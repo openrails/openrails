@@ -55,6 +55,9 @@ namespace ORTS.Debugging
 	  /// </summary>
 	  private bool Dragging = false;
 	  private WorldPosition worldPos;
+      float xScale = 1; 
+      float yScale = 1; 
+
 	  string name = "";
 	  List<SwitchWidget> switchItemsDrawn;
 	  List<SignalWidget> signalItemsDrawn;
@@ -69,7 +72,7 @@ namespace ORTS.Debugging
 	  PointF signalPickedLocation = new PointF();
 	  public bool signalPickedItemHandled = false;
 	  public double signalPickedTime = 0.0f;
-
+	  public bool DrawPath = true; //draw train path
 	  ImageList imageList1 = null;
 	  /// <summary>
 	  /// contains the last position of the mouse
@@ -535,6 +538,7 @@ namespace ORTS.Debugging
 		 using (Pen greenPen = new Pen(Color.Green))
 		 using (Pen orangePen = new Pen(Color.Orange))
 		 using (Pen trainPen = new Pen(Color.DarkGreen))
+		 using (Pen pathPen = new Pen(Color.DeepPink))
 		 using (Pen grayPen = new Pen(Color.Gray))
          {
 			 var subX = minX + ViewWindow.X; var subY = minY + ViewWindow.Y;
@@ -544,17 +548,18 @@ namespace ORTS.Debugging
             float xRange = maxX - minX;
             float yRange = maxY - minY;
 
-            float xScale = pictureBox1.Width / ViewWindow.Width;
-            float yScale = pictureBox1.Height/ ViewWindow.Height;
+            xScale = pictureBox1.Width / ViewWindow.Width;
+            yScale = pictureBox1.Height/ ViewWindow.Height;
 
 			PointF[] points = new PointF[3];
 			Pen p = grayPen;
 
 			p.Width = xScale;
 			if (p.Width < 1) p.Width = 1;
-			greenPen.Width = orangePen.Width = redPen.Width = p.Width;
+			greenPen.Width = orangePen.Width = redPen.Width = p.Width; pathPen.Width = 2 * p.Width;
 			trainPen.Width = p.Width*3;
 			if (trainPen.Width < 15f) trainPen.Width = 15f;
+			var forwardDist = 100 / xScale; if (forwardDist < 5) forwardDist = 5;
 			//if (xScale > 3) p.Width = 3f;
 			//else if (xScale > 2) p.Width = 2f;
 			//else p.Width = 1f;
@@ -666,8 +671,12 @@ namespace ORTS.Debugging
 						g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
 					}
 				}
-				var margin = 30 * xScale;
+				var margin = 30 * xScale;//margins to determine if we want to draw a train
 				var margin2 = 2000 * xScale;
+
+				//variable for drawing train path
+				var mDist = 2000f; var pDist = 50 / xScale; if (pDist < 20) { pDist = 20; mDist = 1000; } if (pDist > 50) pDist = 50;//segment length when draw path
+				
 				foreach (Train t in simulator.Trains)
 				{
 					name = "";
@@ -691,15 +700,17 @@ namespace ORTS.Debugging
 					{
 						worldPos = firstCar.WorldPosition;
 						scaledItem.X = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
-						if (scaledItem.X < -10 || scaledItem.X > IM_Width + 10 || scaledItem.Y > IM_Height + 10 || scaledItem.Y < -10) continue;
+						if (scaledItem.X < -100 || scaledItem.X > IM_Width + 100 || scaledItem.Y > IM_Height + 100 || scaledItem.Y < -100) continue;
 						g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
 						scaledItem.Y -= 25;
+						DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
 						g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
 						continue;
 					}
 					var loc = t.FrontTDBTraveller.WorldLocation;
 					x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pictureBox1.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
 					if (x < -margin2 || x > IM_Width + margin2 || y > IM_Height + margin2 || y < -margin2) continue;
+					DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
 					foreach (var car in t.Cars)
 					{
 						Traveller t1 = new Traveller(t.RearTDBTraveller);
@@ -840,6 +851,32 @@ namespace ORTS.Debugging
 		  int location = ID.LastIndexOf('-');
 		  if (location < 0) return ID;
 		  return ID.Substring(0, location - 1);
+	  }
+
+	  public void DrawTrainPath(Train train, float subX, float subY, Pen pathPen, Graphics g, PointF scaledA, PointF scaledB, float stepDist, float maxDist)
+	  {
+		  if (DrawPath != true) return;
+		  bool ok = false;
+		  if (train == Program.Simulator.PlayerLocomotive.Train) ok = true;
+		  if (MultiPlayer.MPManager.IsMultiPlayer())
+		  {
+			  if (MultiPlayer.MPManager.OnlineTrains.findTrain(train)) ok = true;
+		  }
+		  if (train.FirstCar!=null&train.FirstCar.CarID.Contains("AI")) ok = true; //AI train
+		  if (Math.Abs(train.SpeedMpS) > 0.001) ok = true;
+		  if (ok == false) return;
+		  var dist = 0f;
+		  var traveller = train.MUDirection != Direction.Reverse ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
+
+		  while (dist < maxDist)
+		  {
+			  scaledA.X = (traveller.TileX * 2048 + traveller.Location.X - subX) * xScale; scaledA.Y = pictureBox1.Height - (traveller.TileZ * 2048 + traveller.Location.Z - subY) * yScale;
+			  traveller.Move(stepDist);//< 0) return;
+			  scaledB.X = (traveller.TileX * 2048 + traveller.Location.X - subX) * xScale; scaledB.Y = pictureBox1.Height - (traveller.TileZ * 2048 + traveller.Location.Z - subY) * yScale;
+			  dist += stepDist;
+			  g.DrawLine(pathPen, scaledA, scaledB);
+		  }
+			  //g.FillEllipse(Brushes.DarkGreen, GetRect(scaledItem, car.Length * xScale));
 	  }
       /// <summary>
       /// Generates a rectangle representing a dot being drawn.
@@ -1510,6 +1547,11 @@ namespace ORTS.Debugging
 		  reply2Selected.Enabled = false;
 		  if (MSG.Enabled == true) msgSelected.Enabled = true;
 
+	  }
+
+	  private void chkDrawPathChanged(object sender, EventArgs e)
+	  {
+		  this.DrawPath = chkDrawPath.Checked;
 	  }
 
    }

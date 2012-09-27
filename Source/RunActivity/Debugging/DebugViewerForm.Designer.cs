@@ -43,6 +43,7 @@
 		  this.label1 = new System.Windows.Forms.Label();
 		  this.messages = new System.Windows.Forms.ListBox();
 		  this.reply2Selected = new System.Windows.Forms.Button();
+		  this.chkDrawPath = new System.Windows.Forms.CheckBox();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.SuspendLayout();
@@ -51,7 +52,7 @@
 		  // 
 		  this.pictureBox1.Location = new System.Drawing.Point(3, 131);
 		  this.pictureBox1.Name = "pictureBox1";
-		  this.pictureBox1.Size = new System.Drawing.Size(684, 626);
+		  this.pictureBox1.Size = new System.Drawing.Size(754, 626);
 		  this.pictureBox1.TabIndex = 0;
 		  this.pictureBox1.TabStop = false;
 		  this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseMove);
@@ -61,11 +62,11 @@
 		  // refreshButton
 		  // 
 		  this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.refreshButton.Location = new System.Drawing.Point(711, 9);
+		  this.refreshButton.Location = new System.Drawing.Point(710, 102);
 		  this.refreshButton.Name = "refreshButton";
-		  this.refreshButton.Size = new System.Drawing.Size(141, 23);
+		  this.refreshButton.Size = new System.Drawing.Size(103, 23);
 		  this.refreshButton.TabIndex = 1;
-		  this.refreshButton.Text = "View Selected";
+		  this.refreshButton.Text = "View Train";
 		  this.refreshButton.UseVisualStyleBackColor = true;
 		  this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
 		  // 
@@ -77,7 +78,7 @@
             0,
             0,
             0});
-		  this.windowSizeUpDown.Location = new System.Drawing.Point(755, 38);
+		  this.windowSizeUpDown.Location = new System.Drawing.Point(761, 6);
 		  this.windowSizeUpDown.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -102,7 +103,7 @@
 		  // 
 		  this.label2.AutoSize = true;
 		  this.label2.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.label2.Location = new System.Drawing.Point(836, 40);
+		  this.label2.Location = new System.Drawing.Point(846, 13);
 		  this.label2.Name = "label2";
 		  this.label2.Size = new System.Drawing.Size(19, 16);
 		  this.label2.TabIndex = 8;
@@ -110,7 +111,7 @@
 		  // 
 		  // AvatarView
 		  // 
-		  this.AvatarView.Location = new System.Drawing.Point(717, 133);
+		  this.AvatarView.Location = new System.Drawing.Point(779, 131);
 		  this.AvatarView.Name = "AvatarView";
 		  this.AvatarView.Size = new System.Drawing.Size(121, 626);
 		  this.AvatarView.TabIndex = 14;
@@ -119,7 +120,7 @@
 		  // 
 		  // rmvButton
 		  // 
-		  this.rmvButton.Location = new System.Drawing.Point(725, 104);
+		  this.rmvButton.Location = new System.Drawing.Point(819, 102);
 		  this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
 		  this.rmvButton.Name = "rmvButton";
 		  this.rmvButton.Size = new System.Drawing.Size(93, 24);
@@ -131,13 +132,11 @@
 		  // chkAllowUserSwitch
 		  // 
 		  this.chkAllowUserSwitch.AutoSize = true;
-		  this.chkAllowUserSwitch.Checked = true;
-		  this.chkAllowUserSwitch.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(710, 66);
+		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(710, 35);
 		  this.chkAllowUserSwitch.Name = "chkAllowUserSwitch";
-		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(142, 17);
+		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(108, 17);
 		  this.chkAllowUserSwitch.TabIndex = 16;
-		  this.chkAllowUserSwitch.Text = " Client Controls Switches";
+		  this.chkAllowUserSwitch.Text = "Client can Switch";
 		  this.chkAllowUserSwitch.UseVisualStyleBackColor = true;
 		  this.chkAllowUserSwitch.CheckedChanged += new System.EventHandler(this.chkAllowUserSwitch_CheckedChanged);
 		  // 
@@ -146,7 +145,7 @@
 		  this.chkShowAvatars.AutoSize = true;
 		  this.chkShowAvatars.Checked = true;
 		  this.chkShowAvatars.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkShowAvatars.Location = new System.Drawing.Point(710, 85);
+		  this.chkShowAvatars.Location = new System.Drawing.Point(710, 58);
 		  this.chkShowAvatars.Name = "chkShowAvatars";
 		  this.chkShowAvatars.Size = new System.Drawing.Size(92, 17);
 		  this.chkShowAvatars.TabIndex = 17;
@@ -205,7 +204,7 @@
 		  // label1
 		  // 
 		  this.label1.AutoSize = true;
-		  this.label1.Location = new System.Drawing.Point(692, 43);
+		  this.label1.Location = new System.Drawing.Point(700, 11);
 		  this.label1.Name = "label1";
 		  this.label1.Size = new System.Drawing.Size(57, 13);
 		  this.label1.TabIndex = 7;
@@ -234,12 +233,26 @@
 		  this.reply2Selected.UseVisualStyleBackColor = true;
 		  this.reply2Selected.Click += new System.EventHandler(this.replySelected);
 		  // 
+		  // chkDrawPath
+		  // 
+		  this.chkDrawPath.AutoSize = true;
+		  this.chkDrawPath.Checked = true;
+		  this.chkDrawPath.CheckState = System.Windows.Forms.CheckState.Checked;
+		  this.chkDrawPath.Location = new System.Drawing.Point(710, 80);
+		  this.chkDrawPath.Name = "chkDrawPath";
+		  this.chkDrawPath.Size = new System.Drawing.Size(76, 17);
+		  this.chkDrawPath.TabIndex = 24;
+		  this.chkDrawPath.Text = "Draw Path";
+		  this.chkDrawPath.UseVisualStyleBackColor = true;
+		  this.chkDrawPath.CheckedChanged += new System.EventHandler(this.chkDrawPathChanged);
+		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
-		  this.ClientSize = new System.Drawing.Size(868, 768);
+		  this.ClientSize = new System.Drawing.Size(923, 768);
+		  this.Controls.Add(this.chkDrawPath);
 		  this.Controls.Add(this.reply2Selected);
 		  this.Controls.Add(this.messages);
 		  this.Controls.Add(this.composeMSG);
@@ -284,5 +297,6 @@
 	  private System.Windows.Forms.Label label1;
 	  private System.Windows.Forms.ListBox messages;
 	  private System.Windows.Forms.Button reply2Selected;
+	  private System.Windows.Forms.CheckBox chkDrawPath;
    }
 }

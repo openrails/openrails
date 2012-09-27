@@ -56,7 +56,7 @@ namespace ORTS.MultiPlayer
 
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
-		public bool ClientAllowedSwitch = true;
+		public bool ClientAllowedSwitch = false;
 		public bool ComposingText = false;
 		public string lastSender = ""; //who last sends me a message
 		public void AddUncoupledTrains(Train t)
