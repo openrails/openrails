@@ -860,31 +860,227 @@ namespace ORTS.Debugging
 		  return ID.Substring(0, location - 1);
 	  }
 
-	  public void DrawTrainPath(Train train, float subX, float subY, Pen pathPen, Graphics g, PointF scaledA, PointF scaledB, float stepDist, float maxDist)
-	  {
-		  if (DrawPath != true) return;
-		  bool ok = false;
-		  if (train == Program.Simulator.PlayerLocomotive.Train) ok = true;
-		  if (MultiPlayer.MPManager.IsMultiPlayer())
-		  {
-			  if (MultiPlayer.MPManager.OnlineTrains.findTrain(train)) ok = true;
-		  }
-		  if (train.FirstCar!=null&train.FirstCar.CarID.Contains("AI")) ok = true; //AI train
-		  if (Math.Abs(train.SpeedMpS) > 0.001) ok = true;
-		  if (ok == false) return;
-		  var dist = 0f;
-		  var traveller = train.MUDirection != Direction.Reverse ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
+	    const float SignalErrorDistance = 100;
+        const float SignalWarningDistance = 500;
+        const float DisplayDistance = 1000;
+        const float DisplaySegmentLength = 10;
+        const float MaximumSectionDistance = 10000;
 
-		  while (dist < maxDist)
-		  {
-			  scaledA.X = (traveller.TileX * 2048 + traveller.Location.X - subX) * xScale; scaledA.Y = pictureBox1.Height - (traveller.TileZ * 2048 + traveller.Location.Z - subY) * yScale;
-			  traveller.Move(stepDist);//< 0) return;
-			  scaledB.X = (traveller.TileX * 2048 + traveller.Location.X - subX) * xScale; scaledB.Y = pictureBox1.Height - (traveller.TileZ * 2048 + traveller.Location.Z - subY) * yScale;
-			  dist += stepDist;
-			  g.DrawLine(pathPen, scaledA, scaledB);
-		  }
-			  //g.FillEllipse(Brushes.DarkGreen, GetRect(scaledItem, car.Length * xScale));
-	  }
+	  Dictionary<int, SignallingDebugWindow.TrackSectionCacheEntry> Cache = new Dictionary<int, SignallingDebugWindow.TrackSectionCacheEntry>();
+	  SignallingDebugWindow.TrackSectionCacheEntry GetCacheEntry(Traveller position)
+        {
+            SignallingDebugWindow.TrackSectionCacheEntry rv;
+            if (Cache.TryGetValue(position.TrackNodeIndex, out rv) && (rv.Direction == position.Direction))
+                return rv;
+            Cache[position.TrackNodeIndex] = rv = new SignallingDebugWindow.TrackSectionCacheEntry()
+            {
+                Direction = position.Direction,
+                Length = 0,
+                Objects = new List<SignallingDebugWindow.TrackSectionObject>(),
+            };
+            var nodeIndex = position.TrackNodeIndex;
+            var trackNode = new Traveller(position);
+            while (true)
+            {
+                rv.Length += MaximumSectionDistance - trackNode.MoveInSection(MaximumSectionDistance);
+                if (!trackNode.NextSection())
+                    break;
+                if (trackNode.IsEnd)
+                    rv.Objects.Add(new SignallingDebugWindow.TrackSectionEndOfLine() { Distance = rv.Length });
+                else if (trackNode.IsJunction)
+                    rv.Objects.Add(new SignallingDebugWindow.TrackSectionSwitch() { Distance = rv.Length, TrackNode = trackNode.TN, NodeIndex = nodeIndex });
+                else
+                    rv.Objects.Add(new SignallingDebugWindow.TrackSectionObject() { Distance = rv.Length }); // Always have an object at the end.
+                if (trackNode.TrackNodeIndex != nodeIndex)
+                    break;
+            }
+            trackNode = new Traveller(position);
+            var distance = 0f;
+            while (true)
+            {
+                var signal = Program.Simulator.Signals.FindNearestSignal(trackNode);
+                if (signal.GetAspect() == SignalHead.SIGASP.UNKNOWN)
+                    break;
+                var signalDistance = signal.DistanceToSignal(trackNode);
+                if (signalDistance > 0)
+                {
+                    distance += signalDistance;
+                    trackNode.Move(signalDistance);
+                    if (trackNode.TrackNodeIndex != nodeIndex)
+                        break;
+                    rv.Objects.Add(new SignallingDebugWindow.TrackSectionSignal() { Distance = distance, Signal = signal });
+                }
+                // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
+                trackNode.Move(0.001f);
+            }
+            rv.Objects = rv.Objects.OrderBy(tso => tso.Distance).ToList();
+            return rv;
+        }
+
+	    ORTS.Popups.TrackMonitorSignalAspect GetAspect(Signal signal)
+        {
+            var aspect = signal.GetAspect();
+            if (aspect >= SignalHead.SIGASP.CLEAR_1)
+                return ORTS.Popups.TrackMonitorSignalAspect.Clear;
+            if (aspect >= SignalHead.SIGASP.STOP_AND_PROCEED)
+                return ORTS.Popups.TrackMonitorSignalAspect.Warning;
+            return ORTS.Popups.TrackMonitorSignalAspect.Stop;
+        }
+
+		public void DrawTrainPath(Train train, float subX, float subY, Pen pathPen, Graphics g, PointF scaledA, PointF scaledB, float stepDist, float MaximumSectionDistance)
+		{
+			if (DrawPath != true) return;
+			bool ok = false;
+			if (train == Program.Simulator.PlayerLocomotive.Train) ok = true;
+			if (MultiPlayer.MPManager.IsMultiPlayer())
+			{
+				if (MultiPlayer.MPManager.OnlineTrains.findTrain(train)) ok = true;
+			}
+			if (train.FirstCar != null & train.FirstCar.CarID.Contains("AI")) ok = true; //AI train
+			if (Math.Abs(train.SpeedMpS) > 0.001) ok = true;
+			if (ok == false) return;
+			var DisplayDistance = MaximumSectionDistance;
+			var position = train.MUDirection != Direction.Reverse ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
+			var caches = new List<SignallingDebugWindow.TrackSectionCacheEntry>();
+			// Work backwards until we end up on a different track section.
+			var cacheNode = new Traveller(position);
+			cacheNode.ReverseDirection();
+			var initialNodeOffsetCount = 0;
+			while (cacheNode.TrackNodeIndex == position.TrackNodeIndex && cacheNode.NextSection())
+				initialNodeOffsetCount++;
+			// Now do it again, but don't go the last track section (because it is from a different track node).
+			cacheNode = new Traveller(position);
+			cacheNode.ReverseDirection();
+			for (var i = 1; i < initialNodeOffsetCount; i++)
+				cacheNode.NextSection();
+			// Push the location right up to the end of the section.
+			cacheNode.MoveInSection(MaximumSectionDistance);
+			// Now back facing the right way, calculate the distance to the train location.
+			cacheNode.ReverseDirection();
+			var initialNodeOffset = cacheNode.DistanceTo(position.TileX, position.TileZ, position.X, position.Y, position.Z);
+			// Go and collect all the cache entries for the visible range of vector nodes (straights, curves).
+			var totalDistance = 0f;
+			while (!cacheNode.IsEnd && totalDistance - initialNodeOffset < DisplayDistance)
+			{
+				if (cacheNode.IsTrack)
+				{
+					var cache = GetCacheEntry(cacheNode);
+					cache.Age = 0;
+					caches.Add(cache);
+					totalDistance += cache.Length;
+				}
+				var nodeIndex = cacheNode.TrackNodeIndex;
+				while (cacheNode.TrackNodeIndex == nodeIndex && cacheNode.NextSection()) ;
+			}
+
+			var switchErrorDistance = initialNodeOffset + DisplayDistance + SignalWarningDistance;
+			var signalErrorDistance = initialNodeOffset + DisplayDistance + SignalWarningDistance;
+			var currentDistance = 0f;
+			foreach (var cache in caches)
+			{
+				foreach (var obj in cache.Objects)
+				{
+					var objDistance = currentDistance + obj.Distance;
+					if (objDistance < initialNodeOffset)
+						continue;
+
+					var switchObj = obj as SignallingDebugWindow.TrackSectionSwitch;
+					var signalObj = obj as SignallingDebugWindow.TrackSectionSignal;
+					if (switchObj != null)
+					{
+						for (var pin = switchObj.TrackNode.Inpins; pin < switchObj.TrackNode.Inpins + switchObj.TrackNode.Outpins; pin++)
+						{
+							if (switchObj.TrackNode.TrPins[pin].Link == switchObj.NodeIndex)
+							{
+								if (pin - switchObj.TrackNode.Inpins != switchObj.TrackNode.TrJunctionNode.SelectedRoute)
+									switchErrorDistance = objDistance;
+								break;
+							}
+						}
+						if (switchErrorDistance < DisplayDistance)
+							break;
+					}
+					else if (signalObj != null)
+					{
+						if (GetAspect(signalObj.Signal) == ORTS.Popups.TrackMonitorSignalAspect.Stop)
+						{
+							signalErrorDistance = objDistance;
+							break;
+						}
+					}
+				}
+				if (switchErrorDistance < DisplayDistance || signalErrorDistance < DisplayDistance)
+					break;
+				currentDistance += cache.Length;
+			}
+
+			var currentPosition = new Traveller(position);
+			currentPosition.Move(-initialNodeOffset);
+			currentDistance = 0;
+			foreach (var cache in caches)
+			{
+				var lastObjDistance = 0f;
+				foreach (var obj in cache.Objects)
+				{
+					var objDistance = currentDistance + obj.Distance;
+
+					for (var step = lastObjDistance; step < obj.Distance; step += DisplaySegmentLength)
+					{
+						var stepDistance = currentDistance + step;
+						var stepLength = DisplaySegmentLength > obj.Distance - step ? obj.Distance - step : DisplaySegmentLength;
+						var previousLocation = currentPosition.WorldLocation;
+						currentPosition.Move(stepLength);
+						if (stepDistance + stepLength >= initialNodeOffset && stepDistance <= initialNodeOffset + DisplayDistance)
+						{
+							var currentLocation = currentPosition.WorldLocation;
+							scaledA.X = (previousLocation.TileX * 2048 + previousLocation.Location.X - subX) * xScale; scaledA.Y = pictureBox1.Height - (previousLocation.TileZ * 2048 + previousLocation.Location.Z - subY) * yScale;
+							scaledB.X = (currentLocation.TileX * 2048 + currentLocation.Location.X - subX) * xScale; scaledB.Y = pictureBox1.Height - (currentPosition.TileZ * 2048 + currentPosition.Location.Z - subY) * yScale;
+							g.DrawLine(pathPen, scaledA, scaledB);
+						}
+					}
+					lastObjDistance = obj.Distance;
+
+					if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
+						break;
+				}
+				currentDistance += cache.Length;
+				if (currentDistance >= switchErrorDistance || currentDistance >= signalErrorDistance)
+					break;
+			}
+
+			currentPosition = new Traveller(position);
+			currentPosition.Move(-initialNodeOffset);
+			currentDistance = 0;
+			foreach (var cache in caches)
+			{
+				var lastObjDistance = 0f;
+				foreach (var obj in cache.Objects)
+				{
+					currentPosition.Move(obj.Distance - lastObjDistance);
+					lastObjDistance = obj.Distance;
+
+					var objDistance = currentDistance + obj.Distance;
+					if (objDistance < initialNodeOffset || objDistance > initialNodeOffset + DisplayDistance)
+						continue;
+
+					var eolObj = obj as SignallingDebugWindow.TrackSectionEndOfLine;
+					var switchObj = obj as SignallingDebugWindow.TrackSectionSwitch;
+					var signalObj = obj as SignallingDebugWindow.TrackSectionSignal;
+
+					if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
+						break;
+				}
+				currentDistance += cache.Length;
+				if (currentDistance >= switchErrorDistance || currentDistance >= signalErrorDistance)
+					break;
+			}
+			// Clean up any cache entries who haven't been using for 30 seconds.
+			var oldCaches = Cache.Where(kvp => kvp.Value.Age > 30 * 4).ToArray();
+			foreach (var oldCache in oldCaches)
+				Cache.Remove(oldCache.Key);
+
+		}
+
       /// <summary>
       /// Generates a rectangle representing a dot being drawn.
       /// </summary>

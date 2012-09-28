@@ -294,29 +294,29 @@ namespace ORTS
             Signal,
         }
 
-        class TrackSectionCacheEntry {
+        public class TrackSectionCacheEntry {
             public int Age;
             public Traveller.TravellerDirection Direction;
             public float Length;
             public List<TrackSectionObject> Objects;
         }
 
-        class TrackSectionObject
+        public class TrackSectionObject
         {
             public float Distance;
         }
 
-        class TrackSectionEndOfLine : TrackSectionObject
+        public class TrackSectionEndOfLine : TrackSectionObject
         {
         }
 
-        class TrackSectionSwitch : TrackSectionObject
+        public class TrackSectionSwitch : TrackSectionObject
         {
             public TrackNode TrackNode;
             public int NodeIndex;
         }
 
-        class TrackSectionSignal : TrackSectionObject
+        public class TrackSectionSignal : TrackSectionObject
         {
             public Signal Signal;
         }
