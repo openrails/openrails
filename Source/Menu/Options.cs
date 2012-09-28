@@ -344,5 +344,14 @@ namespace ORTS
             else
                 MessageBox.Show("No errors found.", Application.ProductName);
         }
+
+        private void comboBoxWindowSize_SelectedIndexChanged( object sender, EventArgs e ) {
+            var windowSizeParts = comboBoxWindowSize.Text.Split( new[] { 'x' }, 2 );
+            double width = Convert.ToDouble( windowSizeParts[0] );
+            double height = Convert.ToDouble( windowSizeParts[1] );
+            double aspectRatio = width / height;
+            bool wideScreen = aspectRatio > (4.0 / 3.0); 
+            numericCab2DStretch.Enabled = wideScreen;
+        }
     }
 }

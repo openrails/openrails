@@ -305,7 +305,14 @@ namespace ORTS
             // will disable this feature. A smarter scheme would discover the aspect ratio of the cab view and adjust
             // appropriately. </CJ Comment>
 
-            int CabExceedsDisplay = (int)((MSTSCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
+            int CabExceedsDisplay;
+            if( ((float)windowWidth / windowHeight) > (4.0 / 3) ) {
+                // screen is wide-screen, so can choose between scroll or stretch
+                CabExceedsDisplay = (int)((MSTSCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
+            } else {
+                // scroll not practical, so stretch instead
+                CabExceedsDisplay = 0;
+            }
             CabHeightPixels = windowHeight + CabExceedsDisplay;
             CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
             if (CabCamera.IsAvailable)
