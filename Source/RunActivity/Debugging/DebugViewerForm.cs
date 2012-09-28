@@ -155,7 +155,12 @@ namespace ORTS.Debugging
 
          ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
          windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
-
+		 boxSetSignal.Items.Add("System Controlled");
+		 boxSetSignal.Items.Add("Stop");
+		 boxSetSignal.Items.Add("Approach");
+		 boxSetSignal.Items.Add("Proceed");
+		 boxSetSwitch.Items.Add("To Main Soute");
+		 boxSetSwitch.Items.Add("To Side Soute");
       
 
 		  InitData();
@@ -743,6 +748,7 @@ namespace ORTS.Debugging
 				if (switchPickedItemHandled) switchPickedItem = null;
 				if (signalPickedItemHandled) signalPickedItem = null;
 
+#if false
 				if (switchPickedItem != null /*&& switchPickedItemChanged == true*/ && !switchPickedItemHandled && simulator.GameTime - switchPickedTime < 5)
 				{
 					switchPickedLocation.X = switchPickedItem.Location2D.X + 150; switchPickedLocation.Y = switchPickedItem.Location2D.Y;
@@ -775,6 +781,7 @@ namespace ORTS.Debugging
 						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
 					}
 				}
+#endif
 			}
 
          }
@@ -1121,12 +1128,12 @@ namespace ORTS.Debugging
 		  {
 			  if (LastCursorPosition.X == e.X && LastCursorPosition.Y == e.Y)
 			  {
-				  var temp = findItemFromMouse(e.X, e.Y, 5);
+				  var temp = findItemFromMouse(e.X, e.Y, 5*(int)xScale);
 				  if (temp != null)
 				  {
-					  GenerateView();
-					  if (temp is SwitchWidget) switchPickedItem = (SwitchWidget)temp; //read by MPManager
-					  if (temp is SignalWidget) signalPickedItem = (SignalWidget)temp;
+					  //GenerateView();
+					  if (temp is SwitchWidget) { switchPickedItem = (SwitchWidget)temp; HandlePickedSwitch(); }
+					  if (temp is SignalWidget) { signalPickedItem = (SignalWidget)temp; HandlePickedSignal(); }
 #if false
 					  pictureBox1.ContextMenu.Show(pictureBox1, e.Location);
 					  pictureBox1.ContextMenu.MenuItems[0].Checked = pictureBox1.ContextMenu.MenuItems[1].Checked = false;
@@ -1137,7 +1144,7 @@ namespace ORTS.Debugging
 					  }
 #endif
 				  }
-				  else { switchPickedItem = null; signalPickedItem = null; }
+				  else { switchPickedItem = null; signalPickedItem = null; UnHandleItemPick(); }
 			  }
 
 		  }
@@ -1177,8 +1184,46 @@ namespace ORTS.Debugging
 	  }
 #endif
 
-	  private ItemWidget findItemFromMouse(int x, int y, int range)
+	  private void UnHandleItemPick()
 	  {
+		  boxSetSignal.Visible = false;
+		  boxSetSignal.Enabled = false;
+		  boxSetSwitch.Enabled = false;
+		  boxSetSwitch.Visible = false;
+	  }
+	  private void HandlePickedSignal()
+	  {
+		  boxSetSwitch.Enabled = false;
+		  boxSetSwitch.Visible = false;
+		  if (signalPickedItem == null) return;
+		  var y = LastCursorPosition.Y;
+		  if (LastCursorPosition.Y < 100) y = 100;
+		  if (LastCursorPosition.Y > pictureBox1.Size.Height - 100) y = pictureBox1.Size.Height - 100;
+		  boxSetSignal.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
+		  boxSetSignal.Enabled = true;
+		  boxSetSignal.Focus();
+		  boxSetSignal.Visible = true;
+		  return;
+	  }
+
+	  private void HandlePickedSwitch()
+	  {
+		  boxSetSignal.Enabled = false;
+		  boxSetSignal.Visible = false;
+		  if (switchPickedItem == null) return;
+		  var y = LastCursorPosition.Y + 100;
+		  if (y < 140) y = 140;
+		  if (y > pictureBox1.Size.Height + 100) y = pictureBox1.Size.Height + 100;
+		  boxSetSwitch.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
+		  boxSetSwitch.Enabled = true;
+		  boxSetSwitch.Focus();
+		  boxSetSwitch.Visible = true;
+		  return;
+	  }
+
+	   private ItemWidget findItemFromMouse(int x, int y, int range)
+	  {
+		  if (range < 5) range = 5;
 		  foreach (var item in switchItemsDrawn)
 		  {
 			  //if out of range, continue
@@ -1554,8 +1599,85 @@ namespace ORTS.Debugging
 		  this.DrawPath = chkDrawPath.Checked;
 	  }
 
+	  private void boxSetSignalChosen(object sender, EventArgs e)
+	  {
+		  if (signalPickedItem == null)
+		  {
+			  UnHandleItemPick(); return;
+		  }
+		  var signal = signalPickedItem.Signal;
+		  var type = boxSetSignal.SelectedIndex;
+		  switch (type)
+		  {
+			  case 0:
+				  signal.canUpdate = true;
+				  signal.forcedTime = 0;
+				  break;
+			  case 1:
+				  signal.enabled = false;
+				  signal.canUpdate = false;
+				  foreach (var head in signal.SignalHeads)
+				  {
+					  head.SetMostRestrictiveAspect();
+					  head.Update();
+				  }
+				  break;
+			  case 2:
+				  signal.canUpdate = false;
+				  //signal.
+				  foreach (var head in signal.SignalHeads)
+				  {
+					  //first try to set as approach, if not defined, set as the least
+					  var drawstate1 = head.def_draw_state(SignalHead.SIGASP.APPROACH_1);
+					  var drawstate2 = head.def_draw_state(SignalHead.SIGASP.APPROACH_2);
+					  var drawstate3 = head.def_draw_state(SignalHead.SIGASP.APPROACH_3);
+					  if (drawstate1 > 0) { head.state = SignalHead.SIGASP.APPROACH_1; }
+					  else if (drawstate2 > 0) { head.state = SignalHead.SIGASP.APPROACH_2; }
+					  else { head.state = SignalHead.SIGASP.APPROACH_3; }
+					  head.draw_state = head.def_draw_state(head.state);
+				  }
+				  signal.forcedTime = Program.Simulator.GameTime;
+				  break;
+			  case 3:
+				  signal.canUpdate = false;
+				  signal.enabled = true; //force it to be green,
+				  //signal.
+				  foreach (var head in signal.SignalHeads)
+				  {
+					  head.SetLeastRestrictiveAspect();
+					  head.draw_state = head.def_draw_state(head.state);
+				  }
+				  signal.forcedTime = Program.Simulator.GameTime;
+				  break;
+		  }
+		  UnHandleItemPick();
+	  }
+
+	  private void boxSetSwitchChosen(object sender, EventArgs e)
+	  {
+		  if (switchPickedItem == null)
+		  {
+			  UnHandleItemPick(); return;
+		  }
+		  var sw = switchPickedItem.Item.TrJunctionNode;
+		  var type = boxSetSwitch.SelectedIndex;
+
+		  switch (type)
+		  {
+			  case 0:
+				  sw.SelectedRoute = (int)switchPickedItem.main;
+				  break;
+			  case 1:
+				  sw.SelectedRoute = 1 - (int)switchPickedItem.main;
+				  break;
+		  }
+		  UnHandleItemPick();
+
+	  }
+
    }
 
+   #region SignalWidget
    /// <summary>
    /// Defines a signal being drawn in a 2D view.
    /// </summary>
@@ -1625,7 +1747,9 @@ namespace ORTS.Debugging
 		   catch {  }
 	   }
    }
+   #endregion
 
+   #region SwitchWidget
    /// <summary>
    /// Defines a signal being drawn in a 2D view.
    /// </summary>
@@ -1676,6 +1800,9 @@ namespace ORTS.Debugging
 	   }
    }
 
+   #endregion
+
+   #region BufferWidget
    public class BufferWidget : ItemWidget
    {
 	   public TrackNode Item;
@@ -1693,7 +1820,9 @@ namespace ORTS.Debugging
 		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
 	   }
    }
+   #endregion
 
+   #region ItemWidget
    public class ItemWidget
    {
 	   public PointF Location;
@@ -1711,7 +1840,9 @@ namespace ORTS.Debugging
 	   }
 
    }
+   #endregion
 
+   #region LineSegment
    /// <summary>
    /// Defines a geometric line segment.
    /// </summary>
@@ -1760,6 +1891,10 @@ namespace ORTS.Debugging
 	   }
    }
 
+   #endregion
+
+   #region SidingWidget
+
    /// <summary>
    /// Defines a siding name being drawn in a 2D view.
    /// </summary>
@@ -1786,6 +1921,7 @@ namespace ORTS.Debugging
 		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
 	   }
    }
+   #endregion
 
    public class dVector
    {

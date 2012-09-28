@@ -44,6 +44,8 @@
 		  this.messages = new System.Windows.Forms.ListBox();
 		  this.reply2Selected = new System.Windows.Forms.Button();
 		  this.chkDrawPath = new System.Windows.Forms.CheckBox();
+		  this.boxSetSignal = new System.Windows.Forms.ListBox();
+		  this.boxSetSwitch = new System.Windows.Forms.ListBox();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.SuspendLayout();
@@ -62,7 +64,7 @@
 		  // refreshButton
 		  // 
 		  this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.refreshButton.Location = new System.Drawing.Point(710, 102);
+		  this.refreshButton.Location = new System.Drawing.Point(808, 102);
 		  this.refreshButton.Name = "refreshButton";
 		  this.refreshButton.Size = new System.Drawing.Size(103, 23);
 		  this.refreshButton.TabIndex = 1;
@@ -78,7 +80,7 @@
             0,
             0,
             0});
-		  this.windowSizeUpDown.Location = new System.Drawing.Point(761, 6);
+		  this.windowSizeUpDown.Location = new System.Drawing.Point(807, 5);
 		  this.windowSizeUpDown.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -103,7 +105,7 @@
 		  // 
 		  this.label2.AutoSize = true;
 		  this.label2.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.label2.Location = new System.Drawing.Point(846, 13);
+		  this.label2.Location = new System.Drawing.Point(892, 9);
 		  this.label2.Name = "label2";
 		  this.label2.Size = new System.Drawing.Size(19, 16);
 		  this.label2.TabIndex = 8;
@@ -120,7 +122,7 @@
 		  // 
 		  // rmvButton
 		  // 
-		  this.rmvButton.Location = new System.Drawing.Point(819, 102);
+		  this.rmvButton.Location = new System.Drawing.Point(708, 102);
 		  this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
 		  this.rmvButton.Name = "rmvButton";
 		  this.rmvButton.Size = new System.Drawing.Size(93, 24);
@@ -132,7 +134,9 @@
 		  // chkAllowUserSwitch
 		  // 
 		  this.chkAllowUserSwitch.AutoSize = true;
-		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(710, 35);
+		  this.chkAllowUserSwitch.Checked = true;
+		  this.chkAllowUserSwitch.CheckState = System.Windows.Forms.CheckState.Checked;
+		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(808, 58);
 		  this.chkAllowUserSwitch.Name = "chkAllowUserSwitch";
 		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(108, 17);
 		  this.chkAllowUserSwitch.TabIndex = 16;
@@ -145,7 +149,7 @@
 		  this.chkShowAvatars.AutoSize = true;
 		  this.chkShowAvatars.Checked = true;
 		  this.chkShowAvatars.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkShowAvatars.Location = new System.Drawing.Point(710, 58);
+		  this.chkShowAvatars.Location = new System.Drawing.Point(709, 35);
 		  this.chkShowAvatars.Name = "chkShowAvatars";
 		  this.chkShowAvatars.Size = new System.Drawing.Size(92, 17);
 		  this.chkShowAvatars.TabIndex = 17;
@@ -204,7 +208,7 @@
 		  // label1
 		  // 
 		  this.label1.AutoSize = true;
-		  this.label1.Location = new System.Drawing.Point(700, 11);
+		  this.label1.Location = new System.Drawing.Point(744, 9);
 		  this.label1.Name = "label1";
 		  this.label1.Size = new System.Drawing.Size(57, 13);
 		  this.label1.TabIndex = 7;
@@ -238,7 +242,7 @@
 		  this.chkDrawPath.AutoSize = true;
 		  this.chkDrawPath.Checked = true;
 		  this.chkDrawPath.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkDrawPath.Location = new System.Drawing.Point(710, 80);
+		  this.chkDrawPath.Location = new System.Drawing.Point(807, 34);
 		  this.chkDrawPath.Name = "chkDrawPath";
 		  this.chkDrawPath.Size = new System.Drawing.Size(76, 17);
 		  this.chkDrawPath.TabIndex = 24;
@@ -246,12 +250,42 @@
 		  this.chkDrawPath.UseVisualStyleBackColor = true;
 		  this.chkDrawPath.CheckedChanged += new System.EventHandler(this.chkDrawPathChanged);
 		  // 
+		  // boxSetSignal
+		  // 
+		  this.boxSetSignal.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		  this.boxSetSignal.Enabled = false;
+		  this.boxSetSignal.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+		  this.boxSetSignal.FormattingEnabled = true;
+		  this.boxSetSignal.ItemHeight = 20;
+		  this.boxSetSignal.Location = new System.Drawing.Point(209, 205);
+		  this.boxSetSignal.Name = "boxSetSignal";
+		  this.boxSetSignal.Size = new System.Drawing.Size(164, 100);
+		  this.boxSetSignal.TabIndex = 25;
+		  this.boxSetSignal.Visible = false;
+		  this.boxSetSignal.SelectedIndexChanged += new System.EventHandler(this.boxSetSignalChosen);
+		  // 
+		  // boxSetSwitch
+		  // 
+		  this.boxSetSwitch.BorderStyle = System.Windows.Forms.BorderStyle.None;
+		  this.boxSetSwitch.Enabled = false;
+		  this.boxSetSwitch.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+		  this.boxSetSwitch.FormattingEnabled = true;
+		  this.boxSetSwitch.ItemHeight = 20;
+		  this.boxSetSwitch.Location = new System.Drawing.Point(398, 205);
+		  this.boxSetSwitch.Name = "boxSetSwitch";
+		  this.boxSetSwitch.Size = new System.Drawing.Size(125, 40);
+		  this.boxSetSwitch.TabIndex = 26;
+		  this.boxSetSwitch.Visible = false;
+		  this.boxSetSwitch.SelectedIndexChanged += new System.EventHandler(this.boxSetSwitchChosen);
+		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
 		  this.ClientSize = new System.Drawing.Size(923, 768);
+		  this.Controls.Add(this.boxSetSwitch);
+		  this.Controls.Add(this.boxSetSignal);
 		  this.Controls.Add(this.chkDrawPath);
 		  this.Controls.Add(this.reply2Selected);
 		  this.Controls.Add(this.messages);
@@ -298,5 +332,7 @@
 	  private System.Windows.Forms.ListBox messages;
 	  private System.Windows.Forms.Button reply2Selected;
 	  private System.Windows.Forms.CheckBox chkDrawPath;
+	  private System.Windows.Forms.ListBox boxSetSignal;
+	  private System.Windows.Forms.ListBox boxSetSwitch;
    }
 }
