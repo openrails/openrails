@@ -2049,7 +2049,7 @@ namespace ORTS
 					try
 					{
 						var minimumDist = 1000f;
-						var predicted = 2f;
+						var predicted = 50f;
 						var totalDist = minimumDist;
 
 						var item = Program.Simulator.TDB.TrackDB.TrItemTable[this.trItem];
@@ -2059,6 +2059,9 @@ namespace ORTS
 							if (!WorldLocation.Within(sigLoc, train.FrontTDBTraveller.WorldLocation, totalDist) && !WorldLocation.Within(sigLoc, train.RearTDBTraveller.WorldLocation, totalDist))
 								continue;
 
+							if (Math.Abs(train.SpeedMpS) < 0.0001) continue;//stopped, not need to worry
+							predicted = 50f;
+							if (predicted > train.Length / 2) predicted = train.Length / 2;
 							var speedMpS = train.SpeedMpS;
 							// Distances forward from the front and rearwards from the rear.
 							var frontDist = this.DistanceTo(train.FrontTDBTraveller);
@@ -2080,10 +2083,12 @@ namespace ORTS
 								rearDist = frontDist;
 								frontDist = temp;
 							}
-							
-							if (frontDist <= train.Length && rearDist >= -predicted)
+
+							System.Console.WriteLine(train.Cars[0].CarID + frontDist + " " + -train.Length + predicted + " " + rearDist + " " + -predicted);
+							if (frontDist <= predicted && rearDist >= -predicted)
 							{
-								this.canUpdate = true; forcedTime = 0; return true;
+								System.Console.WriteLine(" get back");
+								this.canUpdate = true; forcedTime = 0; this.enabled = true; this.Update(); return true;
 							}
 						}
 					}

@@ -484,7 +484,7 @@ namespace ORTS.MultiPlayer
 			{
 				if (HandThrown == true && !MPManager.Instance().AllowedManualSwitch)
 				{
-					MPManager.BroadCast((new MSGMessage(user, "Warning", "Server does not allow hand thrown of switch")).ToString());
+					//MPManager.BroadCast((new MSGMessage(user, "Warning", "Server does not allow hand thrown of switch")).ToString());
 					return;
 				}
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
@@ -531,7 +531,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
-			if (MPManager.IsServer())
+			if (MPManager.IsServer() && MPManager.Instance().AllowedManualSwitch)
 			{
 				try
 				{

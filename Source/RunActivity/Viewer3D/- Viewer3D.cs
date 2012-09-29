@@ -555,6 +555,7 @@ namespace ORTS
 								head.SetMostRestrictiveAspect();
 								head.Update();
 							}
+							signal.forcedTime = Simulator.GameTime;
 						}
 						else
 						{

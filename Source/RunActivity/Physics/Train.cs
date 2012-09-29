@@ -825,7 +825,7 @@ namespace ORTS
                     {
                             lastSignalObjectRef = NextSignalObject.thisRef;
         			}
-		        	nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
+					if (!MPManager.IsClient()) nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
         //
         // check if passed object - if so, remove object
         // if object is speed, set max allowed speed
@@ -1051,7 +1051,7 @@ namespace ORTS
                             nextSignal.prevSigRef = lastSignalObjectRef;
                     }
 
-			        nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
+			        if (!MPManager.IsClient()) nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
 		    }
 
             else if (this is AITrain)
@@ -1497,15 +1497,15 @@ namespace ORTS
 			{
 				if (to == Program.Simulator.TDB.TrackDB.TrackNodes[sw.TrPins[i + sw.Inpins].Link])
 				{
-					sw.TrJunctionNode.SelectedRoute = i;
 					//multiplayer mode will do some message to the server
 					if (Simulator.PlayerLocomotive != null && train == Simulator.PlayerLocomotive.Train 
 						&& MPManager.IsMultiPlayer() && !MPManager.IsServer())
 					{
 						MPManager.Notify((new MSGSwitch(MPManager.GetUserName(),
-							sw.TrJunctionNode.TN.UiD.TileX, sw.TrJunctionNode.TN.UiD.TileZ, sw.TrJunctionNode.TN.UiD.WorldID, sw.TrJunctionNode.SelectedRoute, false)).ToString());
+							sw.TrJunctionNode.TN.UiD.TileX, sw.TrJunctionNode.TN.UiD.TileZ, sw.TrJunctionNode.TN.UiD.WorldID, sw.TrJunctionNode.SelectedRoute, true)).ToString());
 						//MPManager.Instance().ignoreSwitchStart = Simulator.GameTime;
 					}
+					else sw.TrJunctionNode.SelectedRoute = i;
 					return;
 				}
 			}
@@ -1904,5 +1904,6 @@ namespace ORTS
 
             return false;
         }
+
 	}// class Train
 }

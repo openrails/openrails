@@ -271,9 +271,8 @@ namespace ORTS.MultiPlayer
 		//check if it is in the server mode
 		public static bool IsClient()
 		{
-			if (Program.Server == null && Program.Client == null) return false;
-			if (Program.Server == null) return true;
-			else return false;
+			if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) return false;
+			return true;
 		}
 		//user name
 		static public string GetUserName()

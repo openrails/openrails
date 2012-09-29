@@ -46,6 +46,8 @@
 		  this.chkDrawPath = new System.Windows.Forms.CheckBox();
 		  this.boxSetSignal = new System.Windows.Forms.ListBox();
 		  this.boxSetSwitch = new System.Windows.Forms.ListBox();
+		  this.chkPickSignals = new System.Windows.Forms.CheckBox();
+		  this.chkPickSwitches = new System.Windows.Forms.CheckBox();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.SuspendLayout();
@@ -138,9 +140,9 @@
 		  this.chkAllowUserSwitch.CheckState = System.Windows.Forms.CheckState.Checked;
 		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(808, 58);
 		  this.chkAllowUserSwitch.Name = "chkAllowUserSwitch";
-		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(108, 17);
+		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(83, 17);
 		  this.chkAllowUserSwitch.TabIndex = 16;
-		  this.chkAllowUserSwitch.Text = "Client can Switch";
+		  this.chkAllowUserSwitch.Text = "Auto Switch";
 		  this.chkAllowUserSwitch.UseVisualStyleBackColor = true;
 		  this.chkAllowUserSwitch.CheckedChanged += new System.EventHandler(this.chkAllowUserSwitch_CheckedChanged);
 		  // 
@@ -278,12 +280,38 @@
 		  this.boxSetSwitch.Visible = false;
 		  this.boxSetSwitch.SelectedIndexChanged += new System.EventHandler(this.boxSetSwitchChosen);
 		  // 
+		  // chkPickSignals
+		  // 
+		  this.chkPickSignals.AutoSize = true;
+		  this.chkPickSignals.Checked = true;
+		  this.chkPickSignals.CheckState = System.Windows.Forms.CheckState.Checked;
+		  this.chkPickSignals.Location = new System.Drawing.Point(708, 58);
+		  this.chkPickSignals.Name = "chkPickSignals";
+		  this.chkPickSignals.Size = new System.Drawing.Size(84, 17);
+		  this.chkPickSignals.TabIndex = 27;
+		  this.chkPickSignals.Text = "Pick Signals";
+		  this.chkPickSignals.UseVisualStyleBackColor = true;
+		  // 
+		  // chkPickSwitches
+		  // 
+		  this.chkPickSwitches.AutoSize = true;
+		  this.chkPickSwitches.Checked = true;
+		  this.chkPickSwitches.CheckState = System.Windows.Forms.CheckState.Checked;
+		  this.chkPickSwitches.Location = new System.Drawing.Point(709, 80);
+		  this.chkPickSwitches.Name = "chkPickSwitches";
+		  this.chkPickSwitches.Size = new System.Drawing.Size(93, 17);
+		  this.chkPickSwitches.TabIndex = 28;
+		  this.chkPickSwitches.Text = "Pick Switches";
+		  this.chkPickSwitches.UseVisualStyleBackColor = true;
+		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
 		  this.ClientSize = new System.Drawing.Size(923, 768);
+		  this.Controls.Add(this.chkPickSwitches);
+		  this.Controls.Add(this.chkPickSignals);
 		  this.Controls.Add(this.boxSetSwitch);
 		  this.Controls.Add(this.boxSetSignal);
 		  this.Controls.Add(this.chkDrawPath);
@@ -334,5 +362,7 @@
 	  private System.Windows.Forms.CheckBox chkDrawPath;
 	  private System.Windows.Forms.ListBox boxSetSignal;
 	  private System.Windows.Forms.ListBox boxSetSwitch;
+	  private System.Windows.Forms.CheckBox chkPickSignals;
+	  private System.Windows.Forms.CheckBox chkPickSwitches;
    }
 }

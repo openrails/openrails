@@ -562,7 +562,15 @@ namespace ORTS
 
 			// otherwise we are coming in on the trailing side of the switch
 			// so line it up for the correct route
-			nextSwitchTrack.SelectedRoute = traveller.JunctionEntryPinIndex - 1;
+			if (PlayerLocomotive != null && train == PlayerLocomotive.Train
+				&& MPManager.IsMultiPlayer() && !MPManager.IsServer())
+			{
+				MPManager.Notify((new MSGSwitch(MPManager.GetUserName(),
+					nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, traveller.JunctionEntryPinIndex - 1, true)).ToString());
+				//MPManager.Instance().ignoreSwitchStart = Simulator.GameTime;
+			}
+			else if (MPManager.IsServer() && !MPManager.Instance().AllowedManualSwitch) return;
+			else nextSwitchTrack.SelectedRoute = traveller.JunctionEntryPinIndex - 1;
 		}
 
 		TrackNode lastAlignedAtTrackNode = null;  // optimization skips trailing point

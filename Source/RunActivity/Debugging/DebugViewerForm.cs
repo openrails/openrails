@@ -165,6 +165,8 @@ namespace ORTS.Debugging
 		 boxSetSignal.Items.Add("Proceed");
 		 boxSetSwitch.Items.Add("To Main Soute");
 		 boxSetSwitch.Items.Add("To Side Soute");
+		 chkAllowUserSwitch.Checked = false;
+		 if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.Instance().AllowedManualSwitch = false; }
       
 
 		  InitData();
@@ -174,6 +176,7 @@ namespace ORTS.Debugging
 		{
 			msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
 			AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false;
+			chkPickSignals.Visible = false; chkPickSwitches.Visible = false;
 			pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
 			refreshButton.Text = "View Self";
 		}
@@ -650,7 +653,7 @@ namespace ORTS.Debugging
 						 pen = redPen;
 					 }
 					 g.FillEllipse(color, GetRect(scaledItem, 5f * p.Width));
-					 //g.DrawString(""+s.Signal.canUpdate, trainFont, Brushes.Black, scaledItem);
+					 g.DrawString(""+s.Signal.canUpdate, trainFont, Brushes.Black, scaledItem);
 					 signalItemsDrawn.Add(s);
 					 if (s.hasDir)
 					 {
@@ -1403,6 +1406,7 @@ namespace ORTS.Debugging
 	  }
 	  private void HandlePickedSignal()
 	  {
+		  if (MultiPlayer.MPManager.IsClient()) return;
 		  //boxSetSwitch.Enabled = false;
 		  boxSetSwitch.Visible = false;
 		  if (signalPickedItem == null) return;
@@ -1419,6 +1423,7 @@ namespace ORTS.Debugging
 
 	  private void HandlePickedSwitch()
 	  {
+		  if (MultiPlayer.MPManager.IsClient()) return;
 		  //boxSetSignal.Enabled = false;
 		  boxSetSignal.Visible = false;
 		  if (switchPickedItem == null) return;
@@ -1436,25 +1441,30 @@ namespace ORTS.Debugging
 	   private ItemWidget findItemFromMouse(int x, int y, int range)
 	  {
 		  if (range < 5) range = 5;
-		  foreach (var item in switchItemsDrawn)
+		  if (chkPickSwitches.Checked == true)
 		  {
-			  //if out of range, continue
-			  if (item.Location2D.X < x - range || item.Location2D.X > x + range
-				 || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
+			  foreach (var item in switchItemsDrawn)
+			  {
+				  //if out of range, continue
+				  if (item.Location2D.X < x - range || item.Location2D.X > x + range
+					 || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
 
-			  if (true/*item != switchPickedItem*/) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; }
-			  return item;
+				  if (true/*item != switchPickedItem*/) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; }
+				  return item;
+			  }
 		  }
-		  foreach (var item in signalItemsDrawn)
+		  if (chkPickSignals.Checked == true)
 		  {
-			  //if out of range, continue
-			  if (item.Location2D.X < x - range || item.Location2D.X > x + range
-				 || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
+			  foreach (var item in signalItemsDrawn)
+			  {
+				  //if out of range, continue
+				  if (item.Location2D.X < x - range || item.Location2D.X > x + range
+					 || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
 
-			  if (true/*item != signalPickedItem*/) { signalPickedItemChanged = true; signalPickedItemHandled = false; signalPickedTime = simulator.GameTime; }
-			  return item;
+				  if (true/*item != signalPickedItem*/) { signalPickedItemChanged = true; signalPickedItemHandled = false; signalPickedTime = simulator.GameTime; }
+				  return item;
+			  }
 		  }
-
 		  return null;
 	  }
 
@@ -1834,6 +1844,7 @@ namespace ORTS.Debugging
 					  head.SetMostRestrictiveAspect();
 					  head.Update();
 				  }
+				  signal.forcedTime = Program.Simulator.GameTime;
 				  break;
 			  case 2:
 				  signal.canUpdate = false;
