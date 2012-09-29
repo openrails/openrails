@@ -482,7 +482,7 @@ namespace ORTS.MultiPlayer
 			//System.Console.WriteLine(this.ToString());
 			if (MPManager.IsServer()) //server got this message from Client
 			{
-				if (HandThrown == true && !MPManager.Instance().ClientAllowedSwitch)
+				if (HandThrown == true && !MPManager.Instance().AllowedManualSwitch)
 				{
 					MPManager.BroadCast((new MSGMessage(user, "Warning", "Server does not allow hand thrown of switch")).ToString());
 					return;
@@ -839,7 +839,7 @@ namespace ORTS.MultiPlayer
 
 			train.CalculatePositionOfCars(0);
 			train.InitializeBrakes();
-			train.InitializeSignals(false);
+			train.InitializeSignals(false);//client do it won't have impact
 			train.CheckFreight();
 
 			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
@@ -1964,7 +1964,7 @@ namespace ORTS.MultiPlayer
 					}
 				}
 
-				train2.InitializeSignals(false);
+				if (MPManager.IsServer()&& MPManager.Instance().AllowedManualSwitch) train2.InitializeSignals(false);
 				train.UncoupledFrom = train2;
 				train2.UncoupledFrom = train;
 

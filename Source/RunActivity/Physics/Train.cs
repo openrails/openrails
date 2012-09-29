@@ -277,6 +277,7 @@ namespace ORTS
 
         public void InitializeSignals(bool existingSpeedLimits)
         {
+			//if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) return;//no matter what, client will not handle signal, even for client controlled AI
             Debug.Assert(Simulator.Signals != null, "Cannot InitializeSignals() without Simulator.Signals.");
 
 	        IndexNextSignal = -1;
@@ -584,7 +585,7 @@ namespace ORTS
             RearTDBTraveller = new Traveller(t, Traveller.TravellerDirection.Backward);
             MUDirection = DirectionControl.Flip(MUDirection);
             MUReverserPercent = -MUReverserPercent;
-            InitializeSignals(true);  // Initialize signals with existing speed information
+			InitializeSignals(true);  // Initialize signals with existing speed information
         }
 
         /// <summary>
@@ -672,8 +673,11 @@ namespace ORTS
 				//Orient();
 				if (MPManager.IsServer())
 				{
-					Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);
-					UpdateSignalState();
+					if (this.NextSignalObject != null && this.NextSignalObject.canUpdate)
+					{
+						Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);
+						UpdateSignalState();
+					}
 				}
 				return;
 			}

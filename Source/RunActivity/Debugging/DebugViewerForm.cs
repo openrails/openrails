@@ -78,8 +78,12 @@ namespace ORTS.Debugging
 	  /// contains the last position of the mouse
 	  /// </summary>
 	  private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
-
-
+	Pen redPen = new Pen(Color.Red);
+	Pen greenPen = new Pen(Color.Green);
+	Pen orangePen = new Pen(Color.Orange);
+	Pen trainPen = new Pen(Color.DarkGreen);
+	Pen pathPen = new Pen(Color.DeepPink);
+	Pen grayPen = new Pen(Color.Gray);
       /// <summary>
       /// True when the user has the "Move left" pressed.
       /// </summary>
@@ -539,12 +543,6 @@ namespace ORTS.Debugging
 		  }
 		  catch {  } //errors for avatar, just ignore
          using(Graphics g = Graphics.FromImage(pictureBox1.Image))
-		 using (Pen redPen = new Pen(Color.Red))
-		 using (Pen greenPen = new Pen(Color.Green))
-		 using (Pen orangePen = new Pen(Color.Orange))
-		 using (Pen trainPen = new Pen(Color.DarkGreen))
-		 using (Pen pathPen = new Pen(Color.DeepPink))
-		 using (Pen grayPen = new Pen(Color.Gray))
          {
 			 var subX = minX + ViewWindow.X; var subY = minY + ViewWindow.Y;
             g.Clear(Color.White);
@@ -652,7 +650,7 @@ namespace ORTS.Debugging
 						 pen = redPen;
 					 }
 					 g.FillEllipse(color, GetRect(scaledItem, 5f * p.Width));
-
+					 //g.DrawString(""+s.Signal.canUpdate, trainFont, Brushes.Black, scaledItem);
 					 signalItemsDrawn.Add(s);
 					 if (s.hasDir)
 					 {
@@ -1067,6 +1065,22 @@ namespace ORTS.Debugging
 					var switchObj = obj as SignallingDebugWindow.TrackSectionSwitch;
 					var signalObj = obj as SignallingDebugWindow.TrackSectionSignal;
 
+					if (switchObj != null)
+					{
+						if (objDistance >= switchErrorDistance) {
+							foreach (var sw in switches)
+							{
+								if (sw.Item.TrJunctionNode == switchObj.TrackNode.TrJunctionNode)
+								{
+									var pen = new Pen(Brushes.Red); pen.Width = pathPen.Width; var r = 6 * greenPen.Width;
+									g.DrawLine(pen, new PointF(sw.Location2D.X - r, sw.Location2D.Y - r), new PointF(sw.Location2D.X + r, sw.Location2D.Y + r));
+									g.DrawLine(pen, new PointF(sw.Location2D.X - r, sw.Location2D.Y + r), new PointF(sw.Location2D.X + r, sw.Location2D.Y - r));
+									break;
+								} 
+							}
+						}
+					}
+
 					if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
 						break;
 				}
@@ -1383,13 +1397,13 @@ namespace ORTS.Debugging
 	  private void UnHandleItemPick()
 	  {
 		  boxSetSignal.Visible = false;
-		  boxSetSignal.Enabled = false;
-		  boxSetSwitch.Enabled = false;
+		  //boxSetSignal.Enabled = false;
+		  //boxSetSwitch.Enabled = false;
 		  boxSetSwitch.Visible = false;
 	  }
 	  private void HandlePickedSignal()
 	  {
-		  boxSetSwitch.Enabled = false;
+		  //boxSetSwitch.Enabled = false;
 		  boxSetSwitch.Visible = false;
 		  if (signalPickedItem == null) return;
 		  var y = LastCursorPosition.Y;
@@ -1398,13 +1412,14 @@ namespace ORTS.Debugging
 		  boxSetSignal.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
 		  boxSetSignal.Enabled = true;
 		  boxSetSignal.Focus();
+		  boxSetSignal.SelectedIndex = -1;
 		  boxSetSignal.Visible = true;
 		  return;
 	  }
 
 	  private void HandlePickedSwitch()
 	  {
-		  boxSetSignal.Enabled = false;
+		  //boxSetSignal.Enabled = false;
 		  boxSetSignal.Visible = false;
 		  if (switchPickedItem == null) return;
 		  var y = LastCursorPosition.Y + 100;
@@ -1413,6 +1428,7 @@ namespace ORTS.Debugging
 		  boxSetSwitch.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
 		  boxSetSwitch.Enabled = true;
 		  boxSetSwitch.Focus();
+		  boxSetSwitch.SelectedIndex = -1;
 		  boxSetSwitch.Visible = true;
 		  return;
 	  }
@@ -1564,7 +1580,7 @@ namespace ORTS.Debugging
 
 	  private void chkAllowUserSwitch_CheckedChanged(object sender, EventArgs e)
 	  {
-		  MultiPlayer.MPManager.Instance().ClientAllowedSwitch = chkAllowUserSwitch.Checked;
+		  MultiPlayer.MPManager.Instance().AllowedManualSwitch = chkAllowUserSwitch.Checked;
 	  }
 
 	  private void chkShowAvatars_CheckedChanged(object sender, EventArgs e)
@@ -1812,6 +1828,7 @@ namespace ORTS.Debugging
 			  case 1:
 				  signal.enabled = false;
 				  signal.canUpdate = false;
+				  //signal.forcedTime = Program.Simulator.GameTime;
 				  foreach (var head in signal.SignalHeads)
 				  {
 					  head.SetMostRestrictiveAspect();

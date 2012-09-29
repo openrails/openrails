@@ -334,7 +334,7 @@ namespace ORTS
 
 			if (Signals != null)
 			{
-				Signals.Update(elapsedClockSeconds);
+				if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) Signals.Update(elapsedClockSeconds);
 			}
 
 			if (AI != null)

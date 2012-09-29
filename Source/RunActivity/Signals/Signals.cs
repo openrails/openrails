@@ -2080,7 +2080,7 @@ namespace ORTS
 								rearDist = frontDist;
 								frontDist = temp;
 							}
-
+							
 							if (frontDist <= train.Length && rearDist >= -predicted)
 							{
 								this.canUpdate = true; forcedTime = 0; return true;
@@ -2123,7 +2123,7 @@ namespace ORTS
 
   // set enabled
 
-                                if (Program.Simulator.Activity == null && !MultiPlayer.MPManager.IsServer())
+                                if (Program.Simulator.Activity == null && !MultiPlayer.MPManager.IsMultiPlayer())
                                 {
                                     enabled = true;
                                 }

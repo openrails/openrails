@@ -210,7 +210,7 @@ namespace ORTS.MultiPlayer
 			p.Username = player.user;
 			train.CalculatePositionOfCars(0);
 			train.InitializeBrakes();
-			train.InitializeSignals(false);
+			if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
 			train.CheckFreight();
 			foreach (var car in train.Cars) {
 				if (car.CarID == p.LeadingLocomotiveID) train.LeadLocomotive = car;

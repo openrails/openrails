@@ -56,7 +56,7 @@ namespace ORTS.MultiPlayer
 
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
-		public bool ClientAllowedSwitch = false;
+		public bool AllowedManualSwitch = false;
 		public bool ComposingText = false;
 		public string lastSender = ""; //who last sends me a message
 		public void AddUncoupledTrains(Train t)
@@ -526,7 +526,7 @@ namespace ORTS.MultiPlayer
 						if (!hasIt) Program.Simulator.Trains.Add(t);
 						if (IsServer())
 						{
-							if (t.Path != null)
+							if (t.Path != null && AllowedManualSwitch)
 							{
 								t.TrackAuthority = new TrackAuthority(t, t.Number + 100000, 10, t.Path);
 								Program.Simulator.AI.Dispatcher.TrackAuthorities.Add(t.TrackAuthority);
