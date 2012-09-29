@@ -100,35 +100,21 @@ namespace ORTS
                 DrawCarNumber = !DrawCarNumber;
             if (UserInput.IsPressed(UserCommands.DisplayStationLabels))
             {
-                // Cycles round 4 states
+                // Steps along a sequence of 5 states
                 // none > both > sidings only > platforms only > none
-                // MSTS users will first see the 2 states they expect and then discover the extra two. 
-                if (DrawSiding == false && DrawPlatform == false)
-                {
-                    DrawSiding = true;
-                    DrawPlatform = true;
-                }
-                else
-                {
-                    if (DrawSiding == true && DrawPlatform == true)
-                    {
-                        DrawSiding = false;
-                        DrawPlatform = true;
-                    }
-                    else
-                    {
-                        if (DrawSiding == false && DrawPlatform == true)
-                        {
-                            DrawSiding = true;
-                            DrawPlatform = false;
-                        }
-                        else
-                        {
-                            DrawSiding = false;
-                            DrawPlatform = false;
-                        }
-                    }
-                }
+                //   00 >   11 >           10 >             01 >   00
+                
+                // Set the first 2 bits of an int
+                int bitArray = 0;
+                bitArray += DrawSiding ? 1 : 0;
+                bitArray += DrawPlatform ? 2 : 0;
+                // Decrement the int to step along the sequence
+                bitArray--;
+                // Extract first 2 bits of the int
+                DrawSiding = ((bitArray & 1) == 1);
+                DrawPlatform = ((bitArray & 2) == 2);
+                // Take modulus 4 to keep in range 0-3. +1 as messages are in range 1-4
+                Viewer.Simulator.Confirmer.Confirm( CabControl.Labels, (CabSetting)(bitArray % 4) + 1 );
             }
         }
 

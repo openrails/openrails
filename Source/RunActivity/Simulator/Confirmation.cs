@@ -65,6 +65,7 @@ namespace ORTS {
       , SwitchAhead
       , SwitchBehind
       , SimulationSpeed
+      , Labels
     }
 
     public enum CabSetting {
@@ -140,6 +141,7 @@ namespace ORTS {
             , new string [] { "Switch Behind", null, null, "change" } 
             // Simulation
             , new string [] { "Simulation Speed", "reset", null, null, "decrease", "increase" } 
+            , new string [] { "Location labels", "none", "sidings", "stations", "stations and sidings" } 
             };
 
         readonly Viewer3D Viewer;
