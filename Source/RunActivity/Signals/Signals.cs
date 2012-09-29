@@ -2084,10 +2084,10 @@ namespace ORTS
 								frontDist = temp;
 							}
 
-							System.Console.WriteLine(train.Cars[0].CarID + frontDist + " " + -train.Length + predicted + " " + rearDist + " " + -predicted);
+							//System.Console.WriteLine(train.Cars[0].CarID + frontDist + " " + -train.Length + predicted + " " + rearDist + " " + -predicted);
 							if (frontDist <= predicted && rearDist >= -predicted)
 							{
-								System.Console.WriteLine(" get back");
+								//System.Console.WriteLine(" get back");
 								this.canUpdate = true; forcedTime = 0; this.enabled = true; this.Update(); return true;
 							}
 						}

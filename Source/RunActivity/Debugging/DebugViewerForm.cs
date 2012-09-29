@@ -653,7 +653,7 @@ namespace ORTS.Debugging
 						 pen = redPen;
 					 }
 					 g.FillEllipse(color, GetRect(scaledItem, 5f * p.Width));
-					 g.DrawString(""+s.Signal.canUpdate, trainFont, Brushes.Black, scaledItem);
+					 //g.DrawString(""+s.Signal.canUpdate, trainFont, Brushes.Black, scaledItem);
 					 signalItemsDrawn.Add(s);
 					 if (s.hasDir)
 					 {
