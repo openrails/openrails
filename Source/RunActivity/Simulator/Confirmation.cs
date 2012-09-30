@@ -17,6 +17,7 @@ namespace ORTS {
 		MSG,
     };
 
+    // <CJ Comment> Some of these are not cab controls or even controls. However they all make good use of structured text. </CJ Comment>
     public enum CabControl {
         None
         // Power
@@ -27,6 +28,7 @@ namespace ORTS {
       , HelperDiesel
       , Reverser
       , Throttle
+      , Wheelslip
       // Steam power
       , Regulator
       , Injector1
@@ -102,6 +104,7 @@ namespace ORTS {
             , new string [] { "Helper Diesel Power", "off", null, "on" }
             , new string [] { "Reverser",  "reverse", "neutral", "forward", null, null, "locked. Close throttle then re-try." } 
             , new string [] { "Throttle", null, null, null, "close", "open", "locked. Release dynamic brake then re-try." } 
+            , new string [] { "Wheelslip", "over", null, "occurring. Tractive power greatly reduced.", null, null, "warning" } 
             // Steam power
             , new string [] { "Regulator", null, null, null, "close", "open" }    // Throttle for steam locomotives
             , new string [] { "Injector 1", "off", null, "on", "close", "open" } 
@@ -249,10 +252,13 @@ namespace ORTS {
 
         void Message(CabControl control, ConfirmLevel level, string message)
         {
+            // User can suppress levels None and Information but not Warning, Error and MSGs.
+            // Cab control confirmations have level None.
             if (level < ConfirmLevel.Information && Viewer.Settings.SuppressConfirmations)
                 return;
 
             var format = "{2}";
+            // Skip control name if not a control
             if (control != CabControl.None)
                 format = "{0}: " + format;
             if (level >= ConfirmLevel.Information)

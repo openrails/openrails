@@ -313,6 +313,7 @@ namespace ORTS
                         MotiveForceN *= 0;
                         break;
                 }
+                ConfirmWheelslip();
             }
             else
             {

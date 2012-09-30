@@ -526,10 +526,13 @@ namespace ORTS
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive())
-                ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
-            else
-                ThrottleController.Update(elapsedClockSeconds);
+            if( this.IsLeadLocomotive() ) {
+                ThrottlePercent = ThrottleController.Update( elapsedClockSeconds ) * 100.0f;
+                //CJ
+                ConfirmWheelslip();
+            } else {
+                ThrottleController.Update( elapsedClockSeconds );
+            }
 #if INDIVIDUAL_CONTROL
 
 			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
@@ -699,6 +702,36 @@ namespace ORTS
 
             base.Update(elapsedClockSeconds);
         } // End Method Update
+
+        enum Wheelslip {
+            None,
+            Warning,
+            Occurring
+        };
+
+        Wheelslip WheelslipState = Wheelslip.None;
+
+        public void ConfirmWheelslip() {
+            // Wheelslip
+            if( LocomotiveAxle.IsWheelSlip ) {
+                if( WheelslipState != Wheelslip.Occurring ) {
+                    WheelslipState = Wheelslip.Occurring;
+                    Simulator.Confirmer.Warning( CabControl.Wheelslip, CabSetting.On );
+                }
+            } else {
+                if( LocomotiveAxle.IsWheelSlipWarning ) {
+                    if( WheelslipState != Wheelslip.Warning ) {
+                        WheelslipState = Wheelslip.Warning;
+                        Simulator.Confirmer.Confirm( CabControl.Wheelslip, CabSetting.Warn );
+                    }
+                } else {
+                    if( WheelslipState != Wheelslip.None ) {
+                        WheelslipState = Wheelslip.None;
+                        Simulator.Confirmer.Confirm( CabControl.Wheelslip, CabSetting.Off );
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Calls the Update method in the parent class MSTSWagon.
