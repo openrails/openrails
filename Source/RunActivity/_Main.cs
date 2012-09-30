@@ -111,10 +111,23 @@ namespace ORTS
                     TestAll(data);
                     break;
                 default:
-                    Console.WriteLine("Supply missing activity file name");
-                    Console.WriteLine("   i.e.: RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA1\\ACTIVITIES\\xxx.act\"");
                     Console.WriteLine();
-                    Console.WriteLine("or launch the program OpenRails.exe and select from the menu.");
+                    Console.WriteLine( "RunActivity.exe requires an activity filename, but none was given." );
+                    Console.WriteLine();
+                    Console.WriteLine( "E.g.:" );
+                    Console.WriteLine("RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA2\\ACTIVITIES\\hotbox.act\"");
+                    if( Debugger.IsAttached ) {
+                        Console.WriteLine();
+                        Console.WriteLine();
+                        Console.WriteLine( "When using Visual Studio, enter a suitable route <RRR> and activity <AAA> using" );
+                        Console.WriteLine();
+                        Console.WriteLine( "RunActivity > Properties > Debug > Command line arguments =" );
+                        Console.WriteLine();
+                        Console.WriteLine( "\"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\RRR\\ACTIVITIES\\AAA.act\"" );
+                    } else {
+                        Console.WriteLine();
+                        Console.WriteLine( "or launch the program OpenRails.exe and select from the menu." );
+                    }
                     Console.ReadKey();
                     break;
             }

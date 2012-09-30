@@ -528,7 +528,6 @@ namespace ORTS
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
             if( this.IsLeadLocomotive() ) {
                 ThrottlePercent = ThrottleController.Update( elapsedClockSeconds ) * 100.0f;
-                //CJ
                 ConfirmWheelslip();
             } else {
                 ThrottleController.Update( elapsedClockSeconds );
