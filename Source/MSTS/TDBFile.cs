@@ -338,8 +338,11 @@ namespace MSTS
         public float X, Y, Z;
         public float AX, AY, AZ;
         public uint WorldFileUiD;
-   
-         
+
+        public override string ToString()
+        {
+            return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4} UiD:{5} Section:{6} Shape:{7}}}", TileX, TileZ, X, Y, Z, WorldFileUiD, SectionIndex, ShapeIndex);
+        }
     }
 
 

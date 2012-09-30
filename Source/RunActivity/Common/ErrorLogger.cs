@@ -141,7 +141,7 @@ namespace ORTS
                 var errorStackLast = errorStack.GetFrame(errorStack.FrameCount - 1);
                 var catchStack = new StackTrace();
                 var catchStackIndex = 0;
-                while (catchStackIndex < catchStack.FrameCount && catchStack.GetFrame(catchStackIndex).GetMethod().Name != errorStackLast.GetMethod().Name)
+                while (catchStackIndex < catchStack.FrameCount && errorStackLast != null && catchStack.GetFrame(catchStackIndex).GetMethod().Name != errorStackLast.GetMethod().Name)
                     catchStackIndex++;
                 catchStack = new StackTrace(catchStackIndex < catchStack.FrameCount ? catchStackIndex + 1 : 0, true);
 

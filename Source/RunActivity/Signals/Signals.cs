@@ -629,30 +629,10 @@ namespace ORTS
                         signalObjects[foundSignals].thisRef = foundSignals;
                         signalObjects[foundSignals].signalRef = this;
 
-						try
-						{
-							signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
-								sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z, (Traveller.TravellerDirection)(1 - sigItem.Direction));
+                        signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
+                            sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z, (Traveller.TravellerDirection)(1 - sigItem.Direction));
 							signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, sigItem);
 
-						}
-						catch
-						{
-							var t = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, 
-								sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z);
-							signalObjects[foundSignals].tdbtraveller = t;
-							signalObjects[foundSignals].trackNode = t.TrackNodeIndex;
-							sigItem.TileX = t.TileX; sigItem.TileZ = t.TileZ; sigItem.X = t.X; sigItem.Y = t.Y; sigItem.Z = t.Z;
-							//trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs = trackNodes[trackNode].TrVectorNode.noItemRefs;
-							int[] tmp = new int[trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs + 1];
-							for (var x = 0; x < trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs; x++) 
-								tmp[x] = trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs[x];
-							tmp[trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs++] = trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx];
-							trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs = tmp;
-							signalObjects[foundSignals].trRefIndex = trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs-1;
-							signalObjects[foundSignals].AddHead(signalObjects[foundSignals].trRefIndex, trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs[signalObjects[foundSignals].trRefIndex], sigItem);
-
-						}
 						signalObjects[foundSignals].WorldObject = null;
                         foundSignals++;
                         return foundSignals - 1;
@@ -676,27 +656,9 @@ namespace ORTS
                         signalObjects[foundSignals].thisRef = foundSignals;
                         signalObjects[foundSignals].signalRef = this;
 
-						try
-						{
-							signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
-								speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z, (Traveller.TravellerDirection)signalObjects[foundSignals].direction);
-							signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
-						}
-						catch
-						{
-							var t = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes,
-								speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z, (Traveller.TravellerDirection)signalObjects[foundSignals].direction);
-							signalObjects[foundSignals].tdbtraveller = t;
-							signalObjects[foundSignals].trackNode = t.TrackNodeIndex;
-							speedItem.TileX = t.TileX; speedItem.TileZ = t.TileZ; speedItem.X = t.X; speedItem.Y = t.Y; speedItem.Z = t.Z;
-							//trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs = trackNodes[trackNode].TrVectorNode.noItemRefs;
-							int[] tmp = new int[trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs + 1];
-							for (var x = 0; x < trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs; x++) tmp[x] = trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs[x];
-							tmp[trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs++] = trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx];
-							trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs = tmp;
-							signalObjects[foundSignals].trRefIndex = trackNodes[t.TrackNodeIndex].TrVectorNode.noItemRefs-1;
-							signalObjects[foundSignals].AddHead(signalObjects[foundSignals].trRefIndex, trackNodes[t.TrackNodeIndex].TrVectorNode.TrItemRefs[signalObjects[foundSignals].trRefIndex], speedItem);
-						}
+                        signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
+                            speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z, (Traveller.TravellerDirection)signalObjects[foundSignals].direction);
+
                         double delta_angle = signalObjects[foundSignals].tdbtraveller.RotY - ((Math.PI/2) - speedItem.Angle);
                         float delta_float = (float)delta_angle;
                         MSTSMath.M.NormalizeRadians( ref delta_float);
@@ -2045,7 +2007,7 @@ namespace ORTS
 			//a signal maybe forced by the dispatcher, need to release it if it is 300 seconds ago, or a train has passed.
 				private bool ReleaseLock()
 				{
-					//if (Program.Simulator.GameTime > forcedTime + 300) { canUpdate = true; forcedTime = 0; return true; }
+					if (Program.Simulator.GameTime > forcedTime + 300) { canUpdate = true; forcedTime = 0; return true; }
 					try
 					{
 						var minimumDist = 1000f;
@@ -2084,8 +2046,7 @@ namespace ORTS
 								frontDist = temp;
 							}
 
-							//System.Console.WriteLine(train.Cars[0].CarID + frontDist + " " + -train.Length + predicted + " " + rearDist + " " + -predicted);
-							if (frontDist <= predicted && rearDist >= -predicted)
+							if (frontDist <= 1 && rearDist <= predicted)
 							{
 								//System.Console.WriteLine(" get back");
 								this.canUpdate = true; forcedTime = 0; this.enabled = true; this.Update(); return true;
@@ -2100,7 +2061,7 @@ namespace ORTS
 
                 public void Update()
                 {
-					if (forcedTime > 1) ReleaseLock();//forced by the dispatcher, will try to release the lock (train passed it). forcedTime will only be set to be > 0 in MP mode
+					if (forcedTime > 1) ReleaseLock();//forced by the dispatcher, will try to release the lock. forcedTime will only be set to be > 0 in MP mode
                         if (canUpdate)
                         {
 
