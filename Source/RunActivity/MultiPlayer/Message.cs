@@ -233,7 +233,7 @@ namespace ORTS.MultiPlayer
 		public int[] flipped; //if a wagon is engine
 		public int[] lengths; //if a wagon is engine
 		public string url;
-
+		public int version = 0;
 		public MSGPlayer() { }
 		public MSGPlayer(string m)
 		{
@@ -277,7 +277,7 @@ namespace ORTS.MultiPlayer
 				{
 					con = con.Remove(0, index + 10);
 				}
-
+				if (areas.Length == 9) { version = int.Parse(areas[8]); }
 			}
 			catch (Exception e)
 			{
@@ -290,8 +290,6 @@ namespace ORTS.MultiPlayer
 		{
 			string[] areas = m.Split('\t');
 			var numCars = areas.Length;
-			if (MPManager.IsServer()) if (numCars <= 0) throw new MultiPlayerError();
-				else if (numCars <= 0) throw new Exception();
 			cars = new string[numCars];//with an empty "" at end
 			ids = new string[numCars];
 			flipped = new int[numCars];
@@ -355,6 +353,7 @@ namespace ORTS.MultiPlayer
 			if (t.LeadLocomotive != null) leadingID = t.LeadLocomotive.CarID;
 			else leadingID = "NA";
 
+			version = MPManager.Instance().version;
 		}
 		public override string ToString()
 		{
@@ -371,12 +370,24 @@ namespace ORTS.MultiPlayer
 				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
 			}
 
+			tmp += "\r" + MPManager.Instance().version;
 			return "" + tmp.Length + ": " + tmp;
 		}
 
 		private object lockObjPlayer = new object();
 		public override void HandleMsg()
 		{
+			if (this.version != MPManager.Instance().version)
+			{
+				var reason = "Wrong version of protocol, please update to version " + MPManager.Instance().version;
+				MPManager.BroadCast((new MSGMessage(this.user, "Error", reason)).ToString());//server will broadcast this error
+				if (MPManager.IsServer()) throw new Exception("Wrong version of protocol");//ignore this player message
+				else
+				{
+					System.Console.WriteLine("Wrong version of protocol, will play in single mode");
+					throw new MultiPlayerError();//client, close the connection
+				}
+			}
 			//check if other players with the same name is online
 			if (MPManager.IsServer())
 			{
@@ -420,6 +431,12 @@ namespace ORTS.MultiPlayer
 		public void HandleMsg(OnlinePlayer p)
 		{
 			if (!MPManager.IsServer()) return; //only intended for the server, when it gets the player message in OnlinePlayer Receive
+			if (this.version != MPManager.Instance().version)
+			{
+				var reason = "Wrong version of protocol, please update to version " + MPManager.Instance().version;
+				MPManager.BroadCast((new MSGMessage(this.user, "Error", reason)).ToString());
+				throw new Exception("Wrong version of protocol");
+			}
 			//check if other players with the same name is online
 				//if someone with the same name is there, will throw a fatal error
 			if (MPManager.Instance().FindPlayerTrain(user) != null || MPManager.GetUserName() == user)

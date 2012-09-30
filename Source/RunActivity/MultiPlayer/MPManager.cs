@@ -36,6 +36,7 @@ namespace ORTS.MultiPlayer
 	//a singleton class handles communication, update and stop etc.
 	class MPManager
 	{
+		public int version = 10;
 		double lastMoveTime = 0.0f;
 		public double lastSwitchTime = 0.0f;
 		double lastSendTime = 0.0f;

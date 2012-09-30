@@ -645,7 +645,7 @@ namespace MenuWPF
                 {
                     Hide();
                     var process = Process.Start(processStartInfo);
-                    process.WaitForExit();
+					while (!process.WaitForExit(1000)) ;
                 }
                 finally
                 {
