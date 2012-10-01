@@ -249,6 +249,11 @@ namespace ORTS.MultiPlayer
 				var tmp = areas[0].Trim();
 				string[] data = tmp.Split(' ');
 				user = data[0];
+				if (MPManager.IsServer() && !MPManager.Instance().AllowNewPlayer)//server does not want to have more people
+				{
+					MPManager.BroadCast((new MSGMessage(user, "Error", "The dispatcher does not want to add more player")).ToString());
+					throw (new Exception("Not want to add new player"));
+				}
 				code = data[1];
 				num = int.Parse(data[2]);
 				TileX = int.Parse(data[3]);

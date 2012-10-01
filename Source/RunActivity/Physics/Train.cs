@@ -825,7 +825,7 @@ namespace ORTS
                     {
                             lastSignalObjectRef = NextSignalObject.thisRef;
         			}
-					if (!MPManager.IsClient()) nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
+					nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
         //
         // check if passed object - if so, remove object
         // if object is speed, set max allowed speed
@@ -1051,7 +1051,7 @@ namespace ORTS
                             nextSignal.prevSigRef = lastSignalObjectRef;
                     }
 
-			        if (!MPManager.IsClient()) nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
+			        nextSignal.UpdateTrackOcupancy(dRearTDBTraveller);
 		    }
 
             else if (this is AITrain)

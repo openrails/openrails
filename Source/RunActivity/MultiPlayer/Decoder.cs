@@ -44,11 +44,23 @@ namespace ORTS.MultiPlayer
 			int index = msg.IndexOf(':');
 			if (index < 0)
 			{
-				msg = ""; //no ':', clear the messages, no way to recover anyway
+				if (msg.Length > 10) msg = msg.Remove(0); //no ':', clear the messages, no way to recover anyway, except the first few digits
 				throw new Exception("Parsing error, no : found");
 			}
 			try
 			{
+				int last = index - 1;
+				while (last >= 0 && char.IsDigit(msg[last--])) ; //shift back to get all digits
+				if (last < 0) last = 0;
+				string tmp = msg.Substring(last, index - last);
+				int len;
+				if (!int.TryParse(tmp, out len)) { msg.Remove(0); return null; }
+				if (len < 0) return null;
+				if (index + 2 + len > msg.Length) return null;
+				tmp = msg.Substring(index + 2, len); //not taking ": "
+				msg = msg.Remove(0, index + 2 + len + last); //remove :
+				if (len > 1000000) return null;//a long message, will ignore it
+#if false
 				int last = index-1;
 				while (last >= 0 && char.IsDigit(msg[last--])) ; //shift back to get all digits
 				if (last < 0) last = 0;
@@ -58,6 +70,7 @@ namespace ORTS.MultiPlayer
 				if (index + 2 + len > msg.Length) return null;//not enough characters
 				tmp = msg.Substring(index+2, len); //not taking ": "
 				msg = msg.Remove(last, index+2+len); //remove :
+#endif
 				return tmp;
 			}
 			catch (Exception)

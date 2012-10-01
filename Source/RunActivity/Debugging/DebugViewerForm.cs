@@ -175,7 +175,7 @@ namespace ORTS.Debugging
 		if (!MultiPlayer.MPManager.IsMultiPlayer())//single player mode, make those unnecessary removed
 		{
 			msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
-			AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false;
+			AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false; chkAllowNew.Visible = false;
 			chkPickSignals.Visible = false; chkPickSwitches.Visible = false;
 			pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
 			refreshButton.Text = "View Self";
@@ -533,8 +533,8 @@ namespace ORTS.Debugging
 			  }
 			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
 			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
-			  if (MultiPlayer.MPManager.IsServer()) rmvButton.Visible = true;
-			  else rmvButton.Visible = false;
+			  if (MultiPlayer.MPManager.IsServer()) { rmvButton.Visible = true; chkAllowNew.Visible = true; chkAllowUserSwitch.Visible = true; }
+			  else { rmvButton.Visible = false; chkAllowNew.Visible = false; chkAllowUserSwitch.Visible = false; }
 			  firstShow = false;
 		  }
 
@@ -1074,16 +1074,20 @@ namespace ORTS.Debugging
 
 					if (switchObj != null)
 					{
-						if (objDistance >= switchErrorDistance) {
-							foreach (var sw in switchItemsDrawn)
+						for (var pin = switchObj.TrackNode.Inpins; pin < switchObj.TrackNode.Inpins + switchObj.TrackNode.Outpins; pin++)
+						{
+							if (switchObj.TrackNode.TrPins[pin].Link == switchObj.NodeIndex && pin - switchObj.TrackNode.Inpins != switchObj.TrackNode.TrJunctionNode.SelectedRoute)
 							{
-								if (sw.Item.TrJunctionNode == switchObj.TrackNode.TrJunctionNode)
+								foreach (var sw in switchItemsDrawn)
 								{
-									var pen = new Pen(Brushes.Red); pen.Width = pathPen.Width; var r = 6 * greenPen.Width;
-									g.DrawLine(pen, new PointF(sw.Location2D.X - r, sw.Location2D.Y - r), new PointF(sw.Location2D.X + r, sw.Location2D.Y + r));
-									g.DrawLine(pen, new PointF(sw.Location2D.X - r, sw.Location2D.Y + r), new PointF(sw.Location2D.X + r, sw.Location2D.Y - r));
-									break;
-								} 
+									if (sw.Item.TrJunctionNode == switchObj.TrackNode.TrJunctionNode)
+									{
+										var pen = new Pen(Brushes.Red); pen.Width = pathPen.Width; var r = 6 * greenPen.Width;
+										g.DrawLine(pen, new PointF(sw.Location2D.X - r, sw.Location2D.Y - r), new PointF(sw.Location2D.X + r, sw.Location2D.Y + r));
+										g.DrawLine(pen, new PointF(sw.Location2D.X - r, sw.Location2D.Y + r), new PointF(sw.Location2D.X + r, sw.Location2D.Y - r));
+										break;
+									}
+								}
 							}
 						}
 					}
@@ -1092,7 +1096,7 @@ namespace ORTS.Debugging
 						break;
 				}
 				currentDistance += cache.Length;
-				if (currentDistance >= switchErrorDistance || currentDistance >= signalErrorDistance)
+				if (currentDistance >= switchErrorDistance)
 					break;
 			}
 			// Clean up any cache entries who haven't been using for 30 seconds.
@@ -1265,6 +1269,7 @@ namespace ORTS.Debugging
 	  private void rmvButton_Click(object sender, EventArgs e)
 	  {
 		  if (!MultiPlayer.MPManager.IsServer()) return;
+		  AvatarView.SelectedIndices.Remove(0);//remove myself is not possible.
 		  var chosen = AvatarView.SelectedItems;
 		  if (chosen.Count > 0)
 		  {
@@ -1901,6 +1906,11 @@ namespace ORTS.Debugging
 		  }
 		  UnHandleItemPick();
 
+	  }
+
+	  private void chkAllowNewCheck(object sender, EventArgs e)
+	  {
+		  MultiPlayer.MPManager.Instance().AllowNewPlayer = chkAllowNew.Checked;
 	  }
 
    }

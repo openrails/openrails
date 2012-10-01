@@ -48,6 +48,7 @@
 		  this.boxSetSwitch = new System.Windows.Forms.ListBox();
 		  this.chkPickSignals = new System.Windows.Forms.CheckBox();
 		  this.chkPickSwitches = new System.Windows.Forms.CheckBox();
+		  this.chkAllowNew = new System.Windows.Forms.CheckBox();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.SuspendLayout();
@@ -304,12 +305,26 @@
 		  this.chkPickSwitches.Text = "Pick Switches";
 		  this.chkPickSwitches.UseVisualStyleBackColor = true;
 		  // 
+		  // chkAllowNew
+		  // 
+		  this.chkAllowNew.AutoSize = true;
+		  this.chkAllowNew.Checked = true;
+		  this.chkAllowNew.CheckState = System.Windows.Forms.CheckState.Checked;
+		  this.chkAllowNew.Location = new System.Drawing.Point(808, 79);
+		  this.chkAllowNew.Name = "chkAllowNew";
+		  this.chkAllowNew.Size = new System.Drawing.Size(67, 17);
+		  this.chkAllowNew.TabIndex = 29;
+		  this.chkAllowNew.Text = "Can Join";
+		  this.chkAllowNew.UseVisualStyleBackColor = true;
+		  this.chkAllowNew.CheckedChanged += new System.EventHandler(this.chkAllowNewCheck);
+		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
 		  this.ClientSize = new System.Drawing.Size(923, 768);
+		  this.Controls.Add(this.chkAllowNew);
 		  this.Controls.Add(this.chkPickSwitches);
 		  this.Controls.Add(this.chkPickSignals);
 		  this.Controls.Add(this.boxSetSwitch);
@@ -364,5 +379,6 @@
 	  private System.Windows.Forms.ListBox boxSetSwitch;
 	  private System.Windows.Forms.CheckBox chkPickSignals;
 	  private System.Windows.Forms.CheckBox chkPickSwitches;
+	  private System.Windows.Forms.CheckBox chkAllowNew;
    }
 }

@@ -342,6 +342,20 @@ namespace ORTS.Popups
         {
             bool contains = false;
 
+			if (MultiPlayer.MPManager.IsClient())
+			{
+				if (trackObjects.Count <= 0)
+				{
+					ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
+					var dFrontTDBTraveller = Program.Simulator.PlayerLocomotive.Train.dFrontTDBTraveller;
+					var firstObject = Program.Simulator.Signals.getNextObject(dFrontTDBTraveller, ObjectItemInfo.ObjectItemType.ANY,
+					   true, -1, ref returnState);
+					if (returnState > 0)
+					{
+						trackObjects.Add(firstObject);
+					}
+				}
+			}
             foreach (ObjectItemInfo o in trackObjects)
             {
                 if (o.ObjectDetails.isSignal && o.distance_to_train < 5000f)
