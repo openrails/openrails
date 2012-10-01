@@ -16,6 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO.Compression;
+using System.IO;
 using ORTS;
 using MSTS;
 namespace ORTS.MultiPlayer
@@ -568,7 +570,7 @@ namespace ORTS.MultiPlayer
 		SortedList<uint, TrJunctionNode> SwitchState;
 		public string msgx = "";
 		string user = "";
-
+		byte[] switchStatesArray;
 		public MSGOrgSwitch(string u, string m)
 		{
 			user = u; msgx = m;
@@ -578,8 +580,21 @@ namespace ORTS.MultiPlayer
 		{
 			string[] tmp = m.Split('\t');
 			user = tmp[0].Trim();
-			
-			msgx = tmp[1];
+			byte[] gZipBuffer = Convert.FromBase64String(tmp[1]);
+			using (var memoryStream = new MemoryStream())
+			{
+				int dataLength = BitConverter.ToInt32(gZipBuffer, 0);
+				memoryStream.Write(gZipBuffer, 4, gZipBuffer.Length - 4);
+
+				switchStatesArray = new byte[dataLength];
+
+				memoryStream.Position = 0;
+				using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+				{
+					gZipStream.Read(switchStatesArray, 0, switchStatesArray.Length);
+				}
+			}
+
 		}
 
 		public override void HandleMsg() //only client will get message, thus will set states
@@ -600,11 +615,14 @@ namespace ORTS.MultiPlayer
 			}
 			catch (Exception e) { SwitchState = null; throw e; } //if error, clean the list and wait for the next signal
 
-
-			int i = 0;
+			int i = 0, state = 0;
 			foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
 			{
-				t.Value.SelectedRoute = msgx[i] - 48; //ASCII code 48 is 0
+				state = (int)switchStatesArray[i];
+				if (t.Value.SelectedRoute != state)
+				{
+					t.Value.SelectedRoute = state;
+				}
 				i++;
 			}
 
@@ -621,13 +639,13 @@ namespace ORTS.MultiPlayer
 	#region MSGSwitchStatus
 	public class MSGSwitchStatus : Message
 	{
+		static byte[] preState;
 		static SortedList<uint, TrJunctionNode> SwitchState;
-		public string msgx = "";
-		public static string prevMSG = "";
 		public bool OKtoSend = false;
+		static byte[] switchStatesArray;
 		public MSGSwitchStatus()
 		{
-			OKtoSend = false;
+			var i = 0;
 			if (SwitchState == null)
 			{
 				SwitchState = new SortedList<uint, TrJunctionNode>();
@@ -640,19 +658,27 @@ namespace ORTS.MultiPlayer
 						SwitchState.Add(key, t.TrJunctionNode);
 					}
 				}
+				switchStatesArray = new byte[SwitchState.Count() + 2];
+				preState = new byte[SwitchState.Count() + 2];
+				for (i = 0; i < preState.Length; i++) preState[i] = 0;
 			}
-			msgx = "";
+			i = 0;
 			foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
 			{
-				if (t.Value.SelectedRoute > 9 && t.Value.SelectedRoute < 0)
-				{
-					throw new Exception("Selected route is " + t.Value.SelectedRoute + ". Please inform OR for the problem");
-				}
-				msgx += t.Value.SelectedRoute;
+				switchStatesArray[i] = (byte)t.Value.SelectedRoute;
+				i++;
 			}
-			if (msgx == prevMSG) { if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime > 3 * MPManager.Instance().MPUpdateInterval) return; }
-			else { prevMSG = msgx; }
-			OKtoSend = true;
+			OKtoSend = false;
+			for (i = 0; i < SwitchState.Count; i++)
+			{
+				if (switchStatesArray[i] != preState[i]) { OKtoSend = true; }//something is different, will send
+				preState[i] = switchStatesArray[i];
+			}
+			if (OKtoSend == false)
+			{
+				//new player added, will keep sending for a while
+				if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime < 3 * MPManager.Instance().MPUpdateInterval) OKtoSend = true;
+			}
 		}
 
 		public MSGSwitchStatus(string m)
@@ -671,11 +697,24 @@ namespace ORTS.MultiPlayer
 							SwitchState.Add(key, t.TrJunctionNode);
 						}
 					}
+					switchStatesArray = new byte[SwitchState.Count + 128];//a bit more for safety
 				}
 				catch (Exception e) { SwitchState = null; throw e; } //if error, clean the list and wait for the next signal
 
 			}
-			msgx = m;
+			byte[] gZipBuffer = Convert.FromBase64String(m);
+			using (var memoryStream = new MemoryStream())
+			{
+				int dataLength = BitConverter.ToInt32(gZipBuffer, 0);
+				memoryStream.Write(gZipBuffer, 4, gZipBuffer.Length - 4);
+
+				memoryStream.Position = 0;
+				using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+				{
+					gZipStream.Read(switchStatesArray, 0, switchStatesArray.Length);
+				}
+
+			}
 		}
 
 		public override void HandleMsg() //only client will get message, thus will set states
@@ -686,10 +725,10 @@ namespace ORTS.MultiPlayer
 			int i = 0, state = 0;
 			foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
 			{
-				state = msgx[i] - 48;
+				state = (int)switchStatesArray[i];
 				if (t.Value.SelectedRoute != state)
 				{
-					if (!SwitchOccupiedByPlayerTrain(t.Value)) t.Value.SelectedRoute = state; //ASCII code 48 is 0
+					if (!SwitchOccupiedByPlayerTrain(t.Value)) t.Value.SelectedRoute = state;
 				}
 				i++;
 			}
@@ -716,7 +755,23 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "SWITCHSTATES " + msgx;
+			byte[] buffer = switchStatesArray;
+			var memoryStream = new MemoryStream();
+			using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress, true))
+			{
+				gZipStream.Write(buffer, 0, buffer.Length);
+			}
+
+			memoryStream.Position = 0;
+
+			var compressedData = new byte[memoryStream.Length];
+			memoryStream.Read(compressedData, 0, compressedData.Length);
+
+			var gZipBuffer = new byte[compressedData.Length + 4];
+			Buffer.BlockCopy(compressedData, 0, gZipBuffer, 4, compressedData.Length);
+			Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gZipBuffer, 0, 4);
+
+			string tmp = "SWITCHSTATES " + Convert.ToBase64String(gZipBuffer);
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}
@@ -1258,7 +1313,7 @@ namespace ORTS.MultiPlayer
 	#endregion MSGTrainMerge
 
 	#region MSGMessage
-	//message to add new train from either a string (received message), or a Train (building a message)
+	//warning, error or information from the server, a client receives Error will disconnect itself
 	public class MSGMessage : MSGRequired
 	{
 		string msgx;
@@ -1306,7 +1361,7 @@ namespace ORTS.MultiPlayer
 	#endregion MSGMessage
 
 	#region MSGControl
-	//message to add new train from either a string (received message), or a Train (building a message)
+	//message to ask for the control of a train or confirm it
 	public class MSGControl : Message
 	{
 		int num;
@@ -2254,14 +2309,15 @@ namespace ORTS.MultiPlayer
 	#region MSGSignalStatus
 	public class MSGSignalStatus : Message
 	{
-		static string prevMSG = "";
-		string msgx = "";
+		static byte[] preState;
 		static SortedList<int, SignalHead> signals;
 		public bool OKtoSend = false;
+		static byte[] signalsStates;
+		int readed;
 		//constructor to create a message from signal data
 		public MSGSignalStatus()
 		{
-			OKtoSend = false;
+			var i = 0;
 			if (signals == null)
 			{
 				signals = new SortedList<int, SignalHead>();
@@ -2277,17 +2333,31 @@ namespace ORTS.MultiPlayer
 							}
 					}
 				}
+				signalsStates = new byte[signals.Count+2];
+				preState = new byte[signals.Count+2];
+				for (i = 0; i < preState.Length; i++) preState[i] = 0;
 			}
 
-			msgx = "";
+			i = 0;
 			foreach (var t in signals)
 			{
-				msgx += (char)(((int)t.Value.state + 1) * 100 + (t.Value.draw_state + 1));
+				signalsStates[i] = (byte)(t.Value.state + 1);
+				//signalsStates[2 * i + 1] = (byte)(t.Value.draw_state + 1);
+				i++;
+				//msgx += (char)(((int)t.Value.state + 1) * 100 + (t.Value.draw_state + 1));
 				//msgx += "" + (char)(t.Value.state + 1) + "" + (char)(t.Value.draw_state + 1);//avoid \0
 			}
-			if (msgx == prevMSG) { if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime > 3 * MPManager.Instance().MPUpdateInterval) return; }
-			else { prevMSG = msgx; }
-			OKtoSend = true;
+			OKtoSend = false;
+			for (i = 0; i < signals.Count; i++)
+			{
+				if (signalsStates[i] != preState[i]) { OKtoSend = true; }//something is different, will send
+				preState[i] = signalsStates[i];
+			}
+			if (OKtoSend == false)
+			{
+				//new player added, will keep sending for a while
+				if (Program.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime < 3 * MPManager.Instance().MPUpdateInterval) OKtoSend = true;
+			}
 		}
 
 		//constructor to decode the message "m"
@@ -2310,10 +2380,22 @@ namespace ORTS.MultiPlayer
 								}
 						}
 					}
+					signalsStates = new byte[signals.Count+128];
 				}
 				catch (Exception e) { signals = null; throw e; }//error, clean the list, so we can get another signal
 			}
-			msgx = m;
+			byte[] gZipBuffer = Convert.FromBase64String(m);
+			using (var memoryStream = new MemoryStream())
+			{
+				int dataLength = BitConverter.ToInt32(gZipBuffer, 0);
+				memoryStream.Write(gZipBuffer, 4, gZipBuffer.Length - 4);
+
+				memoryStream.Position = 0;
+				using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+				{
+					readed = gZipStream.Read(signalsStates, 0, signalsStates.Length);
+				}
+			}
 		}
 
 		//how to handle the message?
@@ -2321,14 +2403,13 @@ namespace ORTS.MultiPlayer
 		{
 			if (Program.Server != null) return; //server will ignore it
 
-			if (signals.Count != msgx.Length) { System.Console.WriteLine("Error in synchronizing signals " + signals.Count + " " + msgx.Length); return; }
+			//if (signals.Count != readed/2-2) { System.Console.WriteLine("Error in synchronizing signals " + signals.Count + " " + readed); return; }
 			int i = 0;
-			var v = 0;
 			foreach (var t in signals)
 			{
-				v = (int) msgx[i]; 
-				t.Value.state = (SignalHead.SIGASP)(v/100)-1; //we added 1 when build the message, need to subtract it out
-				t.Value.draw_state = (int)(v%100)-1;
+				t.Value.state = (SignalHead.SIGASP)(signalsStates[1 * i] - 1); //we added 1 when build the message, need to subtract it out
+				//t.Value.draw_state = (int)(signalsStates[2 * i + 1] - 1);
+				t.Value.draw_state = t.Value.def_draw_state(t.Value.state);
 				//System.Console.Write(msgx[i]-48);
 				i++;
 			}
@@ -2338,7 +2419,22 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "SIGNALSTATES " + msgx; // fill in the message body here
+			byte[] buffer = signalsStates;
+			var memoryStream = new MemoryStream();
+			using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress, true))
+			{
+				gZipStream.Write(buffer, 0, buffer.Length);
+			}
+
+			memoryStream.Position = 0;
+
+			var compressedData = new byte[memoryStream.Length];
+			memoryStream.Read(compressedData, 0, compressedData.Length);
+
+			var gZipBuffer = new byte[compressedData.Length + 4];
+			Buffer.BlockCopy(compressedData, 0, gZipBuffer, 4, compressedData.Length);
+			Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gZipBuffer, 0, 4);
+			string tmp = "SIGNALSTATES " + Convert.ToBase64String(gZipBuffer); // fill in the message body here
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}

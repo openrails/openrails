@@ -1505,6 +1505,7 @@ namespace ORTS
 							sw.TrJunctionNode.TN.UiD.TileX, sw.TrJunctionNode.TN.UiD.TileZ, sw.TrJunctionNode.TN.UiD.WorldID, sw.TrJunctionNode.SelectedRoute, true)).ToString());
 						//MPManager.Instance().ignoreSwitchStart = Simulator.GameTime;
 					}
+					else if (MPManager.IsServer() && !MPManager.Instance().AllowedManualSwitch) return;
 					else sw.TrJunctionNode.SelectedRoute = i;
 					return;
 				}

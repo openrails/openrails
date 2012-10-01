@@ -37,7 +37,7 @@ namespace MSTS
                 {
                     Tr_Worldfile = new Tr_Worldfile(block, filename);
                 }
-                sbr.Skip(); // some w files have additional comments at the end 
+                //sbr.Skip(); // some w files have additional comments at the end  (Changed By JTang: exception, file is closed)
                             //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
             }
         }
@@ -57,7 +57,7 @@ namespace MSTS
                 {
                     Tr_Worldfile = new Tr_Worldfile(block, filename, reqTokens);
                 }
-                sbr.Skip(); // some w files have additional comments at the end 
+                //sbr.Skip(); // some w files have additional comments at the end  (Changed By JTang: exception, file is closed)
                             //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
             }
         }

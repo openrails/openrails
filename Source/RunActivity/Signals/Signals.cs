@@ -2004,10 +2004,11 @@ namespace ORTS
   // Update : Perform the update for each head on this signal.
   //
 
-			//a signal maybe forced by the dispatcher, need to release it if it is 300 seconds ago, or a train has passed.
+			//a signal maybe forced by the dispatcher, need to release it if it is 300 seconds ago (if server set auto switch), or a train has passed.
+			//this function will only be checked when forceTime > 0, which is when a manual set is chosen
 				private bool ReleaseLock()
 				{
-					if (Program.Simulator.GameTime > forcedTime + 300) { canUpdate = true; forcedTime = 0; return true; }
+					if (Program.Simulator.GameTime > forcedTime + 300 && MultiPlayer.MPManager.Instance().AllowedManualSwitch) { enabled = false; canUpdate = true; forcedTime = 0; return true; }
 					try
 					{
 						var minimumDist = 1000f;

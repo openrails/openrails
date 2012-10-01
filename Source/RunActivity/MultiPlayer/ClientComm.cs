@@ -107,7 +107,7 @@ namespace ORTS.MultiPlayer
 				}
 				catch (Exception e)
 				{
-					//System.Console.WriteLine(e.Message + info);
+					//System.Console.WriteLine(e.Message + e.StackTrace);
 				}
 			}
 			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Error("Connection to the server is lost, will play as single mode");

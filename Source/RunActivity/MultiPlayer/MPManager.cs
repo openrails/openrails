@@ -36,7 +36,7 @@ namespace ORTS.MultiPlayer
 	//a singleton class handles communication, update and stop etc.
 	class MPManager
 	{
-		public int version = 10;
+		public int version = 11;
 		double lastMoveTime = 0.0f;
 		public double lastSwitchTime = 0.0f;
 		double lastSendTime = 0.0f;
@@ -96,7 +96,9 @@ namespace ORTS.MultiPlayer
 		public void RememberOriginalSwitchState()
 		{
 			MSGSwitchStatus msg = new MSGSwitchStatus();
-			OriginalSwitchState = msg.msgx;
+			var str = msg.ToString();
+			var index = str.IndexOf("SWITCHSTATES ");
+			OriginalSwitchState = str.Remove(0, index + 13);
 		}
 		//handles singleton
 		private MPManager()
@@ -448,6 +450,7 @@ namespace ORTS.MultiPlayer
 		{
 			lock (playersRemoved)
 			{
+				if (playersRemoved.Contains(p)) return;
 				playersRemoved.Add(p);
 			}
 		}
@@ -463,11 +466,9 @@ namespace ORTS.MultiPlayer
 				foreach (OnlinePlayer p in playersRemoved)
 				{
 					if (Program.Server != null) Program.Server.Players.Remove(p);
-					OnlineTrains.Players.Remove(p.Username);
 					//player is not in this train
 					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
 					{
-						Program.Simulator.Trains.Remove(p.Train);
 						if (p.Train.TrackAuthority != null)
 						{
 							Program.Simulator.AI.Dispatcher.SetAuthorization(p.Train.TrackAuthority, null, null, 0);
@@ -475,8 +476,9 @@ namespace ORTS.MultiPlayer
 							Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(p.Train.TrackAuthority);
 							p.Train.TrackAuthority = null;
 						}
-
+						Program.Simulator.Trains.Remove(p.Train);
 					}
+					OnlineTrains.Players.Remove(p.Username);
 				}
 			}
 			catch (Exception e)

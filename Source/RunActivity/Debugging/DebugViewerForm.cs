@@ -560,8 +560,9 @@ namespace ORTS.Debugging
 			PointF[] points = new PointF[3];
 			Pen p = grayPen;
 
-			p.Width = xScale;
+			p.Width = (int) xScale;
 			if (p.Width < 1) p.Width = 1;
+			else if (p.Width > 4) p.Width = 4;
 			greenPen.Width = orangePen.Width = redPen.Width = p.Width; pathPen.Width = 2 * p.Width;
 			trainPen.Width = p.Width*3;
 			if (trainPen.Width < 15f) trainPen.Width = 15f;
@@ -681,7 +682,7 @@ namespace ORTS.Debugging
 				var margin2 = 2000 * xScale;
 
 				//variable for drawing train path
-				var mDist = 2000f; var pDist = 50 / xScale; if (pDist < 20) { pDist = 20; mDist = 1000; } if (pDist > 50) pDist = 50;//segment length when draw path
+				var mDist = 2000f; var pDist = 50; //segment length when draw path
 				
 				foreach (Train t in simulator.Trains)
 				{
@@ -928,6 +929,7 @@ namespace ORTS.Debugging
             return ORTS.Popups.TrackMonitorSignalAspect.Stop;
         }
 
+	   //draw the train path if it is within the window
 		public void DrawTrainPath(Train train, float subX, float subY, Pen pathPen, Graphics g, PointF scaledA, PointF scaledB, float stepDist, float MaximumSectionDistance)
 		{
 			if (DrawPath != true) return;
@@ -940,6 +942,7 @@ namespace ORTS.Debugging
 			if (train.FirstCar != null & train.FirstCar.CarID.Contains("AI")) ok = true; //AI train
 			if (Math.Abs(train.SpeedMpS) > 0.001) ok = true;
 			if (ok == false) return;
+
 			var DisplayDistance = MaximumSectionDistance;
 			var position = train.MUDirection != Direction.Reverse ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
 			var caches = new List<SignallingDebugWindow.TrackSectionCacheEntry>();
@@ -1041,12 +1044,13 @@ namespace ORTS.Debugging
 					}
 					lastObjDistance = obj.Distance;
 
-					if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
+					if (objDistance >= switchErrorDistance)
 						break;
 				}
 				currentDistance += cache.Length;
-				if (currentDistance >= switchErrorDistance || currentDistance >= signalErrorDistance)
+				if (currentDistance >= switchErrorDistance)
 					break;
+
 			}
 
 			currentPosition = new Traveller(position);
@@ -1071,7 +1075,7 @@ namespace ORTS.Debugging
 					if (switchObj != null)
 					{
 						if (objDistance >= switchErrorDistance) {
-							foreach (var sw in switches)
+							foreach (var sw in switchItemsDrawn)
 							{
 								if (sw.Item.TrJunctionNode == switchObj.TrackNode.TrJunctionNode)
 								{
@@ -1084,7 +1088,7 @@ namespace ORTS.Debugging
 						}
 					}
 
-					if (objDistance >= switchErrorDistance || objDistance >= signalErrorDistance)
+					if (objDistance >= switchErrorDistance)
 						break;
 				}
 				currentDistance += cache.Length;
