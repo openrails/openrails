@@ -460,28 +460,57 @@ namespace ORTS.Debugging
 		  }
 		  imageList1.Images.Clear();
 		  AvatarView.Items.Clear();
-
-		  foreach (var pair in avatarList)
+		  var i = 0;
+		  if (!Program.Simulator.Settings.ShowAvatar)
 		  {
-			  if (pair.Key != username) continue;
-			  if (pair.Value == null) AvatarView.Items.Add(pair.Key).ImageIndex = -1;
-			  else
+			  this.AvatarView.View = View.List;
+			  foreach (var pair in avatarList)
 			  {
-				  AvatarView.Items.Add(pair.Key).ImageIndex = 0;
-				  imageList1.Images.Add(pair.Value);
+				  if (pair.Key != username) continue;
+				  AvatarView.Items.Add(pair.Key);
+			  }
+			  i = 1;
+			  foreach (var pair in avatarList)
+			  {
+				  if (pair.Key == username) continue;
+				  if (MultiPlayer.MPManager.Instance().aiderList.Contains(pair.Key))
+				  {
+					  AvatarView.Items.Add(pair.Key + " (H)") ;
+				  }
+				  else AvatarView.Items.Add(pair.Key);
+				  i++;
 			  }
 		  }
-
-		  var i = 1;
-		  foreach (var pair in avatarList)
+		  else
 		  {
-			  if (pair.Key == username) continue;
-			  if (pair.Value == null) AvatarView.Items.Add(pair.Key).ImageIndex = -1;
-			  else
+			  this.AvatarView.View = View.LargeIcon;
+			  AvatarView.LargeImageList = imageList1;
+			  foreach (var pair in avatarList)
 			  {
-				  AvatarView.Items.Add(pair.Key).ImageIndex = i;
-				  imageList1.Images.Add(pair.Value);
-				  i++;
+				  if (pair.Key != username) continue;
+
+				  if (pair.Value == null) AvatarView.Items.Add(pair.Key).ImageIndex = -1;
+				  else
+				  {
+					  AvatarView.Items.Add(pair.Key).ImageIndex = 0;
+					  imageList1.Images.Add(pair.Value);
+				  }
+			  }
+
+			  i = 1;
+			  foreach (var pair in avatarList)
+			  {
+				  if (pair.Key == username) continue;
+				  var text = pair.Key;
+				  if (MultiPlayer.MPManager.Instance().aiderList.Contains(pair.Key)) text = pair.Key + " (H)";
+
+				  if (pair.Value == null) AvatarView.Items.Add(name).ImageIndex = -1;
+				  else
+				  {
+					  AvatarView.Items.Add(text).ImageIndex = i;
+					  imageList1.Images.Add(pair.Value);
+					  i++;
+				  }
 			  }
 		  }
 	  }
@@ -506,6 +535,8 @@ namespace ORTS.Debugging
 				  this.chkAllowUserSwitch.Visible = false;
 				  this.chkAllowUserSwitch.Checked = true;
 				  this.rmvButton.Visible = false;
+				  this.btnAssist.Visible = false;
+				  this.btnNormal.Visible = false;
 				  this.msgAll.Text = "MSG to Server";
 			  }
 			  else
@@ -605,6 +636,7 @@ namespace ORTS.Debugging
 			signalItemsDrawn.Clear();
 			 float x, y;
 			 PointF scaledItem = new PointF(0f, 0f);
+			 var width = 6f * p.Width; if (width > 10) width = 10;//not to make it too large
 			 for (var i = 0; i < switches.Count; i++)
 			 {
 				 SwitchWidget sw = switches[i];
@@ -616,8 +648,8 @@ namespace ORTS.Debugging
 				 scaledItem.X = x; scaledItem.Y = y;
 
 
-				 if (sw.Item.TrJunctionNode.SelectedRoute == sw.main) g.FillEllipse(Brushes.Black, GetRect(scaledItem, 6f * p.Width));
-				 else g.FillEllipse(Brushes.Gray, GetRect(scaledItem, 6f * p.Width));
+				 if (sw.Item.TrJunctionNode.SelectedRoute == sw.main) g.FillEllipse(Brushes.Black, GetRect(scaledItem, width));
+				 else g.FillEllipse(Brushes.Gray, GetRect(scaledItem, width));
 				 sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
 #if false
 				 if (sw.main == sw.Item.TrJunctionNode.SelectedRoute)
@@ -653,7 +685,7 @@ namespace ORTS.Debugging
 						 color = Brushes.Red;
 						 pen = redPen;
 					 }
-					 g.FillEllipse(color, GetRect(scaledItem, 5f * p.Width));
+					 g.FillEllipse(color, GetRect(scaledItem, width));
 					 //g.DrawString(""+s.Signal.canUpdate, trainFont, Brushes.Black, scaledItem);
 					 signalItemsDrawn.Add(s);
 					 if (s.hasDir)
@@ -1415,7 +1447,7 @@ namespace ORTS.Debugging
 	  }
 	  private void HandlePickedSignal()
 	  {
-		  if (MultiPlayer.MPManager.IsClient()) return;
+		  if (MultiPlayer.MPManager.IsClient() /*&& !MultiPlayer.MPManager.Instance().AmAider*/) return;//normal client not server
 		  //boxSetSwitch.Enabled = false;
 		  boxSetSwitch.Visible = false;
 		  if (signalPickedItem == null) return;
@@ -1432,7 +1464,7 @@ namespace ORTS.Debugging
 
 	  private void HandlePickedSwitch()
 	  {
-		  if (MultiPlayer.MPManager.IsClient()) return;
+		  if (MultiPlayer.MPManager.IsClient() && !MultiPlayer.MPManager.Instance().AmAider) return;//normal client not server
 		  //boxSetSignal.Enabled = false;
 		  boxSetSignal.Visible = false;
 		  if (switchPickedItem == null) return;
@@ -1607,6 +1639,8 @@ namespace ORTS.Debugging
 		  Program.Simulator.Settings.ShowAvatar = chkShowAvatars.Checked;
 		  AvatarView.Items.Clear();
 		  if (avatarList != null) avatarList.Clear();
+		  if (chkShowAvatars.Checked) AvatarView.Font = new Font(FontFamily.GenericSansSerif, 12);
+		  else AvatarView.Font = new Font(FontFamily.GenericSansSerif, 16);
 		  try { CheckAvatar(); }
 		  catch { }
 	  }
@@ -1895,14 +1929,38 @@ namespace ORTS.Debugging
 		  var sw = switchPickedItem.Item.TrJunctionNode;
 		  var type = boxSetSwitch.SelectedIndex;
 
-		  switch (type)
+		  //aider can send message to the server for a switch
+		  if (MultiPlayer.MPManager.Instance().AmAider)
 		  {
-			  case 0:
-				  sw.SelectedRoute = (int)switchPickedItem.main;
-				  break;
-			  case 1:
-				  sw.SelectedRoute = 1 - (int)switchPickedItem.main;
-				  break;
+			  var nextSwitchTrack = sw;
+			  var Selected = 0;
+			  switch (type)
+			  {
+				  case 0:
+					  Selected = (int)switchPickedItem.main;
+					  break;
+				  case 1:
+					  Selected = 1 - (int)switchPickedItem.main;
+					  break;
+			  }
+			  //aider selects and throws the switch, but need to confirm by the dispatcher
+			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+				  nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected, true)).ToString());
+			  Program.Simulator.Confirmer.Information("Switching Request Sent to the Server");
+
+		  }
+		  //server throws the switch immediately
+		  else
+		  {
+			  switch (type)
+			  {
+				  case 0:
+					  sw.SelectedRoute = (int)switchPickedItem.main;
+					  break;
+				  case 1:
+					  sw.SelectedRoute = 1 - (int)switchPickedItem.main;
+					  break;
+			  }
 		  }
 		  UnHandleItemPick();
 
@@ -1911,6 +1969,40 @@ namespace ORTS.Debugging
 	  private void chkAllowNewCheck(object sender, EventArgs e)
 	  {
 		  MultiPlayer.MPManager.Instance().AllowNewPlayer = chkAllowNew.Checked;
+	  }
+
+	  private void AssistClick(object sender, EventArgs e)
+	  {
+		  AvatarView.SelectedIndices.Remove(0);
+		  if (AvatarView.SelectedIndices.Count > 0)
+		  {
+			  var tmp = AvatarView.SelectedItems[0].Text.Split(' ');
+			  var name = tmp[0].Trim();
+			  if (MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(name))
+			  {
+				  MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGAider(name, true)).ToString());
+				  MultiPlayer.MPManager.Instance().aiderList.Add(name);
+			  }
+			  AvatarView.Items.Clear();
+			  if (avatarList != null) avatarList.Clear();
+		  }
+	  }
+
+	  private void btnNormalClick(object sender, EventArgs e)
+	  {
+		  if (AvatarView.SelectedIndices.Count > 0)
+		  {
+			  var tmp = AvatarView.SelectedItems[0].Text.Split(' ');
+			  var name = tmp[0].Trim();
+			  if (MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(name))
+			  {
+				  MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGAider(name, false)).ToString());
+				  MultiPlayer.MPManager.Instance().aiderList.Remove(name);
+			  }
+			  AvatarView.Items.Clear();
+			  if (avatarList != null) avatarList.Clear();
+		  }
+
 	  }
 
    }

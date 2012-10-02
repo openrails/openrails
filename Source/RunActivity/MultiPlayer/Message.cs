@@ -53,6 +53,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "QUIT") return new MSGQuit(m.Substring(index + 1));
 			else if (key == "AVATAR") return new MSGAvatar(m.Substring(index + 1));
 			else if (key == "WEATHER") return new MSGWeather(m.Substring(index + 1));
+			else if (key == "AIDER") return new MSGAider(m.Substring(index + 1));
 			else throw new Exception("Unknown Keyword" + key);
 		}
 
@@ -388,10 +389,10 @@ namespace ORTS.MultiPlayer
 			{
 				var reason = "Wrong version of protocol, please update to version " + MPManager.Instance().version;
 				MPManager.BroadCast((new MSGMessage(this.user, "Error", reason)).ToString());//server will broadcast this error
-				if (MPManager.IsServer()) throw new Exception("Wrong version of protocol");//ignore this player message
+				if (MPManager.IsServer()) throw new Exception("Wrong version of protocol, please update to version " + MPManager.Instance().version);//ignore this player message
 				else
 				{
-					System.Console.WriteLine("Wrong version of protocol, will play in single mode");
+					System.Console.WriteLine("Wrong version of protocol, will play in single mode, please update to version " + MPManager.Instance().version);
 					throw new MultiPlayerError();//client, close the connection
 				}
 			}
@@ -506,7 +507,8 @@ namespace ORTS.MultiPlayer
 			//System.Console.WriteLine(this.ToString());
 			if (MPManager.IsServer()) //server got this message from Client
 			{
-				if (HandThrown == true && !MPManager.Instance().AllowedManualSwitch)
+				//if a normal user, and the dispatcher does not want hand throw, just ignore it
+				if (HandThrown == true && !MPManager.Instance().AllowedManualSwitch && !MPManager.Instance().aiderList.Contains(user))
 				{
 					//MPManager.BroadCast((new MSGMessage(user, "Warning", "Server does not allow hand thrown of switch")).ToString());
 					return;
@@ -2699,4 +2701,47 @@ namespace ORTS.MultiPlayer
 	}
 
 	#endregion MSGWeather
+
+	#region MSGAider
+	public class MSGAider : Message
+	{
+		public string user;
+		public bool add;
+		public MSGAider(string m)
+		{
+			string[] tmp = m.Split('\t');
+			user = tmp[0].Trim();
+			if (tmp[1].Trim() == "T") add = true; else add = false;
+		}
+
+		public MSGAider(string m, bool add1)
+		{
+			user = m.Trim();
+			add = add1;
+		}
+
+		public override string ToString()
+		{
+
+			string tmp = "AIDER " + user + "\t" + (add == true ? "T" : "F");
+			return "" + tmp.Length + ": " + tmp;
+		}
+
+		public override void HandleMsg()
+		{
+			if (MPManager.IsServer()) return;
+			if (add == true)
+			{
+				MPManager.Instance().AmAider = true;
+			}
+			else
+			{
+				MPManager.Instance().AmAider = false;
+			}
+		}
+
+	}
+
+	#endregion MSGAider
+
 }

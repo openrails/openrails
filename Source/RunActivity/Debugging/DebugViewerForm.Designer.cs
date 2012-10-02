@@ -41,7 +41,6 @@
 		  this.msgAll = new System.Windows.Forms.Button();
 		  this.composeMSG = new System.Windows.Forms.Button();
 		  this.label1 = new System.Windows.Forms.Label();
-		  this.messages = new System.Windows.Forms.ListBox();
 		  this.reply2Selected = new System.Windows.Forms.Button();
 		  this.chkDrawPath = new System.Windows.Forms.CheckBox();
 		  this.boxSetSignal = new System.Windows.Forms.ListBox();
@@ -49,6 +48,9 @@
 		  this.chkPickSignals = new System.Windows.Forms.CheckBox();
 		  this.chkPickSwitches = new System.Windows.Forms.CheckBox();
 		  this.chkAllowNew = new System.Windows.Forms.CheckBox();
+		  this.messages = new System.Windows.Forms.ListBox();
+		  this.btnAssist = new System.Windows.Forms.Button();
+		  this.btnNormal = new System.Windows.Forms.Button();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.SuspendLayout();
@@ -67,9 +69,9 @@
 		  // refreshButton
 		  // 
 		  this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.refreshButton.Location = new System.Drawing.Point(808, 102);
+		  this.refreshButton.Location = new System.Drawing.Point(808, 103);
 		  this.refreshButton.Name = "refreshButton";
-		  this.refreshButton.Size = new System.Drawing.Size(103, 23);
+		  this.refreshButton.Size = new System.Drawing.Size(93, 23);
 		  this.refreshButton.TabIndex = 1;
 		  this.refreshButton.Text = "View Train";
 		  this.refreshButton.UseVisualStyleBackColor = true;
@@ -125,7 +127,7 @@
 		  // 
 		  // rmvButton
 		  // 
-		  this.rmvButton.Location = new System.Drawing.Point(708, 102);
+		  this.rmvButton.Location = new System.Drawing.Point(808, 76);
 		  this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
 		  this.rmvButton.Name = "rmvButton";
 		  this.rmvButton.Size = new System.Drawing.Size(93, 24);
@@ -139,7 +141,7 @@
 		  this.chkAllowUserSwitch.AutoSize = true;
 		  this.chkAllowUserSwitch.Checked = true;
 		  this.chkAllowUserSwitch.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(808, 58);
+		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(808, 54);
 		  this.chkAllowUserSwitch.Name = "chkAllowUserSwitch";
 		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(83, 17);
 		  this.chkAllowUserSwitch.TabIndex = 16;
@@ -152,7 +154,7 @@
 		  this.chkShowAvatars.AutoSize = true;
 		  this.chkShowAvatars.Checked = true;
 		  this.chkShowAvatars.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkShowAvatars.Location = new System.Drawing.Point(709, 35);
+		  this.chkShowAvatars.Location = new System.Drawing.Point(708, 34);
 		  this.chkShowAvatars.Name = "chkShowAvatars";
 		  this.chkShowAvatars.Size = new System.Drawing.Size(92, 17);
 		  this.chkShowAvatars.TabIndex = 17;
@@ -211,22 +213,11 @@
 		  // label1
 		  // 
 		  this.label1.AutoSize = true;
-		  this.label1.Location = new System.Drawing.Point(744, 9);
+		  this.label1.Location = new System.Drawing.Point(775, 9);
 		  this.label1.Name = "label1";
-		  this.label1.Size = new System.Drawing.Size(57, 13);
+		  this.label1.Size = new System.Drawing.Size(26, 13);
 		  this.label1.TabIndex = 7;
-		  this.label1.Text = "Resolution";
-		  // 
-		  // messages
-		  // 
-		  this.messages.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.messages.FormattingEnabled = true;
-		  this.messages.ItemHeight = 18;
-		  this.messages.Location = new System.Drawing.Point(1, 38);
-		  this.messages.Name = "messages";
-		  this.messages.Size = new System.Drawing.Size(583, 76);
-		  this.messages.TabIndex = 22;
-		  this.messages.SelectedIndexChanged += new System.EventHandler(this.msgSelectedChanged);
+		  this.label1.Text = "Res";
 		  // 
 		  // reply2Selected
 		  // 
@@ -286,7 +277,7 @@
 		  this.chkPickSignals.AutoSize = true;
 		  this.chkPickSignals.Checked = true;
 		  this.chkPickSignals.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkPickSignals.Location = new System.Drawing.Point(708, 58);
+		  this.chkPickSignals.Location = new System.Drawing.Point(708, 53);
 		  this.chkPickSignals.Name = "chkPickSignals";
 		  this.chkPickSignals.Size = new System.Drawing.Size(84, 17);
 		  this.chkPickSignals.TabIndex = 27;
@@ -298,7 +289,7 @@
 		  this.chkPickSwitches.AutoSize = true;
 		  this.chkPickSwitches.Checked = true;
 		  this.chkPickSwitches.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkPickSwitches.Location = new System.Drawing.Point(709, 80);
+		  this.chkPickSwitches.Location = new System.Drawing.Point(709, 75);
 		  this.chkPickSwitches.Name = "chkPickSwitches";
 		  this.chkPickSwitches.Size = new System.Drawing.Size(93, 17);
 		  this.chkPickSwitches.TabIndex = 28;
@@ -310,7 +301,7 @@
 		  this.chkAllowNew.AutoSize = true;
 		  this.chkAllowNew.Checked = true;
 		  this.chkAllowNew.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkAllowNew.Location = new System.Drawing.Point(808, 79);
+		  this.chkAllowNew.Location = new System.Drawing.Point(708, 12);
 		  this.chkAllowNew.Name = "chkAllowNew";
 		  this.chkAllowNew.Size = new System.Drawing.Size(67, 17);
 		  this.chkAllowNew.TabIndex = 29;
@@ -318,12 +309,47 @@
 		  this.chkAllowNew.UseVisualStyleBackColor = true;
 		  this.chkAllowNew.CheckedChanged += new System.EventHandler(this.chkAllowNewCheck);
 		  // 
+		  // messages
+		  // 
+		  this.messages.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+		  this.messages.FormattingEnabled = true;
+		  this.messages.ItemHeight = 18;
+		  this.messages.Location = new System.Drawing.Point(1, 38);
+		  this.messages.Name = "messages";
+		  this.messages.Size = new System.Drawing.Size(583, 76);
+		  this.messages.TabIndex = 22;
+		  this.messages.SelectedIndexChanged += new System.EventHandler(this.msgSelectedChanged);
+		  // 
+		  // btnAssist
+		  // 
+		  this.btnAssist.Location = new System.Drawing.Point(697, 102);
+		  this.btnAssist.Margin = new System.Windows.Forms.Padding(2);
+		  this.btnAssist.Name = "btnAssist";
+		  this.btnAssist.Size = new System.Drawing.Size(48, 24);
+		  this.btnAssist.TabIndex = 30;
+		  this.btnAssist.Text = "Assist";
+		  this.btnAssist.UseVisualStyleBackColor = true;
+		  this.btnAssist.Click += new System.EventHandler(this.AssistClick);
+		  // 
+		  // btnNormal
+		  // 
+		  this.btnNormal.Location = new System.Drawing.Point(749, 102);
+		  this.btnNormal.Margin = new System.Windows.Forms.Padding(2);
+		  this.btnNormal.Name = "btnNormal";
+		  this.btnNormal.Size = new System.Drawing.Size(58, 24);
+		  this.btnNormal.TabIndex = 31;
+		  this.btnNormal.Text = "Normal";
+		  this.btnNormal.UseVisualStyleBackColor = true;
+		  this.btnNormal.Click += new System.EventHandler(this.btnNormalClick);
+		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
 		  this.ClientSize = new System.Drawing.Size(923, 768);
+		  this.Controls.Add(this.btnNormal);
+		  this.Controls.Add(this.btnAssist);
 		  this.Controls.Add(this.chkAllowNew);
 		  this.Controls.Add(this.chkPickSwitches);
 		  this.Controls.Add(this.chkPickSignals);
@@ -372,7 +398,6 @@
 	  private System.Windows.Forms.Button msgAll;
 	  private System.Windows.Forms.Button composeMSG;
 	  private System.Windows.Forms.Label label1;
-	  private System.Windows.Forms.ListBox messages;
 	  private System.Windows.Forms.Button reply2Selected;
 	  private System.Windows.Forms.CheckBox chkDrawPath;
 	  private System.Windows.Forms.ListBox boxSetSignal;
@@ -380,5 +405,8 @@
 	  private System.Windows.Forms.CheckBox chkPickSignals;
 	  private System.Windows.Forms.CheckBox chkPickSwitches;
 	  private System.Windows.Forms.CheckBox chkAllowNew;
+	  private System.Windows.Forms.ListBox messages;
+	  private System.Windows.Forms.Button btnAssist;
+	  private System.Windows.Forms.Button btnNormal;
    }
 }

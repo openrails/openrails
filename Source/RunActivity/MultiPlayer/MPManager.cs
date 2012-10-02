@@ -61,6 +61,8 @@ namespace ORTS.MultiPlayer
 		public bool AllowNewPlayer = true;
 		public bool ComposingText = false;
 		public string lastSender = ""; //who last sends me a message
+		public bool AmAider = false; //am I aiding the dispatcher?
+		public List<string> aiderList;
 		public void AddUncoupledTrains(Train t)
 		{
 			lock (uncoupledTrains)
@@ -108,6 +110,8 @@ namespace ORTS.MultiPlayer
 			uncoupledTrains = new List<Train>();
 			addedTrains = new List<Train>();
 			removedTrains = new List<Train>();
+			aiderList = new List<string>();
+
 		}
 		public static MPManager Instance()
 		{
