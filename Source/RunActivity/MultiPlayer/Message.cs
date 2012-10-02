@@ -472,6 +472,7 @@ namespace ORTS.MultiPlayer
 		public string user;
 		public int TileX, TileZ, WorldID, Selection;
 		public bool HandThrown;
+		bool OK = true;
 
 		public MSGSwitch(string m)
 		{
@@ -488,6 +489,12 @@ namespace ORTS.MultiPlayer
 
 		public MSGSwitch(string n, int tX, int tZ, int u, int s, bool handThrown)
 		{
+			if (MPManager.Instance().TrySwitch == false)
+			{
+				if (handThrown && Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("Dispatcher does not allow hand throw at this time");
+				OK = false;
+				return;
+			}
 			user = n;
 			WorldID = u;
 			TileX = tX;
@@ -498,6 +505,7 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
+			if (!OK) return null;
 			string tmp = "SWITCH " + user + " " + TileX + " " + TileZ + " " + WorldID + " " + Selection + " " + HandThrown;
 			return "" + tmp.Length + ": " + tmp;
 		}
@@ -510,7 +518,7 @@ namespace ORTS.MultiPlayer
 				//if a normal user, and the dispatcher does not want hand throw, just ignore it
 				if (HandThrown == true && !MPManager.Instance().AllowedManualSwitch && !MPManager.Instance().aiderList.Contains(user))
 				{
-					//MPManager.BroadCast((new MSGMessage(user, "Warning", "Server does not allow hand thrown of switch")).ToString());
+					MPManager.BroadCast((new MSGMessage(user, "SwitchWarning", "Server does not allow hand thrown of switch")).ToString());
 					return;
 				}
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
@@ -1345,7 +1353,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
-			if (MPManager.GetUserName() == user)
+			if (MPManager.GetUserName() == user || user == "All")
 			{
 				if (Program.Simulator.Confirmer != null)
 					Program.Simulator.Confirmer.Message(level == "Error" ? ConfirmLevel.Error : level == "Warning" ? ConfirmLevel.Warning : level == "Info" ? ConfirmLevel.Information : ConfirmLevel.None, msgx);
@@ -1354,6 +1362,16 @@ namespace ORTS.MultiPlayer
 				{
 					MPManager.Notify((new MSGQuit(MPManager.GetUserName())).ToString());//to be nice, still send a quit before close the connection
 					throw new MultiPlayerError();//this is a fatal error, thus the client will be stopped in ClientComm
+				}
+				else if (level == "SwitchWarning")
+				{
+					MPManager.Instance().TrySwitch = false;
+					return;
+				}
+				else if (level == "SwitchOK")
+				{
+					MPManager.Instance().TrySwitch = true;
+					return;
 				}
 			}
 		}

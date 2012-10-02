@@ -1632,6 +1632,8 @@ namespace ORTS.Debugging
 	  private void chkAllowUserSwitch_CheckedChanged(object sender, EventArgs e)
 	  {
 		  MultiPlayer.MPManager.Instance().AllowedManualSwitch = chkAllowUserSwitch.Checked;
+		  if (chkAllowUserSwitch.Checked == true) { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "SwitchOK", "OK to switch")).ToString()); }
+		  else { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "SwitchWarning", "Cannot switch")).ToString()); }
 	  }
 
 	  private void chkShowAvatars_CheckedChanged(object sender, EventArgs e)

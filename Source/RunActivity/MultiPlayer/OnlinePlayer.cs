@@ -41,6 +41,7 @@ namespace ORTS.MultiPlayer
 		public string url = ""; //avatar location
 		public void Send(string msg)
 		{
+			if (msg == null) return;
 			try
 			{
 				NetworkStream clientStream = Client.GetStream();

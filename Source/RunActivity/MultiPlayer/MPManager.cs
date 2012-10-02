@@ -58,6 +58,7 @@ namespace ORTS.MultiPlayer
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
 		public bool AllowedManualSwitch = false;
+		public bool TrySwitch = true;
 		public bool AllowNewPlayer = true;
 		public bool ComposingText = false;
 		public string lastSender = ""; //who last sends me a message
@@ -111,7 +112,6 @@ namespace ORTS.MultiPlayer
 			addedTrains = new List<Train>();
 			removedTrains = new List<Train>();
 			aiderList = new List<string>();
-
 		}
 		public static MPManager Instance()
 		{
@@ -299,19 +299,21 @@ namespace ORTS.MultiPlayer
 
 		static public void BroadCast(string m)
 		{
+			if (m == null) return;
 			if (Program.Server != null) Program.Server.BroadCast(m);
 		}
 
 		//notify others (server will broadcast, client will send msg to server)
 		static public void Notify(string m)
 		{
+			if (m == null) return;
 			if (Program.Client != null && Program.Server == null) Program.Client.Send(m); //client notify server
 			if (Program.Server != null) Program.Server.BroadCast(m); //server notify everybody else
 		}
 
 		static public void SendToServer(string m)
 		{
-			if (Program.Client != null) Program.Client.Send(m);
+			if (m!= null && Program.Client != null) Program.Client.Send(m);
 		}
 		static public void BroadcastSignal()
 		{
