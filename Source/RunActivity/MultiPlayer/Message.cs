@@ -674,6 +674,9 @@ namespace ORTS.MultiPlayer
 					}
 				}
 				switchStatesArray = new byte[SwitchState.Count() + 2];
+			}
+			if (preState == null)
+			{
 				preState = new byte[SwitchState.Count() + 2];
 				for (i = 0; i < preState.Length; i++) preState[i] = 0;
 			}
@@ -1234,23 +1237,36 @@ namespace ORTS.MultiPlayer
 	#region MSGServer
 	public class MSGServer : MSGRequired
 	{
+		string user; //true: I am a server now, false, not
 		public MSGServer(string m)
 		{
+			user = m.Trim();
 		}
 
 
 		public override string ToString()
 		{
-			string tmp = "SERVER YOU";
+			string tmp = "SERVER " + user;
 			return "" + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
 		{
-			if (Program.Server != null) return; //already a server, not need to worry
-			Program.Client.Connected = true;
-			Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
-			//System.Console.WriteLine(this.ToString());
+			if (MPManager.GetUserName() == user || user == "YOU")
+			{
+				if (Program.Server != null) return; //already a server, not need to worry
+				Program.Client.Connected = true;
+				MPManager.Instance().NotServer = false;
+				System.Console.WriteLine("You are the new dispatcher, enjoy");
+				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("You are the new dispatcher, enjoy");
+				//System.Console.WriteLine(this.ToString());
+			}
+			else
+			{
+				MPManager.Instance().NotServer = true;
+				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("New dispatcher is " + user);
+				System.Console.WriteLine("New dispatcher is " + user);
+			}
 		}
 	}
 	#endregion MSGServer
@@ -2359,7 +2375,10 @@ namespace ORTS.MultiPlayer
 					}
 				}
 				signalsStates = new byte[signals.Count+2];
-				preState = new byte[signals.Count+2];
+			}
+			if (preState == null)
+			{
+				preState = new byte[signals.Count + 2];
 				for (i = 0; i < preState.Length; i++) preState[i] = 0;
 			}
 

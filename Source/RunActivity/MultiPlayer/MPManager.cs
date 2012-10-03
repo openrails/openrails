@@ -64,6 +64,7 @@ namespace ORTS.MultiPlayer
 		public string lastSender = ""; //who last sends me a message
 		public bool AmAider = false; //am I aiding the dispatcher?
 		public List<string> aiderList;
+		public bool NotServer = true;
 		public void AddUncoupledTrains(Train t)
 		{
 			lock (uncoupledTrains)
@@ -176,6 +177,16 @@ namespace ORTS.MultiPlayer
 
 		public void Update(double newtime)
 		{
+			if (NotServer == true && Program.Server != null) //I was a server, but no longer
+			{
+				Program.Server = null;
+				Program.DebugViewer.firstShow = true;
+			}
+			else if (NotServer == false && Program.Server == null) //I am declared the server
+			{
+				Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
+				Program.DebugViewer.firstShow = true;
+			}
 			//get key strokes and determine if some messages should be sent
 			handleUserInput();
 

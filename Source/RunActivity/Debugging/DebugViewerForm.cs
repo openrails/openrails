@@ -376,12 +376,12 @@ namespace ORTS.Debugging
 	  public void AddAvatar(string name, string url)
 	  {
 		  if (avatarList == null) avatarList = new Dictionary<string, Image>();
-
+		  bool FindDefault = false;
 		  try
 		  {
 			  if (Program.Simulator.Settings.ShowAvatar == false) throw new Exception();
 			  var request = WebRequest.Create(url);
-
+			  FindDefault = true;
 			  using (var response = request.GetResponse())
 			  using (var stream = response.GetResponseStream())
 			  {
@@ -401,15 +401,23 @@ namespace ORTS.Debugging
 		  }
 		  catch
 		  {
-			  byte[] imageBytes = Convert.FromBase64String(imagestring);
-			  MemoryStream ms = new MemoryStream(imageBytes, 0,
-				imageBytes.Length);
+			  if (FindDefault)
+			  {
+				  byte[] imageBytes = Convert.FromBase64String(imagestring);
+				  MemoryStream ms = new MemoryStream(imageBytes, 0,
+					imageBytes.Length);
 
-			  // Convert byte[] to Image
-			  ms.Write(imageBytes, 0, imageBytes.Length);
-			  Image newImage = Image.FromStream(ms, true);
-			  avatarList[name] = newImage;
+				  // Convert byte[] to Image
+				  ms.Write(imageBytes, 0, imageBytes.Length);
+				  Image newImage = Image.FromStream(ms, true);
+				  avatarList[name] = newImage;
+			  }
+			  else
+			  {
+				  avatarList[name] = null;
+			  }
 		  }
+
 
 		  /*
 		  imageList1.Images.Clear();
@@ -593,10 +601,9 @@ namespace ORTS.Debugging
 
 			p.Width = (int) xScale;
 			if (p.Width < 1) p.Width = 1;
-			else if (p.Width > 4) p.Width = 4;
+			else if (p.Width > 3) p.Width = 3;
 			greenPen.Width = orangePen.Width = redPen.Width = p.Width; pathPen.Width = 2 * p.Width;
-			trainPen.Width = p.Width*3;
-			if (trainPen.Width < 15f) trainPen.Width = 15f;
+			trainPen.Width = p.Width*6;
 			var forwardDist = 100 / xScale; if (forwardDist < 5) forwardDist = 5;
 			//if (xScale > 3) p.Width = 3f;
 			//else if (xScale > 2) p.Width = 2f;
@@ -636,7 +643,7 @@ namespace ORTS.Debugging
 			signalItemsDrawn.Clear();
 			 float x, y;
 			 PointF scaledItem = new PointF(0f, 0f);
-			 var width = 6f * p.Width; if (width > 10) width = 10;//not to make it too large
+			 var width = 6f * p.Width; if (width > 15) width = 15;//not to make it too large
 			 for (var i = 0; i < switches.Count; i++)
 			 {
 				 SwitchWidget sw = switches[i];
@@ -1076,11 +1083,11 @@ namespace ORTS.Debugging
 					}
 					lastObjDistance = obj.Distance;
 
-					if (objDistance >= switchErrorDistance)
+					if (objDistance >= switchErrorDistance || objDistance > DisplayDistance)
 						break;
 				}
 				currentDistance += cache.Length;
-				if (currentDistance >= switchErrorDistance)
+				if (currentDistance >= switchErrorDistance || currentDistance > DisplayDistance)
 					break;
 
 			}
@@ -1124,11 +1131,11 @@ namespace ORTS.Debugging
 						}
 					}
 
-					if (objDistance >= switchErrorDistance)
+					if (objDistance >= switchErrorDistance || objDistance > DisplayDistance)
 						break;
 				}
 				currentDistance += cache.Length;
-				if (currentDistance >= switchErrorDistance)
+				if (currentDistance >= switchErrorDistance || currentDistance > DisplayDistance)
 					break;
 			}
 			// Clean up any cache entries who haven't been using for 30 seconds.
@@ -1382,12 +1389,13 @@ namespace ORTS.Debugging
 		  {
 			  if (LastCursorPosition.X == e.X && LastCursorPosition.Y == e.Y)
 			  {
+				  var range = 5 * (int)xScale; if (range > 10) range = 10;
 				  var temp = findItemFromMouse(e.X, e.Y, 5*(int)xScale);
 				  if (temp != null)
 				  {
 					  //GenerateView();
-					  if (temp is SwitchWidget) { switchPickedItem = (SwitchWidget)temp; HandlePickedSwitch(); }
-					  if (temp is SignalWidget) { signalPickedItem = (SignalWidget)temp; HandlePickedSignal(); }
+					  if (temp is SwitchWidget) { switchPickedItem = (SwitchWidget)temp; signalPickedItem = null; HandlePickedSwitch(); }
+					  if (temp is SignalWidget) { signalPickedItem = (SignalWidget)temp; switchPickedItem = null; HandlePickedSignal(); }
 #if false
 					  pictureBox1.ContextMenu.Show(pictureBox1, e.Location);
 					  pictureBox1.ContextMenu.MenuItems[0].Checked = pictureBox1.ContextMenu.MenuItems[1].Checked = false;
@@ -1932,7 +1940,7 @@ namespace ORTS.Debugging
 		  var type = boxSetSwitch.SelectedIndex;
 
 		  //aider can send message to the server for a switch
-		  if (MultiPlayer.MPManager.Instance().AmAider)
+		  if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.Instance().AmAider)
 		  {
 			  var nextSwitchTrack = sw;
 			  var Selected = 0;

@@ -323,7 +323,7 @@ namespace ORTS
                 */
 				if (Activity == null || MultiPlayer.MPManager.IsMultiPlayer())
                 {
-                    AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
+                    if (train == PlayerLocomotive.Train) AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
                 }
             }
 

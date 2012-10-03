@@ -135,7 +135,7 @@ namespace ORTS
 		}
 		public TrainCar LeadLocomotive
 		{
-			get { return LeadLocomotiveIndex >= 0 ? Cars[LeadLocomotiveIndex] : null; }
+			get { return LeadLocomotiveIndex >= 0 && LeadLocomotiveIndex < Cars.Count() ? Cars[LeadLocomotiveIndex] : null; }
 			set
 			{
 				LeadLocomotiveIndex = -1;
