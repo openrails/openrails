@@ -148,7 +148,7 @@ namespace ORTS
             : this(tSectionDat, trackNodes)
         {
             for (var tni = 0; tni < TrackNodes.Length; tni++)
-                if (InitTrackNode(tni, tileX, tileZ, x, z) == null)
+                if (InitTrackNode(tni, tileX, tileZ, x, z))
                     return;
             throw new InvalidDataException(String.Format("{0} could not be found in the track database.", new WorldLocation(tileX, tileZ, x, 0, z)));
         }
@@ -185,9 +185,8 @@ namespace ORTS
             if (startTrackNode.TrVectorNode.TrVectorSections == null) throw new ArgumentException("Track node has no vector section data.", "startTrackNode");
             if (startTrackNode.TrVectorNode.TrVectorSections.Length == 0) throw new ArgumentException("Track node has no vector sections.", "startTrackNode");
             var tvs = startTrackNode.TrVectorNode.TrVectorSections[0];
-            var error = InitTrackNode(startTrackNodeIndex, tvs.TileX, tvs.TileZ, tvs.X, tvs.Z);
-            if (error != null)
-                throw error;
+            if (!InitTrackNode(startTrackNodeIndex, tvs.TileX, tvs.TileZ, tvs.X, tvs.Z))
+                throw new InvalidDataException(String.Format("Track node {0} could not be found in the track database.", startTrackNode.UiD));
         }
 
         /// <summary>
@@ -206,25 +205,27 @@ namespace ORTS
             if (startTrackNode == null) throw new ArgumentNullException("startTrackNode");
             var startTrackNodeIndex = Array.IndexOf(trackNodes, startTrackNode);
             if (startTrackNodeIndex == -1) throw new ArgumentException("Track node is not in track nodes array.", "startTrackNode");
-            var error = InitTrackNode(startTrackNodeIndex, tileX, tileZ, x, z);
-            var errorLength = error as TravellerBeyondTrackLengthException;
-            if (errorLength != null)
+            if (!InitTrackNode(startTrackNodeIndex, tileX, tileZ, x, z))
             {
-                Trace.WriteLine(error);
                 if (startTrackNode.TrVectorNode == null) throw new ArgumentException("Track node is not a vector node.", "startTrackNode");
                 if (startTrackNode.TrVectorNode.TrVectorSections == null) throw new ArgumentException("Track node has no vector section data.", "startTrackNode");
                 if (startTrackNode.TrVectorNode.TrVectorSections.Length == 0) throw new ArgumentException("Track node has no vector sections.", "startTrackNode");
                 var tvs = startTrackNode.TrVectorNode.TrVectorSections[0];
-                error = InitTrackNode(startTrackNodeIndex, tvs.TileX, tvs.TileZ, tvs.X, tvs.Z);
-                if (error == null && errorLength.Distance > errorLength.Length / 2)
+                if (!InitTrackNode(startTrackNodeIndex, tvs.TileX, tvs.TileZ, tvs.X, tvs.Z))
+                    throw new InvalidDataException(String.Format("Track node {0} could not be found in the track database.", startTrackNode.UiD));
+
+                // Figure out which end of the track node is closest and use that.
+                var target = new WorldLocation(tileX, tileZ, x, 0, z);
+                var startDistance = WorldLocation.GetDistance2D(WorldLocation, target).Length();
+                Direction = TravellerDirection.Backward;
+                NextTrackVectorSection(startTrackNode.TrVectorNode.TrVectorSections.Length - 1);
+                var endDistance = WorldLocation.GetDistance2D(WorldLocation, target).Length();
+                if (startDistance < endDistance)
                 {
-                    Direction = TravellerDirection.Backward;
-                    NextTrackVectorSection(startTrackNode.TrVectorNode.TrVectorSections.Length - 1);
                     Direction = TravellerDirection.Forward;
+                    NextTrackVectorSection(0);
                 }
             }
-            if (error != null)
-                throw error;
         }
 
         /// <summary>
@@ -303,41 +304,40 @@ namespace ORTS
                 outf.Write(TrackVectorSectionIndex);
         }
 
-        Exception InitTrackNode(int tni, int tileX, int tileZ, float wx, float wz)
+        bool InitTrackNode(int tni, int tileX, int tileZ, float wx, float wz)
         {
             TrackNodeIndex = tni;
             trackNode = TrackNodes[TrackNodeIndex];
             if (trackNode == null || trackNode.TrVectorNode == null)
-                return new TravellerInvalidDataException("{0} track node {1} is invalid", ToString(), tni);
+                return false;
             // TODO, we could do an additional cull here by calculating a bounding sphere for each node as they are being read.
-            Exception error = null;
             for (var tvsi = 0; tvsi < trackNode.TrVectorNode.TrVectorSections.Length; tvsi++)
-                if ((error = InitTrackVectorSection(tvsi, tileX, tileZ, wx, wz)) == null)
-                    return null;
-            return error;
+                if (InitTrackVectorSection(tvsi, tileX, tileZ, wx, wz))
+                    return true;
+            return false;
         }
 
-        Exception InitTrackVectorSection(int tvsi, int tileX, int tileZ, float x, float z)
+        bool InitTrackVectorSection(int tvsi, int tileX, int tileZ, float x, float z)
         {
             TrackVectorSectionIndex = tvsi;
             trackVectorSection = trackNode.TrVectorNode.TrVectorSections[TrackVectorSectionIndex];
             if (trackVectorSection == null)
-                return new TravellerInvalidDataException("{0} track vector section {1} is invalid", ToString(), tvsi);
+                return false;
             return InitTrackSection(trackVectorSection.SectionIndex, tileX, tileZ, x, z);
         }
 
-        Exception InitTrackSection(uint tsi, int tileX, int tileZ, float x, float z)
+        bool InitTrackSection(uint tsi, int tileX, int tileZ, float x, float z)
         {
             trackSection = TSectionDat.TrackSections.Get(tsi);
             if (trackSection == null)
-                return new TravellerInvalidDataException("{0} track section {1} is invalid", ToString(), tsi);
+                return false;
             if (trackSection.SectionCurve != null)
                 return InitTrackSectionCurved(tileX, tileZ, x, z);
             return InitTrackSectionStraight(tileX, tileZ, x, z);
         }
 
         // TODO: Add y component.
-        Exception InitTrackSectionCurved(int tileX, int tileZ, float x, float z)
+        bool InitTrackSectionCurved(int tileX, int tileZ, float x, float z)
         {
             // We're working relative to the track section, so offset as needed.
             x += (tileX - trackVectorSection.TileX) * 2048;
@@ -351,7 +351,7 @@ namespace ORTS
             var dx = Math.Abs(x - sx);
             var dz = Math.Abs(z - sz);
             if (dx > boundingDistance || dz > boundingDistance)
-                return new TravellerOutsideBoundingAreaException(tileX, tileZ, x, 0, z, trackVectorSection, boundingDistance, dx, dz);
+                return false;
 
             // To simplify the math, center around the start of the track section, rotate such that the track section starts out pointing north (+z) and flip so the track curves to the right.
             x -= sx;
@@ -364,26 +364,26 @@ namespace ORTS
             dx = x - trackSection.SectionCurve.Radius;
             var lat = Math.Sqrt(dx * dx + z * z) - trackSection.SectionCurve.Radius;
             if (Math.Abs(lat) > MaximumCenterlineOffset)
-                return new TravellerOutsideCenterlineException(tileX, tileZ, x, 0, z, trackVectorSection, MaximumCenterlineOffset, (float)Math.Abs(lat));
+                return false;
 
             // Compute distance along curve (ensure we are in the top right quadrant, otherwise our math goes wrong).
             if (z < -InitErrorMargin || x > trackSection.SectionCurve.Radius + InitErrorMargin || z > trackSection.SectionCurve.Radius + InitErrorMargin)
-                return new TravellerInvalidDataException("{0} not within {3} of ??? of track node {1} at {2}", new WorldLocation(tileX, tileZ, x, 0, z), ToString(), new WorldLocation(trackVectorSection.TileX, trackVectorSection.TileZ, trackVectorSection.X, trackVectorSection.Y, trackVectorSection.Z), InitErrorMargin);
+                return false;
             var radiansAlongCurve = (float)Math.Asin(z / trackSection.SectionCurve.Radius);
             var lon = radiansAlongCurve * trackSection.SectionCurve.Radius;
             var trackSectionLength = GetLength(trackSection);
             if (lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)
-                return new TravellerBeyondTrackLengthException(tileX, tileZ, x, 0, z, trackVectorSection, InitErrorMargin, trackSectionLength, lon);
+                return false;
 
             direction = TravellerDirection.Forward;
             trackOffset = 0;
             locationSet = lengthSet = false;
             MoveInTrackSectionCurved(lon);
-            return null;
+            return true;
         }
 
         // TODO: Add y component.
-        Exception InitTrackSectionStraight(int tileX, int tileZ, float x, float z)
+        bool InitTrackSectionStraight(int tileX, int tileZ, float x, float z)
         {
             // We're working relative to the track section, so offset as needed.
             x += (tileX - trackVectorSection.TileX) * 2048;
@@ -397,22 +397,22 @@ namespace ORTS
             var dx = Math.Abs(x - sx);
             var dz = Math.Abs(z - sz);
             if (dx > boundingDistance || dz > boundingDistance)
-                return new TravellerOutsideBoundingAreaException(tileX, tileZ, x, 0, z, trackVectorSection, boundingDistance, dx, dz);
+                return false;
 
             // Calculate distance along and away from the track centerline.
             float lat, lon;
             M.Survey(sx, sz, trackVectorSection.AY, x, z, out lon, out lat);
             var trackSectionLength = GetLength(trackSection);
             if (Math.Abs(lat) > MaximumCenterlineOffset)
-                return new TravellerOutsideCenterlineException(tileX, tileZ, x, 0, z, trackVectorSection, MaximumCenterlineOffset, (float)Math.Abs(lat));
+                return false;
             if (lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)
-                return new TravellerBeyondTrackLengthException(tileX, tileZ, x, 0, z, trackVectorSection, InitErrorMargin, trackSectionLength, lon);
+                return false;
 
             direction = TravellerDirection.Forward;
             trackOffset = 0;
             locationSet = lengthSet = false;
             MoveInTrackSectionStraight(lon);
-            return null;
+            return true;
         }
 
         void Copy(Traveller copy)
@@ -536,7 +536,7 @@ namespace ORTS
                     if (traveller.TN == trackNode || trackNode == null)
                     {
                         var direction = traveller.Direction == TravellerDirection.Forward ? 1 : -1;
-                        if ((traveller.IsTrackCurved && traveller.InitTrackSectionCurved(tileX, tileZ, x, z) == null) || (!traveller.IsTrackCurved && traveller.InitTrackSectionStraight(tileX, tileZ, x, z) == null))
+                        if ((traveller.IsTrackCurved && traveller.InitTrackSectionCurved(tileX, tileZ, x, z)) || (!traveller.IsTrackCurved && traveller.InitTrackSectionStraight(tileX, tileZ, x, z)))
                         {
                             // If the new offset is EARLIER, the target is behind us!
                             if (traveller.trackOffset * direction < initialOffset * direction)
