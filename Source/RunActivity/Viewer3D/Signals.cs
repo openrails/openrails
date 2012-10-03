@@ -83,14 +83,14 @@ namespace ORTS
                 var signalAndHead = viewer.Simulator.Signals.FindByTrItem(mstsSignal.SignalUnits.Units[i].TrItem);
                 if (!signalAndHead.HasValue)
                 {
-                    Trace.TraceWarning("{0} signal {1} unit {2} has invalid TrItem {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].TrItem);
+                    Trace.TraceWarning("Skipped {0} signal {1} unit {2} with invalid TrItem {3}", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].TrItem);
                     continue;
                 }
                 // Get the signal sub-object for this unit (head).
                 var mstsSignalSubObj = mstsSignalShape.SignalSubObjs[mstsSignal.SignalUnits.Units[i].SubObj];
                 if (mstsSignalSubObj.SignalSubType != 1) // SIGNAL_HEAD
                 {
-                    Trace.TraceWarning("{0} signal {1} unit {2} has invalid SubObj {3}.", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].SubObj);
+                    Trace.TraceWarning("Skipped {0} signal {1} unit {2} with invalid SubObj {3}", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].SubObj);
                     continue;
                 }
                 SignalObject = signalAndHead.Value.Key;
@@ -102,7 +102,7 @@ namespace ORTS
                 }
                 catch (InvalidDataException error)
                 {
-                    Trace.WriteLine(error);
+                    Trace.TraceWarning(error.Message);
                 }
 #if DEBUG_SIGNAL_SHAPES
 				Console.WriteLine();
@@ -162,10 +162,10 @@ namespace ORTS
                 SignalHead = signalHead;
                 MatrixIndex = signalShape.SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName);
                 if (MatrixIndex == -1)
-                    throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid sub-object node-name {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName));
+                    throw new InvalidDataException(String.Format("Skipped {0} signal {1} unit {2} with sub-object {3} which is missing from shape {4}", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName, signalShape.SharedShape.FilePath));
 
                 if (!viewer.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
-                    throw new InvalidDataException(String.Format("{0} signal {1} unit {2} has invalid SigSubSType {3}.", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
+                    throw new InvalidDataException(String.Format("Skipped {0} signal {1} unit {2} with SigSubSType {3} which is not defined in SignalTypes", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
                 var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
 
                 SemaphoreInfo = mstsSignalType.SemaphoreInfo;

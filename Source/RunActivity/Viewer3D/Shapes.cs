@@ -663,7 +663,7 @@ namespace ORTS
         public bool HasNightSubObj;
 
         readonly Viewer3D Viewer;
-        readonly string FilePath;
+        public readonly string FilePath;
 
         /// <summary>
         /// Create an empty shape used as a sub when the shape won't load
