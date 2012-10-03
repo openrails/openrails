@@ -53,7 +53,6 @@ namespace ORTS
         static ORTraceListener ORTraceListener;
 #if DEBUG_VIEWER
         public static Debugging.DispatchViewer DebugViewer;
-        public static bool DebugViewerEnabled = false;
 #endif
 
         /// <summary>
@@ -151,7 +150,7 @@ namespace ORTS
 				}
 
 #if DEBUG_VIEWER
-                if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
+                if (MPManager.IsMultiPlayer() && Viewer.Settings.ViewDispatcher)
                 {
                     // prepare to show debug output in a separate window
                     DebugViewer = new DispatchViewer(Simulator, Viewer);
@@ -159,6 +158,11 @@ namespace ORTS
                     DebugViewer.Hide();
                     Viewer.DebugViewerEnabled = false;
                 }
+				else if (MPManager.IsMultiPlayer())
+				{
+					MPManager.Instance().HandleDispatcherWindow(Simulator, Viewer);
+
+				}
 #endif
 
                 Viewer.Run(null);
@@ -166,7 +170,7 @@ namespace ORTS
                 Simulator.Stop();
 
 #if DEBUG_VIEWER
-				if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher) DebugViewer.Dispose();
+				if (MPManager.IsMultiPlayer() && Viewer.Settings.ViewDispatcher) DebugViewer.Dispose();
 #endif
             };
             if (Debugger.IsAttached)

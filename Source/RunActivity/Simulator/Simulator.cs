@@ -563,7 +563,7 @@ namespace ORTS
 			// otherwise we are coming in on the trailing side of the switch
 			// so line it up for the correct route
 			if (PlayerLocomotive != null && train == PlayerLocomotive.Train
-				&& MPManager.IsMultiPlayer() && !MPManager.IsServer())
+				&& MPManager.IsMultiPlayer() && !MPManager.IsServer() && MPManager.Instance().TrySwitch)
 			{
 				MPManager.Notify((new MSGSwitch(MPManager.GetUserName(),
 					nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, traveller.JunctionEntryPinIndex - 1, true)).ToString());

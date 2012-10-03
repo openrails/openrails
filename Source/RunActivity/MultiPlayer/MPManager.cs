@@ -65,6 +65,10 @@ namespace ORTS.MultiPlayer
 		public bool AmAider = false; //am I aiding the dispatcher?
 		public List<string> aiderList;
 		public bool NotServer = true;
+		static DispatchViewer DispatcherWindow;
+		Simulator Simulator;
+		Viewer3D Viewer;
+
 		public void AddUncoupledTrains(Train t)
 		{
 			lock (uncoupledTrains)
@@ -113,6 +117,7 @@ namespace ORTS.MultiPlayer
 			addedTrains = new List<Train>();
 			removedTrains = new List<Train>();
 			aiderList = new List<string>();
+			if (Program.Server != null) NotServer = false;
 		}
 		public static MPManager Instance()
 		{
@@ -334,9 +339,12 @@ namespace ORTS.MultiPlayer
 
 		}
 
+		public static bool Stopped = false;
 		//nicely shutdown listening threads, and notify the server/other player
 		static public void Stop()
 		{
+			if (DispatcherWindow != null) DispatcherWindow.Visible = false;
+			Stopped = true;
 			if (Program.Client != null && Program.Server == null)
 			{
 				Program.Client.Send((new MSGQuit(GetUserName())).ToString()); //client notify server
@@ -350,7 +358,6 @@ namespace ORTS.MultiPlayer
 				if (Program.Server.ServerComm != null) Program.Server.Stop();
 				if (Program.Client != null) Program.Client.Stop();
 			}
-			
 		}
 
 		//when two player trains connected, require decouple at speed 0.
@@ -640,6 +647,34 @@ namespace ORTS.MultiPlayer
 
 		}
 
+		public void HandleDispatcherWindow(Simulator simulator, Viewer3D viewer)
+		{
+			Simulator = simulator;
+			Viewer = viewer;
+			Thread t = new Thread(StartDispatcher);
+			t.Start();
+		}
+
+		void StartDispatcher()
+		{
+			DispatcherWindow = new DispatchViewer(Simulator, Viewer);
+			DispatcherWindow.Show();
+			DispatcherWindow.Hide();
+			while (MPManager.Stopped != true)
+			{
+				if (Viewer.DebugViewerEnabled == true)
+				{
+					if (DispatcherWindow.Visible != true) DispatcherWindow.ShowDialog();
+					DispatcherWindow.Visible = true;
+				}
+				else
+				{
+					DispatcherWindow.Hide();
+				}
+				Thread.Sleep(100);
+			}
+			DispatcherWindow.Dispose();
+		}
 		public TrainCar SubCar(string wagonFilePath, int length, TrainCar previousCar)
 		{
 			System.Console.WriteLine("Will substitute with your existing stocks\n.");

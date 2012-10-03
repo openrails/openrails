@@ -1490,6 +1490,8 @@ namespace ORTS.Debugging
 	   private ItemWidget findItemFromMouse(int x, int y, int range)
 	  {
 		  if (range < 5) range = 5;
+		  double closest = 100f;
+		  ItemWidget closestItem = null;
 		  if (chkPickSwitches.Checked == true)
 		  {
 			  foreach (var item in switchItemsDrawn)
@@ -1498,9 +1500,17 @@ namespace ORTS.Debugging
 				  if (item.Location2D.X < x - range || item.Location2D.X > x + range
 					 || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
 
-				  if (true/*item != switchPickedItem*/) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; }
-				  return item;
+				  if (closestItem != null)
+				  {
+					  var dist = Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2) + Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2);
+					  if (dist < closest)
+					  {
+						  closest = dist; closestItem = item;
+					  }
+				  }
+				  else closestItem = item;
 			  }
+			  if (closestItem != null) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; return closestItem; }
 		  }
 		  if (chkPickSignals.Checked == true)
 		  {
@@ -1510,9 +1520,17 @@ namespace ORTS.Debugging
 				  if (item.Location2D.X < x - range || item.Location2D.X > x + range
 					 || item.Location2D.Y < y - range || item.Location2D.Y > y + range) continue;
 
-				  if (true/*item != signalPickedItem*/) { signalPickedItemChanged = true; signalPickedItemHandled = false; signalPickedTime = simulator.GameTime; }
-				  return item;
+				  if (closestItem != null)
+				  {
+					  var dist = Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2) + Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2);
+					  if (dist < closest)
+					  {
+						  closest = dist; closestItem = item;
+					  }
+				  }
+				  else closestItem = item;
 			  }
+			  if (closestItem != null) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; return closestItem; }
 		  }
 		  return null;
 	  }
@@ -1555,6 +1573,8 @@ namespace ORTS.Debugging
 					  messages.Items.RemoveAt(0);
 				  }
 				  messages.Items.Add(msg);
+				  messages.SelectedIndex = messages.Items.Count - 1;
+				  messages.SelectedIndex = -1;
 				  break;
 			  }
 			  catch { count++; }

@@ -1498,8 +1498,8 @@ namespace ORTS
 				if (to == Program.Simulator.TDB.TrackDB.TrackNodes[sw.TrPins[i + sw.Inpins].Link])
 				{
 					//multiplayer mode will do some message to the server
-					if (Simulator.PlayerLocomotive != null && train == Simulator.PlayerLocomotive.Train 
-						&& MPManager.IsMultiPlayer() && !MPManager.IsServer())
+					if (Simulator.PlayerLocomotive != null && train == Simulator.PlayerLocomotive.Train
+						&& MPManager.IsMultiPlayer() && !MPManager.IsServer() && MPManager.Instance().TrySwitch)
 					{
 						MPManager.Notify((new MSGSwitch(MPManager.GetUserName(),
 							sw.TrJunctionNode.TN.UiD.TileX, sw.TrJunctionNode.TN.UiD.TileZ, sw.TrJunctionNode.TN.UiD.WorldID, sw.TrJunctionNode.SelectedRoute, true)).ToString());

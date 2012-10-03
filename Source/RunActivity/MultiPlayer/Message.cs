@@ -1257,6 +1257,7 @@ namespace ORTS.MultiPlayer
 				if (Program.Server != null) return; //already a server, not need to worry
 				Program.Client.Connected = true;
 				MPManager.Instance().NotServer = false;
+				MPManager.Instance().RememberOriginalSwitchState();
 				System.Console.WriteLine("You are the new dispatcher, enjoy");
 				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("You are the new dispatcher, enjoy");
 				//System.Console.WriteLine(this.ToString());

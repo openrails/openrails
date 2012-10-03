@@ -42,6 +42,7 @@ namespace ORTS
         WorldLatLon worldLoc = null; // Access to latitude and longitude calcs (MSTS routes only)
         SunMoonPos skyVectors;
 
+		int seasonType; //still need to remember it as MP now can change it.
         #region Class variables
         // Latitude of current route in radians. -pi/2 = south pole, 0 = equator, pi/2 = north pole.
         // Longitude of current route in radians. -pi = west of prime, 0 = prime, pi = east of prime.
@@ -92,7 +93,7 @@ namespace ORTS
             skyVectors = new SunMoonPos();
 
             // Set default values
-            var seasonType = (int)Viewer.Simulator.Season;
+            seasonType = (int)Viewer.Simulator.Season;
             date.ordinalDate = 82 + seasonType * 91;
             // TODO: Set the following three externally from ORTS route files (future)
             date.month = 1 + date.ordinalDate / 30;
@@ -109,6 +110,15 @@ namespace ORTS
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+			if (seasonType != (int)Viewer.Simulator.Season)
+			{
+				seasonType = (int)Viewer.Simulator.Season;
+				date.ordinalDate = 82 + seasonType * 91;
+				// TODO: Set the following three externally from ORTS route files (future)
+				date.month = 1 + date.ordinalDate / 30;
+				date.day = 21;
+				date.year = 2010;
+			}
             // Adjust dome position so the bottom edge is not visible
 			Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y - 100, -Viewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);

@@ -139,7 +139,7 @@ namespace ORTS
         public static bool IsMouseRightButtonDown() { return MouseState.RightButton == ButtonState.Pressed; }
         public static bool IsMouseRightButtonPressed() { return MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released; }
         public static bool IsMouseRightButtonReleased() { return MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed; }
-
+		public static int MouseWheelScrolled() { return MouseState.ScrollWheelValue; }
     }
 
 

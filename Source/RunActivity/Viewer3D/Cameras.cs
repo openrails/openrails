@@ -27,6 +27,7 @@ namespace ORTS
         public int TileZ { get { return cameraLocation.TileZ; } }
         public Vector3 Location { get { return cameraLocation.Location; } }
         public WorldLocation CameraWorldLocation { get { return cameraLocation; } }
+		public int MouseScrollValue = 0;
 
         protected Matrix xnaView;
         public Matrix XNAView { get { return xnaView; } }
@@ -374,6 +375,14 @@ namespace ORTS
             if (UserInput.IsDown(UserCommands.CameraPanOut))
                 movement.Z -= speed * axisZSpeedBoost;
 
+			//mouse scrolling
+			var scrolledValue = UserInput.MouseWheelScrolled() - this.MouseScrollValue;
+			this.MouseScrollValue += scrolledValue;
+			if (scrolledValue != 0 && !Viewer.HelpWindow.Visible) //will not zoom-in-out when help windows is up
+			{
+				if (scrolledValue > 0) movement.Z += speed * axisZSpeedBoost * 100;
+				else movement.Z -= speed * axisZSpeedBoost * 100;
+			}
             movement = Vector3.Transform(movement, Matrix.CreateRotationX(rotationXRadians));
             movement = Vector3.Transform(movement, Matrix.CreateRotationY(rotationYRadians));
             cameraLocation.Location += movement;
@@ -410,7 +419,7 @@ namespace ORTS
         {
             base.HandleUserInput(elapsedTime);
 
-            if (UserInput.IsDown(UserCommands.CameraPanIn) || UserInput.IsDown(UserCommands.CameraPanOut))
+            if (UserInput.IsDown(UserCommands.CameraPanIn) || UserInput.IsDown(UserCommands.CameraPanOut) || UserInput.MouseWheelScrolled() - this.MouseScrollValue != 0)
             {
                 var elevation = Viewer.Tiles.GetElevation(cameraLocation);
                 if (cameraLocation.Location.Y < elevation)
@@ -860,6 +869,7 @@ namespace ORTS
 
         protected override void OnActivate(bool sameCamera)
         {
+			MouseScrollValue = UserInput.MouseWheelScrolled();
 			if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain)
             {
                 if (Front)
@@ -912,6 +922,16 @@ namespace ORTS
                 if (positionDistance > 100) positionDistance = 100;
             }
 
+			//mouse scrolling
+			var scrolledValue = UserInput.MouseWheelScrolled() - this.MouseScrollValue;
+			this.MouseScrollValue += scrolledValue;
+			if (scrolledValue != 0 && !Viewer.HelpWindow.Visible) //will not zoom-in-out when help windows is up
+			{
+				if (scrolledValue>0) positionDistance -= speed * positionDistance / 2;
+				else positionDistance += speed * positionDistance / 2;
+				if (positionDistance < 1) positionDistance = 1;
+				if (positionDistance > 100) positionDistance = 100;
+			}
             base.HandleUserInput(elapsedTime);            
 
             attachedLocation.X = 0;
