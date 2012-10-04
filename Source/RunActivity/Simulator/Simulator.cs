@@ -354,9 +354,10 @@ namespace ORTS
 				RailDriver.Update(PlayerLocomotive);
 			}
 
-			InterlockingSystem.Update(elapsedClockSeconds);
+			//client will not do interlocking
+			if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) InterlockingSystem.Update(elapsedClockSeconds);
 
-			if (MultiPlayer.MPManager.IsMultiPlayer()) MultiPlayer.MPManager.Instance().Update(GameTime);
+			if (MPManager.IsMultiPlayer()) MPManager.Instance().Update(GameTime);
 
 		}
 

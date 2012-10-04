@@ -2135,8 +2135,8 @@ namespace ORTS
                                     }
                                     else
                                     {
-										/*if (MultiPlayer.MPManager.IsMultiPlayer()) enabled = true;
-										else*/ enabled = false;
+										if (MultiPlayer.MPManager.IsMultiPlayer()) enabled = true;
+										else enabled = false;
                                     }
                                 }
   // update all heads
@@ -2392,7 +2392,6 @@ namespace ORTS
 
                 public SignalType signalType = null;    // from sigcfg file
                 public SIGASP state = SIGASP.STOP;
-				//public SIGASP state { get { return state1; } set { state1 = value; } }
 				public int draw_state;
                 public int trItemIndex;                 // Index to trItem   
                 public uint TrackJunctionNode;          // Track Junction Node (= 0 if not set)

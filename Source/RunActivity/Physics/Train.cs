@@ -673,11 +673,11 @@ namespace ORTS
 				//Orient();
 				if (MPManager.IsServer())
 				{
-					if (this.NextSignalObject != null && this.NextSignalObject.canUpdate)
+/*					if (this.NextSignalObject != null && this.NextSignalObject.canUpdate)
 					{
-						Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);
+						Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);*/
 						UpdateSignalState();
-					}
+/*					}*/
 				}
 				return;
 			}
@@ -1815,8 +1815,6 @@ namespace ORTS
 			foreach (TrainCar car in Cars)
 				car.DistanceM += Math.Abs(car.SpeedMpS * elapsedTime);
 		}
-
-
 
 
 

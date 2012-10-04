@@ -2352,7 +2352,7 @@ namespace ORTS.MultiPlayer
 	public class MSGSignalStatus : Message
 	{
 		static byte[] preState;
-		static SortedList<int, SignalHead> signals;
+		static SortedList<long, SignalHead> signals;
 		public bool OKtoSend = false;
 		static byte[] signalsStates;
 		int readed;
@@ -2362,7 +2362,7 @@ namespace ORTS.MultiPlayer
 			var i = 0;
 			if (signals == null)
 			{
-				signals = new SortedList<int, SignalHead>();
+				signals = new SortedList<long, SignalHead>();
 				if (Program.Simulator.Signals.SignalObjects != null)
 				{
 					foreach (var s in Program.Simulator.Signals.SignalObjects)
@@ -2371,7 +2371,7 @@ namespace ORTS.MultiPlayer
 							foreach (var h in s.SignalHeads)
 							{
 								//System.Console.WriteLine(h.TDBIndex);
-								signals.Add(h.TDBIndex * 1000 + h.trItemIndex, h);
+								signals.Add(h.TDBIndex * 100000 + h.trItemIndex, h);
 							}
 					}
 				}
@@ -2410,7 +2410,7 @@ namespace ORTS.MultiPlayer
 		{
 			if (signals == null)
 			{
-				signals = new SortedList<int, SignalHead>();
+				signals = new SortedList<long, SignalHead>();
 				try
 				{
 					if (Program.Simulator.Signals.SignalObjects != null)
@@ -2421,7 +2421,7 @@ namespace ORTS.MultiPlayer
 								foreach (var h in s.SignalHeads)
 								{
 									//System.Console.WriteLine(h.TDBIndex);
-									signals.Add(h.TDBIndex * 1000 + h.trItemIndex, h);
+									signals.Add(h.TDBIndex * 100000 + h.trItemIndex, h);
 								}
 						}
 					}
