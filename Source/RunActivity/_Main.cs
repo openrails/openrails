@@ -150,7 +150,7 @@ namespace ORTS
 				}
 
 #if DEBUG_VIEWER
-                if (MPManager.IsMultiPlayer() && Viewer.Settings.ViewDispatcher)
+                if (!MPManager.IsMultiPlayer() && Viewer.Settings.ViewDispatcher)
                 {
                     // prepare to show debug output in a separate window
                     DebugViewer = new DispatchViewer(Simulator, Viewer);
@@ -170,7 +170,8 @@ namespace ORTS
                 Simulator.Stop();
 
 #if DEBUG_VIEWER
-				if (MPManager.IsMultiPlayer() && Viewer.Settings.ViewDispatcher) DebugViewer.Dispose();
+				if (!MPManager.IsMultiPlayer() && Viewer.Settings.ViewDispatcher) 
+					if (DebugViewer != null && !DebugViewer.IsDisposed) DebugViewer.Dispose();
 #endif
             };
             if (Debugger.IsAttached)

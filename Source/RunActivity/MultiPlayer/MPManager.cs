@@ -185,12 +185,12 @@ namespace ORTS.MultiPlayer
 			if (NotServer == true && Program.Server != null) //I was a server, but no longer
 			{
 				Program.Server = null;
-				Program.DebugViewer.firstShow = true;
+				if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
 			}
 			else if (NotServer == false && Program.Server == null) //I am declared the server
 			{
 				Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
-				Program.DebugViewer.firstShow = true;
+				if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
 			}
 			//get key strokes and determine if some messages should be sent
 			handleUserInput();

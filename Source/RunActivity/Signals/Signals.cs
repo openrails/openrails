@@ -2135,8 +2135,8 @@ namespace ORTS
                                     }
                                     else
                                     {
-										if (MultiPlayer.MPManager.IsMultiPlayer()) enabled = true;
-										else enabled = false;
+										/*if (MultiPlayer.MPManager.IsMultiPlayer()) enabled = true;
+										else*/ enabled = false;
                                     }
                                 }
   // update all heads
@@ -2773,7 +2773,7 @@ namespace ORTS
                                         if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
                                         {
                                                 signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
-                                                signalObjects[rearSigRef].Update();
+                                                if ( !MultiPlayer.MPManager.IsClient()) signalObjects[rearSigRef].Update();
                                         }
                                 }
                         }
@@ -2785,7 +2785,7 @@ namespace ORTS
                                         if (prevSigRef >= 0)
                                         {
                                             signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
-                                            signalObjects[prevSigRef].Update();
+											if (!MultiPlayer.MPManager.IsClient()) signalObjects[prevSigRef].Update();
                                         }
                                 }
                         }
@@ -2805,7 +2805,7 @@ namespace ORTS
                                                 if (prevSigRef > 0)
                                                 {
                                                     signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
-                                                    signalObjects[prevSigRef].Update();
+													if (!MultiPlayer.MPManager.IsClient()) signalObjects[prevSigRef].Update();
                                                 }
                                         }
                                 }
@@ -2822,14 +2822,14 @@ namespace ORTS
                                         if (prevSigRef >= 0)
                                         {
                                             signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
-                                            signalObjects[prevSigRef].Update();
+											if (!MultiPlayer.MPManager.IsClient()) signalObjects[prevSigRef].Update();
                                         }
 
                                         rearSigRef = signals.FindNextSignal(rearTDBTraveller);
                                         if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
                                         {
                                                 signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
-                                                signalObjects[rearSigRef].Update();
+												if (!MultiPlayer.MPManager.IsClient()) signalObjects[rearSigRef].Update();
                                         }
                                 }
 
