@@ -64,7 +64,7 @@ namespace MSTS
                     TrackNodes = new TrackNode[count + 1];
                     int idx = 1;
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("tracknode", ()=>{ TrackNodes[idx] = new TrackNode(stf, idx); ++idx; }),
+                        new STFReader.TokenProcessor("tracknode", ()=>{ TrackNodes[idx] = new TrackNode(stf, idx, count); ++idx; }),
                     });
                 }),
                 new STFReader.TokenProcessor("tritemtable", ()=>{
@@ -103,7 +103,7 @@ namespace MSTS
 
     public class TrackNode
     {
-        public TrackNode(STFReader stf, int idx)
+        public TrackNode(STFReader stf, int idx, int count)
         {
             stf.MustMatch("(");
             Index = stf.ReadUInt(STFReader.UNITS.None, null);
@@ -121,7 +121,7 @@ namespace MSTS
                     for (int i = 0; i < Inpins + Outpins; ++i)
                     {
                         stf.MustMatch("TrPin");
-                        TrPins[i] = new TrPin(stf);
+                        TrPins[i] = new TrPin(stf, count);
                     }
                     stf.SkipRestOfBlock();
                 }),
@@ -157,11 +157,13 @@ namespace MSTS
     [DebuggerDisplay("\\{MSTS.TrPin\\} Link={Link}, Dir={Direction}")]
     public class TrPin
     {
-        public TrPin(STFReader stf)
+        public TrPin(STFReader stf, int count)
         {
             stf.MustMatch("(");
             Link = stf.ReadInt(STFReader.UNITS.None, null);
             Direction = stf.ReadInt(STFReader.UNITS.None, null);
+            if (Link <= 0 || Link > count)
+                STFException.TraceWarning(stf, String.Format("Track node pin has invalid link {0}", Link));
             stf.SkipRestOfBlock();
         }
         public int Link;
