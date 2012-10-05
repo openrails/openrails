@@ -595,7 +595,7 @@ namespace ORTS
             if (pin < 0 || pin >= trackNode.TrPins.Length)
                 return false;
             var trPin = trackNode.TrPins[pin];
-            if (trPin.Link < 0 || trPin.Link >= TrackNodes.Length)
+            if (trPin.Link < 0 || trPin.Link >= TrackNodes.Length || TrackNodes[trPin.Link] == null)
                 return false;
 
             direction = trPin.Direction > 0 ? TravellerDirection.Forward : TravellerDirection.Backward;
@@ -657,6 +657,8 @@ namespace ORTS
             {
                 // We're on a junction or end node. Use one of the links to get location and direction information.
                 var pin = trackNode.TrPins[0];
+                if (pin.Link < 0 || pin.Link >= TrackNodes.Length || TrackNodes[pin.Link] == null)
+                    return;
                 tn = TrackNodes[pin.Link];
                 tvs = tn.TrVectorNode.TrVectorSections[pin.Direction > 0 ? 0 : tn.TrVectorNode.TrVectorSections.Length - 1];
                 ts = TSectionDat.TrackSections.Get(tvs.SectionIndex);

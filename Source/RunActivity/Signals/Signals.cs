@@ -1724,7 +1724,7 @@ namespace ORTS
                 {
                     try
                     {
-                        if (trackNodes[node].TrVectorNode != null)
+                        if (trackNodes[node] != null && trackNodes[node].TrVectorNode != null)
                         {
                             if (direction == 0)
                             {
@@ -1739,7 +1739,7 @@ namespace ORTS
                                 node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
                             }
                         }
-                        else if (trackNodes[node].TrJunctionNode != null)
+                        else if (trackNodes[node] != null && trackNodes[node].TrJunctionNode != null)
                         {
                             if (direction == 0)
                             {
