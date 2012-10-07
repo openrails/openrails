@@ -266,10 +266,12 @@
 		  this.boxSetSwitch.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 		  this.boxSetSwitch.FormattingEnabled = true;
 		  this.boxSetSwitch.ItemHeight = 20;
+		  this.boxSetSwitch.Items.Add("To Main Route");
+		  this.boxSetSwitch.Items.Add("To Side Route");
 		  this.boxSetSwitch.Location = new System.Drawing.Point(398, 205);
-		  this.boxSetSwitch.MinimumSize = new System.Drawing.Size(120, 40);
+		  this.boxSetSwitch.MinimumSize = new System.Drawing.Size(120, 50);
 		  this.boxSetSwitch.Name = "boxSetSwitch";
-		  this.boxSetSwitch.Size = new System.Drawing.Size(125, 40);
+		  this.boxSetSwitch.Size = new System.Drawing.Size(125, 50);
 		  this.boxSetSwitch.TabIndex = 26;
 		  this.boxSetSwitch.Visible = false;
 		  this.boxSetSwitch.SelectedIndexChanged += new System.EventHandler(this.boxSetSwitchChosen);

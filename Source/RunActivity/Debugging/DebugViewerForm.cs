@@ -163,8 +163,6 @@ namespace ORTS.Debugging
 		 boxSetSignal.Items.Add("Stop");
 		 boxSetSignal.Items.Add("Approach");
 		 boxSetSignal.Items.Add("Proceed");
-		 boxSetSwitch.Items.Add("To Main Soute");
-		 boxSetSwitch.Items.Add("To Side Soute");
 		 chkAllowUserSwitch.Checked = false;
 		 if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.Instance().AllowedManualSwitch = false; }
       
@@ -1390,7 +1388,7 @@ namespace ORTS.Debugging
 			  if (LastCursorPosition.X == e.X && LastCursorPosition.Y == e.Y)
 			  {
 				  var range = 5 * (int)xScale; if (range > 10) range = 10;
-				  var temp = findItemFromMouse(e.X, e.Y, 5*(int)xScale);
+				  var temp = findItemFromMouse(e.X, e.Y, range);
 				  if (temp != null)
 				  {
 					  //GenerateView();
