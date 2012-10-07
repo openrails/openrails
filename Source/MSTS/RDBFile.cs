@@ -67,7 +67,7 @@ namespace MSTS
                     TrackNodes = new TrackNode[count + 1];
                     int idx = 1;
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("tracknode", ()=>{ TrackNodes[idx] = new TrackNode(stf, idx); ++idx; }),
+                        new STFReader.TokenProcessor("tracknode", ()=>{ TrackNodes[idx] = new TrackNode(stf, idx, count); ++idx; }),
                     });
                 }),
                 new STFReader.TokenProcessor("tritemtable", ()=>{

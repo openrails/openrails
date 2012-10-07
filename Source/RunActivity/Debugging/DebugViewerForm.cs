@@ -1083,11 +1083,11 @@ namespace ORTS.Debugging
 					}
 					lastObjDistance = obj.Distance;
 
-					if (objDistance >= switchErrorDistance || objDistance > DisplayDistance)
+					if (objDistance >= switchErrorDistance)
 						break;
 				}
 				currentDistance += cache.Length;
-				if (currentDistance >= switchErrorDistance || currentDistance > DisplayDistance)
+				if (currentDistance >= switchErrorDistance)
 					break;
 
 			}
@@ -1131,11 +1131,11 @@ namespace ORTS.Debugging
 						}
 					}
 
-					if (objDistance >= switchErrorDistance || objDistance > DisplayDistance)
+					if (objDistance >= switchErrorDistance)
 						break;
 				}
 				currentDistance += cache.Length;
-				if (currentDistance >= switchErrorDistance || currentDistance > DisplayDistance)
+				if (currentDistance >= switchErrorDistance)
 					break;
 			}
 			// Clean up any cache entries who haven't been using for 30 seconds.

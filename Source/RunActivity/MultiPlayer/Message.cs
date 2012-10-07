@@ -237,6 +237,7 @@ namespace ORTS.MultiPlayer
 		public int[] lengths; //if a wagon is engine
 		public string url;
 		public int version = 0;
+		public string MD5 = "";
 		public MSGPlayer() { }
 		public MSGPlayer(string m)
 		{
@@ -285,7 +286,8 @@ namespace ORTS.MultiPlayer
 				{
 					con = con.Remove(0, index + 10);
 				}
-				if (areas.Length == 9) { version = int.Parse(areas[8]); }
+				if (areas.Length >= 9) { version = int.Parse(areas[8]); }
+				//if (areas.Length >= 10) { MD5 = areas[9]; }
 			}
 			catch (Exception e)
 			{
@@ -362,6 +364,8 @@ namespace ORTS.MultiPlayer
 			else leadingID = "NA";
 
 			version = MPManager.Instance().version;
+
+			MD5 = MPManager.Instance().MD5Check;
 		}
 		public override string ToString()
 		{
@@ -378,7 +382,7 @@ namespace ORTS.MultiPlayer
 				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
 			}
 
-			tmp += "\r" + MPManager.Instance().version;
+			tmp += "\r" + MPManager.Instance().version;// +"\r" + MD5;
 			return "" + tmp.Length + ": " + tmp;
 		}
 
@@ -388,12 +392,23 @@ namespace ORTS.MultiPlayer
 			if (this.version != MPManager.Instance().version)
 			{
 				var reason = "Wrong version of protocol, please update to version " + MPManager.Instance().version;
-				MPManager.BroadCast((new MSGMessage(this.user, "Error", reason)).ToString());//server will broadcast this error
-				if (MPManager.IsServer()) throw new Exception("Wrong version of protocol, please update to version " + MPManager.Instance().version);//ignore this player message
+				if (MPManager.IsServer())
+				{
+					MPManager.BroadCast((new MSGMessage(this.user, "Error", reason)).ToString());//server will broadcast this error
+					throw new Exception("Player has wrong version of protocol");//ignore this player message
+				}
 				else
 				{
 					System.Console.WriteLine("Wrong version of protocol, will play in single mode, please update to version " + MPManager.Instance().version);
 					throw new MultiPlayerError();//client, close the connection
+				}
+			}
+			if (MPManager.IsServer())
+			{
+				if ((MD5 != "" && MD5 != MPManager.Instance().MD5Check) || route != Program.Simulator.RoutePathName)
+				{
+					MPManager.BroadCast((new MSGMessage(this.user, "Error", "Wrong route dir or TDB file, the dispatcher uses a different route")).ToString());//server will broadcast this error
+					throw new Exception("Player has wrong version of route");//ignore this player message
 				}
 			}
 			//check if other players with the same name is online
@@ -405,7 +420,7 @@ namespace ORTS.MultiPlayer
 					if (MPManager.Instance().FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
 					{
 						MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
-						//throw new MultiPlayerError();
+						throw new Exception("Same name");
 					}
 				}
 			}
@@ -436,6 +451,7 @@ namespace ORTS.MultiPlayer
 			}
 		}
 
+		//this version only intends for the one started on server computer
 		public void HandleMsg(OnlinePlayer p)
 		{
 			if (!MPManager.IsServer()) return; //only intended for the server, when it gets the player message in OnlinePlayer Receive
@@ -445,6 +461,12 @@ namespace ORTS.MultiPlayer
 				MPManager.BroadCast((new MSGMessage(this.user, "Error", reason)).ToString());
 				throw new Exception("Wrong version of protocol");
 			}
+			if ((MD5 != "" && MD5 != MPManager.Instance().MD5Check) || route != Program.Simulator.RoutePathName)
+			{
+				MPManager.BroadCast((new MSGMessage(this.user, "Error", "Wrong route dir or TDB file, the dispatcher uses a different route")).ToString());//server will broadcast this error
+				throw new Exception("Player has wrong version of route");//ignore this player message
+			}
+
 			//check if other players with the same name is online
 				//if someone with the same name is there, will throw a fatal error
 			if (MPManager.Instance().FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
@@ -489,7 +511,7 @@ namespace ORTS.MultiPlayer
 
 		public MSGSwitch(string n, int tX, int tZ, int u, int s, bool handThrown)
 		{
-			if (MPManager.Instance().TrySwitch == false)
+			if (!MPManager.Instance().AmAider && MPManager.Instance().TrySwitch == false)
 			{
 				if (handThrown && Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("Dispatcher does not allow hand throw at this time");
 				OK = false;

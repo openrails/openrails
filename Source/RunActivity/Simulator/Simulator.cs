@@ -203,7 +203,8 @@ namespace ORTS
 		{
 			if (RailDriver != null)
 				RailDriver.Shutdown();
-			if (MultiPlayer.MPManager.IsMultiPlayer()) MultiPlayer.MPManager.Stop();
+			if (MPManager.IsMultiPlayer()) MPManager.Stop();
+			else if (MPManager.DispatcherWindow != null) MPManager.StopDispatcher();
 		}
 
         public void Restore( BinaryReader inf, string simulatorPathDescription, float initialTileX, float initialTileZ )

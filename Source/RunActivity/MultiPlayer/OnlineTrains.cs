@@ -148,15 +148,18 @@ namespace ORTS.MultiPlayer
 			int direction = player.dir;
 			train.travelled = player.Travelled;
 
-
-			try
+			if (MPManager.IsServer())
 			{
-				PATFile patFile = new PATFile(p.path);
-				AIPath aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
+				try
+				{
+					PATFile patFile = new PATFile(p.path);
+					AIPath aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
 
-				train.Path = aiPath;
+					train.Path = aiPath;
+				}
+				catch (Exception) { train.Path = null; MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
 			}
-			catch (Exception) { train.Path = null; MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
+			else train.Path = null;
 			try
 			{
 				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
@@ -167,7 +170,7 @@ namespace ORTS.MultiPlayer
 				{
 					MPManager.BroadCast((new MSGMessage(player.user, "Error", "MultiPlayer Error：" + e.Message)).ToString());
 				}
-				else throw new MultiPlayerError();
+				else throw new Exception();
 			}
 			TrainCar previousCar = null;
 			for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {

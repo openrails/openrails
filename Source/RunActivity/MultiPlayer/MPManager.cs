@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography;
 using System.IO;
 using ORTS;
 using ORTS.Debugging;
@@ -65,9 +66,10 @@ namespace ORTS.MultiPlayer
 		public bool AmAider = false; //am I aiding the dispatcher?
 		public List<string> aiderList;
 		public bool NotServer = true;
-		static DispatchViewer DispatcherWindow;
+		public static DispatchViewer DispatcherWindow;
 		Simulator Simulator;
 		Viewer3D Viewer;
+		public string MD5Check = "";
 
 		public void AddUncoupledTrains(Train t)
 		{
@@ -118,6 +120,7 @@ namespace ORTS.MultiPlayer
 			removedTrains = new List<Train>();
 			aiderList = new List<string>();
 			if (Program.Server != null) NotServer = false;
+			//GetMD5HashFromTDBFile();
 		}
 		public static MPManager Instance()
 		{
@@ -195,7 +198,6 @@ namespace ORTS.MultiPlayer
 			//get key strokes and determine if some messages should be sent
 			handleUserInput();
 
-			AddPlayer(); //a new player joined? handle it
 			if (begineZeroTime == 0) begineZeroTime = newtime - 10;
 			//server update train location of all
 			if (Program.Server != null && newtime - lastMoveTime >= 1f)
@@ -276,6 +278,8 @@ namespace ORTS.MultiPlayer
 			//some trains are added/removed
 			HandleTrainList();
 
+			AddPlayer(); //a new player joined? handle it
+
 			/* will have this in the future so that helpers can also control
 			//I am a helper, will see if I need to update throttle and dynamic brake
 			if (Program.Simulator.PlayerLocomotive.Train != null && Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) 
@@ -339,12 +343,16 @@ namespace ORTS.MultiPlayer
 
 		}
 
+		public static void StopDispatcher()
+		{
+			if (DispatcherWindow != null) { if (MPManager.Instance().Viewer != null) MPManager.Instance().Viewer.DebugViewerEnabled = false; Stopped = true; }
+		}
 		public static bool Stopped = false;
 		//nicely shutdown listening threads, and notify the server/other player
 		static public void Stop()
 		{
-			if (DispatcherWindow != null) DispatcherWindow.Visible = false;
 			Stopped = true;
+			StopDispatcher();
 			if (Program.Client != null && Program.Server == null)
 			{
 				Program.Client.Send((new MSGQuit(GetUserName())).ToString()); //client notify server
@@ -391,9 +399,9 @@ namespace ORTS.MultiPlayer
 
 		public void AddPlayer()
 		{
+			if (!MPManager.IsServer()) return;
 			if (PlayerAdded == true)
 			{
-				PlayerAdded = false;
 				MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
 				MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
 
@@ -407,6 +415,7 @@ namespace ORTS.MultiPlayer
 					if (MPManager.Instance().FindPlayerTrain(t)) continue;
 					MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 				}
+				PlayerAdded = false;
 			}
 		}
 		//this will be used in the server, in Simulator.cs
@@ -658,6 +667,7 @@ namespace ORTS.MultiPlayer
 		void StartDispatcher()
 		{
 			DispatcherWindow = new DispatchViewer(Simulator, Viewer);
+			Program.DebugViewer = DispatcherWindow;
 			DispatcherWindow.Show();
 			DispatcherWindow.Hide();
 			while (MPManager.Stopped != true)
@@ -766,6 +776,18 @@ namespace ORTS.MultiPlayer
 				catch { }
 			}
 			return carList;
+		}
+
+		//md5 check of TDB file
+		public void GetMD5HashFromTDBFile()
+		{
+			string fileName = Program.Simulator.RoutePath + @"\" + Program.Simulator.TRK.Tr_RouteFile.FileName + ".tdb";
+			FileStream file = new FileStream(fileName, FileMode.Open);
+			MD5 md5 = new MD5CryptoServiceProvider();
+			byte[] retVal = md5.ComputeHash(file);
+			file.Close();
+
+			MD5Check = Encoding.Unicode.GetString(retVal, 0, retVal.Length);
 		}
 	}
 }
