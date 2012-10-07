@@ -252,6 +252,7 @@
 		  this.boxSetSignal.FormattingEnabled = true;
 		  this.boxSetSignal.ItemHeight = 20;
 		  this.boxSetSignal.Location = new System.Drawing.Point(209, 205);
+		  this.boxSetSignal.MinimumSize = new System.Drawing.Size(160, 100);
 		  this.boxSetSignal.Name = "boxSetSignal";
 		  this.boxSetSignal.Size = new System.Drawing.Size(164, 100);
 		  this.boxSetSignal.TabIndex = 25;
@@ -266,6 +267,7 @@
 		  this.boxSetSwitch.FormattingEnabled = true;
 		  this.boxSetSwitch.ItemHeight = 20;
 		  this.boxSetSwitch.Location = new System.Drawing.Point(398, 205);
+		  this.boxSetSwitch.MinimumSize = new System.Drawing.Size(120, 40);
 		  this.boxSetSwitch.Name = "boxSetSwitch";
 		  this.boxSetSwitch.Size = new System.Drawing.Size(125, 40);
 		  this.boxSetSwitch.TabIndex = 26;

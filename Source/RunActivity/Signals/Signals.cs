@@ -658,6 +658,7 @@ namespace ORTS
 
                         signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
                             speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z, (Traveller.TravellerDirection)signalObjects[foundSignals].direction);
+						signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
 
                         double delta_angle = signalObjects[foundSignals].tdbtraveller.RotY - ((Math.PI/2) - speedItem.Angle);
                         float delta_float = (float)delta_angle;
