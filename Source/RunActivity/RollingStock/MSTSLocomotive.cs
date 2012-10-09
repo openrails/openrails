@@ -3410,11 +3410,12 @@ namespace ORTS
         public override void PrepareFrame(RenderFrame frame)
         {
            
-            float fontratio = (float)_CabViewControl.Height / 16;
+            // float fontratio = (float)_CabViewControl.Height / 16;
+            // Use fixed ratio to supress elongated chars for present
+            float fontratio = 1.0f;
+
             float fpos = 0.0f;
-            //if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
-            //    fpos = ((float)_CabViewControl.Width) - 7 * _Digits;// * fontratio;
-            //else
+
                 fpos = ((float)_CabViewControl.Width) - 7 * _Digits;// * fontratio;
 
                 if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
