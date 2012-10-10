@@ -191,76 +191,63 @@ namespace ORTS
                 private void BuildSignalWorld(Simulator simulator, SIGCFGFile sigcfg)
                 {
 
-  // get all filesnames in World directory
+                    // get all files with extention .w in World directory
 
-                        Trace.WriteLine("");
-                        string WFilePath = simulator.RoutePath + @"\WORLD\";
-                        string [] FileEntries = Directory.GetFiles(WFilePath);
+                    Trace.WriteLine("");
+                    var WFilePath = simulator.RoutePath + @"\WORLD\";
+                    var FileEntries = Directory.GetFiles(WFilePath, "*.w");
 
-                        List<TokenID> Tokens = new List<TokenID> ();
-                        Tokens.Add(TokenID.Signal);
+                    var Tokens = new List<TokenID>{ TokenID.Signal };
 
-  // loop through files, use only extention .w, skip w+1000000+1000000.w file
+                    // loop through files, skip w+1000000+1000000.w file
 
-                        foreach(string fileName in FileEntries)
+                    foreach (string filePath in FileEntries)
+                    {
+
+                        // check if valid file
+
+                        var validFile = true;
+
+                        try
                         {
-                                string [] fparts = fileName.Split('.');
-                                string [] fparts2= fparts[fparts.Length-2].Split('\\');
-
-  // check if valid file
-
-                                bool validFile = true;
-
-                                try
-                                {
-                                            int p = fileName.ToUpper().LastIndexOf("\\WORLD\\W");
-                                            int TileX = int.Parse(fileName.Substring(p + 8, 7));
-                                        int TileZ = int.Parse(fileName.Substring(p + 15, 7));
-                                }
-                                catch (Exception)
-                                {
-                                        validFile = false;
-                                }
-
-                                if (string.Compare(fparts[fparts.Length-1], "w") == 0 && validFile)
-                                {
-
-  // read w-file, get SignalObjects only
-
-                                        Trace.Write("W");
-                                        WFile WFile = new WFile(fileName, Tokens);
-
-  // loop through all signals
-
-                                        foreach (WorldObject worldObject in WFile.Tr_Worldfile)
-                                        {
-                                                if (worldObject.GetType() == typeof(MSTS.SignalObj))
-                                                {
-                                                        MSTS.SignalObj thisWorldObject = (MSTS.SignalObj) worldObject;
-                                                        SignalWorldObject SignalWorldSignal = new SignalWorldObject(thisWorldObject,sigcfg);
-                                                        SignalWorldList.Add(SignalWorldSignal);
-                                                        foreach ( KeyValuePair <uint, uint> thisref in SignalWorldSignal.HeadReference)
-                                                        {
-                                                                int thisSignalCount = SignalWorldList.Count()-1;    // Index starts at 0
-                                                                SignalRefObject thisRefObject = new SignalRefObject(thisSignalCount,thisref.Value);
-                                                                if (SignalRefList.ContainsKey(thisref.Key))
-                                                                {
-                                                                        SignalRefObject DoubleObject = SignalRefList[thisref.Key];
-                                                                }
-                                                                else
-                                                                {
-                                                                        SignalRefList.Add(thisref.Key,thisRefObject);
-                                                                }
-                                                        }
-                                                }
-                                        }
-
-  // clear worldfile info
- 
-                                        WFile=null;
-                                }
+                            var fileName = Path.GetFileName(filePath);
+                            var TileX = int.Parse(fileName.Substring(1, 7));
+                            var TileZ = int.Parse(fileName.Substring(8, 7));
                         }
-                        Trace.WriteLine("");
+                        catch (Exception)
+                        {
+                            validFile = false;
+                        }
+
+                        if (validFile)
+                        {
+
+                            // read w-file, get SignalObjects only
+
+                            Trace.Write("W");
+                            var WFile = new WFile(filePath, Tokens);
+
+                            // loop through all signals
+
+                            foreach (var worldObject in WFile.Tr_Worldfile)
+                            {
+                                if (worldObject.GetType() == typeof(MSTS.SignalObj))
+                                {
+                                    var thisWorldObject = (MSTS.SignalObj)worldObject;
+                                    var SignalWorldSignal = new SignalWorldObject(thisWorldObject, sigcfg);
+                                    SignalWorldList.Add(SignalWorldSignal);
+                                    foreach (var thisref in SignalWorldSignal.HeadReference)
+                                    {
+                                        var thisSignalCount = SignalWorldList.Count() - 1;    // Index starts at 0
+                                        var thisRefObject = new SignalRefObject(thisSignalCount, thisref.Value);
+                                        if (!SignalRefList.ContainsKey(thisref.Key))
+                                            SignalRefList.Add(thisref.Key, thisRefObject);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Trace.WriteLine("");
 
 #if DEBUG_PRINT
                         foreach ( KeyValuePair <uint, SignalRefObject> thisref in SignalRefList)
