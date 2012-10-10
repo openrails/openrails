@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menu", "Menu\Menu.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "Launcher\Launcher.csproj", "{7027354D-7C20-4514-BCEB-177CD7D58952}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuWPF", "MenuWPF\MenuWPF.csproj", "{CC4ED7FB-8A6E-4D85-8719-1C510A106978}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,16 +47,6 @@ Global
 		{7027354D-7C20-4514-BCEB-177CD7D58952}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7027354D-7C20-4514-BCEB-177CD7D58952}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7027354D-7C20-4514-BCEB-177CD7D58952}.Release|x86.ActiveCfg = Release|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{CC4ED7FB-8A6E-4D85-8719-1C510A106978}.Release|x86.ActiveCfg = Release|Any CPU
 		{6A004DB6-7114-41A2-B2BE-FB2B65F014FD}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{6A004DB6-7114-41A2-B2BE-FB2B65F014FD}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{6A004DB6-7114-41A2-B2BE-FB2B65F014FD}.Debug|x86.ActiveCfg = Debug|x86

@@ -46,16 +46,8 @@ namespace ORTS
 				return;
 			}
 
-			// Default menu, with override from Registry.
-			var menu = "MenuWPF.exe";
-			using (var RK = Registry.CurrentUser.OpenSubKey(@"Software\OpenRails\ORTS"))
-			{
-				var value = SafeReadKey(RK, "LauncherMenu", 0);
-				if (value == 1)
-					menu = "Menu.exe";
-				if (value == 2)
-					menu = "MenuWPF.exe";
-			}
+			// Default menu
+			var menu = "Menu.exe";
 			Process.Start(Path.Combine(path, menu));
 		}
 
@@ -88,7 +80,6 @@ namespace ORTS
 				"Reader.dll",
 				// Programs:
 				"Menu.exe",
-				"MenuWPF.exe",
 				"RunActivity.exe",
 			})
 			{

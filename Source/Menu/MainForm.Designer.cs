@@ -50,7 +50,6 @@
             this.labelRoutes = new System.Windows.Forms.Label();
             this.groupBoxActivities = new System.Windows.Forms.GroupBox();
             this.labelActivities = new System.Windows.Forms.Label();
-            this.buttonSwitchStyle = new System.Windows.Forms.Button();
             this.buttonTesting = new System.Windows.Forms.Button();
             this.checkBoxMultiplayer = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
@@ -303,16 +302,6 @@
             this.labelActivities.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.labelActivities.Visible = false;
             // 
-            // buttonSwitchStyle
-            // 
-            this.buttonSwitchStyle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonSwitchStyle.Location = new System.Drawing.Point(12, 447);
-            this.buttonSwitchStyle.Name = "buttonSwitchStyle";
-            this.buttonSwitchStyle.Size = new System.Drawing.Size(138, 23);
-            this.buttonSwitchStyle.TabIndex = 12;
-            this.buttonSwitchStyle.Text = "Switch Menu Style";
-            this.buttonSwitchStyle.Click += new System.EventHandler(this.buttonSwitchStyle_Click);
-            // 
             // buttonTesting
             // 
             this.buttonTesting.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -345,7 +334,6 @@
             this.Controls.Add(this.checkBoxMultiplayer);
             this.Controls.Add(this.buttonOptions);
             this.Controls.Add(this.buttonTesting);
-            this.Controls.Add(this.buttonSwitchStyle);
             this.Controls.Add(this.pictureBoxLogo);
             this.Controls.Add(this.labelLogo1);
             this.Controls.Add(this.labelLogo2);
@@ -392,8 +380,7 @@
         private System.Windows.Forms.GroupBox groupBoxRoutes;
         private System.Windows.Forms.GroupBox groupBoxActivities;
 		private System.Windows.Forms.Label labelRoutes;
-		private System.Windows.Forms.Label labelActivities;
-		private System.Windows.Forms.Button buttonSwitchStyle;
+        private System.Windows.Forms.Label labelActivities;
         private System.Windows.Forms.Button buttonTesting;
         private System.Windows.Forms.CheckBox checkBoxMultiplayer;
     }
