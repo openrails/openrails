@@ -287,7 +287,7 @@ namespace ORTS.MultiPlayer
 					con = con.Remove(0, index + 10);
 				}
 				if (areas.Length >= 9) { version = int.Parse(areas[8]); }
-				//if (areas.Length >= 10) { MD5 = areas[9]; }
+				if (areas.Length >= 10) { MD5 = areas[9]; }
 			}
 			catch (Exception e)
 			{
@@ -382,7 +382,7 @@ namespace ORTS.MultiPlayer
 				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
 			}
 
-			tmp += "\r" + MPManager.Instance().version;// +"\r" + MD5;
+			tmp += "\r" + MPManager.Instance().version +"\r" + MD5;
 			return "" + tmp.Length + ": " + tmp;
 		}
 

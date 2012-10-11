@@ -133,7 +133,6 @@ namespace ORTS.MultiPlayer
 			if (Program.Simulator.Settings.ShowAvatar) { p.url = player.url; }
 			else { p.url = "NA"; }
 			p.LeadingLocomotiveID = player.leadingID;
-			Players.Add(player.user, p);
 			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
 			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
 			Train train = new Train(Program.Simulator);
@@ -238,6 +237,7 @@ namespace ORTS.MultiPlayer
 				else train.TrackAuthority = null;
 			}
 			 */
+			Players.Add(player.user, p);
 			MPManager.Instance().AddOrRemoveTrain(train, true);
 
 		}

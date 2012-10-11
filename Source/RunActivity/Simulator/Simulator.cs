@@ -204,7 +204,7 @@ namespace ORTS
 			if (RailDriver != null)
 				RailDriver.Shutdown();
 			if (MPManager.IsMultiPlayer()) MPManager.Stop();
-			else if (MPManager.DispatcherWindow != null) MPManager.StopDispatcher();
+			//else if (MPManager.DispatcherWindow != null) MPManager.StopDispatcher();
 		}
 
         public void Restore( BinaryReader inf, string simulatorPathDescription, float initialTileX, float initialTileZ )

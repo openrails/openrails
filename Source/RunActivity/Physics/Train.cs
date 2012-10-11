@@ -608,38 +608,43 @@ namespace ORTS
 				//if a MSGMove is received
 				if (updateMSGReceived)
 				{
-					float move = 0.0f;
+					//float move = 0.0f;
 					var requestedSpeed = SpeedMpS;
 					try
 					{
-						var x = travelled + SpeedMpS * elapsedClockSeconds + (SpeedMpS - lastSpeedMps) / 2 * elapsedClockSeconds;
+						//var x = travelled + lastSpeedMps * elapsedClockSeconds + (SpeedMpS - lastSpeedMps) / 2 * elapsedClockSeconds;
 						this.MUDirection = (Direction)expectedDIr;
+						Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
 
-						if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 10)
-						{
-							CalculatePositionOfCars(expectedTravelled - travelled);
+						//move = SpeedMpS > 0 ? 0.001f : -0.001f;
+						this.travelled = expectedTravelled;
+						this.RearTDBTraveller = t;
+						CalculatePositionOfCars(0);
+
+
+						//if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 10)
+						//{
+						//	CalculatePositionOfCars(expectedTravelled - travelled);
 							//if something wrong with the switch
-							if (this.RearTDBTraveller.TrackNodeIndex != expectedTracIndex)
-							{
-								Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
-								
-								//move = SpeedMpS > 0 ? 0.001f : -0.001f;
-								this.travelled = expectedTravelled;
-								this.RearTDBTraveller = t;
-								CalculatePositionOfCars(0);
+						//	if (this.RearTDBTraveller.TrackNodeIndex != expectedTracIndex)
+						//	{
+						//		Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
+									//move = SpeedMpS > 0 ? 0.001f : -0.001f;
+						//			this.travelled = expectedTravelled;
+						//			this.RearTDBTraveller = t;
+						//			CalculatePositionOfCars(0);
 
-							}
-							//}
-						}
-						else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
-						{
-							SpeedMpS += (expectedTravelled - x) / 1;
-							CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
-						}
+						//	}
+						//}
+						//else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
+						//{
+						//	SpeedMpS += (expectedTravelled - x) / 1;
+						//	CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+						//}
 					}
 					catch (Exception)
 					{
-						move = expectedTravelled - travelled;
+						CalculatePositionOfCars((SpeedMpS + lastSpeedMps) * elapsedClockSeconds / 2);
 					}
 					/*if (Math.Abs(requestedSpeed) < 0.00001 && Math.Abs(SpeedMpS) > 0.01) updateMSGReceived = true; //if requested is stop, but the current speed is still moving
 					else*/ updateMSGReceived = false;
@@ -647,7 +652,7 @@ namespace ORTS
 				}
 				else//no message received, will move at the previous speed
 				{
-					CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+					CalculatePositionOfCars((SpeedMpS + lastSpeedMps) * elapsedClockSeconds / 2);
 				}
 
 				//update speed for each car, so wheels will rotate

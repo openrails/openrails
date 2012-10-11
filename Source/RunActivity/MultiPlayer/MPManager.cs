@@ -120,7 +120,7 @@ namespace ORTS.MultiPlayer
 			removedTrains = new List<Train>();
 			aiderList = new List<string>();
 			if (Program.Server != null) NotServer = false;
-			//GetMD5HashFromTDBFile();
+			GetMD5HashFromTDBFile();
 		}
 		public static MPManager Instance()
 		{
@@ -345,7 +345,7 @@ namespace ORTS.MultiPlayer
 
 		public static void StopDispatcher()
 		{
-			if (DispatcherWindow != null) { if (MPManager.Instance().Viewer != null) MPManager.Instance().Viewer.DebugViewerEnabled = false; Stopped = true; }
+			if (DispatcherWindow != null) { if (MPManager.Instance().Viewer != null) MPManager.Instance().Viewer.DebugViewerEnabled = false; Stopped = true; DispatcherWindow.Visible = false; }
 		}
 		public static bool Stopped = false;
 		//nicely shutdown listening threads, and notify the server/other player
@@ -402,6 +402,7 @@ namespace ORTS.MultiPlayer
 			if (!MPManager.IsServer()) return;
 			if (PlayerAdded == true)
 			{
+				PlayerAdded = false;
 				MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
 				MPManager.Instance().lastSwitchTime = Program.Simulator.GameTime;
 
@@ -413,9 +414,9 @@ namespace ORTS.MultiPlayer
 				{
 					if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
 					if (MPManager.Instance().FindPlayerTrain(t)) continue;
+					if (removedTrains.Contains(t)) continue;//this train is going to be removed, should avoid it.
 					MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 				}
-				PlayerAdded = false;
 			}
 		}
 		//this will be used in the server, in Simulator.cs
@@ -499,6 +500,7 @@ namespace ORTS.MultiPlayer
 			{
 				foreach (OnlinePlayer p in playersRemoved)
 				{
+					Program.Simulator.Trains.Remove(p.Train);
 					if (Program.Server != null) Program.Server.Players.Remove(p);
 					//player is not in this train
 					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
@@ -510,7 +512,6 @@ namespace ORTS.MultiPlayer
 							Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(p.Train.TrackAuthority);
 							p.Train.TrackAuthority = null;
 						}
-						Program.Simulator.Trains.Remove(p.Train);
 					}
 					OnlineTrains.Players.Remove(p.Username);
 				}
@@ -781,13 +782,21 @@ namespace ORTS.MultiPlayer
 		//md5 check of TDB file
 		public void GetMD5HashFromTDBFile()
 		{
-			string fileName = Program.Simulator.RoutePath + @"\" + Program.Simulator.TRK.Tr_RouteFile.FileName + ".tdb";
-			FileStream file = new FileStream(fileName, FileMode.Open);
-			MD5 md5 = new MD5CryptoServiceProvider();
-			byte[] retVal = md5.ComputeHash(file);
-			file.Close();
+			try
+			{
+				string fileName = Program.Simulator.RoutePath + @"\" + Program.Simulator.TRK.Tr_RouteFile.FileName + ".tdb";
+				FileStream file = new FileStream(fileName, FileMode.Open);
+				MD5 md5 = new MD5CryptoServiceProvider();
+				byte[] retVal = md5.ComputeHash(file);
+				file.Close();
 
-			MD5Check = Encoding.Unicode.GetString(retVal, 0, retVal.Length);
+				MD5Check = Encoding.Unicode.GetString(retVal, 0, retVal.Length);
+			}
+			catch
+			{
+				System.Console.WriteLine("Cannot get MD5 check of TDB file, server may not connect you");
+				MD5Check = "";
+			}
 		}
 	}
 }
