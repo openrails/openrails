@@ -287,7 +287,14 @@ namespace ORTS.MultiPlayer
 					con = con.Remove(0, index + 10);
 				}
 				if (areas.Length >= 9) { version = int.Parse(areas[8]); }
-				if (areas.Length >= 10) { MD5 = areas[9]; }
+				if (areas.Length >= 10)
+				{
+					MD5 = areas[9];
+					if (MPManager.Instance().MD5Check == "")
+					{
+						MPManager.Instance().GetMD5HashFromTDBFile();
+					}
+				}
 			}
 			catch (Exception e)
 			{
@@ -365,6 +372,7 @@ namespace ORTS.MultiPlayer
 
 			version = MPManager.Instance().version;
 
+			if (MPManager.Instance().MD5Check == "") MPManager.Instance().GetMD5HashFromTDBFile();
 			MD5 = MPManager.Instance().MD5Check;
 		}
 		public override string ToString()

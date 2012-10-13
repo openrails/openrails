@@ -719,7 +719,7 @@ namespace ORTS.Debugging
 				var margin2 = 2000 * xScale;
 
 				//variable for drawing train path
-				var mDist = 2000f; var pDist = 50; //segment length when draw path
+				var mDist = 4000f; var pDist = 50; //segment length when draw path
 				
 				foreach (Train t in simulator.Trains)
 				{
@@ -2006,6 +2006,7 @@ namespace ORTS.Debugging
 		  {
 			  var tmp = AvatarView.SelectedItems[0].Text.Split(' ');
 			  var name = tmp[0].Trim();
+			  if (MultiPlayer.MPManager.Instance().aiderList.Contains(name)) return;
 			  if (MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(name))
 			  {
 				  MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGAider(name, true)).ToString());
