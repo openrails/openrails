@@ -103,6 +103,8 @@ namespace ORTS
         public bool ShowErrorDialogs { get; set; }
         [Default(5)]
         public int SoundDetailLevel { get; set; }
+		[Default(100)]
+		public int SoundVolumePercent { get; set; }
         [Default(false)]
         public bool SuppressConfirmations { get; set; }
         [Default(false)]

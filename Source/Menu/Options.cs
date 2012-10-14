@@ -97,6 +97,7 @@ namespace ORTS
             numericCab2DStretch.Value = Settings.Cab2DStretch;
             checkBoxAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             checkBoxBreakCouplers.Checked = Settings.BreakCouplers;
+			soundVolume.Value = Settings.SoundVolumePercent;
 
         }
 
@@ -303,6 +304,7 @@ namespace ORTS
             Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
             Settings.UseAdvancedAdhesion = checkBoxAdvancedAdhesion.Checked;
             Settings.BreakCouplers = checkBoxBreakCouplers.Checked;
+			Settings.SoundVolumePercent = (int)soundVolume.Value;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

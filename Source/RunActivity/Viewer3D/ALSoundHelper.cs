@@ -511,7 +511,7 @@ namespace ORTS
     public class ALSoundSource : IDisposable
     {
         private static int refCount = 0;
-
+		private static float volumeLevel = 1f;
         private const int QUEUELENGHT = 16;
 
         float[] ListenerPosition = new float[] { 0.0f, 0.0f, 0.0f };
@@ -533,6 +533,7 @@ namespace ORTS
             if (refCount == 0)
             {
                 Trace.TraceInformation("OpenAL using device " + OpenAL.AlInitialize("DirectSound"));
+				volumeLevel = Program.Simulator.Settings.SoundVolumePercent / 100f;
             }
 
             refCount++;
@@ -612,7 +613,7 @@ namespace ORTS
 
         private void SetVolume(float volume)
         {
-            volume *= .7f;
+            volume *= .7f*volumeLevel;
             OpenAL.alSourcef(_SoundSourceID, OpenAL.AL_GAIN, volume);
         }
 

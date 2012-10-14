@@ -516,7 +516,7 @@ namespace ORTS
 
 			if (UserInput.IsPressed(UserCommands.GameSwitchPicked) && (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer()))
 			{
-				if (Program.DebugViewer.Enabled && Program.DebugViewer.switchPickedItem != null)
+				if (Program.DebugViewer != null && Program.DebugViewer.Enabled && Program.DebugViewer.switchPickedItem != null)
 				{
 
 					TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem.Item.TrJunctionNode;
@@ -535,7 +535,7 @@ namespace ORTS
 
 			if (UserInput.IsPressed(UserCommands.GameSignalPicked) && (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer()))
 			{
-				if (Program.DebugViewer.Enabled && Program.DebugViewer.signalPickedItem != null)
+				if (Program.DebugViewer != null && Program.DebugViewer.Enabled && Program.DebugViewer.signalPickedItem != null)
 				{
 
 					var signal = Program.DebugViewer.signalPickedItem.Signal;
@@ -587,7 +587,7 @@ namespace ORTS
 
 			if (UserInput.IsPressed(UserCommands.CameraJumpSeeSwitch))
 			{
-				if (Program.DebugViewer.Enabled && Program.DebugViewer.switchPickedItem != null || Program.DebugViewer.signalPickedItem != null)
+				if (Program.DebugViewer != null && Program.DebugViewer.Enabled && (Program.DebugViewer.switchPickedItem != null || Program.DebugViewer.signalPickedItem != null))
 				{
 					WorldLocation wos = null;
 					try
