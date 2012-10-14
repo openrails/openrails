@@ -123,7 +123,7 @@ namespace MSTS
         private void AddSection(STFReader stf, TrackSection section)
         {
             if (ContainsKey(section.SectionIndex))
-                STFException.TraceWarning(stf, "Replaced SectionIndex " + section.SectionIndex);
+                STFException.TraceWarning(stf, "Replaced duplicate TrackSection " + section.SectionIndex);
             this[section.SectionIndex] = section;
         }
 
@@ -216,13 +216,15 @@ namespace MSTS
             MaxShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);
             stf.ParseBlock(new STFReader.TokenProcessor[] 
             {
-                new STFReader.TokenProcessor("trackshape", ()=>{ Add(new TrackShape(stf)); }),
+                new STFReader.TokenProcessor("trackshape", ()=>{ Add(stf, new TrackShape(stf)); }),
             });
 		}
 
-      private void Add(TrackShape trackShape)
+      private void Add(STFReader stf, TrackShape trackShape)
       {
-         Add(trackShape.ShapeIndex, trackShape);
+          if (ContainsKey(trackShape.ShapeIndex))
+              STFException.TraceWarning(stf, "Replaced duplicate TrackShape " + trackShape.ShapeIndex);
+          this[trackShape.ShapeIndex] = trackShape;
       }
 
 
