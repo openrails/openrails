@@ -174,7 +174,7 @@ namespace ORTS.Debugging
 		{
 			msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
 			AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false; chkAllowNew.Visible = false;
-			chkPickSignals.Visible = false; chkPickSwitches.Visible = false;
+			chkPickSwitches.Visible = false;
 			pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
 			refreshButton.Text = "View Self";
 		}
