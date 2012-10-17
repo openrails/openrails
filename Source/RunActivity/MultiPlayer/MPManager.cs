@@ -120,6 +120,7 @@ namespace ORTS.MultiPlayer
 			removedTrains = new List<Train>();
 			aiderList = new List<string>();
 			if (Program.Server != null) NotServer = false;
+			users = new SortedList<double,string>();
 			GetMD5HashFromTDBFile();
 		}
 		public static MPManager Instance()
@@ -442,6 +443,9 @@ namespace ORTS.MultiPlayer
 		/// <summary>
 		/// Return a string of information of how many players online and those users who are close
 		/// </summary>
+		
+		SortedList<double, string> users;
+
 		public string GetOnlineUsersInfo()
 		{
 
@@ -450,7 +454,8 @@ namespace ORTS.MultiPlayer
 			info += ("" + (OnlineTrains.Players.Count + 1)+ (OnlineTrains.Players.Count <= 0 ? " player " : "  players "));
 			info += ("" + Program.Simulator.Trains.Count + (Program.Simulator.Trains.Count <= 1 ? " train" : "  trains"));
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
-			SortedList<double, string> users = new SortedList<double,string>();
+			users.Clear();
+			int count = 0;
 			try//the list of players may be changed during the following process
 			{
 				//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
@@ -458,10 +463,12 @@ namespace ORTS.MultiPlayer
 				//foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
 				foreach (OnlinePlayer p in OnlineTrains.Players.Values)
 				{
+					if (count > 1) break;
 					if (p.Train == null) continue;
 					if (p.Train.Cars.Count <= 0) continue;
 					var d = WorldLocation.GetDistanceSquared(p.Train.RearTDBTraveller.WorldLocation, mine.Train.RearTDBTraveller.WorldLocation);
 					users.Add(Math.Sqrt(d)+Program.Random.NextDouble(), p.Username);
+					count++;
 				}
 			}
 			catch (Exception)
@@ -477,6 +484,7 @@ namespace ORTS.MultiPlayer
 			{
 				info += "\t" + pair.Value + ": distance of " + (int)(pair.Key/metricbase) + metric;
 			}
+			if (users.Count < OnlineTrains.Players.Count) { info += "\t ..."; }
 			return info;
 		}
 
