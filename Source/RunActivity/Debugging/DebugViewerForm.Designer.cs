@@ -127,7 +127,7 @@
 		  // 
 		  // rmvButton
 		  // 
-		  this.rmvButton.Location = new System.Drawing.Point(808, 76);
+		  this.rmvButton.Location = new System.Drawing.Point(707, 74);
 		  this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
 		  this.rmvButton.Name = "rmvButton";
 		  this.rmvButton.Size = new System.Drawing.Size(93, 24);
@@ -294,7 +294,7 @@
 		  this.chkPickSwitches.AutoSize = true;
 		  this.chkPickSwitches.Checked = true;
 		  this.chkPickSwitches.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkPickSwitches.Location = new System.Drawing.Point(709, 75);
+		  this.chkPickSwitches.Location = new System.Drawing.Point(807, 77);
 		  this.chkPickSwitches.Name = "chkPickSwitches";
 		  this.chkPickSwitches.Size = new System.Drawing.Size(93, 17);
 		  this.chkPickSwitches.TabIndex = 28;

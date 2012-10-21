@@ -130,8 +130,7 @@ namespace ORTS.MultiPlayer
 			{
 				p = new OnlinePlayer(null, null);
 			}
-			if (Program.Simulator.Settings.ShowAvatar) { p.url = player.url; }
-			else { p.url = "NA"; }
+			p.url = player.url; 
 			p.LeadingLocomotiveID = player.leadingID;
 			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
 			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;

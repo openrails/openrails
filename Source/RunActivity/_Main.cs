@@ -665,12 +665,12 @@ namespace ORTS
             {
                 try
                 {
-                    Client = new ClientComm(settings.Multiplayer_Host, settings.Multiplayer_Port, settings.Multiplayer_User + " 1234");
+					MPManager.Instance().MPUpdateInterval = settings.Multiplayer_UpdateInterval;
+					Client = new ClientComm(settings.Multiplayer_Host, settings.Multiplayer_Port, settings.Multiplayer_User + " 1234");
                     UserName = Client.UserName;
                     Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
                         "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
                     Code = Client.Code;
-                    MPManager.Instance().MPUpdateInterval = settings.Multiplayer_UpdateInterval;
 				}
                 catch (Exception error)
                 {

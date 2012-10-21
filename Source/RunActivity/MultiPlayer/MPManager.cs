@@ -455,7 +455,6 @@ namespace ORTS.MultiPlayer
 			info += ("" + Program.Simulator.Trains.Count + (Program.Simulator.Trains.Count <= 1 ? " train" : "  trains"));
 			TrainCar mine = Program.Simulator.PlayerLocomotive;
 			users.Clear();
-			int count = 0;
 			try//the list of players may be changed during the following process
 			{
 				//foreach (var train in Program.Simulator.Trains) info += "\t" + train.Number + " " + train.Cars.Count;
@@ -463,12 +462,10 @@ namespace ORTS.MultiPlayer
 				//foreach (var p in MPManager.OnlineTrains.Players) info += "\t" + p.Value.Train.Number + " " + p.Key;
 				foreach (OnlinePlayer p in OnlineTrains.Players.Values)
 				{
-					if (count > 1) break;
 					if (p.Train == null) continue;
 					if (p.Train.Cars.Count <= 0) continue;
 					var d = WorldLocation.GetDistanceSquared(p.Train.RearTDBTraveller.WorldLocation, mine.Train.RearTDBTraveller.WorldLocation);
 					users.Add(Math.Sqrt(d)+Program.Random.NextDouble(), p.Username);
-					count++;
 				}
 			}
 			catch (Exception)
@@ -480,9 +477,12 @@ namespace ORTS.MultiPlayer
 				metricbase = Program.Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric == true ? 1.0f : 1.0936133f;
 			}
 
-			foreach(var pair in users)
+			int count = 0;
+			foreach (var pair in users)
 			{
-				info += "\t" + pair.Value + ": distance of " + (int)(pair.Key/metricbase) + metric;
+				if (count > 10) break;
+				info += "\t" + pair.Value + ": distance of " + (int)(pair.Key / metricbase) + metric;
+				count++;
 			}
 			if (users.Count < OnlineTrains.Players.Count) { info += "\t ..."; }
 			return info;

@@ -50,15 +50,20 @@ namespace ORTS.MultiPlayer
 			try
 			{
 				int last = index - 1;
-				while (last >= 0 && char.IsDigit(msg[last--])) ; //shift back to get all digits
+				while (last >= 0)
+				{
+					if (!char.IsDigit(msg[last])) break;
+					last--;
+				} //shift back to get all digits
+				last += 1;
 				if (last < 0) last = 0;
 				string tmp = msg.Substring(last, index - last);
 				int len;
-				if (!int.TryParse(tmp, out len)) { msg.Remove(0); return null; }
+				if (!int.TryParse(tmp, out len)) { msg = msg.Remove(0); return null; }
 				if (len < 0) return null;
 				if (index + 2 + len > msg.Length) return null;
 				tmp = msg.Substring(index + 2, len); //not taking ": "
-				msg = msg.Remove(0, index + 2 + len + last); //remove :
+				msg = msg.Remove(0, index + 2 + len); //remove :
 				if (len > 1000000) return null;//a long message, will ignore it
 #if false
 				int last = index-1;
