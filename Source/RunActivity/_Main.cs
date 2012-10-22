@@ -330,7 +330,27 @@ namespace ORTS
                     InitSimulator(settings, savedArgs, "Resume");
                     Simulator.Restore(inf, pathName, initialTileX, initialTileZ);
                     Viewer = new Viewer3D(Simulator);
-                    Viewer.Run(inf);
+#if DEBUG_VIEWER
+					if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
+					{
+						// prepare to show debug output in a separate window
+						DebugViewer = new DispatchViewer(Simulator, Viewer);
+						DebugViewer.Show();
+						DebugViewer.Hide();
+						Viewer.DebugViewerEnabled = false;
+					}
+					/*else if (MPManager.IsMultiPlayer())
+					{
+						MPManager.Instance().HandleDispatcherWindow(Simulator, Viewer);
+
+					}*/
+#endif
+
+					Viewer.Run(inf);
+#if DEBUG_VIEWER
+					if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
+						if (DebugViewer != null && !DebugViewer.IsDisposed) DebugViewer.Dispose();
+#endif
                 }
             };
             if (Debugger.IsAttached)

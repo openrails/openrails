@@ -504,24 +504,35 @@ namespace ORTS.MultiPlayer
 			//if (Program.Server == null) return; //client will do it by decoding message
 			if (playersRemoved.Count == 0) return;
 
-			try //do it without lock, so may have exception
+			try //do it with lock, but may still have exception
 			{
-				foreach (OnlinePlayer p in playersRemoved)
+				lock (playersRemoved)
 				{
-					Program.Simulator.Trains.Remove(p.Train);
-					if (Program.Server != null) Program.Server.Players.Remove(p);
-					//player is not in this train
-					if (p.Train != Program.Simulator.PlayerLocomotive.Train)
+					foreach (OnlinePlayer p in playersRemoved)
 					{
-						if (p.Train.TrackAuthority != null)
+						if (Program.Server != null) Program.Server.Players.Remove(p);
+						//player is not in this train
+						if (p.Train != Program.Simulator.PlayerLocomotive.Train)
 						{
-							Program.Simulator.AI.Dispatcher.SetAuthorization(p.Train.TrackAuthority, null, null, 0);
-							Program.Simulator.AI.Dispatcher.Unreserve(p.Train.Number + 100000);
-							Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(p.Train.TrackAuthority);
-							p.Train.TrackAuthority = null;
+							if (p.Train.TrackAuthority != null)
+							{
+								Program.Simulator.AI.Dispatcher.SetAuthorization(p.Train.TrackAuthority, null, null, 0);
+								Program.Simulator.AI.Dispatcher.Unreserve(p.Train.Number + 100000);
+								Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(p.Train.TrackAuthority);
+								p.Train.TrackAuthority = null;
+							}
+
+							//make sure this train has no other player on it
+							bool hasOtherPlayer = false;
+							foreach (var p1 in OnlineTrains.Players)
+							{
+								if (p == p1.Value) continue;
+								if (p1.Value.Train == p.Train) { hasOtherPlayer = true; break; }//other player has the same train
+							}
+							if (hasOtherPlayer == false) Program.Simulator.Trains.Remove(p.Train);
 						}
+						OnlineTrains.Players.Remove(p.Username);
 					}
-					OnlineTrains.Players.Remove(p.Username);
 				}
 			}
 			catch (Exception e)
