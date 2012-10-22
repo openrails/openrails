@@ -409,6 +409,8 @@ namespace ORTS {
                 new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller );
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
 
             distanceend1 = helper.CalculateToPoint( PlatformEnd1.TileX,
                     PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z );
@@ -426,16 +428,23 @@ namespace ORTS {
             helper =
                 new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller );
 
-            distanceend1 = helper.CalculateToPoint( PlatformEnd1.TileX,
+            distanceend3 = helper.CalculateToPoint( PlatformEnd1.TileX,
                     PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z );
-            distanceend2 = helper.CalculateToPoint( PlatformEnd2.TileX,
+            distanceend4 = helper.CalculateToPoint( PlatformEnd2.TileX,
                     PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z );
 
             // If rear between the ends of the platform
-            if( (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
-                distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind) )
+            if( (distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
+                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
+                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind) )
+                return true;
+
+	    // if front is beyond and rear is still in front of platform
+            if( distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind && 
+                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
+                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid )
                 return true;
 
             // Otherwise not
