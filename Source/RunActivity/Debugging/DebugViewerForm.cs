@@ -1057,6 +1057,28 @@ namespace ORTS.Debugging
 			var currentPosition = new Traveller(position);
 			currentPosition.Move(-initialNodeOffset);
 			currentDistance = 0;
+
+			//trains selected in the avatar view list will be drawn in blue, others will be drawn in red
+			pathPen.Color = Color.Red;
+			var chosen = AvatarView.SelectedItems;
+			if (chosen.Count > 0)
+			{
+				for (var i = 0; i < chosen.Count; i++)
+				{
+					var  name = chosen[i].Text.Split(' ')[0].Trim(); //filter out (H) in the text
+					if (MultiPlayer.MPManager.OnlineTrains.findTrain(name) == train)
+					{
+						pathPen.Color = Color.Blue; break;
+					}
+
+					//if selected include myself, will show it as blue
+					if (MultiPlayer.MPManager.GetUserName() == name && Program.Simulator.PlayerLocomotive != null && train == Program.Simulator.PlayerLocomotive.Train)
+					{
+						pathPen.Color = Color.Blue; break;
+					}
+				}
+			}
+
 			foreach (var cache in caches)
 			{
 				var lastObjDistance = 0f;
@@ -1118,9 +1140,9 @@ namespace ORTS.Debugging
 								{
 									if (sw.Item.TrJunctionNode == switchObj.TrackNode.TrJunctionNode)
 									{
-										var pen = new Pen(Brushes.Red); pen.Width = pathPen.Width; var r = 6 * greenPen.Width;
-										g.DrawLine(pen, new PointF(sw.Location2D.X - r, sw.Location2D.Y - r), new PointF(sw.Location2D.X + r, sw.Location2D.Y + r));
-										g.DrawLine(pen, new PointF(sw.Location2D.X - r, sw.Location2D.Y + r), new PointF(sw.Location2D.X + r, sw.Location2D.Y - r));
+										var r = 6 * greenPen.Width;
+										g.DrawLine(pathPen, new PointF(sw.Location2D.X - r, sw.Location2D.Y - r), new PointF(sw.Location2D.X + r, sw.Location2D.Y + r));
+										g.DrawLine(pathPen, new PointF(sw.Location2D.X - r, sw.Location2D.Y + r), new PointF(sw.Location2D.X + r, sw.Location2D.Y - r));
 										break;
 									}
 								}
@@ -1312,7 +1334,8 @@ namespace ORTS.Debugging
 			  for (var i =0; i < chosen.Count; i++)
 			  {
 				  var tmp = chosen[i];
-				  MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage(tmp.Text, "Error", "Sorry the server has removed you")).ToString());
+				  var name = (tmp.Text.Split(' '))[0];//the name may have (H) in it, need to filter that out
+				  MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage(name, "Error", "Sorry the server has removed you")).ToString());
 			  }
 		  }
 
@@ -1858,8 +1881,9 @@ namespace ORTS.Debugging
 			  var chosen = this.AvatarView.SelectedItems;
 			  for (var i = 0; i < chosen.Count; i++)
 			  {
-				  if (chosen[i].Text == MultiPlayer.MPManager.GetUserName()) continue;
-				  user += chosen[i].Text + "\r";
+				  var name = chosen[i].Text.Split(' ')[0]; //text may have (H) in it, so need to filter out
+				  if (name == MultiPlayer.MPManager.GetUserName()) continue;
+				  user += name + "\r";
 			  }
 			  user += "0END";
 
