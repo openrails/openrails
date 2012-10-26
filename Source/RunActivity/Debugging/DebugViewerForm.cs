@@ -74,6 +74,7 @@ namespace ORTS.Debugging
 	  public double signalPickedTime = 0.0f;
 	  public bool DrawPath = true; //draw train path
 	  ImageList imageList1 = null;
+	  public List<Train> selectedTrainList = null;
 	  /// <summary>
 	  /// contains the last position of the mouse
 	  /// </summary>
@@ -164,6 +165,7 @@ namespace ORTS.Debugging
 		 boxSetSignal.Items.Add("Approach");
 		 boxSetSignal.Items.Add("Proceed");
 		 chkAllowUserSwitch.Checked = false;
+		 selectedTrainList = new List<Train>();
 		 if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.Instance().AllowedManualSwitch = false; }
       
 
@@ -719,9 +721,39 @@ namespace ORTS.Debugging
 
 				//variable for drawing train path
 				var mDist = 4000f; var pDist = 50; //segment length when draw path
-				
-				foreach (Train t in simulator.Trains)
+
+				selectedTrainList.Clear();
+				foreach (var t in simulator.Trains) selectedTrainList.Add(t);
+
+				var redTrain = selectedTrainList.Count;
+
+				//choosen trains will be drawn later using blue, so it will overlap on the red lines
+				var chosen = AvatarView.SelectedItems;
+				if (chosen.Count > 0)
 				{
+					for (var i = 0; i < chosen.Count; i++)
+					{
+						var name = chosen[i].Text.Split(' ')[0].Trim(); //filter out (H) in the text
+						var train = MultiPlayer.MPManager.OnlineTrains.findTrain(name);
+						if (train != null) { selectedTrainList.Remove(train); selectedTrainList.Add(train); redTrain--; }
+						//if selected include myself, will show it as blue
+						if (MultiPlayer.MPManager.GetUserName() == name && Program.Simulator.PlayerLocomotive != null)
+						{
+							selectedTrainList.Remove(Program.Simulator.PlayerLocomotive.Train); selectedTrainList.Add(Program.Simulator.PlayerLocomotive.Train);
+							redTrain--;
+						}
+
+					}
+				}
+
+				//trains selected in the avatar view list will be drawn in blue, others will be drawn in red
+				pathPen.Color = Color.Red;
+				var drawRed = 0;
+				foreach (Train t in selectedTrainList)
+				{
+					drawRed++;//how many red has been drawn
+					if (drawRed > redTrain) pathPen.Color = Color.Blue; //more than the red should be drawn, thus draw in blue
+
 					name = "";
 					TrainCar firstCar = null;
 					if (t.LeadLocomotive != null)
@@ -1057,27 +1089,6 @@ namespace ORTS.Debugging
 			var currentPosition = new Traveller(position);
 			currentPosition.Move(-initialNodeOffset);
 			currentDistance = 0;
-
-			//trains selected in the avatar view list will be drawn in blue, others will be drawn in red
-			pathPen.Color = Color.Red;
-			var chosen = AvatarView.SelectedItems;
-			if (chosen.Count > 0)
-			{
-				for (var i = 0; i < chosen.Count; i++)
-				{
-					var  name = chosen[i].Text.Split(' ')[0].Trim(); //filter out (H) in the text
-					if (MultiPlayer.MPManager.OnlineTrains.findTrain(name) == train)
-					{
-						pathPen.Color = Color.Blue; break;
-					}
-
-					//if selected include myself, will show it as blue
-					if (MultiPlayer.MPManager.GetUserName() == name && Program.Simulator.PlayerLocomotive != null && train == Program.Simulator.PlayerLocomotive.Train)
-					{
-						pathPen.Color = Color.Blue; break;
-					}
-				}
-			}
 
 			foreach (var cache in caches)
 			{

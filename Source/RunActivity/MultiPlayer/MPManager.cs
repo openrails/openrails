@@ -200,6 +200,9 @@ namespace ORTS.MultiPlayer
 			handleUserInput();
 
 			if (begineZeroTime == 0) begineZeroTime = newtime - 10;
+
+			CheckPlayerTrainSpad();//over speed or pass a red light
+
 			//server update train location of all
 			if (Program.Server != null && newtime - lastMoveTime >= 1f)
 			{
@@ -290,6 +293,26 @@ namespace ORTS.MultiPlayer
 			 * */
 		}
 
+		void CheckPlayerTrainSpad()
+		{
+			var Locomotive = (MSTSLocomotive)Program.Simulator.PlayerLocomotive;
+			if (Locomotive == null) return;
+			var train = Locomotive.Train;
+			if (train == null ||train.TrainType == Train.TRAINTYPE.REMOTE) return;//no train or is remotely controlled
+
+			var spad = false;
+			var maxSpeed = Math.Abs(train.AllowedMaxSpeedMpS) + 3;//allow some margin of error (about 10km/h)
+			var speed = Math.Abs(Locomotive.SpeedMpS);
+			if (speed > maxSpeed) spad = true;
+			if (train.TMaspect == ORTS.Popups.TrackMonitorSignalAspect.Stop && Math.Abs(train.distanceToSignal) < 2*speed && speed > 5) spad = true; //red light and cannot stop within 2 seconds, if the speed is large
+			if (spad == true)
+			{
+				Locomotive.SetEmergency();
+				Program.Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
+			}
+
+
+		}
 		//check if it is in the server mode
 		public static bool IsServer()
 		{
@@ -480,11 +503,11 @@ namespace ORTS.MultiPlayer
 			int count = 0;
 			foreach (var pair in users)
 			{
-				if (count > 10) break;
+				if (count >= 10) break;
 				info += "\t" + pair.Value + ": distance of " + (int)(pair.Key / metricbase) + metric;
 				count++;
 			}
-			if (users.Count < OnlineTrains.Players.Count) { info += "\t ..."; }
+			if (count < OnlineTrains.Players.Count) { info += "\t ..."; }
 			return info;
 		}
 
