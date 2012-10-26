@@ -2759,6 +2759,7 @@ namespace ORTS
                                         rearSigRef = signals.FindNextSignal(rearTDBTraveller);
                                         if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
                                         {
+											if (signalObjects == null) return;
                                                 signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
                                                 if ( !MultiPlayer.MPManager.IsClient()) signalObjects[rearSigRef].Update();
                                         }
@@ -2771,6 +2772,7 @@ namespace ORTS
                                         prevSigRef = signals.FindPrevSignal(rearTDBTraveller);
                                         if (prevSigRef >= 0)
                                         {
+											if (signalObjects == null) return;
                                             signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
 											if (!MultiPlayer.MPManager.IsClient()) signalObjects[prevSigRef].Update();
                                         }
@@ -2786,11 +2788,13 @@ namespace ORTS
                                         {
                                                 if (prevSigRef > 0)
                                                 {
+													if (signalObjects == null) return;
                                                     signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.CLEAR;
                                                 }
                                                 prevSigRef = newprevSigRef;
                                                 if (prevSigRef > 0)
                                                 {
+													if (signalObjects == null) return;
                                                     signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
 													if (!MultiPlayer.MPManager.IsClient()) signalObjects[prevSigRef].Update();
                                                 }
@@ -2799,7 +2803,8 @@ namespace ORTS
                         }
                         if (rearSigRef >= 0)
                         {
-                                float dist = signalObjects[rearSigRef].DistanceTo(rearTDBTraveller);
+							if (signalObjects == null) return;
+							float dist = signalObjects[rearSigRef].DistanceTo(rearTDBTraveller);
                                 // The rear of the train has passed this signal so set previous signal to BLOCKSTATE.CLEAR
                                 if (dist <= 0)
                                 {

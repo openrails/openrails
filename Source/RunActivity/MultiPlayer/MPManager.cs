@@ -446,6 +446,7 @@ namespace ORTS.MultiPlayer
 		//this will be used in the server, in Simulator.cs
 		public bool TrainOK2Couple(Train t1, Train t2)
 		{
+			if (Math.Abs(t1.SpeedMpS) > 10 || Math.Abs(t2.SpeedMpS) > 10) return false; //we do not like high speed punch in MP, will mess up a lot.
 
 			if (t1.TrainType != Train.TRAINTYPE.REMOTE && t2.TrainType != Train.TRAINTYPE.REMOTE) return true;
 
@@ -535,7 +536,7 @@ namespace ORTS.MultiPlayer
 					{
 						if (Program.Server != null) Program.Server.Players.Remove(p);
 						//player is not in this train
-						if (p.Train != Program.Simulator.PlayerLocomotive.Train)
+						if (p.Train != null && p.Train != Program.Simulator.PlayerLocomotive.Train)
 						{
 							if (p.Train.TrackAuthority != null)
 							{
@@ -560,7 +561,7 @@ namespace ORTS.MultiPlayer
 			}
 			catch (Exception e)
 			{
-				return;
+				System.Console.WriteLine(e + e.StackTrace); return;
 			}
 			playersRemoved.Clear();
 		}

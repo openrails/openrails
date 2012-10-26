@@ -1691,6 +1691,7 @@ namespace ORTS.MultiPlayer
 					MPManager.Instance().AddRemovedPlayer(p);
 				}
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+				MPManager.BroadCast(this.ToString()); //broadcast twice
 			}
 			else //client will remove train
 			{
