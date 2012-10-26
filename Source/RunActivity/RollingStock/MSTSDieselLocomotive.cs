@@ -561,7 +561,7 @@ namespace ORTS
 
             foreach (KeyValuePair<string, List<ParticleEmitterDrawer>> pair in ParticleDrawers)
             {
-                if (pair.Key == "Exhaust1")
+				if (pair.Key.StartsWith("Exhaust"))
                 {
                     foreach (ParticleEmitterDrawer drawer in pair.Value)
                     {
@@ -617,7 +617,7 @@ namespace ORTS
         {
             foreach (KeyValuePair<string, List<ParticleEmitterDrawer>> pair in ParticleDrawers)
             {
-                if (pair.Key == "Exhaust1")
+                if (pair.Key.StartsWith("Exhaust"))
                 {
                     foreach (ParticleEmitterDrawer drawer in pair.Value)
                     {
