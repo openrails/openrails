@@ -37,7 +37,7 @@ namespace ORTS.MultiPlayer
 	//a singleton class handles communication, update and stop etc.
 	class MPManager
 	{
-		public int version = 11;
+		public int version = 12;
 		double lastMoveTime = 0.0f;
 		public double lastSwitchTime = 0.0f;
 		double lastSendTime = 0.0f;
@@ -293,6 +293,7 @@ namespace ORTS.MultiPlayer
 			 * */
 		}
 
+
 		void CheckPlayerTrainSpad()
 		{
 			var Locomotive = (MSTSLocomotive)Program.Simulator.PlayerLocomotive;
@@ -304,11 +305,12 @@ namespace ORTS.MultiPlayer
 			var maxSpeed = Math.Abs(train.AllowedMaxSpeedMpS) + 3;//allow some margin of error (about 10km/h)
 			var speed = Math.Abs(Locomotive.SpeedMpS);
 			if (speed > maxSpeed) spad = true;
-			if (train.TMaspect == ORTS.Popups.TrackMonitorSignalAspect.Stop && Math.Abs(train.distanceToSignal) < 2*speed && speed > 5) spad = true; //red light and cannot stop within 2 seconds, if the speed is large
-			if (spad == true)
+			//if (train.TMaspect == ORTS.Popups.TrackMonitorSignalAspect.Stop && Math.Abs(train.distanceToSignal) < 2*speed && speed > 5) spad = true; //red light and cannot stop within 2 seconds, if the speed is large
+			if (spad == true || train.spad)
 			{
 				Locomotive.SetEmergency();
 				Program.Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
+				train.spad = false;
 			}
 
 

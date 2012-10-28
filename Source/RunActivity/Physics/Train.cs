@@ -821,7 +821,6 @@ namespace ORTS
 			{
                     firstObject = SignalObjectItems[0];
                     firstObject.distance_to_train = firstObject.ObjectDetails.DistanceTo(dFrontTDBTraveller);
-
   //
         // remember last signal index
         //
@@ -838,9 +837,21 @@ namespace ORTS
 
                     while (firstObject.distance_to_train < 0.0f && SignalObjectItems.Count > 0)
                     {
-                            if (firstObject.actual_speed > 0)
+						//passed a red, will make it spad
+						if (firstObject.ObjectDetails != null && firstObject.ObjectDetails.isSignal &&
+							firstObject.signal_state == SignalHead.SIGASP.STOP) this.spad = true;
+
+						//if (MPManager.IsServer() && firstObject.ObjectDetails.isSignal) firstObject.ObjectDetails.SetSignalState(Signal.SIGNALSTATE.STOP);
+						
+						if (firstObject.actual_speed > 0)
                             {
-                                    AllowedMaxSpeedMpS = firstObject.actual_speed;
+								if (firstObject.signal_state == SignalHead.SIGASP.APPROACH_1 || firstObject.signal_state == SignalHead.SIGASP.APPROACH_2 ||
+									firstObject.signal_state == SignalHead.SIGASP.APPROACH_3)
+								{
+									AllowedMaxSpeedMpS = RouteMaxSpeedMpS;
+
+								}//speedlimit set by approach should be lifted once the train passed it
+                                else AllowedMaxSpeedMpS = firstObject.actual_speed;
                                     if (firstObject.ObjectDetails.isSignal)
                                     {
                                             allowedMaxSpeedSignalMpS = AllowedMaxSpeedMpS;
