@@ -2123,7 +2123,7 @@ namespace ORTS
                                     }
                                     else
                                     {
-										if (MultiPlayer.MPManager.IsMultiPlayer()) enabled = true;
+										if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.Instance().PreferGreen) enabled = true; //in MP, wants green always
 										else enabled = false;
                                     }
                                 }

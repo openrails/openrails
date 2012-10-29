@@ -678,7 +678,7 @@ namespace ORTS
                     }
                 }
 
-                auth.Path.AlignSwitchesTo(node);
+                if (auth.Train.TrainType != Train.TRAINTYPE.REMOTE) auth.Path.AlignSwitchesTo(node);
 
                 float dist = traveller.DistanceTo(node.Location.TileX, node.Location.TileZ, node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z);
                 if (node.NextMainTVNIndex == traveller.TrackNodeIndex || node.NextSidingTVNIndex == traveller.TrackNodeIndex)

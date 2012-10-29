@@ -51,6 +51,9 @@
 		  this.messages = new System.Windows.Forms.ListBox();
 		  this.btnAssist = new System.Windows.Forms.Button();
 		  this.btnNormal = new System.Windows.Forms.Button();
+		  this.btnFollow = new System.Windows.Forms.Button();
+		  this.chkBoxPenalty = new System.Windows.Forms.CheckBox();
+		  this.chkPreferGreen = new System.Windows.Forms.CheckBox();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.SuspendLayout();
@@ -69,7 +72,7 @@
 		  // refreshButton
 		  // 
 		  this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.refreshButton.Location = new System.Drawing.Point(808, 103);
+		  this.refreshButton.Location = new System.Drawing.Point(818, 102);
 		  this.refreshButton.Name = "refreshButton";
 		  this.refreshButton.Size = new System.Drawing.Size(93, 23);
 		  this.refreshButton.TabIndex = 1;
@@ -118,21 +121,21 @@
 		  // 
 		  // AvatarView
 		  // 
-		  this.AvatarView.Location = new System.Drawing.Point(779, 131);
+		  this.AvatarView.Location = new System.Drawing.Point(779, 160);
 		  this.AvatarView.Name = "AvatarView";
-		  this.AvatarView.Size = new System.Drawing.Size(121, 626);
+		  this.AvatarView.Size = new System.Drawing.Size(121, 597);
 		  this.AvatarView.TabIndex = 14;
 		  this.AvatarView.UseCompatibleStateImageBehavior = false;
 		  this.AvatarView.SelectedIndexChanged += new System.EventHandler(this.AvatarView_SelectedIndexChanged);
 		  // 
 		  // rmvButton
 		  // 
-		  this.rmvButton.Location = new System.Drawing.Point(707, 74);
+		  this.rmvButton.Location = new System.Drawing.Point(766, 130);
 		  this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
 		  this.rmvButton.Name = "rmvButton";
-		  this.rmvButton.Size = new System.Drawing.Size(93, 24);
+		  this.rmvButton.Size = new System.Drawing.Size(72, 24);
 		  this.rmvButton.TabIndex = 15;
-		  this.rmvButton.Text = "Remove Player";
+		  this.rmvButton.Text = "Remove";
 		  this.rmvButton.UseVisualStyleBackColor = true;
 		  this.rmvButton.Click += new System.EventHandler(this.rmvButton_Click);
 		  // 
@@ -141,7 +144,7 @@
 		  this.chkAllowUserSwitch.AutoSize = true;
 		  this.chkAllowUserSwitch.Checked = true;
 		  this.chkAllowUserSwitch.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(708, 54);
+		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(708, 49);
 		  this.chkAllowUserSwitch.Name = "chkAllowUserSwitch";
 		  this.chkAllowUserSwitch.Size = new System.Drawing.Size(83, 17);
 		  this.chkAllowUserSwitch.TabIndex = 16;
@@ -154,7 +157,7 @@
 		  this.chkShowAvatars.AutoSize = true;
 		  this.chkShowAvatars.Checked = true;
 		  this.chkShowAvatars.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkShowAvatars.Location = new System.Drawing.Point(708, 34);
+		  this.chkShowAvatars.Location = new System.Drawing.Point(708, 31);
 		  this.chkShowAvatars.Name = "chkShowAvatars";
 		  this.chkShowAvatars.Size = new System.Drawing.Size(92, 17);
 		  this.chkShowAvatars.TabIndex = 17;
@@ -236,7 +239,7 @@
 		  this.chkDrawPath.AutoSize = true;
 		  this.chkDrawPath.Checked = true;
 		  this.chkDrawPath.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkDrawPath.Location = new System.Drawing.Point(807, 34);
+		  this.chkDrawPath.Location = new System.Drawing.Point(807, 32);
 		  this.chkDrawPath.Name = "chkDrawPath";
 		  this.chkDrawPath.Size = new System.Drawing.Size(76, 17);
 		  this.chkDrawPath.TabIndex = 24;
@@ -282,7 +285,7 @@
 		  this.chkPickSignals.AutoSize = true;
 		  this.chkPickSignals.Checked = true;
 		  this.chkPickSignals.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkPickSignals.Location = new System.Drawing.Point(808, 54);
+		  this.chkPickSignals.Location = new System.Drawing.Point(807, 49);
 		  this.chkPickSignals.Name = "chkPickSignals";
 		  this.chkPickSignals.Size = new System.Drawing.Size(84, 17);
 		  this.chkPickSignals.TabIndex = 27;
@@ -294,7 +297,7 @@
 		  this.chkPickSwitches.AutoSize = true;
 		  this.chkPickSwitches.Checked = true;
 		  this.chkPickSwitches.CheckState = System.Windows.Forms.CheckState.Checked;
-		  this.chkPickSwitches.Location = new System.Drawing.Point(807, 77);
+		  this.chkPickSwitches.Location = new System.Drawing.Point(807, 66);
 		  this.chkPickSwitches.Name = "chkPickSwitches";
 		  this.chkPickSwitches.Size = new System.Drawing.Size(93, 17);
 		  this.chkPickSwitches.TabIndex = 28;
@@ -338,7 +341,7 @@
 		  // 
 		  // btnNormal
 		  // 
-		  this.btnNormal.Location = new System.Drawing.Point(749, 102);
+		  this.btnNormal.Location = new System.Drawing.Point(755, 102);
 		  this.btnNormal.Margin = new System.Windows.Forms.Padding(2);
 		  this.btnNormal.Name = "btnNormal";
 		  this.btnNormal.Size = new System.Drawing.Size(58, 24);
@@ -347,12 +350,53 @@
 		  this.btnNormal.UseVisualStyleBackColor = true;
 		  this.btnNormal.Click += new System.EventHandler(this.btnNormalClick);
 		  // 
+		  // btnFollow
+		  // 
+		  this.btnFollow.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+		  this.btnFollow.Location = new System.Drawing.Point(845, 131);
+		  this.btnFollow.Name = "btnFollow";
+		  this.btnFollow.Size = new System.Drawing.Size(60, 23);
+		  this.btnFollow.TabIndex = 32;
+		  this.btnFollow.Text = "Follow";
+		  this.btnFollow.UseVisualStyleBackColor = true;
+		  this.btnFollow.Click += new System.EventHandler(this.btnFollowClick);
+		  // 
+		  // chkBoxPenalty
+		  // 
+		  this.chkBoxPenalty.AutoSize = true;
+		  this.chkBoxPenalty.Checked = true;
+		  this.chkBoxPenalty.CheckState = System.Windows.Forms.CheckState.Checked;
+		  this.chkBoxPenalty.Location = new System.Drawing.Point(708, 66);
+		  this.chkBoxPenalty.Name = "chkBoxPenalty";
+		  this.chkBoxPenalty.Size = new System.Drawing.Size(61, 17);
+		  this.chkBoxPenalty.TabIndex = 33;
+		  this.chkBoxPenalty.Text = "Penalty";
+		  this.chkBoxPenalty.UseVisualStyleBackColor = true;
+		  this.chkBoxPenalty.CheckedChanged += new System.EventHandler(this.chkOPenaltyHandle);
+		  // 
+		  // chkPreferGreen
+		  // 
+		  this.chkPreferGreen.AutoSize = true;
+		  this.chkPreferGreen.Checked = true;
+		  this.chkPreferGreen.CheckState = System.Windows.Forms.CheckState.Checked;
+		  this.chkPreferGreen.Location = new System.Drawing.Point(708, 83);
+		  this.chkPreferGreen.Name = "chkPreferGreen";
+		  this.chkPreferGreen.Size = new System.Drawing.Size(86, 17);
+		  this.chkPreferGreen.TabIndex = 34;
+		  this.chkPreferGreen.Text = "Prefer Green";
+		  this.chkPreferGreen.UseVisualStyleBackColor = true;
+		  this.chkPreferGreen.Visible = false;
+		  this.chkPreferGreen.CheckedChanged += new System.EventHandler(this.chkPreferGreenHandle);
+		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
 		  this.ClientSize = new System.Drawing.Size(923, 768);
+		  this.Controls.Add(this.chkPreferGreen);
+		  this.Controls.Add(this.chkBoxPenalty);
+		  this.Controls.Add(this.btnFollow);
 		  this.Controls.Add(this.btnNormal);
 		  this.Controls.Add(this.btnAssist);
 		  this.Controls.Add(this.chkAllowNew);
@@ -413,5 +457,8 @@
 	  private System.Windows.Forms.ListBox messages;
 	  private System.Windows.Forms.Button btnAssist;
 	  private System.Windows.Forms.Button btnNormal;
+	  private System.Windows.Forms.Button btnFollow;
+	  private System.Windows.Forms.CheckBox chkBoxPenalty;
+	  private System.Windows.Forms.CheckBox chkPreferGreen;
    }
 }

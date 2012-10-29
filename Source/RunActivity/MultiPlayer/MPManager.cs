@@ -67,6 +67,8 @@ namespace ORTS.MultiPlayer
 		public List<string> aiderList;
 		public bool NotServer = true;
 		public static DispatchViewer DispatcherWindow;
+		public bool CheckSpad = true;
+		public bool PreferGreen = true;
 		Simulator Simulator;
 		Viewer3D Viewer;
 		public string MD5Check = "";
@@ -296,6 +298,7 @@ namespace ORTS.MultiPlayer
 
 		void CheckPlayerTrainSpad()
 		{
+			if (CheckSpad == false) return;
 			var Locomotive = (MSTSLocomotive)Program.Simulator.PlayerLocomotive;
 			if (Locomotive == null) return;
 			var train = Locomotive.Train;
@@ -443,6 +446,9 @@ namespace ORTS.MultiPlayer
 					if (removedTrains.Contains(t)) continue;//this train is going to be removed, should avoid it.
 					MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 				}
+				if (CheckSpad == false) { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "OverSpeedOK", "OK to go overspeed and pass stop light")).ToString()); }
+				else { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light")).ToString()); }
+
 			}
 		}
 		//this will be used in the server, in Simulator.cs
@@ -608,12 +614,12 @@ namespace ORTS.MultiPlayer
 						if (!hasIt) Program.Simulator.Trains.Add(t);
 						if (IsServer())
 						{
-							if (t.Path != null && AllowedManualSwitch)
+							if (t.Path != null && !PreferGreen)
 							{
 								t.TrackAuthority = new TrackAuthority(t, t.Number + 100000, 10, t.Path);
 								Program.Simulator.AI.Dispatcher.TrackAuthorities.Add(t.TrackAuthority);
 								Program.Simulator.AI.Dispatcher.RequestAuth(t, true, 0);
-								t.Path.AlignInitSwitches(t.RearTDBTraveller, -1, 500);
+								//t.Path.AlignInitSwitches(t.RearTDBTraveller, -1, 500);
 							}
 							else t.TrackAuthority = null;
 						}

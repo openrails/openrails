@@ -176,6 +176,7 @@ namespace ORTS.Debugging
 		{
 			msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
 			AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false; chkAllowNew.Visible = false;
+			chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false;
 			pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
 			refreshButton.Text = "View Self";
 		}
@@ -232,8 +233,9 @@ namespace ORTS.Debugging
 		 lastUpdateTime = Program.Simulator.GameTime;
 
             GenerateView();
-      }
+	  }
 
+	  #region initData
 	  private void InitData()
 	  {
 		  if (!loaded)
@@ -369,8 +371,11 @@ namespace ORTS.Debugging
 		 imageList1.ImageSize = new Size(64, 64);
 		 this.AvatarView.LargeImageList = this.imageList1;
 
-      }
+	  }
 
+	  #endregion
+
+	  #region avatar
 	  Dictionary<string, Image> avatarList = null;
 	  public void AddAvatar(string name, string url)
 	  {
@@ -521,8 +526,12 @@ namespace ORTS.Debugging
 			  }
 		  }
 	  }
-	  public bool firstShow = true;
 
+	  #endregion
+
+	  #region Draw
+	  public bool firstShow = true;
+	  public bool followTrain = false;
       /// <summary>
       /// Regenerates the 2D view. At the moment, examines the track network
       /// each time the view is drawn. Later, the traversal and drawing can be separated.
@@ -572,10 +581,33 @@ namespace ORTS.Debugging
 			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
 			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
 			  if (MultiPlayer.MPManager.IsServer()) { rmvButton.Visible = true; chkAllowNew.Visible = true; chkAllowUserSwitch.Visible = true; }
-			  else { rmvButton.Visible = false; chkAllowNew.Visible = false; chkAllowUserSwitch.Visible = false; }
+			  else { rmvButton.Visible = false; chkAllowNew.Visible = false; chkAllowUserSwitch.Visible = false; chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false; }
 			  firstShow = false;
 		  }
-
+		  else if (followTrain)
+		  {
+			  WorldPosition pos;
+			  //see who should I look at:
+			  //if the player is selected in the avatar list, show the player, otherwise, show the one with the lowest index
+			  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
+			  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
+			  if (AvatarView.SelectedIndices.Count > 0 && !AvatarView.SelectedIndices.Contains(0))
+			  {
+				  try
+				  {
+					  var i = 10000;
+					  foreach (var index in AvatarView.SelectedIndices)
+					  {
+						  if ((int)index < i) i = (int)index;
+					  }
+					  var name = AvatarView.Items[i].Text;
+					  pos = MultiPlayer.MPManager.OnlineTrains.Players[name].Train.Cars[0].WorldPosition;
+				  }
+				  catch { }
+			  }
+			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
+			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
+		  }
 
 		  //if (Program.Random.Next(100) == 0) AddAvatar("Test:"+Program.Random.Next(5), "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle");
 		  try
@@ -1174,8 +1206,9 @@ namespace ORTS.Debugging
 				Cache.Remove(oldCache.Key);
 
 		}
+	  #endregion
 
-      /// <summary>
+		/// <summary>
       /// Generates a rectangle representing a dot being drawn.
       /// </summary>
       /// <param name="p">Center point of the dot, in pixels.</param>
@@ -1283,6 +1316,7 @@ namespace ORTS.Debugging
 
       private void refreshButton_Click(object sender, EventArgs e)
       {
+		  followTrain = false;
 		  firstShow = true;
          GenerateView();
       }
@@ -2065,6 +2099,25 @@ namespace ORTS.Debugging
 			  AvatarView.Items.Clear();
 			  if (avatarList != null) avatarList.Clear();
 		  }
+
+	  }
+
+	  private void btnFollowClick(object sender, EventArgs e)
+	  {
+		  followTrain = true;
+	  }
+
+	  private void chkOPenaltyHandle(object sender, EventArgs e)
+	  {
+		  MultiPlayer.MPManager.Instance().CheckSpad = chkBoxPenalty.Checked;
+		  if (this.chkBoxPenalty.Checked == false) { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "OverSpeedOK", "OK to go overspeed and pass stop light")).ToString()); }
+		  else { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light")).ToString()); }
+
+	  }
+
+	  private void chkPreferGreenHandle(object sender, EventArgs e)
+	  {
+		  MultiPlayer.MPManager.Instance().PreferGreen = chkBoxPenalty.Checked;
 
 	  }
 

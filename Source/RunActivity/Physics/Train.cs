@@ -845,13 +845,7 @@ namespace ORTS
 						
 						if (firstObject.actual_speed > 0)
                             {
-								if (firstObject.signal_state == SignalHead.SIGASP.APPROACH_1 || firstObject.signal_state == SignalHead.SIGASP.APPROACH_2 ||
-									firstObject.signal_state == SignalHead.SIGASP.APPROACH_3)
-								{
-									AllowedMaxSpeedMpS = RouteMaxSpeedMpS;
-
-								}//speedlimit set by approach should be lifted once the train passed it
-                                else AllowedMaxSpeedMpS = firstObject.actual_speed;
+								AllowedMaxSpeedMpS = firstObject.actual_speed;
                                     if (firstObject.ObjectDetails.isSignal)
                                     {
                                             allowedMaxSpeedSignalMpS = AllowedMaxSpeedMpS;
@@ -1127,7 +1121,9 @@ namespace ORTS
                                                 actualSpeedMpS = -1;
                                         }
                                 }
-                                thisObject.actual_speed = actualSpeedMpS;
+								if (thisObject.signal_state == SignalHead.SIGASP.STOP) thisObject.actual_speed = 0.001f;
+                                else thisObject.actual_speed = actualSpeedMpS;
+								System.Console.Write(thisObject.actual_speed);
                                 if (actualSpeedMpS > 0)
                                 {
                                         validSpeedMpS = actualSpeedMpS;

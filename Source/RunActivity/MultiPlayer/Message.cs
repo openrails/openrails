@@ -1420,6 +1420,17 @@ namespace ORTS.MultiPlayer
 					MPManager.Instance().TrySwitch = true;
 					return;
 				}
+				else if (level == "OverSpeedOK")
+				{
+					MPManager.Instance().CheckSpad = false;
+					return;
+				}
+				else if (level == "NoOverSpeed")
+				{
+					MPManager.Instance().CheckSpad = true;
+					return;
+				}
+
 			}
 		}
 
