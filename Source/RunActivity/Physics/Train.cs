@@ -107,8 +107,6 @@ namespace ORTS
         public int NumOfCouplerBreaks = 0;
         private bool numOfCouplerBreaksNoted = false;
 
-		public TrackLayer EditTrain = null; //WaltN: Temporary facility for track-laying experiments
-
 		/// <summary>
 		/// Reference to the Simulator object.
 		/// </summary>
@@ -741,24 +739,13 @@ namespace ORTS
 			//End-of-route detection
 			if (IsEndOfRoute(MUDirection))// FrontTDBTraveller.Direction))
 			{
-                if (EditTrain == null) //WaltN: !RE_ENABLED This is the normal path
-                {
-                    Stop();
+                Stop();
 
-                    // TODO - Collision detection: If a train hits an object, there should be a
-                    //        realistic response.  This includes a train impacting a bumper/buffer.
-                    //        It's possible that collision detection will occur BEFORE end-of-
-                    //        route detection and will obsolete this test in this location.
-                    //        However, the case of an unterminated section should be kept in mind.
-                }
-                else //WaltN: RE_ENABLED This is the track-laying path
-                {
-                    Stop();
-                    // Using FrontTDBTraveller if moving forward or RearTDBTraveller if moving backwards
-                    Traveller t = (MUDirection == Direction.Forward) ? FrontTDBTraveller : RearTDBTraveller;
-                    // Initiate a route edit
-                    EditTrain.LaySection(t);
-                }
+                // TODO - Collision detection: If a train hits an object, there should be a
+                //        realistic response.  This includes a train impacting a bumper/buffer.
+                //        It's possible that collision detection will occur BEFORE end-of-
+                //        route detection and will obsolete this test in this location.
+                //        However, the case of an unterminated section should be kept in mind.
 			}
 
 			if (!spad) UpdateSignalState();
@@ -1197,7 +1184,7 @@ namespace ORTS
 			AITrainThrottlePercent = 0;
 			AITrainBrakePercent = 100;
 			// The following does not seem to be essential.  It is commented out because
-			// we don't want emergency brake set if we just touch a bumper.  ...WaltN
+			// we don't want emergency brake set if we just touch a bumper.
 			//if (LeadLocomotive != null) ((MSTSLocomotive)LeadLocomotive).SetEmergency();
 		} // end Stop
 

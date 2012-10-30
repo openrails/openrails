@@ -2038,15 +2038,6 @@ namespace ORTS
                             T item = (trItems[trackNodes[currentNode].TrVectorNode.TrItemRefs[i]]) as T;
                             if (item != null && validitems != null && validitems.Contains((int)item.TrItemId))
                             {
-                                /*
-                                if (sigItem.revDir == currDir)
-                                {
-                                    int sigObj = sigItem.sigObj;
-                                    if (signalObjects[sigObj] != null) //WaltN: Fixes Sandpatch problem
-                                        if (signalObjects[sigObj].isSignalNormal())
-                                        {
-                                     */
-
                                 float dist = traveller.DistanceTo(item.TileX, item.TileZ, item.X, item.Y, item.Z);
                                 if (dist > 0)
                                 {

@@ -22,9 +22,6 @@
 /// All keyboard input comes from the viewer class as calls on simulator's methods.
 /// </summary>
 
-// Uncommenting the following will enable the experimental route-editing sandbox:
-//#define RE_ENABLED //WaltN
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -737,11 +734,6 @@ namespace ORTS
 
 			Train train = new Train(this);
 			train.TrainType = Train.TRAINTYPE.PLAYER;
-
-//WaltN: Temporary facility for track-laying experiments
-#if RE_ENABLED
-            train.EditTrain = new TrackLayer(TDB, TSectionDat); // Creates a TrackLayer for the player train
-#endif
 
             PATFile patFile = new PATFile(patFileName);
             PathName = patFile.Name;
