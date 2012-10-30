@@ -24,7 +24,6 @@ namespace ORTS.MultiPlayer
 {
 	public class Message
 	{
-		public string msg;
 		public static Message Decode(string m)
 		{
 			int index = m.IndexOf(' ');
@@ -54,6 +53,7 @@ namespace ORTS.MultiPlayer
 			else if (key == "AVATAR") return new MSGAvatar(m.Substring(index + 1));
 			else if (key == "WEATHER") return new MSGWeather(m.Substring(index + 1));
 			else if (key == "AIDER") return new MSGAider(m.Substring(index + 1));
+			else if (key == "SIGNALCHANGE") return new MSGSignalChange(m.Substring(index + 1));
 			else throw new Exception("Unknown Keyword" + key);
 		}
 
@@ -2823,5 +2823,91 @@ namespace ORTS.MultiPlayer
 	}
 
 	#endregion MSGAider
+
+	#region MSGSignalChange
+	public class MSGSignalChange : Message
+	{
+		int index;
+		int pick;
+		string sender;
+		//constructor to create a message from signal data
+		public MSGSignalChange(SignalObject signal, int p)
+		{
+			index = signal.thisRef;
+			pick = p;
+			sender = MPManager.GetUserName();
+		}
+
+		//constructor to decode the message "m"
+		public MSGSignalChange(string m)
+		{
+			string[] tmp = m.Split(' ');
+			sender = tmp[0].Trim();
+			index = int.Parse(tmp[1]);
+			pick = int.Parse(tmp[2]);
+		}
+
+		//how to handle the message?
+		public override void HandleMsg() //only client will get message, thus will set states
+		{
+			if (Program.Server != null && !MPManager.Instance().aiderList.Contains(sender)) return; //client will ignore it, also if not an aider, will ignore it
+
+			var signal = Program.Simulator.Signals.SignalObjects[index];
+			switch (pick)
+			{
+				case 0:
+					signal.canUpdate = true;
+					signal.forcedTime = 0;
+					break;
+				case 1:
+					signal.enabled = false;
+					signal.canUpdate = false;
+					//signal.forcedTime = Program.Simulator.GameTime;
+					foreach (var head in signal.SignalHeads)
+					{
+						head.SetMostRestrictiveAspect();
+						head.Update();
+					}
+					signal.forcedTime = Program.Simulator.GameTime;
+					break;
+				case 2:
+					signal.canUpdate = false;
+					//signal.
+					foreach (var head in signal.SignalHeads)
+					{
+						//first try to set as approach, if not defined, set as the least
+						var drawstate1 = head.def_draw_state(SignalHead.SIGASP.APPROACH_1);
+						var drawstate2 = head.def_draw_state(SignalHead.SIGASP.APPROACH_2);
+						var drawstate3 = head.def_draw_state(SignalHead.SIGASP.APPROACH_3);
+						if (drawstate1 > 0) { head.state = SignalHead.SIGASP.APPROACH_1; }
+						else if (drawstate2 > 0) { head.state = SignalHead.SIGASP.APPROACH_2; }
+						else { head.state = SignalHead.SIGASP.APPROACH_3; }
+						head.draw_state = head.def_draw_state(head.state);
+					}
+					signal.forcedTime = Program.Simulator.GameTime;
+					break;
+				case 3:
+					signal.canUpdate = false;
+					signal.enabled = true; //force it to be green,
+					//signal.
+					foreach (var head in signal.SignalHeads)
+					{
+						head.SetLeastRestrictiveAspect();
+						head.draw_state = head.def_draw_state(head.state);
+					}
+					signal.forcedTime = Program.Simulator.GameTime;
+					break;
+			}
+
+		}
+
+		public override string ToString()
+		{
+			
+			string tmp = "SIGNALCHANGE " + sender + " " + index + " " + pick; // fill in the message body here
+			return "" + tmp.Length + ": " + tmp;
+		}
+	}
+	#endregion MSGSignalChange
 
 }

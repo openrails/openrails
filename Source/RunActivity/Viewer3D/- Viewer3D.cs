@@ -526,7 +526,7 @@ namespace ORTS
 							nextSwitchTrack.SelectedRoute = 1;
 						else
 							nextSwitchTrack.SelectedRoute = 0;
-						if (MPManager.IsMultiPlayer() && MPManager.IsServer()) MPManager.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
+						//if (MPManager.IsMultiPlayer() && MPManager.IsServer()) MPManager.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
 
 					}
 				}

@@ -1520,7 +1520,7 @@ namespace ORTS.Debugging
 	  }
 	  private void HandlePickedSignal()
 	  {
-		  if (MultiPlayer.MPManager.IsClient() /*&& !MultiPlayer.MPManager.Instance().AmAider*/) return;//normal client not server
+		  if (MultiPlayer.MPManager.IsClient() && !MultiPlayer.MPManager.Instance().AmAider) return;//normal client not server or aider
 		  //boxSetSwitch.Enabled = false;
 		  boxSetSwitch.Visible = false;
 		  if (signalPickedItem == null) return;
@@ -1968,6 +1968,12 @@ namespace ORTS.Debugging
 		  }
 		  var signal = signalPickedItem.Signal;
 		  var type = boxSetSignal.SelectedIndex;
+		  if (MultiPlayer.MPManager.Instance().AmAider)
+		  {
+			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGSignalChange(signal, type)).ToString());
+			  UnHandleItemPick();
+			  return;
+		  }
 		  switch (type)
 		  {
 			  case 0:
