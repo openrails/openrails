@@ -93,6 +93,7 @@ namespace ORTS
 
 		public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
 		public bool spad = false;      // Signal Passed At Danger
+		public bool spad2 = false; //added by JTang, used by MP to put emergency on trains passed red-light
 		public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
 
         public float RouteMaxSpeedMpS = 0;    // Max speed as set by route (default value)
@@ -797,6 +798,7 @@ namespace ORTS
 		//  Update the distance to and aspect of next signal
 		//
         private Direction _prevDirection = Direction.N;
+		private bool tempSpeed = false;
         private void UpdateSignalState()
 		{
             ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
@@ -839,7 +841,7 @@ namespace ORTS
                     {
 						//passed a red, will make it spad
 						if (firstObject.ObjectDetails != null && firstObject.ObjectDetails.isSignal &&
-							firstObject.signal_state == SignalHead.SIGASP.STOP) this.spad = true;
+							firstObject.signal_state == SignalHead.SIGASP.STOP) this.spad2 = true;
 
 						//if (MPManager.IsServer() && firstObject.ObjectDetails.isSignal) firstObject.ObjectDetails.SetSignalState(Signal.SIGNALSTATE.STOP);
 						
@@ -854,6 +856,10 @@ namespace ORTS
                                     {
                                             allowedMaxSpeedLimitMpS = AllowedMaxSpeedMpS;
                                     }
+									if (firstObject.ObjectDetails.isSignal &&
+										(firstObject.signal_state != SignalHead.SIGASP.CLEAR_1 || firstObject.signal_state != SignalHead.SIGASP.CLEAR_2))
+										tempSpeed = true;
+									else tempSpeed = false;
                             }
 
                             SignalObjectItems.RemoveAt(0);
@@ -1104,7 +1110,8 @@ namespace ORTS
                                         validSpeedSignalMpS = actualSpeedMpS;
                                         if (validSpeedSignalMpS > validSpeedLimitMpS)
                                         {
-                                                actualSpeedMpS = -1;
+											if (tempSpeed == true) actualSpeedMpS = validSpeedLimitMpS;
+                                            else actualSpeedMpS = -1;
                                         }
                                 }
                                 else
@@ -1123,7 +1130,6 @@ namespace ORTS
                                 }
 								if (thisObject.signal_state == SignalHead.SIGASP.STOP) thisObject.actual_speed = 0.001f;
                                 else thisObject.actual_speed = actualSpeedMpS;
-								System.Console.Write(thisObject.actual_speed);
                                 if (actualSpeedMpS > 0)
                                 {
                                         validSpeedMpS = actualSpeedMpS;

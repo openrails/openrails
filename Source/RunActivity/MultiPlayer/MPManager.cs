@@ -309,11 +309,11 @@ namespace ORTS.MultiPlayer
 			var speed = Math.Abs(Locomotive.SpeedMpS);
 			if (speed > maxSpeed) spad = true;
 			//if (train.TMaspect == ORTS.Popups.TrackMonitorSignalAspect.Stop && Math.Abs(train.distanceToSignal) < 2*speed && speed > 5) spad = true; //red light and cannot stop within 2 seconds, if the speed is large
-			if (spad == true || train.spad)
+			if (spad == true || train.spad2)
 			{
 				Locomotive.SetEmergency();
 				Program.Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
-				train.spad = false;
+				train.spad2 = false;
 			}
 
 
