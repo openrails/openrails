@@ -559,6 +559,8 @@ namespace ORTS.Debugging
 			  {
 				  this.msgAll.Text = "MSG to All";
 			  }
+		  }
+		  if (firstShow || followTrain) {
 			  WorldPosition pos;
 			  //see who should I look at:
 			  //if the player is selected in the avatar list, show the player, otherwise, show the one with the lowest index
@@ -573,7 +575,7 @@ namespace ORTS.Debugging
 						  {
 							  if ((int)index < i) i = (int)index;
 						  }
-						  var name = AvatarView.Items[i].Text;
+						  var name = AvatarView.Items[i].Text.Split(' ')[0].Trim() ;
 						  pos = MultiPlayer.MPManager.OnlineTrains.Players[name].Train.Cars[0].WorldPosition;
 					  }
 					  catch { }
@@ -584,32 +586,7 @@ namespace ORTS.Debugging
 			  else { rmvButton.Visible = false; chkAllowNew.Visible = false; chkAllowUserSwitch.Visible = false; chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false; }
 			  firstShow = false;
 		  }
-		  else if (followTrain)
-		  {
-			  WorldPosition pos;
-			  //see who should I look at:
-			  //if the player is selected in the avatar list, show the player, otherwise, show the one with the lowest index
-			  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
-			  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
-			  if (AvatarView.SelectedIndices.Count > 0 && !AvatarView.SelectedIndices.Contains(0))
-			  {
-				  try
-				  {
-					  var i = 10000;
-					  foreach (var index in AvatarView.SelectedIndices)
-					  {
-						  if ((int)index < i) i = (int)index;
-					  }
-					  var name = AvatarView.Items[i].Text;
-					  pos = MultiPlayer.MPManager.OnlineTrains.Players[name].Train.Cars[0].WorldPosition;
-				  }
-				  catch { }
-			  }
-			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
-			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
-		  }
 
-		  //if (Program.Random.Next(100) == 0) AddAvatar("Test:"+Program.Random.Next(5), "http://trainsimchina.com/discuz/uc_server/avatar.php?uid=72965&size=middle");
 		  try
 		  {
 			  CheckAvatar();

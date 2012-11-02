@@ -799,7 +799,7 @@ namespace ORTS
             if (this.MUDirection != _prevDirection)
             {
                 _prevDirection = MUDirection;
-				if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) ResetSignal(false);//client will not set signals
+				/*if (!MPManager.IsMultiPlayer() || MPManager.IsServer())*/ ResetSignal(false);//client will not set signals
             }
 
         //
