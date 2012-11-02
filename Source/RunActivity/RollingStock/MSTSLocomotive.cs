@@ -1455,6 +1455,24 @@ namespace ORTS
             }
         }
 
+        public float LocomotiveAbsSpeedometerValue()
+        {
+            //data = SpeedMpS;
+            float data = 0.0f;
+            if (Simulator.UseAdvancedAdhesion && (!AntiSlip))
+                data = WheelSpeedMpS;
+            else
+                data = SpeedMpS;
+
+            //if (cvc.Units == CABViewControlUnits.KM_PER_HOUR)
+            //    data *= 3.6f;
+            //else // MPH
+            //    data *= 2.2369f;
+            data = Math.Abs(data);
+            return data;
+        }
+
+
         public virtual float GetDataOf(CabViewControl cvc)
         {
             if( Simulator.Settings.Alerter ) CheckVigilance();
@@ -1985,10 +2003,11 @@ namespace ORTS
         protected virtual void ReverserControlForwards()
         {
             if( Locomotive.Direction != Direction.Forward ) {
-                if( Locomotive.ThrottlePercent < 1 )
-                    Locomotive.StartReverseIncrease();
+                if( Locomotive.ThrottlePercent < 1 &&
+                    Locomotive.LocomotiveAbsSpeedometerValue() < 1)
+                        Locomotive.StartReverseIncrease();
                 else
-                    Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn);
             } else {
                 Locomotive.StartReverseIncrease();
             }
@@ -1997,10 +2016,11 @@ namespace ORTS
         protected virtual void ReverserControlBackwards()
         {
             if( Locomotive.Direction != Direction.Reverse ) {
-                if( Locomotive.ThrottlePercent < 1 )
-                    Locomotive.StartReverseDecrease();
+                if( Locomotive.ThrottlePercent < 1 &&
+                    Locomotive.LocomotiveAbsSpeedometerValue() < 1)
+                        Locomotive.StartReverseDecrease();
                 else
-                    Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn);
             } else {
                 Locomotive.StartReverseDecrease();
             }
