@@ -2282,40 +2282,29 @@ namespace ORTS
     {
         private static Dictionary<string, Texture2D> DayTextures = new Dictionary<string, Texture2D>();
         private static Dictionary<string, Texture2D> NightTextures = new Dictionary<string, Texture2D>();
-        private static Dictionary<string, Texture2D> LightTextures = new Dictionary<string, Texture2D>();
         private static Dictionary<string, Texture2D[]> PDayTextures = new Dictionary<string, Texture2D[]>();
         private static Dictionary<string, Texture2D[]> PNightTextures = new Dictionary<string, Texture2D[]>();
-        private static Dictionary<string, Texture2D[]> PLightTextures = new Dictionary<string, Texture2D[]>();
 
         /// <summary>
         /// Loads a texture, day night and cablight
         /// </summary>
         /// <param name="viewer">Viver3D</param>
-        /// <param name="FileName">Name of the Texture</param>
-        public static void LoadTextures(Viewer3D viewer, string FileName)
+        /// <param name="fileName">Name of the Texture</param>
+        public static void LoadTextures(Viewer3D viewer, string fileName)
         {
-            if (string.IsNullOrEmpty(FileName))
+            if (string.IsNullOrEmpty(fileName) || DayTextures.ContainsKey(fileName))
                 return;
 
-            if (DayTextures.Keys.Contains(FileName))
-                return;
-
-            if (File.Exists(FileName))
-                DayTextures.Add(FileName, viewer.TextureManager.Get(FileName));
+            if (File.Exists(fileName))
+                DayTextures.Add(fileName, viewer.TextureManager.Get(fileName));
             else
-                DayTextures.Add(FileName, SharedMaterialManager.MissingTexture);
+                DayTextures.Add(fileName, SharedMaterialManager.MissingTexture);
 
-            var nightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "night"), Path.GetFileName(FileName));
-            if (File.Exists(nightpath))
-                NightTextures.Add(FileName, viewer.TextureManager.Get(nightpath));
+            var nightPath = Path.Combine(Path.Combine(Path.GetDirectoryName(fileName), "night"), Path.GetFileName(fileName));
+            if (File.Exists(nightPath))
+                NightTextures.Add(fileName, viewer.TextureManager.Get(nightPath));
             else
-                NightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
-
-            var lightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "cablight"), Path.GetFileName(FileName));
-            if (File.Exists(lightpath))
-                LightTextures.Add(FileName, viewer.TextureManager.Get(lightpath));
-            else
-                LightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
+                NightTextures.Add(fileName, SharedMaterialManager.MissingTexture);
         }
 
         static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, Point controlSize, int frameCount, Point frameGrid, string fileName)
@@ -2393,168 +2382,78 @@ namespace ORTS
         /// <param name="framesY">Number of frames in the Y direction</param>
         public static void DisassembleTexture(GraphicsDevice graphicsDevice, string fileName, int width, int height, int frameCount, int framesX, int framesY)
         {
+            if (string.IsNullOrEmpty(fileName) || !DayTextures.ContainsKey(fileName))
+                return;
+
             var controlSize = new Point(width, height);
             var frameGrid = new Point(framesX, framesY);
 
-            PDayTextures[fileName] = null;
-            if (DayTextures.ContainsKey(fileName))
-            {
-                var texture = DayTextures[fileName];
-                if (texture != SharedMaterialManager.MissingTexture)
-                {
-                    PDayTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":day");
-                }
-            }
+            if (DayTextures[fileName] != SharedMaterialManager.MissingTexture)
+                PDayTextures[fileName] = Disassemble(graphicsDevice, DayTextures[fileName], controlSize, frameCount, frameGrid, fileName + ":day");
+            else
+                PDayTextures[fileName] = new Texture2D[0];
 
-            PNightTextures[fileName] = null;
-            if (NightTextures.ContainsKey(fileName))
-            {
-                var texture = NightTextures[fileName];
-                if (texture != SharedMaterialManager.MissingTexture)
-                {
-                    PNightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":night");
-                }
-            }
-
-            PLightTextures[fileName] = null;
-            if (LightTextures.ContainsKey(fileName))
-            {
-                var texture = LightTextures[fileName];
-                if (texture != SharedMaterialManager.MissingTexture)
-                {
-                    PLightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":light");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets a Texture from the given array
-        /// </summary>
-        /// <param name="arr">Texture array</param>
-        /// <param name="indx">Index</param>
-        /// <param name="FileName">Name of the file to report</param>
-        /// <returns>The given Texture</returns>
-        private static Texture2D SafeGetAt(Texture2D[] arr, int indx, string FileName)
-        {
-            if (arr == null)
-            {
-                Trace.TraceWarning("Passed null Texture[] for accessing {0}", FileName);
-                return SharedMaterialManager.MissingTexture;
-            }
-            
-            if (arr.Length < 1)
-            {
-                Trace.TraceWarning("Disassembled texture invalid for {0}", FileName);
-                return SharedMaterialManager.MissingTexture;
-            }
-            
-            indx = (int)MathHelper.Clamp(indx, 0, arr.Length - 1);
-
-            try
-            {
-                return arr[indx];
-            }
-            catch (IndexOutOfRangeException)
-            {
-                Trace.TraceWarning("Index {1} out of range for array length {2} while accessing texture for {0}", FileName, indx, arr.Length);
-                return SharedMaterialManager.MissingTexture;
-            }
+            if (NightTextures[fileName] != SharedMaterialManager.MissingTexture)
+                PNightTextures[fileName] = Disassemble(graphicsDevice, NightTextures[fileName], controlSize, frameCount, frameGrid, fileName + ":night");
+            else
+                PNightTextures[fileName] = new Texture2D[0];
         }
 
         /// <summary>
         /// Returns the compound part of a Texture previously disassembled
         /// </summary>
-        /// <param name="FileName">Name of the disassembled Texture</param>
-        /// <param name="indx">Index of the part</param>
+        /// <param name="fileName">Name of the disassembled Texture</param>
+        /// <param name="index">Index of the part</param>
         /// <param name="isDark">Is dark out there?</param>
-        /// <param name="isLight">Is Cab Light on?</param>
+        /// <param name="cabLight">Is Cab Light on?</param>
         /// <param name="isNightTexture"></param>
         /// <returns>The Texture represented by its index</returns>
-        public static Texture2D GetTextureByIndexes(string FileName, int indx, bool isDark, bool isLight, out bool isNightTexture)
+        public static Texture2D GetTextureByIndexes(string fileName, int index, bool isDark, bool cabLight, out bool isNightTexture)
         {
-            Texture2D retval = SharedMaterialManager.MissingTexture;
-            Texture2D[] tmp = null;
-
             isNightTexture = false;
-
-            if (string.IsNullOrEmpty(FileName) || !PDayTextures.Keys.Contains(FileName))
+            if (string.IsNullOrEmpty(fileName) || !DayTextures.ContainsKey(fileName) || index < 0)
                 return SharedMaterialManager.MissingTexture;
 
-            if (isDark)
-            {
-                if (isLight)
-                {
-                    //tmp = PLightTextures[FileName];
-                    tmp = PDayTextures[FileName];
-                    if (tmp != null)
-                    {
-                        retval = SafeGetAt(tmp, indx, FileName);
-                        isNightTexture = false;
-                    }
-                }
+            if (isDark && cabLight && PDayTextures[fileName].Length > index && PDayTextures[fileName][index] != SharedMaterialManager.MissingTexture)
+                return PDayTextures[fileName][index];
 
-                if (retval == SharedMaterialManager.MissingTexture)
-                {
-                    tmp = PNightTextures[FileName];
-                    if (tmp != null)
-                    {
-                        retval = SafeGetAt(tmp, indx, FileName);
-                        isNightTexture = true;
-                    }
-                }
-            }
+            isNightTexture = true;
+            if (isDark && PNightTextures[fileName].Length > index && PNightTextures[fileName][index] != SharedMaterialManager.MissingTexture)
+                return PNightTextures[fileName][index];
 
-            if (retval == SharedMaterialManager.MissingTexture)
-            {
-                tmp = PDayTextures[FileName];
-                if (tmp != null)
-                {
-                    retval = SafeGetAt(tmp, indx, FileName);
-                    isNightTexture = false;
-                }
-            }
-            return retval;
+            isNightTexture = false;
+            if (PDayTextures[fileName].Length > index && PDayTextures[fileName][index] != SharedMaterialManager.MissingTexture)
+                return PDayTextures[fileName][index];
+
+            return SharedMaterialManager.MissingTexture;
         }
 
         /// <summary>
         /// Returns a Texture by its name
         /// </summary>
-        /// <param name="FileName">Name of the Texture</param>
+        /// <param name="fileName">Name of the Texture</param>
         /// <param name="isDark">Is dark out there?</param>
-        /// <param name="isLight">Is Cab Light on?</param>
+        /// <param name="cabLight">Is Cab Light on?</param>
         /// <param name="isNightTexture"></param>
         /// <returns>The Texture</returns>
-        public static Texture2D GetTexture(string FileName, bool isDark, bool isLight, out bool isNightTexture)
+        public static Texture2D GetTexture(string fileName, bool isDark, bool cabLight, out bool isNightTexture)
         {
-            Texture2D retval = SharedMaterialManager.MissingTexture;
             isNightTexture = false;
+            if (string.IsNullOrEmpty(fileName) || !DayTextures.ContainsKey(fileName))
+                return SharedMaterialManager.MissingTexture;
 
-            if (string.IsNullOrEmpty(FileName) || !DayTextures.Keys.Contains(FileName))
-                return retval;
+            if (isDark && cabLight&& DayTextures[fileName] != SharedMaterialManager.MissingTexture)
+                return DayTextures[fileName];
 
-            if (isDark)
-            {
-                if (isLight)
-                {
-                    //retval = LightTextures[FileName];
-                    retval = DayTextures[FileName];
-                    isNightTexture = false;
-                }
+            isNightTexture = true;
+            if (isDark && NightTextures[fileName] != SharedMaterialManager.MissingTexture)
+                return NightTextures[fileName];
 
-                if (retval == SharedMaterialManager.MissingTexture)
-                {
-                    retval = NightTextures[FileName];
-                    isNightTexture = true;
-                }
-            }
+            isNightTexture = false;
+            if (DayTextures[fileName] != SharedMaterialManager.MissingTexture)
+                return DayTextures[fileName];
 
-            if (retval == SharedMaterialManager.MissingTexture)
-            {
-                retval = DayTextures[FileName];
-                isNightTexture = false;
-            }
-
-            return retval;
+            return SharedMaterialManager.MissingTexture;
         }
 
         [CallOnThread("Loader")]
@@ -2564,17 +2463,11 @@ namespace ORTS
                 viewer.TextureManager.Mark(texture);
             foreach (var texture in NightTextures.Values)
                 viewer.TextureManager.Mark(texture);
-            foreach (var texture in LightTextures.Values)
-                viewer.TextureManager.Mark(texture);
             foreach (var textureList in PDayTextures.Values)
                 if (textureList != null)
                     foreach (var texture in textureList)
                         viewer.TextureManager.Mark(texture);
             foreach (var textureList in PNightTextures.Values)
-                if (textureList != null)
-                    foreach (var texture in textureList)
-                        viewer.TextureManager.Mark(texture);
-            foreach (var textureList in PLightTextures.Values)
                 if (textureList != null)
                     foreach (var texture in textureList)
                         viewer.TextureManager.Mark(texture);
