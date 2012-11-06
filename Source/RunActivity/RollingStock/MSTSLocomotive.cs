@@ -3562,18 +3562,15 @@ namespace ORTS
             // float fontratio = (float)_CabViewControl.Height / 16;
             // Use fixed ratio to supress elongated chars for present
             float fontratio = 1.0f;
-
+            // Cab view height adjusted to allow for clip or stretch.
+            float xratio = (float)_Viewer.DisplaySize.X / 640;
+            float yratio = (float)_Viewer.CabHeightPixels / 480;
+            
             float fpos = 0.0f;
 
-                fpos = ((float)_CabViewControl.Width) - 7 * _Digits;// * fontratio;
-
-                if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
-                    _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
-                else
-                    _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + fpos);
-
-            // Cab view height and vertical position adjusted to allow for clip or stretch.
-            _Position.Y = (float)_Viewer.DisplaySize.X / 640 * (float)_CabViewControl.PositionY + _Viewer.CabYOffsetPixels;
+            fpos = ((float)_CabViewControl.Width) - 7 * _Digits;// * fontratio;
+            _Position.X = xratio * ((float)_CabViewControl.PositionX + fpos);
+            _Position.Y = yratio * (float)_CabViewControl.PositionY + _Viewer.CabYOffsetPixels;
 
             base.PrepareFrame(frame);
 
