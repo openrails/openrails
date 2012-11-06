@@ -922,6 +922,12 @@ namespace ORTS
                     return new { Key = material.ToString() + "/" + vertexState.imatrix.ToString(), Primitive = primitive, Material = material, HierachyIndex = vertexState.imatrix };
                 }).ToArray();
 #else
+                    if (primitive.indexed_trilist.vertex_idxs.Count == 0)
+                    {
+                        Trace.TraceWarning("Skipped primitive with 0 indices in {0}", sharedShape.FilePath);
+                        continue;
+                    }
+
                     var indexData = new List<ushort>(primitive.indexed_trilist.vertex_idxs.Count * 3);
                     foreach (vertex_idx vertex_idx in primitive.indexed_trilist.vertex_idxs)
                     {
@@ -975,6 +981,9 @@ namespace ORTS
                 }
                 if (sub_object.primitives.Count != indexes.Count)
                     Trace.TraceInformation("{1} -> {2} primitives in {0}", sharedShape.FilePath, sub_object.primitives.Count, indexes.Count);
+#else
+                if (primitiveIndex < ShapePrimitives.Length)
+                    ShapePrimitives = ShapePrimitives.Take(primitiveIndex).ToArray();
 #endif
             }
 
