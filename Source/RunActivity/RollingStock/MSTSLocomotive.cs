@@ -1,6 +1,6 @@
 ﻿/* LOCOMOTIVE CLASSES
  * 
- * Used a a base for Steam, Diesel and Electric locomotive classes.
+ * Used as a base for Steam, Diesel and Electric locomotive classes.
  * 
  * A locomotive is represented by two classes:
  *  LocomotiveSimulator - defines the behaviour, ie physics, motion, power generated etc
@@ -55,7 +55,7 @@ namespace ORTS
     /// to the basic TrainCar.
     /// Use as a base for Electric, Diesel or Steam locomotives.
     /// </summary>
-    public partial class MSTSLocomotive: MSTSWagon
+    public partial class MSTSLocomotive : MSTSWagon
     {
         // simulation parameters
         public bool Horn = false;
@@ -139,7 +139,11 @@ namespace ORTS
         
         public float FilteredMotiveForceN = 0.0f;
 
-        
+        public double CommandStartTime;
+        float? trainBrakeTarget;
+        float? engineBrakeTarget;
+        float? dynamicBrakeTarget;
+        float? throttleTarget;
 
         public MSTSLocomotive(Simulator simulator, string wagPath, TrainCar previousCar)
             : base(simulator, wagPath, previousCar)
@@ -188,41 +192,32 @@ namespace ORTS
                     AlerterStartUp();
             }
 
-            if (CVFFileName != null)
-            {
-                var cvfBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW");
-                var cvfFilePath = Path.Combine(cvfBasePath, CVFFileName);
-                if (File.Exists(cvfFilePath))
-                {
-                    CVFFile = new CVFFile(cvfFilePath, cvfBasePath);
+            if( CVFFileName != null ) {
+                var cvfBasePath = Path.Combine( Path.GetDirectoryName( WagFilePath ), "CABVIEW" );
+                var cvfFilePath = Path.Combine( cvfBasePath, CVFFileName );
+				if (File.Exists(cvfFilePath)) {
+					CVFFile = new CVFFile( cvfFilePath, cvfBasePath );
 
-                    // Set up camera locations for the cab views
-                    for (int i = 0; i < CVFFile.Locations.Count; ++i)
-                    {
-                        if (i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count)
-                        {
-                            Trace.TraceWarning("Skipped cab view camera {1} missing Position and Direction in {0}", cvfFilePath, i);
-                            break;
-                        }
-                        ViewPoint viewPoint = new ViewPoint();
-                        viewPoint.Location = CVFFile.Locations[i];
-                        viewPoint.StartDirection = CVFFile.Directions[i];
-                        viewPoint.RotationLimit = new Vector3(0, 0, 0);  // cab views have a fixed head position
-                        FrontCabViewpoints.Add(viewPoint);
-                        if (i == 0 && (CVFFile.Directions[i].Y < -90 || CVFFile.Directions[i].Y > 90))
-                            CabFlipped = true;
-                    }
-
-                    ExCVF = null;
-
-                    if (ExCVF == null && !(this is MSTSSteamLocomotive))
-                    {
-                        ExCVF = new ExtendedCVF();
-                        InitializeFromORTSSpecific(cvfFilePath, ExCVF);
-                    }
-                }
-                else
-                {
+					// Set up camera locations for the cab views
+					for( int i = 0; i < CVFFile.Locations.Count; ++i ) {
+						if( i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count ) {
+							Trace.TraceWarning( "Skipped cab view camera {1} missing Position and Direction in {0}", cvfFilePath, i );
+							break;
+						}
+						ViewPoint viewPoint = new ViewPoint();
+						viewPoint.Location = CVFFile.Locations[i];
+						viewPoint.StartDirection = CVFFile.Directions[i];
+						viewPoint.RotationLimit = new Vector3( 0, 0, 0 );  // cab views have a fixed head position
+						FrontCabViewpoints.Add( viewPoint );
+						if( i == 0 && (CVFFile.Directions[i].Y < -90 || CVFFile.Directions[i].Y > 90) )
+							CabFlipped = true;
+					}
+					ExCVF = null;
+					if( ExCVF == null && !(this is MSTSSteamLocomotive) ) {
+						ExCVF = new ExtendedCVF();
+						InitializeFromORTSSpecific( cvfFilePath, ExCVF );
+					}
+                }else{
                     Trace.TraceWarning("{0} locomotive's CabView references non-existant {1}", wagFilePath, cvfFilePath);
                 }
             }
@@ -526,12 +521,12 @@ namespace ORTS
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if( this.IsLeadLocomotive() ) {
-                ThrottlePercent = ThrottleController.Update( elapsedClockSeconds ) * 100.0f;
+            if (this.IsLeadLocomotive()) {
+                ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
                 ConfirmWheelslip();
             } else {
-                ThrottleController.Update( elapsedClockSeconds );
-            }
+                ThrottleController.Update(elapsedClockSeconds);
+			}
 #if INDIVIDUAL_CONTROL
 
 			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
@@ -943,7 +938,7 @@ namespace ORTS
             }
         }
 
-        public void StartReverseIncrease()
+        public virtual void StartReverseIncrease( float? target )
         {
             AlerterReset();
             if (this.IsLeadLocomotive())
@@ -958,7 +953,7 @@ namespace ORTS
             }
         }
 
-        public void StartReverseDecrease()
+        public virtual void StartReverseDecrease( float? target )
         {
             AlerterReset();
             if (this.IsLeadLocomotive())
@@ -973,50 +968,68 @@ namespace ORTS
                 }
             }
         }
-
-        public void StartThrottleIncrease()
-        {
+        
+        public void StartThrottleIncrease( float? target ) {
             AlerterReset();
+            ThrottleController.StartIncrease( target );
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
+            // By GeorgeS
+            if( EventID.IsMSTSBin )
+                SignalEvent( EventID.PowerHandler );
+        }
+        
+        public bool StartThrottleIncrease()
+        {
+            bool notchedThrottleCommandNeeded = false;
+            AlerterReset();
+            
+            CommandStartTime = Simulator.ClockTime;
+
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
-                return;
+                return notchedThrottleCommandNeeded;
 
             if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
-                    StartDynamicBrakeDecrease();
+                    StartDynamicBrakeDecrease( null );
+                    
                     if (!HasSmoothStruc)
                         StopDynamicBrakeDecrease();
                 }
                 if (DynamicBrakePercent == -1)
                 {
-                    ThrottleController.StartIncrease();
-                    ThrottleController.StopIncrease();
-                    Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
+                    notchedThrottleCommandNeeded = true;
+                    //new NotchedThrottleCommand( Simulator.Log, true ); 
                 }
             } else if( !HasCombCtrl && HasStepCtrl ) {
-                ThrottleController.StartIncrease();
-                ThrottleController.StopIncrease();
-                Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
-                //SignalEvent( EventID.Reverse );
+                notchedThrottleCommandNeeded = true;
+                //new NotchedThrottleCommand( Simulator.Log, true ); 
             } else {
-                ThrottleController.StartIncrease();
-                Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
+                StartThrottleIncrease( null );
             }
             // By GeorgeS
             if (EventID.IsMSTSBin)
                 SignalEvent(EventID.PowerHandler);
+            return notchedThrottleCommandNeeded;
         }
 
-        public void StopThrottleIncrease()
+        public bool StopThrottleIncrease()
         {
+            bool continuousThrottleCommandNeeded = false;
+
             AlerterReset();
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
-                return;
+                return continuousThrottleCommandNeeded;
             ThrottleController.StopIncrease();
-
+            
+            if( !HasStepCtrl ) {
+                continuousThrottleCommandNeeded = true;
+                //new ContinuousThrottleCommand( Simulator.Log, true, ThrottleController.CurrentValue, commandStartTime );
+            }
+            
             if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
@@ -1025,53 +1038,72 @@ namespace ORTS
                     StopDynamicBrakeIncrease();
                 }
             }
+            return continuousThrottleCommandNeeded;
         }
 
-        public void StartThrottleDecrease()
-        {
+        public void StartThrottleDecrease( float? target ) {
             AlerterReset();
+            CommandStartTime = Simulator.ClockTime;
+            ThrottleController.StartDecrease( target );
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
+            // By GeorgeS
+            if( EventID.IsMSTSBin )
+                SignalEvent( EventID.PowerHandler );
+        }
+
+        public bool StartThrottleDecrease()
+        {
+            bool notchedThrottleCommandNeeded = false;
+            AlerterReset();
+            
+            CommandStartTime = Simulator.ClockTime;
+
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
-                return;
+                return notchedThrottleCommandNeeded;
 
             if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
+                    StartDynamicBrakeIncrease( null );
 
-                        StartDynamicBrakeIncrease();
-                        if (!HasSmoothStruc)
-                            StopDynamicBrakeIncrease();
+                    if (!HasSmoothStruc)
+                        StopDynamicBrakeIncrease();
                 }
                 if (DynamicBrakePercent == -1)
                 {
-                    ThrottleController.StartDecrease();
-                    ThrottleController.StopDecrease();
-                    Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
+                    notchedThrottleCommandNeeded = true;
+                    //new NotchedThrottleCommand( Simulator.Log, false );
                 }
             } else if( !HasCombCtrl && HasStepCtrl ) {
-                ThrottleController.StartDecrease();
-                ThrottleController.StopDecrease();
-                Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
+                //new NotchedThrottleCommand( Simulator.Log, false );
+                notchedThrottleCommandNeeded = true;
                 //SignalEvent( EventID.Reverse );
             } else {
-                ThrottleController.StartDecrease();
-                Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
+                StartThrottleDecrease( null );
             }
             // By GeorgeS
             if (EventID.IsMSTSBin)
                 SignalEvent(EventID.PowerHandler);
+            return notchedThrottleCommandNeeded;
         }
 
-        public void StopThrottleDecrease()
+        public bool StopThrottleDecrease()
         {
+            bool continuousThrottleCommandNeeded = false;
             AlerterReset();
 
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
-                return;
+                return continuousThrottleCommandNeeded;
 
             ThrottleController.StopDecrease();
+            
+            if( !HasStepCtrl ) {
+                continuousThrottleCommandNeeded = true;
+                //new ContinuousThrottleCommand( Simulator.Log, false, ThrottleController.CurrentValue, commandStartTime );
+            }
 
             if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
             {
@@ -1081,6 +1113,41 @@ namespace ORTS
                     StopDynamicBrakeIncrease();
                 }
             }
+            return continuousThrottleCommandNeeded;
+        }
+
+        /// <summary>
+        /// Used by commands to start a continuous adjustment.
+        /// </summary>
+        /// <param name="increase"></param>
+        /// <param name="target"></param>
+        public void ThrottleChangeTo( bool increase, float? target ) {
+            throttleTarget = target;
+            if( increase ) {
+                if( target > ThrottleController.CurrentValue ) {
+                    StartThrottleIncrease( target );
+                }
+            } else {
+                if( target < ThrottleController.CurrentValue ) {
+                    StartThrottleDecrease( target );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Used by commands to make a single adjustment.
+        /// </summary>
+        /// <param name="increase"></param>
+        /// <param name="target"></param>
+        public void AdjustNotchedThrottle( bool increase ) {
+            if( increase ) {
+                ThrottleController.StartIncrease();
+                ThrottleController.StopIncrease();
+            } else {
+                ThrottleController.StartDecrease();
+                ThrottleController.StopDecrease();
+            }
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Throttle, ThrottleController.CurrentValue * 100 );
         }
 
         public void SetThrottlePercent(float percent)
@@ -1088,11 +1155,10 @@ namespace ORTS
             ThrottlePercent = ThrottleController.SetRDPercent(percent);
         }
 
-        public void StartTrainBrakeIncrease()
-        {
+        public void StartTrainBrakeIncrease( float? target ) {
             AlerterReset();
+            TrainBrakeController.StartIncrease( target );
             Simulator.Confirmer.Confirm( CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus() );
-            TrainBrakeController.StartIncrease();
             // By GeorgeS
             if (EventID.IsMSTSBin)
                 SignalEvent(EventID.TrainBrakeSet);
@@ -1104,11 +1170,10 @@ namespace ORTS
             TrainBrakeController.StopIncrease();
         }
 
-        public void StartTrainBrakeDecrease()
-        {
+        public void StartTrainBrakeDecrease( float? target ) {
             AlerterReset();
+            TrainBrakeController.StartDecrease( target );
             Simulator.Confirmer.Confirm( CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus() );
-            TrainBrakeController.StartDecrease();
             // By GeorgeS
             if (EventID.IsMSTSBin)
                 SignalEvent(EventID.TrainBrakeSet);
@@ -1118,6 +1183,50 @@ namespace ORTS
         {
             AlerterReset();
             TrainBrakeController.StopDecrease();
+        }
+
+        /// <summary>
+        /// Used by commands to start a continuous adjustment.
+        /// </summary>
+        /// <param name="increase"></param>
+        /// <param name="target"></param>
+        public void TrainBrakeChangeTo( bool increase, float? target ) {  // Need a better way to express brake as a single number?
+            trainBrakeTarget = target;
+            if( increase ) {
+                if( target > TrainBrakeController.CurrentValue ) {
+                    StartTrainBrakeIncrease( target );
+                }
+            } else {
+                if( target < TrainBrakeController.CurrentValue ) {
+                    StartTrainBrakeDecrease( target );
+                }
+            }
+        }
+
+        public void EngineBrakeChangeTo( bool increase, float? target ) {  // Need a better way to express brake as a single number.
+            engineBrakeTarget = target;
+            if( increase ) {
+                if( target > EngineBrakeController.CurrentValue ) {
+                    StartEngineBrakeIncrease( target );
+                }
+            } else {
+                if( target < EngineBrakeController.CurrentValue ) {
+                    StartEngineBrakeDecrease( target );
+                }
+            }
+        }
+
+        public void DynamicBrakeChangeTo( bool increase, float? target ) {  // Need a better way to express brake as a single number.
+            dynamicBrakeTarget = target;
+            if( increase ) {
+                if( target > DynamicBrakeController.CurrentValue ) {
+                    StartDynamicBrakeIncrease( target );
+                }
+            } else {
+                if( target < DynamicBrakeController.CurrentValue ) {
+                    StartDynamicBrakeDecrease( target );
+                }
+            }
         }
 
         public void SetTrainBrakePercent(float percent)
@@ -1134,6 +1243,7 @@ namespace ORTS
             if (EmergencyEngagesHorn) SignalEvent(EventID.HornOn);
             TrainBrakeController.SetEmergency();
             SignalEvent(EventID.TrainBrakeEmergency);
+            Simulator.Confirmer.Confirm( CabControl.EmergencyBrake, CabSetting.On );
         }
 
         public override string GetTrainBrakeStatus()
@@ -1146,38 +1256,55 @@ namespace ORTS
             return s;
         }
 
-        public void StartEngineBrakeIncrease()
-        {
+        public void StartEngineBrakeIncrease( float? target ) {
             AlerterReset();
             if (EngineBrakeController == null)
                 return;
+            
+            EngineBrakeController.StartIncrease( target );
             Simulator.Confirmer.Confirm( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
-            EngineBrakeController.StartIncrease();
         }
 
-        public void StopEngineBrakeIncrease()
+        /// <summary>
+        /// Ends change of brake value.
+        /// </summary>
+        /// <returns>true if action is completed</returns>
+        public bool StopEngineBrakeIncrease()
         {
+            bool engineBrakeCommandNeeded = false;
+
+            AlerterReset();
+            if( EngineBrakeController != null ) {
+                EngineBrakeController.StopIncrease();
+                engineBrakeCommandNeeded = true;
+            }
+            return engineBrakeCommandNeeded;
+        }
+
+        public void StartEngineBrakeDecrease( float? target ) {
             AlerterReset();
             if (EngineBrakeController == null)
                 return;
-            EngineBrakeController.StopIncrease();
-        }
-
-        public void StartEngineBrakeDecrease()
-        {
-            AlerterReset();
-            if (EngineBrakeController == null)
-                return;
+            
+            EngineBrakeController.StartDecrease( target );
+            EngineBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             Simulator.Confirmer.Confirm( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
-            EngineBrakeController.StartDecrease();
         }
 
-        public void StopEngineBrakeDecrease()
+        /// <summary>
+        /// Ends change of brake value.
+        /// </summary>
+        /// <returns>true if action is completed</returns>
+        public bool StopEngineBrakeDecrease()
         {
+            bool engineBrakeCommandNeeded = false;
+
             AlerterReset();
-            if (EngineBrakeController == null)
-                return;
-            EngineBrakeController.StopDecrease();
+            if( EngineBrakeController != null ) {
+                EngineBrakeController.StopDecrease();
+                engineBrakeCommandNeeded = true;
+            }
+            return engineBrakeCommandNeeded;
         }
 
         public void SetEngineBrakePercent(float percent)
@@ -1197,6 +1324,7 @@ namespace ORTS
         public void SetBailOff(bool bailOff)
         {
             BailOff = bailOff;
+            Simulator.Confirmer.Confirm( CabControl.BailOff, bailOff ? CabSetting.On : CabSetting.Off );
         }
 
         private bool CanUseDynamicBrake()
@@ -1205,8 +1333,7 @@ namespace ORTS
                 && ThrottlePercent == 0 && !HasDefectiveComboDynamicBreak);
         }
 
-        public void StartDynamicBrakeIncrease()
-        {
+        public void StartDynamicBrakeIncrease( float? target ) {
             AlerterReset();
             if (!CanUseDynamicBrake())
                 return;
@@ -1220,23 +1347,29 @@ namespace ORTS
             }
             else
             {
-                DynamicBrakeController.StartIncrease();
+                DynamicBrakeController.StartIncrease( target );
+                Simulator.Confirmer.Confirm( CabControl.DynamicBrake, GetDynamicBrakeStatus() );
+                
                 if (!HasSmoothStruc)
                     StopDynamicBrakeIncrease();
             }
         }
 
-        public void StopDynamicBrakeIncrease()
+        public bool StopDynamicBrakeIncrease()
         {
+            bool dynamicBrakeCommandNeeded = false;
+            
             AlerterReset();
-            if (!CanUseDynamicBrake())
-                return;
-            DynamicBrakeController.StopIncrease();
-            Simulator.Confirmer.Message(CabControl.DynamicBrake, GetDynamicBrakeStatus());
+            if( CanUseDynamicBrake() ) {
+                DynamicBrakeController.StopIncrease();
+                // Give the new command its target and backdate the start time.
+                //new DynamicBrakeCommand( Simulator.Log, true, DynamicBrakeController.CurrentValue, commandStartTime );
+                dynamicBrakeCommandNeeded = true;
+            }
+            return dynamicBrakeCommandNeeded;
         }
 
-        public void StartDynamicBrakeDecrease()
-        {
+        public void StartDynamicBrakeDecrease( float? target ) {
             AlerterReset();
             if (!CanUseDynamicBrake())
                 return;
@@ -1245,19 +1378,26 @@ namespace ORTS
                 DynamicBrakePercent = -1;
             else
             {
-                DynamicBrakeController.StartDecrease();
+                DynamicBrakeController.StartDecrease( target );
+                Simulator.Confirmer.Confirm( CabControl.DynamicBrake, GetDynamicBrakeStatus() );
+
                 if (!HasSmoothStruc)
                     StopDynamicBrakeDecrease();
             }
         }
 
-        public void StopDynamicBrakeDecrease()
+        public bool StopDynamicBrakeDecrease()
         {
+            bool dynamicBrakeCommandNeeded = false;
+
             AlerterReset();
-            if (!CanUseDynamicBrake())
-                return;
-            DynamicBrakeController.StopDecrease();
-            Simulator.Confirmer.Message(CabControl.DynamicBrake, GetDynamicBrakeStatus());
+            if( CanUseDynamicBrake() ) {
+                DynamicBrakeController.StopDecrease();
+                // Give the new command its target and backdate the start time.
+                //new DynamicBrakeCommand( Simulator.Log, false, DynamicBrakeController.CurrentValue, commandStartTime );
+                dynamicBrakeCommandNeeded = true;
+            }
+            return dynamicBrakeCommandNeeded;
         }
 
         public void SetDynamicBrakePercent(float percent)
@@ -1277,6 +1417,42 @@ namespace ORTS
                 return string.Empty;
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
+
+        public void SetTrainHandbrake( bool apply ) {
+            if( apply ) {
+                Train.SetHandbrakePercent( 100 );
+                Simulator.Confirmer.Confirm( CabControl.Handbrake, CabSetting.On );
+            } else {
+                Train.SetHandbrakePercent( 0 );
+                Simulator.Confirmer.Confirm( CabControl.Handbrake, CabSetting.Off );
+            }
+        }
+
+        public void SetTrainRetainers( bool apply ) {
+            Train.SetRetainers( apply );
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Retainers, CabSetting.Increase, Train.RetainerPercent, (int)CabSetting.Range1 + (int)Train.RetainerSetting );
+        }
+
+        public void BrakeHoseConnect( bool apply ) {
+            if( apply ) {
+                Train.ConnectBrakeHoses();
+                Simulator.Confirmer.Confirm( CabControl.BrakeHose, CabSetting.On );
+            } else {
+                Train.DisconnectBrakes();
+                Simulator.Confirmer.Confirm( CabControl.BrakeHose, CabSetting.Off );
+            }
+        }
+
+        public void ToggleCabLight() {
+            CabLightOn = !CabLightOn;
+            SignalEvent( EventID.LightSwitchToggle );
+            Simulator.Confirmer.Confirm( CabControl.CabLight, CabLightOn ? CabSetting.On : CabSetting.Off );
+        }
+
+        public void ToggleWipers() {
+            SignalEvent( Wiper ? EventID.WiperOff : EventID.WiperOn );
+        }
+
         public override bool GetCabFlipped()
         {
             return CabFlipped;
@@ -1371,10 +1547,10 @@ namespace ORTS
                 if( eventID == EventID.AlerterSndOff ) { AlerterSnd = false; Simulator.Confirmer.Confirm( CabControl.Alerter, CabSetting.Off ); break; }
                 if( eventID == EventID.BellOn ) { Bell = true; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.On ); break; }
                 if( eventID == EventID.BellOff ) { Bell = false; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.Off ); break; }
-                if( eventID == EventID.HornOn ) {
+                if( eventID == EventID.HornOn ) { 
                     Horn = true;
-                    if( this != Program.Simulator.PlayerLocomotive ) break;
-                    if( this is MSTSSteamLocomotive ) {
+					if (this != Program.Simulator.PlayerLocomotive) break;
+                    if( this is MSTSSteamLocomotive) {
                         Simulator.Confirmer.Confirm( CabControl.Whistle, CabSetting.On );
                     } else {
                         Simulator.Confirmer.Confirm( CabControl.Horn, CabSetting.On );
@@ -1383,7 +1559,7 @@ namespace ORTS
                 }
                 if( eventID == EventID.HornOff ) {
                     Horn = false;
-                    if( this != Program.Simulator.PlayerLocomotive ) break;
+					if (this != Program.Simulator.PlayerLocomotive) break;
                     if( this is MSTSSteamLocomotive ) {
                         Simulator.Confirmer.Confirm( CabControl.Whistle, CabSetting.Off );
                     } else {
@@ -1391,11 +1567,11 @@ namespace ORTS
                     }
                     break;
                 }
-                if( eventID == EventID.SanderOn ) { Sander = true; if( this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.On ); break; }
+                if( eventID == EventID.SanderOn ) { Sander = true; if (this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.On ); break; }
                 if( eventID == EventID.SanderOff ) { Sander = false; if( this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.Off ); break; }
-                if( eventID == EventID.WiperOn ) { Wiper = true; if( this == Program.Simulator.PlayerLocomotive ) Simulator.Confirmer.Confirm( CabControl.Wipers, CabSetting.On ); break; }
-                if( eventID == EventID.WiperOff ) { Wiper = false; if( this == Program.Simulator.PlayerLocomotive )  Simulator.Confirmer.Confirm( CabControl.Wipers, CabSetting.Off ); break; }
-
+				if (eventID == EventID.WiperOn) { Wiper = true; if (this == Program.Simulator.PlayerLocomotive) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
+				if (eventID == EventID.WiperOff) { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
+                
                 // <CJ Comment> The "H" key doesn't call these SignalEvents yet. </CJ Comment>
                 if( eventID == EventID.HeadlightOff ) { Headlight = 0; break; }
                 if( eventID == EventID.HeadlightDim ) { Headlight = 1; break; }
@@ -1403,7 +1579,8 @@ namespace ORTS
 
                 if( eventID == EventID.CompressorOn ) { CompressorOn = true; break; }
                 if( eventID == EventID.CompressorOff ) { CompressorOn = false; break; }
-                if( eventID == EventID.ResetWheelSlip ) { LocomotiveAxle.Reset( SpeedMpS ); ThrottleController.SetValue( 0.0f ); break; }
+				if (eventID == EventID.LightSwitchToggle) { break; }
+                if (eventID == EventID.ResetWheelSlip) { LocomotiveAxle.Reset(SpeedMpS); ThrottleController.SetValue(0.0f); break; }
 			} while (false);  // Never repeats
 
             base.SignalEvent(eventID );
@@ -1415,8 +1592,6 @@ namespace ORTS
         /// </summary>
         /// <param name="cvc">The Cab View Control</param>
         /// <returns>The data converted to the requested unit</returns>
-        /// 
-
         public void CheckVigilance()
         {
 
@@ -1454,24 +1629,6 @@ namespace ORTS
                 }
             }
         }
-
-        public float LocomotiveAbsSpeedometerValue()
-        {
-            //data = SpeedMpS;
-            float data = 0.0f;
-            if (Simulator.UseAdvancedAdhesion && (!AntiSlip))
-                data = WheelSpeedMpS;
-            else
-                data = SpeedMpS;
-
-            //if (cvc.Units == CABViewControlUnits.KM_PER_HOUR)
-            //    data *= 3.6f;
-            //else // MPH
-            //    data *= 2.2369f;
-            data = Math.Abs(data);
-            return data;
-        }
-
 
         public virtual float GetDataOf(CabViewControl cvc)
         {
@@ -1908,22 +2065,22 @@ namespace ORTS
         {
             if (!SwapControl()) // tests for CombThrottleTrainBreak
             {
-                if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
+                if( !Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0 ) {
                     Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
-                    return; 
-                } else
-                    Locomotive.StartThrottleIncrease();
-            }
-            else
-            {
+                    return;
+                } else {
+                    if( Locomotive.StartThrottleIncrease() )
+                        new NotchedThrottleCommand( Viewer.Log, true );
+                }
+            }else{
                 float trainBreakPercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
                 float throttlePercent = Locomotive.ThrottlePercent;
 
                 //if (trainBreakPercent > 0)
                 if (throttlePercent == 0 && trainBreakPercent > 0)
                 {
-                    Locomotive.StartTrainBrakeDecrease();
                     Locomotive.StopThrottleIncrease();
+                    Locomotive.StartTrainBrakeDecrease( null );
                 }
             }
         }
@@ -1936,7 +2093,8 @@ namespace ORTS
                     Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
                     return;
                 } else
-                    Locomotive.StopThrottleIncrease();
+                    if( Locomotive.StopThrottleIncrease() )
+                        new ContinuousThrottleCommand( Viewer.Log, true, Locomotive.ThrottleController.CurrentValue, Locomotive.CommandStartTime );
             }
             else
             {
@@ -1962,8 +2120,10 @@ namespace ORTS
                 if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
                     Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
                     return;
-                } else
-                    Locomotive.StartThrottleDecrease();
+                } else {
+                    if( Locomotive.StartThrottleDecrease() )
+                        new NotchedThrottleCommand( Viewer.Log, false );
+                }
             }
             else
             {
@@ -1972,11 +2132,11 @@ namespace ORTS
 
                 if (throttlePercent == 0 && trainBreakPercent >= 0)
                 {
-                    Locomotive.StartTrainBrakeIncrease();
                     Locomotive.StopThrottleDecrease();
-                }
-                else
+                    Locomotive.StartTrainBrakeIncrease( null );
+                }else{
                     Locomotive.StartThrottleDecrease();
+                }
             }
         }
 
@@ -1988,7 +2148,8 @@ namespace ORTS
                     Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
                     return;
                 } else
-                    Locomotive.StopThrottleDecrease();
+                    if( Locomotive.StopThrottleDecrease() )
+                        new ContinuousThrottleCommand( Viewer.Log, false, Locomotive.ThrottleController.CurrentValue, Locomotive.CommandStartTime );
             }
             else
             {
@@ -2000,30 +2161,24 @@ namespace ORTS
             }
         }
 
-        protected virtual void ReverserControlForwards()
-        {
-            if( Locomotive.Direction != Direction.Forward ) {
-                if( Locomotive.ThrottlePercent < 1 &&
-                    Locomotive.LocomotiveAbsSpeedometerValue() < 1)
-                        Locomotive.StartReverseIncrease();
-                else
-                    Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn);
-            } else {
-                Locomotive.StartReverseIncrease();
+        protected virtual void ReverserControlForwards() {
+            if( Locomotive.Direction != Direction.Forward
+            && (Locomotive.ThrottlePercent >= 1 
+            || Math.Abs(Locomotive.SpeedMpS) > 1 ) ) {
+                Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn );
+                return;
             }
+            new ReverserCommand( Viewer.Log, true );    // No harm in trying to engage Forward when already engaged.
         }
 
-        protected virtual void ReverserControlBackwards()
-        {
-            if( Locomotive.Direction != Direction.Reverse ) {
-                if( Locomotive.ThrottlePercent < 1 &&
-                    Locomotive.LocomotiveAbsSpeedometerValue() < 1)
-                        Locomotive.StartReverseDecrease();
-                else
-                    Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn);
-            } else {
-                Locomotive.StartReverseDecrease();
+        protected virtual void ReverserControlBackwards() {
+            if( Locomotive.Direction != Direction.Reverse
+            && (Locomotive.ThrottlePercent >= 1 
+            || Math.Abs(Locomotive.SpeedMpS) > 1 ) ) {
+                Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn );
+                return;
             }
+            new ReverserCommand( Viewer.Log, false );    // No harm in trying to engage Reverse when already engaged.
         }
 
         /// <summary>
@@ -2035,111 +2190,83 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.ControlForwards)) ReverserControlForwards();
             if (UserInput.IsPressed(UserCommands.ControlBackwards)) ReverserControlBackwards();
 
-            if (UserInput.IsPressed(UserCommands.ControlThrottleIncrease)) StartThrottleIncrease();
+            if (UserInput.IsPressed( UserCommands.ControlThrottleIncrease)) StartThrottleIncrease();
             if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) StopThrottleIncrease();
-            if (UserInput.IsPressed(UserCommands.ControlThrottleDecrease)) StartThrottleDecrease();
+            if (UserInput.IsPressed( UserCommands.ControlThrottleDecrease)) StartThrottleDecrease();
             if (UserInput.IsReleased(UserCommands.ControlThrottleDecrease)) StopThrottleDecrease();
 
-			if (UserInput.IsPressed(UserCommands.ControlTrainBrakeIncrease)) Locomotive.StartTrainBrakeIncrease();
-			if (UserInput.IsReleased(UserCommands.ControlTrainBrakeIncrease)) Locomotive.StopTrainBrakeIncrease();
-			if (UserInput.IsPressed(UserCommands.ControlTrainBrakeDecrease)) Locomotive.StartTrainBrakeDecrease();
-			if (UserInput.IsReleased(UserCommands.ControlTrainBrakeDecrease)) Locomotive.StopTrainBrakeDecrease();
+            if( UserInput.IsPressed( UserCommands.ControlTrainBrakeIncrease ) ) {
+                Locomotive.StartTrainBrakeIncrease( null );
+                Locomotive.TrainBrakeController.CommandStartTime = _Viewer3D.Simulator.ClockTime;
+            }
+            if( UserInput.IsReleased( UserCommands.ControlTrainBrakeIncrease ) ) {
+                Locomotive.StopTrainBrakeIncrease();
+                new TrainBrakeCommand( Viewer.Log, true, Locomotive.TrainBrakeController.CurrentValue, Locomotive.TrainBrakeController.CommandStartTime );
+            }
+            if( UserInput.IsPressed( UserCommands.ControlTrainBrakeDecrease ) ) {
+                Locomotive.StartTrainBrakeDecrease( null );
+                Locomotive.TrainBrakeController.CommandStartTime = _Viewer3D.Simulator.ClockTime;
+            }
+            if( UserInput.IsReleased( UserCommands.ControlTrainBrakeDecrease ) ) {
+                Locomotive.StopTrainBrakeDecrease();
+                new TrainBrakeCommand( Viewer.Log, false, Locomotive.TrainBrakeController.CurrentValue, Locomotive.TrainBrakeController.CommandStartTime );
+            }
+            if( UserInput.IsPressed( UserCommands.ControlEngineBrakeIncrease ) ) Locomotive.StartEngineBrakeIncrease( null );
+            if( UserInput.IsReleased( UserCommands.ControlEngineBrakeIncrease ) ) {
+                if( Locomotive.StopEngineBrakeIncrease() ) {
+                    new EngineBrakeCommand( Viewer.Log, true, Locomotive.EngineBrakeController.CurrentValue, Locomotive.EngineBrakeController.CommandStartTime );
+                }
+            }
+            if( UserInput.IsPressed( UserCommands.ControlEngineBrakeDecrease ) ) Locomotive.StartEngineBrakeDecrease( null );
+            if( UserInput.IsReleased( UserCommands.ControlEngineBrakeDecrease ) ) { 
+                if( Locomotive.StopEngineBrakeDecrease() ) {
+                    new EngineBrakeCommand( Viewer.Log, false, Locomotive.EngineBrakeController.CurrentValue, Locomotive.EngineBrakeController.CommandStartTime );
+                }
+            }
+            if( UserInput.IsPressed( UserCommands.ControlDynamicBrakeIncrease ) ) Locomotive.StartDynamicBrakeIncrease( null );
+            if( UserInput.IsReleased( UserCommands.ControlDynamicBrakeIncrease ) ) 
+                if( Locomotive.StopDynamicBrakeIncrease() )
+                    new DynamicBrakeCommand( Viewer.Log, true, Locomotive.DynamicBrakeController.CurrentValue, Locomotive.DynamicBrakeController.CommandStartTime );
+            if( UserInput.IsPressed( UserCommands.ControlDynamicBrakeDecrease ) ) Locomotive.StartDynamicBrakeDecrease( null );
+            if( UserInput.IsReleased( UserCommands.ControlDynamicBrakeDecrease ) ) 
+                if( Locomotive.StopDynamicBrakeDecrease() )
+                    new DynamicBrakeCommand( Viewer.Log, false, Locomotive.DynamicBrakeController.CurrentValue, Locomotive.DynamicBrakeController.CommandStartTime );
 
-			if (UserInput.IsPressed(UserCommands.ControlEngineBrakeIncrease)) Locomotive.StartEngineBrakeIncrease();
-			if (UserInput.IsReleased(UserCommands.ControlEngineBrakeIncrease)) Locomotive.StopEngineBrakeIncrease();
-			if (UserInput.IsPressed(UserCommands.ControlEngineBrakeDecrease)) Locomotive.StartEngineBrakeDecrease();
-			if (UserInput.IsReleased(UserCommands.ControlEngineBrakeDecrease)) Locomotive.StopEngineBrakeDecrease();
+            if( UserInput.IsPressed( UserCommands.ControlBailOff ) ) new BailOffCommand( Viewer.Log, true );
+            if( UserInput.IsReleased( UserCommands.ControlBailOff ) ) new BailOffCommand( Viewer.Log, false );
 
-			if (UserInput.IsPressed(UserCommands.ControlDynamicBrakeIncrease)) Locomotive.StartDynamicBrakeIncrease();
-			if (UserInput.IsReleased(UserCommands.ControlDynamicBrakeIncrease)) Locomotive.StopDynamicBrakeIncrease();
-			if (UserInput.IsPressed(UserCommands.ControlDynamicBrakeDecrease)) Locomotive.StartDynamicBrakeDecrease();
-			if (UserInput.IsReleased(UserCommands.ControlDynamicBrakeDecrease)) Locomotive.StopDynamicBrakeDecrease();
-
-            if( UserInput.IsPressed( UserCommands.ControlBailOff ) ) {
-                // <CJ Comment> Don't see why this is coded differently from Horn, Bell or Retainers </CJ Comment>
-                Locomotive.SetBailOff( true );
-                Viewer.Simulator.Confirmer.Confirm( CabControl.BailOff, CabSetting.On );
-            }
-            if( UserInput.IsReleased( UserCommands.ControlBailOff ) ) {
-                Locomotive.SetBailOff( false );
-                Viewer.Simulator.Confirmer.Confirm( CabControl.BailOff, CabSetting.Off );
-            }
-
-			if (UserInput.IsPressed(UserCommands.ControlInitializeBrakes)) Locomotive.Train.InitializeBrakes();
-            if( UserInput.IsPressed( UserCommands.ControlHandbrakeNone ) ) {
-                Locomotive.Train.SetHandbrakePercent( 0 );
-                Viewer.Simulator.Confirmer.Confirm( CabControl.Handbrake,  CabSetting.Off );
-            }
-			if (UserInput.IsPressed(UserCommands.ControlHandbrakeFull)) {
-                Locomotive.Train.SetHandbrakePercent(100);
-                Viewer.Simulator.Confirmer.Confirm( CabControl.Handbrake, CabSetting.On );
-            }
-            if( UserInput.IsPressed( UserCommands.ControlRetainersOff ) ) {
-                Locomotive.Train.SetRetainers( false );
-                Viewer.Simulator.Confirmer.Confirm( CabControl.Retainers, CabSetting.Off );
-            }
-			if (UserInput.IsPressed(UserCommands.ControlRetainersOn)) {
-                Locomotive.Train.SetRetainers(true);
-                Viewer.Simulator.Confirmer.ConfirmWithPerCent( CabControl.Retainers, CabSetting.Increase, Locomotive.Train.RetainerPercent, (int)CabSetting.Range1 + (int)Locomotive.Train.RetainerSetting );
-                //Viewer.Simulator.Confirmer.ConfirmWithPerCent( CabControl.Retainers, CabSetting.Increase, Locomotive.Train.RetainerPercent );
-            }
-			if (UserInput.IsPressed(UserCommands.ControlBrakeHoseConnect)) {
-                Locomotive.Train.ConnectBrakeHoses();
-                Viewer.Simulator.Confirmer.Confirm( CabControl.BrakeHose, CabSetting.On );
-            }
-            if( UserInput.IsPressed( UserCommands.ControlBrakeHoseDisconnect ) ) {
-                Locomotive.Train.DisconnectBrakes();
-                Viewer.Simulator.Confirmer.Confirm( CabControl.BrakeHose, CabSetting.Off );
-            }
-            if( UserInput.IsPressed( UserCommands.ControlEmergency ) ) {
-                Locomotive.SetEmergency();
-                Viewer.Simulator.Confirmer.Confirm( CabControl.EmergencyBrake, CabSetting.On );
-            }
+            if( UserInput.IsPressed( UserCommands.ControlInitializeBrakes ) ) new InitializeBrakesCommand( Viewer.Log );
+            if( UserInput.IsPressed( UserCommands.ControlHandbrakeNone ) ) new HandbrakeCommand( Viewer.Log, false );
+            if( UserInput.IsPressed( UserCommands.ControlHandbrakeFull ) ) new HandbrakeCommand( Viewer.Log, true );
+            if( UserInput.IsPressed( UserCommands.ControlRetainersOff ) ) new RetainersCommand( Viewer.Log, false );
+            if( UserInput.IsPressed( UserCommands.ControlRetainersOn ) ) new RetainersCommand( Viewer.Log, true );
+            if( UserInput.IsPressed( UserCommands.ControlBrakeHoseConnect ) ) new BrakeHoseConnectCommand( Viewer.Log, true );
+            if( UserInput.IsPressed( UserCommands.ControlBrakeHoseDisconnect ) ) new BrakeHoseConnectCommand( Viewer.Log, false );
+            if( UserInput.IsPressed( UserCommands.ControlEmergency ) ) new EmergencyBrakesCommand( Viewer.Log );
 
             // <CJ Comment> Some inputs calls their method directly, other via a SignalEvent. 
             // Probably because a signal can then be handled more than once, 
             // e.g. by every locomotive on the train or every car in the consist.
             // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJ Comment>
-			if (UserInput.IsPressed(UserCommands.ControlSander)) Locomotive.Train.SignalEvent(Locomotive.Sander ? EventID.SanderOff : EventID.SanderOn);
-			if (UserInput.IsPressed(UserCommands.ControlWiper)) Locomotive.SignalEvent(Locomotive.Wiper ? EventID.WiperOff : EventID.WiperOn);
-			if (UserInput.IsPressed(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOn);
-			if (UserInput.IsReleased(UserCommands.ControlHorn)) Locomotive.SignalEvent(EventID.HornOff);
-            if( UserInput.IsPressed( UserCommands.ControlBell ) ) Locomotive.SignalEvent( Locomotive.Bell ? EventID.BellOff : EventID.BellOn );
+            if( UserInput.IsPressed( UserCommands.ControlSander ) ) new SanderCommand( Viewer.Log, Locomotive.Sander );
+            if( UserInput.IsPressed( UserCommands.ControlWiper ) ) new ToggleWipersCommand( Viewer.Log );
+            if( UserInput.IsPressed( UserCommands.ControlHorn ) ) new HornCommand( Viewer.Log, true );
+            if( UserInput.IsReleased( UserCommands.ControlHorn ) ) new HornCommand( Viewer.Log, false );
+            if( UserInput.IsPressed( UserCommands.ControlBell ) ) new BellCommand( Viewer.Log, !Locomotive.Bell );
+            if( UserInput.IsPressed( UserCommands.ControlAlerter ) ) new AlerterCommand( Viewer.Log );  // z
 
-            if (UserInput.IsPressed(UserCommands.ControlAlerter)) Locomotive.AlerterResetExternal();        // z
-            //<CJ Comment> Why reset on both press and release? Disabled. </CJ Comment>
-            //if (UserInput.IsReleased(UserCommands.ControlAlerter)) Locomotive.AlerterResetExternal();       //z
-
-
-			if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
-            {
-                switch ((Locomotive.Headlight))
-                {
-                    case 1: Locomotive.Headlight = 0; Program.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Off ); break;
-                    case 2: Locomotive.Headlight = 1; Program.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Neutral ); break;
-                }
-                // By GeorgeS
-                if (EventID.IsMSTSBin)
-                     Locomotive.SignalEvent(EventID.LightSwitchToggle);
-            }
-			else if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
-            {
-                switch ((Locomotive.Headlight))
-                {
-                    case 0: Locomotive.Headlight = 1; Program.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Neutral ); break;
-                    case 1: Locomotive.Headlight = 2; Program.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.On ); break;
-                }
-                // By GeorgeS
-                if (EventID.IsMSTSBin)
-                    Locomotive.SignalEvent(EventID.LightSwitchToggle);
-            }
+            if( UserInput.IsPressed( UserCommands.ControlHeadlightDecrease ) ) new HeadlightCommand( Viewer.Log, false );
+            if( UserInput.IsPressed( UserCommands.ControlHeadlightIncrease ) ) new HeadlightCommand( Viewer.Log, true );
             if (UserInput.IsPressed(UserCommands.DebugForcePlayerAuthorization))
                 Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(true);
 
             // By GeorgeS
-            if (UserInput.IsPressed(UserCommands.ControlLight)) { 
-                Locomotive.CabLightOn = !Locomotive.CabLightOn;     // Changes the light in the cab
-                Locomotive.SignalEvent(EventID.LightSwitchToggle);  // Makes a switching sound ?
+            if( UserInput.IsPressed( UserCommands.ControlLight ) ) {
+                if( Locomotive is MSTSSteamLocomotive ) {       // By default, the "L" key is used for injector2 on steam locos
+                    // do nothing
+                }else{
+                    new ToggleCabLightCommand( Viewer.Log );    // and cab lights on other locos.
+                }
             }
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
 
@@ -2147,13 +2274,11 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(EventID.ResetWheelSlip); }
             if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(EventID.ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
 
-
             if (UserInput.RDState != null)
             {
                 if (UserInput.RDState.BailOff) {
-                    Locomotive.SetBailOff(true);
-                    Viewer.Simulator.Confirmer.Confirm( CabControl.BailOff, CabSetting.On );
-                }   
+                    Locomotive.SetBailOff( true );
+                }
                 if (UserInput.RDState.Changed)
                 {
                     Locomotive.SetThrottlePercent(UserInput.RDState.ThrottlePercent);
@@ -2168,7 +2293,6 @@ namespace ORTS
                         Locomotive.SetDirection(Direction.N);
                     if( UserInput.RDState.Emergency ) {
                         Locomotive.SetEmergency();
-                        Viewer.Simulator.Confirmer.Confirm( CabControl.EmergencyBrake, CabSetting.On );
                     }
                     if (UserInput.RDState.Wipers == 1 && Locomotive.Wiper)
                         Locomotive.SignalEvent(EventID.WiperOff);
@@ -2282,29 +2406,45 @@ namespace ORTS
     {
         private static Dictionary<string, Texture2D> DayTextures = new Dictionary<string, Texture2D>();
         private static Dictionary<string, Texture2D> NightTextures = new Dictionary<string, Texture2D>();
+        private static Dictionary<string, Texture2D> LightTextures = new Dictionary<string, Texture2D>();
         private static Dictionary<string, Texture2D[]> PDayTextures = new Dictionary<string, Texture2D[]>();
         private static Dictionary<string, Texture2D[]> PNightTextures = new Dictionary<string, Texture2D[]>();
+        private static Dictionary<string, Texture2D[]> PLightTextures = new Dictionary<string, Texture2D[]>();
 
         /// <summary>
         /// Loads a texture, day night and cablight
         /// </summary>
         /// <param name="viewer">Viver3D</param>
-        /// <param name="fileName">Name of the Texture</param>
-        public static void LoadTextures(Viewer3D viewer, string fileName)
+        /// <param name="FileName">Name of the Texture</param>
+        /// <summary>
+        /// Loads a texture, day night and cablight
+        /// </summary>
+        /// <param name="viewer">Viver3D</param>
+        /// <param name="FileName">Name of the Texture</param>
+        public static void LoadTextures(Viewer3D viewer, string FileName)
         {
-            if (string.IsNullOrEmpty(fileName) || DayTextures.ContainsKey(fileName))
+            if (string.IsNullOrEmpty(FileName))
                 return;
 
-            if (File.Exists(fileName))
-                DayTextures.Add(fileName, viewer.TextureManager.Get(fileName));
-            else
-                DayTextures.Add(fileName, SharedMaterialManager.MissingTexture);
+            if (DayTextures.Keys.Contains(FileName))
+                return;
 
-            var nightPath = Path.Combine(Path.Combine(Path.GetDirectoryName(fileName), "night"), Path.GetFileName(fileName));
-            if (File.Exists(nightPath))
-                NightTextures.Add(fileName, viewer.TextureManager.Get(nightPath));
+            if (File.Exists(FileName))
+                DayTextures.Add(FileName, viewer.TextureManager.Get(FileName));
             else
-                NightTextures.Add(fileName, SharedMaterialManager.MissingTexture);
+                DayTextures.Add(FileName, SharedMaterialManager.MissingTexture);
+
+            var nightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "night"), Path.GetFileName(FileName));
+            if (File.Exists(nightpath))
+                NightTextures.Add(FileName, viewer.TextureManager.Get(nightpath));
+            else
+                NightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
+
+            var lightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "cablight"), Path.GetFileName(FileName));
+            if (File.Exists(lightpath))
+                LightTextures.Add(FileName, viewer.TextureManager.Get(lightpath));
+            else
+                LightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
         }
 
         static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, Point controlSize, int frameCount, Point frameGrid, string fileName)
@@ -2382,78 +2522,168 @@ namespace ORTS
         /// <param name="framesY">Number of frames in the Y direction</param>
         public static void DisassembleTexture(GraphicsDevice graphicsDevice, string fileName, int width, int height, int frameCount, int framesX, int framesY)
         {
-            if (string.IsNullOrEmpty(fileName) || !DayTextures.ContainsKey(fileName))
-                return;
-
             var controlSize = new Point(width, height);
             var frameGrid = new Point(framesX, framesY);
 
-            if (DayTextures[fileName] != SharedMaterialManager.MissingTexture)
-                PDayTextures[fileName] = Disassemble(graphicsDevice, DayTextures[fileName], controlSize, frameCount, frameGrid, fileName + ":day");
-            else
-                PDayTextures[fileName] = new Texture2D[0];
+            PDayTextures[fileName] = null;
+            if (DayTextures.ContainsKey(fileName))
+            {
+                var texture = DayTextures[fileName];
+                if (texture != SharedMaterialManager.MissingTexture)
+                {
+                    PDayTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":day");
+                }
+            }
 
-            if (NightTextures[fileName] != SharedMaterialManager.MissingTexture)
-                PNightTextures[fileName] = Disassemble(graphicsDevice, NightTextures[fileName], controlSize, frameCount, frameGrid, fileName + ":night");
-            else
-                PNightTextures[fileName] = new Texture2D[0];
+            PNightTextures[fileName] = null;
+            if (NightTextures.ContainsKey(fileName))
+            {
+                var texture = NightTextures[fileName];
+                if (texture != SharedMaterialManager.MissingTexture)
+                {
+                    PNightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":night");
+                }
+            }
+
+            PLightTextures[fileName] = null;
+            if (LightTextures.ContainsKey(fileName))
+            {
+                var texture = LightTextures[fileName];
+                if (texture != SharedMaterialManager.MissingTexture)
+                {
+                    PLightTextures[fileName] = Disassemble(graphicsDevice, texture, controlSize, frameCount, frameGrid, fileName + ":light");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a Texture from the given array
+        /// </summary>
+        /// <param name="arr">Texture array</param>
+        /// <param name="indx">Index</param>
+        /// <param name="FileName">Name of the file to report</param>
+        /// <returns>The given Texture</returns>
+        private static Texture2D SafeGetAt(Texture2D[] arr, int indx, string FileName)
+        {
+            if (arr == null)
+            {
+                Trace.TraceWarning("Passed null Texture[] for accessing {0}", FileName);
+                return SharedMaterialManager.MissingTexture;
+            }
+            
+            if (arr.Length < 1)
+            {
+                Trace.TraceWarning("Disassembled texture invalid for {0}", FileName);
+                return SharedMaterialManager.MissingTexture;
+            }
+            
+            indx = (int)MathHelper.Clamp(indx, 0, arr.Length - 1);
+
+            try
+            {
+                return arr[indx];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                Trace.TraceWarning("Index {1} out of range for array length {2} while accessing texture for {0}", FileName, indx, arr.Length);
+                return SharedMaterialManager.MissingTexture;
+            }
         }
 
         /// <summary>
         /// Returns the compound part of a Texture previously disassembled
         /// </summary>
-        /// <param name="fileName">Name of the disassembled Texture</param>
-        /// <param name="index">Index of the part</param>
+        /// <param name="FileName">Name of the disassembled Texture</param>
+        /// <param name="indx">Index of the part</param>
         /// <param name="isDark">Is dark out there?</param>
-        /// <param name="cabLight">Is Cab Light on?</param>
+        /// <param name="isLight">Is Cab Light on?</param>
         /// <param name="isNightTexture"></param>
         /// <returns>The Texture represented by its index</returns>
-        public static Texture2D GetTextureByIndexes(string fileName, int index, bool isDark, bool cabLight, out bool isNightTexture)
+        public static Texture2D GetTextureByIndexes(string FileName, int indx, bool isDark, bool isLight, out bool isNightTexture)
         {
+            Texture2D retval = SharedMaterialManager.MissingTexture;
+            Texture2D[] tmp = null;
+
             isNightTexture = false;
-            if (string.IsNullOrEmpty(fileName) || !DayTextures.ContainsKey(fileName) || index < 0)
+
+            if (string.IsNullOrEmpty(FileName) || !PDayTextures.Keys.Contains(FileName))
                 return SharedMaterialManager.MissingTexture;
 
-            if (isDark && cabLight && PDayTextures[fileName].Length > index && PDayTextures[fileName][index] != SharedMaterialManager.MissingTexture)
-                return PDayTextures[fileName][index];
+            if (isDark)
+            {
+                if (isLight)
+                {
+                    //tmp = PLightTextures[FileName];
+                    tmp = PDayTextures[FileName];
+                    if (tmp != null)
+                    {
+                        retval = SafeGetAt(tmp, indx, FileName);
+                        isNightTexture = false;
+                    }
+                }
 
-            isNightTexture = true;
-            if (isDark && PNightTextures[fileName].Length > index && PNightTextures[fileName][index] != SharedMaterialManager.MissingTexture)
-                return PNightTextures[fileName][index];
+                if (retval == SharedMaterialManager.MissingTexture)
+                {
+                    tmp = PNightTextures[FileName];
+                    if (tmp != null)
+                    {
+                        retval = SafeGetAt(tmp, indx, FileName);
+                        isNightTexture = true;
+                    }
+                }
+            }
 
-            isNightTexture = false;
-            if (PDayTextures[fileName].Length > index && PDayTextures[fileName][index] != SharedMaterialManager.MissingTexture)
-                return PDayTextures[fileName][index];
-
-            return SharedMaterialManager.MissingTexture;
+            if (retval == SharedMaterialManager.MissingTexture)
+            {
+                tmp = PDayTextures[FileName];
+                if (tmp != null)
+                {
+                    retval = SafeGetAt(tmp, indx, FileName);
+                    isNightTexture = false;
+                }
+            }
+            return retval;
         }
 
         /// <summary>
         /// Returns a Texture by its name
         /// </summary>
-        /// <param name="fileName">Name of the Texture</param>
+        /// <param name="FileName">Name of the Texture</param>
         /// <param name="isDark">Is dark out there?</param>
-        /// <param name="cabLight">Is Cab Light on?</param>
+        /// <param name="isLight">Is Cab Light on?</param>
         /// <param name="isNightTexture"></param>
         /// <returns>The Texture</returns>
-        public static Texture2D GetTexture(string fileName, bool isDark, bool cabLight, out bool isNightTexture)
+        public static Texture2D GetTexture(string FileName, bool isDark, bool isLight, out bool isNightTexture)
         {
+            Texture2D retval = SharedMaterialManager.MissingTexture;
             isNightTexture = false;
-            if (string.IsNullOrEmpty(fileName) || !DayTextures.ContainsKey(fileName))
-                return SharedMaterialManager.MissingTexture;
 
-            if (isDark && cabLight&& DayTextures[fileName] != SharedMaterialManager.MissingTexture)
-                return DayTextures[fileName];
+            if (string.IsNullOrEmpty(FileName) || !DayTextures.Keys.Contains(FileName))
+                return retval;
 
-            isNightTexture = true;
-            if (isDark && NightTextures[fileName] != SharedMaterialManager.MissingTexture)
-                return NightTextures[fileName];
+            if (isDark)
+            {
+                if (isLight)
+                {
+                    //retval = LightTextures[FileName];
+                    retval = DayTextures[FileName];
+                    isNightTexture = false;
+                }
 
-            isNightTexture = false;
-            if (DayTextures[fileName] != SharedMaterialManager.MissingTexture)
-                return DayTextures[fileName];
+                if (retval == SharedMaterialManager.MissingTexture)
+                {
+                    retval = NightTextures[FileName];
+                    isNightTexture = true;
+                }
+            }
 
-            return SharedMaterialManager.MissingTexture;
+            if (retval == SharedMaterialManager.MissingTexture)
+            {
+                retval = DayTextures[FileName];
+                isNightTexture = false;
+            }
+
+            return retval;
         }
 
         [CallOnThread("Loader")]
@@ -2463,11 +2693,17 @@ namespace ORTS
                 viewer.TextureManager.Mark(texture);
             foreach (var texture in NightTextures.Values)
                 viewer.TextureManager.Mark(texture);
+            foreach (var texture in LightTextures.Values)
+                viewer.TextureManager.Mark(texture);
             foreach (var textureList in PDayTextures.Values)
                 if (textureList != null)
                     foreach (var texture in textureList)
                         viewer.TextureManager.Mark(texture);
             foreach (var textureList in PNightTextures.Values)
+                if (textureList != null)
+                    foreach (var texture in textureList)
+                        viewer.TextureManager.Mark(texture);
+            foreach (var textureList in PLightTextures.Values)
                 if (textureList != null)
                     foreach (var texture in textureList)
                         viewer.TextureManager.Mark(texture);
