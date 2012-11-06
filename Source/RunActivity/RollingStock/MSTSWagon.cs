@@ -896,22 +896,16 @@ namespace ORTS
 			if (AftPantograph.Exists() ) car.NumPantograph++;
 
 			//we always want to raise aft by default, so rename panto1 to aft if there is only one set of pant
-			if (car.NumPantograph == 1 && !AftPantograph.Exists() )
-			{
-                AnimatedPart.Swap( ref AftPantograph, ref FrontPantograph);
-			}
+            if (car.NumPantograph == 1 && !AftPantograph.Exists())
+                AnimatedPart.Swap(ref AftPantograph, ref FrontPantograph);
 
-			//now handle the direction of the car; if reverse, then the pantoaft should use Panto***1*
-			if (car.Direction == Direction.Reverse && car.NumPantograph == 2)
-			{
-                AnimatedPart.Swap( ref AftPantograph, ref FrontPantograph);
-			}
+            //now handle the direction of the car; if flipped, then the pantoaft should use Panto***1*
+            if (car.Flipped && car.NumPantograph == 2)
+                AnimatedPart.Swap(ref AftPantograph, ref FrontPantograph);
 
-			//now handle the direction of the car; if reverse, then the left/right door should be switched
-			if (car.Direction == Direction.Reverse )
-			{
+			//now handle the direction of the car; if flipped, then the left/right door should be switched
+            if (car.Flipped)
                 AnimatedPart.Swap(ref RightDoor, ref  LeftDoor);
-			}
 
             AftPantograph.SetPosition(MSTSWagon.AftPanUp);
             FrontPantograph.SetPosition(MSTSWagon.FrontPanUp);
