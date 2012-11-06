@@ -37,11 +37,11 @@ namespace ORTS
         //Configure a default cutoff controller
         //IF none is specified, this will be used, otherwise those values will be overwritten
         public MSTSNotchController CutoffController = new MSTSNotchController(-0.9f, 0.9f, 0.1f);
-        MSTSNotchController Injector1Controller = new MSTSNotchController(0, 1, 0.1f);
-        MSTSNotchController Injector2Controller = new MSTSNotchController(0, 1, 0.1f);
-        MSTSNotchController BlowerController = new MSTSNotchController(0, 1, 0.1f);
-        MSTSNotchController DamperController = new MSTSNotchController(0, 1, 0.1f);
-        MSTSNotchController FiringRateController = new MSTSNotchController(0, 1, 0.1f);
+        public MSTSNotchController Injector1Controller = new MSTSNotchController( 0, 1, 0.1f );
+        public MSTSNotchController Injector2Controller = new MSTSNotchController( 0, 1, 0.1f );
+        public MSTSNotchController BlowerController = new MSTSNotchController( 0, 1, 0.1f );
+        public MSTSNotchController DamperController = new MSTSNotchController( 0, 1, 0.1f );
+        public MSTSNotchController FiringRateController = new MSTSNotchController( 0, 1, 0.1f );
         bool Injector1On = false;
         bool Injector2On = false;
         bool CylinderCocksOpen = false;
@@ -96,6 +96,13 @@ namespace ORTS
         Interpolator BurnRate;      // fuel burn rate given steam usage
         Interpolator Pressure2Temperature;
         Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
+
+        float? reverserTarget;
+        float? injector1Target;
+        float? injector2Target;
+        float? blowerTarget;
+        float? damperTarget;
+        float? firingRateTarget;
 
 		public MSTSSteamLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
             : base(simulator, wagFile, previousCar)
@@ -651,26 +658,37 @@ namespace ORTS
             return result.ToString();
         }
 
-        public new void StartReverseIncrease()
-        {
-            CutoffController.StartIncrease();
+        public override void StartReverseIncrease( float? target ) {
+            CutoffController.StartIncrease( target );
+            CutoffController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
         }
 
-        public void StopReverseIncrease()
-        {
+        public void StopReverseIncrease() {
             CutoffController.StopIncrease();
         }
 
-        public new void StartReverseDecrease()
-        {
-            CutoffController.StartDecrease();
+        public override void StartReverseDecrease( float? target ) {
+            CutoffController.StartDecrease( target );
+            CutoffController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
         }
 
-        public  void StopReverseDecrease()
-        {
+        public void StopReverseDecrease() {
             CutoffController.StopDecrease();
+        }
+
+        public void ReverserChangeTo( bool isForward, float? target ) {
+            reverserTarget = target;
+            if( isForward ) {
+                if( target > CutoffController.CurrentValue ) {
+                    StartReverseIncrease( target );
+                }
+            } else {
+                if( target < CutoffController.CurrentValue ) {
+                    StartReverseDecrease( target );
+                }
+            }
         }
 
         public void SetCutoffPercent(float percent)
@@ -682,112 +700,175 @@ namespace ORTS
                 Train.MUDirection = Direction.Reverse;
         }
 
-        public void StartInjector1Increase()
-        {
+        public void StartInjector1Increase( float? target ) {
+            Injector1Controller.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Injector1, CabSetting.Increase, Injector1Controller.CurrentValue * 100 );
-            Injector1Controller.StartIncrease();
+            Injector1Controller.StartIncrease( target );
         }
-        public void StopInjector1Increase()
-        {
+
+        public void StopInjector1Increase() {
             Injector1Controller.StopIncrease();
         }
-        public void StartInjector1Decrease()
-        {
+
+        public void StartInjector1Decrease( float? target ) {
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Injector1, CabSetting.Decrease, Injector1Controller.CurrentValue * 100 );
-            Injector1Controller.StartDecrease();
+            Injector1Controller.StartDecrease( target );
+            Injector1Controller.CommandStartTime = Simulator.ClockTime;
         }
-        public void StopInjector1Decrease()
-        {
+
+        public void StopInjector1Decrease() {
             Injector1Controller.StopDecrease();
         }
+        
         public void ToggleInjector1()
         {
             Injector1On = !Injector1On;
             Simulator.Confirmer.Confirm( CabControl.Injector1, Injector1On ? CabSetting.On : CabSetting.Off );
         }
 
-        public void StartInjector2Increase()
-        {
+        public void StartInjector2Increase( float? target ) {
+            Injector2Controller.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Injector2, CabSetting.Increase, Injector2Controller.CurrentValue * 100 );
-            Injector2Controller.StartIncrease();
+            Injector2Controller.StartIncrease( target );
         }
-        public void StopInjector2Increase()
-        {
+
+        public void StopInjector2Increase() {
             Injector2Controller.StopIncrease();
         }
-        public void StartInjector2Decrease()
-        {
+
+        public void StartInjector2Decrease( float? target ) {
+            Injector2Controller.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Injector2, CabSetting.Decrease, Injector2Controller.CurrentValue * 100 );
-            Injector2Controller.StartDecrease();
+            Injector2Controller.StartDecrease( target );
         }
-        public void StopInjector2Decrease()
-        {
+
+        public void StopInjector2Decrease() {
             Injector2Controller.StopDecrease();
         }
+
         public void ToggleInjector2()
         {
             Injector2On = !Injector2On;
             Simulator.Confirmer.Confirm( CabControl.Injector2, Injector2On ? CabSetting.On : CabSetting.Off );
         }
 
-        public void StartBlowerIncrease()
-        {
-            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100 );
-            BlowerController.StartIncrease();
+        public void Injector1ChangeTo( bool increase, float? target ) {
+            injector1Target = target;
+            if( increase ) {
+                if( target > Injector1Controller.CurrentValue ) {
+                    StartInjector1Increase( target );
+                }
+            } else {
+                if( target < Injector1Controller.CurrentValue ) {
+                    StartInjector1Decrease( target );
+                }
+            }
         }
-        public void StopBlowerIncrease()
-        {
+
+        public void Injector2ChangeTo( bool increase, float? target ) {
+            injector2Target = target;
+            if( increase ) {
+                if( target > Injector2Controller.CurrentValue ) {
+                    StartInjector2Increase( target );
+                }
+            } else {
+                if( target < Injector2Controller.CurrentValue ) {
+                    StartInjector2Decrease( target );
+                }
+            }
+        }
+
+        public void StartBlowerIncrease( float? target ) {
+            BlowerController.CommandStartTime = Simulator.ClockTime;
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100 );
+            BlowerController.StartIncrease( target );
+        }
+        public void StopBlowerIncrease() {
             BlowerController.StopIncrease();
         }
-        public void StartBlowerDecrease()
-        {
+        public void StartBlowerDecrease( float? target ) {
+            BlowerController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Blower, CabSetting.Decrease, BlowerController.CurrentValue * 100 );
-            BlowerController.StartDecrease();
+            BlowerController.StartDecrease( target );
         }
-        public void StopBlowerDecrease()
-        {
+        public void StopBlowerDecrease() {
             BlowerController.StopDecrease();
         }
 
-        public void StartDamperIncrease()
-        {
-            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, CabSetting.Increase, DamperController.CurrentValue * 100 );
-            DamperController.StartIncrease();
+        public void BlowerChangeTo( bool increase, float? target ) {
+            blowerTarget = target;
+            if( increase ) {
+                if( target > BlowerController.CurrentValue ) {
+                    StartBlowerIncrease( target );
+                }
+            } else {
+                if( target < BlowerController.CurrentValue ) {
+                    StartBlowerDecrease( target );
+                }
+            }
         }
-        public void StopDamperIncrease()
-        {
+
+        public void StartDamperIncrease( float? target ) {
+            DamperController.CommandStartTime = Simulator.ClockTime;
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, CabSetting.Increase, DamperController.CurrentValue * 100 );
+            DamperController.StartIncrease( target );
+        }
+        public void StopDamperIncrease() {
             DamperController.StopIncrease();
         }
-        public void StartDamperDecrease()
-        {
-            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, DamperController.CurrentValue * 100 );
-            DamperController.StartDecrease();
+        public void StartDamperDecrease( float? target ) {
+            DamperController.CommandStartTime = Simulator.ClockTime;
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, CabSetting.Decrease, DamperController.CurrentValue * 100 );
+            DamperController.StartDecrease( target );
         }
-        public void StopDamperDecrease()
-        {
+        public void StopDamperDecrease() {
             DamperController.StopDecrease();
         }
 
-        public void StartFiringRateIncrease()
-        {
-            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, FiringRateController.CurrentValue * 100 );
-            FiringRateController.StartIncrease();
+        public void DamperChangeTo( bool increase, float? target ) {
+            damperTarget = target;
+            if( increase ) {
+                if( target > DamperController.CurrentValue ) {
+                    StartDamperIncrease( target );
+                }
+            } else {
+                if( target < DamperController.CurrentValue ) {
+                    StartDamperDecrease( target );
+                }
+            }
         }
-        public void StopFiringRateIncrease()
-        {
+
+        public void StartFiringRateIncrease( float? target ) {
+            FiringRateController.CommandStartTime = Simulator.ClockTime;
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.FiringRate, FiringRateController.CurrentValue * 100 );
+            FiringRateController.StartIncrease( target );
+        }
+        public void StopFiringRateIncrease() {
             FiringRateController.StopIncrease();
         }
-        public void StartFiringRateDecrease()
-        {
-            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, FiringRateController.CurrentValue * 100 );
-            FiringRateController.StartDecrease();
+        public void StartFiringRateDecrease( float? target ) {
+            FiringRateController.CommandStartTime = Simulator.ClockTime;
+            Simulator.Confirmer.ConfirmWithPerCent( CabControl.FiringRate, FiringRateController.CurrentValue * 100 );
+            FiringRateController.StartDecrease( target );
         }
-        public void StopFiringRateDecrease()
-        {
+        public void StopFiringRateDecrease() {
             FiringRateController.StopDecrease();
         }
 
-        public void FireShovelFull()
+        public void FiringRateChangeTo( bool increase, float? target ) {
+            firingRateTarget = target;
+            if( increase ) {
+                if( target > FiringRateController.CurrentValue ) {
+                    StartFiringRateIncrease( target );
+                }
+            } else {
+                if( target < FiringRateController.CurrentValue ) {
+                    StartFiringRateDecrease( target );
+                }
+            }
+        }
+
+        public void FireShovelfull()
         {
             FireMassKG+= ShovelMassKG;
             Simulator.Confirmer.Confirm( CabControl.FireShovelfull, CabSetting.On );
@@ -882,7 +963,7 @@ namespace ORTS
         /// lacks the throttle interlock and warning in other locomotives. 
         /// </summary>
         protected override void ReverserControlForwards() {
-                SteamLocomotive.StartReverseIncrease();
+            SteamLocomotive.StartReverseIncrease( null );
         }
 
         /// <summary>
@@ -890,7 +971,7 @@ namespace ORTS
         /// lacks the throttle interlock and warning in other locomotives. 
         /// </summary>
         protected override void ReverserControlBackwards() {
-                SteamLocomotive.StartReverseDecrease();
+            SteamLocomotive.StartReverseDecrease( null );
         }
 
         /// <summary>
@@ -899,62 +980,83 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // Note: UserInput.IsPressed( UserCommands.ControlReverserForward/Backwards ) are handled in base class MSTSLocomotive
-            // else there will be calls to StartReverseIncrease() here and also from MSTSLocomotive.
-            if( UserInput.IsReleased( UserCommands.ControlReverserForward ) )
+            // Note: UserInput.IsReleased( UserCommands.ControlReverserForward/Backwards ) are given here but
+            // UserInput.IsPressed( UserCommands.ControlReverserForward/Backwards ) are handled in base class MSTSLocomotive.
+            if( UserInput.IsReleased( UserCommands.ControlReverserForward ) ) {
                 SteamLocomotive.StopReverseIncrease();
-            else if( UserInput.IsReleased( UserCommands.ControlReverserBackwards ) )
-                SteamLocomotive.StopReverseDecrease();  
-            if (UserInput.IsPressed(UserCommands.ControlInjector1Increase))
-                SteamLocomotive.StartInjector1Increase();
-            else if (UserInput.IsReleased(UserCommands.ControlInjector1Increase))
+                new ContinuousReverserCommand( Viewer.Log, true, SteamLocomotive.CutoffController.CurrentValue, SteamLocomotive.CutoffController.CommandStartTime );
+            } else if( UserInput.IsReleased( UserCommands.ControlReverserBackwards ) ) {
+                SteamLocomotive.StopReverseDecrease();
+                new ContinuousReverserCommand( Viewer.Log, false, SteamLocomotive.CutoffController.CurrentValue, SteamLocomotive.CutoffController.CommandStartTime );
+            }
+            if( UserInput.IsPressed( UserCommands.ControlInjector1Increase ) ) {
+                SteamLocomotive.StartInjector1Increase( null );
+            } else if( UserInput.IsReleased( UserCommands.ControlInjector1Increase ) ) {
                 SteamLocomotive.StopInjector1Increase();
-            else if (UserInput.IsPressed(UserCommands.ControlInjector1Decrease))
-                SteamLocomotive.StartInjector1Decrease();
-            else if (UserInput.IsReleased(UserCommands.ControlInjector1Decrease))
+                new ContinuousInjectorCommand( Viewer.Log, 1, true, SteamLocomotive.Injector1Controller.CurrentValue, SteamLocomotive.Injector1Controller.CommandStartTime );
+            }
+            else if( UserInput.IsPressed( UserCommands.ControlInjector1Decrease ) )
+                SteamLocomotive.StartInjector1Decrease( null );
+            else if( UserInput.IsReleased( UserCommands.ControlInjector1Decrease ) ) {
                 SteamLocomotive.StopInjector1Decrease();
-            if (UserInput.IsPressed(UserCommands.ControlInjector1))
-                SteamLocomotive.ToggleInjector1();
+                new ContinuousInjectorCommand( Viewer.Log, 1, false, SteamLocomotive.Injector1Controller.CurrentValue, SteamLocomotive.Injector1Controller.CommandStartTime );
+            }
+            if( UserInput.IsPressed( UserCommands.ControlInjector1 ) )
+                new ToggleInjectorCommand( Viewer.Log, 1 );
+
             if (UserInput.IsPressed(UserCommands.ControlInjector2Increase))
-                SteamLocomotive.StartInjector2Increase();
-            else if (UserInput.IsReleased(UserCommands.ControlInjector2Increase))
+                SteamLocomotive.StartInjector2Increase( null );
+            else if( UserInput.IsReleased( UserCommands.ControlInjector2Increase ) ) {
                 SteamLocomotive.StopInjector2Increase();
-            else if (UserInput.IsPressed(UserCommands.ControlInjector2Decrease))
-                SteamLocomotive.StartInjector2Decrease();
-            else if (UserInput.IsReleased(UserCommands.ControlInjector2Decrease))
+                new ContinuousInjectorCommand( Viewer.Log, 2, true, SteamLocomotive.Injector2Controller.CurrentValue, SteamLocomotive.Injector2Controller.CommandStartTime );
+            } else if( UserInput.IsPressed( UserCommands.ControlInjector2Decrease ) )
+                SteamLocomotive.StartInjector2Decrease( null );
+            else if( UserInput.IsReleased( UserCommands.ControlInjector2Decrease ) ) {
                 SteamLocomotive.StopInjector2Decrease();
-            if (UserInput.IsPressed(UserCommands.ControlInjector2))
-                SteamLocomotive.ToggleInjector2();
+                new ContinuousInjectorCommand( Viewer.Log, 2, false, SteamLocomotive.Injector2Controller.CurrentValue, SteamLocomotive.Injector2Controller.CommandStartTime );
+            }
+            if( UserInput.IsPressed( UserCommands.ControlInjector2 ) )
+                new ToggleInjectorCommand( Viewer.Log, 2 );
+
             if (UserInput.IsPressed(UserCommands.ControlBlowerIncrease))
-                SteamLocomotive.StartBlowerIncrease();
-            else if (UserInput.IsReleased(UserCommands.ControlBlowerIncrease))
+                SteamLocomotive.StartBlowerIncrease( null );
+            else if( UserInput.IsReleased( UserCommands.ControlBlowerIncrease ) ) {
                 SteamLocomotive.StopBlowerIncrease();
-            else if (UserInput.IsPressed(UserCommands.ControlBlowerDecrease))
-                SteamLocomotive.StartBlowerDecrease();
-            else if (UserInput.IsReleased(UserCommands.ControlBlowerDecrease))
+                new ContinuousBlowerCommand( Viewer.Log, true, SteamLocomotive.BlowerController.CurrentValue, SteamLocomotive.BlowerController.CommandStartTime );
+            } else if( UserInput.IsPressed( UserCommands.ControlBlowerDecrease ) )
+                SteamLocomotive.StartBlowerDecrease( null );
+            else if( UserInput.IsReleased( UserCommands.ControlBlowerDecrease ) ) {
                 SteamLocomotive.StopBlowerDecrease();
+                new ContinuousBlowerCommand( Viewer.Log, false, SteamLocomotive.BlowerController.CurrentValue, SteamLocomotive.BlowerController.CommandStartTime );
+            }
             if (UserInput.IsPressed(UserCommands.ControlDamperIncrease))
-                SteamLocomotive.StartDamperIncrease();
-            else if (UserInput.IsReleased(UserCommands.ControlDamperIncrease))
+                SteamLocomotive.StartDamperIncrease( null );
+            else if( UserInput.IsReleased( UserCommands.ControlDamperIncrease ) ) {
                 SteamLocomotive.StopDamperIncrease();
-            else if (UserInput.IsPressed(UserCommands.ControlDamperDecrease))
-                SteamLocomotive.StartDamperDecrease();
-            else if (UserInput.IsReleased(UserCommands.ControlDamperDecrease))
+                new ContinuousDamperCommand( Viewer.Log, true, SteamLocomotive.DamperController.CurrentValue, SteamLocomotive.DamperController.CommandStartTime );
+            } else if( UserInput.IsPressed( UserCommands.ControlDamperDecrease ) )
+                SteamLocomotive.StartDamperDecrease( null );
+            else if( UserInput.IsReleased( UserCommands.ControlDamperDecrease ) ) {
                 SteamLocomotive.StopDamperDecrease();
+                new ContinuousDamperCommand( Viewer.Log, false, SteamLocomotive.DamperController.CurrentValue, SteamLocomotive.DamperController.CommandStartTime );
+            }
             if (UserInput.IsPressed(UserCommands.ControlFiringRateIncrease))
-                SteamLocomotive.StartFiringRateIncrease();
-            else if (UserInput.IsReleased(UserCommands.ControlFiringRateIncrease))
+                SteamLocomotive.StartFiringRateIncrease( null );
+            else if( UserInput.IsReleased( UserCommands.ControlFiringRateIncrease ) ) {
                 SteamLocomotive.StopFiringRateIncrease();
-            else if (UserInput.IsPressed(UserCommands.ControlFiringRateDecrease))
-                SteamLocomotive.StartFiringRateDecrease();
-            else if (UserInput.IsReleased(UserCommands.ControlFiringRateDecrease))
+                new ContinuousFiringRateCommand( Viewer.Log, true, SteamLocomotive.FiringRateController.CurrentValue, SteamLocomotive.FiringRateController.CommandStartTime );
+            } else if( UserInput.IsPressed( UserCommands.ControlFiringRateDecrease ) )
+                SteamLocomotive.StartFiringRateDecrease( null );
+            else if( UserInput.IsReleased( UserCommands.ControlFiringRateDecrease ) ) {
                 SteamLocomotive.StopFiringRateDecrease();
-            if (UserInput.IsPressed(UserCommands.ControlFireShovelFull))
-                SteamLocomotive.FireShovelFull();
-            if (UserInput.IsPressed(UserCommands.ControlCylinderCocks))
-                SteamLocomotive.ToggleCylinderCocks();
-            if (UserInput.IsPressed(UserCommands.ControlFiring))
-                SteamLocomotive.ToggleManualFiring();
+                new ContinuousFiringRateCommand( Viewer.Log, false, SteamLocomotive.FiringRateController.CurrentValue, SteamLocomotive.FiringRateController.CommandStartTime );
+            }
+            if( UserInput.IsPressed( UserCommands.ControlFireShovelFull ) )
+                new FireShovelfullCommand( Viewer.Log );
+            if( UserInput.IsPressed( UserCommands.ControlCylinderCocks ) )
+                new ToggleCylinderCocksCommand( Viewer.Log );
+            if( UserInput.IsPressed( UserCommands.ControlFiring ) )
+                new ToggleManualFiringCommand( Viewer.Log );
 
             if (UserInput.RDState != null && UserInput.RDState.Changed)
                 SteamLocomotive.SetCutoffPercent(UserInput.RDState.DirectionPercent);

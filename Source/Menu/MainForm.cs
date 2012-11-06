@@ -25,7 +25,7 @@ namespace ORTS
         }
 
         bool Initialized;
-        UserSettings Settings;
+        public UserSettings Settings;
         List<Folder> Folders = new List<Folder>();
         List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
@@ -37,6 +37,11 @@ namespace ORTS
         public Activity SelectedActivity { get { return listBoxActivities.SelectedIndex < 0 ? null : Activities[listBoxActivities.SelectedIndex]; } set { if (listBoxActivities.SelectedIndex >= 0) Activities[listBoxActivities.SelectedIndex] = value; } }
         public string SelectedSaveFile { get; set; }
         public MultiplayerMode Multiplayer { get; set; }
+        public bool ResumeFromSavePressed;
+        public bool ReplayFromStartPressed;
+        public bool ReplayFromSavePressed;
+        public bool EmptySavePacksOnExit;
+        public string SPFolder = "SavePacks";
 
         #region Main Form
         public MainForm()
@@ -90,6 +95,15 @@ namespace ORTS
             {
                 Directory.Delete(folderToDelete, true);   // true removes all contents as well as folder
             }
+            
+            // Empty the ORSavePacks folder
+            if( EmptySavePacksOnExit ) {
+                string folderToEmpty = Path.Combine( userDataFolder, SPFolder );
+                if( Directory.Exists( folderToEmpty ) ) {
+                    Directory.GetFiles( folderToEmpty ).ToList().ForEach( File.Delete );
+                }
+            }
+
             // Tidy up after versions which used SAVE.BIN
             var file = userDataFolder + @"\SAVE.BIN";
             if (File.Exists(file))
@@ -171,6 +185,16 @@ namespace ORTS
         #endregion
 
         #region Misc. buttons and options
+        void buttonSwitchStyle_Click(object sender, EventArgs e)
+        {
+            using (var RK = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
+            {
+                if (RK != null)
+                    RK.SetValue("LauncherMenu", 2);
+            }
+            Process.Start(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "MenuWPF.exe"));
+            Close();
+        }
 
         void buttonTesting_Click(object sender, EventArgs e)
         {
@@ -190,7 +214,7 @@ namespace ORTS
 
         void buttonResume_Click(object sender, EventArgs e)
         {
-            using (var form = new ResumeForm(SelectedRoute, SelectedActivity))
+            using (var form = new ResumeForm(this, SelectedRoute, SelectedActivity))
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
@@ -202,7 +226,7 @@ namespace ORTS
 
         void buttonMultiplayer_Click(object sender, EventArgs e)
         {
-            using (var form = new MultiplayerForm(Settings))
+            using( var form = new MultiplayerForm( Settings ) )
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
                     DialogResult = DialogResult.OK;
@@ -261,6 +285,7 @@ namespace ORTS
             checkBoxWarnings.Checked = Settings.Logging;
             checkBoxWindowed.Checked = !Settings.FullScreen;
             checkBoxMultiplayer.Checked = Settings.Multiplayer;
+            EmptySavePacksOnExit = Settings.EmptySavePacksOnExit;
         }
 
         void SaveOptions()
@@ -273,6 +298,7 @@ namespace ORTS
                 listBoxRoutes.SelectedItem != null ? (listBoxRoutes.SelectedItem as Route).Path : "",
                 listBoxActivities.SelectedItem != null && (listBoxActivities.SelectedItem as Activity).FilePath != null ? (listBoxActivities.SelectedItem as Activity).FilePath : "",
             };
+            Settings.EmptySavePacksOnExit = EmptySavePacksOnExit;
             Settings.Save();
         }
 
@@ -309,7 +335,7 @@ namespace ORTS
                 RouteLoader.Cancel();
 
             listBoxRoutes.Items.Clear();
-            buttonRouteDetails.Enabled = buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
+			buttonRouteDetails.Enabled = buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
             var selectedFolder = SelectedFolder;
             RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
             {
@@ -317,14 +343,14 @@ namespace ORTS
                 labelRoutes.Visible = Routes.Count == 0;
                 foreach (var route in Routes)
                     listBoxRoutes.Items.Add(route);
-                var selectionIndex = Settings.Menu_Selection.Length > 1 ? Routes.FindIndex(f => f.Path == Settings.Menu_Selection[1]) : -1;
+                var selectionIndex = Settings.Menu_Selection.Length > 1 ? routes.FindIndex(f => f.Path == Settings.Menu_Selection[1]) : -1;
                 if (selectionIndex >= 0)
                     listBoxRoutes.SelectedIndex = selectionIndex;
-                else if (Routes.Count > 0)
+                else if (routes.Count > 0)
                     listBoxRoutes.SelectedIndex = 0;
                 else
                     listBoxRoutes.ClearSelected();
-                buttonRouteDetails.Enabled = listBoxRoutes.Items.Count > 0;
+				buttonRouteDetails.Enabled = listBoxRoutes.Items.Count > 0;
             });
         }
 
@@ -334,7 +360,7 @@ namespace ORTS
                 ActivityLoader.Cancel();
 
             listBoxActivities.Items.Clear();
-            buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
+			buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
             var selectedRoute = SelectedRoute;
             ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
             {
@@ -342,14 +368,14 @@ namespace ORTS
                 labelActivities.Visible = Activities.Count == 0;
                 foreach (var activity in Activities)
                     listBoxActivities.Items.Add(activity);
-                var selectionIndex = Settings.Menu_Selection.Length > 2 ? Activities.FindIndex(f => f.FilePath == Settings.Menu_Selection[2]) : -1;
+                var selectionIndex = Settings.Menu_Selection.Length > 2 ? activities.FindIndex(f => f.FilePath == Settings.Menu_Selection[2]) : -1;
                 if (selectionIndex >= 0)
                     listBoxActivities.SelectedIndex = selectionIndex;
-                else if (Activities.Count > 0)
+                else if (activities.Count > 0)
                     listBoxActivities.SelectedIndex = 0;
                 else
                     listBoxActivities.ClearSelected();
-                buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = listBoxActivities.Items.Count > 0;
+				buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = listBoxActivities.Items.Count > 0;
             });
         }
 
@@ -392,7 +418,7 @@ namespace ORTS
 
         bool GetMultiplayerInfo()
         {
-            using (var form = new MultiplayerForm(Settings))
+            using (var form = new MultiplayerForm( Settings ))
             {
                 switch (form.ShowDialog(this))
                 {

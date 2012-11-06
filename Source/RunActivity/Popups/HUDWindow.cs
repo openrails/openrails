@@ -186,6 +186,9 @@ namespace ORTS.Popups
             TableSetLabelValueColumns(table, 0, 2);
             TableAddLabelValue(table, "Version", Program.Version.Length > 0 ? Program.Version : Program.Build);
             TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
+            if( Viewer.IsReplaying ) {
+                TableAddLabelValue( table, "Replay", InfoDisplay.FormattedTime( Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime ) );
+            }
             TableAddLabelValue(table, "Speed", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
             TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);

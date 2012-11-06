@@ -12,81 +12,72 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ORTS.Popups
-{
-	public class TrainOperationsWindow : Window
-	{
-		const int CarListHeight = 16;
-		const int CarListPadding = 2;
-		const int CarWidth = 100;
-		internal const int CouplerSize = 16;
-		internal static Texture2D CouplerTexture;
-		Train PlayerTrain;
-		int LastPlayerTrainCars;
+namespace ORTS.Popups {
+    public class TrainOperationsWindow : Window {
+        const int CarListHeight = 16;
+        const int CarListPadding = 2;
+        const int CarWidth = 100;
+        internal const int CouplerSize = 16;
+        internal static Texture2D CouplerTexture;
+        Train PlayerTrain;
+        int LastPlayerTrainCars;
 
-		public TrainOperationsWindow(WindowManager owner)
-			: base(owner, 600, Window.DecorationSize.Y + CarListHeight + CarListPadding + ControlLayoutScrollbox.ScrollbarSize, "Train Operations")
-		{
+        public TrainOperationsWindow( WindowManager owner )
+            : base( owner, 600, Window.DecorationSize.Y + CarListHeight + CarListPadding + ControlLayoutScrollbox.ScrollbarSize, "Train Operations" ) {
         }
 
-        protected internal override void Initialize()
-        {
+        protected internal override void Initialize() {
             base.Initialize();
-            if (CouplerTexture == null)
-                CouplerTexture = Owner.Viewer.RenderProcess.Content.Load<Texture2D>("TrainOperationsCoupler");
+            if( CouplerTexture == null )
+                CouplerTexture = Owner.Viewer.RenderProcess.Content.Load<Texture2D>( "TrainOperationsCoupler" );
         }
 
-		protected override ControlLayout Layout(ControlLayout layout)
-		{
-			var hbox = base.Layout(layout).AddLayoutHorizontal();
-			var scrollbox = hbox.AddLayoutScrollboxHorizontal(hbox.RemainingHeight);
-			if (PlayerTrain != null)
-			{
-				foreach (var car in PlayerTrain.Cars)
-				{
-					var carLabel = new Label(CarWidth, CarListHeight, car.CarID, LabelAlignment.Center);
-					scrollbox.Add(carLabel);
-					if (car != PlayerTrain.Cars.Last())
-						scrollbox.Add(new TrainOperationsCoupler(0, (CarListHeight - CouplerSize) / 2, Owner.Viewer.Simulator, car));
-				}
-			}
-			return hbox;
-		}
+        protected override ControlLayout Layout( ControlLayout layout ) {
+            var hbox = base.Layout( layout ).AddLayoutHorizontal();
+            var scrollbox = hbox.AddLayoutScrollboxHorizontal( hbox.RemainingHeight );
+            if( PlayerTrain != null ) {
+                int carPosition = 0;
+                foreach( var car in PlayerTrain.Cars ) {
+                    var carLabel = new Label( CarWidth, CarListHeight, car.CarID, LabelAlignment.Center );
+                    scrollbox.Add( carLabel );
+                    if( car != PlayerTrain.Cars.Last() )
+                        scrollbox.Add( new TrainOperationsCoupler( 0, (CarListHeight - CouplerSize) / 2, Owner.Viewer, car, carPosition ) );
+                    carPosition++;
+                }
+            }
+            return hbox;
+        }
 
-        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
-        {
-            base.PrepareFrame(elapsedTime, updateFull);
+        public override void PrepareFrame( ElapsedTime elapsedTime, bool updateFull ) {
+            base.PrepareFrame( elapsedTime, updateFull );
 
-            if (updateFull)
-            {
-                if ((PlayerTrain != Owner.Viewer.PlayerTrain) || (Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars))
-                {
+            if( updateFull ) {
+                if( (PlayerTrain != Owner.Viewer.PlayerTrain) || (Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars) ) {
                     PlayerTrain = Owner.Viewer.PlayerTrain;
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
                     Layout();
                 }
             }
         }
-	}
+    }
 
-	class TrainOperationsCoupler : Image
-	{
-		readonly Simulator Simulator;
-		readonly TrainCar Car;
+    class TrainOperationsCoupler : Image {
+        readonly Viewer3D Viewer;
+        readonly TrainCar Car;
+        readonly int CarPosition;
 
-		public TrainOperationsCoupler(int x, int y, Simulator simulator, TrainCar car)
-			: base(x, y, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize)
-		{
-			Simulator = simulator;
-			Car = car;
-			Texture = TrainOperationsWindow.CouplerTexture;
-			Source = new Rectangle(0, 0, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize);
-			Click += new Action<Control, Point>(TrainOperationsCoupler_Click);
-		}
+        public TrainOperationsCoupler( int x, int y, Viewer3D viewer, TrainCar car, int carPosition )
+            : base( x, y, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize ) {
+            Viewer = viewer;
+            Car = car;
+            CarPosition = carPosition;
+            Texture = TrainOperationsWindow.CouplerTexture;
+            Source = new Rectangle( 0, 0, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize );
+            Click += new Action<Control, Point>( TrainOperationsCoupler_Click );
+        }
 
-		void TrainOperationsCoupler_Click(Control arg1, Point arg2)
-		{
-			Simulator.UncoupleBehind(Car);
-		}
-	}
+        void TrainOperationsCoupler_Click( Control arg1, Point arg2 ) {
+            new UncoupleCommand( Viewer.Log, CarPosition );
+        }
+    }
 }

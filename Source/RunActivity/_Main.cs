@@ -1,6 +1,6 @@
 /// <summary>
 /// This application runs an activity.  After loading the activity, main
-/// sets up the simulator engine and connects a 3D viewer.
+/// sets up the simulator engine and connects a 3D viewer 
 /// 
 /// The simulator engine contains all the elements that represent the operations on a route including 
 /// signal conditions, switch track alignment, rolling stock location and movement, track paths, 
@@ -18,7 +18,9 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 /// </summary>
 
+#if DEBUG
 #define DEBUG_VIEWER
+#endif
 
 using System;
 using System.Collections.Generic;
@@ -51,8 +53,17 @@ namespace ORTS
 
         static Viewer3D Viewer;
         static ORTraceListener ORTraceListener;
+        static string logFileName = "";
+
+        private struct savedValues {
+            public float initialTileX;
+            public float initialTileZ;
+            public string[] args;
+        }
+
 #if DEBUG_VIEWER
         public static Debugging.DispatchViewer DebugViewer;
+        public static bool DebugViewerEnabled = false;
 #endif
 
         /// <summary>
@@ -69,7 +80,7 @@ namespace ORTS
 
             // Look for an action to perform.
             var action = "";
-            var actions = new[] { "start", "resume", "test", "testall" };
+            var actions = new[] { "start", "resume", "test", "testall", "replay", "replay_from_save" };
             foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
                     action = possibleAction;
@@ -92,41 +103,36 @@ namespace ORTS
             {
                 case "start":
                 case "start-profile":
-                    InitLogging(settings);
+                    InitLogging( settings, args );
                     Start(settings, data);
                     break;
                 case "resume":
-                    InitLogging(settings);
+                    InitLogging( settings, args );
                     Resume(settings, data);
                     break;
                 case "test":
                     // Any log file is deleted by Menu.exe
-                    InitLogging(settings, true);
+                    InitLogging( settings, args, true );
                     // set Exit code to be returned to Menu.exe 
                     Environment.ExitCode = Test(settings, data);
                     break;
                 case "testall":
-                    InitLogging(settings);
+                    InitLogging( settings, args );
                     TestAll(data);
                     break;
+                case "replay":
+                    InitLogging( settings, args );
+                    Replay( settings, data );
+                    break;
+                case "replay_from_save":
+                    InitLogging( settings, args );
+                    ReplayFromSave( settings, data );
+                    break;
                 default:
+                    Console.WriteLine("Supply missing activity file name");
+                    Console.WriteLine("   i.e.: RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA1\\ACTIVITIES\\xxx.act\"");
                     Console.WriteLine();
-                    Console.WriteLine( "RunActivity.exe requires an activity filename, but none was given." );
-                    Console.WriteLine();
-                    Console.WriteLine( "E.g.:" );
-                    Console.WriteLine("RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA2\\ACTIVITIES\\hotbox.act\"");
-                    if( Debugger.IsAttached ) {
-                        Console.WriteLine();
-                        Console.WriteLine();
-                        Console.WriteLine( "When using Visual Studio, enter a suitable route <RRR> and activity <AAA> using" );
-                        Console.WriteLine();
-                        Console.WriteLine( "RunActivity > Properties > Debug > Command line arguments =" );
-                        Console.WriteLine();
-                        Console.WriteLine( "\"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\RRR\\ACTIVITIES\\AAA.act\"" );
-                    } else {
-                        Console.WriteLine();
-                        Console.WriteLine( "or launch the program OpenRails.exe and select from the menu." );
-                    }
+                    Console.WriteLine("or launch the program OpenRails.exe and select from the menu.");
                     Console.ReadKey();
                     break;
             }
@@ -143,10 +149,11 @@ namespace ORTS
                 Simulator.Start();
 
                 Viewer = new Viewer3D(Simulator);
+                Viewer.Log = new CommandLog( Viewer );
 
 				if (Client != null)
 				{
-					Client.Send((new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL)).ToString());
+                    Client.Send( (new MSGPlayer( Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL )).ToString() );
 				}
 
 #if DEBUG_VIEWER
@@ -158,11 +165,6 @@ namespace ORTS
                     DebugViewer.Hide();
                     Viewer.DebugViewerEnabled = false;
                 }
-				/*else if (MPManager.IsMultiPlayer())
-				{
-					MPManager.Instance().HandleDispatcherWindow(Simulator, Viewer);
-
-				}*/
 #endif
 
                 Viewer.Run(null);
@@ -170,8 +172,7 @@ namespace ORTS
                 Simulator.Stop();
 
 #if DEBUG_VIEWER
-				if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher) 
-					if (DebugViewer != null && !DebugViewer.IsDisposed) DebugViewer.Dispose();
+                if (MPManager.IsMultiPlayer()) DebugViewer.Dispose();
 #endif
             };
             if (Debugger.IsAttached)
@@ -220,22 +221,29 @@ namespace ORTS
                     // Save heading data used in Menu.exe
                     outf.Write(Simulator.RouteName);
                     outf.Write(Simulator.PathName);
+
                     outf.Write((int)Simulator.GameTime);
-                    outf.Write(DateTime.Now.ToBinary());
-                    // TODO: This needs to be the player's train and/or viewer's selected train.
+                    outf.Write( DateTime.Now.ToBinary() );
                     outf.Write(Simulator.Trains[0].FrontTDBTraveller.TileX + (Simulator.Trains[0].FrontTDBTraveller.X / 2048));
-                    outf.Write(Simulator.Trains[0].FrontTDBTraveller.TileZ + (Simulator.Trains[0].FrontTDBTraveller.Z / 2048));
-                    outf.Write(Simulator.InitialTileX);
-                    outf.Write(Simulator.InitialTileZ);
+                    outf.Write( Simulator.Trains[0].FrontTDBTraveller.TileZ + (Simulator.Trains[0].FrontTDBTraveller.Z / 2048) );
+                    outf.Write( Simulator.InitialTileX );
+                    outf.Write( Simulator.InitialTileZ );
 
                     // Now save the data used by RunActivity.exe
                     outf.Write(Arguments.Length);
-                    foreach (var argument in Arguments)
+                    foreach( var argument in Arguments )
                         outf.Write(argument);
+
+                    // The Save command is the only command that doesn't take any action. It just serves as a marker.
+                    new SaveCommand( Viewer.Log, fileStem );
+                    Viewer.Log.SaveLog( Path.Combine(UserDataFolder, fileStem + ".replay" ) );
+
+                    // Copy the logfile to the save folder
+                    CopyLog( Path.Combine( UserDataFolder, fileStem + ".txt" ) );
+
                     Simulator.Save(outf);
                     Viewer.Save(outf, fileStem);
-                    Console.WriteLine();
-                    Console.WriteLine("Saved");
+
                     Console.WriteLine();
                 }
             };
@@ -265,71 +273,25 @@ namespace ORTS
         {
             Action resume = () =>
             {
-                // If "-resume" also specifies a save file then use it else use most recently changed *.save E.g.:
-                // RunActivity.exe -resume "yard_two 2012-03-20 22.07.36"
-                var saveFile = "";
-                if (args.Length > 0)
-                {
-                    saveFile = args[0];
-                    if (!saveFile.EndsWith(".save"))
-                        saveFile += ".save";
-                    if (!Path.IsPathRooted(saveFile))
-                        saveFile = Path.Combine(Program.UserDataFolder, saveFile);
-                }
-                else
-                {
-                    saveFile = GetMostRecentSave();
-                }
-                Console.WriteLine("Save File  = {0}", saveFile);
-                using (var inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
-                {
-                    // Read in validation data.
-                    var revision = "<unknown>";
-                    var build = "<unknown>";
-                    var versionOkay = false;
-                    try
-                    {
-                        revision = inf.ReadString().Replace("\0", "");
-                        build = inf.ReadString().Replace("\0", "");
-                        versionOkay = (revision == Version) && (build == Build);
-                    }
-                    catch { }
+                // If "-resume" also specifies a save file then use it
+                // E.g. RunActivity.exe -resume "yard_two 2012-03-20 22.07.36"
+                // else use most recently changed *.save
+                // E.g. RunActivity.exe -resume
 
-                    if (!versionOkay)
-                    {
-                        if (Debugger.IsAttached)
-                        {
-                            // Only if debugging, then allow user to continue.
-                            // Resuming from saved activities is useful in debugging.
-                            // (To resume from the latest save, set RunActivity > Properties > Debug > Command line arguments = "-resume")
-                            Trace.Assert(versionOkay, String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}. Continue at your own risk!", Application.ProductName, Version, Build));
-                        }
-                        else
-                        {
-                            if (revision.Length + build.Length > 0)
-                                throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}); it was probably created by V{3} ({4}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build, revision, build));
-                            throw new InvalidDataException(String.Format("{0} save file is not compatible with V{1} ({2}). Save files must be created by the same version of {0}.", Application.ProductName, Version, Build));
-                        }
-                    }
+                // First use the .save file to check the validity and extract the route and activity.
+                string saveFile = GetSaveFile( args );
+                using( BinaryReader inf = new BinaryReader(
+                        new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) ) {
+                    ValidateSave( inf );
+                    savedValues values = GetSavedValues( inf );
+                    InitSimulator( settings, values.args, "Resume" );
+                    Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
+                    Viewer = new Viewer3D( Simulator );
 
-                    // Skip the heading data used in Menu.exe
-                    inf.ReadString(); // Route name
-                    var pathName = inf.ReadString(); // Path name
-                    inf.ReadInt32(); // Game time
-                    inf.ReadInt64(); // Real time
-                    inf.ReadSingle(); // Player TileX
-                    inf.ReadSingle(); // Player TileZ
-                    var initialTileX = inf.ReadSingle(); // Initial TileX
-                    var initialTileZ = inf.ReadSingle(); // Initial TileZ
-
-                    // Read in the real data...
-                    var savedArgs = new string[inf.ReadInt32()];
-                    for (var i = 0; i < savedArgs.Length; i++)
-                        savedArgs[i] = inf.ReadString();
-
-                    InitSimulator(settings, savedArgs, "Resume");
-                    Simulator.Restore(inf, pathName, initialTileX, initialTileZ);
-                    Viewer = new Viewer3D(Simulator);
+                    // Reload the command log
+                    Viewer.Log = new CommandLog( Viewer );
+                    string replayFile = Path.ChangeExtension( saveFile, "replay" );
+                    Viewer.Log.LoadLog( replayFile );
 #if DEBUG_VIEWER
 					if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
 					{
@@ -345,7 +307,6 @@ namespace ORTS
 
 					}*/
 #endif
-
 					Viewer.Run(inf);
 #if DEBUG_VIEWER
 					if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
@@ -372,19 +333,139 @@ namespace ORTS
             }
         }
 
-        static string GetMostRecentSave()
-        {
-            var directory = new DirectoryInfo(UserDataFolder);
-            var file = directory.GetFiles("*.save")
-             .OrderByDescending(f => f.LastWriteTime)
-             .First();
-            if (file == null)
+        /// <summary>
+        /// Replay a saved game.
+        /// </summary>
+        static void Replay( UserSettings settings, string[] args ) {
+            Action replay = () => {
+                // If "-replay" also specifies a save file then use it
+                // E.g. RunActivity.exe -replay "yard_two 2012-03-20 22.07.36"
+                // else use most recently changed *.save
+                // E.g. RunActivity.exe -replay
+
+                // First use the .save file to check the validity and extract the route and activity.
+                string saveFile = GetSaveFile( args );
+                using( BinaryReader inf = new BinaryReader( new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) ) {
+                    ValidateSave( inf );
+                    savedValues values = GetSavedValues( inf );
+                    InitSimulator( settings, values.args, "Replay" );
+                    Simulator.Start();
+                    Viewer = new Viewer3D( Simulator );
+                }
+
+                Viewer.Log = new CommandLog( Viewer );
+                // Load command log to replay
+                Viewer.ReplayCommandList = new List<ICommand>();
+                string replayFile = Path.ChangeExtension( saveFile, "replay" );
+                Viewer.Log.LoadLog( replayFile );
+                foreach( var c in Viewer.Log.CommandList ) {
+                    Viewer.ReplayCommandList.Add( c );
+                }
+                Viewer.Log.CommandList.Clear();
+                Viewer.Log.ReportReplayCommands( Viewer.ReplayCommandList );
+
+                Viewer.Run( null );
+                Simulator.Stop();
+            };
+            if (Debugger.IsAttached)
             {
-                return "resume not found";
+                replay();
             }
             else
             {
-                return file.FullName;
+                try
+                {
+                    replay();
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(error);
+                    if (settings.ShowErrorDialogs)
+                        MessageBox.Show(error.ToString(), Application.ProductName);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replay the last segment of a saved game.
+        /// </summary>
+        static void ReplayFromSave( UserSettings settings, string[] args ) {
+            Action replayFromSave = () => {
+                BinaryReader inf;
+
+                // E.g. RunActivity.exe -replay_from_save "yard_two 2012-03-20 22.07.36"
+                string saveFile = GetSaveFile( args );
+
+                // Find previous save file and move commands to be replayed into replay list.
+                CommandLog log = new CommandLog();
+                string logFile = saveFile.Replace( ".save", ".replay" );
+                log.LoadLog( logFile );
+                List<ICommand> replayCommandList = new List<ICommand>();
+
+                // Scan backwards to find previous saveFile (ignore any that user has deleted).
+                int count = log.CommandList.Count;
+                string previousSaveFile = "";
+                for( int i = count - 2; // -2 so we skip over the final save command
+                        i >= 0; i-- ) {
+                    var c = log.CommandList[i];
+                    if( c is SaveCommand ) {
+                        string f = ((SaveCommand)c).FileStem;
+                        f = Path.Combine( Program.UserDataFolder, f );
+                        if( !f.EndsWith( ".save" ) ) { f += ".save"; }
+                        if( System.IO.File.Exists( f ) ) {
+                            previousSaveFile = f;
+                            // Move commands after this to the replay command list.
+                            for( int j = i + 1; j < count; j++ ) {
+                                replayCommandList.Add( log.CommandList[i + 1] );
+                                log.CommandList.RemoveAt( i + 1 );
+                            }
+                            break;
+                        }
+                    }
+                }
+                if( previousSaveFile == "" ) {
+                    // No save file found so just replay from start
+                    // But we have no args, so have to get these from the Save
+                    inf = new BinaryReader(
+                            new FileStream( saveFile, FileMode.Open, FileAccess.Read ) );
+                    ValidateSave( inf );
+                    savedValues values = GetSavedValues( inf );
+                    InitSimulator( settings, values.args, "Replay" );
+                    Simulator.Start();
+                    Viewer = new Viewer3D( Simulator );
+                } else {
+                    // Resume from previousSaveFile
+                    // and then replay
+                    inf = new BinaryReader(
+                            new FileStream( previousSaveFile, FileMode.Open, FileAccess.Read ) );
+                    ValidateSave( inf );
+                    savedValues values = GetSavedValues( inf );
+                    InitSimulator( settings, values.args, "Resume" );
+                    Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
+                    Viewer = new Viewer3D( Simulator );
+                }
+
+                // Now Viewer exists, link the log to it in both directions
+                Viewer.Log = log;
+                log.Viewer = Viewer;
+                // Now Simulator exists, link the viewer to it
+                Viewer.Log.Simulator = Simulator;
+                Viewer.ReplayCommandList = replayCommandList;
+                Viewer.Log.ReportReplayCommands( Viewer.ReplayCommandList );
+
+                Viewer.Run( inf );
+                Simulator.Stop();
+            };
+            if( Debugger.IsAttached ) {
+                replayFromSave();
+            } else {
+                try {
+                    replayFromSave();
+                } catch( Exception error ) {
+                    Trace.WriteLine( error );
+                    if( settings.ShowErrorDialogs )
+                        MessageBox.Show( error.ToString(), Application.ProductName );
+                }
             }
         }
 
@@ -399,7 +480,7 @@ namespace ORTS
         static void TestAll(string[] args)
         {
             var settings = GetSettings(new[] { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" });
-            InitLogging(settings);
+            InitLogging(settings, args);
             Action testAll = () =>
             {
                 var activities = (args.Length == 0 ? ORTS.Menu.Folder.GetFolders() : args.Select(a => new ORTS.Menu.Folder(Path.GetFileName(a), a)))
@@ -559,18 +640,16 @@ namespace ORTS
             return new UserSettings(RegistryKey, options);
         }
 
-        static void InitLogging(UserSettings settings)
-        {
-            InitLogging(settings, false);
+        static void InitLogging( UserSettings settings, string[] args ) {
+            InitLogging( settings, args, false );
         }
 
-        static void InitLogging(UserSettings settings, bool appendLog)
-        {
-            var logFileName = "";
-            if (settings.Logging)
-            {
-                if ((settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
-                {
+        static void InitLogging( UserSettings settings, string[] args, bool appendLog ) {
+            if( settings.LoggingPath == "" ) {
+                settings.LoggingPath = Environment.GetFolderPath( Environment.SpecialFolder.Desktop );
+            }
+            if( settings.Logging ) {
+                if( (settings.LoggingPath.Length > 0) && Directory.Exists( settings.LoggingPath ) ) {
                     var fileName = settings.LoggingFilename;
                     try
                     {
@@ -580,14 +659,14 @@ namespace ORTS
                     foreach (var ch in Path.GetInvalidFileNameChars())
                         fileName = fileName.Replace(ch, '.');
 
-                    logFileName = Path.Combine(settings.LoggingPath, fileName);
+                    logFileName = Path.Combine( settings.LoggingPath, fileName );
                     // Ensure we start with an empty file.
                     if (!appendLog)
                         File.Delete(logFileName);
                     // Make Console.Out go to the log file AND the output stream.
-                    Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
+                    Console.SetOut( new FileTeeLogger( logFileName, Console.Out ) );
                     // Make Console.Error go to the new Console.Out.
-                    Console.SetError(Console.Out);
+                    Console.SetError( Console.Out );
                 }
             }
 
@@ -597,20 +676,23 @@ namespace ORTS
             // Trace.Listeners and Debug.Listeners are the same list.
             Trace.Listeners.Add(ORTraceListener);
 
-            Console.WriteLine("{0} is starting...", Application.ProductName);
-            Console.WriteLine();
-            Console.WriteLine("Version    = {0}", Version.Length > 0 ? Version : "<none>");
-            Console.WriteLine("Build      = {0}", Build);
-            if (logFileName.Length > 0)
-                Console.WriteLine("Logfile    = {0}", logFileName);
+            Console.WriteLine( "{0} is starting...", Application.ProductName ); { int i = 0; foreach( var a in args ) { Console.WriteLine( String.Format( "Argument {0} = {1}", i++, a ) ); } }
+
+            Console.WriteLine( "Version    = {0}", Version.Length > 0 ? Version : "<none>" );
+            Console.WriteLine( "Build      = {0}", Build );
+            if( logFileName.Length > 0 )
+                Console.WriteLine( "Logfile    = {0}", logFileName );
             LogSeparator();
             settings.Log();
             LogSeparator();
-            if (!settings.Logging)
-            {
-                Console.WriteLine("Logging is disabled, only fatal errors will appear here.");
+            if( !settings.Logging ) {
+                Console.WriteLine( "Logging is disabled, only fatal errors will appear here." );
                 LogSeparator();
             }
+        }
+
+        static void CopyLog( string toFile ) {
+            File.Copy( logFileName, toFile );
         }
 
         static void InitSimulator(UserSettings settings, string[] args)
@@ -704,6 +786,93 @@ namespace ORTS
         static void LogSeparator()
         {
             Console.WriteLine(new String('-', 80));
+        }
+        
+        private static void ValidateSave( BinaryReader inf ) {
+            // Read in validation data.
+            var revision = "<unknown>";
+            var build = "<unknown>";
+            var versionOkay = false;
+            try {
+                revision = inf.ReadString().Replace( "\0", "" );
+                build = inf.ReadString().Replace( "\0", "" );
+                versionOkay = (revision == Version) && (build == Build);
+            } catch { }
+
+            if( !versionOkay ) {
+                if( System.Diagnostics.Debugger.IsAttached ) {
+                    // Only if debugging, then allow user to continue as
+                    // resuming from saved activities is useful in debugging.
+                    // (To resume from the latest save, set 
+                    // RunActivity > Properties > Debug > Command line arguments = "-resume")
+                    Trace.Assert( versionOkay,
+                        "Resuming: Activity Save older than version executing.\n"
+                        + "Press 'Ignore' to continue at your own risk !" );
+                } else {
+                    if( revision.Length > 0 && build.Length > 0 )
+                        throw new InvalidDataException( String.Format(
+                            "{0} save file is not compatible with \nV{1} ({2});"
+                            + " it was probably created by \nV{3} ({4})."
+                            + " Save files must be created by the same version of {0}.",
+                            Application.ProductName, Version, Build, revision, build ) );
+                    throw new InvalidDataException( String.Format(
+                        "{0} save file is not compatible with V{1} ({2})."
+                        + "Save files must be created by the same version of {0}.",
+                        Application.ProductName, Version, Build ) );
+                }
+            }
+        }
+
+        private static string GetSaveFile( string[] args ) {
+            if( args.Length == 0 ) {
+                return GetMostRecentSave();
+            }
+            string saveFile = args[0];
+            if( !saveFile.EndsWith( ".save" ) ) { saveFile += ".save"; }
+            return Path.Combine( Program.UserDataFolder, saveFile );
+        }
+
+        private static string GetMostRecentSave() {
+            var directory = new DirectoryInfo( UserDataFolder );
+            var file = directory.GetFiles( "*.save" )
+             .OrderByDescending( f => f.LastWriteTime )
+             .First();
+            if( file == null ) throw new FileNotFoundException( String.Format(
+                "Activity Save file '*.save' not found in folder {0}", directory ) );
+            return file.FullName;
+        }
+        
+        private static string GetMostRecentReplay() {
+            var directory = new DirectoryInfo( UserDataFolder );
+            var file = directory.GetFiles( "*.replay" )
+             .OrderByDescending( f => f.LastWriteTime )
+             .First();
+            if( file == null ) throw new FileNotFoundException( String.Format(
+                "Activity Replay file '*.replay' found in folder {0}", directory ) );
+            return file.FullName;
+        }
+
+        private static savedValues GetSavedValues( BinaryReader inf ) {
+            savedValues values = default( savedValues );
+            // Skip the heading data used in Menu.exe
+            string temp = inf.ReadString(); // Route name
+            temp = inf.ReadString();        // Path name
+            int tempInt = inf.ReadInt32();          // Time elapsed in game (secs)
+            Int64 tempInt64 = inf.ReadInt64();      // Date and time in real world
+            float tempFloat = inf.ReadSingle();     // Current location of player train TileX
+            tempFloat = inf.ReadSingle();           // Current location of player train TileZ
+
+            // Read initial position and pass to Simulator so it can be written out if another save is made.
+            values.initialTileX = inf.ReadSingle();  // Initial location of player train TileX
+            values.initialTileZ = inf.ReadSingle();  // Initial location of player train TileZ
+
+            // Read in the real data...
+            tempInt = inf.ReadInt32();
+            var savedArgs = new string[tempInt];
+            for( var i = 0; i < savedArgs.Length; i++ )
+                savedArgs[i] = inf.ReadString();
+            values.args = savedArgs;
+            return values;
         }
     }
 }

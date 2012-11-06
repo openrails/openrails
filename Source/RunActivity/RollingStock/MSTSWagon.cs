@@ -33,6 +33,7 @@ namespace ORTS
     /// <summary>
     /// Represents the physical motion and behaviour of the car.
     /// </summary>
+    
     public class MSTSWagon: TrainCar
     {
 		public bool Pan = false;     // false = down; some wagon has pantograph
@@ -456,8 +457,66 @@ namespace ORTS
 				} // pan down
             } while( false );  // Never repeats
 
-            foreach (CarEventHandler eventHandler in EventHandlers)
+            foreach (CarEventHandler eventHandler in EventHandlers) // e.g. for HandleCarEvent() in Sounds.cs
                 eventHandler.HandleCarEvent(eventID);
+        }
+
+        // <CJ Comment> Expected pantograph handling to be in MSTSElectricLocomotive.cs,
+        // but guess that some trains have pantographs on non-motorised cars </CJ Comment>
+        public void ToggleFirstPantograph() {
+    		AftPanUp = !AftPanUp;
+            if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train
+                foreach( TrainCar car in Train.Cars )
+                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).AftPanUp = AftPanUp;
+            if( FrontPanUp || AftPanUp ) {
+                SignalEvent( EventID.Pantograph1Up );
+            } else {
+                SignalEvent( EventID.Pantograph1Down );
+            }
+        }
+
+        public void ToggleSecondPantograph() {
+            FrontPanUp = !FrontPanUp;
+            if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train
+                foreach( TrainCar car in Train.Cars )
+                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).FrontPanUp = FrontPanUp;
+            // Paragraph1Up is not a typo. "P" and Shift+"P" are handled by the same SignalEvent.
+            if( FrontPanUp || AftPanUp ) {
+                SignalEvent( EventID.Pantograph1Up );
+            } else {
+                SignalEvent( EventID.Pantograph1Down );
+            }
+        }
+        
+        public void ToggleDoorsLeft() {
+            DoorLeftOpen = !DoorLeftOpen;
+            if( Simulator.PlayerLocomotive == this ) {//inform everyone else in the train
+                foreach( TrainCar car in Train.Cars ) {
+                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).DoorLeftOpen = DoorLeftOpen;
+                }
+                /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
+                else Car.SignalEvent(EventID.DoorClose);*/
+                //comment out, but can be added back to animate sound
+                Simulator.Confirmer.Confirm( CabControl.DoorsLeft, DoorLeftOpen ? CabSetting.On : CabSetting.Off );
+            }
+        }
+
+        public void ToggleDoorsRight() {
+            DoorRightOpen = !DoorRightOpen;
+            if( Simulator.PlayerLocomotive == this ) { //inform everyone else in the train
+                foreach( TrainCar car in Train.Cars ) {
+                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).DoorRightOpen = DoorRightOpen;
+                }
+                /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
+                else Car.SignalEvent(EventID.DoorClose);*/
+                //comment out, but can be added back to animate sound
+                Simulator.Confirmer.Confirm( CabControl.DoorsRight, DoorRightOpen ? CabSetting.On : CabSetting.Off );
+            }
+        }
+
+        public void ToggleMirrors() {
+            MirrorOpen = !MirrorOpen;
+            Simulator.Confirmer.Confirm( CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off );
         }
 
         // sound sources and viewers can register themselves to get direct notification of an event
@@ -741,8 +800,7 @@ namespace ORTS
 		AnimatedPart Mirrors; //mirror
 
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
-
-        Viewer3D _Viewer3D;
+        protected Viewer3D _Viewer3D;
 
         public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car): base( viewer, car )
         {

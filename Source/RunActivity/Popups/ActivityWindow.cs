@@ -27,8 +27,9 @@ namespace ORTS.Popups
         Label CloseLabel;
         Label QuitLabel;
         Label StatusLabel;
+        DateTime PopupTime;
 
-        public ActivityWindow(WindowManager owner)
+        public ActivityWindow( WindowManager owner )
             : base(owner, 400, 180, "Activity Events")
         {
             Activity = Owner.Viewer.Simulator.ActivityRun;
@@ -36,36 +37,36 @@ namespace ORTS.Popups
 
         protected override ControlLayout Layout(ControlLayout layout)
         {
-            var vbox = base.Layout(layout).AddLayoutVertical();
+            var vbox = base.Layout( layout ).AddLayoutVertical();
             {
-                var hbox = vbox.AddLayoutHorizontal(100);
-                var scrollbox = hbox.AddLayoutScrollboxVertical(hbox.RemainingWidth);
-                scrollbox.Add(Message = new TextFlow(scrollbox.RemainingWidth - ControlLayoutScrollbox.ScrollbarSize, ""));
+                var hbox = vbox.AddLayoutHorizontal( 100 );
+                var scrollbox = hbox.AddLayoutScrollboxVertical( hbox.RemainingWidth );
+                scrollbox.Add( Message = new TextFlow( scrollbox.RemainingWidth - ControlLayoutScrollbox.ScrollbarSize, "" ) );
                 MessageScroller = (ControlLayoutScrollbox)hbox.Controls.Last();
             }
             vbox.AddHorizontalSeparator();
             var height = vbox.RemainingHeight / 2;
             var width = vbox.RemainingWidth / 3;
             {
-                var hbox = vbox.AddLayoutHorizontal(height);
-                hbox.Add(ResumeLabel = new Label(width, height, "", LabelAlignment.Center));
-                hbox.Add(CloseLabel = new Label(width, height, "", LabelAlignment.Center));
-                hbox.Add(QuitLabel = new Label(width, height, "", LabelAlignment.Center));
-                ResumeLabel.Click += new Action<Control, Point>(ResumeActivity_Click);
-                CloseLabel.Click += new Action<Control, Point>(CloseBox_Click);
-                QuitLabel.Click += new Action<Control, Point>(QuitActivity_Click);
+                var hbox = vbox.AddLayoutHorizontal( height );
+                hbox.Add( ResumeLabel = new Label( width, height, "", LabelAlignment.Center ) );
+                hbox.Add( CloseLabel = new Label( width, height, "", LabelAlignment.Center ) );
+                hbox.Add( QuitLabel = new Label( width, height, "", LabelAlignment.Center ) );
+                ResumeLabel.Click += new Action<Control, Point>( ResumeActivity_Click );
+                CloseLabel.Click += new Action<Control, Point>( CloseBox_Click );
+                QuitLabel.Click += new Action<Control, Point>( QuitActivity_Click );
             }
             vbox.AddHorizontalSeparator();
             {
-                var hbox = vbox.AddLayoutHorizontal(height);
+                var hbox = vbox.AddLayoutHorizontal( height );
                 var width2 = hbox.RemainingWidth / 2;
                 {
-                    var vbox2 = hbox.AddLayoutVertical(width2);
-                    vbox2.Add(EventNameLabel = new Label(vbox2.RemainingWidth, height, "", LabelAlignment.Left));
+                    var vbox2 = hbox.AddLayoutVertical( width2 );
+                    vbox2.Add( EventNameLabel = new Label( vbox2.RemainingWidth, height, "", LabelAlignment.Left ) );
                 }
                 {
-                    var vbox2 = hbox.AddLayoutVertical(width2);
-                    vbox2.Add(StatusLabel = new Label(vbox2.RemainingWidth, height, "", LabelAlignment.Left));
+                    var vbox2 = hbox.AddLayoutVertical( width2 );
+                    vbox2.Add( StatusLabel = new Label( vbox2.RemainingWidth, height, "", LabelAlignment.Left ) );
                     StatusLabel.Color = Color.LightSalmon;
                 }
             }
@@ -74,39 +75,52 @@ namespace ORTS.Popups
 
         void ResumeActivity_Click(Control arg1, Point arg2)
         {
-            ResumeActivity();
-            CloseMenu();
+            TimeSpan diff = DateTime.Now - PopupTime;
+            new ResumeActivityCommand( Owner.Viewer.Log, EventNameLabel.Text, diff.TotalMilliseconds / 1000 );
         }
 
         void CloseBox_Click(Control arg1, Point arg2)
         {
-            CloseBox();
+            TimeSpan diff = DateTime.Now - PopupTime;
+            new CloseAndResumeActivityCommand( Owner.Viewer.Log, EventNameLabel.Text, diff.TotalMilliseconds / 1000 );
         }
 
         void QuitActivity_Click(Control arg1, Point arg2)
         {
-            CloseBox();
+            TimeSpan diff = DateTime.Now - PopupTime;
+            new QuitActivityCommand( Owner.Viewer.Log, EventNameLabel.Text, diff.TotalMilliseconds / 1000 );
+        }
+
+        public void QuitActivity() {
+            this.Visible = false;
+            this.Activity.IsActivityWindowOpen = this.Visible;
+            this.Activity.TriggeredEvent = null;
+            Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
+            this.Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
             Activity.IsSuccessful = false;
             Activity.IsComplete = true;
+            if( Owner.Viewer.IsReplaying ) Owner.Viewer.Simulator.Confirmer.Confirm( CabControl.Activity, CabSetting.Off );
         }
 
-        void CloseBox()
-        {
-            Visible = false;
-            Activity.IsActivityWindowOpen = Visible;
-            ResumeActivity();
+        public void CloseBox() {
+            this.Visible = false;
+            this.Activity.IsActivityWindowOpen = this.Visible;
+            this.Activity.TriggeredEvent = null;
+            Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
+            this.Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
+            if( Owner.Viewer.IsReplaying ) Owner.Viewer.Simulator.Confirmer.Confirm( CabControl.Activity, CabSetting.On );
         }
 
-        void ResumeActivity()
-        {
-            Activity.TriggeredEvent = null;
+        public void ResumeActivity() {
+            this.Activity.TriggeredEvent = null;
             Owner.Viewer.Simulator.Paused = false;   // Move to Viewer3D?
             Activity.IsActivityResumed = !Owner.Viewer.Simulator.Paused;
+            if( Owner.Viewer.IsReplaying ) Owner.Viewer.Simulator.Confirmer.Confirm( CabControl.Activity, CabSetting.On );
         }
 
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
-            base.PrepareFrame(elapsedTime, updateFull);
+            base.PrepareFrame( elapsedTime, updateFull );
 
             if (updateFull)
             {
@@ -121,7 +135,7 @@ namespace ORTS.Popups
                             Visible = Activity.IsActivityWindowOpen = Owner.Viewer.HelpWindow.ActivityUpdated = Owner.Viewer.Simulator.Paused = true;
                             ComposeMenu(e.ParsedObject.Name, String.Format("This activity has ended {0}.\nFor a detailed evaluation, see the Help Window (F1).", Activity.IsSuccessful ? "successfully" : "without success"));
                             EndMenu();
-                        }
+                    }
                         else
                         {
                             var text = e.ParsedObject.Outcomes.DisplayMessage;
@@ -129,7 +143,7 @@ namespace ORTS.Popups
                             {
                                 if (Activity.ReopenActivityWindow)
                                 {
-                                    ComposeMenu(e.ParsedObject.Name, text);
+                                    ComposeMenu( e.ParsedObject.Name, text );
                                     if (Activity.IsActivityResumed)
                                     {
                                         ResumeActivity();
@@ -139,6 +153,7 @@ namespace ORTS.Popups
                                     {
                                         Owner.Viewer.Simulator.Paused = true;
                                         ResumeMenu();
+                                        PopupTime = DateTime.Now;
                                     }
                                 }
                                 else
@@ -147,14 +162,13 @@ namespace ORTS.Popups
                                     if (!Owner.Viewer.Simulator.Paused)
                                     {
                                         Owner.Viewer.Simulator.Paused = true;
-                                        ComposeMenu(e.ParsedObject.Name, text);
+                                        ComposeMenu( e.ParsedObject.Name, text );
                                         ResumeMenu();
+                                        PopupTime = DateTime.Now;
                                     }
                                 }
                                 Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
-                            }
-                            else
-                            {
+                            } else {
                                 // Cancel the event as pop-up not needed.
                                 Activity.TriggeredEvent = null;
                             }

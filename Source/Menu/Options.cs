@@ -217,7 +217,7 @@ namespace ORTS
 
             // these ones use the CameraMoveFast and CameraMoveSlow modifier
             foreach (UserCommands eCommand in new UserCommands[] { UserCommands.CameraPanLeft, UserCommands.CameraPanRight, 
-                        UserCommands.CameraPanUp, UserCommands.CameraPanDown, UserCommands.CameraPanIn, UserCommands.CameraPanOut, 
+                        UserCommands.CameraPanUp, UserCommands.CameraPanDown, UserCommands.CameraZoomIn, UserCommands.CameraZoomOut, 
                         UserCommands.CameraRotateLeft, UserCommands.CameraRotateRight, UserCommands.CameraRotateUp, UserCommands.CameraRotateDown })
 
                 FixModifiableKey(eCommand, new UserCommands[] { UserCommands.CameraMoveFast, UserCommands.CameraMoveSlow });

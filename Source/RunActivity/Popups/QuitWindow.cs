@@ -64,6 +64,9 @@ namespace ORTS.Popups
         void buttonContinue_Click(Control arg1, Point arg2)
         {
             Visible = Owner.Viewer.Simulator.Paused = false;
+            if( Owner.Viewer.Log.PauseState == ReplayPauseState.During ) {
+                Owner.Viewer.Log.PauseState = ReplayPauseState.Done;
+            }
         }
     }
 }

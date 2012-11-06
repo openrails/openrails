@@ -377,8 +377,8 @@ namespace ORTS
             //Commands[(int)UserCommands. load passengers] = new RailDriverUserCommand(3, 0x04);
             //Commands[(int)UserCommands. ok] = new RailDriverUserCommand(3, 0x08);
             // controls to right of blue buttons
-            Commands[(int)UserCommands.CameraPanIn] = new RailDriverUserCommand(3, 0x10);
-            Commands[(int)UserCommands.CameraPanOut] = new RailDriverUserCommand(3, 0x20);
+            Commands[(int)UserCommands.CameraZoomIn] = new RailDriverUserCommand(3, 0x10);
+            Commands[(int)UserCommands.CameraZoomOut] = new RailDriverUserCommand(3, 0x20);
             Commands[(int)UserCommands.CameraPanUp] = new RailDriverUserCommand(3, 0x40);
             Commands[(int)UserCommands.CameraPanRight] = new RailDriverUserCommand(3, 0x80);
             Commands[(int)UserCommands.CameraPanDown] = new RailDriverUserCommand(4, 0x01);

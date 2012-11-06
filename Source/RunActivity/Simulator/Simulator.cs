@@ -98,8 +98,11 @@ namespace ORTS
 		/// </summary>
 		public InterlockingSystem InterlockingSystem;
 
-
 		public TrainCar PlayerLocomotive = null;    // Set by the Viewer - TODO there could be more than one player so eliminate this.
+        
+        // <CJ Comment> Works but not entirely happy about this arrangement. 
+        // Confirmer should be part of the Viewer, rather than the Simulator, as it is part of the user interface.
+        // Perhaps an Observer design pattern would be better, so the Simulator sends messages to any observers. </CJ Comment>
         public Confirmer Confirmer;                 // Set by the Viewer
 
 		public Simulator(UserSettings settings, string activityPath)
@@ -204,12 +207,11 @@ namespace ORTS
 			//else if (MPManager.DispatcherWindow != null) MPManager.StopDispatcher();
 		}
 
-        public void Restore( BinaryReader inf, string simulatorPathDescription, float initialTileX, float initialTileZ )
+        public void Restore( BinaryReader inf, float initialTileX, float initialTileZ )
 		{
             ClockTime = inf.ReadDouble();
             Season = (SeasonType)inf.ReadInt32();
             Weather = (WeatherType)inf.ReadInt32();
-            PathName = simulatorPathDescription; // Needed for Resume header data
             InitialTileX = initialTileX;
             InitialTileZ = initialTileZ;
 
@@ -567,7 +569,7 @@ namespace ORTS
 				MPManager.Notify((new MSGSwitch(MPManager.GetUserName(),
 					nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.WorldID, traveller.JunctionEntryPinIndex - 1, true)).ToString());
 				//MPManager.Instance().ignoreSwitchStart = Simulator.GameTime;
-			}
+		}
 			else if (MPManager.IsServer() && !MPManager.Instance().AllowedManualSwitch) return;
 			else nextSwitchTrack.SelectedRoute = traveller.JunctionEntryPinIndex - 1;
 		}
@@ -608,86 +610,163 @@ namespace ORTS
 					TN.TrJunctionNode.SelectedRoute = inf.ReadInt32();
 		}
 
-		/// <summary>
-		/// Align the switchtrack behind the players train to the opposite position
-		/// </summary>
-		public void SwitchTrackBehind(Train train)
-		{
-            TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.FrontTDBTraveller.JunctionNodeAhead() : train.RearTDBTraveller.JunctionNodeBehind();
-			if (SwitchIsOccupied(nextSwitchTrack))
-				return;
+        ///// <summary>
+        ///// Align the switchtrack behind the players train to the opposite position
+        ///// </summary>
+        //public void SwitchTrackBehind(Train train)
+        //{
+        //    TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.FrontTDBTraveller.JunctionNodeAhead() : train.RearTDBTraveller.JunctionNodeBehind();
+        //    if (SwitchIsOccupied(nextSwitchTrack))
+        //        return;
 
-			if (nextSwitchTrack != null)
-			{
-				if (!MPManager.IsMultiPlayer()||MPManager.IsServer()) //single mode, or server
-				{
-					if (nextSwitchTrack.SelectedRoute == 0)
-						nextSwitchTrack.SelectedRoute = 1;
-					else
-						nextSwitchTrack.SelectedRoute = 0;
+        //    if (nextSwitchTrack != null)
+        //    {
+        //        if (!MPManager.IsMultiPlayer()||MPManager.IsServer()) //single mode, or server
+        //        {
+        //            if (nextSwitchTrack.SelectedRoute == 0)
+        //                nextSwitchTrack.SelectedRoute = 1;
+        //            else
+        //                nextSwitchTrack.SelectedRoute = 0;
 
-					//multiplayer mode will do some message
-					if (MPManager.IsMultiPlayer())
-						MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute, true)).ToString());
-					Confirmer.Confirm(CabControl.SwitchBehind, CabSetting.On);
+        //            //multiplayer mode will do some message
+        //            if (MPManager.IsMultiPlayer())
+        //                MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+        //                    nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
+        //            Confirmer.Confirm(CabControl.SwitchBehind, CabSetting.On);
 
-				}
-				else
-				{
-					var Selected = 0;
-					if (nextSwitchTrack.SelectedRoute == 0)
-						Selected = 1;
+        //        }
+        //        else
+        //        {
+        //            var Selected = 0;
+        //            if (nextSwitchTrack.SelectedRoute == 0)
+        //                Selected = 1;
 
-					//notify the server
-					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected, true)).ToString());
-					Confirmer.Information("Switching Request Sent to the Server");
-				}
-            }
-		}
+        //            //notify the server
+        //            MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+        //                    nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected)).ToString());
+        //            Confirmer.Information("Switching Request Sent to the Server");
+        //        }
+        //    }
+        //}
 
-		/// <summary>
-		/// Align the switchtrack ahead of the players train to the opposite position
-		/// </summary>
-		public void SwitchTrackAhead(Train train)
-		{
+        ///// <summary>
+        ///// Align the switchtrack ahead of the players train to the opposite position
+        ///// </summary>
+        //public void SwitchTrackAhead(Train train)
+        //{
+        //    TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.RearTDBTraveller.JunctionNodeBehind() : train.FrontTDBTraveller.JunctionNodeAhead();
+        //    if (SwitchIsOccupied(nextSwitchTrack))
+        //        return;
+
+        //    if (nextSwitchTrack != null)
+        //    {
+        //        if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) //single mode, or server
+        //        {
+        //            if (nextSwitchTrack.SelectedRoute == 0)
+        //                nextSwitchTrack.SelectedRoute = 1;
+        //            else
+        //                nextSwitchTrack.SelectedRoute = 0;
+
+        //            //multiplayer mode will do some message
+        //            if (MPManager.IsMultiPlayer())
+        //                MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+        //                    nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute)).ToString());
+        //            train.ResetSignal(false);
+        //            Confirmer.Confirm(CabControl.SwitchAhead, CabSetting.On);
+
+        //        }
+        //        else
+        //        {
+        //            var Selected = 0;
+        //            if (nextSwitchTrack.SelectedRoute == 0)
+        //                Selected = 1;
+
+        //            //notify the server
+        //            MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+        //                    nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected)).ToString());
+        //            Confirmer.Information("Switching Request Sent to the Server");
+        //        }
+        //    }
+        //}
+
+        public void ToggleSwitchTrackAhead( Train train ) {
+            TrJunctionNode switchTrack = train.LeadLocomotive.Flipped ? train.RearTDBTraveller.JunctionNodeBehind() : train.FrontTDBTraveller.JunctionNodeAhead();
+            switchTrack.SelectedRoute = (switchTrack.SelectedRoute == 0) ? 1 : 0;
+            if( Confirmer.Viewer.IsReplaying ) Confirmer.Confirm( CabControl.SwitchAhead, CabSetting.On );
+        }
+
+        public void ToggleSwitchTrackBehind( Train train ) {
+            TrJunctionNode switchTrack = train.LeadLocomotive.Flipped ? train.FrontTDBTraveller.JunctionNodeAhead() : train.RearTDBTraveller.JunctionNodeBehind();
+            switchTrack.SelectedRoute = (switchTrack.SelectedRoute == 0) ? 1 : 0;
+            if( Confirmer.Viewer.IsReplaying ) Confirmer.Confirm( CabControl.SwitchBehind, CabSetting.On );
+        }
+
+        /// <summary>
+        /// Align the switchtrack ahead of the player's train to the opposite position
+        /// </summary>
+        public bool SwitchTrackAhead( Train train ) {
             TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.RearTDBTraveller.JunctionNodeBehind() : train.FrontTDBTraveller.JunctionNodeAhead();
-            if (SwitchIsOccupied(nextSwitchTrack))
-				return;
+            if( SwitchIsOccupied( nextSwitchTrack ) ) {
+                Confirmer.Confirm( CabControl.SwitchAhead, CabSetting.Warn );
+                return false;
+            }
 
-			if (nextSwitchTrack != null)
-			{
-				if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) //single mode, or server
+            if( nextSwitchTrack != null ) {
+                if( !MPManager.IsMultiPlayer() || MPManager.IsServer() ) //single mode, or server
 				{
-					if (nextSwitchTrack.SelectedRoute == 0)
-						nextSwitchTrack.SelectedRoute = 1;
-					else
-						nextSwitchTrack.SelectedRoute = 0;
-
-					//multiplayer mode will do some message
-					if (MPManager.IsMultiPlayer())
-						MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+                    //multiplayer mode will do some message
+                    if( MPManager.IsMultiPlayer() )
+                        MPManager.Notify( (new MultiPlayer.MSGSwitch( MultiPlayer.MPManager.GetUserName(),
 							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute, true)).ToString());
-					train.ResetSignal(false);
-					Confirmer.Confirm(CabControl.SwitchAhead, CabSetting.On);
+                    train.ResetSignal( false );
+                    return true;
+                } else {
+                    var Selected = 0;
+                    if( nextSwitchTrack.SelectedRoute == 0 )
+                        Selected = 1;
 
-				}
-				else
-				{
-					var Selected = 0;
-					if (nextSwitchTrack.SelectedRoute == 0)
-						Selected = 1;
-
-					//notify the server
-					MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
+                    //notify the server
+                    MPManager.Notify( (new MultiPlayer.MSGSwitch( MultiPlayer.MPManager.GetUserName(),
 							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected, true)).ToString());
-					Confirmer.Information("Switching Request Sent to the Server");
-				}
-			}
-		}
+                    Confirmer.Information( "Switching request sent to the server" );
+                }
+            }
+            return false;
+        }
 
-		public bool SwitchIsOccupied(int junctionIndex)
+        /// <summary>
+        /// Align the switchtrack behind the players train to the opposite position
+        /// </summary>
+        public bool SwitchTrackBehind( Train train ) {
+            TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.FrontTDBTraveller.JunctionNodeAhead() : train.RearTDBTraveller.JunctionNodeBehind();
+            if( SwitchIsOccupied( nextSwitchTrack ) ) {
+                Confirmer.Confirm( CabControl.SwitchBehind, CabSetting.Warn );
+                return false;
+            }
+
+            if( nextSwitchTrack != null ) {
+                if( !MPManager.IsMultiPlayer() || MPManager.IsServer() ) //single mode, or server
+				{
+                    //multiplayer mode will do some message
+                    if( MPManager.IsMultiPlayer() )
+                        MPManager.Notify( (new MultiPlayer.MSGSwitch( MultiPlayer.MPManager.GetUserName(),
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, nextSwitchTrack.SelectedRoute, true)).ToString());
+                    return true;
+                } else {
+                    var Selected = 0;
+                    if( nextSwitchTrack.SelectedRoute == 0 )
+                        Selected = 1;
+
+                    //notify the server
+                    MPManager.Notify( (new MultiPlayer.MSGSwitch( MultiPlayer.MPManager.GetUserName(),
+							nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected, true)).ToString());
+                    Confirmer.Information( "Switching request sent to the server" );
+                }
+            }
+            return false;
+        }
+        
+        public bool SwitchIsOccupied( int junctionIndex )
 		{
 			if (junctionIndex < 0 || TDB.TrackDB.TrackNodes[junctionIndex] == null)
 				return false;
@@ -976,6 +1055,9 @@ namespace ORTS
 			return xnaTilt * xnaRotation * xnaLocation;
 		}
 
+        public void UncoupleBehind( int carPosition ) {
+            UncoupleBehind( PlayerLocomotive.Train.Cars[carPosition] );
+        }
 
 		public void UncoupleBehind(TrainCar car)
 		{
@@ -1051,6 +1133,7 @@ namespace ORTS
 			//car.CreateEvent(63);
 			if (MPManager.IsMultiPlayer())
 				MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
+            if( Confirmer.Viewer.IsReplaying ) Confirmer.Confirm( CabControl.Uncouple, train.LastCar.CarID );
 		}
 	} // Simulator
 }

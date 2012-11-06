@@ -39,36 +39,47 @@ namespace ORTS
                 {
                     while (true)
                     {
+                        MainForm.ReplayFromStartPressed = false;
+                        MainForm.ReplayFromSavePressed = false; 
+                        
                         var dialogResult = MainForm.ShowDialog();
                         if (dialogResult == DialogResult.Cancel)
                             break;
 
                         var parameters = new List<string>();
-                        switch (dialogResult)
-                        {
-                            case DialogResult.OK:
-                                switch (MainForm.Multiplayer)
-                                {
-                                    case MainForm.MultiplayerMode.Server:
-                                        parameters.Add("-multiplayerserver");
-                                        break;
-                                    case MainForm.MultiplayerMode.Client:
-                                        parameters.Add("-multiplayerclient");
-                                        break;
-                                    default:
-                                        parameters.Add("-start");
-                                        break;
-                                }
-                                var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
-                                if (exploreActivity == null)
-                                    parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FilePath));
-                                else
-                                    parameters.Add(String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path.FilePath, exploreActivity.Consist.FilePath, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather));
-                                break;
-                            case DialogResult.Retry:
-                                parameters.Add("-resume");
-                                parameters.Add("\"" + Path.GetFileNameWithoutExtension(MainForm.SelectedSaveFile) + "\"");
-                                break;
+
+                        if( MainForm.ReplayFromStartPressed ) {
+                            parameters.Add("-replay");
+                            parameters.Add("\"" + Path.GetFileNameWithoutExtension(MainForm.SelectedSaveFile) + "\"");
+                        } else if( MainForm.ReplayFromSavePressed ) {
+                            parameters.Add( "-replay_from_save" );
+                            parameters.Add( "\"" + Path.GetFileNameWithoutExtension( MainForm.SelectedSaveFile ) + "\"" );
+                        } else {
+
+                            switch( dialogResult ) {
+                                case DialogResult.OK:
+                                    switch( MainForm.Multiplayer ) {
+                                        case MainForm.MultiplayerMode.Server:
+                                            parameters.Add( "-multiplayerserver" );
+                                            break;
+                                        case MainForm.MultiplayerMode.Client:
+                                            parameters.Add( "-multiplayerclient" );
+                                            break;
+                                        default:
+                                            parameters.Add( "-start" );
+                                            break;
+                                    }
+                                    var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
+                                    if( exploreActivity == null )
+                                        parameters.Add( String.Format( "\"{0}\"", MainForm.SelectedActivity.FilePath ) );
+                                    else
+                                        parameters.Add( String.Format( "\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather ) );
+                                    break;
+                                case DialogResult.Retry:
+                                    parameters.Add( "-resume" );
+                                    parameters.Add( "\"" + Path.GetFileNameWithoutExtension( MainForm.SelectedSaveFile ) + "\"" );
+                                    break;
+                            }
                         }
 
                         var processStartInfo = new System.Diagnostics.ProcessStartInfo();

@@ -1,0 +1,488 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ORTS.Command" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAAAAAAAAAAAAAABQA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ORTS.BooleanCommand" Collapsed="true">
+    <Position X="2.5" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ContinuousCommand" Collapsed="true">
+    <Position X="4.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAACAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ActivityCommand" Collapsed="true">
+    <Position X="2.5" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAAAAAAAEAAAAAAAAAAAEAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.SaveCommand" Collapsed="true">
+    <Position X="26.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ReverserCommand" Collapsed="true">
+    <Position X="20.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ContinuousReverserCommand" Collapsed="true">
+    <Position X="22.5" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.PantographCommand" Collapsed="true">
+    <Position X="27" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAQAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.NotchedThrottleCommand" Collapsed="true">
+    <Position X="6.75" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ContinuousThrottleCommand" Collapsed="true">
+    <Position X="6.75" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.TrainBrakeCommand" Collapsed="true">
+    <Position X="9" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.EngineBrakeCommand" Collapsed="true">
+    <Position X="11.25" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.DynamicBrakeCommand" Collapsed="true">
+    <Position X="15.75" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.InitializeBrakesCommand" Collapsed="true">
+    <Position X="28.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.EmergencyBrakesCommand" Collapsed="true">
+    <Position X="33.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.BailOffCommand" Collapsed="true">
+    <Position X="22.5" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.HandbrakeCommand" Collapsed="true">
+    <Position X="29.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.RetainersCommand" Collapsed="true">
+    <Position X="9" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.BrakeHoseConnectCommand" Collapsed="true">
+    <Position X="11.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.SanderCommand" Collapsed="true">
+    <Position X="13.5" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.AlerterCommand" Collapsed="true">
+    <Position X="17.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.HornCommand" Collapsed="true">
+    <Position X="15.75" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.BellCommand" Collapsed="true">
+    <Position X="18" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleCabLightCommand" Collapsed="true">
+    <Position X="35.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.HeadlightCommand" Collapsed="true">
+    <Position X="24.75" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleWipersCommand" Collapsed="true">
+    <Position X="37.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleDoorsLeftCommand" Collapsed="true">
+    <Position X="4.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleDoorsRightCommand" Collapsed="true">
+    <Position X="8.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleMirrorsCommand" Collapsed="true">
+    <Position X="13" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ContinuousInjectorCommand" Collapsed="true">
+    <Position X="13.5" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleInjectorCommand" Collapsed="true">
+    <Position X="22" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAEAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ContinuousBlowerCommand" Collapsed="true">
+    <Position X="18" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ContinuousDamperCommand" Collapsed="true">
+    <Position X="20.25" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ContinuousFiringRateCommand" Collapsed="true">
+    <Position X="24.75" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleManualFiringCommand" Collapsed="true">
+    <Position X="40" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.FireShovelfullCommand" Collapsed="true">
+    <Position X="6.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleCylinderCocksCommand" Collapsed="true">
+    <Position X="10.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.SwapLocomotivesCommand" Collapsed="true">
+    <Position X="15.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleSwitchAheadCommand" Collapsed="true">
+    <Position X="19.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ToggleSwitchBehindCommand" Collapsed="true">
+    <Position X="24.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UncoupleCommand" Collapsed="true">
+    <Position X="31" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAAkAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.ResumeActivityCommand" Collapsed="true">
+    <Position X="4.5" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.CloseAndResumeActivityCommand" Collapsed="true">
+    <Position X="6.75" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.QuitActivityCommand" Collapsed="true">
+    <Position X="9" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseCameraCommand" Collapsed="true">
+    <Position X="2.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseCabCameraCommand" Collapsed="true">
+    <Position X="6.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseFrontCameraCommand" Collapsed="true">
+    <Position X="9" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseBackCameraCommand" Collapsed="true">
+    <Position X="13.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseFreeRoamCameraCommand" Collapsed="true">
+    <Position X="18" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseHeadOutForwardCameraCommand" Collapsed="true">
+    <Position X="22.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseHeadOutBackCameraCommand" Collapsed="true">
+    <Position X="27" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseBrakemanCameraCommand" Collapsed="true">
+    <Position X="29.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UsePassengerCameraCommand" Collapsed="true">
+    <Position X="31.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.UseTracksideCameraCommand" Collapsed="true">
+    <Position X="4.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.MoveCameraCommand" Collapsed="true">
+    <Position X="2.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAAAkAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.CameraRotateUpDownCommand" Collapsed="true">
+    <Position X="9" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAIBAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.CameraRotateLeftRightCommand" Collapsed="true">
+    <Position X="11.25" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAIBAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.CameraMouseRotateCommand" Collapsed="true">
+    <Position X="13.5" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAIBAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.CameraXCommand" Collapsed="true">
+    <Position X="15.75" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABAAEAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.CameraYCommand" Collapsed="true">
+    <Position X="18" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABgAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.CameraZCommand" Collapsed="true">
+    <Position X="20.25" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAABQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.TrackingCameraXCommand" Collapsed="true">
+    <Position X="22.5" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAEAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.TrackingCameraYCommand" Collapsed="true">
+    <Position X="4.5" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAACAAEAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.TrackingCameraZCommand" Collapsed="true">
+    <Position X="6.75" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAEAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.NextCarCommand" Collapsed="true">
+    <Position X="11.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.PreviousCarCommand" Collapsed="true">
+    <Position X="15.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.FirstCarCommand" Collapsed="true">
+    <Position X="20.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ORTS.LastCarCommand" Collapsed="true">
+    <Position X="24.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="ORTS.ICommand" Collapsed="true">
+    <Position X="2.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAABQA=</HashCode>
+      <FileName>Viewer3D\Commands.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -29,7 +29,9 @@ namespace ORTS
 
         //Does not need to persist
         //this indicates if the controller is increasing or decreasing, 0 no changes
-        public float UpdateValue = 0;        
+        public float UpdateValue = 0;
+        private float? controllerTarget;
+        public double CommandStartTime;
 
         #region CONSTRUCTORS
 
@@ -180,6 +182,11 @@ namespace ORTS
             return 100 * CurrentValue;
         }
 
+        public void StartIncrease( float? target ) {
+            controllerTarget = target;
+            StartIncrease();
+        }
+
         public void StartIncrease()
         {
             UpdateValue = 1;
@@ -215,6 +222,11 @@ namespace ORTS
             UpdateValue = 0;
         }
 
+        public void StartDecrease( float? target ) {
+            controllerTarget = target;
+            StartDecrease();
+        }
+        
         public void StartDecrease()
         {
             UpdateValue = -1;
@@ -237,12 +249,32 @@ namespace ORTS
 
         public float Update(float elapsedSeconds)
         {
-            if (UpdateValue > 0)
-                return this.UpdateValues(elapsedSeconds, 1);
-            else if (UpdateValue < 0)
-                return this.UpdateValues(elapsedSeconds, -1);
-            else 
-                return this.CurrentValue;
+            if( UpdateValue > 0 ) {
+                CheckControllerTargetAchieved();
+                return this.UpdateValues( elapsedSeconds, 1 );
+            } else if( UpdateValue < 0 ) {
+                CheckControllerTargetAchieved();
+                return this.UpdateValues( elapsedSeconds, -1 );
+            } else return this.CurrentValue;
+        }
+
+        /// <summary>
+        /// If a target has been set, then stop once it's reached and also cancel the target.
+        /// </summary>
+        public void CheckControllerTargetAchieved() {
+            if( controllerTarget != null ) {
+                if( UpdateValue > 0.0 ) {
+                    if( CurrentValue >= controllerTarget ) {
+                        StopIncrease();
+                        controllerTarget = null;
+                    }
+                } else {
+                    if( CurrentValue <= controllerTarget ) {
+                        StopDecrease();
+                        controllerTarget = null;
+                    }
+                }
+            }
         }
 
         private float UpdateValues(float elapsedSeconds, float direction)

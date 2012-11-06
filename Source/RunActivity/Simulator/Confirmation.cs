@@ -67,6 +67,9 @@ namespace ORTS {
       , SwitchAhead
       , SwitchBehind
       , SimulationSpeed
+      , Uncouple
+      , Activity
+      , Replay
       , Labels
     }
 
@@ -102,7 +105,7 @@ namespace ORTS {
             , new string [] { "Pantograph 2", "lower", null, "raise" }
             , new string [] { "Player Diesel Power", "off", null, "on", null, null, "locked. Close throttle then re-try." }
             , new string [] { "Helper Diesel Power", "off", null, "on" }
-            , new string [] { "Reverser",  "reverse", "neutral", "forward", null, null, "locked. Close throttle then re-try." } 
+            , new string [] { "Reverser",  "reverse", "neutral", "forward", null, null, "locked. Close throttle, stop train then re-try." } 
             , new string [] { "Throttle", null, null, null, "close", "open", "locked. Release dynamic brake then re-try." } 
             , new string [] { "Wheelslip", "over", null, "occurring. Tractive power greatly reduced.", null, null, "warning" } 
             // Steam power
@@ -140,14 +143,17 @@ namespace ORTS {
             , new string [] { "Doors Right", "close", null, "open" } 
             , new string [] { "Mirror", "retract", null, "extend" } 
             // Track Devices
-            , new string [] { "Switch Ahead", null, null, "change" } 
-            , new string [] { "Switch Behind", null, null, "change" } 
+            , new string [] { "Switch Ahead", null, null, "change", null, null, "is occupied and cannot change" } 
+            , new string [] { "Switch Behind", null, null, "change", null, null, "is occupied and cannot change" } 
             // Simulation
             , new string [] { "Simulation Speed", "reset", null, null, "decrease", "increase" } 
+            , new string [] { "Uncouple After" } 
+            , new string [] { "Activity", "quit", null, "resume" } 
+            , new string [] { "Replay", null, null, null, null, null, "Overriding camera replay. Press Esc to resume camera replay." } 
             , new string [] { "Location labels", "none", "sidings", "stations", "stations and sidings" } 
             };
 
-        readonly Viewer3D Viewer;
+        public readonly Viewer3D Viewer;
         readonly double DefaultDurationS;
 
         public Confirmer(Viewer3D viewer, double defaultDurationS)
@@ -158,9 +164,13 @@ namespace ORTS {
 
         #region Control confirmation
 
-        public void Confirm(CabControl control, CabSetting setting)
+        public void Confirm(CabControl control, string text)
         {
-            Message(control, "{0}", ConfirmText[(int)control][(int)setting]);
+            Message(control, "{0} {1}", ConfirmText[(int)control][0], text);
+        }
+
+        public void Confirm( CabControl control, CabSetting setting ) {
+            Message( control, "{0}", ConfirmText[(int)control][(int)setting] );
         }
 
         public void Confirm(CabControl control, CabSetting setting, string text)
@@ -233,7 +243,7 @@ namespace ORTS {
 			Message(CabControl.None, ConfirmLevel.MSG, message);
 		}
 		
-		public void Warning(string message)
+        public void Warning(string message)
         {
             Message(CabControl.None, ConfirmLevel.Warning, message);
         }

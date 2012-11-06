@@ -2,7 +2,7 @@
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
-// to anyone else is prohibited without specific written permission from
+// to anyone else is prohibited without specific written permission fromsingle thread
 // admin@openrails.org.
 //
 // This file is the responsibility of the 3D & Environment Team. 
@@ -90,17 +90,19 @@ namespace ORTS
         public bool MilepostUnitsMetric;
         // Cameras
         public Camera Camera; // Current camera
-        Camera AboveGroundCamera; // Previous camera for when automatically switching to cab.
-        CabCamera CabCamera; // Camera 1
-        HeadOutCamera HeadOutForwardCamera; // Camera 1+Up
-        HeadOutCamera HeadOutBackCamera; // Camera 2+Down
-		TrackingCamera FrontCamera; // Camera 2
-		TrackingCamera BackCamera; // Camera 3
-        TracksideCamera TracksideCamera; // Camera 4
-        PassengerCamera PassengerCamera; // Camera 5
-        BrakemanCamera BrakemanCamera; // Camera 6
-        FreeRoamCamera FreeRoamCamera;  // Camera 8
+        public Camera AboveGroundCamera; // Previous camera for when automatically switching to cab.
+        public CabCamera CabCamera; // Camera 1
+        public HeadOutCamera HeadOutForwardCamera; // Camera 1+Up
+        public HeadOutCamera HeadOutBackCamera; // Camera 2+Down
+        public TrackingCamera FrontCamera; // Camera 2
+        public TrackingCamera BackCamera; // Camera 3
+        public TracksideCamera TracksideCamera; // Camera 4
+        public PassengerCamera PassengerCamera; // Camera 5
+        public BrakemanCamera BrakemanCamera; // Camera 6
+        public FreeRoamCamera FreeRoamCamera;  // Camera 8
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
+        // 2.1 sets the limit at just under a right angle as get unwanted swivel at the full right angle.
+        public CameraAngleClamper VerticalClamper = new CameraAngleClamper( -MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f );
         int PlayerTrainLength = 0; // re-activate cameras when this changes
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
         private MouseState originalMouseState;      // Current mouse coordinates.
@@ -135,6 +137,44 @@ namespace ORTS
         // This adjustment assumes that the cab view is 4:3. Where the cab view matches the aspect ratio of the screen, use an adjustment of 100.
         public int CabHeightPixels;
         public int CabYOffsetPixels; // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
+
+        public CommandLog Log { get; set; }
+        public List<ICommand> ReplayCommandList = null;
+        public bool CameraReplaySuspended { get; set; }
+        public Camera SuspendedCamera { get; set; }
+
+        /// <summary>
+        /// True if a replay is in progress.
+        /// Used to show some confirmations which are only valuable during replay (e.g. uncouple or resume activity).
+        /// Also used to show the replay countdown in the HUD.
+        /// </summary>
+        public bool IsReplaying {
+            get {
+                if( ReplayCommandList != null ) {
+                    return (ReplayCommandList.Count > 0);
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
+        /// </summary>
+        void InitReplay() {
+            if( ReplayCommandList != null ) {
+                // Get time of last entry
+                int lastEntry = ReplayCommandList.Count - 1;
+                if( lastEntry >= 0 ) {
+                    double lastTime = ReplayCommandList[lastEntry].Time;
+                    Log.ReplayEndsAt = lastTime;
+                    double duration = lastTime - Simulator.ClockTime;
+                    MessagesWindow.AddMessage( String.Format( "Replay started: ending at {0} after {1}",
+                        InfoDisplay.FormattedApproxTime( lastTime ),
+                        InfoDisplay.FormattedTime( duration ) ),
+                        3.0 );
+                }
+            }
+        }
 
         /// <summary>
         /// Construct a viewer.  At this time background processes are not running
@@ -293,6 +333,62 @@ namespace ORTS
 
             if (Settings.FullScreen)
                 RenderProcess.ToggleFullScreen();
+
+            SetCommandReceivers();
+            InitReplay();
+        }
+
+        /// <summary>
+        /// Each Command needs to know its Receiver so it can call a method of the Receiver to action the command. 
+        /// The Receiver is a static property as all commands of the same class share the same Receiver
+        /// and it needs to be set before the command is used.
+        /// </summary>
+        void SetCommandReceivers() {
+            ReverserCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            NotchedThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ContinuousThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            TrainBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            EngineBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            DynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            InitializeBrakesCommand.Receiver = PlayerLocomotive.Train;
+            EmergencyBrakesCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            HandbrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            if( PlayerLocomotive is MSTSSteamLocomotive ) {
+                ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousDamperCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleManualFiringCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleCylinderCocksCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                FireShovelfullCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+            }
+            if( PlayerLocomotive is MSTSElectricLocomotive ) {
+                PantographCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
+            }
+            SanderCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            AlerterCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            HornCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BellCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleCabLightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleWipersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            HeadlightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            SwapLocomotivesCommand.Receiver = this;
+            ToggleDoorsLeftCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleDoorsRightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleMirrorsCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleSwitchAheadCommand.Receiver = this;
+            ToggleSwitchBehindCommand.Receiver = this;
+            UncoupleCommand.Receiver = Simulator;
+            ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
+            UseCameraCommand.Receiver = this;
+            MoveCameraCommand.Receiver = this;
+            MoveCameraCommand.Receiver = this;
+            SaveCommand.Receiver = this;
         }
 
         public void AdjustCabHeight(int windowWidth, int windowHeight) {
@@ -371,6 +467,24 @@ namespace ORTS
             Simulator.Update(elapsedTime.ClockSeconds);
             HandleUserInput(elapsedTime);
             UserInput.Handled();
+
+            if( ReplayCommandList != null ) {
+                Log.Update( ReplayCommandList );
+
+                if( Log.PauseState == ReplayPauseState.Due ) {
+                    if( Simulator.Settings.ReplayPauseBeforeEnd ) {
+                        // Reveal Quit Menu
+                        QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible;
+                        Log.PauseState = ReplayPauseState.During;
+                    } else {
+                        Log.PauseState = ReplayPauseState.Done;
+                    }
+                }
+            }
+            if( Log.ReplayComplete ) {
+                MessagesWindow.AddMessage( "Replay complete", 2 );
+                Log.ReplayComplete = false;
+            }
 
             // Mute sound when paused
             if (Simulator.Paused)
@@ -486,27 +600,54 @@ namespace ORTS
                 PlayerTrainLength = 0;
 				if (MPManager.IsMultiPlayer()) MPManager.LocoChange(Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive);
             }
-			
-			if (UserInput.IsPressed(UserCommands.CameraCab) && CabCamera.IsAvailable) CabCamera.Activate();
-			if (UserInput.IsPressed(UserCommands.CameraOutsideFront)) FrontCamera.Activate();
-			if (UserInput.IsPressed(UserCommands.CameraJumpingTrains)) RandomSelectTrain(); //hit Alt-9 key, random selected train to have 2 and 3 camera attached to
-			if (UserInput.IsPressed(UserCommands.CameraJumpBackPlayer)) { SelectedTrain = PlayerTrain; Camera.Activate(); } //hit 9 key, get back to player train
-			if (UserInput.IsPressed(UserCommands.CameraOutsideRear)) BackCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraTrackside)) TracksideCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraPassenger) && PassengerCamera.IsAvailable) PassengerCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraBrakeman)) BrakemanCamera.Activate();
-            if( UserInput.IsPressed( UserCommands.CameraFree ) ) {
-                FreeRoamCamera = new FreeRoamCamera( this, Camera );
-                FreeRoamCamera.Activate();
-            }
-            if( UserInput.IsPressed( UserCommands.CameraPreviousFree ) )
-                FreeRoamCamera.Activate();
-            if( UserInput.IsPressed( UserCommands.CameraHeadOutForward ) && HeadOutForwardCamera.IsAvailable ) HeadOutForwardCamera.Activate();
-            if (UserInput.IsPressed(UserCommands.CameraHeadOutBackward) && HeadOutBackCamera.IsAvailable) HeadOutBackCamera.Activate();
 
-            if (UserInput.IsPressed(UserCommands.GameSwitchAhead)) Simulator.SwitchTrackAhead(PlayerTrain);
-            if (UserInput.IsPressed(UserCommands.GameSwitchBehind)) Simulator.SwitchTrackBehind(PlayerTrain);
-            if (UserInput.IsPressed(UserCommands.DebugLocomotiveFlip)) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
+            if( UserInput.IsPressed( UserCommands.CameraCab ) && CabCamera.IsAvailable ) new UseCabCameraCommand( Log );
+            if( UserInput.IsPressed( UserCommands.CameraOutsideFront ) ) {
+                CheckReplaying();
+                new UseFrontCameraCommand( Log );
+            }
+            if( UserInput.IsPressed( UserCommands.CameraOutsideRear ) ) {
+                CheckReplaying();
+                new UseBackCameraCommand( Log );
+            }
+            if( UserInput.IsPressed( UserCommands.CameraJumpingTrains ) ) RandomSelectTrain(); //hit Alt-9 key, random selected train to have 2 and 3 camera attached to
+            //hit 9 key, get back to player train
+            if( UserInput.IsPressed( UserCommands.CameraJumpBackPlayer ) ) {
+                SelectedTrain = PlayerTrain;
+                Camera.Activate();
+            }
+            if( UserInput.IsPressed( UserCommands.CameraTrackside ) ) {
+                CheckReplaying();
+                new UseTracksideCameraCommand( Log );
+            }
+            // Could add warning if PassengerCamera not available.
+            if( UserInput.IsPressed( UserCommands.CameraPassenger ) && PassengerCamera.IsAvailable ) {
+                CheckReplaying();
+                new UsePassengerCameraCommand( Log );
+            }
+            if( UserInput.IsPressed( UserCommands.CameraBrakeman ) ) {
+                CheckReplaying();
+                new UseBrakemanCameraCommand( Log );
+            }
+            if( UserInput.IsPressed( UserCommands.CameraFree ) ) {
+                CheckReplaying();
+                new UseFreeRoamCameraCommand( Log );
+            }
+            if( UserInput.IsPressed( UserCommands.CameraHeadOutForward ) && HeadOutForwardCamera.IsAvailable ) {
+                CheckReplaying();
+                new UseHeadOutForwardCameraCommand( Log );
+            }
+            if( UserInput.IsPressed( UserCommands.CameraHeadOutBackward ) && HeadOutBackCamera.IsAvailable ) {
+                CheckReplaying();
+                new UseHeadOutBackCameraCommand( Log );
+            }
+            if( UserInput.IsPressed( UserCommands.GameSwitchAhead ) )
+                if( Simulator.SwitchTrackAhead( PlayerTrain ) )
+                    new ToggleSwitchAheadCommand( Log );
+            if( UserInput.IsPressed( UserCommands.GameSwitchBehind ) )
+                if( Simulator.SwitchTrackBehind( PlayerTrain ) )
+                    new ToggleSwitchBehindCommand( Log );
+            if( UserInput.IsPressed( UserCommands.DebugLocomotiveFlip ) ) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
 			if (UserInput.IsPressed(UserCommands.DebugResetSignal))
 			{
 				if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) MPManager.Instance().RequestSignalReset();
@@ -668,6 +809,50 @@ namespace ORTS
 
             originalMouseState = currentMouseState;
         }
+        /// <summary>
+        /// If the player changes the camera during replay, then further replay of the camera is suspended.
+        /// The player's camera commands will be recorded instead of the replay camera commands.
+        /// Replay and recording of non-camera commands such as controls continues.
+        /// </summary>
+        public void CheckReplaying() {
+            if( IsReplaying ) {
+                if( !CameraReplaySuspended ) {
+                    CameraReplaySuspended = true;
+                    SuspendedCamera = Camera;
+                    Simulator.Confirmer.Confirm( CabControl.Replay, CabSetting.Warn );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Replay of the camera is not resumed until the player opens the Quit Menu and then presses Esc to unpause the simulator.
+        /// </summary>
+        public void ResumeReplaying() {
+            CameraReplaySuspended = false;
+            if( SuspendedCamera != null ) {
+                Camera = SuspendedCamera;
+                Camera.Activate();
+            }
+        }
+
+        public void SwapLocomotives() {
+            Simulator.Confirmer.Confirm( CabControl.SwitchLocomotive, CabSetting.On );
+            Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
+            Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
+            Simulator.PlayerLocomotive.Train.CalculatePositionOfCars( 0 );  // fix the front traveller
+            Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
+            PlayerLocomotiveViewer = World.Trains.GetViewer( Simulator.PlayerLocomotive );
+            PlayerTrainLength = 0;
+            if( MPManager.IsMultiPlayer() ) MPManager.LocoChange( Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive );
+        }
+
+        public void ToggleSwitchAhead() {
+            Simulator.ToggleSwitchTrackAhead( PlayerTrain );
+        }
+
+        public void ToggleSwitchBehind() {
+            Simulator.ToggleSwitchTrackBehind( PlayerTrain );
+        }
 
         [CallOnThread("Loader")]
         public void Mark()
@@ -745,7 +930,7 @@ namespace ORTS
         bool isFullScreen = false;
 
         /// <summary>
-        /// The user has left clicked with U pressed.   
+        /// The user has left-clicked with U pressed.   
         /// If the mouse was over a coupler, then uncouple the car.
         /// </summary>
         void TryUncoupleAt()
@@ -757,6 +942,7 @@ namespace ORTS
 
             // check each car
             Traveller traveller = new Traveller(PlayerTrain.FrontTDBTraveller, Traveller.TravellerDirection.Backward);
+            int carNo = 0;
             foreach (TrainCar car in PlayerTrain.Cars)
             {
                 float d = (car.CouplerSlackM + car.GetCouplerZeroLengthM()) / 2;
@@ -768,16 +954,17 @@ namespace ORTS
 
                 if (null != pickRay.Intersects(boundingSphere))
                 {
-                    Simulator.UncoupleBehind(car);
+                    new UncoupleCommand( Log, carNo );
                     break;
                 }
                 traveller.Move(d);
+                carNo++;
             }
         }
 
         /// <summary>
-        /// The user has left clicked with U pressed.   
-        /// If the mouse was over a coupler, then uncouple the car.
+        /// The user has left-clicked with Alt key pressed.   
+        /// If the mouse was over a switch, then toggle the switch.
         /// </summary>
         void TryThrowSwitchAt()
         {

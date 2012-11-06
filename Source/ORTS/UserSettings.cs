@@ -65,6 +65,8 @@ namespace ORTS
         public bool DataLogger { get; set; }
         [Default(false)]
         public bool DynamicShadows { get; set; }
+        [Default( true )]
+        public bool EmptySavePacksOnExit { get; set; }
         [Default(false)]
         public bool FullScreen { get; set; }
         [Default(false)]
@@ -73,7 +75,7 @@ namespace ORTS
         public bool Logging { get; set; }
         [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
-        [Default("")]
+        [Default( "" )] // If left as "", OR will use the user's desktop folder
         public string LoggingPath { get; set; }
         [Default(false)]
         public bool MSTSBINSound { get; set; }
@@ -85,6 +87,10 @@ namespace ORTS
         public int ProfilingFrameCount { get; set; }
         [Default(0)]
         public int ProfilingTime { get; set; }
+        [Default( 0 )]
+        public int ReplayPauseBeforeEndS { get; set; }
+        [Default( true )]
+        public bool ReplayPauseBeforeEnd { get; set; }
         [Default("")]
         public string ScreenshotPath { get; set; }
         [Default(0)]
