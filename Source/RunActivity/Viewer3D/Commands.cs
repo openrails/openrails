@@ -135,7 +135,7 @@ namespace ORTS {
 
         public override void Redo() {
             // Redo does nothing as SaveCommand is just a marker and saves the fileStem but is not used during replay to redo the save.
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -159,7 +159,7 @@ namespace ORTS {
             } else {
                 Receiver.StartReverseDecrease( null );
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -178,7 +178,7 @@ namespace ORTS {
 
         public override void Redo() { 
             Receiver.ReverserChangeTo( ToState, Target );
-            Report();
+            // Report();
         }
     }
 
@@ -198,7 +198,7 @@ namespace ORTS {
             Receiver.SetPantographs( item, ToState );
             if( item == 1 ) ((MSTSWagon)Receiver).ToggleFirstPantograph();
             if( item == 2 ) ((MSTSWagon)Receiver).ToggleSecondPantograph();
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -216,7 +216,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.AdjustNotchedThrottle( ToState );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -235,7 +235,7 @@ namespace ORTS {
 
         public override void Redo() { 
             Receiver.ThrottleChangeTo( ToState, Target );
-            Report();
+            // Report();
         }
     }
     
@@ -251,7 +251,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.TrainBrakeChangeTo( ToState, Target );
-            Report();
+            // Report();
         }
     }
 
@@ -266,7 +266,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.EngineBrakeChangeTo( ToState, Target );
-            Report();
+            // Report();
         }
     }
 
@@ -281,7 +281,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.DynamicBrakeChangeTo( ToState, Target );
-            Report();
+            // Report();
         }
     }
 
@@ -296,7 +296,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.InitializeBrakes();
-            Report();
+            // Report();
         }
     }
 
@@ -311,7 +311,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.SetEmergency();
-            Report();
+            // Report();
         }
     }
 
@@ -326,7 +326,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.SetBailOff( ToState );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -345,7 +345,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.SetTrainHandbrake( ToState );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -364,7 +364,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.SetTrainRetainers( ToState );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -384,7 +384,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.BrakeHoseConnect( ToState );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -407,7 +407,7 @@ namespace ORTS {
             } else {
                 Receiver.Train.SignalEvent( EventID.SanderOn );
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -426,7 +426,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.AlerterResetExternal();
-            Report();
+            // Report();
         }
     }
 
@@ -441,7 +441,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.SignalEvent( ToState ? EventID.HornOn : EventID.HornOff );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -460,7 +460,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.SignalEvent( ToState ? EventID.BellOn : EventID.BellOff );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -479,7 +479,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleCabLight( );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -514,7 +514,7 @@ namespace ORTS {
                 if( EventID.IsMSTSBin )
                     Receiver.SignalEvent( EventID.LightSwitchToggle );
             }
-            Report();
+            // Report();
         }
     }
 
@@ -529,7 +529,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleWipers();
-            Report();
+            // Report();
         }
     }
 
@@ -544,7 +544,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleDoorsLeft();
-            Report();
+            // Report();
         }
     }
 
@@ -559,7 +559,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleDoorsRight();
-            Report();
+            // Report();
         }
     }
 
@@ -574,7 +574,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleMirrors();
-            Report();
+            // Report();
         }
     }
     
@@ -595,7 +595,7 @@ namespace ORTS {
                 case 1: { Receiver.Injector1ChangeTo( ToState, Target ); break; }
                 case 2: { Receiver.Injector2ChangeTo( ToState, Target ); break; }
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -620,7 +620,7 @@ namespace ORTS {
                 case 1: { Receiver.ToggleInjector1(); break; }
                 case 2: { Receiver.ToggleInjector2(); break; }
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -639,7 +639,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.BlowerChangeTo( ToState, Target );
-            Report();
+            // Report();
         }
     }
 
@@ -654,7 +654,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.DamperChangeTo( ToState, Target );
-            Report();
+            // Report();
         }
     }
 
@@ -669,7 +669,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.FiringRateChangeTo( ToState, Target );
-            Report();
+            // Report();
         }
     }
 
@@ -684,7 +684,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleManualFiring();
-            Report();
+            // Report();
         }
     }
 
@@ -699,7 +699,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.FireShovelfull();
-            Report();
+            // Report();
         }
     }
 
@@ -714,7 +714,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleCylinderCocks();
-            Report();
+            // Report();
         }
     }
 
@@ -730,7 +730,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.SwapLocomotives();
-            Report();
+            // Report();
         }
     }
 
@@ -745,7 +745,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleSwitchAhead();
-            Report();
+            // Report();
         }
     }
 
@@ -760,7 +760,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleSwitchBehind();
-            Report();
+            // Report();
         }
     }
 
@@ -777,7 +777,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.UncoupleBehind( CarPosition );
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -794,7 +794,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ResumeActivity();
-            Report();
+            // Report();
         }
     }
 
@@ -807,7 +807,7 @@ namespace ORTS {
     
         public override void Redo() {
             Receiver.CloseBox();
-            Report();
+            // Report();
         }
     }
 
@@ -820,7 +820,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.QuitActivity();
-            Report();
+            // Report();
         }
     }
     
@@ -843,7 +843,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.CabCamera.Activate();
-            Report();
+            // Report();
         }
     }
 
@@ -857,7 +857,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.FrontCamera.Activate();
-            Report();
+            // Report();
         }
     }
 
@@ -871,7 +871,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.BackCamera.Activate();
-            Report();
+            // Report();
         }
     }
 
@@ -885,7 +885,7 @@ namespace ORTS {
 
         public override void Redo() {
             new FreeRoamCamera( Receiver, Receiver.Camera ).Activate();
-            Report();
+            // Report();
         }
     }
 
@@ -899,7 +899,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.HeadOutForwardCamera.Activate();
-            Report();
+            // Report();
         }
     }
 
@@ -913,7 +913,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.HeadOutBackCamera.Activate();
-            Report();
+            // Report();
         }
     }
 
@@ -928,7 +928,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.BrakemanCamera.Activate();
-            Report();
+            // Report();
         }
     }
 
@@ -942,7 +942,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.PassengerCamera.Activate();
-            Report();
+            // Report();
         }
     }
 
@@ -956,7 +956,7 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.TracksideCamera.Activate();
-            Report();
+            // Report();
         }
     }
     
@@ -992,7 +992,7 @@ namespace ORTS {
                 c.RotationXTargetRadians = RotationXRadians;
                 c.EndTime = EndTime;
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -1017,7 +1017,7 @@ namespace ORTS {
                 c.RotationYTargetRadians = RotationYRadians;
                 c.EndTime = EndTime;
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -1047,7 +1047,7 @@ namespace ORTS {
                 c.RotationXTargetRadians = RotationXRadians;
                 c.RotationYTargetRadians = RotationYRadians;
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -1071,7 +1071,7 @@ namespace ORTS {
                 c.XTargetRadians = XRadians;
                 c.EndTime = EndTime;
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -1095,7 +1095,7 @@ namespace ORTS {
                 c.YTargetRadians = YRadians;
                 c.EndTime = EndTime;
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -1118,7 +1118,7 @@ namespace ORTS {
                 var c = Receiver.Camera as RotatingCamera;
                 c.ZTargetRadians = ZRadians;
                 c.EndTime = EndTime;
-            } Report();
+            } // Report();
         }
 
         public override string ToString() {
@@ -1142,7 +1142,7 @@ namespace ORTS {
                 c.PositionXTargetRadians = PositionXRadians;
                 c.EndTime = EndTime;
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -1166,7 +1166,7 @@ namespace ORTS {
                 c.PositionYTargetRadians = PositionYRadians;
                 c.EndTime = EndTime;
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -1190,7 +1190,7 @@ namespace ORTS {
                 c.PositionDistanceTargetMetres = PositionDistanceMetres;
                 c.EndTime = EndTime;
             }
-            Report();
+            // Report();
         }
 
         public override string ToString() {
@@ -1211,7 +1211,7 @@ namespace ORTS {
                 var c = Receiver.Camera as AttachedCamera;
                 c.NextCar();
             }
-            Report();
+            // Report();
         }
     }
 
@@ -1228,7 +1228,7 @@ namespace ORTS {
                 var c = Receiver.Camera as AttachedCamera;
                 c.PreviousCar();
             }
-            Report();
+            // Report();
         }
     }
 
@@ -1245,7 +1245,7 @@ namespace ORTS {
                 var c = Receiver.Camera as AttachedCamera;
                 c.FirstCar();
             }
-            Report();
+            // Report();
         }
     }
 
@@ -1262,7 +1262,7 @@ namespace ORTS {
                 var c = Receiver.Camera as AttachedCamera;
                 c.LastCar();
             }
-            Report();
+            // Report();
         }
     }
 }
