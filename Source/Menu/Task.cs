@@ -68,6 +68,10 @@ namespace ORTS
             lock (this)
                 cancelled = Cancelled;
 
+            // If the control we've been passed is still setting itself up, we must wait before invoking the callbacks.
+            while (!Control.IsHandleCreated)
+                Thread.Sleep(100);
+
             try
             {
                 // Execute the success/failure handlers if they exist.
