@@ -454,8 +454,8 @@ namespace ORTS {
             var speed = GetSpeed( elapsedTime );
 
             // Pan and zoom camera
-            if( UserInput.IsDown( UserCommands.CameraPanLeft ) ) PanRight( speed );
-            if( UserInput.IsDown( UserCommands.CameraPanRight ) ) PanRight( -speed );
+            if( UserInput.IsDown( UserCommands.CameraPanRight ) ) PanRight( speed );
+            if( UserInput.IsDown( UserCommands.CameraPanLeft ) ) PanRight( -speed );
             if( UserInput.IsDown( UserCommands.CameraPanUp ) ) PanUp( speed );
             if( UserInput.IsDown( UserCommands.CameraPanDown ) ) PanUp( -speed );
             if( UserInput.IsDown( UserCommands.CameraZoomIn ) ) ZoomIn( speed * ZoomFactor );
