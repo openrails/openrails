@@ -3559,10 +3559,8 @@ namespace ORTS
         public override void PrepareFrame(RenderFrame frame)
         {
            
-            // float fontratio = (float)_CabViewControl.Height / 16;
-            // Use fixed ratio to supress elongated chars for present
-            float fontratio = 1.0f;
-            // Cab view height adjusted to allow for clip or stretch.
+            float fontratio = (float)_CabViewControl.Height / 16;
+
             float xratio = (float)_Viewer.DisplaySize.X / 640;
             float yratio = (float)_Viewer.CabHeightPixels / 480;
             
@@ -3574,7 +3572,7 @@ namespace ORTS
 
             base.PrepareFrame(frame);
 
-            _ScaleToScreen = (float)_Viewer.DisplaySize.X / 640 * (fontratio);
+            _ScaleToScreen = (float)_Viewer.DisplaySize.Y / 480 * (fontratio);
 
             _Num = _Locomotive.GetDataOf(_CabViewControl);
         }
