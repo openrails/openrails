@@ -73,7 +73,13 @@ namespace ORTS
                                     if( exploreActivity == null )
                                         parameters.Add( String.Format( "\"{0}\"", MainForm.SelectedActivity.FilePath ) );
                                     else
-                                        parameters.Add( String.Format( "\"{0}\" \"{1}\" {2}:{3} {4} {5}", exploreActivity.Path, exploreActivity.Consist, exploreActivity.StartHour, exploreActivity.StartMinute, exploreActivity.Season, exploreActivity.Weather ) );
+                                        parameters.Add( String.Format( "\"{0}\" \"{1}\" {2}:{3} {4} {5}",
+                                        exploreActivity.Path.FilePath,
+                                        exploreActivity.Consist.FilePath, 
+                                        exploreActivity.StartHour, 
+                                        exploreActivity.StartMinute, 
+                                        exploreActivity.Season, 
+                                        exploreActivity.Weather ) );
                                     break;
                                 case DialogResult.Retry:
                                     parameters.Add( "-resume" );
