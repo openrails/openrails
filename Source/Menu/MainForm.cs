@@ -185,16 +185,6 @@ namespace ORTS
         #endregion
 
         #region Misc. buttons and options
-        void buttonSwitchStyle_Click(object sender, EventArgs e)
-        {
-            using (var RK = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(Program.RegistryKey))
-            {
-                if (RK != null)
-                    RK.SetValue("LauncherMenu", 2);
-            }
-            Process.Start(Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "MenuWPF.exe"));
-            Close();
-        }
 
         void buttonTesting_Click(object sender, EventArgs e)
         {
