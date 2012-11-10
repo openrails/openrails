@@ -1,11 +1,10 @@
-﻿// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
 // This code is provided to enable you to contribute improvements to the open rails program.  
 // Use of the code for any other purpose or distribution of the code to anyone else
 // is prohibited without specific written permission from admin@openrails.org.
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -17,15 +16,18 @@ namespace ORTS
 {
     public partial class MainForm : Form
     {
-        public enum MultiplayerMode
+        public enum UserAction
         {
-            None,
-            Server,
-            Client,
+            SingleplayerNewGame,
+            SingleplayerResumeSave,
+            SingleplayerReplaySave,
+            SingleplayerReplaySaveFromSave,
+            MultiplayerServer,
+            MultiplayerClient,
         }
 
         bool Initialized;
-        public UserSettings Settings;
+        UserSettings Settings;
         List<Folder> Folders = new List<Folder>();
         List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
@@ -36,12 +38,7 @@ namespace ORTS
         public Route SelectedRoute { get { return listBoxRoutes.SelectedIndex < 0 ? null : Routes[listBoxRoutes.SelectedIndex]; } }
         public Activity SelectedActivity { get { return listBoxActivities.SelectedIndex < 0 ? null : Activities[listBoxActivities.SelectedIndex]; } set { if (listBoxActivities.SelectedIndex >= 0) Activities[listBoxActivities.SelectedIndex] = value; } }
         public string SelectedSaveFile { get; set; }
-        public MultiplayerMode Multiplayer { get; set; }
-        public bool ResumeFromSavePressed;
-        public bool ReplayFromStartPressed;
-        public bool ReplayFromSavePressed;
-        public bool EmptySavePacksOnExit;
-        public string SPFolder = "SavePacks";
+        public UserAction SelectedAction { get; set; }
 
         #region Main Form
         public MainForm()
@@ -89,23 +86,11 @@ namespace ORTS
                 ActivityLoader.Cancel();
 
             // Empty the deleted_saves folder
-            var userDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
-            var folderToDelete = userDataFolder + @"\deleted_saves";
-            if (Directory.Exists(folderToDelete))
-            {
-                Directory.Delete(folderToDelete, true);   // true removes all contents as well as folder
-            }
-            
-            // Empty the ORSavePacks folder
-            if( EmptySavePacksOnExit ) {
-                string folderToEmpty = Path.Combine( userDataFolder, SPFolder );
-                if( Directory.Exists( folderToEmpty ) ) {
-                    Directory.GetFiles( folderToEmpty ).ToList().ForEach( File.Delete );
-                }
-            }
+            if (Directory.Exists(Program.DeletedSaveFolder))
+                Directory.Delete(Program.DeletedSaveFolder, true);   // true removes all contents as well as folder
 
             // Tidy up after versions which used SAVE.BIN
-            var file = userDataFolder + @"\SAVE.BIN";
+            var file = Program.UserDataFolder + @"\SAVE.BIN";
             if (File.Exists(file))
                 File.Delete(file);
         }
@@ -185,7 +170,6 @@ namespace ORTS
         #endregion
 
         #region Misc. buttons and options
-
         void buttonTesting_Click(object sender, EventArgs e)
         {
             using (var form = new TestingForm())
@@ -204,22 +188,14 @@ namespace ORTS
 
         void buttonResume_Click(object sender, EventArgs e)
         {
-            using (var form = new ResumeForm(this, SelectedRoute, SelectedActivity))
+            using (var form = new ResumeForm(Settings, SelectedRoute, SelectedActivity))
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
                     SelectedSaveFile = form.SelectedSaveFile;
-                    DialogResult = DialogResult.Retry;
-                }
-            }
-        }
-
-        void buttonMultiplayer_Click(object sender, EventArgs e)
-        {
-            using( var form = new MultiplayerForm( Settings ) )
-            {
-                if (form.ShowDialog(this) == DialogResult.OK)
+                    SelectedAction = form.SelectedAction;
                     DialogResult = DialogResult.OK;
+                }
             }
         }
 
@@ -227,7 +203,9 @@ namespace ORTS
         {
             SaveOptions();
 
-            Multiplayer = MultiplayerMode.None;
+            SelectedAction = UserAction.SingleplayerNewGame;
+
+            // GetMultiplayerInfo() overrides SelectedAction.
             if (checkBoxMultiplayer.Checked && !GetMultiplayerInfo())
                 return;
 
@@ -275,7 +253,6 @@ namespace ORTS
             checkBoxWarnings.Checked = Settings.Logging;
             checkBoxWindowed.Checked = !Settings.FullScreen;
             checkBoxMultiplayer.Checked = Settings.Multiplayer;
-            EmptySavePacksOnExit = Settings.EmptySavePacksOnExit;
         }
 
         void SaveOptions()
@@ -288,7 +265,6 @@ namespace ORTS
                 listBoxRoutes.SelectedItem != null ? (listBoxRoutes.SelectedItem as Route).Path : "",
                 listBoxActivities.SelectedItem != null && (listBoxActivities.SelectedItem as Activity).FilePath != null ? (listBoxActivities.SelectedItem as Activity).FilePath : "",
             };
-            Settings.EmptySavePacksOnExit = EmptySavePacksOnExit;
             Settings.Save();
         }
 
@@ -325,7 +301,7 @@ namespace ORTS
                 RouteLoader.Cancel();
 
             listBoxRoutes.Items.Clear();
-			buttonRouteDetails.Enabled = buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
+            buttonRouteDetails.Enabled = buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
             var selectedFolder = SelectedFolder;
             RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
             {
@@ -340,7 +316,7 @@ namespace ORTS
                     listBoxRoutes.SelectedIndex = 0;
                 else
                     listBoxRoutes.ClearSelected();
-				buttonRouteDetails.Enabled = listBoxRoutes.Items.Count > 0;
+                buttonRouteDetails.Enabled = listBoxRoutes.Items.Count > 0;
             });
         }
 
@@ -350,7 +326,7 @@ namespace ORTS
                 ActivityLoader.Cancel();
 
             listBoxActivities.Items.Clear();
-			buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
+            buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = false;
             var selectedRoute = SelectedRoute;
             ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
             {
@@ -365,7 +341,7 @@ namespace ORTS
                     listBoxActivities.SelectedIndex = 0;
                 else
                     listBoxActivities.ClearSelected();
-				buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = listBoxActivities.Items.Count > 0;
+                buttonActivityDetails.Enabled = buttonResume.Enabled = buttonStart.Enabled = listBoxActivities.Items.Count > 0;
             });
         }
 
@@ -408,15 +384,15 @@ namespace ORTS
 
         bool GetMultiplayerInfo()
         {
-            using (var form = new MultiplayerForm( Settings ))
+            using (var form = new MultiplayerForm(Settings))
             {
                 switch (form.ShowDialog(this))
                 {
                     case DialogResult.Yes:
-                        Multiplayer = MultiplayerMode.Server;
+                        SelectedAction = UserAction.MultiplayerServer;
                         return true;
                     case DialogResult.No:
-                        Multiplayer = MultiplayerMode.Client;
+                        SelectedAction = UserAction.MultiplayerClient;
                         return true;
                     default:
                         return false;

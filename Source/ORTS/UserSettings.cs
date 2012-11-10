@@ -65,8 +65,6 @@ namespace ORTS
         public bool DataLogger { get; set; }
         [Default(false)]
         public bool DynamicShadows { get; set; }
-        [Default( true )]
-        public bool EmptySavePacksOnExit { get; set; }
         [Default(false)]
         public bool FullScreen { get; set; }
         [Default(false)]

@@ -1,4 +1,9 @@
-﻿/*
+﻿// COPYRIGHT 2012 by the Open Rails project.
+// This code is provided to enable you to contribute improvements to the open rails program.  
+// Use of the code for any other purpose or distribution of the code to anyone else
+// is prohibited without specific written permission from admin@openrails.org.
+
+/*
 This form adds the ability to save the state of the simulator (a Save) multiple times and replace the previous 
 single save to the file SAVE.BIN.
 
@@ -38,15 +43,9 @@ Some problems remain (see <CJ comment> in the source code):
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ORTS.Menu;
 using Path = System.IO.Path;
@@ -55,13 +54,11 @@ namespace ORTS
 {
     public partial class ResumeForm : Form
     {
-        const string InvalidTextString = "To prevent crashes and unexpected behavior, new versions of Open Rails invalidate old saved games.\r\n {0} / {1} saves are no longer valid.";
+        const string InvalidTextString = "To prevent crashes and unexpected behavior, new versions of Open Rails invalidate old saved games. {0} of {1} saves are no longer valid.";
 
-        public readonly MainForm MainForm; 
+        readonly UserSettings Settings;
         readonly Route Route;
         readonly Activity Activity;
-        readonly string Build;
-        readonly string DeletedSavesPath;
 
         List<Save> Saves = new List<Save>();
         Task<List<Save>> SaveLoader;
@@ -119,8 +116,9 @@ namespace ORTS
         }
 
         public string SelectedSaveFile { get; set; }
+        public MainForm.UserAction SelectedAction { get; set; }
 
-        public ResumeForm( MainForm parent, Route route, Activity activity )
+        public ResumeForm(UserSettings settings, Route route, Activity activity)
         {
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
@@ -129,14 +127,12 @@ namespace ORTS
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
 
-            MainForm = parent;
+            Settings = settings;
             Route = route;
             Activity = activity;
-            Build = GetBuild();
-            DeletedSavesPath = Path.Combine(Program.UserDataFolder, "deleted_saves");
             Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name : "Explore Route");
-            checkBoxReplayPauseBeforeEnd.Checked = MainForm.Settings.ReplayPauseBeforeEnd;
-            numericReplayPauseBeforeEnd.Value = MainForm.Settings.ReplayPauseBeforeEndS;
+            checkBoxReplayPauseBeforeEnd.Checked = Settings.ReplayPauseBeforeEnd;
+            numericReplayPauseBeforeEnd.Value = Settings.ReplayPauseBeforeEndS;
 
             gridSaves_SelectionChanged(null, null);
             pathNameDataGridViewTextBoxColumn.Visible = activity.FilePath == null;
@@ -149,22 +145,6 @@ namespace ORTS
                 SaveLoader.Cancel();
         }
 
-        string GetBuild()
-        {
-            try
-            {
-                using (var f = new StreamReader("Revision.txt"))
-                {
-                    f.ReadLine();
-                    return f.ReadLine() + " " + f.ReadLine(); // date, time
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         void LoadSaves()
         {
             if (SaveLoader != null)
@@ -174,6 +154,7 @@ namespace ORTS
             {
                 var saves = new List<Save>();
                 var directory = Program.UserDataFolder;
+                var build = Program.Build.Contains(" ") ? Program.Build.Substring(Program.Build.IndexOf(" ") + 1) : null;
                 var prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
                 if (Directory.Exists(directory))
                 {
@@ -182,9 +163,9 @@ namespace ORTS
                         try
                         {
                             // Skip activities of the same name (e.g. Short Passenger Run shrtpass.act) which belong to a different route.
-                            if( Route.Name == new Save(saveFile, Build).RouteName ) {
-                                saves.Add( new Save( saveFile, Build ) );
-                            }
+                            var save = new Save(saveFile, build);
+                            if (Route.Name == save.RouteName)
+                                saves.Add(save);
                         }
                         catch { }
                     }
@@ -205,6 +186,7 @@ namespace ORTS
             if (save.Valid)
             {
                 SelectedSaveFile = save.File;
+                SelectedAction = MainForm.UserAction.SingleplayerResumeSave;
                 DialogResult = DialogResult.OK;
             }
         }
@@ -230,14 +212,14 @@ namespace ORTS
 
                     buttonDelete.Enabled = true;
                     buttonResume.Enabled = save.Valid;
-                    var replayFileName = Path.ChangeExtension( save.File, "replay" );
+                    var replayFileName = Path.ChangeExtension(save.File, "replay");
                     buttonReplayFromStart.Enabled
                         = buttonReplayFromPreviousSave.Enabled
-                        = (save.Valid && File.Exists( replayFileName ));
+                        = (save.Valid && File.Exists(replayFileName));
                 }
                 else
                 {
-                    buttonDelete.Enabled = buttonResume.Enabled = buttonReplayFromStart.Enabled 
+                    buttonDelete.Enabled = buttonResume.Enabled = buttonReplayFromStart.Enabled
                         = buttonReplayFromPreviousSave.Enabled = false;
                 }
             }
@@ -247,7 +229,7 @@ namespace ORTS
             }
 
             buttonDeleteInvalid.Enabled = Saves.Any(s => !s.Valid);
-            buttonUndelete.Enabled = Directory.Exists(DeletedSavesPath) && Directory.GetFiles(DeletedSavesPath).Length > 0;
+            buttonUndelete.Enabled = Directory.Exists(Program.DeletedSaveFolder) && Directory.GetFiles(Program.DeletedSaveFolder).Length > 0;
         }
 
         void gridSaves_DoubleClick(object sender, EventArgs e)
@@ -272,17 +254,17 @@ namespace ORTS
             {
                 gridSaves.ClearSelection();
 
-                if (!Directory.Exists(DeletedSavesPath))
-                    Directory.CreateDirectory(DeletedSavesPath);
+                if (!Directory.Exists(Program.DeletedSaveFolder))
+                    Directory.CreateDirectory(Program.DeletedSaveFolder);
 
                 for (var i = 0; i < selectedRows.Count; i++)
                 {
-                    var save=selectedRows[i].DataBoundItem as Save;
+                    var save = selectedRows[i].DataBoundItem as Save;
                     foreach (var fileName in new[] { Path.GetFileName(save.File), Path.ChangeExtension(Path.GetFileName(save.File), "png") })
                     {
                         try
                         {
-                            File.Move(Path.Combine(Program.UserDataFolder, fileName), Path.Combine(DeletedSavesPath, fileName));
+                            File.Move(Path.Combine(Program.UserDataFolder, fileName), Path.Combine(Program.DeletedSaveFolder, fileName));
                         }
                         catch { }
                     }
@@ -294,9 +276,9 @@ namespace ORTS
 
         void buttonUndelete_Click(object sender, EventArgs e)
         {
-            if (Directory.Exists(DeletedSavesPath))
+            if (Directory.Exists(Program.DeletedSaveFolder))
             {
-                foreach (var filePath in Directory.GetFiles(DeletedSavesPath))
+                foreach (var filePath in Directory.GetFiles(Program.DeletedSaveFolder))
                 {
                     try
                     {
@@ -305,7 +287,7 @@ namespace ORTS
                     catch { }
                 }
 
-                Directory.Delete(DeletedSavesPath);
+                Directory.Delete(Program.DeletedSaveFolder);
 
                 LoadSaves();
             }
@@ -333,31 +315,35 @@ namespace ORTS
             LoadSaves();
         }
 
-        private void buttonReplayFromStart_Click( object sender, EventArgs e ) {
-            MainForm.ReplayFromStartPressed = true; 
+        private void buttonReplayFromStart_Click(object sender, EventArgs e)
+        {
+            SelectedAction = MainForm.UserAction.SingleplayerReplaySave;
             InitiateReplay();
         }
 
-        private void buttonReplayFromPreviousSave_Click( object sender, EventArgs e ) {
-            MainForm.ReplayFromSavePressed = true; 
+        private void buttonReplayFromPreviousSave_Click(object sender, EventArgs e)
+        {
+            SelectedAction = MainForm.UserAction.SingleplayerReplaySaveFromSave;
             InitiateReplay();
         }
 
-        private void InitiateReplay() {
+        private void InitiateReplay()
+        {
             var save = saveBindingSource.Current as Save;
-            if( save.Valid ) {
+            if (save.Valid)
+            {
                 SelectedSaveFile = save.File;
-                MainForm.Settings.ReplayPauseBeforeEnd = checkBoxReplayPauseBeforeEnd.Checked;
-                MainForm.Settings.ReplayPauseBeforeEndS = (int)numericReplayPauseBeforeEnd.Value;
-                this.Close();
-                MainForm.Close();
+                Settings.ReplayPauseBeforeEnd = checkBoxReplayPauseBeforeEnd.Checked;
+                Settings.ReplayPauseBeforeEndS = (int)numericReplayPauseBeforeEnd.Value;
                 DialogResult = DialogResult.OK; // Anything but DialogResult.Cancel
             }
         }
 
-        private void buttonImportExportSaves_Click( object sender, EventArgs e ) {
+        private void buttonImportExportSaves_Click(object sender, EventArgs e)
+        {
             var save = saveBindingSource.Current as Save;
-            using( ImportExportSaveForm form = new ImportExportSaveForm( this, save ) ) {
+            using (ImportExportSaveForm form = new ImportExportSaveForm(save))
+            {
                 form.ShowDialog();
             }
             LoadSaves(); // <CJ Comment> Should update list of saves but doesn't refresh the form as I was hoping.</CJ Comment>

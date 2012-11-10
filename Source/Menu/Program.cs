@@ -1,7 +1,7 @@
-﻿/// COPYRIGHT 2009 by the Open Rails project.
-/// This code is provided to enable you to contribute improvements to the open rails program.  
-/// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from admin@openrails.org.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
+// This code is provided to enable you to contribute improvements to the open rails program.  
+// Use of the code for any other purpose or distribution of the code to anyone else
+// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
 using System.Collections.Generic;
@@ -19,73 +19,71 @@ namespace ORTS
         public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
         public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
         public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
+        public static string DeletedSaveFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Deleted Saves"
+        public static string SavePackFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Save Packs"
 
         [STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
         static void Main(string[] args)
-		{
-			Application.EnableVisualStyles();
+        {
+            Application.EnableVisualStyles();
 
-			SetBuildRevision();
-
-			UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
+            SetBuildRevision();
+            RegistryKey = @"SOFTWARE\OpenRails\ORTS";
+            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
+            DeletedSaveFolder = Path.Combine(UserDataFolder, "Deleted Saves");
+            SavePackFolder = Path.Combine(UserDataFolder, "Save Packs");
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
 
-			RegistryKey = @"SOFTWARE\OpenRails\ORTS";
-
-			try
-			{
-
+            try
+            {
                 using (var MainForm = new MainForm())
                 {
-                    while (true)
+                    while (MainForm.ShowDialog() == DialogResult.OK)
                     {
-                        MainForm.ReplayFromStartPressed = false;
-                        MainForm.ReplayFromSavePressed = false; 
-                        
-                        var dialogResult = MainForm.ShowDialog();
-                        if (dialogResult == DialogResult.Cancel)
-                            break;
-
                         var parameters = new List<string>();
-
-                        if( MainForm.ReplayFromStartPressed ) {
-                            parameters.Add("-replay");
-                            parameters.Add("\"" + Path.GetFileNameWithoutExtension(MainForm.SelectedSaveFile) + "\"");
-                        } else if( MainForm.ReplayFromSavePressed ) {
-                            parameters.Add( "-replay_from_save" );
-                            parameters.Add( "\"" + Path.GetFileNameWithoutExtension( MainForm.SelectedSaveFile ) + "\"" );
-                        } else {
-
-                            switch( dialogResult ) {
-                                case DialogResult.OK:
-                                    switch( MainForm.Multiplayer ) {
-                                        case MainForm.MultiplayerMode.Server:
-                                            parameters.Add( "-multiplayerserver" );
-                                            break;
-                                        case MainForm.MultiplayerMode.Client:
-                                            parameters.Add( "-multiplayerclient" );
-                                            break;
-                                        default:
-                                            parameters.Add( "-start" );
-                                            break;
-                                    }
-                                    var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
-                                    if( exploreActivity == null )
-                                        parameters.Add( String.Format( "\"{0}\"", MainForm.SelectedActivity.FilePath ) );
-                                    else
-                                        parameters.Add( String.Format( "\"{0}\" \"{1}\" {2}:{3} {4} {5}",
-                                        exploreActivity.Path.FilePath,
-                                        exploreActivity.Consist.FilePath, 
-                                        exploreActivity.StartHour, 
-                                        exploreActivity.StartMinute, 
-                                        exploreActivity.Season, 
-                                        exploreActivity.Weather ) );
-                                    break;
-                                case DialogResult.Retry:
-                                    parameters.Add( "-resume" );
-                                    parameters.Add( "\"" + Path.GetFileNameWithoutExtension( MainForm.SelectedSaveFile ) + "\"" );
-                                    break;
-                            }
+                        switch (MainForm.SelectedAction)
+                        {
+                            case MainForm.UserAction.SingleplayerNewGame:
+                                parameters.Add("-start");
+                                break;
+                            case MainForm.UserAction.SingleplayerResumeSave:
+                                parameters.Add("-resume");
+                                break;
+                            case MainForm.UserAction.SingleplayerReplaySave:
+                                parameters.Add("-replay");
+                                break;
+                            case MainForm.UserAction.SingleplayerReplaySaveFromSave:
+                                parameters.Add("-replay_from_save");
+                                break;
+                            case MainForm.UserAction.MultiplayerClient:
+                                parameters.Add("-multiplayerclient");
+                                break;
+                            case MainForm.UserAction.MultiplayerServer:
+                                parameters.Add("-multiplayerserver");
+                                break;
+                        }
+                        switch (MainForm.SelectedAction)
+                        {
+                            case MainForm.UserAction.SingleplayerNewGame:
+                            case MainForm.UserAction.MultiplayerClient:
+                            case MainForm.UserAction.MultiplayerServer:
+                                var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
+                                if (exploreActivity == null)
+                                    parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FilePath));
+                                else
+                                    parameters.Add(String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}",
+                                    exploreActivity.Path.FilePath,
+                                    exploreActivity.Consist.FilePath,
+                                    exploreActivity.StartHour,
+                                    exploreActivity.StartMinute,
+                                    exploreActivity.Season,
+                                    exploreActivity.Weather));
+                                break;
+                            case MainForm.UserAction.SingleplayerResumeSave:
+                            case MainForm.UserAction.SingleplayerReplaySave:
+                            case MainForm.UserAction.SingleplayerReplaySaveFromSave:
+                                parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
+                                break;
                         }
 
                         var processStartInfo = new System.Diagnostics.ProcessStartInfo();
@@ -98,12 +96,12 @@ namespace ORTS
                         process.WaitForExit();
                     }
                 }
-			}
-			catch (Exception error)
-			{
-				MessageBox.Show(error.ToString());
-			}
-		}
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show(error.ToString());
+            }
+        }
 
         /// <summary>
         /// Set up the global Build and Revision variables
@@ -127,8 +125,8 @@ namespace ORTS
                     else
                         Version = "";
 
-                    Build = Application.ProductVersion;  // from assembly
-                    Build = Build + " " + f.ReadLine();  // date
+                    Build = Application.ProductVersion; // from assembly
+                    Build = Build + " " + f.ReadLine(); // date
                     Build = Build + " " + f.ReadLine(); // time
                 }
             }
@@ -138,5 +136,5 @@ namespace ORTS
                 Build = Application.ProductVersion;
             }
         }
-    } // class Program
+    }
 }

@@ -198,7 +198,7 @@
             this.buttonOptions.Name = "buttonOptions";
             this.buttonOptions.Size = new System.Drawing.Size(75, 23);
             this.buttonOptions.TabIndex = 5;
-            this.buttonOptions.Text = "Options ...";
+            this.buttonOptions.Text = "Options";
             this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
             // 
             // buttonRouteDetails
@@ -231,7 +231,7 @@
             this.buttonResume.Name = "buttonResume";
             this.buttonResume.Size = new System.Drawing.Size(75, 23);
             this.buttonResume.TabIndex = 4;
-            this.buttonResume.Text = "Resume ...";
+            this.buttonResume.Text = "Resume";
             this.buttonResume.Click += new System.EventHandler(this.buttonResume_Click);
             // 
             // groupBoxFolders
@@ -309,7 +309,7 @@
             this.buttonTesting.Name = "buttonTesting";
             this.buttonTesting.Size = new System.Drawing.Size(75, 23);
             this.buttonTesting.TabIndex = 6;
-            this.buttonTesting.Text = "Testing ...";
+            this.buttonTesting.Text = "Testing";
             this.buttonTesting.Click += new System.EventHandler(this.buttonTesting_Click);
             // 
             // checkBoxMultiplayer
