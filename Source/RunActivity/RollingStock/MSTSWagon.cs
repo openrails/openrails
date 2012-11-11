@@ -447,14 +447,10 @@ namespace ORTS
         {
             do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
 			{
-				if (eventID == EventID.Pantograph1Up) { Pan = true; if (FrontPanUp == false && AftPanUp == false) AftPanUp = true; break; }  // pan up
-				if (eventID == EventID.Pantograph1Down) { Pan = false; FrontPanUp = AftPanUp = false;  break; } // pan down
-				if (eventID == EventID.Pantograph1Toggle) {	
-					Pan = !Pan;
-					if (Pan && FrontPanUp == false && AftPanUp == false) AftPanUp = true;
-					if (Pan == false) FrontPanUp = AftPanUp = false;
-					break; 
-				} // pan down
+                if (eventID == EventID.Pantograph1Up) { AftPanUp = true; Pan = AftPanUp || FrontPanUp; break; }  // pan up
+                if (eventID == EventID.Pantograph1Down) { AftPanUp = false; Pan = AftPanUp || FrontPanUp; break; } // pan down
+                if (eventID == EventID.Pantograph2Up) { FrontPanUp = true; Pan = AftPanUp || FrontPanUp; break; }  // pan up
+                if (eventID == EventID.Pantograph2Down) { FrontPanUp = false; Pan = AftPanUp || FrontPanUp; break; } // pan down
             } while( false );  // Never repeats
 
             foreach (CarEventHandler eventHandler in EventHandlers) // e.g. for HandleCarEvent() in Sounds.cs
@@ -468,7 +464,7 @@ namespace ORTS
             if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train
                 foreach( TrainCar car in Train.Cars )
                     if( car != this && car is MSTSWagon ) ((MSTSWagon)car).AftPanUp = AftPanUp;
-            if( FrontPanUp || AftPanUp ) {
+            if( AftPanUp ) {
                 SignalEvent( EventID.Pantograph1Up );
             } else {
                 SignalEvent( EventID.Pantograph1Down );
@@ -480,11 +476,10 @@ namespace ORTS
             if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train
                 foreach( TrainCar car in Train.Cars )
                     if( car != this && car is MSTSWagon ) ((MSTSWagon)car).FrontPanUp = FrontPanUp;
-            // Paragraph1Up is not a typo. "P" and Shift+"P" are handled by the same SignalEvent.
-            if( FrontPanUp || AftPanUp ) {
-                SignalEvent( EventID.Pantograph1Up );
+            if( FrontPanUp ) {
+                SignalEvent( EventID.Pantograph2Up );
             } else {
-                SignalEvent( EventID.Pantograph1Down );
+                SignalEvent( EventID.Pantograph2Down );
             }
         }
         
@@ -902,7 +897,7 @@ namespace ORTS
 						case "PANTOGRAPHTOP1":
 						case "PANTOGRAPHTOP1A":
 						case "PANTOGRAPHTOP1B":
-							FrontPantograph.MatrixIndexAdd(iMatrix);
+							AftPantograph.MatrixIndexAdd(iMatrix);
 							break;
 						case "PANTOGRAPHBOTTOM2":
 						case "PANTOGRAPHBOTTOM2A":
@@ -913,7 +908,7 @@ namespace ORTS
 						case "PANTOGRAPHTOP2":
 						case "PANTOGRAPHTOP2A":
 						case "PANTOGRAPHTOP2B":
-							AftPantograph.MatrixIndexAdd(iMatrix);
+							FrontPantograph.MatrixIndexAdd(iMatrix);
 							break;
 					}
 				}
@@ -931,11 +926,11 @@ namespace ORTS
                     if (TrainCarShape.SharedShape.Animations == null) continue;
                     if (matrixName.Contains("1"))
                     {
-                        FrontPantograph.MatrixIndexAdd(iMatrix);
+                        AftPantograph.MatrixIndexAdd(iMatrix);
                     }
                     else if (matrixName.Contains("2"))
                     {
-                        AftPantograph.MatrixIndexAdd(iMatrix);
+                        FrontPantograph.MatrixIndexAdd(iMatrix);
                     }
                 }
                 else
@@ -951,13 +946,9 @@ namespace ORTS
 
 			//determine how many panto
 			if (FrontPantograph.Exists()) car.NumPantograph++;
-			if (AftPantograph.Exists() ) car.NumPantograph++;
+            if (AftPantograph.Exists()) car.NumPantograph++;
 
-			//we always want to raise aft by default, so rename panto1 to aft if there is only one set of pant
-            if (car.NumPantograph == 1 && !AftPantograph.Exists())
-                AnimatedPart.Swap(ref AftPantograph, ref FrontPantograph);
-
-            //now handle the direction of the car; if flipped, then the pantoaft should use Panto***1*
+            //now handle the direction of the car; if flipped, then the pantographs should be switched
             if (car.Flipped && car.NumPantograph == 2)
                 AnimatedPart.Swap(ref AftPantograph, ref FrontPantograph);
 
@@ -977,23 +968,23 @@ namespace ORTS
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
 			// Pantograph
-			if (UserInput.IsPressed(UserCommands.ControlPantographSecond))
-			{
-				MSTSWagon.FrontPanUp = !MSTSWagon.FrontPanUp;
-				if (Viewer.Simulator.PlayerLocomotive == this.Car) //inform everyone else in the train
-					foreach (TrainCar car in Car.Train.Cars)
-						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = MSTSWagon.FrontPanUp;
-				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.Pantograph1Up);
-				else Car.SignalEvent(EventID.Pantograph1Down);
-			}
 			if (UserInput.IsPressed(UserCommands.ControlPantographFirst))
 			{
 				MSTSWagon.AftPanUp = !MSTSWagon.AftPanUp;
 				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).AftPanUp = MSTSWagon.AftPanUp;
-				if (MSTSWagon.FrontPanUp || MSTSWagon.AftPanUp) Car.SignalEvent(EventID.Pantograph1Up);
+				if (MSTSWagon.AftPanUp) Car.SignalEvent(EventID.Pantograph1Up);
 				else Car.SignalEvent(EventID.Pantograph1Down);
+			}
+			if (UserInput.IsPressed(UserCommands.ControlPantographSecond))
+			{
+				MSTSWagon.FrontPanUp = !MSTSWagon.FrontPanUp;
+				if (Viewer.Simulator.PlayerLocomotive == this.Car) //inform everyone else in the train
+					foreach (TrainCar car in Car.Train.Cars)
+						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = MSTSWagon.FrontPanUp;
+				if (MSTSWagon.FrontPanUp) Car.SignalEvent(EventID.Pantograph2Up);
+				else Car.SignalEvent(EventID.Pantograph2Down);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
 			{
