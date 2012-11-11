@@ -3126,7 +3126,7 @@ namespace ORTS
             if (_Gauge.Orientation == 0)    // gauge horiz
             {
                 ypos = (int)_Gauge.Height;
-                if (_Gauge.Direction == 0)  // horiz increasing
+                if (_Gauge.Direction == 0)  // bar grows from left
                 {
                     if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
                         LoadMeterPositive)
@@ -3140,7 +3140,7 @@ namespace ORTS
                         xpos = ((float)_Gauge.Width * percent);
                 }
 
-                if (_Gauge.Direction == 1)  // horiz decreasing
+                if (_Gauge.Direction == 1)  // bar grows from right
                 {
                     if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
                         !LoadMeterPositive)
@@ -3152,56 +3152,48 @@ namespace ORTS
                         xpos = ((float)_Gauge.Width - (float)_Gauge.Width * percent);
                 }
             } // end if _Gauge.Orientation
-            else                          // gauge vert
+            else                          // gauge vertical
             {
-                xpos = (int)_Gauge.Width;
-                if (_Gauge.Direction == 0)
-                {
-                    ypos = ((float)_Gauge.Height * percent);
-                }
-                else
-                {
-                    ypos = ((float)_Gauge.Height - (float)_Gauge.Height * percent);
-                }
+                xpos = (float)_Gauge.Width;
+                ypos = (float)_Gauge.Height * percent;
             }
-
-            if (_Gauge.ControlStyle == CABViewControlStyles.SOLID || _Gauge.ControlStyle == CABViewControlStyles.LIQUID)
-                if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER)
+            if( _Gauge.ControlStyle == CABViewControlStyles.SOLID || _Gauge.ControlStyle == CABViewControlStyles.LIQUID )
+            {
+                if( _CabViewControl.ControlType == CABViewControlTypes.LOAD_METER )
                 {
                     _DestRectangle.X = (int)(xratio * _CabViewControl.PositionX);    // left hand start position
-
-                    if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
-                        LoadMeterPositive)
+                    if( _CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                        LoadMeterPositive )
                         // gauge width - area  offset to center
-                         _DestRectangle.X = (int)(xratio * (_CabViewControl.PositionX + (int)30.4f));
-                    
-                    if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
-                        !LoadMeterPositive)
+                        _DestRectangle.X = (int)(xratio * (_CabViewControl.PositionX + (int)30.4f));
+                    if( _CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                        !LoadMeterPositive )
                     {
-                        var centDrec = (int)(xratio * (_CabViewControl.PositionX + (int)30.4f)); 
+                        var centDrec = (int)(xratio * (_CabViewControl.PositionX + (int)30.4f));
                         _DestRectangle.X = centDrec - (int)(xratio * xpos);
                     }
-
-
                     // Cab view vertical position adjusted to allow for clip or stretch.
                     _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY) + _Viewer.CabYOffsetPixels;
                     _DestRectangle.Width = (int)(xratio * xpos);
                     _DestRectangle.Height = (int)(yratio * ypos);
-                }
+                } 
                 else
                 {
-                    // Cab view vertical position adjusted to allow for clip or stretch.
                     _DestRectangle.X = (int)(xratio * _CabViewControl.PositionX);
-                    _DestRectangle.Y = (int)(yratio * _CabViewControl.PositionY) + _Viewer.CabYOffsetPixels;
+                    var topY = _CabViewControl.PositionY;  // top of visible column. +ve Y is downwards
+                    if( _Gauge.Direction != 0 )  // column grows up from bottom
+                        topY += _Gauge.Height * (1 - percent);
+
+                    // Cab view vertical position adjusted to allow for clip or stretch.
+                    _DestRectangle.Y = (int)(yratio * topY) + _Viewer.CabYOffsetPixels;
                     _DestRectangle.Width = (int)(xratio * xpos);
                     _DestRectangle.Height = (int)(yratio * ypos);
                 }
-
-
-            else    // Is this code ever executed ???
+            }
+            else
             {
-                // Cab view vertical position adjusted to allow for clip or stretch.
                 _DestRectangle.X = (int)(xratio * (_CabViewControl.PositionX + xpos));
+                // Cab view vertical position adjusted to allow for clip or stretch.
                 _DestRectangle.Y = (int)(yratio * (_CabViewControl.PositionY + ypos)) + _Viewer.CabYOffsetPixels;
                 _DestRectangle.Width = (int)(xratio * _Gauge.Area.Width);
                 _DestRectangle.Height = (int)(yratio * _Gauge.Area.Height);
