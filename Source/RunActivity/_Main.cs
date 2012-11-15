@@ -18,10 +18,6 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 /// </summary>
 
-#if DEBUG
-#define DEBUG_VIEWER
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -61,10 +57,8 @@ namespace ORTS
             public string[] args;
         }
 
-#if DEBUG_VIEWER
         public static Debugging.DispatchViewer DebugViewer;
         public static bool DebugViewerEnabled = false;
-#endif
 
         /// <summary>
         /// The main entry point for the application.
@@ -156,7 +150,6 @@ namespace ORTS
                     Client.Send( (new MSGPlayer( Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL )).ToString() );
 				}
 
-#if DEBUG_VIEWER
                 if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
                 {
                     // prepare to show debug output in a separate window
@@ -165,15 +158,12 @@ namespace ORTS
                     DebugViewer.Hide();
                     Viewer.DebugViewerEnabled = false;
                 }
-#endif
 
                 Viewer.Run(null);
 
                 Simulator.Stop();
 
-#if DEBUG_VIEWER
                 if (MPManager.IsMultiPlayer()) DebugViewer.Dispose();
-#endif
             };
             if (Debugger.IsAttached)
             {
@@ -292,7 +282,6 @@ namespace ORTS
                     Viewer.Log = new CommandLog( Viewer );
                     string replayFile = Path.ChangeExtension( saveFile, "replay" );
                     Viewer.Log.LoadLog( replayFile );
-#if DEBUG_VIEWER
 					if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
 					{
 						// prepare to show debug output in a separate window
@@ -301,17 +290,11 @@ namespace ORTS
 						DebugViewer.Hide();
 						Viewer.DebugViewerEnabled = false;
 					}
-					/*else if (MPManager.IsMultiPlayer())
-					{
-						MPManager.Instance().HandleDispatcherWindow(Simulator, Viewer);
 
-					}*/
-#endif
 					Viewer.Run(inf);
-#if DEBUG_VIEWER
+		
 					if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
 						if (DebugViewer != null && !DebugViewer.IsDisposed) DebugViewer.Dispose();
-#endif
                 }
             };
             if (Debugger.IsAttached)

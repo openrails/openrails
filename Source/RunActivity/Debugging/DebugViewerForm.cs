@@ -726,10 +726,10 @@ namespace ORTS.Debugging
 					}
 				}
 				var margin = 30 * xScale;//margins to determine if we want to draw a train
-				var margin2 = 2000 * xScale;
+				var margin2 = 5000 * xScale;
 
 				//variable for drawing train path
-				var mDist = 4000f; var pDist = 50; //segment length when draw path
+				var mDist = 5000f; var pDist = 50; //segment length when draw path
 
 				selectedTrainList.Clear();
 				foreach (var t in simulator.Trains) selectedTrainList.Add(t);
@@ -784,7 +784,7 @@ namespace ORTS.Debugging
 					{
 						worldPos = firstCar.WorldPosition;
 						scaledItem.X = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
-						if (scaledItem.X < -100 || scaledItem.X > IM_Width + 100 || scaledItem.Y > IM_Height + 100 || scaledItem.Y < -100) continue;
+						if (scaledItem.X < -margin2 || scaledItem.X > IM_Width + margin2 || scaledItem.Y > IM_Height + margin2 || scaledItem.Y < -margin2) continue;
 						g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
 						scaledItem.Y -= 25;
 						DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
