@@ -39,6 +39,7 @@ namespace ORTS.MultiPlayer
 		public double CreatedTime;
 		private object lockObj = new object();
 		public string url = ""; //avatar location
+		public double quitTime = -100f;
 		public void Send(string msg)
 		{
 			if (msg == null) return;
@@ -134,6 +135,12 @@ namespace ORTS.MultiPlayer
 			System.Console.WriteLine(this.Username + " quit");
 			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.Username + " quit.");
 			Client.Close();
+			if (this.Train != null)
+			{
+				if (!MPManager.Instance().lostPlayer.ContainsKey(this.Username)) MPManager.Instance().lostPlayer.Add(this.Username, this);
+				this.quitTime = Program.Simulator.GameTime;
+				this.Train.SpeedMpS = 0.0f;
+			}
 			MPManager.Instance().AddRemovedPlayer(this);//add this player to be removed
 			MPManager.BroadCast((new MSGQuit(this.Username)).ToString());
 			thread.Abort();

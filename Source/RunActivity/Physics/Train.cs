@@ -685,7 +685,23 @@ namespace ORTS
 				}
 				return;
 			}
-		
+
+			if (updateMSGReceived)
+			{
+				try
+				{
+					Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, expectedTileX,
+						expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedDIr);
+
+					this.RearTDBTraveller = t;
+					CalculatePositionOfCars(0);
+				}
+				catch (Exception)
+				{
+				}
+				updateMSGReceived = false;
+			}
+
 			PropagateBrakePressure(elapsedClockSeconds);
 
             TrainCar uncoupleBehindCar = null;

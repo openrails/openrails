@@ -436,6 +436,35 @@ namespace ORTS.MultiPlayer
 			{
 
 				if (MPManager.Instance().FindPlayerTrain(user) != null) return; //already added the player, ignore
+				//if the client comes back after disconnected withing 1 minute
+				if (MPManager.IsServer() && MPManager.Instance().lostPlayer != null && MPManager.Instance().lostPlayer.ContainsKey(user))
+				{
+					var p1 = MPManager.Instance().lostPlayer[user];
+
+					//check to see if the player gets back with the same set of cars
+					bool identical = true;
+					if (cars.Length != p1.Train.Cars.Count) identical = false;
+					if (identical != false)
+					{
+						string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\";
+						for (int i = 0; i < cars.Length; i++)
+						{
+							if (wagonFilePath+cars[i] != p1.Train.Cars[i].RealWagFilePath) { identical = false; break; }
+						}
+					}
+
+					//if the player uses the same train cars
+					if (identical)
+					{
+						MPManager.OnlineTrains.Players.Add(user, p1);
+						MPManager.Instance().AddOrRemoveTrain(p1.Train, true);
+						MPManager.Instance().lostPlayer.Remove(user);
+					}
+					else//if the player uses different train cars
+					{
+						MPManager.Instance().lostPlayer.Remove(user);
+					}
+				}
 				MPManager.OnlineTrains.AddPlayers(this, null);
 
 				//System.Console.WriteLine(this.ToString());
@@ -449,8 +478,17 @@ namespace ORTS.MultiPlayer
 					if (MPManager.GetUserName() == this.user) //a reply from the server, update my train number
 					{
 						Program.Client.Connected = true;
-						if (Program.Simulator.PlayerLocomotive == null) Program.Simulator.Trains[0].Number = this.num;
-						else Program.Simulator.PlayerLocomotive.Train.Number = this.num;
+						Train t = null;
+						if (Program.Simulator.PlayerLocomotive == null) t = Program.Simulator.Trains[0];
+						else t = Program.Simulator.PlayerLocomotive.Train;
+						t.Number = this.num;
+						if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
+							new WorldLocation(t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, 0, t.RearTDBTraveller.Z)) > 1000)
+						{
+							t.updateMSGReceived = true;
+							t.expectedTileX = this.TileX; t.expectedTileZ = this.TileZ; t.expectedX = this.X; t.expectedZ = this.Z;
+							t.expectedDIr = this.dir;
+						}
 					}
 					Program.Simulator.Weather = (WeatherType)this.weather;
 					Program.Simulator.ClockTime = this.seconds;
@@ -483,6 +521,42 @@ namespace ORTS.MultiPlayer
 				throw new MultiPlayerError();
 			}
 
+			//if the client comes back after disconnected withing 1 minute
+			if (MPManager.Instance().lostPlayer != null && MPManager.Instance().lostPlayer.ContainsKey(user))
+			{
+				var p1 = MPManager.Instance().lostPlayer[user];
+
+				//check to see if the player gets back with the same set of cars
+				bool identical = true;
+				if (cars.Length != p1.Train.Cars.Count) identical = false;
+				if (identical != false)
+				{
+					string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\";
+					for (int i = 0; i < cars.Length; i++)
+					{
+						System.Console.WriteLine(wagonFilePath + cars[i] + " " + p1.Train.Cars[i].RealWagFilePath);
+						if (wagonFilePath + cars[i] != p1.Train.Cars[i].RealWagFilePath) { identical = false; break; }
+					}
+				}
+
+				System.Console.WriteLine(identical);
+				//if the player uses the same train cars
+				if (identical)
+				{
+					p.Train = p1.Train; p.url = this.url;
+					p.LeadingLocomotiveID = this.leadingID;
+					p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + this.con;
+					p.path = Program.Simulator.RoutePath + "\\PATHS\\" + this.path;
+					p.Username = this.user;
+					MPManager.OnlineTrains.Players.Add(user, p);
+					MPManager.Instance().AddOrRemoveTrain(p.Train, true);
+					MPManager.Instance().lostPlayer.Remove(user);
+				}
+				else//if the player uses different train cars
+				{
+					MPManager.Instance().lostPlayer.Remove(user);
+				}
+			}
 			MPManager.OnlineTrains.AddPlayers(this, p);
 			//System.Console.WriteLine(this.ToString());
 			MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
@@ -1700,9 +1774,17 @@ namespace ORTS.MultiPlayer
 					if (p.Train == Program.Simulator.PlayerLocomotive.Train) 
 						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 					MPManager.Instance().AddRemovedPlayer(p);
+					//the client may quit because of lost connection, will remember it so it may recover in the future when the player log in again
+					if (p.Train != null)
+					{
+						if (!MPManager.Instance().lostPlayer.ContainsKey(p.Username)) MPManager.Instance().lostPlayer.Add(p.Username, p);
+						p.quitTime = Program.Simulator.GameTime;
+						p.Train.SpeedMpS = 0.0f;
+					}
 				}
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 				MPManager.BroadCast(this.ToString()); //broadcast twice
+
 			}
 			else //client will remove train
 			{

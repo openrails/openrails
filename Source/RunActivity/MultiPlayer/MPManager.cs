@@ -65,6 +65,7 @@ namespace ORTS.MultiPlayer
 		public string lastSender = ""; //who last sends me a message
 		public bool AmAider = false; //am I aiding the dispatcher?
 		public List<string> aiderList;
+		public Dictionary<string, OnlinePlayer> lostPlayer = new Dictionary<string,OnlinePlayer>();
 		public bool NotServer = true;
 		public static DispatchViewer DispatcherWindow;
 		public bool CheckSpad = true;
@@ -280,6 +281,9 @@ namespace ORTS.MultiPlayer
 
 			//some players are removed
 			RemovePlayer();
+
+			//some players are disconnected more than 1 minute ago, will not care if they come back later
+			CleanLostPlayers();
 
 			//some trains are added/removed
 			HandleTrainList();
@@ -530,6 +534,29 @@ namespace ORTS.MultiPlayer
 			}
 		}
 
+		private void CleanLostPlayers()
+		{
+			//check if any of the lost player list has been lost for more than 60 seconds. If so, remove it and will not worry about it anymore
+			if (lostPlayer.Count > 0)
+			{
+				List<string> removeLost = null;
+				foreach (var x in lostPlayer)
+				{
+					if (Program.Simulator.GameTime - x.Value.quitTime > 60)
+					{
+						if (removeLost == null) removeLost = new List<string>();
+						removeLost.Add(x.Key);
+					}
+				}
+				if (removeLost != null)
+				{
+					foreach (var name in removeLost)
+					{
+						lostPlayer.Remove(name);
+					}
+				}
+			}
+		}
 		//only can be called by Update
 		private void RemovePlayer()
 		{
@@ -572,6 +599,7 @@ namespace ORTS.MultiPlayer
 				System.Console.WriteLine(e + e.StackTrace); return;
 			}
 			playersRemoved.Clear();
+
 		}
 
 		public bool AddOrRemoveTrain(Train t, bool add)
