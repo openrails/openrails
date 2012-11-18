@@ -27,6 +27,8 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ORTS.Debugging;
 using ORTS.MultiPlayer;
+//CJ
+using MSTS;
 
 namespace ORTS
 {
@@ -853,9 +855,33 @@ namespace ORTS
             tempInt = inf.ReadInt32();
             var savedArgs = new string[tempInt];
             for( var i = 0; i < savedArgs.Length; i++ )
-                savedArgs[i] = inf.ReadString();
+                savedArgs[i] = RestoreBasePath(i, inf.ReadString());
             values.args = savedArgs;
             return values;
+        }
+
+        /// <summary>
+        /// Saves may come from other, foreign installations (i.e. not this PC). 
+        /// They can be replayed or resumed on this PC but the base path to the MSTS files may be different.
+        /// This method overwrites the base path from the *.act file with the local one.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        private static string RestoreBasePath( int argNo, string argValue )
+        {
+            // args[0] for Activity Path if args.Length == 1
+            // args[0] for Route Path and args[1] for Consist Path if args.Length == 5
+            switch( argNo )
+            {
+                case 0:
+                    var routesStart = argValue.IndexOf("\\ROUTES\\");
+                    return argValue = MSTSPath.Base() + argValue.Substring(routesStart);
+                case 1:
+                    var trainsStart = argValue.IndexOf("\\TRAINS\\");
+                    return argValue = MSTSPath.Base() + argValue.Substring(trainsStart);
+                default:
+                    return argValue;
+            }
         }
     }
 }
