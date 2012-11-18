@@ -457,6 +457,7 @@ namespace ORTS.MultiPlayer
 					if (identical)
 					{
 						MPManager.OnlineTrains.Players.Add(user, p1);
+						p1.CreatedTime = Program.Simulator.GameTime;
 						MPManager.Instance().AddOrRemoveTrain(p1.Train, true);
 						MPManager.Instance().lostPlayer.Remove(user);
 					}

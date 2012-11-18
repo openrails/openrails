@@ -37,7 +37,7 @@ namespace ORTS.MultiPlayer
 	//a singleton class handles communication, update and stop etc.
 	class MPManager
 	{
-		public int version = 14;
+		public int version = 15;
 		double lastMoveTime = 0.0f;
 		public double lastSwitchTime = 0.0f;
 		double lastSendTime = 0.0f;
@@ -458,7 +458,7 @@ namespace ORTS.MultiPlayer
 		//this will be used in the server, in Simulator.cs
 		public bool TrainOK2Couple(Train t1, Train t2)
 		{
-			if (Math.Abs(t1.SpeedMpS) > 10 || Math.Abs(t2.SpeedMpS) > 10) return false; //we do not like high speed punch in MP, will mess up a lot.
+			//if (Math.Abs(t1.SpeedMpS) > 10 || Math.Abs(t2.SpeedMpS) > 10) return false; //we do not like high speed punch in MP, will mess up a lot.
 
 			if (t1.TrainType != Train.TRAINTYPE.REMOTE && t2.TrainType != Train.TRAINTYPE.REMOTE) return true;
 

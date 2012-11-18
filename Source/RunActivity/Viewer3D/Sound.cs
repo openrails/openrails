@@ -1356,7 +1356,8 @@ namespace ORTS
             string p = GetNextFile();
             if (p != "")
             {
-                ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal);
+				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+					ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal);
             }
         }
     } 
@@ -1378,7 +1379,8 @@ namespace ORTS
             string p = GetNextFile();
             if (p != "")
             {
-                ORTSStream.ALSoundSource.Queue(p, PlayMode.Loop, ORTSStream.SoundSource.IsExternal);
+				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+					ORTSStream.ALSoundSource.Queue(p, PlayMode.Loop, ORTSStream.SoundSource.IsExternal);
             }
         }
     } 
@@ -1397,7 +1399,8 @@ namespace ORTS
         
         public override void Run()
         {
-            ORTSStream.ALSoundSource.Queue("", PlayMode.Release, ORTSStream.SoundSource.IsExternal);
+			if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+				ORTSStream.ALSoundSource.Queue("", PlayMode.Release, ORTSStream.SoundSource.IsExternal);
         }
     }
 
@@ -1421,7 +1424,8 @@ namespace ORTS
             string p = GetNextFile();
             if (p != "")
             {
-                ORTSStream.ALSoundSource.Queue(p, PlayMode.LoopRelease, ORTSStream.SoundSource.IsExternal);
+				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+					ORTSStream.ALSoundSource.Queue(p, PlayMode.LoopRelease, ORTSStream.SoundSource.IsExternal);
             }
         }
     }
@@ -1439,7 +1443,8 @@ namespace ORTS
 
         public override void Run()
         {
-            ORTSStream.ALSoundSource.Queue("", PlayMode.ReleaseWithJump, ORTSStream.SoundSource.IsExternal);
+			if (ORTSStream != null && ORTSStream.ALSoundSource != null)
+				ORTSStream.ALSoundSource.Queue("", PlayMode.ReleaseWithJump, ORTSStream.SoundSource.IsExternal);
         }
     }
 
