@@ -54,6 +54,7 @@
 		  this.btnFollow = new System.Windows.Forms.Button();
 		  this.chkBoxPenalty = new System.Windows.Forms.CheckBox();
 		  this.chkPreferGreen = new System.Windows.Forms.CheckBox();
+		  this.btnSeeInGame = new System.Windows.Forms.Button();
 		  ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 		  ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
 		  this.SuspendLayout();
@@ -72,7 +73,7 @@
 		  // refreshButton
 		  // 
 		  this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.refreshButton.Location = new System.Drawing.Point(818, 102);
+		  this.refreshButton.Location = new System.Drawing.Point(818, 105);
 		  this.refreshButton.Name = "refreshButton";
 		  this.refreshButton.Size = new System.Drawing.Size(93, 23);
 		  this.refreshButton.TabIndex = 1;
@@ -130,7 +131,7 @@
 		  // 
 		  // rmvButton
 		  // 
-		  this.rmvButton.Location = new System.Drawing.Point(766, 130);
+		  this.rmvButton.Location = new System.Drawing.Point(766, 132);
 		  this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
 		  this.rmvButton.Name = "rmvButton";
 		  this.rmvButton.Size = new System.Drawing.Size(72, 24);
@@ -330,7 +331,7 @@
 		  // 
 		  // btnAssist
 		  // 
-		  this.btnAssist.Location = new System.Drawing.Point(697, 102);
+		  this.btnAssist.Location = new System.Drawing.Point(697, 104);
 		  this.btnAssist.Margin = new System.Windows.Forms.Padding(2);
 		  this.btnAssist.Name = "btnAssist";
 		  this.btnAssist.Size = new System.Drawing.Size(48, 24);
@@ -341,7 +342,7 @@
 		  // 
 		  // btnNormal
 		  // 
-		  this.btnNormal.Location = new System.Drawing.Point(755, 102);
+		  this.btnNormal.Location = new System.Drawing.Point(755, 104);
 		  this.btnNormal.Margin = new System.Windows.Forms.Padding(2);
 		  this.btnNormal.Name = "btnNormal";
 		  this.btnNormal.Size = new System.Drawing.Size(58, 24);
@@ -353,7 +354,7 @@
 		  // btnFollow
 		  // 
 		  this.btnFollow.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-		  this.btnFollow.Location = new System.Drawing.Point(845, 131);
+		  this.btnFollow.Location = new System.Drawing.Point(845, 133);
 		  this.btnFollow.Name = "btnFollow";
 		  this.btnFollow.Size = new System.Drawing.Size(60, 23);
 		  this.btnFollow.TabIndex = 32;
@@ -388,12 +389,24 @@
 		  this.chkPreferGreen.Visible = false;
 		  this.chkPreferGreen.CheckedChanged += new System.EventHandler(this.chkPreferGreenHandle);
 		  // 
+		  // btnSeeInGame
+		  // 
+		  this.btnSeeInGame.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+		  this.btnSeeInGame.Location = new System.Drawing.Point(818, 80);
+		  this.btnSeeInGame.Name = "btnSeeInGame";
+		  this.btnSeeInGame.Size = new System.Drawing.Size(93, 23);
+		  this.btnSeeInGame.TabIndex = 35;
+		  this.btnSeeInGame.Text = "See in Game";
+		  this.btnSeeInGame.UseVisualStyleBackColor = true;
+		  this.btnSeeInGame.Click += new System.EventHandler(this.btnSeeInGameClick);
+		  // 
 		  // DispatchViewer
 		  // 
 		  this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 		  this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 		  this.AutoScroll = true;
 		  this.ClientSize = new System.Drawing.Size(923, 768);
+		  this.Controls.Add(this.btnSeeInGame);
 		  this.Controls.Add(this.chkPreferGreen);
 		  this.Controls.Add(this.chkBoxPenalty);
 		  this.Controls.Add(this.btnFollow);
@@ -460,5 +473,6 @@
 	  private System.Windows.Forms.Button btnFollow;
 	  private System.Windows.Forms.CheckBox chkBoxPenalty;
 	  private System.Windows.Forms.CheckBox chkPreferGreen;
+	  private System.Windows.Forms.Button btnSeeInGame;
    }
 }

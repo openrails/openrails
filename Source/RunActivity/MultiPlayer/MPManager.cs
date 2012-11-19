@@ -46,7 +46,7 @@ namespace ORTS.MultiPlayer
 		public static OnlineTrains OnlineTrains = new OnlineTrains();
 		private static MPManager localUser = null;
 
-		private List<Train> removedTrains;
+		public List<Train> removedTrains;
 		private List<Train> addedTrains;
 
 		private List<Train> uncoupledTrains;

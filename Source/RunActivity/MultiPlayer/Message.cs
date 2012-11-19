@@ -558,10 +558,39 @@ namespace ORTS.MultiPlayer
 					MPManager.Instance().lostPlayer.Remove(user);
 				}
 			}
+
+			//client connected directly to the server, thus will send the game status to the player directly (avoiding using broadcast)
 			MPManager.OnlineTrains.AddPlayers(this, p);
 			//System.Console.WriteLine(this.ToString());
-			MPManager.BroadCast((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
-			MPManager.Instance().PlayerAdded = true;
+			p.Send((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
+
+			MPManager.Instance().lastPlayerAddedTime = Program.Simulator.GameTime;
+
+			MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.PlayerLocomotive.Train,
+				Program.Simulator.PlayerLocomotive.Train.Number, Program.Simulator.Settings.AvatarURL);
+			p.Send(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
+
+			//send the train information to the new player
+			Train[] trains = Program.Simulator.Trains.ToArray();
+
+			foreach (Train t in trains)
+			{
+				if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
+				if (MPManager.Instance().FindPlayerTrain(t)) continue;
+				if (MPManager.Instance().removedTrains.Contains(t)) continue;//this train is going to be removed, should avoid it.
+				p.Send((new MSGTrain(t, t.Number)).ToString());
+			}
+			if (MPManager.Instance().CheckSpad == false) { p.Send((new MultiPlayer.MSGMessage("All", "OverSpeedOK", "OK to go overspeed and pass stop light")).ToString()); }
+			else { p.Send((new MultiPlayer.MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light")).ToString()); }
+
+			//send the new player information to everyone else
+			host = new MSGPlayer(p.Username, "1234", p.con, p.path, p.Train, p.Train.Number, p.url);
+			var players = MPManager.OnlineTrains.Players.ToArray();
+			string newPlayer = host.ToString();
+			foreach (var op in players)
+			{
+				op.Value.Send(newPlayer);
+			}
 
 			//System.Console.WriteLine(host.ToString() + Program.Simulator.OnlineTrains.AddAllPlayerTrain());
 
@@ -1769,6 +1798,7 @@ namespace ORTS.MultiPlayer
 			if (p != null && Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.user + " quit.");
 			if (MPManager.IsServer())
 			{
+				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 				if (p != null)
 				{
 					//if the one quit controls my train, I will gain back the control
@@ -1783,7 +1813,6 @@ namespace ORTS.MultiPlayer
 						p.Train.SpeedMpS = 0.0f;
 					}
 				}
-				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 				MPManager.BroadCast(this.ToString()); //broadcast twice
 
 			}

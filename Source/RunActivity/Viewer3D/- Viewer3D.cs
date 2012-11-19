@@ -754,6 +754,28 @@ namespace ORTS
 				}
 			}
 
+			//in the dispatcher window, when one clicks a train and "See in Game", will jump to see that train
+			if (Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true)
+			{
+				Program.DebugViewer.ClickedTrain = false;
+				Train old = SelectedTrain;
+				if (SelectedTrain != Program.DebugViewer.PickedTrain)
+				{
+					SelectedTrain = Program.DebugViewer.PickedTrain;
+
+					if (SelectedTrain.Cars == null || SelectedTrain.Cars.Count == 0) SelectedTrain = PlayerTrain;
+
+					if (Camera is PassengerCamera) //passenger camera may jump to a train without passenger view
+					{
+						if (!Camera.IsAvailable)
+						{
+							SelectedTrain = old;
+						}
+					}
+					if (old != SelectedTrain) Camera.Activate();
+				}
+			}
+
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
             {
                 isMouseShouldVisible = true;

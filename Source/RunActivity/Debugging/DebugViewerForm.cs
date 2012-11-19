@@ -85,6 +85,9 @@ namespace ORTS.Debugging
 	Pen trainPen = new Pen(Color.DarkGreen);
 	Pen pathPen = new Pen(Color.DeepPink);
 	Pen grayPen = new Pen(Color.Gray);
+
+	   //the train selected by leftclicking the mouse
+	public Train PickedTrain;
       /// <summary>
       /// True when the user has the "Move left" pressed.
       /// </summary>
@@ -532,6 +535,7 @@ namespace ORTS.Debugging
 	  #region Draw
 	  public bool firstShow = true;
 	  public bool followTrain = false;
+	  float subX, subY;
       /// <summary>
       /// Regenerates the 2D view. At the moment, examines the track network
       /// each time the view is drawn. Later, the traversal and drawing can be separated.
@@ -594,7 +598,7 @@ namespace ORTS.Debugging
 		  catch {  } //errors for avatar, just ignore
          using(Graphics g = Graphics.FromImage(pictureBox1.Image))
          {
-			 var subX = minX + ViewWindow.X; var subY = minY + ViewWindow.Y;
+			 subX = minX + ViewWindow.X; subY = minY + ViewWindow.Y;
             g.Clear(Color.White);
 
             // this is the total size of the entire viewable route (xRange == width, yRange == height in metres)
@@ -785,7 +789,8 @@ namespace ORTS.Debugging
 						worldPos = firstCar.WorldPosition;
 						scaledItem.X = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
 						if (scaledItem.X < -margin2 || scaledItem.X > IM_Width + margin2 || scaledItem.Y > IM_Height + margin2 || scaledItem.Y < -margin2) continue;
-						g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
+						if (t == PickedTrain) g.FillRectangle(Brushes.Red, GetRect(scaledItem, 15f));
+						else g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
 						scaledItem.Y -= 25;
 						DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
 						g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
@@ -795,6 +800,7 @@ namespace ORTS.Debugging
 					x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pictureBox1.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
 					if (x < -margin2 || x > IM_Width + margin2 || y > IM_Height + margin2 || y < -margin2) continue;
 					DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
+					trainPen.Color = Color.DarkGreen;
 					foreach (var car in t.Cars)
 					{
 						Traveller t1 = new Traveller(t.RearTDBTraveller);
@@ -814,7 +820,11 @@ namespace ORTS.Debugging
 							if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
 
 							scaledA.X = x; scaledA.Y = y;
+							
+							//if the train is selected by left click of the mouse, will draw it in red
+							if (t == PickedTrain) trainPen.Color = Color.Red;
 							g.DrawLine(trainPen, scaledA, scaledItem);
+							
 							//g.FillEllipse(Brushes.DarkGreen, GetRect(scaledItem, car.Length * xScale));
 						}
 					}
@@ -1448,7 +1458,7 @@ namespace ORTS.Debugging
 					  }
 #endif
 				  }
-				  else { switchPickedItem = null; signalPickedItem = null; UnHandleItemPick(); }
+				  else { switchPickedItem = null; signalPickedItem = null; UnHandleItemPick(); PickedTrain = null; }
 			  }
 
 		  }
@@ -1544,7 +1554,7 @@ namespace ORTS.Debugging
 
 				  if (closestItem != null)
 				  {
-					  var dist = Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2) + Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2);
+					  var dist = Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2) + Math.Pow(item.Location2D.Y - closestItem.Location2D.Y, 2);
 					  if (dist < closest)
 					  {
 						  closest = dist; closestItem = item;
@@ -1564,7 +1574,7 @@ namespace ORTS.Debugging
 
 				  if (closestItem != null)
 				  {
-					  var dist = Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2) + Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2);
+					  var dist = Math.Pow(item.Location2D.X - closestItem.Location2D.X, 2) + Math.Pow(item.Location2D.Y - closestItem.Location2D.Y, 2);
 					  if (dist < closest)
 					  {
 						  closest = dist; closestItem = item;
@@ -1574,6 +1584,35 @@ namespace ORTS.Debugging
 			  }
 			  if (closestItem != null) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; return closestItem; }
 		  }
+
+		   //now check for trains (first car only)
+		  TrainCar firstCar;
+		  PickedTrain = null;  float tX, tY;
+		  closest = 100f;
+
+		  foreach (var t in Program.Simulator.Trains)
+		  {
+			  firstCar = null;
+			  if (t.LeadLocomotive != null)
+			  {
+				  worldPos = t.LeadLocomotive.WorldPosition;
+				  firstCar = t.LeadLocomotive;
+			  }
+			  else if (t.Cars != null && t.Cars.Count > 0)
+			  {
+				  worldPos = t.Cars[0].WorldPosition;
+				  firstCar = t.Cars[0];
+
+			  }
+			  else continue;
+
+			  worldPos = firstCar.WorldPosition;
+			  tX = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; tY = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
+
+			  if (tX < x - range || tX > x + range || tY < y - range || tY > y + range) continue;
+			  if (PickedTrain == null) PickedTrain = t;
+		  }
+		  if (PickedTrain != null) return new TrainWidget(PickedTrain);
 		  return null;
 	  }
 
@@ -2104,6 +2143,13 @@ namespace ORTS.Debugging
 
 	  }
 
+	   public bool ClickedTrain = false;
+	  private void btnSeeInGameClick(object sender, EventArgs e)
+	  {
+		  if (PickedTrain != null) ClickedTrain = true;
+		  else ClickedTrain = false;
+	  }
+
    }
 
    #region SignalWidget
@@ -2271,6 +2317,22 @@ namespace ORTS.Debugging
    }
    #endregion
 
+   #region TrainWidget
+   public class TrainWidget : ItemWidget
+   {
+	   public Train Train;
+
+	   /// <summary>
+	   /// 
+	   /// </summary>
+	   /// <param name="item"></param>
+	   public TrainWidget(Train t)
+	   {
+		   Train = t;
+	   }
+
+   }
+   #endregion
    #region LineSegment
    /// <summary>
    /// Defines a geometric line segment.
