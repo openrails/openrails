@@ -48,8 +48,6 @@ namespace ORTS.Debugging
       private int IM_Width = 720;
       private int IM_Height = 720;
 
-	  private int X;
-	  private int Y; //X, Y of mouse
 	  /// <summary>
 	  /// True when the user is dragging the route view
 	  /// </summary>
@@ -64,12 +62,8 @@ namespace ORTS.Debugging
 
 	  public SwitchWidget switchPickedItem = null;
 	  public SignalWidget signalPickedItem = null;
-	  bool switchPickedItemChanged = false;
-	  PointF switchPickedLocation = new PointF();
 	  public bool switchPickedItemHandled = false;
 	  public double switchPickedTime = 0.0f;
-	  bool signalPickedItemChanged = false;
-	  PointF signalPickedLocation = new PointF();
 	  public bool signalPickedItemHandled = false;
 	  public double signalPickedTime = 0.0f;
 	  public bool DrawPath = true; //draw train path
@@ -442,14 +436,17 @@ namespace ORTS.Debugging
 		  }*/
 	  }
 
+	  int LostCount = 0;//how many players in the lost list (quit)
 	  public void CheckAvatar()
 	  {
 		  if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.OnlineTrains == null || MultiPlayer.MPManager.OnlineTrains.Players == null) return;
 		  var player = MultiPlayer.MPManager.OnlineTrains.Players;
-		  var username =MultiPlayer.MPManager.GetUserName(); 
+		  var username =MultiPlayer.MPManager.GetUserName();
+		  player = player.Concat(MultiPlayer.MPManager.Instance().lostPlayer).ToDictionary(x => x.Key, x => x.Value);
 		  if (avatarList == null) avatarList = new Dictionary<string, Image>();
-		  if (avatarList.Count == player.Count + 1) return;
+		  if (avatarList.Count == player.Count + 1 && LostCount == MultiPlayer.MPManager.Instance().lostPlayer.Count) return;
 
+		  LostCount = MultiPlayer.MPManager.Instance().lostPlayer.Count;
 		  //add myself
 		  if (!avatarList.ContainsKey(username))
 		  {
@@ -490,7 +487,11 @@ namespace ORTS.Debugging
 				  if (pair.Key == username) continue;
 				  if (MultiPlayer.MPManager.Instance().aiderList.Contains(pair.Key))
 				  {
-					  AvatarView.Items.Add(pair.Key + " (H)") ;
+					  AvatarView.Items.Add(pair.Key + " (H)");
+				  }
+				  else if (MultiPlayer.MPManager.Instance().lostPlayer.ContainsKey(pair.Key))
+				  {
+					  AvatarView.Items.Add(pair.Key + " (Q)");
 				  }
 				  else AvatarView.Items.Add(pair.Key);
 				  i++;
@@ -762,6 +763,16 @@ namespace ORTS.Debugging
 				//trains selected in the avatar view list will be drawn in blue, others will be drawn in red
 				pathPen.Color = Color.Red;
 				var drawRed = 0;
+				int ValidTrain = selectedTrainList.Count();
+				//add trains quit into the end, will draw them in gray
+				try
+				{
+					foreach (var lost in MultiPlayer.MPManager.Instance().lostPlayer)
+					{
+						if (lost.Value.Train != null && !selectedTrainList.Contains(lost.Value.Train)) selectedTrainList.Add(lost.Value.Train);
+					}
+				}
+				catch { }
 				foreach (Train t in selectedTrainList)
 				{
 					drawRed++;//how many red has been drawn
@@ -789,17 +800,24 @@ namespace ORTS.Debugging
 						worldPos = firstCar.WorldPosition;
 						scaledItem.X = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
 						if (scaledItem.X < -margin2 || scaledItem.X > IM_Width + margin2 || scaledItem.Y > IM_Height + margin2 || scaledItem.Y < -margin2) continue;
-						if (t == PickedTrain) g.FillRectangle(Brushes.Red, GetRect(scaledItem, 15f));
-						else g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
-						scaledItem.Y -= 25;
-						DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
+						if (drawRed > ValidTrain) g.FillRectangle(Brushes.Gray, GetRect(scaledItem, 15f));
+						else
+						{
+							if (t == PickedTrain) g.FillRectangle(Brushes.Red, GetRect(scaledItem, 15f));
+							else g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
+							scaledItem.Y -= 25;
+							DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
+						}
 						g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
 						continue;
 					}
 					var loc = t.FrontTDBTraveller.WorldLocation;
 					x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pictureBox1.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
 					if (x < -margin2 || x > IM_Width + margin2 || y > IM_Height + margin2 || y < -margin2) continue;
-					DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
+					
+					//train quit will not draw path, others will draw it
+					if (drawRed <= ValidTrain) DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
+					
 					trainPen.Color = Color.DarkGreen;
 					foreach (var car in t.Cars)
 					{
@@ -821,8 +839,9 @@ namespace ORTS.Debugging
 
 							scaledA.X = x; scaledA.Y = y;
 							
-							//if the train is selected by left click of the mouse, will draw it in red
-							if (t == PickedTrain) trainPen.Color = Color.Red;
+							//if the train has quit, will draw in gray, if the train is selected by left click of the mouse, will draw it in red
+							if (drawRed > ValidTrain) trainPen.Color = Color.Gray;
+							else if (t == PickedTrain) trainPen.Color = Color.Red;
 							g.DrawLine(trainPen, scaledA, scaledItem);
 							
 							//g.FillEllipse(Brushes.DarkGreen, GetRect(scaledItem, car.Length * xScale));
@@ -1367,7 +1386,12 @@ namespace ORTS.Debugging
 			  {
 				  var tmp = chosen[i];
 				  var name = (tmp.Text.Split(' '))[0];//the name may have (H) in it, need to filter that out
-				  MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage(name, "Error", "Sorry the server has removed you")).ToString());
+				  if (MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(name))
+				  {
+					  MultiPlayer.MPManager.OnlineTrains.Players[name].status = MultiPlayer.OnlinePlayer.Status.Removed;
+					  MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage(name, "Error", "Sorry the server has removed you")).ToString());
+
+				  }
 			  }
 		  }
 
@@ -1562,7 +1586,7 @@ namespace ORTS.Debugging
 				  }
 				  else closestItem = item;
 			  }
-			  if (closestItem != null) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; return closestItem; }
+			  if (closestItem != null) { switchPickedTime = simulator.GameTime; return closestItem; }
 		  }
 		  if (chkPickSignals.Checked == true)
 		  {
@@ -1582,7 +1606,7 @@ namespace ORTS.Debugging
 				  }
 				  else closestItem = item;
 			  }
-			  if (closestItem != null) { switchPickedItemChanged = true; switchPickedItemHandled = false; switchPickedTime = simulator.GameTime; return closestItem; }
+			  if (closestItem != null) { switchPickedTime = simulator.GameTime; return closestItem; }
 		  }
 
 		   //now check for trains (first car only)
@@ -1612,7 +1636,12 @@ namespace ORTS.Debugging
 			  if (tX < x - range || tX > x + range || tY < y - range || tY > y + range) continue;
 			  if (PickedTrain == null) PickedTrain = t;
 		  }
-		  if (PickedTrain != null) return new TrainWidget(PickedTrain);
+		   //if a train is picked, will clear the avatar list selection
+		  if (PickedTrain != null)
+		  {
+			  AvatarView.SelectedItems.Clear();
+			  return new TrainWidget(PickedTrain);
+		  }
 		  return null;
 	  }
 
@@ -1968,6 +1997,14 @@ namespace ORTS.Debugging
 		  messages.SelectedItems.Clear();
 		  reply2Selected.Enabled = false;
 		  if (MSG.Enabled == true) msgSelected.Enabled = true;
+		  if (AvatarView.SelectedItems.Count <= 0) return;
+		  var name = AvatarView.SelectedItems[0].Text.Split(' ')[0].Trim();
+		  if (name == MultiPlayer.MPManager.GetUserName())
+		  {
+			  if (Program.Simulator.PlayerLocomotive != null) PickedTrain = Program.Simulator.PlayerLocomotive.Train;
+			  else if (Program.Simulator.Trains.Count > 0) PickedTrain = Program.Simulator.Trains[0];
+		  }
+		  else PickedTrain = MultiPlayer.MPManager.OnlineTrains.findTrain(name);
 
 	  }
 

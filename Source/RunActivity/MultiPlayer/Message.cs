@@ -535,12 +535,10 @@ namespace ORTS.MultiPlayer
 					string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\";
 					for (int i = 0; i < cars.Length; i++)
 					{
-						System.Console.WriteLine(wagonFilePath + cars[i] + " " + p1.Train.Cars[i].RealWagFilePath);
 						if (wagonFilePath + cars[i] != p1.Train.Cars[i].RealWagFilePath) { identical = false; break; }
 					}
 				}
 
-				System.Console.WriteLine(identical);
 				//if the player uses the same train cars
 				if (identical)
 				{
@@ -1806,11 +1804,12 @@ namespace ORTS.MultiPlayer
 						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 					MPManager.Instance().AddRemovedPlayer(p);
 					//the client may quit because of lost connection, will remember it so it may recover in the future when the player log in again
-					if (p.Train != null)
+					if (p.Train != null && p.status != OnlinePlayer.Status.Removed) //if this player has train and is not removed by the dispatcher
 					{
 						if (!MPManager.Instance().lostPlayer.ContainsKey(p.Username)) MPManager.Instance().lostPlayer.Add(p.Username, p);
 						p.quitTime = Program.Simulator.GameTime;
 						p.Train.SpeedMpS = 0.0f;
+						p.status = OnlinePlayer.Status.Quit;
 					}
 				}
 				MPManager.BroadCast(this.ToString()); //broadcast twice
