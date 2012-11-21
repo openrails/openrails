@@ -3069,7 +3069,7 @@ namespace ORTS
         protected Rectangle _SourceRectangle = new Rectangle();
         protected Rectangle _DestRectangle = new Rectangle();
         bool LoadMeterPositive = true;
-
+        
         public CabViewGaugeRenderer(CVCGauge gauge, Viewer3D viewer, MSTSLocomotive car, CabShader shader)
             : base(gauge, viewer, car, shader)
         {
@@ -3086,7 +3086,7 @@ namespace ORTS
 
             if (_Texture == SharedMaterialManager.MissingTexture)
                 return;
-
+            
             base.PrepareFrame(frame);
 
             // Cab view height adjusted to allow for clip or stretch.
@@ -3208,21 +3208,23 @@ namespace ORTS
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
-            if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
-                LoadMeterPositive)
+            if( _CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                LoadMeterPositive )
                 _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Green);
 
-            else if (_CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
-                !LoadMeterPositive)
-                //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Yellow);
+            else if( _CabViewControl.ControlType == CABViewControlTypes.LOAD_METER &&
+                !LoadMeterPositive )
                 _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Yellow);
-            else if (_CabViewControl.ControlType == CABViewControlTypes.REVERSER_PLATE)
-                //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
+            else if( _CabViewControl.ControlType == CABViewControlTypes.REVERSER_PLATE )
                 _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.White);
             else
-                //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
-                _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, Color.Blue);
-            if (_Shader != null)
+            {
+                // Gauge responds to ControlColour value
+                var gauge = _CabViewControl as CVCGauge;
+                Color color = new Color(gauge.PositiveColor.R, gauge.PositiveColor.G, gauge.PositiveColor.B);
+                _Sprite2DCtlView.SpriteBatch.Draw(_Texture, _DestRectangle, _SourceRectangle, color);
+            }
+            if( _Shader != null )
             {
                 _Shader.CurrentTechnique.Passes[0].End();
                 _Shader.End();

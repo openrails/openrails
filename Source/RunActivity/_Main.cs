@@ -27,7 +27,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using ORTS.Debugging;
 using ORTS.MultiPlayer;
-//CJ
 using MSTS;
 
 namespace ORTS

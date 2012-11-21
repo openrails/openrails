@@ -286,6 +286,14 @@ namespace MSTS
             }
             stf.SkipRestOfBlock();
         }
+        // Used by subclasses CVCGauge and CVCDigital
+        protected virtual color ParseControlColor( STFReader stf )
+        {
+            stf.MustMatch("(");
+            color colour = new color { A = 255, R = stf.ReadInt(STFReader.UNITS.None, 0), G = stf.ReadInt(STFReader.UNITS.None, 0), B = stf.ReadInt(STFReader.UNITS.None, 0) };
+            stf.SkipRestOfBlock();
+            return colour;
+        }
     }
     #endregion
 
@@ -328,6 +336,9 @@ namespace MSTS
         public int ZeroPos = 0;
         public int Orientation = 0;
         public int Direction = 0;
+        public color PositiveColor { get; set; }
+        public color NegativeColor { get; set; }
+        public color DecreaseColor { get; set; }
 
         public CVCGauge(STFReader stf, string basepath)
         {
@@ -352,6 +363,33 @@ namespace MSTS
                     Area = new Rectangle(x, y, width, height);
                     stf.SkipRestOfBlock();
                 }),
+                new STFReader.TokenProcessor("positivecolour", ()=>{ 
+                    stf.MustMatch("(");
+                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    if(stf.EndOfBlock() == false)
+                    {
+                        stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }) });
+                    }
+                }),
+                new STFReader.TokenProcessor("negativecolour", ()=>{
+                    stf.MustMatch("(");
+                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    if(stf.EndOfBlock() == false)
+                    {
+                        stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ NegativeColor = ParseControlColor(stf); }) });
+                    }
+                }),
+                new STFReader.TokenProcessor("decreasecolour", ()=>{
+                    stf.MustMatch("(");
+                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    if(stf.EndOfBlock() == false)
+                    {
+                        stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
+                    }
+                })
             });
         }
     }
@@ -442,14 +480,6 @@ namespace MSTS
             stf.MustMatch("(");
             Justification = stf.ReadInt(STFReader.UNITS.None, 3);
             stf.SkipRestOfBlock();
-        }
-
-        protected virtual color ParseControlColor(STFReader stf)
-        {
-            stf.MustMatch("(");
-            color colour = new color { A = 255, R = stf.ReadInt(STFReader.UNITS.None, 0), G = stf.ReadInt(STFReader.UNITS.None, 0), B = stf.ReadInt(STFReader.UNITS.None, 0) };
-            stf.SkipRestOfBlock();
-            return colour;
         }
     }
 
