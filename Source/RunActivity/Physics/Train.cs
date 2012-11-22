@@ -597,7 +597,7 @@ namespace ORTS
 				car.SignalEvent(eventID);
 		}
 
-
+		private bool Update2Old = false;//when get in the game, server may tell me to move to a new location, just do it once
 		public virtual void Update(float elapsedClockSeconds)
 		{
 #if DUMP_DISPATCHER
@@ -686,8 +686,9 @@ namespace ORTS
 				return;
 			}
 
-			if (updateMSGReceived)
+			if (updateMSGReceived && Update2Old == false)
 			{
+				Update2Old = true;
 				try
 				{
 					Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, expectedTileX,
@@ -699,7 +700,6 @@ namespace ORTS
 				catch (Exception)
 				{
 				}
-				updateMSGReceived = false;
 			}
 
 			PropagateBrakePressure(elapsedClockSeconds);
