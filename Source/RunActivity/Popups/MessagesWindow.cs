@@ -61,10 +61,18 @@ namespace ORTS.Popups
         {
             base.Restore(inf);
             var messages = new List<Message>(inf.ReadInt32());
-            for (var i = 0; i < messages.Capacity; i++)
+            for( var i = 0; i < messages.Capacity; i++ )
+            {
                 messages.Add(new Message(inf));
+                // Reset the EndTime so the message lasts as long on restore as it did orginally.
+                // Without this reset, the band may last a very long time.
+                var last = messages.Count - 1;
+                var message = messages[last];
+                message.EndTime = Owner.Viewer.Simulator.GameTime + (message.EndTime - message.StartTime); 
+                MessagesChanged = true;
+            }
             Messages = messages;
-            MessagesChanged = true;
+            //MessagesChanged = true;
         }
 
         protected override void LocationChanged()
@@ -127,7 +135,7 @@ namespace ORTS.Popups
             public readonly string Key;
             public readonly string Text;
             public readonly double StartTime;
-            public readonly double EndTime;
+            public double EndTime;  // Not readonly so it can be reset by Restore().
             internal LabelShadow LabelShadow;
             internal Label LabelText;
 
