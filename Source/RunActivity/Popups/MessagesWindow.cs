@@ -9,6 +9,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -103,10 +104,11 @@ namespace ORTS.Popups
         protected override ControlLayout Layout(ControlLayout layout)
         {
             var vbox = base.Layout(layout).AddLayoutVertical();
+
             var maxLines = vbox.RemainingHeight / TextSize;
             var messages = Messages.Take(maxLines).Reverse().ToList();
             vbox.AddSpace(0, vbox.RemainingHeight - TextSize * messages.Count());
-            foreach (var message in messages)
+            foreach( var message in messages )
             {
                 var hbox = vbox.AddLayoutHorizontal(TextSize);
                 var width = hbox.RemainingWidth;

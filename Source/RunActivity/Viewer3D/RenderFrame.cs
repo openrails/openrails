@@ -279,6 +279,14 @@ namespace ORTS
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
 
+        enum VisibilityState {
+            Visible,
+            Hidden,
+            ScreenshotPending,
+        };
+
+        VisibilityState Visibility = VisibilityState.Visible;
+
         public RenderFrame(RenderProcess owner)
         {
             RenderProcess = owner;
@@ -551,19 +559,32 @@ namespace ORTS
                 Console.WriteLine();
             }
 
-            if (UserInput.IsPressed(UserCommands.GameScreenshot))
+            // VisibilityState is used to delay calling SaveScreenshot() by one render cycle. 
+            // We want the hiding of the MessageWindow to take effect on the screen before the screen content is saved.
+            if( Visibility == VisibilityState.Hidden )  // Must come before if( UserInput.IsPressed(UserCommands.GameScreenshot) )
             {
-                if (!Directory.Exists(RenderProcess.Viewer.Settings.ScreenshotPath))
+                Visibility = VisibilityState.ScreenshotPending;  // Next state else this path would be taken more than once.
+                if( !Directory.Exists(RenderProcess.Viewer.Settings.ScreenshotPath) )
                     Directory.CreateDirectory(RenderProcess.Viewer.Settings.ScreenshotPath);
                 var fileName = Path.Combine(RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss")) + ".png";
                 SaveScreenshot(graphicsDevice, fileName);
-                RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
             }
-            // Boolean and FileStem set by Viewer3D
+            // Use IsDown() not IsPressed() so users can take multiple screenshots as fast as possible by holding down the key.
+            if( UserInput.IsDown(UserCommands.GameScreenshot) 
+                && Visibility == VisibilityState.Visible ) // Ensure we only get one screenshot.
+            {
+                Visibility = VisibilityState.Hidden;
+                // Hide MessageWindow
+                RenderProcess.Viewer.MessagesWindow.Visible = false;
+                // Audible confirmation that screenshot taken
+                if( RenderProcess.Viewer.World.GameSounds != null ) RenderProcess.Viewer.World.GameSounds.HandleEvent(10);
+            }
+
+            // SaveActivityThumbnail and FileStem set by Viewer3D
             // <CJ comment> Intended to save a thumbnail-sized image but can't find a way to do this.
             // Currently saving a full screen image and then showing it in Menu.exe at a thumbnail size.
             // </CJ comment>
-            if (RenderProcess.Viewer.SaveActivityThumbnail)
+            if( RenderProcess.Viewer.SaveActivityThumbnail )
             {
                 RenderProcess.Viewer.SaveActivityThumbnail = false;
                 SaveScreenshot(graphicsDevice, Path.Combine(Program.UserDataFolder, RenderProcess.Viewer.SaveActivityFileStem + ".png"));
@@ -588,9 +609,15 @@ namespace ORTS
                     for (var i = 0; i < data.Length; i++)
                         data[i] |= 0xFF000000;
                     screenshot.SetData(data);
+                    
                     // Now save the modified image.
                     screenshot.Save(fileName, ImageFileFormat.Png);
                     screenshot.Dispose();
+                    RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
+
+                    Visibility = VisibilityState.Visible;
+                    // Reveal MessageWindow
+                    RenderProcess.Viewer.MessagesWindow.Visible = true;
                 }
                 catch { }
             }).Start();
