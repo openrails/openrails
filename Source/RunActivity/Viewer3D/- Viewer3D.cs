@@ -594,6 +594,7 @@ namespace ORTS
                 Simulator.Confirmer.Confirm( CabControl.SwitchLocomotive, CabSetting.On );
                 Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
                 Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
+                SetCommandReceivers(); // As PlayerLocomotive has changed
                 Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
                 Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
                 PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
