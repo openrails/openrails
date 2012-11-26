@@ -1888,9 +1888,13 @@ namespace ORTS
                                     break;
                                 }
                             case SignalHead.SIGASP.CLEAR_1:
-                            case SignalHead.SIGASP.CLEAR_2:
+								{
+									data = 6;
+									break;
+								}
+							case SignalHead.SIGASP.CLEAR_2:
                                 {
-                                    data = 6;
+                                    data = 7;
                                     break;
                                 }
                             default:
