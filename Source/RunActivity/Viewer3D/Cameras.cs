@@ -771,6 +771,29 @@ namespace ORTS {
             PositionYRadians = inf.ReadSingle();
         }
 
+		//for Ctrl-E, when the leading engine is in the second half of the train, front camera will look at the tail, back camera will look at the front
+		public void Reset()
+		{
+			try
+			{
+				var Lead = attachedCar.Train.LeadLocomotive;
+				if (Lead == null) return;
+				int index = attachedCar.Train.Cars.IndexOf(Lead);
+				int numCars = attachedCar.Train.Cars.Count;
+				if (Front)
+				{
+					if (index < numCars / 2) SetCameraCar(GetCameraCars().First());
+					else SetCameraCar(GetCameraCars().Last());
+				}
+				else
+				{
+					if (index < numCars / 2) SetCameraCar(GetCameraCars().Last());
+					else SetCameraCar(GetCameraCars().First());
+				}
+			}
+			catch { }
+		}
+
         protected override void OnActivate( bool sameCamera ) {
             if( attachedCar == null || attachedCar.Train != Viewer.SelectedTrain ) {
                 if( Front )

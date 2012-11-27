@@ -599,6 +599,9 @@ namespace ORTS
                 Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
                 PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
                 PlayerTrainLength = 0;
+				FrontCamera.Reset();
+				BackCamera.Reset();
+				
 				if (MPManager.IsMultiPlayer()) MPManager.LocoChange(Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive);
             }
 
