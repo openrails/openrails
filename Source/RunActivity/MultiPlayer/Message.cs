@@ -1384,6 +1384,18 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
+			//in the public port mode, old server may get disconnected, the port will ask anyone who is an aider to be the server
+			//will response, but whoever reaches the port first will be declared dispatcher.
+			if (user == "WhoCanBeServer")
+			{
+				if (MPManager.Instance().AmAider)
+				{
+					string tmp = "SERVER MakeMeServer";
+					MPManager.Notify("" + tmp.Length + ": " + tmp);
+				}
+				return;
+			}
+
 			if (MPManager.GetUserName() == user || user == "YOU")
 			{
 				if (Program.Server != null) return; //already a server, not need to worry
@@ -2921,13 +2933,15 @@ namespace ORTS.MultiPlayer
 		public override void HandleMsg()
 		{
 			if (MPManager.IsServer()) return;
-			if (add == true)
+			if (MPManager.GetUserName() == this.user && add == true)
 			{
 				MPManager.Instance().AmAider = true;
+				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("You are an assistant now, will be able to handle switches and signals.");
 			}
-			else
+			if (MPManager.GetUserName() == this.user && add == false)
 			{
 				MPManager.Instance().AmAider = false;
+				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("You are no longer an assistant.");
 			}
 		}
 
