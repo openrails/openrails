@@ -407,13 +407,15 @@ namespace ORTS
                         }
                     }
                 }
-                if( previousSaveFile == "" ) {
-                    // No save file found so just replay from start
+                if( previousSaveFile == "" ) {  // No save file found so just replay from start
+                    replayCommandList.AddRange(log.CommandList);    // copy the commands before deleting them.
+                    log.CommandList.Clear();
                     // But we have no args, so have to get these from the Save
                     inf = new BinaryReader(
                             new FileStream( saveFile, FileMode.Open, FileAccess.Read ) );
                     ValidateSave( inf );
                     savedValues values = GetSavedValues( inf );
+                    inf = null; // else Viewer.Initialize() will trigger Viewer.Restore()
                     InitSimulator( settings, values.args, "Replay" );
                     Simulator.Start();
                     Viewer = new Viewer3D( Simulator );

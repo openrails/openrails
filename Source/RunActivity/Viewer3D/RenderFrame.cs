@@ -587,13 +587,17 @@ namespace ORTS
             if( RenderProcess.Viewer.SaveActivityThumbnail )
             {
                 RenderProcess.Viewer.SaveActivityThumbnail = false;
-                SaveScreenshot(graphicsDevice, Path.Combine(Program.UserDataFolder, RenderProcess.Viewer.SaveActivityFileStem + ".png"));
+                SaveScreenshot(graphicsDevice, Path.Combine(Program.UserDataFolder, RenderProcess.Viewer.SaveActivityFileStem + ".png"), true);
                 RenderProcess.Viewer.MessagesWindow.AddMessage("Game saved", 5);
             }
         }
 
         [CallOnThread("Render")]
-        public void SaveScreenshot(GraphicsDevice graphicsDevice, string fileName)
+        public void SaveScreenshot( GraphicsDevice graphicsDevice, string fileName )
+        {
+            SaveScreenshot(graphicsDevice, fileName, false);
+        }
+        public void SaveScreenshot(GraphicsDevice graphicsDevice, string fileName, bool silent)
         {
             var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color);
             graphicsDevice.ResolveBackBuffer(screenshot);
@@ -613,7 +617,8 @@ namespace ORTS
                     // Now save the modified image.
                     screenshot.Save(fileName, ImageFileFormat.Png);
                     screenshot.Dispose();
-                    RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
+                    if (!silent)
+                        RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
 
                     Visibility = VisibilityState.Visible;
                     // Reveal MessageWindow
