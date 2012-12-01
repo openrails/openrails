@@ -43,12 +43,14 @@ Some problems remain (see <CJ comment> in the source code):
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using ORTS.Menu;
 using Path = System.IO.Path;
+using MSTS;
 
 namespace ORTS
 {
@@ -108,7 +110,8 @@ namespace ORTS
                         RealTime = realTime;
                         CurrentTile = currentTile;
                         Distance = distance;
-                        Valid = currentBuild == null || build.EndsWith(currentBuild);
+                        Valid = currentBuild == null || build.EndsWith(currentBuild) 
+                            || Debugger.IsAttached; // to support testing
                     }
                     catch { }
                 }
@@ -185,9 +188,12 @@ namespace ORTS
             var save = saveBindingSource.Current as Save;
             if (save.Valid)
             {
-                SelectedSaveFile = save.File;
-                SelectedAction = MainForm.UserAction.SingleplayerResumeSave;
-                DialogResult = DialogResult.OK;
+                if( Found(save) )
+                {
+                    SelectedSaveFile = save.File;
+                    SelectedAction = MainForm.UserAction.SingleplayerResumeSave;
+                    DialogResult = DialogResult.OK;
+                }
             }
         }
 
@@ -332,10 +338,13 @@ namespace ORTS
             var save = saveBindingSource.Current as Save;
             if (save.Valid)
             {
-                SelectedSaveFile = save.File;
-                Settings.ReplayPauseBeforeEnd = checkBoxReplayPauseBeforeEnd.Checked;
-                Settings.ReplayPauseBeforeEndS = (int)numericReplayPauseBeforeEnd.Value;
-                DialogResult = DialogResult.OK; // Anything but DialogResult.Cancel
+                if (Found(save) )
+                {
+                    SelectedSaveFile = save.File;
+                    Settings.ReplayPauseBeforeEnd = checkBoxReplayPauseBeforeEnd.Checked;
+                    Settings.ReplayPauseBeforeEndS = (int)numericReplayPauseBeforeEnd.Value;
+                    DialogResult = DialogResult.OK; // Anything but DialogResult.Cancel
+                }
             }
         }
 
@@ -347,6 +356,107 @@ namespace ORTS
                 form.ShowDialog();
             }
             LoadSaves(); // <CJ Comment> Should update list of saves but doesn't refresh the form as I was hoping.</CJ Comment>
+        }
+
+        /// <summary>
+        /// Saves may come from other, foreign installations (i.e. not this PC). 
+        /// They can be replayed or resumed on this PC but they will contain activity / path / consist filenames
+        /// and these may be inappropriate for this PC, typically having a different path.
+        /// This method tries to use the paths in the Save if they exist on the current PC. 
+        /// If not, it prompts the user to locate a matching file from those on the current PC.
+        /// 
+        /// The save file is then modified to contain filename(s) from the current PC instead.
+        /// </summary>
+        public bool Found(Save save)
+        {
+            {
+                try
+                {
+                    BinaryReader inf = new BinaryReader(new FileStream(save.File, FileMode.Open, FileAccess.Read));
+                    var version = inf.ReadString();
+                    var build = inf.ReadString();
+                    var routeName = inf.ReadString();
+                    var pathName = inf.ReadString();
+                    var gameTime = inf.ReadInt32();
+                    var realTime = inf.ReadInt64();
+                    var currentTileX = inf.ReadSingle();
+                    var currentTileZ = inf.ReadSingle();
+                    var initialTileX = inf.ReadSingle();
+                    var initialTileZ = inf.ReadSingle();
+                    var tempInt = inf.ReadInt32();
+                    var savedArgs = new string[tempInt];
+                    for (var i = 0; i < savedArgs.Length; i++)
+                        savedArgs[i] = inf.ReadString();
+
+                    // Re-locate files if saved on another PC
+                    var rewriteNeeded = false;
+                    // savedArgs[0] contains Activity or Path filepath
+                    var filePath = savedArgs[0];
+                    if( !System.IO.File.Exists(filePath) )
+                    {
+                        // Show the dialog and get result.
+                        openFileDialog1.InitialDirectory = MSTSPath.Base();
+                        openFileDialog1.FileName = Path.GetFileName(filePath);
+                        openFileDialog1.Title = @"Find location for file " + filePath;
+                        if( openFileDialog1.ShowDialog() != DialogResult.OK )
+                            return false;
+                        rewriteNeeded = true;
+                        savedArgs[0] = openFileDialog1.FileName;
+                    }
+                    if( savedArgs.Length > 1 )  // Explore, not Activity
+                    {
+                        // savedArgs[1] contains Consist filepath
+                        filePath = savedArgs[1];
+                        if( !System.IO.File.Exists(filePath) )
+                        {
+                            // Show the dialog and get result.
+                            openFileDialog1.InitialDirectory = MSTSPath.Base();
+                            openFileDialog1.FileName = Path.GetFileName(filePath);
+                            openFileDialog1.Title = @"Find location for file " + filePath;
+                            if( openFileDialog1.ShowDialog() != DialogResult.OK )
+                                return false;
+                            rewriteNeeded = true;
+                            savedArgs[1] = openFileDialog1.FileName;
+                        }
+                    }
+                    if( rewriteNeeded )
+                    {
+                        using( BinaryWriter outf = new BinaryWriter(new FileStream(save.File + ".tmp", FileMode.Create, FileAccess.Write)) )
+                        {
+                            // copy the start of the file
+                            outf.Write(version);
+                            outf.Write(build);
+                            outf.Write(routeName);
+                            outf.Write(pathName);
+                            outf.Write(gameTime);
+                            outf.Write(realTime);
+                            outf.Write(currentTileX);
+                            outf.Write(currentTileZ);
+                            outf.Write(initialTileX);
+                            outf.Write(initialTileZ);
+                            outf.Write(savedArgs.Length);
+                            // copy the pars which may have changed
+                            for( var i = 0; i < savedArgs.Length; i++ )
+                                outf.Write(savedArgs[i]);
+                            // copy the rest of the file
+                            while( inf.BaseStream.Position < inf.BaseStream.Length )
+                            {
+                                outf.Write(inf.ReadByte());
+                            }
+                        }
+                        inf.Close();
+                        File.Replace(save.File + ".tmp", save.File, null);
+                    } 
+                    else
+                    {
+                        inf.Close();
+                    }
+                }
+                catch
+                {
+                }
+            }
+            return true;
         }
     }
 }

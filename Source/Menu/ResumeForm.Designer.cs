@@ -51,6 +51,7 @@
             this.checkBoxReplayPauseBeforeEnd = new System.Windows.Forms.CheckBox();
             this.numericReplayPauseBeforeEnd = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.gridSaves)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.saveBindingSource)).BeginInit();
             this.groupBoxInvalid.SuspendLayout();
@@ -358,6 +359,10 @@
             this.label1.Text = "Pause this many seconds before end:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
             // ResumeForm
             // 
             this.AcceptButton = this.buttonResume;
@@ -409,5 +414,6 @@
         private System.Windows.Forms.Button buttonReplayFromStart;
         private System.Windows.Forms.CheckBox checkBoxReplayPauseBeforeEnd;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
