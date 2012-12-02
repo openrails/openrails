@@ -481,8 +481,8 @@ namespace ORTS
                     InitSimulator(settings, new[] { activities[i].FilePath}, "");
                     Simulator.Start();
                     Viewer = new Viewer3D(Simulator);
+                    Viewer.Log = new CommandLog(Viewer);
                     Viewer.Run(null);
-
                     results[i] = true;
                     Simulator.Stop();
                 };
@@ -552,6 +552,7 @@ namespace ORTS
                 InitSimulator(settings, args, "Test");
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator);
+                Viewer.Log = new CommandLog(Viewer);
                 Viewer.Run(null);
                 Simulator.Stop();
                 loadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
