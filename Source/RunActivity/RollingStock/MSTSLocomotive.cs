@@ -3038,7 +3038,8 @@ namespace ORTS
             if (_Dial.Direction == 0)
                 degree = _Dial.FromDegree + degree;
             else
-                degree = _Dial.ToDegree - degree;
+                // degree = _Dial.ToDegree - degree;
+                 degree = _Dial.FromDegree - degree;
 
             _Rotation = MathHelper.ToRadians(degree);
         }
