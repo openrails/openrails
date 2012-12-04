@@ -144,6 +144,7 @@ namespace MSTS
         KM_PER_HOUR,
         MILES_PER_HOUR, 
         METRESµSECµSEC,
+        METRES_SEC_SEC,
         KMµHOURµHOUR, 
         KMµHOURµSEC, 
         METRESµSECµHOUR,
