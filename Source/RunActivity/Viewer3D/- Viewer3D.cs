@@ -383,6 +383,7 @@ namespace ORTS
             ToggleMirrorsCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleSwitchAheadCommand.Receiver = this;
             ToggleSwitchBehindCommand.Receiver = this;
+            ToggleAnySwitchCommand.Receiver = this;
             UncoupleCommand.Receiver = Simulator;
             ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
             UseCameraCommand.Receiver = this;
@@ -999,6 +1000,7 @@ namespace ORTS
         {
             TrJunctionNode bestNode = null;
             float bestD = 10;
+            int index = 0;
             // check each switch
             for (int j = 0; j < Simulator.TDB.TrackDB.TrackNodes.Count(); j++)
             {
@@ -1012,11 +1014,21 @@ namespace ORTS
                     {
                         bestNode = tn.TrJunctionNode;
                         bestD = d;
+                        index = j;
                     }
                 }
             }
-            if (bestNode != null)
-                bestNode.SelectedRoute = 1 - bestNode.SelectedRoute;
+            if( bestNode != null )
+            {
+                new ToggleAnySwitchCommand(Log, index);
+            }
+        }
+
+        public void ToggleAnySwitch( int index )
+        {
+            TrackNode tn = Simulator.TDB.TrackDB.TrackNodes[index];
+            TrJunctionNode bestNode = tn.TrJunctionNode;
+            bestNode.SelectedRoute = 1 - bestNode.SelectedRoute;
         }
     }
 }

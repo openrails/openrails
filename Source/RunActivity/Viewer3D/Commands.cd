@@ -274,7 +274,7 @@
       <FileName>Viewer3D\Commands.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ORTS.ToggleSwitchBehindCommand" Collapsed="true">
+  <Class Name="ORTS.ToggleAnySwitchCommand" Collapsed="true">
     <Position X="24.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>

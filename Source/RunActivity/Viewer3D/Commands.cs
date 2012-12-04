@@ -84,6 +84,17 @@ namespace ORTS {
         }
     }
 
+    [Serializable()]
+    public abstract class IndexCommand : Command {
+        protected int Index;
+
+        public IndexCommand( CommandLog log, int index )
+            : base(log)
+        {
+            Index = index;
+        }
+    }
+    
     /// <summary>
     /// Superclass for continuous commands. Do not create a continuous command until the operation is complete.
     /// </summary>
@@ -760,6 +771,23 @@ namespace ORTS {
 
         public override void Redo() {
             Receiver.ToggleSwitchBehind();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public class ToggleAnySwitchCommand : IndexCommand {
+        public static Viewer3D Receiver { get; set; }
+
+        public ToggleAnySwitchCommand( CommandLog log, int index )
+            : base(log, index)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.ToggleAnySwitch( Index );
             // Report();
         }
     }

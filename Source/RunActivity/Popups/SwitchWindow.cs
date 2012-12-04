@@ -52,12 +52,18 @@ namespace ORTS.Popups
 
 		void SwitchForwards_Click(Control arg1, Point arg2)
 		{
-			Owner.Viewer.Simulator.SwitchTrackAhead(Owner.Viewer.PlayerTrain);
+            if( Owner.Viewer.Simulator.SwitchTrackAhead(Owner.Viewer.PlayerTrain) )
+            {
+                new ToggleSwitchAheadCommand(Owner.Viewer.Log);
+            }
 		}
 
 		void SwitchBackwards_Click(Control arg1, Point arg2)
 		{
-			Owner.Viewer.Simulator.SwitchTrackBehind(Owner.Viewer.PlayerTrain);
+            if( Owner.Viewer.Simulator.SwitchTrackBehind(Owner.Viewer.PlayerTrain) )
+            {
+                new ToggleSwitchBehindCommand(Owner.Viewer.Log);
+            }
         }
 
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
