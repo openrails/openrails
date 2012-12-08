@@ -945,7 +945,7 @@ namespace ORTS
                 {
                     var emitter = (ParticleEmitter)item.RenderPrimitive;
                     shader.CameraTileXY = emitter.CameraTileXZ;
-                    shader.EmitDirection = emitter.EmitterData.Direction;
+                    shader.EmitDirection = emitter.XNADirection;
                     shader.EmitSize = emitter.EmitterData.NozzleWidth;
                     shader.Texture = Texture;
                     shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);

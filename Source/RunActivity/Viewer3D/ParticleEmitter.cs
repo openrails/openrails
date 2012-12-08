@@ -22,12 +22,12 @@ namespace ORTS
         public ParticleEmitterData(STFReader stf)
         {
             stf.MustMatch("(");
-            Offset.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            Offset.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            Offset.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            Direction.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            Direction.Y = stf.ReadFloat(STFReader.UNITS.Distance, 1.0f);  // May as well go up by default.
-            Direction.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNAOffset.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNAOffset.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNAOffset.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 1.0f);  // May as well go up by default.
+            XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             stf.SkipRestOfBlock();
 
@@ -36,8 +36,8 @@ namespace ORTS
             texturePath = string.Empty; // May come from the STF in the future.
         }
 
-        public Vector3 Offset;
-        public Vector3 Direction;
+        public Vector3 XNAOffset;
+        public Vector3 XNADirection;
         public float NozzleWidth;
         public float MaxParticlesPerSecond;
         public float ParticleDuration;
@@ -60,7 +60,6 @@ namespace ORTS
         public ParticleEmitterDrawer(Viewer3D viewer, ParticleEmitterData data)
         {
             Viewer = viewer;
-            //string texturePath = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
             ParticleMaterial = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
             emitter = new ParticleEmitter(Viewer.RenderProcess, data);
         }
@@ -71,9 +70,8 @@ namespace ORTS
             emitter.CameraTileXZ.Y = Viewer.Camera.TileZ;
 
             emitter.Update(Viewer.Simulator.GameTime, elapsedTime);
-            //ParticleMaterial.particleEmitterShader.
             
-            Matrix XNAPrecipWorldLocation = Matrix.Identity;// Matrix.CreateTranslation(ViewerXNAPosition);
+            var XNAPrecipWorldLocation = Matrix.Identity;
 
             if(emitter.HasParticlesToRender())
                 frame.AddPrimitive(ParticleMaterial, emitter, RenderPrimitiveGroup.Particles, ref XNAPrecipWorldLocation);
@@ -92,10 +90,6 @@ namespace ORTS
         public void SetEmissionColor(Color particleColor)
         {
             emitter.ParticleColor = particleColor;
-        }
-
-        public void Reset()
-        {
         }
 
         [CallOnThread("Loader")]
@@ -128,6 +122,8 @@ namespace ORTS
         static int INDICES_PER_PARTICLE = 6;
 
         public Vector2 CameraTileXZ = Vector2.Zero;
+
+        public Vector3 XNADirection { get; private set; }
 
         public ParticleEmitterData EmitterData;
         int maxParticles;
@@ -247,6 +243,10 @@ namespace ORTS
 
         public void Update(double currentTime, ElapsedTime elapsedTime)
         {
+            var rotation = WorldPosition.XNAMatrix;
+            rotation.Translation = Vector3.Zero;
+            XNADirection = Vector3.Transform(EmitterData.XNADirection, rotation);
+
             RetireActiveParticles((float)currentTime);
             FreeRetiredParticles();
 
@@ -266,23 +266,12 @@ namespace ORTS
             for (var i = 0; i < numToEmit; i++)
             {
                 var nextFreeParticle = (firstFreeParticle + 1) % maxParticles;
-
                 var newParticleVertexIndex = nextFreeParticle * VERTICES_PER_PARTICLE;
-
-                var particleOffset = EmitterData.Offset;
-                var rotation = WorldPosition.XNAMatrix;
-                rotation.Translation = Vector3.Zero;
-                particleOffset = Vector3.Transform(particleOffset, Matrix.Invert(rotation));
-
+                var particleOffset = Vector3.Transform(EmitterData.XNAOffset, rotation);
                 var particlePosition = WorldPosition.Location + particleOffset;
-
                 var timeOfEmission = timeParticlesLastEmitted + (i * intervalPerParticle);
-
-                var positionTime = new Vector4(WorldPosition.Location + particleOffset, timeOfEmission);
-                positionTime.Z *= -1;
-
+                var positionTime = new Vector4(WorldPosition.XNAMatrix.Translation + particleOffset, timeOfEmission);
                 var randomTextureOffset = (float)rng.Next(16);
-
                 var color_random = new Color(ParticleColor, (float)rng.NextDouble());
 
                 for (var j = 0; j < VERTICES_PER_PARTICLE; j++)
