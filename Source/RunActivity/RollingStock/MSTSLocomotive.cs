@@ -2912,6 +2912,9 @@ namespace ORTS
 
         public CabViewControlRenderer(CabViewControl cvc, Viewer3D viewer, MSTSLocomotive car, CabShader shader)
         {
+            // Cab view controls must render atop the cab view itself.
+            SortIndex = 1;
+
             _CabViewControl = cvc;
             _Shader = shader;
             _Sprite2DCtlView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
