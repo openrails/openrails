@@ -166,6 +166,7 @@ namespace ORTS
 
         // these can be shared since they are the same for all patches
         public static VertexDeclaration SharedPatchVertexDeclaration;
+        public static IndexBuffer SharedPatchIndexBuffer;
         public static int SharedPatchVertexStride;  // in bytes
 
         // these are only used while the contructor runs and are discarded after
@@ -184,11 +185,6 @@ namespace ORTS
             Tile = tile;
 
             var patch = Tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z);
-            var ts = ((terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader]).terrain_texslots;
-            if (ts.Length > 1)
-                PatchMaterial = viewer.MaterialManager.Load("Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
-            else
-                PatchMaterial = viewer.MaterialManager.Load("Terrain", Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
 
             float cx = -1024 + (int)patch.CenterX;
             float cz = -1024 - (int)patch.CenterZ;
@@ -200,12 +196,19 @@ namespace ORTS
             C = patch.C;
             H = patch.H;
 
-            // vertex type declaration to be shared by all terrain patches
+            // index buffer SOMETIMES and vertex type declaration ALWAYS shared by all terrain patches
             if (SharedPatchVertexDeclaration == null)
-                SetupPatchVertexDeclaration(Viewer.GraphicsDevice);
+                SetupSharedData(Viewer.GraphicsDevice);
 
             PatchIndexBuffer = GetIndexBuffer(out PatchPrimitiveCount);
             PatchVertexBuffer = GetVertexBuffer(out AverageElevation);
+
+            var terrainMaterial = PatchIndexBuffer == null ? "TerrainShared" : "Terrain";
+            var ts = ((terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader]).terrain_texslots;
+            if (ts.Length > 1)
+                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
+            else
+                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
 
             Tile = null;
         }
@@ -225,9 +228,9 @@ namespace ORTS
         /// </summary>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = TerrainPatch.SharedPatchVertexDeclaration;
             graphicsDevice.Vertices[0].SetSource(PatchVertexBuffer, 0, SharedPatchVertexStride);
-            graphicsDevice.Indices = PatchIndexBuffer;
+            if (PatchIndexBuffer != null)
+                graphicsDevice.Indices = PatchIndexBuffer;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 17 * 17, 0, PatchPrimitiveCount);
         }
 
@@ -358,10 +361,45 @@ namespace ORTS
             }
         }
 
-        static void SetupPatchVertexDeclaration(GraphicsDevice graphicsDevice)
+        static void SetupSharedData(GraphicsDevice graphicsDevice)
         {
             SharedPatchVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
             SharedPatchVertexStride = VertexPositionNormalTexture.SizeInBytes;
+
+            // 16 x 16 squares * 2 triangles per square * 3 indices per triangle
+            var indexData = new List<short>(16 * 16 * 2 * 3);
+
+            // for each 8 meter rectangle
+            for (var z = 0; z < 16; ++z)
+                for (var x = 0; x < 16; ++x)
+                {
+                    var nw = (short)(z * 17 + x);  // vertice index in the north west corner
+                    var ne = (short)(nw + 1);
+                    var sw = (short)(nw + 17);
+                    var se = (short)(sw + 1);
+
+                    if (((z & 1) == (x & 1)))  // triangles alternate
+                    {
+                        indexData.Add(nw);
+                        indexData.Add(se);
+                        indexData.Add(sw);
+                        indexData.Add(nw);
+                        indexData.Add(ne);
+                        indexData.Add(se);
+                    }
+                    else
+                    {
+                        indexData.Add(ne);
+                        indexData.Add(se);
+                        indexData.Add(sw);
+                        indexData.Add(nw);
+                        indexData.Add(ne);
+                        indexData.Add(sw);
+                    }
+                }
+
+            SharedPatchIndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * indexData.Count, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+            SharedPatchIndexBuffer.SetData(indexData.ToArray());
         }
 
         IndexBuffer GetIndexBuffer(out int primitiveCount)
@@ -411,6 +449,11 @@ namespace ORTS
                 }
 
             primitiveCount = indexData.Count / 3;
+
+            // If this patch has no holes, use the shared IndexBuffer for better performance.
+            if (indexData.Count == 16 * 16 * 6)
+                return null;
+
             var indexBuffer = new IndexBuffer(Viewer.GraphicsDevice, sizeof(short) * indexData.Count, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
             indexBuffer.SetData(indexData.ToArray());
             return indexBuffer;

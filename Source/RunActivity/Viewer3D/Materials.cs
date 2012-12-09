@@ -192,6 +192,9 @@ namespace ORTS
                     case "Terrain":
                         Materials[materialKey] = new TerrainMaterial(Viewer, textureName);
                         break;
+                    case "TerrainShared":
+                        Materials[materialKey] = new TerrainSharedMaterial(Viewer, textureName);
+                        break;
                     case "Transfer":
                         Materials[materialKey] = new TransferMaterial(Viewer, textureName);
                         break;
@@ -686,7 +689,9 @@ namespace ORTS
             var samplerState = graphicsDevice.SamplerStates[0];
             samplerState.AddressU = TextureAddressMode.Wrap;
 			samplerState.AddressV = TextureAddressMode.Wrap;
-		}
+
+            graphicsDevice.VertexDeclaration = TerrainPatch.SharedPatchVertexDeclaration;
+        }
 
 		public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
@@ -716,6 +721,20 @@ namespace ORTS
             Viewer.TextureManager.Mark(PatchTexture);
             Viewer.TextureManager.Mark(PatchTextureOverlay);
             base.Mark();
+        }
+    }
+
+    public class TerrainSharedMaterial : TerrainMaterial
+    {
+        public TerrainSharedMaterial(Viewer3D viewer, string terrainTexture)
+            : base(viewer, terrainTexture)
+        {
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            base.SetState(graphicsDevice, previousMaterial);
+            graphicsDevice.Indices = TerrainPatch.SharedPatchIndexBuffer;
         }
     }
 

@@ -10,11 +10,9 @@
 // Define this to check every material is resetting the RenderState correctly.
 //#define DEBUG_RENDER_STATE
 
-// Define this to use the experimental collection that reduces reallocation
-// and copying of RenderItems. This reduces the number/frequency of Gen 0 and
-// Gen 1 garbage collections but has little overall performance effect. It
-// also leaks memory currently.
-//#define RENDER_ITEM_COLLECTION
+// Define this to enable sorting of blended render primitives. This is a
+// complex feature and performance is not guaranteed.
+#define RENDER_BLEND_SORTING
 
 using System;
 using System.Collections.Generic;
@@ -72,7 +70,16 @@ namespace ORTS
 			RenderPrimitiveSequence.TextOverlayOpaque,
 		};
 
-        public float ZBias = 0f;
+        /// <summary>
+        /// This is an adjustment for the depth buffer calculation which may be used to reduce the chance of co-planar primitives from fighting each other.
+        /// </summary>
+        // TODO: Does this actually make any real difference?
+        public float ZBias;
+
+        /// <summary>
+        /// This is a sorting adjustment for primitives with similar/the same world location. Primitives with higher SortIndex values are rendered after others. Has no effect on non-blended primitives.
+        /// </summary>
+        public float SortIndex;
 
         /// <summary>
         /// This is when the object actually renders itself onto the screen.
@@ -84,18 +91,13 @@ namespace ORTS
     }
 
     [DebuggerDisplay("{Material} {RenderPrimitive} {Flags}")]
-#if RENDER_ITEM_COLLECTION
-    public struct RenderItem
-#else
     public class RenderItem
-#endif
     {
-        public Material Material;
-        public RenderPrimitive RenderPrimitive;
+        public readonly Material Material;
+        public readonly RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
-        public ShapeFlags Flags;
+        public readonly ShapeFlags Flags;
 
-#if !RENDER_ITEM_COLLECTION
         public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags)
         {
             Material = material;
@@ -103,7 +105,6 @@ namespace ORTS
             XNAMatrix = xnaMatrix;
             Flags = flags;
         }
-#endif
 
         public class Comparer : IComparer<RenderItem>
         {
@@ -119,139 +120,14 @@ namespace ORTS
 
             public int Compare(RenderItem x, RenderItem y)
             {
-                var xd = (x.XNAMatrix.Translation - XNAViewerPos).Length();
-                var yd = (y.XNAMatrix.Translation - XNAViewerPos).Length();
-                return Math.Sign(xd - yd);
+                var xd = (x.XNAMatrix.Translation - XNAViewerPos).Length() - x.RenderPrimitive.SortIndex;
+                var yd = (y.XNAMatrix.Translation - XNAViewerPos).Length() - y.RenderPrimitive.SortIndex;
+                return Math.Sign(yd - xd);
             }
 
             #endregion
         }
     }
-
-#if RENDER_ITEM_COLLECTION
-	public class RenderItemCollection : IEnumerable<RenderItem>, IEnumerator<RenderItem>
-	{
-		RenderItem[] RenderItems;
-		int count;
-		bool Enumerating;
-		int EnumeratingIndex;
-
-		public RenderItemCollection()
-		{
-			// 128 is a reasonable size, i.e. few instances need to resize up
-			// but isn't too big. Further tuning certainly possible.
-			RenderItems = new RenderItem[128];
-			count = 0;
-		}
-
-		public RenderItem this[int index]
-		{
-			get
-			{
-				return RenderItems[index];
-			}
-		}
-
-		public int Count
-		{
-			get
-			{
-				return count;
-			}
-		}
-
-		public void Add(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags)
-		{
-			if (count >= RenderItems.Length)
-			{
-				var newRenderItems = new RenderItem[RenderItems.Length * 2];
-				Array.Copy(RenderItems, newRenderItems, RenderItems.Length);
-				RenderItems = newRenderItems;
-			}
-			RenderItems[count].Material = material;
-			RenderItems[count].RenderPrimitive = renderPrimitive;
-			RenderItems[count].XNAMatrix = xnaMatrix;
-			RenderItems[count].Flags = flags;
-			count++;
-		}
-
-		public void Clear()
-		{
-			count = 0;
-		}
-
-    #region IEnumerable<RenderItem> Members
-
-		public IEnumerator<RenderItem> GetEnumerator()
-		{
-			//return new RenderItemCollectionEnumerator(this);
-			if (Enumerating) throw new InvalidOperationException("RenderItemCollection can only have one enumerator.");
-			Enumerating = true;
-			EnumeratingIndex = -1;
-			return this;
-		}
-
-    #endregion
-
-    #region IEnumerable Members
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-    #endregion
-
-    #region IEnumerator<RenderItem> Members
-
-		public RenderItem Current
-		{
-			get
-			{
-				return RenderItems[EnumeratingIndex];
-			}
-		}
-
-    #endregion
-
-    #region IDisposable Members
-
-		public void Dispose()
-		{
-			if (!Enumerating) throw new InvalidOperationException("RenderItemCollection is not enumerating.");
-			Enumerating = false;
-		}
-
-    #endregion
-
-    #region IEnumerator Members
-
-		object System.Collections.IEnumerator.Current
-		{
-			get
-			{
-				return RenderItems[EnumeratingIndex];
-			}
-		}
-
-		public bool MoveNext()
-		{
-			EnumeratingIndex++;
-			return EnumeratingIndex < count;
-		}
-
-		public void Reset()
-		{
-			EnumeratingIndex = -1;
-		}
-
-    #endregion
-	}
-#else
-    public class RenderItemCollection : List<RenderItem>
-    {
-    }
-#endif
 
     public class RenderFrame
     {
@@ -273,8 +149,8 @@ namespace ORTS
         readonly RenderProcess RenderProcess;
         readonly Material DummyBlendedMaterial;
         readonly ShadowMapMaterial ShadowMapMaterial;
-        readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
-        readonly RenderItemCollection[] RenderShadowItems;
+        readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[(int)RenderPrimitiveSequence.Sentinel];
+        readonly List<RenderItem>[] RenderShadowItems;
 
         Matrix XNAViewMatrix;
         Matrix XNAProjectionMatrix;
@@ -294,7 +170,7 @@ namespace ORTS
             ShadowMapMaterial = (ShadowMapMaterial)owner.Viewer.MaterialManager.Load("ShadowMap");
 
             for (int i = 0; i < RenderItems.Length; i++)
-                RenderItems[i] = new Dictionary<Material, RenderItemCollection>();
+                RenderItems[i] = new Dictionary<Material, List<RenderItem>>();
 
             if (RenderProcess.Viewer.Settings.DynamicShadows)
             {
@@ -314,9 +190,9 @@ namespace ORTS
                 ShadowMapLightViewProjShadowProj = new Matrix[RenderProcess.ShadowMapCount];
                 ShadowMapCenter= new Vector3[RenderProcess.ShadowMapCount];
 
-                RenderShadowItems = new RenderItemCollection[RenderProcess.ShadowMapCount];
+                RenderShadowItems = new List<RenderItem>[RenderProcess.ShadowMapCount];
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                    RenderShadowItems[shadowMapIndex] = new RenderItemCollection();
+                    RenderShadowItems[shadowMapIndex] = new List<RenderItem>();
             }
         }
 
@@ -396,9 +272,6 @@ namespace ORTS
         /// <summary>
         /// Automatically adds or culls a <see cref="RenderPrimitive"/> based on a location, radius and max viewing distance.
         /// </summary>
-        /// <remarks>
-        /// Must be called from the UpdateProcess thread.
-        /// </remarks>
         /// <param name="mstsLocation">Center location of the <see cref="RenderPrimitive"/> in MSTS coordinates.</param>
         /// <param name="objectRadius">Radius of a sphere containing the whole <see cref="RenderPrimitive"/>, centered on <paramref name="mstsLocation"/>.</param>
         /// <param name="objectViewingDistance">Maximum distance from which the <see cref="RenderPrimitive"/> should be viewable.</param>
@@ -407,6 +280,7 @@ namespace ORTS
         /// <param name="group"></param>
         /// <param name="xnaMatrix"></param>
         /// <param name="flags"></param>
+        [CallOnThread("Updater")]
         public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
             if (RenderProcess.Viewer.Camera.InRange(mstsLocation, objectRadius, objectViewingDistance))
@@ -421,72 +295,50 @@ namespace ORTS
             }
         }
 
-        /// <summary>
-        /// Executed in the UpdateProcess thread
-        /// </summary>
+        [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix)
         {
             AddPrimitive(material, primitive, group, ref xnaMatrix, ShapeFlags.None);
         }
 
-        /// <summary>
-        /// Executed in the UpdateProcess thread
-        /// </summary>
+        [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
             var blended = material.GetBlending();
-            // TODO: Alpha sorting code
             var sortingMaterial = blended ? DummyBlendedMaterial : material;
-            //var sortingMaterial = material;
             var sequence = RenderItems[(int)GetRenderSequence(group, blended)];
 
-#if RENDER_ITEM_COLLECTION
-			if (!sequence.ContainsKey(sortingMaterial))
-				sequence.Add(sortingMaterial, new RenderItemCollection());
-
-			sequence[sortingMaterial].Add(material, primitive, ref xnaMatrix, flags);
-#else
-            RenderItemCollection items;
+            List<RenderItem> items;
             if (!sequence.TryGetValue(sortingMaterial, out items))
             {
-                items = new RenderItemCollection();
+                items = new List<RenderItem>();
                 sequence.Add(sortingMaterial, items);
             }
             items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
-#endif
 
             if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
                 primitive.ZBias = 1;
         }
 
-        /// <summary>
-        /// Executed in the UpdateProcess thread
-        /// </summary>
+        [CallOnThread("Updater")]
         void AddShadowPrimitive(int shadowMapIndex, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-#if RENDER_ITEM_COLLECTION
-			RenderShadowItems[shadowMapIndex].Add(material, primitive, ref xnaMatrix, flags);
-#else
             RenderShadowItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
-#endif
         }
 
-        /// <summary>
-        /// Executed in the UpdateProcess thread
-        /// </summary>
+        [CallOnThread("Updater")]
         public void Sort()
         {
-            // TODO: Alpha sorting code
-            //var renderItemComparer = new RenderItem.Comparer(RenderProcess.Viewer.Camera.Location);
-            //foreach (var sequence in RenderItems.Where((d, i) => i != (int)RenderPrimitiveSequence.Shadows))
-            //{
-            //    foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
-            //    {
-            //        if (sequenceMaterial.Key != DummyBlendedMaterial)
-            //            continue;
-            //        sequenceMaterial.Value.Sort(renderItemComparer);
-            //    }
-            //}
+            var renderItemComparer = new RenderItem.Comparer(RenderProcess.Viewer.Camera.Location);
+            foreach (var sequence in RenderItems)
+            {
+                foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
+                {
+                    if (sequenceMaterial.Key != DummyBlendedMaterial)
+                        continue;
+                    sequenceMaterial.Value.Sort(renderItemComparer);
+                }
+            }
         }
 
         bool IsInShadowMap(int shadowMapIndex, Vector3 mstsLocation, float objectRadius, float objectViewingDistance)
@@ -666,7 +518,10 @@ namespace ORTS
 
             // Render terrain shadow items now, with their magic.
             if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is TerrainMaterial));
-            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            graphicsDevice.VertexDeclaration = TerrainPatch.SharedPatchVertexDeclaration;
+            graphicsDevice.Indices = TerrainPatch.SharedPatchIndexBuffer;
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial && (ri.Material is TerrainSharedMaterial)), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
+            ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial && !(ri.Material is TerrainSharedMaterial)), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
             // Prepare for blocking rendering of terrain.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Blocker);

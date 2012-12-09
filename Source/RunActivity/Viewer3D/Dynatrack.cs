@@ -231,8 +231,7 @@ namespace ORTS
                 lod = (LOD)dtrackMesh.TrProfile.LODs[lodIndex];
                 for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
                 {
-                    frame.AddPrimitive(dtrackMesh.ShapePrimitives[j].Material, dtrackMesh.ShapePrimitives[j],
-                        RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                    frame.AddPrimitive(dtrackMesh.ShapePrimitives[j].Material, dtrackMesh.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
                 }
                 lodIndex++;
             }

@@ -493,8 +493,7 @@ namespace ORTS
             xnaXfmWrtCamTile = this.Location.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
             // (Transformation is now with respect to camera-tile origin)
 
-            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive,
-                        RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
 
             // Update the pose
             for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
@@ -773,8 +772,9 @@ namespace ORTS
                 SubObjects = (from sub_object obj in MSTSdistance_level.sub_objects
                               select new SubObject(obj, MSTSdistance_level.distance_level_header.hierarchy, textureFlags, index++, sFile, sharedShape)).ToArray();
 #else
+                var index = 0;
                 SubObjects = (from sub_object obj in MSTSdistance_level.sub_objects
-                              select new SubObject(obj, MSTSdistance_level.distance_level_header.hierarchy, textureFlags, sFile, sharedShape)).ToArray();
+                              select new SubObject(obj, ref index, MSTSdistance_level.distance_level_header.hierarchy, textureFlags, sFile, sharedShape)).ToArray();
 #endif
                 if (SubObjects.Length == 0)
                     throw new InvalidDataException("Shape file missing sub_object");
@@ -822,7 +822,7 @@ namespace ORTS
 #if DEBUG_SHAPE_HIERARCHY
             public SubObject(sub_object sub_object, int[] hierarchy, Helpers.TextureFlags textureFlags, int index, SFile sFile, SharedShape sharedShape)
 #else
-            public SubObject(sub_object sub_object, int[] hierarchy, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
+            public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
 #endif
             {
 #if DEBUG_SHAPE_HIERARCHY
@@ -930,15 +930,13 @@ namespace ORTS
 
                     var indexData = new List<ushort>(primitive.indexed_trilist.vertex_idxs.Count * 3);
                     foreach (vertex_idx vertex_idx in primitive.indexed_trilist.vertex_idxs)
-                    {
-                        indexData.Add((ushort)vertex_idx.a);
-                        indexData.Add((ushort)vertex_idx.b);
-                        indexData.Add((ushort)vertex_idx.c);
-                    }
+                        foreach (var index in new[] { vertex_idx.a, vertex_idx.b, vertex_idx.c })
+                            indexData.Add((ushort)index);
 
                     var indexBuffer = new IndexBuffer(sharedShape.Viewer.GraphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
                     indexBuffer.SetData(indexData.ToArray());
                     ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexBuffer, indexData.Min(), indexData.Max() - indexData.Min() + 1, indexData.Count / 3, hierarchy, vertexState.imatrix);
+                    ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
                 }
 #endif
