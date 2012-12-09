@@ -103,9 +103,8 @@ namespace ORTS
             outf.Write(PowerOn);
 
             outf.Write(Pan);
-            outf.Write(FrontPanUp);
-            outf.Write(AftPanUp);
-            outf.Write(NumPantograph);
+            outf.Write(Pan1Up);
+            outf.Write(Pan2Up);
 
             base.Save(outf);
         }
@@ -121,9 +120,8 @@ namespace ORTS
             PowerOn = inf.ReadBoolean();
 
             Pan = inf.ReadBoolean();
-            FrontPanUp = inf.ReadBoolean();
-            AftPanUp = inf.ReadBoolean();
-            NumPantograph = (int)inf.ReadSingle();
+            Pan1Up = inf.ReadBoolean();
+            Pan2Up = inf.ReadBoolean();
 
             //if (inf.ReadBoolean()) SignalEvent(EventID.PantographUp);
             base.Restore(inf);
@@ -310,11 +308,11 @@ namespace ORTS
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if( UserInput.IsPressed( UserCommands.ControlPantographFirst ) ) {
+            if( UserInput.IsPressed( UserCommands.ControlPantograph1 ) ) {
                 new PantographCommand( _Viewer3D.Log, 1, !ElectricLocomotive.PantographFirstUp );
                 return; // I.e. Skip the call to base.HandleUserInput()
             }
-            if( UserInput.IsPressed( UserCommands.ControlPantographSecond ) ) {
+            if( UserInput.IsPressed( UserCommands.ControlPantograph2 ) ) {
                 new PantographCommand( _Viewer3D.Log, 2, !ElectricLocomotive.PantographSecondUp );
                 return;
             }

@@ -37,10 +37,9 @@ namespace ORTS
     public class MSTSWagon: TrainCar
     {
 		public bool Pan = false;     // false = down; some wagon has pantograph
-		public bool FrontPanUp = false; // if the Front pantograph is up
-		public bool AftPanUp = false; // if the Aft pantograph is up
-		public int NumPantograph = 0;
-		public bool DoorLeftOpen = false;
+		public bool Pan1Up = false; // if the forwards pantograph is up
+        public bool Pan2Up = false; // if the backwards pantograph is up
+        public bool DoorLeftOpen = false;
 		public bool DoorRightOpen = false;
 		public bool MirrorOpen = false;
 
@@ -447,10 +446,10 @@ namespace ORTS
         {
             do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
 			{
-                if (eventID == EventID.Pantograph1Up) { AftPanUp = true; Pan = AftPanUp || FrontPanUp; break; }  // pan up
-                if (eventID == EventID.Pantograph1Down) { AftPanUp = false; Pan = AftPanUp || FrontPanUp; break; } // pan down
-                if (eventID == EventID.Pantograph2Up) { FrontPanUp = true; Pan = AftPanUp || FrontPanUp; break; }  // pan up
-                if (eventID == EventID.Pantograph2Down) { FrontPanUp = false; Pan = AftPanUp || FrontPanUp; break; } // pan down
+                if (eventID == EventID.Pantograph1Up) { Pan1Up = true; Pan = Pan1Up || Pan2Up; break; }  // pan up
+                if (eventID == EventID.Pantograph1Down) { Pan1Up = false; Pan = Pan1Up || Pan2Up; break; } // pan down
+                if (eventID == EventID.Pantograph2Up) { Pan2Up = true; Pan = Pan1Up || Pan2Up; break; }  // pan up
+                if (eventID == EventID.Pantograph2Down) { Pan2Up = false; Pan = Pan1Up || Pan2Up; break; } // pan down
             } while( false );  // Never repeats
 
             foreach (CarEventHandler eventHandler in EventHandlers) // e.g. for HandleCarEvent() in Sounds.cs
@@ -460,11 +459,11 @@ namespace ORTS
         // <CJ Comment> Expected pantograph handling to be in MSTSElectricLocomotive.cs,
         // but guess that some trains have pantographs on non-motorised cars </CJ Comment>
         public void ToggleFirstPantograph() {
-    		AftPanUp = !AftPanUp;
+    		Pan1Up = !Pan1Up;
             if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train
                 foreach( TrainCar car in Train.Cars )
-                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).AftPanUp = AftPanUp;
-            if( AftPanUp ) {
+                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).Pan1Up = Pan1Up;
+            if( Pan1Up ) {
                 SignalEvent( EventID.Pantograph1Up );
             } else {
                 SignalEvent( EventID.Pantograph1Down );
@@ -472,11 +471,11 @@ namespace ORTS
         }
 
         public void ToggleSecondPantograph() {
-            FrontPanUp = !FrontPanUp;
+            Pan2Up = !Pan2Up;
             if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train
                 foreach( TrainCar car in Train.Cars )
-                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).FrontPanUp = FrontPanUp;
-            if( FrontPanUp ) {
+                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).Pan2Up = Pan2Up;
+            if( Pan2Up ) {
                 SignalEvent( EventID.Pantograph2Up );
             } else {
                 SignalEvent( EventID.Pantograph2Down );
@@ -788,8 +787,8 @@ namespace ORTS
         List<int> WheelPartIndexes = new List<int>();   // these index into a matrix in the shape file
 		List<int> RunningGearPartIndexes = new List<int>();
 
-		AnimatedPart AftPantograph;  // matrixes for the Panto***2* parts
-		AnimatedPart FrontPantograph;  // matrixes for the Panto***1* parts
+		AnimatedPart Pantograph1;  // matrixes for the fowards pantograph parts
+		AnimatedPart Pantograph2;  // matrixes for the backwards pantograph parts
 		AnimatedPart LeftDoor; //left door
 		AnimatedPart RightDoor;//right door
 		AnimatedPart Mirrors; //mirror
@@ -814,8 +813,8 @@ namespace ORTS
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName, car.WorldPosition);
             }
 
-            AftPantograph = new AnimatedPart( TrainCarShape);  // matrixes for the Panto***2* parts
-		    FrontPantograph = new AnimatedPart(TrainCarShape);  // matrixes for the Panto***1* parts
+            Pantograph1 = new AnimatedPart( TrainCarShape);  // matrixes for the fowards pantograph parts
+		    Pantograph2 = new AnimatedPart(TrainCarShape);  // matrixes for the backwards pantograph parts
 		    LeftDoor = new AnimatedPart(TrainCarShape); //left door
 		    RightDoor = new AnimatedPart(TrainCarShape);//right door
 		    Mirrors = new AnimatedPart(TrainCarShape); //mirror
@@ -897,7 +896,7 @@ namespace ORTS
 						case "PANTOGRAPHTOP1":
 						case "PANTOGRAPHTOP1A":
 						case "PANTOGRAPHTOP1B":
-							AftPantograph.MatrixIndexAdd(iMatrix);
+							Pantograph1.MatrixIndexAdd(iMatrix);
 							break;
 						case "PANTOGRAPHBOTTOM2":
 						case "PANTOGRAPHBOTTOM2A":
@@ -908,7 +907,7 @@ namespace ORTS
 						case "PANTOGRAPHTOP2":
 						case "PANTOGRAPHTOP2A":
 						case "PANTOGRAPHTOP2B":
-							FrontPantograph.MatrixIndexAdd(iMatrix);
+							Pantograph2.MatrixIndexAdd(iMatrix);
 							break;
 					}
 				}
@@ -926,11 +925,11 @@ namespace ORTS
                     if (TrainCarShape.SharedShape.Animations == null) continue;
                     if (matrixName.Contains("1"))
                     {
-                        AftPantograph.MatrixIndexAdd(iMatrix);
+                        Pantograph1.MatrixIndexAdd(iMatrix);
                     }
                     else if (matrixName.Contains("2"))
                     {
-                        FrontPantograph.MatrixIndexAdd(iMatrix);
+                        Pantograph2.MatrixIndexAdd(iMatrix);
                     }
                 }
                 else
@@ -944,20 +943,16 @@ namespace ORTS
 
             car.SetupWheels();
 
-			//determine how many panto
-			if (FrontPantograph.Exists()) car.NumPantograph++;
-            if (AftPantograph.Exists()) car.NumPantograph++;
+            // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
+            if (!car.Flipped && Pantograph1.Exists() && Pantograph2.Exists())
+                AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
 
-            //now handle the direction of the car; if flipped, then the pantographs should be switched
-            if (car.Flipped && car.NumPantograph == 2)
-                AnimatedPart.Swap(ref AftPantograph, ref FrontPantograph);
-
-			//now handle the direction of the car; if flipped, then the left/right door should be switched
+			// If the car is flipped, the doors should be corrected to match the rest of the train.
             if (car.Flipped)
-                AnimatedPart.Swap(ref RightDoor, ref  LeftDoor);
+                AnimatedPart.Swap(ref RightDoor, ref LeftDoor);
 
-            AftPantograph.SetPosition(MSTSWagon.AftPanUp);
-            FrontPantograph.SetPosition(MSTSWagon.FrontPanUp);
+            Pantograph1.SetPosition(MSTSWagon.Pan1Up);
+            Pantograph2.SetPosition(MSTSWagon.Pan2Up);
             LeftDoor.SetPosition(MSTSWagon.DoorLeftOpen);
             RightDoor.SetPosition(MSTSWagon.DoorRightOpen);
             Mirrors.SetPosition(MSTSWagon.MirrorOpen);
@@ -968,22 +963,22 @@ namespace ORTS
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
 			// Pantograph
-			if (UserInput.IsPressed(UserCommands.ControlPantographFirst))
+			if (UserInput.IsPressed(UserCommands.ControlPantograph1))
 			{
-				MSTSWagon.AftPanUp = !MSTSWagon.AftPanUp;
+				MSTSWagon.Pan1Up = !MSTSWagon.Pan1Up;
 				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
-						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).AftPanUp = MSTSWagon.AftPanUp;
-				if (MSTSWagon.AftPanUp) Car.SignalEvent(EventID.Pantograph1Up);
+						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).Pan1Up = MSTSWagon.Pan1Up;
+				if (MSTSWagon.Pan1Up) Car.SignalEvent(EventID.Pantograph1Up);
 				else Car.SignalEvent(EventID.Pantograph1Down);
 			}
-			if (UserInput.IsPressed(UserCommands.ControlPantographSecond))
+			if (UserInput.IsPressed(UserCommands.ControlPantograph2))
 			{
-				MSTSWagon.FrontPanUp = !MSTSWagon.FrontPanUp;
+				MSTSWagon.Pan2Up = !MSTSWagon.Pan2Up;
 				if (Viewer.Simulator.PlayerLocomotive == this.Car) //inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
-						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = MSTSWagon.FrontPanUp;
-				if (MSTSWagon.FrontPanUp) Car.SignalEvent(EventID.Pantograph2Up);
+						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).Pan2Up = MSTSWagon.Pan2Up;
+				if (MSTSWagon.Pan2Up) Car.SignalEvent(EventID.Pantograph2Up);
 				else Car.SignalEvent(EventID.Pantograph2Down);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
@@ -1023,8 +1018,8 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            AftPantograph.Update( MSTSWagon.AftPanUp, elapsedTime);
-            FrontPantograph.Update( MSTSWagon.FrontPanUp, elapsedTime);
+            Pantograph1.Update( MSTSWagon.Pan1Up, elapsedTime);
+            Pantograph2.Update( MSTSWagon.Pan2Up, elapsedTime);
             LeftDoor.Update( MSTSWagon.DoorLeftOpen, elapsedTime);
             RightDoor.Update( MSTSWagon.DoorRightOpen, elapsedTime);
             Mirrors.Update( MSTSWagon.MirrorOpen, elapsedTime);

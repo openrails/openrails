@@ -197,8 +197,8 @@ namespace ORTS.MultiPlayer
 				MSTSWagon w = (MSTSWagon)car;
 				if (w != null)
 				{
-					w.AftPanUp = player.pantofirst == 1 ? true : false;
-					w.FrontPanUp = player.pantosecond == 1 ? true : false;
+					w.Pan1Up = player.pantofirst == 1 ? true : false;
+					w.Pan2Up = player.pantosecond == 1 ? true : false;
 				}
 
 			}// for each rail car

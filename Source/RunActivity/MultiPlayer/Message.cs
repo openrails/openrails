@@ -351,8 +351,8 @@ namespace ORTS.MultiPlayer
 			MSTSWagon w = (MSTSWagon)Program.Simulator.PlayerLocomotive;
 			if (w != null)
 			{
-				pantofirst = w.AftPanUp == true ? 1 : 0;
-				pantosecond = w.FrontPanUp == true ? 1 : 0;
+				pantofirst = w.Pan1Up == true ? 1 : 0;
+				pantosecond = w.Pan2Up == true ? 1 : 0;
 			}
 
 			cars = new string[t.Cars.Count];
@@ -1731,10 +1731,10 @@ namespace ORTS.MultiPlayer
 				MSTSWagon w = (MSTSWagon)t.Cars[0];
 				if (w == null) return;
 
-				w.FrontPanUp = (EventState == 1 ? true : false);
+				w.Pan2Up = (EventState == 1 ? true : false);
 
 				foreach (TrainCar car in t.Cars)
-					if (car is MSTSWagon) ((MSTSWagon)car).FrontPanUp = w.FrontPanUp;
+					if (car is MSTSWagon) ((MSTSWagon)car).Pan2Up = w.Pan2Up;
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "PANTO1")
@@ -1742,10 +1742,10 @@ namespace ORTS.MultiPlayer
 				MSTSWagon w = (MSTSWagon)t.Cars[0];
 				if (w == null) return;
 
-				w.AftPanUp = (EventState == 1 ? true : false);
+				w.Pan1Up = (EventState == 1 ? true : false);
 
 				foreach (TrainCar car in t.Cars)
-					if (car is MSTSWagon) ((MSTSWagon)car).AftPanUp = w.AftPanUp;
+					if (car is MSTSWagon) ((MSTSWagon)car).Pan1Up = w.Pan1Up;
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "BELL")

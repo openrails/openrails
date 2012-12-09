@@ -660,7 +660,7 @@ namespace ORTS
                     {
                         PowerOn = true;
                         Pan = true;
-                        AftPanUp = true;
+                        Pan1Up = true;
                     }
                     break;
                 case Train.TRAINTYPE.STATIC:

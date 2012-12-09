@@ -714,9 +714,9 @@ namespace ORTS.MultiPlayer
 
 			if (UserInput.IsReleased(UserCommands.ControlHorn)) Notify((new MSGEvent(GetUserName(), "HORN", EventID.HornOff)).ToString());
 			
-			if (UserInput.IsPressed(UserCommands.ControlPantographSecond)) Notify((new MSGEvent(GetUserName(), "PANTO2", (++PantoSecondCount)%2)).ToString());
+			if (UserInput.IsPressed(UserCommands.ControlPantograph2)) Notify((new MSGEvent(GetUserName(), "PANTO2", (++PantoSecondCount)%2)).ToString());
 
-			if (UserInput.IsPressed(UserCommands.ControlPantographFirst)) Notify((new MSGEvent(GetUserName(), "PANTO1", (++PantoFirstCount)%2)).ToString());
+			if (UserInput.IsPressed(UserCommands.ControlPantograph1)) Notify((new MSGEvent(GetUserName(), "PANTO1", (++PantoFirstCount)%2)).ToString());
 
 			if (UserInput.IsPressed(UserCommands.ControlBell)) Notify((new MSGEvent(GetUserName(), "BELL", (++BellCount)%2)).ToString());
 

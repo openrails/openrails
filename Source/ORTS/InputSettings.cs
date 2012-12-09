@@ -172,8 +172,8 @@ namespace ORTS
         ControlDoorRight,
         ControlMirror,
         ControlLight,
-        ControlPantographFirst,
-        ControlPantographSecond,
+        ControlPantograph1,
+        ControlPantograph2,
         ControlDieselPlayer,
         ControlDieselHelper,
         ControlHeadlightIncrease,
@@ -494,8 +494,8 @@ namespace ORTS
 
             Commands[(int)UserCommands.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlLight] = new UserCommandKeyInput(0x26);
-			Commands[(int)UserCommands.ControlPantographFirst] = new UserCommandKeyInput(0x19);
-			Commands[(int)UserCommands.ControlPantographSecond] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
+			Commands[(int)UserCommands.ControlPantograph1] = new UserCommandKeyInput(0x19);
+			Commands[(int)UserCommands.ControlPantograph2] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDieselPlayer] = new UserCommandKeyInput(0x15);
             Commands[(int)UserCommands.ControlDieselHelper] = new UserCommandKeyInput(0x15, KeyModifiers.Shift);
 			Commands[(int)UserCommands.ControlHeadlightIncrease] = new UserCommandKeyInput(0x23);
