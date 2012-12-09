@@ -121,7 +121,11 @@ namespace ORTS
         public virtual string GetDynamicBrakeStatus() { return null; }
         public virtual bool GetSanderOn() { return false; }
 
-		public TrainCar(Simulator simulator, string wagFile, TrainCar previousCar)
+        public TrainCar()
+        {
+        }
+        
+        public TrainCar(Simulator simulator, string wagFile, TrainCar previousCar)
         {
 			Simulator = simulator;
             WagFilePath = wagFile;

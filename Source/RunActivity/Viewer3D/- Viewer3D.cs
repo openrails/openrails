@@ -121,6 +121,7 @@ namespace ORTS
         private bool isMouseTimerVisible = false;
         private double MouseShownAtRealTime = 0;
 
+        public bool SaveScreenshot;
         public bool SaveActivityThumbnail;
         public string SaveActivityFileStem;
         private BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
@@ -385,6 +386,7 @@ namespace ORTS
             ToggleSwitchBehindCommand.Receiver = this;
             ToggleAnySwitchCommand.Receiver = this;
             UncoupleCommand.Receiver = Simulator;
+            SaveScreenshotCommand.Receiver = this;
             ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
             UseCameraCommand.Receiver = this;
             MoveCameraCommand.Receiver = this;
@@ -590,21 +592,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DebugTracks)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
 
-            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwap))
-            {
-                Simulator.Confirmer.Confirm( CabControl.SwitchLocomotive, CabSetting.On );
-                Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
-                Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
-                SetCommandReceivers(); // As PlayerLocomotive has changed
-                Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
-                Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
-                PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
-                PlayerTrainLength = 0;
-				FrontCamera.Reset();
-				BackCamera.Reset();
-				
-				if (MPManager.IsMultiPlayer()) MPManager.LocoChange(Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive);
-            }
+            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwap)) new SwapLocomotivesCommand(Log);
 
             if( UserInput.IsPressed( UserCommands.CameraCab ) && CabCamera.IsAvailable ) new UseCabCameraCommand( Log );
             if( UserInput.IsPressed( UserCommands.CameraOutsideFront ) ) {
@@ -863,9 +851,7 @@ namespace ORTS
         }
 
         public void SwapLocomotives() {
-            Simulator.Confirmer.Confirm( CabControl.SwitchLocomotive, CabSetting.On );
             Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
-            Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.LeadLocomotive;
             Simulator.PlayerLocomotive.Train.CalculatePositionOfCars( 0 );  // fix the front traveller
             Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
             PlayerLocomotiveViewer = World.Trains.GetViewer( Simulator.PlayerLocomotive );

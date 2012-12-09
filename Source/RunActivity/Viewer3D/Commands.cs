@@ -812,7 +812,24 @@ namespace ORTS {
             return base.ToString() + " - " + CarPosition.ToString();
         }
     }
-    
+
+    [Serializable()]
+    public class SaveScreenshotCommand : Command {
+        public static Viewer3D Receiver { get; set; }
+
+        public SaveScreenshotCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.SaveScreenshot = true;
+            // Report();
+        }
+    }    
+
     [Serializable()]
     public class ResumeActivityCommand : ActivityCommand {
         public ResumeActivityCommand( CommandLog log, string eventNameLabel, double pauseDurationS )

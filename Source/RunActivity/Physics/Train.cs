@@ -508,54 +508,61 @@ namespace ORTS
         }
 #endif
 
-        // Sets the Lead locomotive to the next in the consist
+        /// <summary>
+        /// Changes the Lead locomotive (i.e. the loco which the player controls) to the next in the consist.
+        /// Steps back through the train, ignoring any cabs that face rearwards until there are no forward-facing
+        /// cabs left. Then continues from the rearmost, rearward-facing cab, reverses the train and resumes stepping back.
+        /// </summary>
         public void LeadNextLocomotive()
         {
-            // First driveable
-            int firstLead = -1;
-            // Next driveale to the current
-            int nextLead = -1;
-            // Count of driveable locos
-            int coud = 0;
+            Trace.Assert(Simulator.PlayerLocomotive != null, "Player loco is null when trying to switch locos");
+            Trace.Assert(Simulator.PlayerLocomotive.Train == this, "Trying to switch locos but not on player's train");
 
+            int driveables = 0;
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                if (Cars[i].IsDriveable) driveables++;
+            }
+            if (driveables < 2)
+            {
+                Simulator.Confirmer.Warning(CabControl.SwitchLocomotive, CabSetting.Warn);
+                return; // could return false but does no harm.
+            }
+
+            int? firstLead = null;          // First driveable car
+            int? nextLead = null;           // Next driveable car after the current car
+            int? lastFlippedLead = null;    // Last driveable car facing the other way from current car
             for (int i = 0; i < Cars.Count; i++)
             {
                 if (Cars[i].IsDriveable)
                 {
-					//in multiplayer, only wants to change locomotive starts with my name (i.e. original settings of my locomotives)
-					if (MPManager.IsMultiPlayer() && !Cars[i].CarID.StartsWith(MPManager.GetUserName() + " ")) continue;
-                    // Count the driveables
-                    coud++;
+                    //in multiplayer, only wants to change locomotive starts with my name (i.e. original settings of my locomotives)
+                    if( MPManager.IsMultiPlayer() && !Cars[i].CarID.StartsWith(MPManager.GetUserName() + " ") ) continue;
 
-                    // Get the first driveable
-                    if (firstLead == -1)
-                        firstLead = i;
-
-                    // If later than current select the next
-                    if (LeadLocomotiveIndex < i && nextLead == -1)
+                    if (Cars[i].Flipped != LeadLocomotive.Flipped) // cab is rearward-facing
                     {
-                        nextLead = i;
+                        lastFlippedLead = i; // remember only the last cab
+                        continue;
                     }
+
+                    // Remember the first driveable
+                    if (firstLead == null ) firstLead = i;
+
+                    // If beyond the current, remember the next
+                    if (LeadLocomotiveIndex < i && nextLead == null ) nextLead = i;
                 }
             }
-
-            TrainCar prevLead = LeadLocomotive;
-
-            // If found one after the current
-            if (nextLead != -1)
-                LeadLocomotiveIndex = nextLead;
-            // If not, and have more than one, set the first
-            else if (coud > 1)
-                LeadLocomotiveIndex = firstLead;
+            if (nextLead == null) nextLead = lastFlippedLead; // no more forward-facing, so switch to rearmost, rearward-facing.
+            LeadLocomotiveIndex = (nextLead != null) 
+                ? (int)nextLead     // step back through train
+                : (int)firstLead;   // last cab and none rearward-facing, so cycle back to first cab
             Orient();
-            TrainCar newLead = LeadLocomotive;
-            if (prevLead != null && newLead != null && prevLead != newLead)
-                newLead.CopyControllerSettings(prevLead);
-            if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == this)
-            {
-                Program.Simulator.PlayerLocomotive = newLead;
-                Program.Simulator.AI.Dispatcher.ReversePlayerAuthorization();
-            }
+            TrainCar oldLead = LeadLocomotive;
+            TrainCar newLead = LeadLocomotive; // simpler than using the TrainCar() constructor
+            newLead.CopyControllerSettings(oldLead);
+            Simulator.PlayerLocomotive = newLead;
+            Simulator.AI.Dispatcher.ReversePlayerAuthorization();
+            Simulator.Confirmer.Confirm(CabControl.SwitchLocomotive, CabSetting.On);
         }
 
         /// <summary>
@@ -563,9 +570,11 @@ namespace ORTS
         /// </summary>
         public void Orient()
         {
-            TrainCar lead = LeadLocomotive;
-            if (lead == null || !(lead.Flipped ^ lead.GetCabFlipped()))
-                return;
+            Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
+
+            // cab of lead loco doesn't face wrong way so exit early
+            if (!(LeadLocomotive.Flipped ^ LeadLocomotive.GetCabFlipped())) return;
+
             for (int i = Cars.Count - 1; i > 0; i--)
                 Cars[i].CopyCoupler(Cars[i - 1]);
             for (int i = 0; i < Cars.Count / 2; i++)

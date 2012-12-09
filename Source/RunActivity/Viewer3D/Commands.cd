@@ -92,13 +92,6 @@
       <FileName>Viewer3D\Commands.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ORTS.InitializeBrakesCommand" Collapsed="true">
-    <Position X="28.75" Y="1.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Viewer3D\Commands.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="ORTS.EmergencyBrakesCommand" Collapsed="true">
     <Position X="33.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>

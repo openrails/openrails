@@ -209,10 +209,13 @@ namespace ORTS
 						viewPoint.StartDirection = CVFFile.Directions[i];
 						viewPoint.RotationLimit = new Vector3( 0, 0, 0 );  // cab views have a fixed head position
 						FrontCabViewpoints.Add( viewPoint );
-						if( i == 0 && (CVFFile.Directions[i].Y < -90 || CVFFile.Directions[i].Y > 90) )
-							CabFlipped = true;
 					}
-					ExCVF = null;
+
+                    var y = CVFFile.Directions[0].Y; // abbreviation
+                    // Most models use range -180 to 180 but Making Trains have some with 0 to 360
+                    CabFlipped = y < -90 || (y > 90 && y < 270);
+
+                    ExCVF = null;
 					if( ExCVF == null && !(this is MSTSSteamLocomotive) ) {
 						ExCVF = new ExtendedCVF();
 						InitializeFromORTSSpecific( cvfFilePath, ExCVF );
