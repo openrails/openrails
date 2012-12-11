@@ -49,9 +49,13 @@ namespace ORTS
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
         public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
         public float _SpeedMpS = 0.0f; // meters per second; updated by train physics, relative to direction of car  50mph = 22MpS
+        public float _PrevSpeedMpS = 0.0f;
         public float CouplerSlackM = 0f;// extra distance between cars (calculated based on relative speeds)
         public float CouplerSlack2M = 0f;// slack calculated using draft gear force
         public bool WheelSlip = false;// true if locomotive wheels slipping
+        public float _AccelerationMpSS = 0.0f;
+
+        private IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
 
         public float SpeedMpS
         {
@@ -64,6 +68,13 @@ namespace ORTS
                 _SpeedMpS = value;
             }
         }
+
+        public float AccelerationMpSS
+        { 
+            get{ return _AccelerationMpSS; }
+        }
+
+
 
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
@@ -110,6 +121,16 @@ namespace ORTS
         {
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * 9.8f * WorldPosition.XNAMatrix.M32;
+            // acceleration
+            if (elapsedClockSeconds > 0.0f)
+            {
+                _AccelerationMpSS = (_SpeedMpS - _PrevSpeedMpS) / elapsedClockSeconds;
+                
+                if (Simulator.UseAdvancedAdhesion)
+                    _AccelerationMpSS = AccelerationFilter.Filter(_AccelerationMpSS, elapsedClockSeconds);
+
+                _PrevSpeedMpS = _SpeedMpS;
+            }
         }
 
         // Notifications from others of key outside events, ie coupling etc, pantograph up etc
@@ -157,6 +178,7 @@ namespace ORTS
             MotiveForceN = inf.ReadSingle();
             FrictionForceN = inf.ReadSingle();
             SpeedMpS = inf.ReadSingle();
+            _PrevSpeedMpS = SpeedMpS;
             CouplerSlackM = inf.ReadSingle();
             Headlight = inf.ReadInt32();
         }

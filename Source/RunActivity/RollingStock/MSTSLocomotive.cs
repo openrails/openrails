@@ -694,7 +694,7 @@ namespace ORTS
                 SignalEvent(EventID.CompressorOn);
             else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
                 SignalEvent(EventID.CompressorOff);
-            if (CompressorOn)
+            if ((CompressorOn)&&(PowerOn))
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
             base.Update(elapsedClockSeconds);
@@ -1644,10 +1644,33 @@ namespace ORTS
                         data = Math.Abs(data);
                         break;
                     }
+                case CABViewControlTypes.ACCELEROMETER:
+                    {
+                        switch(cvc.Units)
+                        {
+                            case CABViewControlUnits.METRES_SEC_SEC:
+                            case CABViewControlUnits.METRESµSECµSEC:
+                                data = this.AccelerationMpSS;
+                                break;
+                            case CABViewControlUnits.METRESµSECµHOUR:
+                                data = this.AccelerationMpSS / 3600.0f;
+                                break;
+                            case CABViewControlUnits.KMµHOURµSEC:
+                                data = this.AccelerationMpSS / 3.6f;
+                                break;
+                            case CABViewControlUnits.KMµHOURµHOUR:
+                                data = this.AccelerationMpSS / 3600.0f / 3.6f;
+                                break;
+                            default:
+                                data = this.AccelerationMpSS;
+                                break;
+
+                        }
+                        break;
+                    }
                 case CABViewControlTypes.AMMETER:
                 case CABViewControlTypes.LOAD_METER:
                 case CABViewControlTypes.TRACTION_BRAKING:
-                case CABViewControlTypes.ACCELEROMETER:
                     {
                         if (LocomotiveAxle != null)
                         {

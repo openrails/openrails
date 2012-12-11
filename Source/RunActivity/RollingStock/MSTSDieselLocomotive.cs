@@ -441,7 +441,7 @@ namespace ORTS
                 SignalEvent(EventID.CompressorOn);
             else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
                 SignalEvent(EventID.CompressorOff);
-            if (CompressorOn)
+            if ((CompressorOn)&&(PowerOn))
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
             base.UpdateParent(elapsedClockSeconds); // Calls the Update() method in the parent class MSTSLocomotive which calls Update() on its parent MSTSWagon which calls ...

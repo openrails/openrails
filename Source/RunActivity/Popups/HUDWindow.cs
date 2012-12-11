@@ -190,6 +190,7 @@ namespace ORTS.Popups
                 TableAddLabelValue( table, "Replay", InfoDisplay.FormattedTime( Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime ) );
             }
             TableAddLabelValue(table, "Speed", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+            TableAddLabelValue(table, "Acceleration", "{0:F3} m/s/s", Viewer.PlayerLocomotive.AccelerationMpSS);
             TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
             TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
