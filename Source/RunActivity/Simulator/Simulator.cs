@@ -707,7 +707,7 @@ namespace ORTS
         public bool SwitchTrackAhead( Train train ) {
             TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.RearTDBTraveller.JunctionNodeBehind() : train.FrontTDBTraveller.JunctionNodeAhead();
             if( SwitchIsOccupied( nextSwitchTrack ) ) {
-                Confirmer.Confirm( CabControl.SwitchAhead, CabSetting.Warn );
+                Confirmer.Confirm( CabControl.SwitchAhead, CabSetting.Warn1 );
                 return false;
             }
 
@@ -740,7 +740,7 @@ namespace ORTS
         public bool SwitchTrackBehind( Train train ) {
             TrJunctionNode nextSwitchTrack = train.LeadLocomotive.Flipped ? train.FrontTDBTraveller.JunctionNodeAhead() : train.RearTDBTraveller.JunctionNodeBehind();
             if( SwitchIsOccupied( nextSwitchTrack ) ) {
-                Confirmer.Confirm( CabControl.SwitchBehind, CabSetting.Warn );
+                Confirmer.Confirm( CabControl.SwitchBehind, CabSetting.Warn1 );
                 return false;
             }
 

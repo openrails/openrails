@@ -584,7 +584,7 @@ namespace ORTS
                     DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
                     Viewer.Simulator.Confirmer.Confirm( CabControl.PlayerDiesel, DieselLocomotive.PowerOn ? CabSetting.On : CabSetting.Off );
                 } else {
-                    Viewer.Simulator.Confirmer.Warning( CabControl.PlayerDiesel, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.PlayerDiesel, CabSetting.Warn1 );
                 }
             }
             if (UserInput.IsPressed(UserCommands.ControlDieselHelper))

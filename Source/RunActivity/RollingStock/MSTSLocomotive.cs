@@ -719,7 +719,7 @@ namespace ORTS
                 if( LocomotiveAxle.IsWheelSlipWarning ) {
                     if( WheelslipState != Wheelslip.Warning ) {
                         WheelslipState = Wheelslip.Warning;
-                        Simulator.Confirmer.Confirm( CabControl.Wheelslip, CabSetting.Warn );
+                        Simulator.Confirmer.Confirm( CabControl.Wheelslip, CabSetting.Warn1 );
                     }
                 } else {
                     if( WheelslipState != Wheelslip.None ) {
@@ -2074,7 +2074,7 @@ namespace ORTS
             if (!SwapControl()) // tests for CombThrottleTrainBreak
             {
                 if( !Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0 ) {
-                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn1 );
                     return;
                 } else {
                     if( Locomotive.StartThrottleIncrease() )
@@ -2098,7 +2098,7 @@ namespace ORTS
             if (!SwapControl()) // tests for CombThrottleTrainBreak
             {
                 if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
-                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn1 );
                     return;
                 } else
                     if( Locomotive.StopThrottleIncrease() )
@@ -2126,7 +2126,7 @@ namespace ORTS
             if (!SwapControl())
             {
                 if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
-                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn1 );
                     return;
                 } else {
                     if( Locomotive.StartThrottleDecrease() )
@@ -2153,7 +2153,7 @@ namespace ORTS
             if (!SwapControl()) // tests for CombThrottleTrainBrea
             {
                 if (!Locomotive.HasCombCtrl && Locomotive.DynamicBrakePercent >= 0) {
-                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn );
+                    Viewer.Simulator.Confirmer.Warning( CabControl.Throttle, CabSetting.Warn1 );
                     return;
                 } else
                     if( Locomotive.StopThrottleDecrease() )
@@ -2173,7 +2173,7 @@ namespace ORTS
             if( Locomotive.Direction != Direction.Forward
             && (Locomotive.ThrottlePercent >= 1 
             || Math.Abs(Locomotive.SpeedMpS) > 1 ) ) {
-                Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn );
+                Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn1 );
                 return;
             }
             new ReverserCommand( Viewer.Log, true );    // No harm in trying to engage Forward when already engaged.
@@ -2183,7 +2183,7 @@ namespace ORTS
             if( Locomotive.Direction != Direction.Reverse
             && (Locomotive.ThrottlePercent >= 1 
             || Math.Abs(Locomotive.SpeedMpS) > 1 ) ) {
-                Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn );
+                Viewer.Simulator.Confirmer.Warning( CabControl.Reverser, CabSetting.Warn1 );
                 return;
             }
             new ReverserCommand( Viewer.Log, false );    // No harm in trying to engage Reverse when already engaged.

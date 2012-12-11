@@ -525,7 +525,7 @@ namespace ORTS
             }
             if (driveables < 2)
             {
-                Simulator.Confirmer.Warning(CabControl.SwitchLocomotive, CabSetting.Warn);
+                Simulator.Confirmer.Warning(CabControl.SwitchLocomotive, CabSetting.Warn1);
                 return; // could return false but does no harm.
             }
 
@@ -1217,7 +1217,7 @@ namespace ORTS
 		{
             if( Math.Abs(SpeedMpS) >= 0.01 ) {
                 if( Simulator.Confirmer != null ) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Warning( CabControl.InitializeBrakes, CabSetting.Warn );
+                    Simulator.Confirmer.Warning( CabControl.InitializeBrakes, CabSetting.Warn1 );
                 return;
             }
 			if (Program.Simulator.PlayerLocomotive != null && this == Program.Simulator.PlayerLocomotive.Train)

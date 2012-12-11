@@ -79,7 +79,8 @@ namespace ORTS {
         , On        // 2 or 3 state control/apply/change
         , Decrease  // continuous control
         , Increase  // continuous control
-        , Warn
+        , Warn1
+        , Warn2
         , Range1    // sub-range
         , Range2
         , Range3
@@ -126,7 +127,7 @@ namespace ORTS {
             , new string [] { "Bail Off", "disengage", null, "engage" } 
             , new string [] { "Brakes", "initialize", null, null, null, null, "cannot initialize. Stop train then re-try." } 
             , new string [] { "Handbrake", "none", null, "full" } 
-            , new string [] { "Retainers", "off", null, "on", null, null, null, "Exhaust", "High Pressure", "Low Pressure", "Slow Direct" } 
+            , new string [] { "Retainers", "off", null, "on", null, null, null, null, "Exhaust", "High Pressure", "Low Pressure", "Slow Direct" } 
             , new string [] { "Brake Hose", "disconnect", null, "connect" } 
             // Cab Devices
             , new string [] { "Sander", "off", null, "on" } 
@@ -137,7 +138,7 @@ namespace ORTS {
             , new string [] { "Headlight", "off", "dim", "bright" } 
             , new string [] { "Cab Light", "off", null, "on" } 
             , new string [] { "Wipers", "off", null, "on" } 
-            , new string [] { "Locomotive", null, null, "switch", null, null, "switching is not available" } 
+            , new string [] { "Locomotive", null, null, "switch", null, null, "switching is not available", "switching disabled. Close throttle, stop train then re-try." } 
             // Train Devices
             , new string [] { "Doors Left", "close", null, "open" } 
             , new string [] { "Doors Right", "close", null, "open" } 

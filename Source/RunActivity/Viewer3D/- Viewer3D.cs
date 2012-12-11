@@ -592,7 +592,17 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DebugTracks)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
 
-            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwap)) new SwapLocomotivesCommand(Log);
+            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwap))
+            {
+                if (PlayerLocomotive.ThrottlePercent >= 1 || Math.Abs(PlayerLocomotive.SpeedMpS) > 1)
+                {
+                    Simulator.Confirmer.Warning(CabControl.SwitchLocomotive, CabSetting.Warn2);
+                } 
+                else
+                {
+                    new SwapLocomotivesCommand(Log);
+                }
+            }
 
             if( UserInput.IsPressed( UserCommands.CameraCab ) && CabCamera.IsAvailable ) new UseCabCameraCommand( Log );
             if( UserInput.IsPressed( UserCommands.CameraOutsideFront ) ) {
@@ -834,7 +844,7 @@ namespace ORTS
                 if( !CameraReplaySuspended ) {
                     CameraReplaySuspended = true;
                     SuspendedCamera = Camera;
-                    Simulator.Confirmer.Confirm( CabControl.Replay, CabSetting.Warn );
+                    Simulator.Confirmer.Confirm( CabControl.Replay, CabSetting.Warn1 );
                 }
             }
         }
