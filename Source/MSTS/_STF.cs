@@ -1419,6 +1419,11 @@ namespace MSTS
             Trace.TraceWarning("{2} in {0}:line {1}", stf.FileName, stf.LineNumber, message);
         }
 
+        public static void TraceInformation(STFReader stf, string message)
+        {
+            Trace.TraceInformation("{2} in {0}:line {1}", stf.FileName, stf.LineNumber, message);
+        }
+        
         public STFException(STFReader stf, string message)
             : base(String.Format("{2} in {0}:line {1}", stf.FileName, stf.LineNumber, message))
         {

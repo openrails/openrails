@@ -263,7 +263,7 @@ namespace MSTS
                             case "abs": Abs = true; break;
                             case "no_gantry": NoGantry = true; break;
                             case "semaphore": Semaphore = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Skipped unknown SignalType flag " + stf.ReadString()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown SignalType flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -278,7 +278,7 @@ namespace MSTS
 			}
 			catch (ArgumentException)
 			{
-                STFException.TraceWarning(stf, "Skipped unknown SignalFnType " + type);
+                STFException.TraceInformation(stf, "Skipped unknown SignalFnType " + type);
                 return FnTypes.Info;
 			}
 		}
@@ -448,7 +448,7 @@ namespace MSTS
                         switch (stf.ReadString().ToLower())
                         {
                             case "semaphore_change": SemaphoreChange = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Skipped unknown SignalLight flag " + stf.ReadString()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown SignalLight flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -526,7 +526,7 @@ namespace MSTS
                         switch (stf.ReadString().ToLower())
                         {
                             case "flashing": Flashing = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Skipped unknown DrawLight flag " + stf.ReadString()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown DrawLight flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -562,7 +562,7 @@ namespace MSTS
             }
             catch (ArgumentException)
             {
-                STFException.TraceWarning(stf, "Skipped unknown signal aspect " + aspectName);
+                STFException.TraceInformation(stf, "Skipped unknown signal aspect " + aspectName);
                 Aspect = SignalHead.SIGASP.UNKNOWN;
             }
             DrawStateName = stf.ReadString().ToLowerInvariant();
@@ -575,7 +575,7 @@ namespace MSTS
                         switch (stf.ReadString().ToLower())
                         {
                             case "asap": Asap = true; break;
-                            default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Skipped unknown DrawLight flag " + stf.ReadString()); break;
+                            default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown DrawLight flag " + stf.ReadString()); break;
                         }
                 }),
             });
@@ -656,7 +656,7 @@ namespace MSTS
                                 case "default": Default = true; break;
                                 case "back_facing": BackFacing = true; break;
                                 case "jn_link": JunctionLink = true; break;
-                                default: stf.StepBackOneItem(); STFException.TraceWarning(stf, "Skipped unknown SignalSubObj flag " + stf.ReadString()); break;
+                                default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown SignalSubObj flag " + stf.ReadString()); break;
                             }
                     }),
                 });

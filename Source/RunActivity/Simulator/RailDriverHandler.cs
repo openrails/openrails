@@ -307,7 +307,7 @@ namespace ORTS
                             case "Rotary Switch 2-Position 1(OFF)": Rotary2Position1 = v; break;
                             case "Rotary Switch 2-Position 2(DIM)": Rotary2Position2 = v; break;
                             case "Rotary Switch 2-Position 3(FULL)": Rotary2Position3 = v; break;
-                            default: STFException.TraceWarning(reader, "Skipped unknown calibration value " + name); break;
+                            default: STFException.TraceInformation(reader, "Skipped unknown calibration value " + name); break;
                         }
                     }
                 }

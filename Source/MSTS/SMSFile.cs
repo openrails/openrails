@@ -190,7 +190,7 @@ namespace MSTS
                 case "variable1controlled": Control = Controls.Variable1Controlled; break;
                 case "variable2controlled": Control = Controls.Variable2Controlled; break;
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
-                default: STFException.TraceWarning(stf, "Skipped unknown VolumeCurve type " + type); stf.SkipRestOfBlock(); return;
+                default: STFException.TraceInformation(stf, "Skipped unknown VolumeCurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("granularity", ()=>{ Granularity = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),

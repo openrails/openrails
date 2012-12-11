@@ -869,7 +869,7 @@ namespace ORTS
                             options |= UVTextureAddressModeMap[lightModelConfiguration.uv_ops[0].TexAddrMode - 1];
                         else if (!ShapeWarnings.Contains("texture_addressing_mode:" + lightModelConfiguration.uv_ops[0].TexAddrMode))
                         {
-                            Trace.TraceWarning("Skipped unknown texture addressing mode {1} first seen in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
+                            Trace.TraceInformation("Skipped unknown texture addressing mode {1} first seen in shape {0}", sharedShape.FilePath, lightModelConfiguration.uv_ops[0].TexAddrMode);
                             ShapeWarnings.Add("texture_addressing_mode:" + lightModelConfiguration.uv_ops[0].TexAddrMode);
                         }
 
@@ -880,7 +880,7 @@ namespace ORTS
                         options |= ShaderNames[sFile.shape.shader_names[primitiveState.ishader]];
                     else if (!ShapeWarnings.Contains("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]))
                     {
-                        Trace.TraceWarning("Skipped unknown shader name {1} first seen in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
+                        Trace.TraceInformation("Skipped unknown shader name {1} first seen in shape {0}", sharedShape.FilePath, sFile.shape.shader_names[primitiveState.ishader]);
                         ShapeWarnings.Add("shader_name:" + sFile.shape.shader_names[primitiveState.ishader]);
                     }
 
@@ -888,7 +888,7 @@ namespace ORTS
                         options |= VertexLightModeMap[12 + vertexState.LightMatIdx];
                     else if (!ShapeWarnings.Contains("lighting_model:" + vertexState.LightMatIdx))
                     {
-                        Trace.TraceWarning("Skipped unknown lighting model index {1} first seen in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
+                        Trace.TraceInformation("Skipped unknown lighting model index {1} first seen in shape {0}", sharedShape.FilePath, vertexState.LightMatIdx);
                         ShapeWarnings.Add("lighting_model:" + vertexState.LightMatIdx);
                     }
 

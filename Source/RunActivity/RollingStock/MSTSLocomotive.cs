@@ -1004,11 +1004,9 @@ namespace ORTS
                 if (DynamicBrakePercent == -1)
                 {
                     notchedThrottleCommandNeeded = true;
-                    //new NotchedThrottleCommand( Simulator.Log, true ); 
                 }
             } else if( !HasCombCtrl && HasStepCtrl ) {
                 notchedThrottleCommandNeeded = true;
-                //new NotchedThrottleCommand( Simulator.Log, true ); 
             } else {
                 StartThrottleIncrease( null );
             }
@@ -1030,7 +1028,6 @@ namespace ORTS
             
             if( !HasStepCtrl ) {
                 continuousThrottleCommandNeeded = true;
-                //new ContinuousThrottleCommand( Simulator.Log, true, ThrottleController.CurrentValue, commandStartTime );
             }
             
             if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
@@ -1077,10 +1074,8 @@ namespace ORTS
                 if (DynamicBrakePercent == -1)
                 {
                     notchedThrottleCommandNeeded = true;
-                    //new NotchedThrottleCommand( Simulator.Log, false );
                 }
             } else if( !HasCombCtrl && HasStepCtrl ) {
-                //new NotchedThrottleCommand( Simulator.Log, false );
                 notchedThrottleCommandNeeded = true;
                 //SignalEvent( EventID.Reverse );
             } else {
@@ -1105,7 +1100,6 @@ namespace ORTS
             
             if( !HasStepCtrl ) {
                 continuousThrottleCommandNeeded = true;
-                //new ContinuousThrottleCommand( Simulator.Log, false, ThrottleController.CurrentValue, commandStartTime );
             }
 
             if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
@@ -1365,8 +1359,6 @@ namespace ORTS
             AlerterReset();
             if( CanUseDynamicBrake() ) {
                 DynamicBrakeController.StopIncrease();
-                // Give the new command its target and backdate the start time.
-                //new DynamicBrakeCommand( Simulator.Log, true, DynamicBrakeController.CurrentValue, commandStartTime );
                 dynamicBrakeCommandNeeded = true;
             }
             return dynamicBrakeCommandNeeded;
@@ -1396,8 +1388,6 @@ namespace ORTS
             AlerterReset();
             if( CanUseDynamicBrake() ) {
                 DynamicBrakeController.StopDecrease();
-                // Give the new command its target and backdate the start time.
-                //new DynamicBrakeCommand( Simulator.Log, false, DynamicBrakeController.CurrentValue, commandStartTime );
                 dynamicBrakeCommandNeeded = true;
             }
             return dynamicBrakeCommandNeeded;
