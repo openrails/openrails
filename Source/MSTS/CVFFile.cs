@@ -141,13 +141,20 @@ namespace MSTS
         AMPS,
         VOLTS,
         KILOVOLTS,
+
         KM_PER_HOUR,
         MILES_PER_HOUR, 
         METRESµSECµSEC,
         METRES_SEC_SEC,
-        KMµHOURµHOUR, 
-        KMµHOURµSEC, 
+        KMµHOURµHOUR,
+        KM_HOUR_HOUR,
+        KMµHOURµSEC,
+        KM_HOUR_SEC,
         METRESµSECµHOUR,
+        METRES_SEC_HOUR,
+        MILES_HOUR_MIN,
+        MILES_HOUR_HOUR,
+
         NEWTONS, 
         KILO_NEWTONS,
         KILO_LBS,
@@ -276,7 +283,8 @@ namespace MSTS
             try
             {
                 string sUnits = stf.ReadItem();
-                sUnits = sUnits.Replace('/', '?');
+                // sUnits = sUnits.Replace('/', '?');
+                sUnits = sUnits.Replace('/', '_');
                 Units = (CABViewControlUnits)Enum.Parse(typeof(CABViewControlUnits), sUnits);
             }
             catch (ArgumentException)

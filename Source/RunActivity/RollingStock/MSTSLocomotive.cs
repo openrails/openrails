@@ -1652,15 +1652,33 @@ namespace ORTS
                             case CABViewControlUnits.METRESµSECµSEC:
                                 data = this.AccelerationMpSS;
                                 break;
+
+                            case CABViewControlUnits.METRES_SEC_HOUR:
                             case CABViewControlUnits.METRESµSECµHOUR:
                                 data = this.AccelerationMpSS / 3600.0f;
                                 break;
+
+                            case CABViewControlUnits.KM_HOUR_SEC:
                             case CABViewControlUnits.KMµHOURµSEC:
                                 data = this.AccelerationMpSS / 3.6f;
                                 break;
+
+                            case CABViewControlUnits.KM_HOUR_HOUR:
                             case CABViewControlUnits.KMµHOURµHOUR:
                                 data = this.AccelerationMpSS / 3600.0f / 3.6f;
                                 break;
+
+                            // TODO needs dimensional analysis for conversion factor
+                            case CABViewControlUnits.MILES_HOUR_MIN:
+                                data = this.AccelerationMpSS  / 60.0f;
+                                break;
+
+                            // TODO needs dimensional analysis for conversion factor
+                            case CABViewControlUnits.MILES_HOUR_HOUR:
+                                // 
+                                data = this.AccelerationMpSS  / 3600.0f / 3.6f;
+                                break;
+
                             default:
                                 data = this.AccelerationMpSS;
                                 break;
@@ -3039,6 +3057,13 @@ namespace ORTS
             _Position.X = (float)_Viewer.DisplaySize.X / 640 * ((float)_CabViewControl.PositionX + _Origin.X);
             _Position.Y = (float)_Viewer.CabHeightPixels / 480 * ((float)_CabViewControl.PositionY + _Origin.Y) + _Viewer.CabYOffsetPixels;
             _ScaleToScreen = (float)_Viewer.DisplaySize.X / 640 * _Scale;
+
+
+            //if (_CabViewControl.ControlType == CABViewControlTypes.ACCELEROMETER)
+            //{
+            //    Console.WriteLine("Debug Point");
+            //}
+
 
             float percent = TranslateToPercent();
             float range;
