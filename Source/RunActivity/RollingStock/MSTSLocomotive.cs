@@ -3580,6 +3580,7 @@ namespace ORTS
     /// Uses fonts instead of graphic
     /// Does not support Justification
     /// </summary>
+
     public class CabViewDigitalRenderer : CabViewControlRenderer
     {
         private float _Num;
@@ -3600,19 +3601,53 @@ namespace ORTS
             
         }
 
+
+        enum Justification {NONE, CENTER, LEFT, RIGHT }
         public override void PrepareFrame(RenderFrame frame)
         {
-           
-            float fontratio = (float)_CabViewControl.Height / 16;
 
+  
+            float fpos = 0.0f;
+            float fontratio = 1.0f;
             float xratio = (float)_Viewer.DisplaySize.X / 640;
             float yratio = (float)_Viewer.CabHeightPixels / 480;
-            
-            float fpos = 0.0f;
 
-            fpos = ((float)_CabViewControl.Width) - 7 * _Digits;// * fontratio;
-            _Position.X = xratio * ((float)_CabViewControl.PositionX + fpos);
-            _Position.Y = yratio * (float)_CabViewControl.PositionY + _Viewer.CabYOffsetPixels;
+
+            switch (((CVCDigital)_CabViewControl).Justification)
+            {
+                case (int)Justification.NONE:
+                    {
+                        _Position.X = xratio * ((float)_CabViewControl.PositionX + fpos);
+                        _Position.Y = yratio * (float)_CabViewControl.PositionY + _Viewer.CabYOffsetPixels;
+                        fontratio = 1.0f;
+                        break;
+                    }
+
+                case (int)Justification.CENTER:
+                    {
+                        float xposOffset = xratio * ((float)_CabViewControl.Width * 0.5f - 8);
+                        _Position.X = xratio * (float)_CabViewControl.PositionX + xposOffset;
+                        float yposOffset = yratio * ((float)_CabViewControl.Height * 0.5f - 8);
+                        _Position.Y = yratio * (float)_CabViewControl.PositionY + yposOffset + _Viewer.CabYOffsetPixels;
+                        fontratio = 1.0f;
+                        break;
+                    }
+
+                case (int)Justification.LEFT:
+                case (int)Justification.RIGHT:
+                default:
+                    _Position.X = xratio * ((float)_CabViewControl.PositionX + fpos);
+                    _Position.Y = yratio * (float)_CabViewControl.PositionY + _Viewer.CabYOffsetPixels;
+                    fontratio = (float)_CabViewControl.Height / 16;
+                    break;
+            }
+
+            if (_CabViewControl.ControlType == CABViewControlTypes.CLOCK)
+            {
+                float yposOffset = yratio * ((float)_CabViewControl.Height * 0.5f - 8);
+                _Position.X = xratio * ((float)_CabViewControl.PositionX + fpos);
+                _Position.Y = yratio * (float)_CabViewControl.PositionY + yposOffset  + _Viewer.CabYOffsetPixels;
+            }
 
             base.PrepareFrame(frame);
 
