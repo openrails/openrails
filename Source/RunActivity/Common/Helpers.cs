@@ -29,13 +29,11 @@ namespace ORTS
             AutumnSnow = 0x40,
             WinterSnow = 0x80,
             Night = 0x100,
-            // SPECIAL VALUE FOR OPEN RAILS!
-            TrainSet = 0x10000,
         }
 
         public static string GetForestTextureFile(Simulator simulator, string textureName)
         {
-            return GetTextureFile(simulator, Helpers.TextureFlags.Spring | Helpers.TextureFlags.Autumn | Helpers.TextureFlags.Winter | Helpers.TextureFlags.SpringSnow | Helpers.TextureFlags.AutumnSnow | Helpers.TextureFlags.WinterSnow, simulator.RoutePath + @"\Textures", textureName);
+            return GetRouteTextureFile(simulator, Helpers.TextureFlags.Spring | Helpers.TextureFlags.Autumn | Helpers.TextureFlags.Winter | Helpers.TextureFlags.SpringSnow | Helpers.TextureFlags.AutumnSnow | Helpers.TextureFlags.WinterSnow, textureName);
         }
 
         public static string GetNightTextureFile(Simulator simulator, string textureFilePath)
@@ -53,19 +51,12 @@ namespace ORTS
             return GetTextureFile(simulator, textureFlags, simulator.RoutePath + @"\Textures", textureName);
         }
 
-        public static string GetShapeTextureFile(Simulator simulator, TextureFlags textureFlags, string shapeFile, string textureName)
-        {
-            if ((textureFlags & TextureFlags.TrainSet) != 0)
-                return GetTextureFile(simulator, textureFlags, Path.GetDirectoryName(shapeFile), textureName);
-            return GetTextureFile(simulator, textureFlags, simulator.RoutePath + @"\Textures", textureName);
-        }
-
         public static string GetTerrainTextureFile(Simulator simulator, string textureName)
         {
             return GetTextureFile(simulator, Helpers.TextureFlags.Snow, simulator.RoutePath + @"\TerrTex", textureName);
         }
 
-        static string GetTextureFile(Simulator simulator, TextureFlags textureFlags, string texturePath, string textureName)
+        public static string GetTextureFile(Simulator simulator, TextureFlags textureFlags, string texturePath, string textureName)
         {
             var alternativePath = "";
             if ((textureFlags & TextureFlags.Snow) != 0 || (textureFlags & TextureFlags.SnowTrack) != 0)

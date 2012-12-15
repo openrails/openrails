@@ -799,21 +799,18 @@ namespace ORTS
         public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car): base( viewer, car )
         {
             _Viewer3D = viewer;
-            string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
-            string shapePath = wagonFolderSlash + car.MainShapeFileName;
+            var wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
+            var shapePath = wagonFolderSlash + car.MainShapeFileName;
 			
-            TrainCarShape = new PoseableShape(viewer, shapePath, car.WorldPosition, ShapeFlags.ShadowCaster);
+            TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
 
             if (car.FreightShapeFileName != null)
-            {
-                FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName, car.WorldPosition, ShapeFlags.ShadowCaster);
-            }
-            if (car.InteriorShapeFileName != null)
-            {
-                InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName, car.WorldPosition);
-            }
+                FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
 
-            Pantograph1 = new AnimatedPart( TrainCarShape);  // matrixes for the fowards pantograph parts
+            if (car.InteriorShapeFileName != null)
+                InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition);
+
+            Pantograph1 = new AnimatedPart(TrainCarShape);  // matrixes for the fowards pantograph parts
 		    Pantograph2 = new AnimatedPart(TrainCarShape);  // matrixes for the backwards pantograph parts
 		    LeftDoor = new AnimatedPart(TrainCarShape); //left door
 		    RightDoor = new AnimatedPart(TrainCarShape);//right door

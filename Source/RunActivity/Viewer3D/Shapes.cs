@@ -663,6 +663,7 @@ namespace ORTS
 
         readonly Viewer3D Viewer;
         public readonly string FilePath;
+        public readonly string ReferencePath;
 
         /// <summary>
         /// Create an empty shape used as a sub when the shape won't load
@@ -684,6 +685,12 @@ namespace ORTS
         {
             Viewer = viewer;
             FilePath = filePath;
+            if (filePath.Contains('\0'))
+            {
+                var parts = filePath.Split('\0');
+                FilePath = parts[0];
+                ReferencePath = parts[1];
+            }
             LoadContent();
         }
 
@@ -702,8 +709,6 @@ namespace ORTS
                 textureFlags = (Helpers.TextureFlags)sdFile.shape.ESD_Alternative_Texture;
                 HasNightSubObj = sdFile.shape.ESD_SubObj;
             }
-            if (FilePath.ToUpperInvariant().Contains(@"\TRAINS\TRAINSET\"))
-                textureFlags |= Helpers.TextureFlags.TrainSet;
 
             var matrixCount = sFile.shape.matrices.Count;
             MatrixNames.Capacity = matrixCount;
@@ -900,7 +905,10 @@ namespace ORTS
                     {
                         var texture = sFile.shape.textures[primitiveState.tex_idxs[0]];
                         var imageName = sFile.shape.images[texture.iImage];
-                        material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetShapeTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.FilePath, imageName), (int)options, texture.MipMapLODBias);
+                        if (String.IsNullOrEmpty(sharedShape.ReferencePath))
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias);
+                        else
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
                     }
                     else
                     {
