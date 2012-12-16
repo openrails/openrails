@@ -47,8 +47,8 @@ namespace ORTS
         public IIRFilter VoltageFilter;
         public float VoltageV = 0.0f;
 
-		public MSTSElectricLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
-			: base(simulator, wagFile, previousCar)
+        public MSTSElectricLocomotive(Simulator simulator, string wagFile)
+            : base(simulator, wagFile)
         {
             VoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
         }

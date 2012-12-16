@@ -104,8 +104,8 @@ namespace ORTS
         float? damperTarget;
         float? firingRateTarget;
 
-		public MSTSSteamLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
-            : base(simulator, wagFile, previousCar)
+        public MSTSSteamLocomotive(Simulator simulator, string wagFile)
+            : base(simulator, wagFile)
         {
             if (NumCylinders < 0 && ZeroError(NumCylinders, "NumCylinders", wagFile))
                 NumCylinders = 0;

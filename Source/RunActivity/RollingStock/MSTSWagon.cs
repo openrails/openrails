@@ -76,8 +76,8 @@ namespace ORTS
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
-        public MSTSWagon(Simulator simulator, string wagFilePath, TrainCar previousCar)
-            : base(simulator, wagFilePath, previousCar)
+        public MSTSWagon(Simulator simulator, string wagFilePath)
+            : base(simulator, wagFilePath)
         {
             if (CarManager.LoadedCars.ContainsKey(wagFilePath))
             {
@@ -823,9 +823,9 @@ namespace ORTS
             _Viewer3D.SoundProcess.AddSoundSource(this, SoundSources);
 
             // Get indexes of all the animated parts
-			for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
+            for (var iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
             {
-                string matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
+                var matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
                 if (matrixName.StartsWith("WHEELS"))
                 {
                     if (matrixName.Length == 7)
@@ -834,8 +834,8 @@ namespace ORTS
                                    && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
                                    && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
                             RunningGearPartIndexes.Add(iMatrix);
-                        Matrix m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
-                        int pmatrix = TrainCarShape.SharedShape.GetParentMatrix(iMatrix);
+                        var m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
+                        var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(iMatrix);
                         car.AddWheelSet(m.M43, 0, pmatrix);
                     }
                     else if (matrixName.Length == 8)
@@ -843,9 +843,9 @@ namespace ORTS
                         WheelPartIndexes.Add(iMatrix);
                         try
                         {
-                            int id = Int32.Parse(matrixName.Substring(6, 1));
-                            Matrix m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
-                            int pmatrix = TrainCarShape.SharedShape.GetParentMatrix(iMatrix);
+                            var id = Int32.Parse(matrixName.Substring(6, 1));
+                            var m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
+                            var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(iMatrix);
                             car.AddWheelSet(m.M43, id, pmatrix);
                         }
                         catch
@@ -853,12 +853,12 @@ namespace ORTS
                         }
                     }
                 }
-                else if (matrixName.StartsWith("BOGIE") && matrixName.Length == 6)
+                else if (matrixName.StartsWith("BOGIE"))
                 {
                     try
                     {
-                        int id = Int32.Parse(matrixName.Substring(5, 1));
-                        Matrix m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
+                        var id = Int32.Parse(matrixName.Substring(5));
+                        var m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
                         car.AddBogie(m.M43, iMatrix, id);
                     }
                     catch
@@ -938,7 +938,7 @@ namespace ORTS
                 }
             }
 
-            car.SetupWheels();
+            car.SetUpWheels();
 
             // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
             if (!car.Flipped && Pantograph1.Exists() && Pantograph2.Exists())

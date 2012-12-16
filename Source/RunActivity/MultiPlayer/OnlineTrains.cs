@@ -170,7 +170,6 @@ namespace ORTS.MultiPlayer
 				}
 				else throw new Exception();
 			}
-			TrainCar previousCar = null;
 			for (var i = 0; i < player.cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
 
@@ -178,13 +177,13 @@ namespace ORTS.MultiPlayer
 				TrainCar car = null;
 				try
 				{
-					car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
+                    car = RollingStock.Load(Program.Simulator, wagonFilePath);
 					car.Length = player.lengths[i];
 				}
 				catch (Exception error)
 				{
 					System.Console.WriteLine(error.Message);
-					car = MPManager.Instance().SubCar(wagonFilePath, player.lengths[i], previousCar);
+                    car = MPManager.Instance().SubCar(wagonFilePath, player.lengths[i]);
 				}
 				if (car == null) continue;
 				bool flip = true;
@@ -193,7 +192,6 @@ namespace ORTS.MultiPlayer
 				car.CarID = player.ids[i];
 				train.Cars.Add(car);
 				car.Train = train;
-				previousCar = car;
 				MSTSWagon w = (MSTSWagon)car;
 				if (w != null)
 				{

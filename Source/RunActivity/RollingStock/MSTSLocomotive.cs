@@ -145,8 +145,8 @@ namespace ORTS
         float? dynamicBrakeTarget;
         float? throttleTarget;
 
-        public MSTSLocomotive(Simulator simulator, string wagPath, TrainCar previousCar)
-            : base(simulator, wagPath, previousCar)
+        public MSTSLocomotive(Simulator simulator, string wagPath)
+            : base(simulator, wagPath)
         {
 			BrakePipeChargingRatePSIpS = simulator.Settings.BrakePipeChargingRate;
 

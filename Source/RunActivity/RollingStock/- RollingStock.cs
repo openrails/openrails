@@ -9,7 +9,7 @@ namespace ORTS
 {
     public static class RollingStock
     {
-        public static TrainCar Load(Simulator simulator, string wagFilePath, TrainCar previousCar)
+        public static TrainCar Load(Simulator simulator, string wagFilePath)
         {
             GenericWAGFile wagFile = SharedGenericWAGFileManager.Get(wagFilePath);  
             TrainCar car;
@@ -35,7 +35,7 @@ namespace ORTS
             if (!wagFile.IsEngine)
             {   
                 // its an ordinary MSTS wagon
-                car = new MSTSWagon(simulator, wagFilePath, previousCar);
+                car = new MSTSWagon(simulator, wagFilePath);
             }
             else
             {   
@@ -46,9 +46,9 @@ namespace ORTS
                 switch (wagFile.Engine.Type.ToLower())
                 {
                         // TODO complete parsing of proper car types
-                    case "electric": car = new MSTSElectricLocomotive(simulator, wagFilePath, previousCar); break;
-                    case "steam": car = new MSTSSteamLocomotive(simulator, wagFilePath, previousCar); break;
-                    case "diesel": car = new MSTSDieselLocomotive(simulator, wagFilePath, previousCar); break;
+                    case "electric": car = new MSTSElectricLocomotive(simulator, wagFilePath); break;
+                    case "steam": car = new MSTSSteamLocomotive(simulator, wagFilePath); break;
+                    case "diesel": car = new MSTSDieselLocomotive(simulator, wagFilePath); break;
 					default: throw new InvalidDataException(wagFilePath + "\r\n\r\nUnknown engine type: " + wagFile.Engine.Type);
                 }
             }
@@ -62,9 +62,9 @@ namespace ORTS
             wagon.Save(outf);
         }
 
-		public static TrainCar Restore(Simulator simulator, BinaryReader inf, Train train, TrainCar previousCar)
+        public static TrainCar Restore(Simulator simulator, BinaryReader inf, Train train)
         {
-            TrainCar car = Load(simulator, inf.ReadString(), previousCar);
+            TrainCar car = Load(simulator, inf.ReadString());
             car.Train = train;
             car.Restore(inf);
             return car;

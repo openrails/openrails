@@ -1031,20 +1031,19 @@ namespace ORTS.MultiPlayer
 			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 			//if (consistDirection != 1)
 			//	train.RearTDBTraveller.ReverseDirection();
-			TrainCar previousCar = null;
 			for(var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
 				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + cars[i];
 				TrainCar car = null;
 				try
 				{
-					car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
+                    car = RollingStock.Load(Program.Simulator, wagonFilePath);
 					car.Length = lengths[i];
 				}
 				catch (Exception error)
 				{
 					System.Console.WriteLine( wagonFilePath +" " + error);
-					car = MPManager.Instance().SubCar(wagonFilePath, lengths[i], previousCar);
+                    car = MPManager.Instance().SubCar(wagonFilePath, lengths[i]);
 				}
 				if (car == null) continue;
 				bool flip = true;
@@ -1053,7 +1052,6 @@ namespace ORTS.MultiPlayer
 				car.CarID = ids[i];
 				train.Cars.Add(car);
 				car.Train = train;
-				previousCar = car;
 
 			}// for each rail car
 
@@ -1215,7 +1213,6 @@ namespace ORTS.MultiPlayer
 			if (found)
 			{
 				Traveller traveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
-				TrainCar previousCar = null;
 				List<TrainCar> tmpCars = new List<TrainCar>();
 				for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 				{
@@ -1223,13 +1220,13 @@ namespace ORTS.MultiPlayer
 					TrainCar car = findCar(train, ids[i]);
 					try
 					{
-						if (car == null) car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar);
+                        if (car == null) car = RollingStock.Load(Program.Simulator, wagonFilePath);
 						car.Length = lengths[i];
 					}
 					catch (Exception error)
 					{
 						System.Console.WriteLine(wagonFilePath + " " + error);
-						car = MPManager.Instance().SubCar(wagonFilePath, lengths[i], previousCar);
+                        car = MPManager.Instance().SubCar(wagonFilePath, lengths[i]);
 					}
 					if (car == null) continue;
 					bool flip = true;
@@ -1238,7 +1235,6 @@ namespace ORTS.MultiPlayer
 					car.CarID = ids[i];
 					tmpCars.Add(car);
 					car.Train = train;
-					previousCar = car;
 
 				}// for each rail car
 
@@ -1256,20 +1252,19 @@ namespace ORTS.MultiPlayer
 			int consistDirection = direction;
 			train1.travelled = Travelled;
 			train1.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
-			TrainCar previousCar1 = null;
 			for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
 				string wagonFilePath = Program.Simulator.BasePath + @"\trains\trainset\" + cars[i];
 				TrainCar car = null;
 				try
 				{
-					car = RollingStock.Load(Program.Simulator, wagonFilePath, previousCar1);
+                    car = RollingStock.Load(Program.Simulator, wagonFilePath);
 					car.Length = lengths[i];
 				}
 				catch (Exception error)
 				{
 					System.Console.WriteLine(wagonFilePath + " " + error);
-					car = MPManager.Instance().SubCar(wagonFilePath, lengths[i], previousCar1);
+                    car = MPManager.Instance().SubCar(wagonFilePath, lengths[i]);
 				}
 				if (car == null) continue;
 				bool flip = true;
@@ -1278,7 +1273,6 @@ namespace ORTS.MultiPlayer
 				car.CarID = ids[i];
 				train1.Cars.Add(car);
 				car.Train = train1;
-				previousCar1 = car;
 			}// for each rail car
 
 			if (train1.Cars.Count == 0) return;
@@ -2443,20 +2437,17 @@ namespace ORTS.MultiPlayer
 
 			//if (consistDirection != 1)
 			//	train.RearTDBTraveller.ReverseDirection();
-			TrainCar previousCar = null;
 			List<TrainCar> tmpCars = new List<TrainCar>();
 			for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
 			{
 				TrainCar car = FindCar(train, train2, ids[i]);
 				if (car == null) continue;
-				//car.PreviousCar = previousCar;
 				bool flip = true;
 				if (flipped[i] == 0) flip = false;
 				car.Flipped = flip;
 				car.CarID = ids[i];
 				tmpCars.Add(car);
 				car.Train = train;
-				previousCar = car;
 
 			}// for each rail car
 			if (tmpCars.Count == 0) return;

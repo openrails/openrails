@@ -835,7 +835,6 @@ namespace ORTS
 			CONFile conFile = new CONFile(conFileName);
 
 			// add wagons
-			TrainCar previousCar = null;
 			foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
 			{
 
@@ -846,14 +845,13 @@ namespace ORTS
 
                 try
                 {
-                    TrainCar car = RollingStock.Load(this, wagonFilePath, previousCar);
+                    TrainCar car = RollingStock.Load(this, wagonFilePath);
                     car.Flipped = wagon.Flip;
                     car.UiD = wagon.UiD;
                     if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
                     else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
                     train.Cars.Add(car);
                     car.Train = train;
-                    previousCar = car;
                     if ((Activity != null) && (car.GetType() == typeof(MSTSDieselLocomotive)))
                     {
                         ((MSTSDieselLocomotive)car).DieselLevelL = ((MSTSDieselLocomotive)car).MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
@@ -920,7 +918,6 @@ namespace ORTS
 					// add wagons in reverse order - ie first wagon is at back of train
 					// static consists are listed back to front in the activities, so we have to reverse the order, and flip the cars
 					// when we add them to ORTS
-					TrainCar previousCar = null;
 					for (int iWagon = activityObject.Train_Config.TrainCfg.WagonList.Count - 1; iWagon >= 0; --iWagon)
 					{
 						Wagon wagon = (Wagon)activityObject.Train_Config.TrainCfg.WagonList[iWagon];
@@ -930,13 +927,12 @@ namespace ORTS
 							wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 						try
 						{
-							TrainCar car = RollingStock.Load(this, wagonFilePath, previousCar);
+                            TrainCar car = RollingStock.Load(this, wagonFilePath);
 							car.Flipped = !wagon.Flip;
 							car.UiD = wagon.UiD;
 							car.CarID = activityObject.ID + " - " + car.UiD;
 							train.Cars.Add(car);
 							car.Train = train;
-							previousCar = car;
 						}
 						catch (Exception error)
 						{

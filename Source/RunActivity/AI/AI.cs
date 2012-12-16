@@ -202,7 +202,7 @@ namespace ORTS
                 if (wagon.IsEngine)
                 {
                     wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
-                    TrainCar car = RollingStock.Load(Simulator, wagonFilePath, null);
+                    TrainCar car = RollingStock.Load(Simulator, wagonFilePath);
                     MSTSLocomotive loco = car as MSTSLocomotive;
                     locoMaxSpeedMpS = Math.Min(loco.MaxSpeedMpS * srvFile.Efficiency, locoMaxSpeedMpS);
                 }
@@ -274,7 +274,6 @@ namespace ORTS
             }
 
             // add wagons
-            TrainCar previousCar = null;
 			var id = 0;
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
@@ -286,14 +285,13 @@ namespace ORTS
 
                 try
                 {
-                    TrainCar car = RollingStock.Load(Simulator, wagonFilePath, previousCar);
+                    TrainCar car = RollingStock.Load(Simulator, wagonFilePath);
                     car.Flipped = wagon.Flip;
 					car.UiD = id++;
 					car.CarID = "AI" + train.UiD + " - " + car.UiD;
                     train.Cars.Add(car);
                     car.Train = train;
                     car.SignalEvent(EventID.Pantograph1Up);
-                    previousCar = car;
                     car.SpeedMpS = car.Flipped ? -train.SpeedMpS : train.SpeedMpS;
                 }
                 catch (Exception error)

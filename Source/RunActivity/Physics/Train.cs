@@ -21,18 +21,16 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
 
- 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using MSTS;
-using ORTS.Popups;
 using ORTS.MultiPlayer;
+using ORTS.Popups;
 
 namespace ORTS
 {
@@ -271,7 +269,7 @@ namespace ORTS
 		{
 			int count = inf.ReadInt32();
 			for (int i = 0; i < count; ++i)
-				Cars.Add(RollingStock.Restore(simulator, inf, this, i == 0 ? null : Cars[i - 1]));
+                Cars.Add(RollingStock.Restore(simulator, inf, this));
 		}
 
         public void InitializeSignals(bool existingSpeedLimits)

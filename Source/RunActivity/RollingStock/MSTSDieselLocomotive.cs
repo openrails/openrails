@@ -61,8 +61,8 @@ namespace ORTS
         Color ExhaustSteadyColor = Color.Gray;
         Color ExhaustTransientColor = Color.Black;
 
-		public MSTSDieselLocomotive(Simulator simulator, string wagFile, TrainCar previousCar)
-            : base(simulator, wagFile, previousCar)
+        public MSTSDieselLocomotive(Simulator simulator, string wagFile)
+            : base(simulator, wagFile)
         {
             PowerOn = true;
             InitialMassKg = MassKG;

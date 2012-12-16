@@ -765,7 +765,7 @@ namespace ORTS.MultiPlayer
 			}
 			DispatcherWindow.Dispose();
 		}
-		public TrainCar SubCar(string wagonFilePath, int length, TrainCar previousCar)
+        public TrainCar SubCar(string wagonFilePath, int length)
 		{
 			System.Console.WriteLine("Will substitute with your existing stocks\n.");
 			TrainCar car = null;
@@ -774,7 +774,7 @@ namespace ORTS.MultiPlayer
 				char type = 'w';
 				if (wagonFilePath.ToLower().Contains(".eng")) type = 'e';
 				string newWagonFilePath = SubMissingCar(length, type);
-				car = RollingStock.Load(Program.Simulator, newWagonFilePath, previousCar);
+                car = RollingStock.Load(Program.Simulator, newWagonFilePath);
 				car.Length = length;
 				car.RealWagFilePath = wagonFilePath;
 				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("Missing car, have substituted with other one.");
