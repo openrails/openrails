@@ -47,7 +47,7 @@ namespace ORTS
             LastMouseState = MouseState;
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
             KeyboardState = viewer.RenderProcess.IsActive ? Keyboard.GetState() : new KeyboardState();
-            MouseState = viewer.RenderProcess.IsActive ? Mouse.GetState() : new MouseState(0, 0, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+            MouseState = viewer.RenderProcess.IsActive ? Mouse.GetState() : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
 			if (LastKeyboardState != KeyboardState && viewer.ComposeMessageWindow.Visible == true)
 			{
 				Changed = false;
@@ -128,6 +128,9 @@ namespace ORTS
         public static int MouseMoveX() { return MouseState.X - LastMouseState.X; }
         public static int MouseMoveY() { return MouseState.Y - LastMouseState.Y; }
 
+        public static bool IsMouseWheelChanged() { return MouseState.ScrollWheelValue != LastMouseState.ScrollWheelValue; }
+        public static int MouseWheelChange() { return MouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue; }
+
         public static bool IsMouseLeftButtonDown() { return MouseState.LeftButton == ButtonState.Pressed; }
         public static bool IsMouseLeftButtonPressed() { return MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released; }
         public static bool IsMouseLeftButtonReleased() { return MouseState.LeftButton == ButtonState.Released && LastMouseState.LeftButton == ButtonState.Pressed; }
@@ -139,7 +142,6 @@ namespace ORTS
         public static bool IsMouseRightButtonDown() { return MouseState.RightButton == ButtonState.Pressed; }
         public static bool IsMouseRightButtonPressed() { return MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released; }
         public static bool IsMouseRightButtonReleased() { return MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed; }
-		public static int MouseWheelScrolled() { return MouseState.ScrollWheelValue; }
     }
 
 

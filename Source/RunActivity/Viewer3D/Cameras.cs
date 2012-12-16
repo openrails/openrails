@@ -400,12 +400,12 @@ namespace ORTS {
         }            
 
         // <CJ Comment> To Do: Add a way to record this zoom operation. </CJ Comment>
-        protected void ZoomByMouseWheel( float speed, float factor ) {
-            var scrolledValue = UserInput.MouseWheelScrolled() - MouseScrollValue;
-            MouseScrollValue += scrolledValue;
-            if( scrolledValue != 0 && !Viewer.HelpWindow.Visible ) { //will not zoom-in-out when help windows is up
-                ZoomIn( ( scrolledValue > 0 ? speed : -speed ) * factor);
-            }
+        protected void ZoomByMouseWheel(float speed, float factor)
+        {
+            // Will not zoom-in-out when help windows is up.
+            // TODO: Propery input processing through WindowManager.
+            if (UserInput.IsMouseWheelChanged() && !Viewer.HelpWindow.Visible)
+                ZoomIn(Math.Sign(UserInput.MouseWheelChange()) * speed  * factor);
         }
 
         /// <summary>
