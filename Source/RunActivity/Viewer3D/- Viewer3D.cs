@@ -862,7 +862,8 @@ namespace ORTS
 
         public void SwapLocomotives() {
             Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
-            Simulator.PlayerLocomotive.Train.CalculatePositionOfCars( 0 );  // fix the front traveller
+            SetCommandReceivers();
+            Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
             Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
             PlayerLocomotiveViewer = World.Trains.GetViewer( Simulator.PlayerLocomotive );
             PlayerTrainLength = 0;
