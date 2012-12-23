@@ -188,12 +188,21 @@ namespace ORTS
                 var i = (float)(shadowMapIndex + 1);
                 var Clog = n * (float)Math.Pow(f / n, i / m);
                 var Cuniform = n + (f - n) * i / m;
-                var C = (Clog + Cuniform) / 2;
+                var C = (3 * Clog + Cuniform) / 4;
 
                 // This shadow map goes from LastC to C; calculate the correct center and diameter for the sphere from the view frustum.
-                var center = (LastC + C) / 2;
-                var height = (float)Math.Sin(fov / 2) * C;
-                var diameter = 2 * (float)Math.Sqrt(height * height + (height * ratio) * (height * ratio) + (C - center) * (C - center));
+                var height1 = (float)Math.Tan(fov / 2) * LastC;
+                var height2 = (float)Math.Tan(fov / 2) * C;
+                var width1 = height1 * ratio;
+                var width2 = height2 * ratio;
+                var corner1 = new Vector3(height1, width1, LastC);
+                var corner2 = new Vector3(height2, width2, C);
+                var cornerCenter = (corner1 + corner2) / 2;
+                var length = cornerCenter.Length();
+                cornerCenter.Normalize();
+                var cornerCenterPlane = new Plane(cornerCenter, length);
+                var center = cornerCenterPlane.DotCoordinate(Vector3.UnitZ);
+                var diameter = 2 * (float)Math.Sqrt(height2 * height2 + width2 * width2 + (C - center) * (C - center));
 
                 ShadowMapDistance[shadowMapIndex] = (int)center;
                 ShadowMapDiameter[shadowMapIndex] = (int)diameter;

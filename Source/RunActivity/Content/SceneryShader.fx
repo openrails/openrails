@@ -416,6 +416,7 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
 	return float4(litColor, Color.a);
 }
 
