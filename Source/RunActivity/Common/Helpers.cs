@@ -51,6 +51,11 @@ namespace ORTS
             return GetTextureFile(simulator, textureFlags, simulator.RoutePath + @"\Textures", textureName);
         }
 
+        public static string GetTransferTextureFile(Simulator simulator, string textureName)
+        {
+            return GetTextureFile(simulator, Helpers.TextureFlags.Snow, simulator.RoutePath + @"\Textures", textureName);
+        }
+
         public static string GetTerrainTextureFile(Simulator simulator, string textureName)
         {
             return GetTextureFile(simulator, Helpers.TextureFlags.Snow, simulator.RoutePath + @"\TerrTex", textureName);

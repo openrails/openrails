@@ -22,7 +22,7 @@ namespace ORTS
         public TransferShape(Viewer3D viewer, MSTS.TransferObj transfer, WorldPosition position)
             : base(viewer, null, RemoveRotation(position), ShapeFlags.AutoZBias)
         {
-            Material = viewer.MaterialManager.Load("Transfer", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, transfer.FileName));
+            Material = viewer.MaterialManager.Load("Transfer", Helpers.GetTransferTextureFile(viewer.Simulator, transfer.FileName));
             Primitive = new TransferMesh(viewer, transfer.Width, transfer.Height, position);
         }
 
