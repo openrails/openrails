@@ -796,7 +796,7 @@ namespace ORTS
         public class SubObject
         {
             static readonly SceneryMaterialOptions[] UVTextureAddressModeMap = new[] {
-                SceneryMaterialOptions.None,
+                SceneryMaterialOptions.TextureAddressModeWrap,
                 SceneryMaterialOptions.TextureAddressModeMirror,
                 SceneryMaterialOptions.TextureAddressModeClamp,
                 SceneryMaterialOptions.TextureAddressModeBorder,
