@@ -260,10 +260,6 @@ namespace ORTS
             Lights = copy.Lights;
             foreach (ViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
-            foreach (ViewPoint frontCabViewPoint in copy.FrontCabViewpoints)
-                FrontCabViewpoints.Add(frontCabViewPoint);
-            foreach (ViewPoint rearCabViewPoint in copy.RearCabViewpoints)
-                RearCabViewpoints.Add(rearCabViewPoint);
             foreach (ViewPoint headOutViewPoint in copy.HeadOutViewpoints)
                 HeadOutViewpoints.Add(headOutViewPoint);
             foreach (MSTSCoupling coupler in copy.Couplers)

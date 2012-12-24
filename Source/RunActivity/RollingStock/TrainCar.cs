@@ -31,13 +31,12 @@ namespace ORTS
         public float Height = 4;        // derived classes must overwrite these defaults
         public float MassKG = 10000;
         public bool IsDriveable = false;
-        //public bool HasCabView = false;
 	    public bool IsFreight = false;  // indication freight wagon or passenger car
 
         public LightCollection Lights = null;
         public int Headlight = 0;
 
-        // instance variables set by train train physics when it creates the traincar
+        // instance variables set by train physics when it creates the traincar
         public Train Train = null;  // the car is connected to this train
         public bool Flipped = false; // the car is reversed in the consist
         public int UiD;
@@ -72,8 +71,6 @@ namespace ORTS
             get{ return _AccelerationMpSS; }
         }
 
-
-
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
         public float DynamicBrakePercent { get { return Train.MUDynamicBrakePercent; } set { Train.MUDynamicBrakePercent = value; } }
@@ -85,9 +82,9 @@ namespace ORTS
 
         // TrainCar.Update() must set these variables
         public float MotiveForceN = 0.0f;   // ie motor power in Newtons  - signed relative to direction of car - 
-        public float GravityForceN = 0.0f;   // Newtons  - signed relative to direction of car - 
+        public float GravityForceN = 0.0f;  // Newtons  - signed relative to direction of car - 
         public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
-        public float BrakeForceN = 0.0f;    //brake force in Newtons
+        public float BrakeForceN = 0.0f;    // brake force in Newtons
         public float TotalForceN; // sum of all the forces active on car relative train direction
 
         // temporary values used to compute coupler forces
@@ -105,8 +102,6 @@ namespace ORTS
         public List<TrainCarPart> Parts = new List<TrainCarPart>();
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
-        public List<ViewPoint> FrontCabViewpoints = new List<ViewPoint>();
-        public List<ViewPoint> RearCabViewpoints = new List<ViewPoint>();
         public List<ViewPoint> PassengerViewpoints = new List<ViewPoint>();
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
@@ -179,6 +174,24 @@ namespace ORTS
             Headlight = inf.ReadInt32();
         }
 
+        public bool HasFrontCab { get
+            {
+                var loco = this as MSTSLocomotive;
+                var i = (int)CabViewType.Front;
+                if (loco == null || loco.CabViewList.Count <= i) return false;
+                return (loco.CabViewList[i].ViewPointList.Count > 0);
+            }
+        }
+
+        public bool HasRearCab { get
+            {
+                var loco = this as MSTSLocomotive;
+                var i = (int)CabViewType.Rear;
+                if (loco == null || loco.CabViewList.Count <= i) return false;
+                return (loco.CabViewList[i].ViewPointList.Count > 0);
+            }
+        }
+
         public virtual float GetCouplerZeroLengthM()
         {
             return 0;
@@ -203,18 +216,16 @@ namespace ORTS
         {
             return 1e10f;
         }
+        
         public virtual void CopyCoupler(TrainCar other)
         {
             CouplerSlackM = other.CouplerSlackM;
             CouplerSlack2M = other.CouplerSlack2M;
         }
+
         public virtual void CopyControllerSettings(TrainCar other)
         {
             Headlight = other.Headlight;
-        }
-        public virtual bool GetCabFlipped()
-        {
-            return false;
         }
 
         public void AddWheelSet(float offset, int bogie, int parentMatrix)

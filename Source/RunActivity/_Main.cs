@@ -277,6 +277,7 @@ namespace ORTS
                     InitSimulator( settings, values.args, "Resume" );
                     Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
                     Viewer = new Viewer3D( Simulator );
+                    //Viewer.SetCommandReceivers();
 
                     // Reload the command log
                     Viewer.Log = new CommandLog( Viewer );

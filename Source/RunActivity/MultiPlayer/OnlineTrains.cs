@@ -216,7 +216,7 @@ namespace ORTS.MultiPlayer
 			}
 			if (train.LeadLocomotive == null)
 			{
-				train.LeadNextLocomotive();
+				train.ChangeToNextCab();
 				if (train.LeadLocomotive != null) p.LeadingLocomotiveID = train.LeadLocomotive.CarID;
 				else p.LeadingLocomotiveID = "NA";
 			}

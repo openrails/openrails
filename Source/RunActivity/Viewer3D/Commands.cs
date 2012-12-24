@@ -731,16 +731,16 @@ namespace ORTS {
 
     // Other
     [Serializable()]
-    public class SwapLocomotivesCommand : Command {
+    public class ChangeCabCommand : Command {
         public static Viewer3D Receiver { get; set; }
 
-        public SwapLocomotivesCommand( CommandLog log ) 
+        public ChangeCabCommand( CommandLog log ) 
             : base( log ) {
             Redo();
         }
 
         public override void Redo() {
-            Receiver.SwapLocomotives();
+            Receiver.ChangeCab();
             // Report();
         }
     }

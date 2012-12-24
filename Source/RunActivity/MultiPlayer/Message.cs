@@ -2195,7 +2195,7 @@ namespace ORTS.MultiPlayer
 				if (tmpcars2.Count == 0) return;
 				train2.Cars = tmpcars2;
 				train2.LeadLocomotive = null;
-				train2.LeadNextLocomotive();
+				train2.ChangeToNextCab();
 				train2.CheckFreight();
 
 				//train2 may contain myself, and no other players, thus will make myself controlling this train
@@ -2462,7 +2462,7 @@ namespace ORTS.MultiPlayer
 			train.LeadLocomotive = null; train2.LeadLocomotive = null;
 			if (Lead != -1 && Lead < train.Cars.Count ) train.LeadLocomotive = train.Cars[Lead];
 
-			if (train.LeadLocomotive == null) train.LeadNextLocomotive();
+			if (train.LeadLocomotive == null) train.ChangeToNextCab();
 
 			//mine is not the leading locomotive, thus I give up the control
 			if (train.LeadLocomotive != Program.Simulator.PlayerLocomotive)

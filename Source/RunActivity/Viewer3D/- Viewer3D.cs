@@ -344,7 +344,7 @@ namespace ORTS
         /// The Receiver is a static property as all commands of the same class share the same Receiver
         /// and it needs to be set before the command is used.
         /// </summary>
-        void SetCommandReceivers() {
+        public void SetCommandReceivers() {
             ReverserCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             NotchedThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ContinuousThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
@@ -378,7 +378,7 @@ namespace ORTS
             ToggleCabLightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleWipersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             HeadlightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            SwapLocomotivesCommand.Receiver = this;
+            ChangeCabCommand.Receiver = this;
             ToggleDoorsLeftCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleDoorsRightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleMirrorsCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
@@ -592,15 +592,17 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DebugTracks)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DebugSignalling)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
 
-            if (UserInput.IsPressed(UserCommands.GameLocomotiveSwap))
+            if (UserInput.IsPressed(UserCommands.GameChangeCab))
             {
-                if (PlayerLocomotive.ThrottlePercent >= 1 || Math.Abs(PlayerLocomotive.SpeedMpS) > 1)
+                if (PlayerLocomotive.ThrottlePercent >= 1 
+                    || Math.Abs(PlayerLocomotive.SpeedMpS) > 1
+                    || !IsReverserInNeutral(PlayerLocomotive))
                 {
-                    Simulator.Confirmer.Warning(CabControl.SwitchLocomotive, CabSetting.Warn2);
+                    Simulator.Confirmer.Warning(CabControl.ChangeCab, CabSetting.Warn2);
                 } 
                 else
                 {
-                    new SwapLocomotivesCommand(Log);
+                    new ChangeCabCommand(Log);
                 }
             }
 
@@ -650,7 +652,6 @@ namespace ORTS
             if( UserInput.IsPressed( UserCommands.GameSwitchBehind ) )
                 if( Simulator.SwitchTrackBehind( PlayerTrain ) )
                     new ToggleSwitchBehindCommand( Log );
-            if( UserInput.IsPressed( UserCommands.DebugLocomotiveFlip ) ) { Simulator.PlayerLocomotive.Flipped = !Simulator.PlayerLocomotive.Flipped; Simulator.PlayerLocomotive.SpeedMpS *= -1; }
 			if (UserInput.IsPressed(UserCommands.DebugResetSignal))
 			{
 				if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) MPManager.Instance().RequestSignalReset();
@@ -834,6 +835,15 @@ namespace ORTS
 
             originalMouseState = currentMouseState;
         }
+       
+        private bool IsReverserInNeutral(TrainCar car)
+        {
+            // Diesel and electric locos have a Reverser lever and,
+            // in the neutral position, direction == N
+            return car.Direction == Direction.N
+            // Steam locos never have direction == N, so check for setting close to zero.
+            || Math.Abs(car.Train.MUReverserPercent) <= 1;
+        }
         /// <summary>
         /// If the player changes the camera during replay, then further replay of the camera is suspended.
         /// The player's camera commands will be recorded instead of the replay camera commands.
@@ -860,17 +870,22 @@ namespace ORTS
             }
         }
 
-        public void SwapLocomotives() {
-            Simulator.PlayerLocomotive.Train.LeadNextLocomotive();
-            SetCommandReceivers();
-            Simulator.PlayerLocomotive.Train.CalculatePositionOfCars(0);  // fix the front traveller
-            Simulator.PlayerLocomotive.Train.RepositionRearTraveller();    // fix the rear traveller
-            PlayerLocomotiveViewer = World.Trains.GetViewer( Simulator.PlayerLocomotive );
+        public void ChangeCab() {
+            var loco = Simulator.PlayerLocomotive;
+            if (!loco.Train.IsChangeCabAvailable()) return;
+
+            loco.Train.ChangeToNextCab();
+            loco.Train.CalculatePositionOfCars( 0 );  // fix the front traveller
+            loco.Train.RepositionRearTraveller();    // fix the rear traveller
+            PlayerLocomotiveViewer = World.Trains.GetViewer( loco );
             PlayerTrainLength = 0;
 			FrontCamera.Reset();
 			BackCamera.Reset();
+            CabCamera.ReactivateCamera((MSTSLocomotive)loco);
+            SetCommandReceivers();
 			//temporarily removed the following as MP does not support replay
-            //if( MPManager.IsMultiPlayer() ) MPManager.LocoChange( Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive );
+            //if( MPManager.IsMultiPlayer() ) MPManager.LocoChange( loco.Train, loco );
+            Simulator.Confirmer.Confirm(CabControl.ChangeCab, CabSetting.On);
         }
 
         public void ToggleSwitchAhead() {

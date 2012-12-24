@@ -1051,13 +1051,12 @@ namespace ORTS {
         }
     }
 
-    //public class CabCamera : AttachedCamera {
     public class CabCamera : NonTrackingCamera {
         protected int sideLocation = 0;
         public int SideLocation { get { return sideLocation; } }
 
         public override Styles Style { get { return Styles.Cab; } }
-        public override bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.FrontCabViewpoints.Count > 0; } }
+        public override bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.HasFrontCab; } }
 
         public override bool IsUnderground {
             get {
@@ -1093,6 +1092,11 @@ namespace ORTS {
             base.OnActivate( sameCamera );
         }
 
+        public void ReactivateCamera(TrainCar car)
+        {
+            SetCameraCar( car);
+        }
+
         protected override List<TrainCar> GetCameraCars() {
             return new List<TrainCar>( new[] { Viewer.PlayerLocomotive } );
         }
@@ -1104,8 +1108,15 @@ namespace ORTS {
 
         protected override void SetCameraCar( TrainCar car ) {
             base.SetCameraCar( car );
-            attachedLocation = attachedCar.FrontCabViewpoints[sideLocation].Location;
-            InitialiseRotation( attachedCar );
+            if (car != null)
+            {
+                var loco = car as MSTSLocomotive;
+                var viewpoints = (loco.UsingRearCab)
+                ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
+                : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
+                attachedLocation = viewpoints[sideLocation].Location;
+            }
+            InitialiseRotation(attachedCar);
         }
 
         /// <summary>
@@ -1115,9 +1126,15 @@ namespace ORTS {
         void ShiftView( int index, float rotationXRadians ) {
             sideLocation += index;
 
+            var loco = attachedCar as MSTSLocomotive;
+            var count = (loco.UsingRearCab)
+                ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList.Count
+                : loco.CabViewList[(int)CabViewType.Front].ViewPointList.Count;
+            
+            // Wrap around
             if( sideLocation < 0 )
-                sideLocation = attachedCar.FrontCabViewpoints.Count - 1;
-            else if( sideLocation >= attachedCar.FrontCabViewpoints.Count )
+                sideLocation = count - 1;
+            else if( sideLocation >= count )
                 sideLocation = 0;
 
             SetCameraCar( attachedCar, rotationXRadians );
@@ -1159,8 +1176,15 @@ namespace ORTS {
         /// </summary>
         /// <param name="attachedCar"></param>
         public void InitialiseRotation( TrainCar attachedCar ) {
-            RotationXRadians = MSTSMath.M.Radians( attachedCar.FrontCabViewpoints[sideLocation].StartDirection.X );
-            RotationYRadians = MSTSMath.M.Radians( attachedCar.FrontCabViewpoints[sideLocation].StartDirection.Y );
+            if (attachedCar == null) return;
+
+            var loco = attachedCar as MSTSLocomotive;
+            var viewpoints = (loco.UsingRearCab)
+            ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
+            : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
+
+            RotationXRadians = MSTSMath.M.Radians(viewpoints[sideLocation].StartDirection.X);
+            RotationYRadians = MSTSMath.M.Radians(viewpoints[sideLocation].StartDirection.Y);
         }
 
         public override void HandleUserInput( ElapsedTime elapsedTime ) {
@@ -1259,7 +1283,7 @@ namespace ORTS {
         public override void Update( ElapsedTime elapsedTime ) {
             var train = attachedCar.Train;
 
-            if( train != Viewer.PlayerTrain && train.LeadLocomotive == null ) train.LeadNextLocomotive();
+            if( train != Viewer.PlayerTrain && train.LeadLocomotive == null ) train.ChangeToNextCab();
             if( train.LeadLocomotive == null ) {
                 return;
             }

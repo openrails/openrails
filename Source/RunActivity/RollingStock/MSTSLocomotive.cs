@@ -3,11 +3,11 @@
  * Used as a base for Steam, Diesel and Electric locomotive classes.
  * 
  * A locomotive is represented by two classes:
- *  LocomotiveSimulator - defines the behaviour, ie physics, motion, power generated etc
- *  LocomotiveViewer - defines the appearance in a 3D viewer including animation for wipers etc
+ *  MSTSLocomotive - defines the behaviour, ie physics, motion, power generated etc
+ *  MSTSLocomotiveViewer - defines the appearance in a 3D viewer including animation for wipers etc
  *  
  * Both these classes derive from corresponding classes for a basic TrainCar
- *  TrainCarSimulator - provides for movement, rolling friction, etc
+ *  TrainCar - provides for movement, rolling friction, etc
  *  TrainCarViewer - provides basic animation for running gear, wipers, etc
  *  
  * Locomotives can either be controlled by a player, 
@@ -49,6 +49,10 @@ namespace ORTS
     ///   SIMULATION BEHAVIOUR
     ///////////////////////////////////////////////////
 
+    public enum CabViewType {
+        Front = 0,
+        Rear = 1,
+    }
 
     /// <summary>
     /// Adds Throttle, Direction, Horn, Sander and Wiper control
@@ -73,7 +77,6 @@ namespace ORTS
         public float AverageForceN = 0;
         public bool PowerOn = false;
         public float PowerOnDelay = 0.0f;
-        // by GeorgeS
         public bool CabLightOn = false;
         public bool ShowCab = true;
 
@@ -100,7 +103,7 @@ namespace ORTS
         public float DynamicBrakeSpeed4 = 35;
         public float MaxDynamicBrakeForceN = 0;
         public bool DynamicBrakeAutoBailOff = false;
-        bool CabFlipped = false;
+        public bool UsingRearCab = false;
 
         public bool HasCombCtrl = false;
         public bool HasStepCtrl = false;
@@ -124,8 +127,7 @@ namespace ORTS
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
 
-        public CVFFile CVFFile = null;
-        public ExtendedCVF ExCVF = null;
+        public List<CabView> CabViewList = new List<CabView>();
 
         public MSTSNotchController  ThrottleController;
         public MSTSBrakeController  TrainBrakeController;
@@ -192,36 +194,23 @@ namespace ORTS
                     AlerterStartUp();
             }
 
-            if( CVFFileName != null ) {
-                var cvfBasePath = Path.Combine( Path.GetDirectoryName( WagFilePath ), "CABVIEW" );
-                var cvfFilePath = Path.Combine( cvfBasePath, CVFFileName );
-				if (File.Exists(cvfFilePath)) {
-					CVFFile = new CVFFile( cvfFilePath, cvfBasePath );
-
-					// Set up camera locations for the cab views
-					for( int i = 0; i < CVFFile.Locations.Count; ++i ) {
-						if( i >= CVFFile.Locations.Count || i >= CVFFile.Directions.Count ) {
-							Trace.TraceWarning( "Skipped cab view camera {1} missing Position and Direction in {0}", cvfFilePath, i );
-							break;
-						}
-						ViewPoint viewPoint = new ViewPoint();
-						viewPoint.Location = CVFFile.Locations[i];
-						viewPoint.StartDirection = CVFFile.Directions[i];
-						viewPoint.RotationLimit = new Vector3( 0, 0, 0 );  // cab views have a fixed head position
-						FrontCabViewpoints.Add( viewPoint );
-					}
-
-                    var y = CVFFile.Directions[0].Y; // abbreviation
-                    // Most models use range -180 to 180 but Making Trains have some with 0 to 360
-                    CabFlipped = y < -90 || (y > 90 && y < 270);
-
-                    ExCVF = null;
-					if( ExCVF == null && !(this is MSTSSteamLocomotive) ) {
-						ExCVF = new ExtendedCVF();
-						InitializeFromORTSSpecific( cvfFilePath, ExCVF );
-					}
-                }else{
-                    Trace.TraceWarning("{0} locomotive's CabView references non-existant {1}", wagFilePath, cvfFilePath);
+            // Assumes that CabViewList[0] is the front cab
+            // and that CabViewList[1] is the rear cab, if present.
+            // Could be extended to more than 2 cabs.
+            if (CVFFileName != null)
+            {
+                var cabView = BuildCabView(WagFilePath, CVFFileName, CabViewType.Front);
+                if (cabView != null)
+                {
+                    CabViewList.Add(cabView);
+                    var reverseCVFFileName = Path.Combine(Path.GetDirectoryName(CVFFileName), // Some CVF paths begin with "..\..\"
+                                                            // so Path.GetDirectoryName() is needed.
+                                                            Path.GetFileNameWithoutExtension(CVFFileName) + "_rv.cvf");
+                    {
+                        cabView = BuildCabView(WagFilePath, reverseCVFFileName, CabViewType.Rear);
+                        if (cabView != null)
+                            CabViewList.Add(cabView);
+                    }
                 }
             }
 
@@ -258,6 +247,60 @@ namespace ORTS
             }
         }
 
+        private CabView BuildCabView(string wagFilePath, string cvfFileName, CabViewType type)
+        {
+            var viewPointList = new List<ViewPoint>();
+            var extendedCVF = new ExtendedCVF();
+
+            var cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW");
+            var cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
+
+            if (File.Exists(cvfFilePath))
+            {
+                var cvfFile = new CVFFile(cvfFilePath, cvfBasePath);
+                var viewPoint = new ViewPoint();                    // Set up camera locations for the cab views
+                for (int i = 0; i < cvfFile.Locations.Count; ++i)
+                {
+                    if (i >= cvfFile.Locations.Count || i >= cvfFile.Directions.Count)
+                    {
+                        Trace.TraceWarning("Skipped cab view camera {1} missing Position and Direction in {0}", cvfFilePath, i);
+                        break;
+                    }
+                    viewPoint = new ViewPoint();
+                    viewPoint.Location = cvfFile.Locations[i];
+                    viewPoint.StartDirection = cvfFile.Directions[i];
+                    viewPoint.RotationLimit = new Vector3(0, 0, 0);  // cab views have a fixed head position
+                    viewPointList.Add(viewPoint);
+                }
+
+                var y = cvfFile.Directions[0].Y; // abbreviation
+                // Most models use range -180 to 180 but Making Trains have some with 0 to 360
+                var isRearFacing = (y < -90 || (y > 90 && y < 270));
+                if (type == CabViewType.Front)
+                {
+                    // Most models use range -180 to 180 but Making Trains have some with 0 to 360
+                    if (isRearFacing)
+                        Trace.TraceWarning("Front-facing cab view is not facing forward {0}", cvfFilePath);
+                }
+                else
+                {
+                    // Most models use range -180 to 180 but Making Trains have some with 0 to 360
+                    if (!isRearFacing)
+                        Trace.TraceWarning("Rear-facing cab view is not facing rearward {0}", cvfFilePath);
+                }
+                if (!(this is MSTSSteamLocomotive))
+                {
+                    InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
+                }
+                return new CabView(cvfFile, viewPointList, extendedCVF);
+            }
+            else
+            {
+                Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, cvfFilePath);
+                return null;
+            }
+        }
+
         protected void ParseEffects(string lowercasetoken, STFReader stf)
         {
             stf.MustMatch("(");
@@ -287,7 +330,9 @@ namespace ORTS
             switch (lowercasetoken)
             {
                 case "engine(sound": CabSoundFileName = stf.ReadStringBlock(null); break;
-                case "engine(cabview": CVFFileName = stf.ReadStringBlock(null); break;
+                case "engine(cabview": CVFFileName = stf.ReadStringBlock(null);
+                    //ReverseCVFFileName = Path.Combine(Path.GetDirectoryName(CVFFileName), Path.GetFileNameWithoutExtension(CVFFileName) + "_rv.cvf");
+                    break;
                 case "engine(maxpower": MaxPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
@@ -350,8 +395,8 @@ namespace ORTS
             MSTSLocomotive locoCopy = (MSTSLocomotive)copy;
             CabSoundFileName = locoCopy.CabSoundFileName;
             CVFFileName = locoCopy.CVFFileName;
-            CVFFile = locoCopy.CVFFile;
-            CabFlipped = locoCopy.CabFlipped;
+            CabViewList = locoCopy.CabViewList;
+
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
@@ -489,7 +534,7 @@ namespace ORTS
             if (DynamicBrakeController != null)
                 DynamicBrakeController.SetValue(other.DynamicBrakePercent / 100);
             if (TrainBrakeController != null)
-                TrainBrakeController.SetValue(0);
+                TrainBrakeController.SetValue(((MSTSLocomotive)other).TrainBrakeController.CurrentValue);
             if (EngineBrakeController != null)
                 EngineBrakeController.SetValue(0);
         }
@@ -1446,11 +1491,6 @@ namespace ORTS
             SignalEvent( Wiper ? EventID.WiperOff : EventID.WiperOn );
         }
 
-        public override bool GetCabFlipped()
-        {
-            return CabFlipped;
-        }
-
         public class Alerter
         {
             int AlerterStartTime;
@@ -1981,6 +2021,19 @@ namespace ORTS
 
     } // End Class MSTSLocomotive
 
+    public class CabView {
+        public CVFFile CVFFile;
+        public List<ViewPoint> ViewPointList;
+        public ExtendedCVF ExtendedCVF;
+
+        public CabView(CVFFile cvfFile, List<ViewPoint> viewPointList, ExtendedCVF extendedCVF)
+        {
+            CVFFile = cvfFile;
+            ViewPointList = viewPointList;
+            ExtendedCVF = extendedCVF;
+        }
+    }
+
     /// <summary>
     /// Extended CVF data, currently used for CAB light
     /// By GeorgeS
@@ -2412,7 +2465,7 @@ namespace ORTS
             if (!_hasCabRenderer)
             {
                 _hasCabRenderer = true;
-                if (Locomotive.CVFFile != null && Locomotive.CVFFile.TwoDViews.Count > 0)
+                if (Locomotive.CabViewList[(int)CabViewType.Front].CVFFile != null && Locomotive.CabViewList[(int)CabViewType.Front].CVFFile.TwoDViews.Count > 0)
                     _CabRenderer = new CabRenderer(Viewer, Locomotive);
             }
         }
@@ -2759,9 +2812,8 @@ namespace ORTS
 
         private Point _PrevScreenSize;
 
-        private CabViewControls CabViewControls;
-        private List<CabViewControlRenderer> CabViewControlRenderers = new List<CabViewControlRenderer>();
-
+        private List<CabViewControls> CabViewControlsList = new List<CabViewControls>();
+        private List<List<CabViewControlRenderer>> CabViewControlRenderersList = new List<List<CabViewControlRenderer>>();
         private Viewer3D _Viewer;
         private MSTSLocomotive _Locomotive;
         private int _Location;
@@ -2769,7 +2821,7 @@ namespace ORTS
 
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
-			//Sequence = RenderPrimitiveSequence.CabView;
+            //Sequence = RenderPrimitiveSequence.CabView;
             _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
             _Viewer = viewer;
             _Locomotive = car;
@@ -2778,71 +2830,78 @@ namespace ORTS
             Point DisplaySize = _Viewer.DisplaySize;
             DisplaySize.Y = _Viewer.CabHeightPixels;
 
-            if (_Locomotive.ExCVF != null)
+            // Use same shader for both front-facing and rear-facing cabs.
+            if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
             {
-                _Shader = new CabShader( viewer.GraphicsDevice, viewer.RenderProcess.Content,
-                    _Locomotive.ExCVF.TranslatedPosition( _Locomotive.ExCVF.Light1Position, DisplaySize ),
-                    _Locomotive.ExCVF.TranslatedPosition( _Locomotive.ExCVF.Light2Position, DisplaySize ),
-                    _Locomotive.ExCVF.TranslatedColor( _Locomotive.ExCVF.Light1Color ),
-                    _Locomotive.ExCVF.TranslatedColor( _Locomotive.ExCVF.Light2Color ) );
+                _Shader = new CabShader(viewer.GraphicsDevice, viewer.RenderProcess.Content,
+                    _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
+                    _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
+                    _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
+                    _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
             }
+    
             _PrevScreenSize = DisplaySize;
 
-            // Loading ACE files, skip displaying ERROR messages
-            foreach (string cabfile in car.CVFFile.TwoDViews)
-            {
-                CABTextureManager.LoadTextures(viewer, cabfile);
-            }
-
             #region Create Control renderers
-            CabViewControls = car.CVFFile.CabViewControls;
-            if (CabViewControls != null)
+            var i = 0;
+            foreach (var cabView in car.CabViewList)
             {
-                foreach (CabViewControl cvc in CabViewControls)
+                if (cabView.CVFFile != null)
                 {
-                    CVCDial dial = cvc as CVCDial;
-                    if (dial != null)
+                    // Loading ACE files, skip displaying ERROR messages
+                    foreach (var cabfile in cabView.CVFFile.TwoDViews)
                     {
-                        CabViewDialRenderer cvcr = new CabViewDialRenderer(dial, viewer, car, _Shader);
-                        CabViewControlRenderers.Add(cvcr);
-                        continue;
+                        CABTextureManager.LoadTextures(viewer, cabfile);
                     }
-                    CVCGauge gauge = cvc as CVCGauge;
-                    if (gauge != null)
+
+                    CabViewControlRenderersList.Add(new List<CabViewControlRenderer>());
+                    foreach (CabViewControl cvc in cabView.CVFFile.CabViewControls)
                     {
-                        CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(gauge, viewer, car, _Shader);
-                        CabViewControlRenderers.Add(cvgr);
-                        continue;
-                    }
-                    CVCSignal asp = cvc as CVCSignal;
-                    if (asp != null)
-                    {
-                        CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(asp, viewer, car, _Shader);
-                        CabViewControlRenderers.Add(aspr);
-                        continue;
-                    }
-                    CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
-                    if (multi != null)
-                    {
-                        CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(multi, viewer, car, _Shader);
-                        CabViewControlRenderers.Add(mspr);
-                        continue;
-                    }
-                    CVCDiscrete disc = cvc as CVCDiscrete;
-                    if (disc != null)
-                    {
-                        CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(disc, viewer, car, _Shader);
-                        CabViewControlRenderers.Add(cvdr);
-                        continue;
-                    }
-                    CVCDigital digital = cvc as CVCDigital;
-                    if (digital != null)
-                    {
-                        CabViewDigitalRenderer cvdr = new CabViewDigitalRenderer(digital, viewer, car, _Shader);
-                        CabViewControlRenderers.Add(cvdr);
-                        continue;
+                        CVCDial dial = cvc as CVCDial;
+                        if (dial != null)
+                        {
+                            CabViewDialRenderer cvcr = new CabViewDialRenderer(dial, viewer, car, _Shader);
+                            CabViewControlRenderersList[i].Add(cvcr);
+                            continue;
+                        }
+                        CVCGauge gauge = cvc as CVCGauge;
+                        if (gauge != null)
+                        {
+                            CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(gauge, viewer, car, _Shader);
+                            CabViewControlRenderersList[i].Add(cvgr);
+                            continue;
+                        }
+                        CVCSignal asp = cvc as CVCSignal;
+                        if (asp != null)
+                        {
+                            CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(asp, viewer, car, _Shader);
+                            CabViewControlRenderersList[i].Add(aspr);
+                            continue;
+                        }
+                        CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
+                        if (multi != null)
+                        {
+                            CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(multi, viewer, car, _Shader);
+                            CabViewControlRenderersList[i].Add(mspr);
+                            continue;
+                        }
+                        CVCDiscrete disc = cvc as CVCDiscrete;
+                        if (disc != null)
+                        {
+                            CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(disc, viewer, car, _Shader);
+                            CabViewControlRenderersList[i].Add(cvdr);
+                            continue;
+                        }
+                        CVCDigital digital = cvc as CVCDigital;
+                        if (digital != null)
+                        {
+                            CabViewDigitalRenderer cvdr = new CabViewDigitalRenderer(digital, viewer, car, _Shader);
+                            CabViewControlRenderersList[i].Add(cvdr);
+                            continue;
+                        }
                     }
                 }
+                i++;
             }
             #endregion
         }
@@ -2865,8 +2924,8 @@ namespace ORTS
                 _Location = 0;
             }
 
-            _CabTexture = CABTextureManager.GetTexture(_Locomotive.CVFFile.TwoDViews[_Location], Dark, CabLight, out _isNightTexture);
-
+            var i = (_Locomotive.UsingRearCab) ? 1 : 0;
+            _CabTexture = CABTextureManager.GetTexture(_Locomotive.CabViewList[i].CVFFile.TwoDViews[_Location], Dark, CabLight, out _isNightTexture);
             if (_CabTexture == SharedMaterialManager.MissingTexture)
                 return;
 
@@ -2878,20 +2937,16 @@ namespace ORTS
             {
                 _PrevScreenSize = _Viewer.DisplaySize;
                 _Shader.SetLightPositions(
-                    _Locomotive.ExCVF.TranslatedPosition(_Locomotive.ExCVF.Light1Position, _Viewer.DisplaySize),
-                    _Locomotive.ExCVF.TranslatedPosition(_Locomotive.ExCVF.Light2Position, _Viewer.DisplaySize));
+                    _Locomotive.CabViewList[i].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[i].ExtendedCVF.Light1Position, _Viewer.DisplaySize),
+                    _Locomotive.CabViewList[i].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[i].ExtendedCVF.Light2Position, _Viewer.DisplaySize));
             }
 
             frame.AddPrimitive(_Sprite2DCabView, this, RenderPrimitiveGroup.Cab, ref _Scale);
             //frame.AddPrimitive(Materials.SpriteBatchMaterial, this, RenderPrimitiveGroup.Cab, ref _Scale);
 
             if (_Location == 0)
-            {
-                foreach (CabViewControlRenderer cvcr in CabViewControlRenderers)
-                {
+                foreach (var cvcr in CabViewControlRenderersList[i])
                     cvcr.PrepareFrame(frame);
-                }
-            }
         }
         
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -2909,8 +2964,9 @@ namespace ORTS
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
 
-            _Sprite2DCabView.SpriteBatch.Draw( _CabTexture, stretchedCab, Color.White );
-            //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
+            if (_CabTexture != null)
+                _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, stretchedCab, Color.White);
+                //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
 
             if (_Location == 0 && _Shader != null)
             {
@@ -2922,7 +2978,9 @@ namespace ORTS
         internal void Mark()
         {
             _Viewer.TextureManager.Mark(_CabTexture);
-            foreach (var cvcr in CabViewControlRenderers)
+
+            var i = (_Locomotive.UsingRearCab) ? 1 : 0;
+            foreach (var cvcr in CabViewControlRenderersList[i])
                 cvcr.Mark();
         }
     }

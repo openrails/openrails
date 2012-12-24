@@ -992,7 +992,11 @@ namespace ORTS
 			}
 		}
 
-		private void RestoreTrains(BinaryReader inf)
+            //InitializePlayerTrain();
+            //InitializeStaticConsists();
+            //PlayerLocomotive = InitialPlayerLocomotive();
+
+        private void RestoreTrains(BinaryReader inf)
 		{
 			int count = inf.ReadInt32();
 			Trains = new List<Train>();

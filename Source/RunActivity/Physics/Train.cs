@@ -53,16 +53,16 @@ namespace ORTS
 		public int NPull = 0;
 		public int NPush = 0;
 		private int LeadLocomotiveIndex = -1;
-	public bool IsFreight = false;
+	    public bool IsFreight = false;
 		public float SlipperySpotDistanceM = 0; // distance to extra slippery part of track
 		public float SlipperySpotLengthM = 0;
 
 		// These signals pass through to all cars and locomotives on the train
 		public Direction MUDirection = Direction.N; //set by player locomotive to control MU'd locomotives
-		public float MUThrottlePercent = 0;  // set by player locomotive to control MU'd locomotives
-		public float MUReverserPercent = 100;  // steam engine direction/cutoff control for MU'd locomotives
-		public float MUDynamicBrakePercent = -1;  // dynamic brake control for MU'd locomotives, <0 for off
-		public float BrakeLine1PressurePSI = 90;     // set by player locomotive to control entire train brakes
+		public float MUThrottlePercent = 0;         // set by player locomotive to control MU'd locomotives
+		public float MUReverserPercent = 100;       // steam engine direction/cutoff control for MU'd locomotives
+		public float MUDynamicBrakePercent = -1;    // dynamic brake control for MU'd locomotives, <0 for off
+		public float BrakeLine1PressurePSI = 90;    // set by player locomotive to control entire train brakes
 		public float BrakeLine2PressurePSI = 0;     // extra line for dual line systems, main reservoir
 		public float BrakeLine3PressurePSI = 0;     // extra line just in case, engine brake pressure
 		public float BrakeLine4PressurePSI = 0;     // extra line just in case, ep brake control line
@@ -91,7 +91,7 @@ namespace ORTS
 
 		public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
 		public bool spad = false;      // Signal Passed At Danger
-		public bool spad2 = false; //added by JTang, used by MP to put emergency on trains passed red-light
+		public bool spad2 = false;     // used by MP to put emergency on trains passed red-light
 		public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
 
         public float RouteMaxSpeedMpS = 0;    // Max speed as set by route (default value)
@@ -216,8 +216,9 @@ namespace ORTS
 			BrakeLine3PressurePSI = inf.ReadSingle();
 			BrakeLine4PressurePSI = inf.ReadSingle();
 			aiBrakePercent = inf.ReadSingle();
-			LeadLocomotiveIndex = inf.ReadInt32();
-			RetainerSetting = (RetainerSetting)inf.ReadInt32();
+			LeadLocomotiveIndex = inf.ReadInt32();  // sets LeadLocomotive
+            Simulator.PlayerLocomotive = LeadLocomotive;
+            RetainerSetting = (RetainerSetting)inf.ReadInt32();
 			RetainerPercent = inf.ReadInt32();
 			RearTDBTraveller = new Traveller(simulator.TSectionDat, simulator.TDB.TrackDB.TrackNodes, inf);
 			SlipperySpotDistanceM = inf.ReadSingle();
@@ -505,74 +506,106 @@ namespace ORTS
             }
         }
 #endif
-
         /// <summary>
         /// Changes the Lead locomotive (i.e. the loco which the player controls) to the next in the consist.
         /// Steps back through the train, ignoring any cabs that face rearwards until there are no forward-facing
         /// cabs left. Then continues from the rearmost, rearward-facing cab, reverses the train and resumes stepping back.
+        /// E.g. if consist is made of 3 cars, each with front and rear-facing cabs
+        ///     (A-b]:(C-d]:[e-F)
+        /// then pressing Ctrl+E cycles the cabs in the sequence
+        ///     A -> C -> e -> F -> d -> b -> A
         /// </summary>
-        public void LeadNextLocomotive()
+        public void ChangeToNextCab()
+        {
+            int? firstLead = null;          // First driveable car
+            int? nextLead = null;           // Next driveable car after the current car with cab facing same way as current cab
+            int? lastOppositeLead = null;   // Last driveable car with cab facing the other way from current cab
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                // Ignore cars without a front-facing cab.
+                if (!Cars[i].HasFrontCab) continue;
+
+                if (SkipOtherUsersCar(i)) continue;
+
+                // For front-facing cabs,
+                if (!Cars[i].Flipped || Cars[i].HasRearCab)
+                {
+                    // ... remember the first cab
+                    if (firstLead == null)
+                         firstLead = i;
+
+                    // ... also remember the next cab
+                    if (nextLead == null && i > LeadLocomotiveIndex) // Cars[LeadLocomotiveIndex] is the current loco
+                         nextLead = i;
+                }
+                // For rear-facing cabs,  
+                if (Cars[i].Flipped || Cars[i].HasRearCab)
+                    // ... remember only the last cab
+                    lastOppositeLead = i;
+            }
+
+            var flipNeeded = false;
+            if (nextLead == null)  // no more forward-facing, so try rearmost, rearward-facing.
+            {
+                nextLead = lastOppositeLead; 
+                flipNeeded = (nextLead != null);
+            }
+            // Change loco
+            TrainCar oldLead = LeadLocomotive;
+            LeadLocomotiveIndex = (nextLead == null)
+                ? (int)firstLead   // last cab and none rearward-facing, so cycle back to first cab
+                : (int)nextLead;   // step back through train
+            Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
+            TrainCar newLead = LeadLocomotive;  // Changing LeadLocomotiveIndex also changes LeadLocomotive
+
+            if (flipNeeded)
+                Flip();
+            ((MSTSLocomotive)newLead).UsingRearCab = newLead.Flipped;
+            Simulator.PlayerLocomotive = newLead;
+            newLead.CopyControllerSettings(oldLead);
+
+            if (flipNeeded)
+                Simulator.AI.Dispatcher.ReversePlayerAuthorization(); 
+        }
+
+        /// <summary>
+        /// Is there another cab in the player's train to change to?
+        /// </summary>
+        public bool IsChangeCabAvailable()
         {
             Trace.Assert(Simulator.PlayerLocomotive != null, "Player loco is null when trying to switch locos");
             Trace.Assert(Simulator.PlayerLocomotive.Train == this, "Trying to switch locos but not on player's train");
 
-            int driveables = 0;
+            int driveableCabs = 0;
             for (int i = 0; i < Cars.Count; i++)
             {
-                if (Cars[i].IsDriveable) driveables++;
+                if (SkipOtherUsersCar(i)) continue;
+                if (Cars[i].HasFrontCab) driveableCabs++;
+                if (Cars[i].HasRearCab) driveableCabs++;
             }
-            if (driveables < 2)
+            if (driveableCabs < 2)
             {
-                Simulator.Confirmer.Warning(CabControl.SwitchLocomotive, CabSetting.Warn1);
-                return; // could return false but does no harm.
+                Simulator.Confirmer.Warning(CabControl.ChangeCab, CabSetting.Warn1);
+                return false;
             }
-
-            int? firstLead = null;          // First driveable car
-            int? nextLead = null;           // Next driveable car after the current car
-            int? lastFlippedLead = null;    // Last driveable car facing the other way from current car
-            for (int i = 0; i < Cars.Count; i++)
-            {
-                if (Cars[i].IsDriveable)
-                {
-                    //in multiplayer, only wants to change locomotive starts with my name (i.e. original settings of my locomotives)
-                    if( MPManager.IsMultiPlayer() && !Cars[i].CarID.StartsWith(MPManager.GetUserName() + " ") ) continue;
-
-                    if (Cars[i].Flipped != LeadLocomotive.Flipped) // cab is rearward-facing
-                    {
-                        lastFlippedLead = i; // remember only the last cab
-                        continue;
-                    }
-
-                    // Remember the first driveable
-                    if (firstLead == null ) firstLead = i;
-
-                    // If beyond the current, remember the next
-                    if (LeadLocomotiveIndex < i && nextLead == null ) nextLead = i;
-                }
-            }
-            if (nextLead == null) nextLead = lastFlippedLead; // no more forward-facing, so switch to rearmost, rearward-facing.
-            LeadLocomotiveIndex = (nextLead != null) 
-                ? (int)nextLead     // step back through train
-                : (int)firstLead;   // last cab and none rearward-facing, so cycle back to first cab
-            Orient();
-            TrainCar oldLead = LeadLocomotive;
-            TrainCar newLead = LeadLocomotive; // simpler than using the TrainCar() constructor
-            newLead.CopyControllerSettings(oldLead);
-            Simulator.PlayerLocomotive = newLead;
-            Simulator.AI.Dispatcher.ReversePlayerAuthorization();
-            Simulator.Confirmer.Confirm(CabControl.SwitchLocomotive, CabSetting.On);
+            return true;
         }
 
         /// <summary>
-        /// Flips the train if necessary so that the train orientation matches the lead locomotive cab direction
+        /// In multiplayer, only want to change to my locomotives; i.e. those that start with my name.
         /// </summary>
-        public void Orient()
+        /// <param name="i"></param>
+        /// <returns></returns>
+        private bool SkipOtherUsersCar(int i)
         {
-            Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
+            return MPManager.IsMultiPlayer() && !Cars[i].CarID.StartsWith(MPManager.GetUserName() + " ");
+        }
 
-            // cab of lead loco doesn't face wrong way so exit early
-            if (!(LeadLocomotive.Flipped ^ LeadLocomotive.GetCabFlipped())) return;
-
+        /// <summary>
+        /// Flips the entire train
+        /// </summary>
+        public void Flip()
+        {
             for (int i = Cars.Count - 1; i > 0; i--)
                 Cars[i].CopyCoupler(Cars[i - 1]);
             for (int i = 0; i < Cars.Count / 2; i++)
@@ -585,7 +618,15 @@ namespace ORTS
             if (LeadLocomotiveIndex >= 0)
                 LeadLocomotiveIndex = Cars.Count - LeadLocomotiveIndex - 1;
             for (int i = 0; i < Cars.Count; i++)
+            {
+                if (Cars[i].HasRearCab)
+                {
+                    var loco = Cars[i] as MSTSLocomotive;
+                    loco.UsingRearCab = !loco.UsingRearCab;
+                }
                 Cars[i].Flipped = !Cars[i].Flipped;
+            }
+                
             Traveller t = FrontTDBTraveller;
             FrontTDBTraveller = new Traveller(RearTDBTraveller, Traveller.TravellerDirection.Backward);
             RearTDBTraveller = new Traveller(t, Traveller.TravellerDirection.Backward);

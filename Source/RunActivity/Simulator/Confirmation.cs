@@ -58,7 +58,7 @@ namespace ORTS {
       , Headlight
       , CabLight
       , Wipers
-      , SwitchLocomotive
+      , ChangeCab
       // Train Devices
       , DoorsLeft
       , DoorsRight
@@ -138,7 +138,7 @@ namespace ORTS {
             , new string [] { "Headlight", "off", "dim", "bright" } 
             , new string [] { "Cab Light", "off", null, "on" } 
             , new string [] { "Wipers", "off", null, "on" } 
-            , new string [] { "Locomotive", null, null, "switch", null, null, "switching is not available", "switching disabled. Close throttle, stop train then re-try." } 
+            , new string [] { "Cab", null, null, "change", null, null, "changing is not available", "changing disabled. Close throttle, set reverser to neutral, stop train then re-try." } 
             // Train Devices
             , new string [] { "Doors Left", "close", null, "open" } 
             , new string [] { "Doors Right", "close", null, "open" } 

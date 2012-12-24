@@ -253,7 +253,7 @@
       <FileName>Viewer3D\Commands.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="ORTS.SwapLocomotivesCommand" Collapsed="true">
+  <Class Name="ORTS.ChangeCabCommand" Collapsed="true">
     <Position X="15.25" Y="1.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAABAAAEAAAAAAAAAAAAAAA=</HashCode>

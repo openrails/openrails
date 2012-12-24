@@ -75,7 +75,7 @@ namespace ORTS
 		GameSignalPicked,
         GameSwitchWithMouse,
         GameUncoupleWithMouse,
-        GameLocomotiveSwap,
+        GameChangeCab,
         GameRequestControl,
         GameMultiPlayerDispatcher,
 		GameMultiPlayerTexting,
@@ -91,7 +91,6 @@ namespace ORTS
         DisplayNextStationWindow,
         DisplayCompassWindow,
 
-        DebugLocomotiveFlip,
         DebugResetSignal,
         DebugForcePlayerAuthorization,
         DebugSpeedUp,
@@ -397,7 +396,7 @@ namespace ORTS
 			Commands[(int)UserCommands.GameSignalPicked] = new UserCommandKeyInput(0x22, KeyModifiers.Control);
 			Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
             Commands[(int)UserCommands.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
-            Commands[(int)UserCommands.GameLocomotiveSwap] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
+            Commands[(int)UserCommands.GameChangeCab] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
 			Commands[(int)UserCommands.GameRequestControl] = new UserCommandKeyInput(0x12, KeyModifiers.Shift);
 
             Commands[(int)UserCommands.DisplayNextWindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
@@ -411,7 +410,6 @@ namespace ORTS
             Commands[(int)UserCommands.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommands.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
 
-            Commands[(int)UserCommands.DebugLocomotiveFlip] = new UserCommandKeyInput(0x21, KeyModifiers.Shift | KeyModifiers.Control);
             Commands[(int)UserCommands.DebugResetSignal] = new UserCommandKeyInput(0x0F);
             Commands[(int)UserCommands.DebugForcePlayerAuthorization] = new UserCommandKeyInput(0x0F, KeyModifiers.Control);
             Commands[(int)UserCommands.DebugSpeedUp] = new UserCommandKeyInput(0x49, KeyModifiers.Control | KeyModifiers.Alt);
