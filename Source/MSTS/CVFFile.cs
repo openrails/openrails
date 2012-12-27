@@ -35,6 +35,15 @@ namespace MSTS
                             var fileName = stf.ReadStringBlock(null);
                             var path = Path.Combine(basePath, Path.GetDirectoryName(fileName));
                             var name = Path.GetFileName(fileName);
+
+                            // Use *Frnt1024.ace if avalible
+                            string s = name;
+                            string[] nameParts = s.Split('.');
+                            string name1024 = nameParts[0] + "1024." + nameParts[1];
+                            var tstFileName1024 = Path.Combine(path, name1024);
+                            if (File.Exists(tstFileName1024))
+                                name = name1024;
+
                             TwoDViews.Add(Path.Combine(path, name));
                             NightViews.Add(Path.Combine(path, Path.Combine("NIGHT", name)));
                             LightViews.Add(Path.Combine(path, Path.Combine("CABLIGHT", name)));
