@@ -203,14 +203,19 @@ namespace ORTS
                 if (cabView != null)
                 {
                     CabViewList.Add(cabView);
-                    var reverseCVFFileName = Path.Combine(Path.GetDirectoryName(CVFFileName), // Some CVF paths begin with "..\..\"
-                                                            // so Path.GetDirectoryName() is needed.
+                    var reverseCVFFileName = Path.Combine(Path.GetDirectoryName(CVFFileName),
+                        // Some CVF paths begin with "..\..\"
+                        // so Path.GetDirectoryName() is needed.
                                                             Path.GetFileNameWithoutExtension(CVFFileName) + "_rv.cvf");
                     {
                         cabView = BuildCabView(WagFilePath, reverseCVFFileName, CabViewType.Rear);
                         if (cabView != null)
                             CabViewList.Add(cabView);
                     }
+                }
+                else
+                {
+                    Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
                 }
             }
 
@@ -254,51 +259,45 @@ namespace ORTS
 
             var cvfBasePath = Path.Combine(Path.GetDirectoryName(wagFilePath), "CABVIEW");
             var cvfFilePath = Path.Combine(cvfBasePath, cvfFileName);
+            if (!File.Exists(cvfFilePath))
+                return null;
 
-            if (File.Exists(cvfFilePath))
+            var cvfFile = new CVFFile(cvfFilePath, cvfBasePath);
+            var viewPoint = new ViewPoint();                    // Set up camera locations for the cab views
+            for (int i = 0; i < cvfFile.Locations.Count; ++i)
             {
-                var cvfFile = new CVFFile(cvfFilePath, cvfBasePath);
-                var viewPoint = new ViewPoint();                    // Set up camera locations for the cab views
-                for (int i = 0; i < cvfFile.Locations.Count; ++i)
+                if (i >= cvfFile.Locations.Count || i >= cvfFile.Directions.Count)
                 {
-                    if (i >= cvfFile.Locations.Count || i >= cvfFile.Directions.Count)
-                    {
-                        Trace.TraceWarning("Skipped cab view camera {1} missing Position and Direction in {0}", cvfFilePath, i);
-                        break;
-                    }
-                    viewPoint = new ViewPoint();
-                    viewPoint.Location = cvfFile.Locations[i];
-                    viewPoint.StartDirection = cvfFile.Directions[i];
-                    viewPoint.RotationLimit = new Vector3(0, 0, 0);  // cab views have a fixed head position
-                    viewPointList.Add(viewPoint);
+                    Trace.TraceWarning("Skipped cab view camera {1} missing Position and Direction in {0}", cvfFilePath, i);
+                    break;
                 }
+                viewPoint = new ViewPoint();
+                viewPoint.Location = cvfFile.Locations[i];
+                viewPoint.StartDirection = cvfFile.Directions[i];
+                viewPoint.RotationLimit = new Vector3(0, 0, 0);  // cab views have a fixed head position
+                viewPointList.Add(viewPoint);
+            }
 
-                var y = cvfFile.Directions[0].Y; // abbreviation
+            var y = cvfFile.Directions[0].Y; // abbreviation
+            // Most models use range -180 to 180 but Making Trains have some with 0 to 360
+            var isRearFacing = (y < -90 || (y > 90 && y < 270));
+            if (type == CabViewType.Front)
+            {
                 // Most models use range -180 to 180 but Making Trains have some with 0 to 360
-                var isRearFacing = (y < -90 || (y > 90 && y < 270));
-                if (type == CabViewType.Front)
-                {
-                    // Most models use range -180 to 180 but Making Trains have some with 0 to 360
-                    if (isRearFacing)
-                        Trace.TraceWarning("Front-facing cab view is not facing forward {0}", cvfFilePath);
-                }
-                else
-                {
-                    // Most models use range -180 to 180 but Making Trains have some with 0 to 360
-                    if (!isRearFacing)
-                        Trace.TraceWarning("Rear-facing cab view is not facing rearward {0}", cvfFilePath);
-                }
-                if (!(this is MSTSSteamLocomotive))
-                {
-                    InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
-                }
-                return new CabView(cvfFile, viewPointList, extendedCVF);
+                if (isRearFacing)
+                    Trace.TraceWarning("Front-facing cab view is not facing forward {0}", cvfFilePath);
             }
             else
             {
-                Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, cvfFilePath);
-                return null;
+                // Most models use range -180 to 180 but Making Trains have some with 0 to 360
+                if (!isRearFacing)
+                    Trace.TraceWarning("Rear-facing cab view is not facing rearward {0}", cvfFilePath);
             }
+            if (!(this is MSTSSteamLocomotive))
+            {
+                InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
+            }
+            return new CabView(cvfFile, viewPointList, extendedCVF);
         }
 
         protected void ParseEffects(string lowercasetoken, STFReader stf)
