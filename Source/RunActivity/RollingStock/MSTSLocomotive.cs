@@ -1029,30 +1029,45 @@ namespace ORTS
         {
             bool notchedThrottleCommandNeeded = false;
             AlerterReset();
-            
+
             CommandStartTime = Simulator.ClockTime;
 
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return notchedThrottleCommandNeeded;
 
-            if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
+            if (HasCombCtrl && !HasCombThrottleTrainBreak)
             {
-                if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
+                if (DynamicBrakePercent >= 0 && ThrottlePercent == 0)
                 {
-                    StartDynamicBrakeDecrease( null );
-                    
+                    if (DynamicBrakePercent == 0)
+                    {
+                        //Deactivate. Have to do it here, not in StartDynamicBrakeDecrease(null),
+                        //because that way it doesn't stop at the deactivation.
+                        DynamicBrakePercent = -1;
+                        return notchedThrottleCommandNeeded;
+                    }
+                    else
+                        StartDynamicBrakeDecrease(null);
+
                     if (!HasSmoothStruc)
                         StopDynamicBrakeDecrease();
                 }
                 if (DynamicBrakePercent == -1)
                 {
-                    notchedThrottleCommandNeeded = true;
+                    if (HasStepCtrl)
+                        notchedThrottleCommandNeeded = true;
+                    else
+                        StartThrottleIncrease(null);
                 }
-            } else if( !HasCombCtrl && HasStepCtrl ) {
+            }
+            else if (!HasCombCtrl && HasStepCtrl)
+            {
                 notchedThrottleCommandNeeded = true;
-            } else {
-                StartThrottleIncrease( null );
+            }
+            else
+            {
+                StartThrottleIncrease(null);
             }
             // By GeorgeS
             if (EventID.IsMSTSBin)
@@ -1074,7 +1089,7 @@ namespace ORTS
                 continuousThrottleCommandNeeded = true;
             }
             
-            if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
+            if (HasCombCtrl  && !HasCombThrottleTrainBreak)
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
@@ -1099,31 +1114,38 @@ namespace ORTS
         {
             bool notchedThrottleCommandNeeded = false;
             AlerterReset();
-            
+
             CommandStartTime = Simulator.ClockTime;
 
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return notchedThrottleCommandNeeded;
 
-            if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
+            if (HasCombCtrl && !HasCombThrottleTrainBreak)
             {
-                if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
+                if (ThrottlePercent == 0)
                 {
-                    StartDynamicBrakeIncrease( null );
+                    StartDynamicBrakeIncrease(null);
 
                     if (!HasSmoothStruc)
                         StopDynamicBrakeIncrease();
                 }
                 if (DynamicBrakePercent == -1)
                 {
-                    notchedThrottleCommandNeeded = true;
+                    if (HasStepCtrl)
+                        notchedThrottleCommandNeeded = true;
+                    else
+                        StartThrottleDecrease(null);
                 }
-            } else if( !HasCombCtrl && HasStepCtrl ) {
+            }
+            else if (!HasCombCtrl && HasStepCtrl)
+            {
                 notchedThrottleCommandNeeded = true;
                 //SignalEvent( EventID.Reverse );
-            } else {
-                StartThrottleDecrease( null );
+            }
+            else
+            {
+                StartThrottleDecrease(null);
             }
             // By GeorgeS
             if (EventID.IsMSTSBin)
@@ -1146,7 +1168,7 @@ namespace ORTS
                 continuousThrottleCommandNeeded = true;
             }
 
-            if (HasCombCtrl && HasStepCtrl && !HasCombThrottleTrainBreak)
+            if (HasCombCtrl  && !HasCombThrottleTrainBreak)
             {
                 if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
                 {
@@ -1413,16 +1435,16 @@ namespace ORTS
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakePercent <= 0)
-                DynamicBrakePercent = -1;
-            else
-            {
+            //if (DynamicBrakePercent <= 0)
+            //    DynamicBrakePercent = -1;
+            //else
+            //{
                 DynamicBrakeController.StartDecrease( target );
                 Simulator.Confirmer.Confirm( CabControl.DynamicBrake, GetDynamicBrakeStatus() );
 
                 if (!HasSmoothStruc)
                     StopDynamicBrakeDecrease();
-            }
+            //}
         }
 
         public bool StopDynamicBrakeDecrease()

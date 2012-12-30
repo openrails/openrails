@@ -191,7 +191,7 @@ namespace ORTS
         {
             UpdateValue = 1;
 
-            //If we have notches and the current Notch does not require smooth, we go directly to the next notch
+            // When we have notches and the current Notch does not require smooth, we go directly to the next notch
             if ((Notches.Count > 0) && (CurrentNotch < Notches.Count - 1) && (!Notches[CurrentNotch].Smooth))
             {
                 ++CurrentNotch;
@@ -202,19 +202,19 @@ namespace ORTS
             //			Throttle ( 0 1 0.01 0 
             //			NumNotches ( 5 Notch ( 0    0 Dummy ) Notch ( 0.1  0 Dummy ) Notch ( 0.1  1 Dummy ) Notch ( 0.2  0 Dummy )Notch ( 0.3  1 Dummy ))
 			//		)
-			/*
+			
 			else if ((Notches.Count > 0) && (CurrentNotch < Notches.Count - 1) && (Notches[CurrentNotch].Smooth))
 			{
-				IntermediateValue += StepSize;
+                IntermediateValue += StepSize * GetNotchBoost();
 				if (IntermediateValue >= Notches[CurrentNotch + 1].Value) { ++CurrentNotch; IntermediateValue = CurrentValue = Notches[CurrentNotch].Value; }
 				else CurrentValue = IntermediateValue;
 			}
 			else if ((Notches.Count > 0) && (CurrentNotch == Notches.Count - 1) && (Notches[CurrentNotch].Smooth))
 			{
-				IntermediateValue += StepSize; 
+				IntermediateValue += StepSize * GetNotchBoost(); 
 				if (IntermediateValue >= MaximumValue) IntermediateValue = MaximumValue;
 				CurrentValue = IntermediateValue;
-			}*/
+			}
 		}
 
         public void StopIncrease()
@@ -231,14 +231,29 @@ namespace ORTS
         {
             UpdateValue = -1;
 
-            //If we have notches and the current Notch does not require smooth, we go directly to the next notch
-            if ((Notches.Count > 0) && (CurrentNotch > 0) && (!Notches[CurrentNotch].Smooth))
+            //If we have notches and the previous Notch does not require smooth, we go directly to the previous notch
+            if ((Notches.Count > 0) && (CurrentNotch > 0))
             {
-                //Keep intermediate value with the "previous" notch, so it will take a while to change notches
-                //again if the user keep holding the key
-                IntermediateValue = Notches[CurrentNotch].Value;
-                CurrentNotch--;                
-                CurrentValue = Notches[CurrentNotch].Value;
+                if ((CurrentValue > Notches[CurrentNotch].Value) || ((CurrentValue == Notches[CurrentNotch].Value) && (Notches[CurrentNotch - 1].Smooth)))
+                //So we have Smooth notch
+                {
+                    if (CurrentValue == Notches[CurrentNotch].Value) { --CurrentNotch; }
+                    //Without rounding the following equation is unprecise, for some reason...
+                    IntermediateValue = (float)Math.Round(CurrentValue - StepSize * GetNotchBoost(), 2);
+                    if (IntermediateValue <= Notches[CurrentNotch].Value)
+                    {
+                        IntermediateValue = CurrentValue = Notches[CurrentNotch].Value;
+                    }
+                    else CurrentValue = IntermediateValue;
+                }
+                else
+                {
+                    //Keep intermediate value with the "previous" notch, so it will take a while to change notches
+                    //again if the user keep holding the key
+                    IntermediateValue = Notches[CurrentNotch].Value;
+                    CurrentNotch--;
+                    CurrentValue = Notches[CurrentNotch].Value;
+                }
             }
         }
 
