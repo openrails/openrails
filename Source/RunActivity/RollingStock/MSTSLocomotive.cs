@@ -3825,7 +3825,10 @@ namespace ORTS
 
                 if (_CabViewControl.ControlType == CABViewControlTypes.SPEEDOMETER)
                 {
-                    textColor = Color.White;
+                    // Digit responds to ControlColour value
+                    var text = _CabViewControl as MSTS.CVCDigital;
+                    textColor = new Color(text.PositiveColor.R, text.PositiveColor.G, text.PositiveColor.B);
+                    
                     if (_Locomotive.Train != null && _Locomotive.GetDataOf(_CabViewControl) > 
                         MpS.FromMpS(_Locomotive.Train.AllowedMaxSpeedMpS, _CabViewControl.Units == CABViewControlUnits.KM_PER_HOUR))
                     {
@@ -3836,8 +3839,8 @@ namespace ORTS
                 _Sprite2DCtlView.SpriteBatch.DrawString(_Font, displayedText, _Position, textColor, 0f, new Vector2(),
                     _ScaleToScreen, SpriteEffects.None, 0);
                 //((CVCDigital)_CabViewControl).OldValue = _Num;
-                // The line commente out above is a temporary fix for the flashing AMP on Dash 9
-                // commit v837 for a web link describint the details
+                // The line commented out above is a temporary fix for the flashing AMP on Dash 9
+                // commit v837 for a web link describing the details
             }
             catch (Exception error)
             {

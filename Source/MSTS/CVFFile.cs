@@ -237,10 +237,6 @@ namespace MSTS
         protected void ParsePosition(STFReader stf)
         {
             stf.MustMatch("(");
-            //PositionX = stf.ReadInt(STFReader.UNITS.None, null);
-            //PositionY = stf.ReadInt(STFReader.UNITS.None, null);
-            //Width = stf.ReadInt(STFReader.UNITS.None, null);
-            //Height = stf.ReadInt(STFReader.UNITS.None, null);
             PositionX = stf.ReadDouble( STFReader.UNITS.None, null );
             PositionY = stf.ReadDouble( STFReader.UNITS.None, null );
             Width = stf.ReadDouble( STFReader.UNITS.None, null );
@@ -430,6 +426,13 @@ namespace MSTS
 
         public CVCDigital(STFReader stf, string basepath)
         {
+            // Set white as the default positive colour for digital displays
+            color white = new color();
+            white.R = 255f;
+            white.G = 255f;
+            white.B = 255f;
+            PositiveColor = white;
+            
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
