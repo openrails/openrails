@@ -754,6 +754,11 @@ namespace MSTS
             if (s == "(")
             {
                 string result = ReadString();
+                if (result == ")")
+                {
+                    STFException.TraceWarning(this, "Found an empty block ( ) where a string ( \"<string>\" ) was expected.");
+                    return (defaultValue != null) ? defaultValue : "";
+                }
                 SkipRestOfBlock();
                 if (result == "#\u00b6")
                 {
