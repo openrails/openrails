@@ -1710,22 +1710,18 @@ namespace ORTS
                         switch(cvc.Units)
                         {
                             case CABViewControlUnits.METRES_SEC_SEC:
-                            case CABViewControlUnits.METRESµSECµSEC:
                                 data = this.AccelerationMpSS;
                                 break;
 
                             case CABViewControlUnits.METRES_SEC_HOUR:
-                            case CABViewControlUnits.METRESµSECµHOUR:
                                 data = this.AccelerationMpSS / 3600.0f;
                                 break;
 
                             case CABViewControlUnits.KM_HOUR_SEC:
-                            case CABViewControlUnits.KMµHOURµSEC:
                                 data = this.AccelerationMpSS / 3.6f;
                                 break;
 
                             case CABViewControlUnits.KM_HOUR_HOUR:
-                            case CABViewControlUnits.KMµHOURµHOUR:
                                 data = this.AccelerationMpSS / 3600.0f / 3.6f;
                                 break;
 

@@ -552,20 +552,28 @@ namespace ORTS
             }
             // Change loco
             TrainCar oldLead = LeadLocomotive;
-            LeadLocomotiveIndex = (nextLead == null)
-                ? (int)firstLead   // last cab and none rearward-facing, so cycle back to first cab
-                : (int)nextLead;   // step back through train
-            Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
+			try
+			{
+				LeadLocomotiveIndex = (nextLead == null)
+					? (int)firstLead   // last cab and none rearward-facing, so cycle back to first cab
+					: (int)nextLead;   // step back through train
+			}
+			catch { LeadLocomotiveIndex = 0; }
+			if (!MPManager.IsMultiPlayer()) Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
             TrainCar newLead = LeadLocomotive;  // Changing LeadLocomotiveIndex also changes LeadLocomotive
 
             if (flipNeeded)
                 Flip();
             ((MSTSLocomotive)newLead).UsingRearCab = newLead.Flipped;
-            Simulator.PlayerLocomotive = newLead;
-            newLead.CopyControllerSettings(oldLead);
+			if (oldLead != null && newLead != null && oldLead != newLead)
+				newLead.CopyControllerSettings(oldLead);
 
-            if (flipNeeded)
-                Simulator.AI.Dispatcher.ReversePlayerAuthorization(); 
+			if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == this)
+			{
+				Simulator.PlayerLocomotive = newLead;
+				if (flipNeeded)
+					Simulator.AI.Dispatcher.ReversePlayerAuthorization();
+			}
         }
 
         /// <summary>
