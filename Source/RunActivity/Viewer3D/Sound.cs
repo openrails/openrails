@@ -40,7 +40,6 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using MSTS;
 
-
 namespace ORTS
 {
 
@@ -54,7 +53,7 @@ namespace ORTS
         public abstract bool Update();
 
         public MSTSWagon Car = null;          // the sound may be from a train car
-        public Viewer3D Viewer;                 // the listener is connected to this viewer
+        public Viewer3D Viewer;               // the listener is connected to this viewer
 
         public abstract void Dispose();
     }
@@ -93,18 +92,18 @@ namespace ORTS
         {
             if (filename == null)
                 return;
-            string path = Viewer.Simulator.RoutePath + @"\SOUND\" + filename;
-            if (!File.Exists(path))
-                path = Viewer.Simulator.BasePath + @"\SOUND\" + filename;
-            if (!File.Exists(path))
+
+            string[] pathArray = {Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath};            
+            var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"SOUND\" + filename);
+            if (fullPath == null)
             {
                 Trace.TraceWarning("Skipped missing track sound {0}", filename);
                 return;
             }
             if (isInside)
-                _inSources.Add(new SoundSource(Viewer, Car, path));
+                _inSources.Add(new SoundSource(Viewer, Car, fullPath));
             else
-                _outSources.Add(new SoundSource(Viewer, Car, path));
+                _outSources.Add(new SoundSource(Viewer, Car, fullPath));
         }
 
         public override void InitInitials()
@@ -1620,23 +1619,13 @@ namespace ORTS
             }
 
 #if PLAYSOUNDS
-            string filePath = ORTSStream.SoundSource.SMSFolder + @"\" + Files[iFile];
-            if (!File.Exists(filePath))
-            {
-                filePath = Program.Simulator.RoutePath + @"\Sound\" + Files[iFile];
-                if (!File.Exists(filePath))
-                {
-                    filePath = Program.Simulator.BasePath + @"\Sound\" + Files[iFile];
-                }
-            }
-            if (File.Exists(filePath))
-            {
-                return filePath;
-            }
-            else
-            {
-                return "";
-            }
+            //<CJ Comment>SMSFolder is often same as BasePath, which means this searches the more general folder 
+            // before the more specific folder. This is surely not intended.</CJ Comment>
+            string[] pathArray = {ORTSStream.SoundSource.SMSFolder, 
+                                     Program.Simulator.RoutePath + @"\SOUND", 
+                                     Program.Simulator.BasePath + @"\SOUND"};
+            var fullPath = ORTSPaths.GetFileFromFolders(pathArray, Files[iFile]);
+            return (fullPath != null) ? fullPath : "";
 #endif
         }
 
@@ -1830,7 +1819,6 @@ namespace ORTS
         public void AddByTile(int TileX, int TileZ)
         {
             string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
-            string soundfolder = Viewer.Simulator.RoutePath + "\\sound\\";
 #if PLAYENVSOUNDS
             lock (Sounds)
             {
@@ -1840,14 +1828,18 @@ namespace ORTS
                     List<SoundSourceBase> ls = new List<SoundSourceBase>();
                     if (wf.TR_WorldSoundFile != null)
                     {
+                        string[] pathArray = {Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath};
+
                         foreach (WorldSoundSource fss in wf.TR_WorldSoundFile.SoundSources)
                         {
                             WorldLocation wl = new WorldLocation(TileX, TileZ, fss.X, fss.Y, fss.Z);
-                            SoundSource ss = null;
-                            if (File.Exists(soundfolder + fss.SoundSourceFileName))
-                                ss = new SoundSource(Viewer, wl, soundfolder + fss.SoundSourceFileName, true);
-                            if (ss != null)
-                                ls.Add(ss);
+                            var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + fss.SoundSourceFileName);
+                            if (fullPath != null)
+                            {
+                                var ss = new SoundSource(Viewer, wl, fullPath, true);
+                                if (ss != null)
+                                    ls.Add(ss);
+                            }
                         }
 
                         lock (SoundRegions)
