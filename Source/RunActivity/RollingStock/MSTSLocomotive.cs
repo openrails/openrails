@@ -1430,21 +1430,24 @@ namespace ORTS
             return dynamicBrakeCommandNeeded;
         }
 
-        public void StartDynamicBrakeDecrease( float? target ) {
+        public void StartDynamicBrakeDecrease( float? target )
+        {
             AlerterReset();
             if (!CanUseDynamicBrake())
                 return;
 
-            //if (DynamicBrakePercent <= 0)
-            //    DynamicBrakePercent = -1;
-            //else
-            //{
-                DynamicBrakeController.StartDecrease( target );
-                Simulator.Confirmer.Confirm( CabControl.DynamicBrake, GetDynamicBrakeStatus() );
+            if (!HasCombCtrl && DynamicBrakePercent <= 0)
+                DynamicBrakePercent = -1;
+            else
+            {
+                DynamicBrakeController.StartDecrease(target);
 
                 if (!HasSmoothStruc)
+                {
                     StopDynamicBrakeDecrease();
-            //}
+                    Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                }
+            }
         }
 
         public bool StopDynamicBrakeDecrease()
