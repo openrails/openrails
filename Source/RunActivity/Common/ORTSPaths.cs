@@ -7,9 +7,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.IO;
+
 
 namespace ORTS
 {
@@ -32,6 +34,12 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Static variables to reduce occurrence of duplicate warning messages.
+        /// </summary>
+        static string badBranch = "";
+        static string badPath = "";
+
+        /// <summary>
         /// Search an array of paths for a file. Paths must be in search sequence.
         /// No need for trailing "\" on path or leading "\" on branch parameter.
         /// </summary>
@@ -45,6 +53,13 @@ namespace ORTS
                 var fullPath = Path.Combine(path, branch);
                 if (File.Exists(fullPath))
                     return fullPath;
+            }
+            var firstPath = pathArray[0];
+            if (branch != badBranch || firstPath != badPath)
+            {
+                Trace.TraceWarning("Sound file {0} missing from {1}", branch, firstPath);
+                badBranch = branch;
+                badPath = firstPath;
             }
             return null;
         }
