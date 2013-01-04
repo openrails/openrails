@@ -391,6 +391,22 @@ namespace ORTS
                             ThrottleController.CurrentValue * 100);
                     }
 
+                     if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0)
+                   {
+                       Simulator.Confirmer.UpdateWithPerCent(
+                            CabControl.DynamicBrake,
+                            DynamicBrakeController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
+                           DynamicBrakeController.CurrentValue * 100);
+                   }
+                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0)
+                   {
+                       Simulator.Confirmer.UpdateWithPerCent(
+                            CabControl.DynamicBrake,
+                           DynamicBrakeController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
+                            DynamicBrakeController.CurrentValue * 100);
+                   }
+ 
+
                     //Force is filtered due to inductance
                     FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
 

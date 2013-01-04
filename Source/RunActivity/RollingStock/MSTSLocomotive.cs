@@ -230,7 +230,7 @@ namespace ORTS
             {
                 if (DynamicBrakeController.NotchCount() <= 3)
                 {
-                    Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
+                    // Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
                     HasSmoothStruc = true;
                 }
             }
@@ -502,7 +502,7 @@ namespace ORTS
                     // cancel smooth dynamic control, keyboard hud display only
                     //HasDefectiveComboDynamicBreak = true;
                     HasSmoothStruc = true;
-                    Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
+                    // Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
                 }
             }
         }
@@ -550,18 +550,29 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             TrainBrakeController.Update(elapsedClockSeconds);
-            if (TrainBrakeController.UpdateValue != 0.0)
+            if (TrainBrakeController.UpdateValue > 0.0)
             {
-                Simulator.Confirmer.Message(CabControl.TrainBrake, GetTrainBrakeStatus());
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
             }
 
-            if (EngineBrakeController != null)
-                EngineBrakeController.Update(elapsedClockSeconds);
+            if (TrainBrakeController.UpdateValue < 0.0) {
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
+            }
 
-            if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
-            {
-                if (this.IsLeadLocomotive())
-                    DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+           if (EngineBrakeController != null)
+             {
+                 EngineBrakeController.Update(elapsedClockSeconds);
+                if (EngineBrakeController.UpdateValue > 0.0) {
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
+                }
+                if (EngineBrakeController.UpdateValue < 0.0) {
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus());
+                }
+            }
+
+            if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) {
+                 if (this.IsLeadLocomotive())
+                     DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
                 else
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
@@ -722,6 +733,14 @@ namespace ORTS
                             ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
                             ThrottleController.CurrentValue * 100);
                     }
+                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0)
+                    {
+                        Simulator.Confirmer.UpdateWithPerCent(
+                            CabControl.DynamicBrake,
+                            DynamicBrakeController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
+                            DynamicBrakeController.CurrentValue * 100);
+                    }
+
                     LimitMotiveForce(elapsedClockSeconds);
 
                     if (WheelslipCausesThrottleDown && WheelSlip)
@@ -1019,7 +1038,8 @@ namespace ORTS
         public void StartThrottleIncrease( float? target ) {
             AlerterReset();
             ThrottleController.StartIncrease( target );
-            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
+            //Not needed, Update() handles it:
+            // Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
             // By GeorgeS
             if( EventID.IsMSTSBin )
                 SignalEvent( EventID.PowerHandler );
@@ -1045,6 +1065,7 @@ namespace ORTS
                         //Deactivate. Have to do it here, not in StartDynamicBrakeDecrease(null),
                         //because that way it doesn't stop at the deactivation.
                         DynamicBrakePercent = -1;
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
                         return notchedThrottleCommandNeeded;
                     }
                     else
@@ -1406,15 +1427,17 @@ namespace ORTS
             {
                 //activate it
                 DynamicBrakePercent = 0;
+                Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On);
                 return;
             }
             else
             {
                 DynamicBrakeController.StartIncrease( target );
-                Simulator.Confirmer.Confirm( CabControl.DynamicBrake, GetDynamicBrakeStatus() );
-                
                 if (!HasSmoothStruc)
+                {
                     StopDynamicBrakeIncrease();
+                    Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                }
             }
         }
 

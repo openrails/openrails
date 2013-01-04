@@ -122,7 +122,7 @@ namespace ORTS {
             // Braking
             , new string [] { "Train Brake", null, null, null, "release", "apply" } 
             , new string [] { "Engine Brake", null, null, null, "release", "apply" } 
-            , new string [] { "Dynamic Brake" } 
+            , new string [] { "Dynamic Brake", "off", null, "setup", "decrease", "increase" }
             , new string [] { "Emergency Brake", null, null, "apply" } 
             , new string [] { "Bail Off", "disengage", null, "engage" } 
             , new string [] { "Brakes", "initialize", null, null, null, null, "cannot initialize. Stop train then re-try." } 
