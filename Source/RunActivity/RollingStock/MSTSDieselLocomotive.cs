@@ -150,6 +150,7 @@ namespace ORTS
             // for example
             // outf.Write(Pan);
             base.Save(outf);
+            outf.Write(DieselLevelL);
         }
 
         /// <summary>
@@ -161,6 +162,7 @@ namespace ORTS
             // for example
             //if (inf.ReadBoolean()) SignalEvent(EventID.PantographUp);
             base.Restore(inf);
+            DieselLevelL = inf.ReadSingle();
         }
 
         /// <summary>
