@@ -48,11 +48,16 @@ namespace ORTS
         /// <returns>null or the full file path of the first file found</returns>
         public static string GetFileFromFolders(string[] pathArray, string branch)
         {
+            if (branch == null) return null;
+
             foreach (var path in pathArray)
             {
-                var fullPath = Path.Combine(path, branch);
-                if (File.Exists(fullPath))
-                    return fullPath;
+                if (path != null)
+                {
+                    var fullPath = Path.Combine(path, branch);
+                    if (File.Exists(fullPath))
+                        return fullPath;
+                }
             }
             var firstPath = pathArray[0];
             if (branch != badBranch || firstPath != badPath)
