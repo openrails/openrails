@@ -1812,36 +1812,22 @@ namespace ORTS
                 //    }
                 case CABViewControlTypes.MAIN_RES:
                     {
-                        data = this.MainResPressurePSI;
-                        if (cvc.Units == CABViewControlUnits.BAR)
-                            data *= 68.948e-3f;
-                        else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
-                            data *= 6.89476f;
-                        else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
-                            data *= 70.307e-3f;
+                        data = ConvertFromPSI(cvc, MainResPressurePSI);
                         break;
                     }
                 case CABViewControlTypes.BRAKE_PIPE:
+                    {
+                        data = ConvertFromPSI(cvc, this.BrakeSystem.BrakeLine1PressurePSI);
+                        break;
+                    }
                 case CABViewControlTypes.EQ_RES:
                     {
-                        data = this.BrakeSystem.BrakeLine1PressurePSI;
-                        if (cvc.Units == CABViewControlUnits.BAR)
-                            data *= 68.948e-3f;
-                        else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
-                            data *= 6.89476f;
-                        else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
-                            data *= 70.307e-3f;
+                        data = ConvertFromPSI(cvc, this.Train.BrakeLine1PressurePSI);
                         break;
                     }
                 case CABViewControlTypes.BRAKE_CYL:
                     {
-                        data = BrakeSystem.GetCylPressurePSI();
-                        if (cvc.Units == CABViewControlUnits.BAR)
-                            data *= 68.948e-3f;
-                        else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
-                            data *= 6.89476f;
-                        else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
-                            data *= 70.307e-3f;
+                        data = ConvertFromPSI(cvc, BrakeSystem.GetCylPressurePSI());
                         break;
                     }
                 case CABViewControlTypes.RPM:
@@ -2059,6 +2045,17 @@ namespace ORTS
                         break;
                     }
             }
+            return data;
+        }
+
+        private static float ConvertFromPSI(CabViewControl cvc, float data)
+        {
+            if (cvc.Units == CABViewControlUnits.BAR)
+                data *= 68.948e-3f;
+            else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
+                data *= 6.89476f;
+            else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
+                data *= 70.307e-3f;
             return data;
         }
 
