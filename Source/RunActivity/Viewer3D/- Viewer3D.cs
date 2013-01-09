@@ -876,7 +876,7 @@ namespace ORTS
 
             loco.Train.ChangeToNextCab();
             loco.Train.CalculatePositionOfCars( 0 );  // fix the front traveller
-            loco.Train.RepositionRearTraveller();    // fix the rear traveller
+            loco.Train.RepositionRearTraveller();     // fix the rear traveller
             PlayerLocomotiveViewer = World.Trains.GetViewer( loco );
             PlayerTrainLength = 0;
 			FrontCamera.Reset();

@@ -520,6 +520,7 @@ namespace ORTS
             int? firstLead = null;          // First driveable car
             int? nextLead = null;           // Next driveable car after the current car with cab facing same way as current cab
             int? lastOppositeLead = null;   // Last driveable car with cab facing the other way from current cab
+
             for (int i = 0; i < Cars.Count; i++)
             {
                 // Ignore cars without a front-facing cab.
@@ -560,7 +561,7 @@ namespace ORTS
 			}
 			catch { LeadLocomotiveIndex = 0; }
 			if (!MPManager.IsMultiPlayer()) Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
-            TrainCar newLead = LeadLocomotive;  // Changing LeadLocomotiveIndex also changes LeadLocomotive
+            TrainCar newLead = LeadLocomotive;  // Changing LeadLocomotiveIndex also changed LeadLocomotive
 
             if (flipNeeded)
                 Flip();
@@ -717,9 +718,11 @@ namespace ORTS
 					{
 						if (car.IsDriveable && car is MSTSWagon) (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
 						car.SpeedMpS = SpeedMpS;
-						if (car.Flipped) car.SpeedMpS = -car.SpeedMpS;
-
-                        
+                        // Flip direction
+                        if (car.Flipped ^ ((MSTSLocomotive)Cars[LeadLocomotiveIndex]).UsingRearCab)
+                        {
+                            car.SpeedMpS = -car.SpeedMpS;
+                        }
 
 #if INDIVIDUAL_CONTROL
 						if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
@@ -742,6 +745,7 @@ namespace ORTS
 				return;
 			}
 
+            // else if (TrainType != TRAINTYPE.REMOTE)
 			if (updateMSGReceived && Update2Old == false)
 			{
 				Update2Old = true;
@@ -779,8 +783,9 @@ namespace ORTS
 #endif
 				car.Update(elapsedClockSeconds);
 				car.TotalForceN = car.MotiveForceN + car.GravityForceN;
-				if (car.Flipped)
-				{
+                // Flip direction
+                if (car.Flipped ^ ((MSTSLocomotive)Cars[LeadLocomotiveIndex]).UsingRearCab)
+                {
 					car.TotalForceN = -car.TotalForceN;
 					car.SpeedMpS = -car.SpeedMpS;
 				}
@@ -799,8 +804,9 @@ namespace ORTS
 			foreach (TrainCar car1 in Cars)
 			{
 				SpeedMpS += car1.SpeedMpS;
-				if (car1.Flipped)
-					car1.SpeedMpS = -car1.SpeedMpS;
+                // Flip direction
+                if (car1.Flipped ^ ((MSTSLocomotive)Cars[LeadLocomotiveIndex]).UsingRearCab)
+                    car1.SpeedMpS = -car1.SpeedMpS;
 			}
 			SpeedMpS /= Cars.Count;
 
@@ -1475,7 +1481,7 @@ namespace ORTS
 		/// Distance is the signed distance the cars are moving.
 		/// </summary>
 		/// <param name="distance"></param>
-		public void CalculatePositionOfCars(float distance)
+        public void CalculatePositionOfCars(float distance)
 		{
             var tn = RearTDBTraveller.TN;
 			RearTDBTraveller.Move(distance);
