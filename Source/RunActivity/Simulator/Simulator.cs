@@ -881,9 +881,7 @@ namespace ORTS
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
             InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
-
         }
-
 
 		/// <summary>
 		/// Set up trains based on info in the static consists listed in the activity file.
@@ -898,7 +896,7 @@ namespace ORTS
             // for each static consist
 			foreach (ActivityObject activityObject in Activity.Tr_Activity.Tr_Activity_File.ActivityObjects.ActivityObjectList)
 			{
-				try
+                try
 				{
 					// construct train data
 					Train train = new Train(this);
@@ -920,30 +918,30 @@ namespace ORTS
 					// when we add them to ORTS
 					for (int iWagon = activityObject.Train_Config.TrainCfg.WagonList.Count - 1; iWagon >= 0; --iWagon)
 					{
-						Wagon wagon = (Wagon)activityObject.Train_Config.TrainCfg.WagonList[iWagon];
+                        Wagon wagon = (Wagon)activityObject.Train_Config.TrainCfg.WagonList[iWagon];
 						string wagonFolder = BasePath + @"\trains\trainset\" + wagon.Folder;
 						string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
 						if (wagon.IsEngine)
 							wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
-						try
-						{
+                        
+                        try // Load could fail if file has bad data.
+                        {
                             TrainCar car = RollingStock.Load(this, wagonFilePath);
-							car.Flipped = !wagon.Flip;
-							car.UiD = wagon.UiD;
-							car.CarID = activityObject.ID + " - " + car.UiD;
-							train.Cars.Add(car);
-							car.Train = train;
-						}
-						catch (Exception error)
-						{
-							Trace.TraceInformation(wagonFilePath);
-							Trace.WriteLine(error);
-						}
+                            car.Flipped = !wagon.Flip;
+                            car.UiD = wagon.UiD;
+                            car.CarID = activityObject.ID + " - " + car.UiD;
+                            train.Cars.Add(car);
+                            car.Train = train;
+                        }
+                        catch
+                        {
+                            Trace.TraceWarning(String.Format("Error in loading {0} as car {1} for static consist. Rest of consist skipped.", wagonFilePath, iWagon));
+                        }
 					}// for each rail car
+					
+                    if (train.Cars.Count == 0) return;
 
-					if (train.Cars.Count == 0) return;
-
-					// in static consists, the specified location represents the middle of the last car, 
+                    // in static consists, the specified location represents the middle of the last car, 
 					// our TDB traveller is always at the back of the last car so it needs to be repositioned
 					TrainCar lastCar = train.LastCar;
 					train.RearTDBTraveller.ReverseDirection();
@@ -953,16 +951,13 @@ namespace ORTS
 					train.CalculatePositionOfCars(0);
 					train.InitializeBrakes();
                     train.InitializeSignals(false);  // initialize without existing speed limits
-
-					Trains.Add(train);
-
+                    Trains.Add(train);
 				}
 				catch (Exception error)
 				{
 					Trace.WriteLine(error);
 				}
 			}// for each train
-
 		}
 
 		private void SaveTrains(BinaryWriter outf)
@@ -991,10 +986,6 @@ namespace ORTS
 				train.Save(outf);
 			}
 		}
-
-            //InitializePlayerTrain();
-            //InitializeStaticConsists();
-            //PlayerLocomotive = InitialPlayerLocomotive();
 
         private void RestoreTrains(BinaryReader inf)
 		{

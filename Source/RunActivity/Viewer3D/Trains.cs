@@ -47,7 +47,10 @@ namespace ORTS
 						else
 							newCars.Add(car, LoadCar(car));
 					}
-					catch (Exception) { }
+					catch (Exception) 
+                    {
+                        Trace.WriteLine(String.Format("Unable to load car {0}", car.CarID));
+                    }
                 }
                 Cars = newCars;
             }
