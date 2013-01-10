@@ -697,8 +697,21 @@ namespace ORTS {
             : base( @event, simulator ) {
             var e = this.ParsedObject as EventCategoryAction;
             if( e.SidingId != null ) {
-                SidingEnd1 = Simulator.TDB.TrackDB.TrItemTable[e.SidingId.Value] as SidingItem;
-                SidingEnd2 = Simulator.TDB.TrackDB.TrItemTable[SidingEnd1.Flags2] as SidingItem;
+                var i = e.SidingId.Value;
+                try
+                {
+                    SidingEnd1 = Simulator.TDB.TrackDB.TrItemTable[i] as SidingItem;
+                    i = SidingEnd1.Flags2;
+                    SidingEnd2 = Simulator.TDB.TrackDB.TrItemTable[i] as SidingItem;
+                }
+                catch (IndexOutOfRangeException error)
+                {
+                    Trace.TraceWarning(String.Format("Siding {0} is not in track database.", i));
+                }
+                catch (NullReferenceException error)
+                {
+                    Trace.TraceWarning(String.Format("Item {0} in track database is not a siding.", i));
+                }
             }
         }
 

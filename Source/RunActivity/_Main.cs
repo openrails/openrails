@@ -175,6 +175,15 @@ namespace ORTS
                 {
                     start();
                 }
+                catch (FileNotFoundException error)
+                {
+                    Trace.WriteLine(error);
+                    if (settings.ShowErrorDialogs)
+                        MessageBox.Show(String.Format(
+                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
+                            error.FileName), 
+                        Application.ProductName);
+                }
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
@@ -247,6 +256,15 @@ namespace ORTS
                 {
                     save();
                 }
+                catch (FileNotFoundException error)
+                {
+                    Trace.WriteLine(error);
+                    if (Simulator.Settings.ShowErrorDialogs)
+                        MessageBox.Show(String.Format(
+                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
+                            error.FileName),
+                        Application.ProductName);
+                }
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
@@ -308,6 +326,15 @@ namespace ORTS
                 {
                     resume();
                 }
+                catch (FileNotFoundException error)
+                {
+                    Trace.WriteLine(error);
+                    if (settings.ShowErrorDialogs)
+                        MessageBox.Show(String.Format(
+                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
+                            error.FileName),
+                        Application.ProductName);
+                }
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
@@ -360,6 +387,15 @@ namespace ORTS
                 try
                 {
                     replay();
+                }
+                catch (FileNotFoundException error)
+                {
+                    Trace.WriteLine(error);
+                    if (settings.ShowErrorDialogs)
+                        MessageBox.Show(String.Format(
+                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
+                            error.FileName),
+                        Application.ProductName);
                 }
                 catch (Exception error)
                 {
@@ -447,7 +483,18 @@ namespace ORTS
             } else {
                 try {
                     replayFromSave();
-                } catch( Exception error ) {
+                }
+                catch (FileNotFoundException error)
+                {
+                    Trace.WriteLine(error);
+                    if (settings.ShowErrorDialogs)
+                        MessageBox.Show(String.Format(
+                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
+                            error.FileName),
+                        Application.ProductName);
+                }
+                catch (Exception error)
+                {
                     Trace.WriteLine( error );
                     if( settings.ShowErrorDialogs )
                         MessageBox.Show( error.ToString(), Application.ProductName );
@@ -530,6 +577,15 @@ namespace ORTS
                 {
                     testAll();
                 }
+                catch (FileNotFoundException error)
+                {
+                    Trace.WriteLine(error);
+                    if (settings.ShowErrorDialogs)
+                        MessageBox.Show(String.Format(
+                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
+                            error.FileName),
+                        Application.ProductName);
+                }
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
@@ -557,6 +613,15 @@ namespace ORTS
                 Simulator.Stop();
                 loadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
                 passed = true;
+            }
+            catch (FileNotFoundException error)
+            {
+                var message = String.Format(
+                    "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
+                    error.FileName);
+                Trace.WriteLine(error);
+                if (settings.ShowErrorDialogs)
+                    MessageBox.Show(message, Application.ProductName);
             }
             catch (Exception error)
             {

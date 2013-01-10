@@ -373,6 +373,12 @@ namespace ORTS
                     {
                         readInfo.Scriptname = String.Copy(scriptname);
                         ScriptLines.Add(readInfo);
+                        
+                        //CJ
+                        if (readInfo.Linenumber % 1000 == 1)
+                        {
+                            Trace.Write("s");
+                        }
                     }
                 }
             }
