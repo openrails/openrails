@@ -149,6 +149,7 @@ namespace ORTS.MultiPlayer
 			foreach (MSGMoveItem m in items)
 			{
 				bool found = false; //a train may not be in my sim
+#if !NEW_SIGNALLING
 				if (m.user == MPManager.GetUserName())//about itself, check if the number of car has changed, otherwise ignore
 				{
 					//if I am a remote controlled train now
@@ -167,6 +168,7 @@ namespace ORTS.MultiPlayer
 					catch (Exception) { }*/
 					continue; 
 				}
+#endif
 				if (m.user.Contains("0xAI") || m.user.Contains("0xUC"))
 				{
 					foreach (Train t in Program.Simulator.Trains)
@@ -184,7 +186,9 @@ namespace ORTS.MultiPlayer
 							}
 							if (t.TrainType == Train.TRAINTYPE.REMOTE)
 							{
+#if !NEW_SIGNALLING
 								t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir);
+#endif
 								break;
 							}
 						}
@@ -196,7 +200,9 @@ namespace ORTS.MultiPlayer
 					if (t != null)
 					{
 							found = true;
+#if !NEW_SIGNALLING
 							t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir);
+#endif
 					}
 				}
 				if (found == false) //I do not have the train, tell server to send it to me
@@ -483,6 +489,7 @@ namespace ORTS.MultiPlayer
 						if (Program.Simulator.PlayerLocomotive == null) t = Program.Simulator.Trains[0];
 						else t = Program.Simulator.PlayerLocomotive.Train;
 						t.Number = this.num;
+#if !NEW_SIGNALLING
 						if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
 							new WorldLocation(t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, 0, t.RearTDBTraveller.Z)) > 1000)
 						{
@@ -490,6 +497,7 @@ namespace ORTS.MultiPlayer
 							t.expectedTileX = this.TileX; t.expectedTileZ = this.TileZ; t.expectedX = this.X; t.expectedZ = this.Z;
 							t.expectedDIr = this.dir;
 						}
+#endif
 					}
 					Program.Simulator.Weather = (WeatherType)this.weather;
 					Program.Simulator.ClockTime = this.seconds;
@@ -654,11 +662,13 @@ namespace ORTS.MultiPlayer
 					return;
 				}
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
+#if !NEW_SIGNALLING
 				if (Program.Simulator.SwitchIsOccupied(trj))
 				{
 					MPManager.BroadCast((new MSGMessage(user, "Warning", "Train on the switch, cannot throw")).ToString());
 					return;
 				}
+#endif
 				trj.SelectedRoute = Selection;
 				MPManager.BroadCast(this.ToString()); //server will tell others
 			}
@@ -702,7 +712,9 @@ namespace ORTS.MultiPlayer
 				try
 				{
 					var t = MPManager.Instance().FindPlayerTrain(user);
+#if !NEW_SIGNALLING
 					if (t != null) t.ResetSignal();
+#endif
 					MultiPlayer.MPManager.BroadCast((new MSGSignalStatus()).ToString());
 				}
 				catch (Exception) { }
@@ -2972,10 +2984,13 @@ namespace ORTS.MultiPlayer
 			switch (pick)
 			{
 				case 0:
+#if !NEW_SIGNALLING
 					signal.canUpdate = true;
 					signal.forcedTime = 0;
+#endif
 					break;
 				case 1:
+#if !NEW_SIGNALLING
 					signal.enabled = false;
 					signal.canUpdate = false;
 					//signal.forcedTime = Program.Simulator.GameTime;
@@ -2985,8 +3000,10 @@ namespace ORTS.MultiPlayer
 						head.Update();
 					}
 					signal.forcedTime = Program.Simulator.GameTime;
+#endif
 					break;
 				case 2:
+#if !NEW_SIGNALLING
 					signal.canUpdate = false;
 					//signal.
 					foreach (var head in signal.SignalHeads)
@@ -3001,8 +3018,10 @@ namespace ORTS.MultiPlayer
 						head.draw_state = head.def_draw_state(head.state);
 					}
 					signal.forcedTime = Program.Simulator.GameTime;
+#endif
 					break;
 				case 3:
+#if !NEW_SIGNALLING
 					signal.canUpdate = false;
 					signal.enabled = true; //force it to be green,
 					//signal.
@@ -3012,6 +3031,7 @@ namespace ORTS.MultiPlayer
 						head.draw_state = head.def_draw_state(head.state);
 					}
 					signal.forcedTime = Program.Simulator.GameTime;
+#endif
 					break;
 			}
 

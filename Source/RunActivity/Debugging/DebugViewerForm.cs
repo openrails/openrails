@@ -22,7 +22,6 @@ using System.Net;
 using Microsoft.Xna.Framework;
 using System.Windows.Forms;
 using MSTS;
-using ORTS.Interlocking;
 namespace ORTS.Debugging
 {
 
@@ -1017,6 +1016,8 @@ namespace ORTS.Debugging
             }
             trackNode = new Traveller(position);
             var distance = 0f;
+
+#if !NEW_SIGNALLING
             while (true)
             {
                 var signal = Program.Simulator.Signals.FindNearestSignal(trackNode);
@@ -1034,10 +1035,13 @@ namespace ORTS.Debugging
                 // TODO: This is a massive hack because the current signalling code is useless at finding the next signal in the face of changing switches.
                 trackNode.Move(0.001f);
             }
+#endif
+
             rv.Objects = rv.Objects.OrderBy(tso => tso.Distance).ToList();
             return rv;
         }
 
+#if !NEW_SIGNALLING
 	    ORTS.Popups.TrackMonitorSignalAspect GetAspect(Signal signal)
         {
             var aspect = signal.GetAspect();
@@ -1047,6 +1051,7 @@ namespace ORTS.Debugging
                 return ORTS.Popups.TrackMonitorSignalAspect.Warning;
             return ORTS.Popups.TrackMonitorSignalAspect.Stop;
         }
+#endif
 
 	   //draw the train path if it is within the window
 		public void DrawTrainPath(Train train, float subX, float subY, Pen pathPen, Graphics g, PointF scaledA, PointF scaledB, float stepDist, float MaximumSectionDistance)
@@ -1123,6 +1128,7 @@ namespace ORTS.Debugging
 						if (switchErrorDistance < DisplayDistance)
 							break;
 					}
+#if !NEW_SIGNALLING
 					else if (signalObj != null)
 					{
 						if (GetAspect(signalObj.Signal) == ORTS.Popups.TrackMonitorSignalAspect.Stop)
@@ -1131,6 +1137,7 @@ namespace ORTS.Debugging
 							break;
 						}
 					}
+#endif
 				}
 				if (switchErrorDistance < DisplayDistance || signalErrorDistance < DisplayDistance)
 					break;
@@ -2043,10 +2050,13 @@ namespace ORTS.Debugging
 		  switch (type)
 		  {
 			  case 0:
+#if !NEW_SIGNALLING
 				  signal.canUpdate = true;
 				  signal.forcedTime = 0;
+#endif
 				  break;
 			  case 1:
+#if !NEW_SIGNALLING
 				  signal.enabled = false;
 				  signal.canUpdate = false;
 				  //signal.forcedTime = Program.Simulator.GameTime;
@@ -2056,8 +2066,10 @@ namespace ORTS.Debugging
 					  head.Update();
 				  }
 				  signal.forcedTime = Program.Simulator.GameTime;
+#endif
 				  break;
 			  case 2:
+#if !NEW_SIGNALLING
 				  signal.canUpdate = false;
 				  //signal.
 				  foreach (var head in signal.SignalHeads)
@@ -2072,8 +2084,10 @@ namespace ORTS.Debugging
 					  head.draw_state = head.def_draw_state(head.state);
 				  }
 				  signal.forcedTime = Program.Simulator.GameTime;
+#endif
 				  break;
 			  case 3:
+#if !NEW_SIGNALLING
 				  signal.canUpdate = false;
 				  signal.enabled = true; //force it to be green,
 				  //signal.
@@ -2083,6 +2097,7 @@ namespace ORTS.Debugging
 					  head.draw_state = head.def_draw_state(head.state);
 				  }
 				  signal.forcedTime = Program.Simulator.GameTime;
+#endif
 				  break;
 		  }
 		  UnHandleItemPick();
@@ -2266,8 +2281,10 @@ namespace ORTS.Debugging
 			   var v1 = new Vector2(Location.X, Location.Y); var v3 = v1 - v2; v3.Normalize(); v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 10f : -10f);
 			   Dir.X = v2.X; Dir.Y = v2.Y;
 			   hasDir = true;
+#if !NEW_SIGNALLING
 			   var pos = signal.WorldObject.Position;
 			   if (pos != null) { Location.X = item.TileX * 2048 + pos.X; Location.Y = item.TileZ * 2048 + pos.Z; }
+#endif
 		   }
 		   catch {  }
 	   }

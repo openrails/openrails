@@ -373,7 +373,11 @@ namespace ORTS
             Commands[(int)UserCommands.CameraPassenger] = new RailDriverUserCommand(2, 0x40);
             Commands[(int)UserCommands.CameraBrakeman] = new RailDriverUserCommand(2, 0x80);
             //Commands[(int)UserCommands. hide popups] = new RailDriverUserCommand(3, 0x01);
+#if !NEW_SIGNALLING
             Commands[(int)UserCommands.DebugResetSignal] = new RailDriverUserCommand(3, 0x02);
+#else
+            Commands[(int)UserCommands.GameResetSignalForward] = new RailDriverUserCommand(3, 0x02);
+#endif
             //Commands[(int)UserCommands. load passengers] = new RailDriverUserCommand(3, 0x04);
             //Commands[(int)UserCommands. ok] = new RailDriverUserCommand(3, 0x08);
             // controls to right of blue buttons

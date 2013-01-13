@@ -21,35 +21,61 @@ namespace ORTS
 {
     public class AI
     {
-        Heap<AITrain> StartQueue = new Heap<AITrain>();
         public readonly Simulator Simulator;
         public List<AITrain> AITrains = new List<AITrain>();// active AI trains
         public Dictionary<int, AITrain> AITrainDictionary = new Dictionary<int, AITrain>();
-        bool FirstUpdate = true; // flag for special processing if first call to Update
-        public Dispatcher Dispatcher;
+
+        public StartTrains StartList = new StartTrains();
+        private double clockTime; // clock time : local time before activity start, common time from simulator after start
+        private bool localTime;  // if true : clockTime is local time
+        public bool PreUpdate = false; // if true : running in pre-update phase
+        public List<AITrain> TrainsToRemove = new List<AITrain>();
 
         /// <summary>
         /// Loads AI train information from activity file.
         /// Creates a queue of AI trains in the order they should appear.
         /// At the moment AI trains are also created off scene so the rendering code will know about them.
         /// </summary>
-        public AI(Simulator simulator)
+        public AI(Simulator simulator, double activityStartTime)
         {
             Simulator = simulator;
-            Dispatcher = new Dispatcher(this);
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
+            {
                 foreach (var sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
                 {
-                    AITrain train = CreateAITrain(sd);
+                    AITrain train = CreateAITrain(sd,
+                    simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.TrafficFile.TrafficDefinition);
                     if (train == null)
                         continue;
                     AITrainDictionary.Add(sd.UiD, train);
                 }
-            foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
-                StartQueue.Add(kvp.Value.StartTime, kvp.Value);
+            }
 
-            float distance = simulator.Activity != null ? Simulator.Trains[0].Length + 20 : float.MaxValue;
-            Simulator.PlayerPath.AlignInitSwitches(Simulator.Trains[0].dRearTDBTraveller, 0, distance);
+            float firstAITime = StartList.GetNextTime();
+            if (firstAITime > 0 && firstAITime < Simulator.ClockTime)
+            {
+
+                // perform update for AI trains upto actual start time
+
+                clockTime = firstAITime - 1.0f;
+                localTime = true;
+
+                Trace.Write("\nRunning AI trains ...   ");
+                PreUpdate = true;
+
+                for (double runTime = firstAITime; runTime < Simulator.ClockTime; runTime += 5.0) // update with 5 secs interval
+                {
+                    AIUpdate((float)(runTime - clockTime), PreUpdate);
+                    Simulator.Signals.Update((float)(runTime - clockTime));
+                    clockTime = runTime;
+                }
+
+                Trace.Write("\n");
+                PreUpdate = false;
+            }
+
+            clockTime = Simulator.ClockTime;
+            localTime = false;
         }
 
         // restore game state
@@ -57,67 +83,44 @@ namespace ORTS
         {
             Debug.Assert(simulator.Trains != null, "Cannot restore AI without Simulator.Trains.");
             Simulator = simulator;
-            FirstUpdate = false;
-            foreach (Train train in Simulator.Trains)
+
+            int totalAITrains = inf.ReadInt32();
+
+            for (int iTrain = 0; iTrain < totalAITrains; iTrain++)
             {
-                if (train.GetType() == typeof(AITrain))
-                {
-                    AITrain aiTrain = (AITrain)train;
-                    AITrainDictionary.Add(aiTrain.UiD, aiTrain);
-                    aiTrain.AI = this;
-                    AITrains.Add(aiTrain);
-                    aiTrain.Path.TrackDB = Simulator.TDB.TrackDB;
-                    aiTrain.Path.TSectionDat = Simulator.TSectionDat;
-                    for (; ; )
-                    {
-                        AIPathNode node = aiTrain.Path.ReadNode(inf);
-                        if (node == null)
-                            break;
-                        AISwitchInfo sw = new AISwitchInfo(aiTrain.Path, node);
-                        sw.SelectedRoute = inf.ReadInt32();
-                        sw.DistanceM = inf.ReadSingle();
-                        aiTrain.SwitchList.Add(sw);
-                    }
-                }
+                AITrain aiTrain = new AITrain(Simulator, inf);
+                aiTrain.AI = this;
+                AITrains.Add(aiTrain);
+                Simulator.Trains.Add(aiTrain);
             }
-            int n = inf.ReadInt32();
-            for (int i = 0; i < n; i++)
+
+            int totalStarting = inf.ReadInt32();
+
+            for (int iStarting = 0; iStarting < totalStarting; iStarting++)
             {
-                double time = inf.ReadDouble();
-                AITrain train = new AITrain(Simulator, inf);
-                StartQueue.Add(time, train);
-                AITrainDictionary.Add(train.UiD, train);
-                train.AI = this;
-                train.Path.TrackDB = Simulator.TDB.TrackDB;
-                train.Path.TSectionDat = Simulator.TSectionDat;
+                AITrain aiTrain = new AITrain(Simulator, inf);
+                aiTrain.AI = this;
+                StartList.InsertTrain(aiTrain);
             }
-            Dispatcher = new Dispatcher(this, inf);
         }
 
         // save game state
         public void Save(BinaryWriter outf)
         {
-            foreach (Train train in Simulator.Trains)
+
+            RemoveTrains();   // remove trains waiting to be removed
+
+            outf.Write(AITrains.Count);
+            foreach (AITrain train in AITrains)
             {
-                if (train.GetType() == typeof(AITrain))
-                {
-                    AITrain aiTrain = (AITrain)train;
-                    foreach (AISwitchInfo sw in aiTrain.SwitchList)
-                    {
-                        aiTrain.Path.WriteNode(outf, sw.PathNode);
-                        outf.Write(sw.SelectedRoute);
-                        outf.Write(sw.DistanceM);
-                    }
-                    aiTrain.Path.WriteNode(outf, null);
-                }
+                train.Save(outf);
             }
-            outf.Write(StartQueue.GetSize());
-            for (int i = 0; i < StartQueue.GetSize(); i++)
+
+            outf.Write(StartList.Count);
+            foreach (AITrain thisStartTrain in StartList)
             {
-                outf.Write(StartQueue.getKey(i));
-                StartQueue.getValue(i).Save(outf);
+                thisStartTrain.Save(outf);
             }
-            Dispatcher.Save(outf);
         }
 
         /// <summary>
@@ -126,160 +129,104 @@ namespace ORTS
         /// Moves all active AI trains by calling their Update method.
         /// And finally, removes any AI trains that have reached the end of their path.
         /// </summary>
-        public void Update( float elapsedClockSeconds )
+        public void Update(float elapsedClockSeconds)
         {
-            if (FirstUpdate)
+            AIUpdate(elapsedClockSeconds, false);
+        }
+
+        public void AIUpdate(float elapsedClockSeconds, bool preUpdate)
+        {
+            // update clock
+
+            if (!localTime)
             {
-                foreach (KeyValuePair<int, AITrain> kvp in AITrainDictionary)
-                    Simulator.Trains.Remove(kvp.Value);
-                FirstUpdate = false;
+                clockTime = Simulator.ClockTime;
             }
-            Dispatcher.Update(Simulator.ClockTime, elapsedClockSeconds);
-            while (StartQueue.GetMinKey() < Simulator.ClockTime)
+
+            // check to see if any train to be added
+
+            float nextTrainTime = StartList.GetNextTime();
+            if (nextTrainTime > 0 && nextTrainTime < clockTime)
             {
-                AITrain train = StartQueue.GetMinValue();
-                StartQueue.DeleteMin();
-                // Added By GeorgeS
-                if (Dispatcher.RequestAuth(train, false) == false)
+                List<AITrain> newTrains = StartList.GetTrains((float)clockTime);
+                foreach (AITrain thisTrain in newTrains)
                 {
-                    StartQueue.Add(Simulator.ClockTime + 10, train);
-                }
-                else
-                {
-                    MSTSElectricLocomotive el = train.FirstCar as MSTSElectricLocomotive;
-                    if (el != null)
-                    {
-                        el.SetPantographFirst(true);
-                    }
-                    AITrains.Add(train);
-                    Simulator.Trains.Add(train);
-					//For Multiplayer: Server BroadCast to others of AITrains being added
-					if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGTrain(train, train.Number)).ToString());
-                    train.spad = true;
-                    train.Update(0);
-                    train.spad = false;
-                    //train.InitializeSignals(false);
+                    AddToWorld(thisTrain);
                 }
             }
-            bool remove = false;
             foreach (AITrain train in AITrains)
-                if (train.NextStopNode == null || train.TrackAuthority.StartNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
-                    remove = true;
+            {
+                if (train.Cars.Count == 0 || train.Cars[0].Train != train)
+                    train.RemoveTrain();
                 else
-                    train.AIUpdate( elapsedClockSeconds, Simulator.ClockTime);
-            if (remove)
-                RemoveTrains();
+                    train.AIUpdate(elapsedClockSeconds, clockTime, preUpdate);
+            }
+
+            RemoveTrains();
         }
 
         /// <summary>
         /// Creates an AI train
         /// Moves the models down 1000M to make them invisible.
         /// </summary>
-        private AITrain CreateAITrain(Service_Definition sd)
+        private AITrain CreateAITrain(Service_Definition sd, Traffic_Traffic_Definition trd)
         {
             // set up a new AI train
             // first extract the service definition from the activity file
             // this gives the consist and path
-            // TODO combine this with similar player train code
+
+            // find related traffic definition
+
+            Traffic_Service_Definition trfDef = null;
+            foreach (Traffic_Service_Definition thisDef in trd.TrafficItems)
+            {
+                if (String.Compare(thisDef.Service_Definition, sd.Name) == 0 &&
+                thisDef.Time == sd.Time)
+                {
+                    trfDef = thisDef;
+                    break;
+                }
+            }
+
+            // read service and consist file
+
             SRVFile srvFile = new SRVFile(Simulator.RoutePath + @"\SERVICES\" + sd.Name + ".SRV");
             string consistFileName = srvFile.Train_Config;
             CONFile conFile = new CONFile(Simulator.BasePath + @"\TRAINS\CONSISTS\" + consistFileName + ".CON");
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
-            PATFile patFile = new PATFile(pathFileName);
-            AITrain train = new AITrain(Simulator, sd.UiD, this, new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName), sd.Time);
+            PATTraveller patTraveller = new PATTraveller(pathFileName);
+            Traveller tempTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes,
+                patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
 
-            if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
-                train.RouteMaxSpeedMpS = train.MaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A * srvFile.Efficiency;
-	    		// also set Route max speed for speedpost-processing in train.cs [R.Roeterdink]
-
-            // By GeorgeS
-            float locoMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit * srvFile.Efficiency;
-            foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
-            {
-                string wagonFolder = Simulator.BasePath + @"\trains\trainset\" + wagon.Folder;
-                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
-                if (wagon.IsEngine)
-                {
-                    wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
-                    TrainCar car = RollingStock.Load(Simulator, wagonFilePath);
-                    MSTSLocomotive loco = car as MSTSLocomotive;
-                    locoMaxSpeedMpS = Math.Min(loco.MaxSpeedMpS * srvFile.Efficiency, locoMaxSpeedMpS);
-                }
-            }
-
-            if (locoMaxSpeedMpS < train.MaxSpeedMpS)
-                train.MaxSpeedMpS = locoMaxSpeedMpS;
-
-            WorldLocation wl = train.Path.FirstNode.Location;
-            train.RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Z);
-            //train.Path.AlignAllSwitches();
-            train.Path.AlignInitSwitches(train.RearTDBTraveller, -1 , 500);
-            // This is the position of the back end of the train in the database.
-            //PATTraveller patTraveller = new PATTraveller(Simulator.RoutePath + @"\PATHS\" + pathFileName + ".PAT");
             // figure out if the next waypoint is forward or back
-            //patTraveller.NextWaypoint();
-            wl = train.GetNextNode(train.Path.FirstNode).Location;
-            if (train.RearTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z) < 0)
-                train.RearTDBTraveller.ReverseDirection();
-            float nodelen = train.RearTDBTraveller.DistanceTo(wl.TileX, wl.TileZ, wl.Location.X, wl.Location.Y, wl.Location.Z);
-            //train.PATTraveller = patTraveller;
-            if (sd.Time < Simulator.ClockTime)
-            {
-                float dtS = (float)(Simulator.ClockTime - sd.Time);
+            patTraveller.NextWaypoint();
+            if (tempTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
+                tempTraveller.ReverseDirection();
+            PATFile patFile = new PATFile(pathFileName);
+            //            PathDescription = patFile.Name;
 
-                AIPathNode tnode = train.Path.FirstNode;
-                float rdtS = dtS;
-                float disttotravel = 0;
-                while (tnode != null && tnode.NextMainTVNIndex != -1)
-                {
-                    if (tnode.Type == AIPathNodeType.Stop)
-                    {
-                        rdtS -= tnode.WaitTimeS;
-                        if (rdtS < 0)
-                        {
-                            tnode.WaitTimeS = -(int)rdtS;
-                            break;
-                        }
-                    }
-                    rdtS -= nodelen / train.MaxSpeedMpS;
-                    if (rdtS < 0)
-                        break;
-                    disttotravel += nodelen;
-                    tnode = tnode.NextMainNode;
-                    if (tnode != null && tnode.NextMainTVNIndex != -1)
-                        nodelen = Dispatcher.TrackLength[tnode.NextMainTVNIndex];
-                }
+            AIPath aiPath = new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName);
 
-                float sttime = train.MaxSpeedMpS / train.MaxAccelMpSS;
+            AITrain train = new AITrain(Simulator, sd.UiD, this, aiPath, sd.Time, srvFile.Efficiency, sd.Name, trfDef);
 
-                float dist = Math.Min(dtS, sttime) * train.MaxSpeedMpS / 2;
-                dist += Math.Max(dtS - sttime, 0) * train.MaxSpeedMpS;
+            // also set Route max speed for speedpost-processing in train.cs
+            if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
+                train.TrainMaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A;
 
-                dist = dist < disttotravel ? dist : disttotravel;
+            // insert in start list
 
-                train.Path.AlignInitSwitches(train.RearTDBTraveller, -1 , dist);
-
-                // By GeorgeS
-                if (tnode == null || tnode.Type != AIPathNodeType.Stop)
-                    train.SpeedMpS = Math.Min(dtS, sttime) * train.MaxAccelMpSS;
-                
-                if (train.RearTDBTraveller.Move(dist) > 0.01 || train.RearTDBTraveller.TN.TrEndNode)
-                    return null;
-                AIPathNode node = train.Path.FirstNode;
-                while (node != null && node.NextMainTVNIndex != train.RearTDBTraveller.TrackNodeIndex)
-                    node = node.NextMainNode;
-                if (node != null)
-                    train.Path.FirstNode = node;
-            }
+            StartList.InsertTrain(train);
+            train.RearTDBTraveller = new Traveller(tempTraveller);
 
             // add wagons
-			var id = 0;
+            TrainCar previousCar = null;
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
 
                 string wagonFolder = Simulator.BasePath + @"\trains\trainset\" + wagon.Folder;
-                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
+                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag";
+                ;
                 if (wagon.IsEngine)
                     wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
 
@@ -287,39 +234,72 @@ namespace ORTS
                 {
                     TrainCar car = RollingStock.Load(Simulator, wagonFilePath);
                     car.Flipped = wagon.Flip;
-					car.UiD = id++;
-					car.CarID = "AI" + train.UiD + " - " + car.UiD;
                     train.Cars.Add(car);
                     car.Train = train;
                     car.SignalEvent(EventID.Pantograph1Up);
-                    car.SpeedMpS = car.Flipped ? -train.SpeedMpS : train.SpeedMpS;
+                    previousCar = car;
                 }
                 catch (Exception error)
                 {
-					Trace.TraceInformation(wagonFilePath);
-					Trace.WriteLine(error);
+                    Trace.TraceInformation(wagonFilePath);
+                    Trace.WriteLine(error);
                 }
 
             }// for each rail car
 
-			train.Cars[0].Headlight = 2;//AI train always has light on
-            train.CalculatePositionOfCars(0);
-            for (int i = 0; i < train.Cars.Count; i++)
-                train.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
-            if (train.FrontTDBTraveller.IsEnd)
-                return null;
+            train.Cars[0].Headlight = 2;//AI train always has light on
 
-			train.CheckFreight(); // check if train is freight or passenger [R.Roeterdink]
+            train.CreateRoute(false);  // create route without use of FrontTDBtraveller
+            train.CheckFreight(); // check if train is freight or passenger
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
-            train.InitializeSignals(false);  // Initialize Signals and Speedlimits without active speed information [R.Roeterdink]
 
-            // By GeorgeS
-            //train.InitializeSignals();
-
-            //AITrains.Add(train);
-            Simulator.Trains.Add(train);
             return train;
+        }
+
+        /// <summary>
+        /// Add train to world : 
+        /// place train on required position
+        /// initialize signals and movement
+        /// </summary>
+
+        private void AddToWorld(AITrain thisTrain)
+        {
+            // clear track and align switches - check state
+
+            bool validPosition = true;
+            Train.TCSubpathRoute tempRoute = thisTrain.CalculateInitialTrainPosition(ref validPosition);
+
+            if (validPosition)
+            {
+                thisTrain.SetInitialTrainRoute(tempRoute);
+                thisTrain.CalculatePositionOfCars(0);
+                for (int i = 0; i < thisTrain.Cars.Count; i++)
+                    thisTrain.Cars[i].WorldPosition.XNAMatrix.M42 -= 1000;
+                thisTrain.ResetInitialTrainRoute(tempRoute);
+                validPosition = thisTrain.PostInit();
+            }
+
+            if (validPosition)
+            {
+                thisTrain.actualWaitTimeS = 0; // reset wait counter //
+                thisTrain.TrainType = Train.TRAINTYPE.AI;
+                AITrains.Add(thisTrain);
+                Simulator.Trains.Add(thisTrain);
+            }
+            else
+            {
+                thisTrain.StartTime += 30;    // try again in half a minute
+                thisTrain.actualWaitTimeS += 30;
+                if (thisTrain.actualWaitTimeS > 900)   // tried for 15 mins
+                {
+                    Trace.TraceWarning("Cannot place AI train {0} at time {1}", thisTrain.UiD, thisTrain.StartTime);
+                }
+                else
+                {
+                    StartList.InsertTrain(thisTrain);
+                }
+            }
         }
 
         /// <summary>
@@ -329,81 +309,111 @@ namespace ORTS
         /// </summary>
         private void RemoveTrains()
         {
-            List<Train> removeList = new List<Train>();
-            foreach (AITrain train in AITrains)
-                if (train.NextStopNode == null || train.TrackAuthority.StartNode == null || train.Cars.Count == 0 || train.Cars[0].Train != train)
-                    removeList.Add(train);
-            foreach (AITrain train in removeList)
+            foreach (AITrain train in TrainsToRemove)
             {
+                AITrainDictionary.Remove(train.UiD);
                 AITrains.Remove(train);
                 Simulator.Trains.Remove(train);
-                Dispatcher.Release(train);
-                train.Release();
+
                 if (train.Cars.Count > 0 && train.Cars[0].Train == train)
+                {
                     foreach (TrainCar car in train.Cars)
+                    {
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+                    }
+                }
             }
-			//server broadcast to others about removing this train
-			if (MPManager.IsServer()) MPManager.BroadCast((new MSGRemoveTrain(removeList).ToString()));
-
-        }
-
-        public string GetStatus()
-        {
-            return Dispatcher.PlayerStatus();
         }
     }
 
-    public class StartQueue
+    public class StartTrains : LinkedList<AITrain>
     {
-        List<Service_Definition> List = new List<Service_Definition>();
-        int QueueSize = 0;
-        public void Add(Service_Definition sd)
+
+        //================================================================================================//
+        //
+        // Insert item on correct time
+        //
+
+        public void InsertTrain(AITrain thisTrain)
         {
-            if (QueueSize < List.Count)
-                List[QueueSize]= sd;
+            if (this.Count == 0)
+            {
+                this.AddFirst(thisTrain);
+            }
             else
-                List.Add(sd);
-            int i = QueueSize++;
-            while (i > 0)
             {
-                int j = (i - 1) / 2;
-                if (List[j].Time <= List[i].Time)
-                    break;
-                Service_Definition t = List[j];
-                List[j] = List[i];
-                List[i] = t;
-                i = j;
+                LinkedListNode<AITrain> nextNode = this.First;
+                AITrain nextTrain = nextNode.Value;
+                bool inserted = false;
+                while (!inserted)
+                {
+                    if (nextTrain.StartTime > thisTrain.StartTime)
+                    {
+                        this.AddBefore(nextNode, thisTrain);
+                        inserted = true;
+                    }
+                    else if (nextNode.Next == null)
+                    {
+                        this.AddAfter(nextNode, thisTrain);
+                        inserted = true;
+                    }
+                    else
+                    {
+                        nextNode = nextNode.Next;
+                        nextTrain = nextNode.Value;
+                    }
+                }
             }
         }
-        public void Print()
+
+        //================================================================================================//
+        //
+        // Get next time
+        //
+
+        public float GetNextTime()
         {
-            Console.WriteLine("StartQueue {0}",QueueSize);
-            for (int i=0; i<QueueSize; i++)
-                Console.WriteLine(" {0} {1}", i, List[i].Time);
-        }
-        public Service_Definition GetNext(double time)
-        {
-            if (QueueSize <= 0 || List[0].Time > time)
-                return null;
-            Service_Definition result = List[0];
-            List[0] = List[--QueueSize];
-            int i = 0;
-            while (true)
+            if (this.Count == 0)
             {
-                int j = 2 * i + 1;
-                if (j >= QueueSize)
-                    break;
-                if (j < QueueSize-1 && List[j + 1].Time < List[j].Time)
-                    j++;
-                if (List[i].Time <= List[j].Time)
-                    break;
-                Service_Definition t = List[j];
-                List[j] = List[i];
-                List[i] = t;
-                i = j;
+                return (-1.0f);
             }
-            return result;
+            else
+            {
+                LinkedListNode<AITrain> nextNode = this.First;
+                AITrain nextTrain = nextNode.Value;
+                return (nextTrain.StartTime);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Get all trains with time < present time and remove these from list
+        //
+
+        public List<AITrain> GetTrains(float reqTime)
+        {
+            List<AITrain> itemList = new List<AITrain>();
+
+            bool itemsCollected = false;
+            LinkedListNode<AITrain> nextNode = this.First;
+            LinkedListNode<AITrain> prevNode;
+
+            while (!itemsCollected && nextNode != null)
+            {
+                if (nextNode.Value.StartTime <= reqTime)
+                {
+                    itemList.Add(nextNode.Value);
+                    prevNode = nextNode;
+                    nextNode = prevNode.Next;
+                    this.Remove(prevNode);
+                }
+                else
+                {
+                    itemsCollected = true;
+                }
+            }
+
+            return (itemList);
         }
     }
 }

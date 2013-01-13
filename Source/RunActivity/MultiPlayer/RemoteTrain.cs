@@ -46,6 +46,7 @@ namespace ORTS
 		//update train location
 		public override void Update(float elapsedClockSeconds)
 		{
+#if !NEW_SIGNALLING
 			//if a MSGMove is received
 			if (updateMSGReceived)
 			{
@@ -105,7 +106,7 @@ namespace ORTS
 			{
 				CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
 			}
-
+#endif
 			//update speed for each car, so wheels will rotate
 			foreach (TrainCar car in Cars)
 			{
@@ -115,7 +116,9 @@ namespace ORTS
 					car.SpeedMpS = SpeedMpS;
 				}
 			}
+#if !NEW_SIGNALLING
 			lastSpeedMps = SpeedMpS;
+#endif
 		} // end Update
 	}// class Train
 }

@@ -140,6 +140,22 @@ namespace ORTS.Popups
             table.Cells[cellRow, cellColumn] = String.Format(format, args);
         }
 
+#if NEW_SIGNALLING
+        void TableSetCellUnformatted(TableData table, int cellRow, int cellColumn, string format)
+        {
+            if (cellRow > table.Cells.GetUpperBound(0) || cellColumn > table.Cells.GetUpperBound(1))
+            {
+                var newCells = new string[Math.Max(cellRow + 1, table.Cells.GetLength(0)), Math.Max(cellColumn + 1, table.Cells.GetLength(1))];
+                for (var row = 0; row < table.Cells.GetLength(0); row++)
+                    for (var column = 0; column < table.Cells.GetLength(1); column++)
+                        newCells[row, column] = table.Cells[row, column];
+                table.Cells = newCells;
+            }
+            Debug.Assert(!format.Contains('\n'), "HUD table cells must not contain newlines. Use the table positioning instead.");
+            table.Cells[cellRow, cellColumn] = String.Copy(format);
+        }
+#endif
+
         void TableSetCells(TableData table, int startColumn, params string[] columns)
         {
             for (var i = 0; i < columns.Length; i++)
@@ -189,7 +205,11 @@ namespace ORTS.Popups
             if( Viewer.IsReplaying ) {
                 TableAddLabelValue( table, "Replay", InfoDisplay.FormattedTime( Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime ) );
             }
+#if !NEW_SIGNALLING
             TableAddLabelValue(table, "Speed", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+#else
+            TableAddLabelValue(table, "Speed", FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+#endif
             TableAddLabelValue(table, "Acceleration", "{0:F3} m/s/s", Viewer.PlayerLocomotive.AccelerationMpSS);
             TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
@@ -223,7 +243,9 @@ namespace ORTS.Popups
             TableAddLine(table);
             TableAddLabelValue(table, "FPS", "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
             TableAddLine(table);
+#if !NEW_SIGNALLING
             locomotiveStatus = Viewer.Simulator.AI.GetStatus();
+#endif
             if (locomotiveStatus != null)
             {
                 var lines = locomotiveStatus.Split('\n');
@@ -321,14 +343,57 @@ namespace ORTS.Popups
         {
             TextPageHeading(table, "DISPATCHER INFORMATION");
 
+#if NEW_SIGNALLING
+	    TableSetCellUnformatted(table, table.CurrentRow,  0, "Num");
+	    TableSetCellUnformatted(table, table.CurrentRow,  1, "DistTrav");
+	    TableSetCellUnformatted(table, table.CurrentRow,  2, "ActSpd");
+	    TableSetCellUnformatted(table, table.CurrentRow,  3, "MaxSpd");
+	    TableSetCellUnformatted(table, table.CurrentRow,  4, "AI MOVM");
+	    TableSetCellUnformatted(table, table.CurrentRow,  5, "Acc&Brk");
+	    TableSetCellUnformatted(table, table.CurrentRow,  6, "MODE");
+	    TableSetCellUnformatted(table, table.CurrentRow,  7, "AUTH");
+	    TableSetCellUnformatted(table, table.CurrentRow,  8, "Dist");
+	    TableSetCellUnformatted(table, table.CurrentRow,  9, "Signal");
+	    TableSetCellUnformatted(table, table.CurrentRow, 10, "Dist");
+	    TableSetCellUnformatted(table, table.CurrentRow, 11, "Consist");
+	    TableSetCellUnformatted(table, table.CurrentRow, 12, "Path");
+
+#else	    
             TableSetCells(table, 0, "Train", "Speed", "Signal aspect", "", "Distance", "Path");
+#endif
             TableAddLine(table);
 
+#if !NEW_SIGNALLING
             foreach (var auth in Viewer.Simulator.AI.Dispatcher.TrackAuthorities)
             {
                 var status = auth.GetStatus();
                 TableSetCells(table, 0, status.TrainID.ToString(), TrackMonitorWindow.FormatSpeed(status.Train.SpeedMpS, Viewer.MilepostUnitsMetric), status.Train.GetNextSignalAspect().ToString(), "", TrackMonitorWindow.FormatDistance(status.Train.distanceToSignal, Viewer.MilepostUnitsMetric), status.Path);
                 TableAddLine(table);
+#else
+	    foreach (Train thisTrain in Program.Simulator.Trains)
+	    {
+		    if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER)
+		    {
+		    String [] status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+
+		    for (int iCell = 0; iCell < status.Length; iCell++)
+		    {
+		    TableSetCellUnformatted(table, table.CurrentRow, iCell, status[iCell]);
+		    }
+            TableAddLine(table);
+		    }
+	    }
+
+	    foreach (AITrain thisTrain in Program.Simulator.AI.AITrains)
+	    {
+		    String []  status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+		    status = thisTrain.AddMovementState(status,Viewer.MilepostUnitsMetric);
+		    for (int iCell = 0; iCell < status.Length; iCell++)
+		    {
+		    TableSetCellUnformatted(table, table.CurrentRow, iCell, status[iCell]);
+		    }
+            TableAddLine(table);
+#endif 
             }
         }
 

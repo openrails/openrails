@@ -6,7 +6,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using ORTS.Interlocking;
+#if NEW_SIGNALLING
+using ORTS;
+using System.Collections.Generic;
+#endif
 
 namespace MSTS
 {
@@ -150,7 +153,11 @@ namespace MSTS
         public uint Outpins;
 		public uint Index;
 
+#if NEW_SIGNALLING
+        public ORTS.TrackCircuitXRefList TCCrossReference = null;  // Cross reference with TC sections
+#else
         public InterlockingTrack InterlockingTrack { get; set; }
+#endif
     
     }
 
@@ -168,6 +175,29 @@ namespace MSTS
         }
         public int Link;
         public int Direction;
+
+#if NEW_SIGNALLING
+        //
+        // constructor for TrackCircuitSection pins
+        //
+
+        public TrPin()
+        {
+        }
+
+        //
+        // copy pins (from trackNode to TrackCircuitSection)
+        //
+
+        public TrPin Copy()
+        {
+            TrPin newPin = new TrPin();
+            newPin.Direction = this.Direction;
+            newPin.Link = this.Link;
+
+            return newPin;
+        }
+#endif
     }
 
     [DebuggerDisplay("\\{MSTS.UiD\\} ID={WorldID}, TileX={TileX}, TileZ={TileZ}, X={X}, Y={Y}, Z={Z}, AX={AX}, AY={AY}, AZ={AZ}, WorldX={WorldTileX}, WorldZ={WorldTileZ}")]
@@ -415,7 +445,11 @@ namespace MSTS
 
     public class CrossoverItem : TrItem
     {
+#if !NEW_SIGNALLING
         uint TrackNode, CID1;
+#else
+        public uint TrackNode, CID1;
+#endif
         public CrossoverItem(STFReader stf, int idx)
         {
             ItemType = trItemType.trCROSSOVER;
@@ -688,6 +722,21 @@ namespace MSTS
                 }),
             });
         }
+
+#if NEW_SIGNALLING
+        // constructor to create Platform Item out of Siding Item
+
+        public PlatformItem(SidingItem thisSiding)
+        {
+            TrItemId = thisSiding.TrItemId;
+            SData1 = thisSiding.SData1;
+            SData2 = thisSiding.SData2;
+            ItemName = thisSiding.ItemName;
+            Flags1 = thisSiding.Flags1;
+            LinkedPlatformItemId = thisSiding.Flags2;
+            Station = String.Copy(ItemName);
+        }
+#endif
     }
 
     public class HazzardItem : TrItem

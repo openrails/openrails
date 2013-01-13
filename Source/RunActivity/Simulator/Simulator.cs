@@ -29,7 +29,6 @@ using System.IO;
 using System.Windows.Forms; // Needed for MessageBox
 using Microsoft.Xna.Framework;
 using MSTS;
-using ORTS.Interlocking;
 using ORTS.MultiPlayer;
 
 namespace ORTS
@@ -96,7 +95,6 @@ namespace ORTS
 		/// Reference to the InterlockingSystem object, responsible for
 		/// managing signalling and interlocking.
 		/// </summary>
-		public InterlockingSystem InterlockingSystem;
 
 		public TrainCar PlayerLocomotive = null;    // Set by the Viewer - TODO there could be more than one player so eliminate this.
         
@@ -180,6 +178,7 @@ namespace ORTS
 
 		public void Start()
 		{
+#if !NEW_SIGNALLING
             AlignSwitchesToDefault();
             Signals = new Signals(this, SIGCFG);
             InitializeTrains();
@@ -196,6 +195,16 @@ namespace ORTS
 				}
 				MPManager.Instance().RememberOriginalSwitchState();
 			}
+#else
+            Signals = new Signals(this, SIGCFG);
+            LevelCrossings = new LevelCrossings(this);
+            Train playerTrain = InitializeTrains();
+            AI = new AI(this, ClockTime);
+            if (playerTrain != null)
+            {
+                bool valid_position = playerTrain.PostInit();  // place player train after pre-running of AI trains
+            }
+#endif
 
 		}
 
@@ -215,13 +224,18 @@ namespace ORTS
             InitialTileX = initialTileX;
             InitialTileZ = initialTileZ;
 
+#if !NEW_SIGNALLING
             RestoreSwitchSettings(inf);
+#endif
+
             Signals = new Signals(this, SIGCFG, inf);
             RestoreTrains(inf);
             LevelCrossings = new LevelCrossings(this);
-            InterlockingSystem = new InterlockingSystem(this);
             AI = new AI(this, inf);
             ActivityRun = ORTS.Activity.Restore( inf, this, ActivityRun );
+#if NEW_SIGNALLING
+            Signals.RestoreTrains(Trains);  // restore links to trains
+#endif
         }
 
 		public void Save(BinaryWriter outf)
@@ -230,7 +244,10 @@ namespace ORTS
 			outf.Write((int)Season);
 			outf.Write((int)Weather);
 
+#if !NEW_SIGNALLING
             SaveSwitchSettings(outf);
+#endif
+
 			Signals.Save(outf);
             SaveTrains(outf);
             // LevelCrossings
@@ -240,6 +257,7 @@ namespace ORTS
             ORTS.Activity.Save(outf, ActivityRun);
 		}
 
+#if !NEW_SIGNALLING
         void InitializeTrains()
         {
             Trains = new List<Train>();
@@ -247,6 +265,15 @@ namespace ORTS
             InitializeStaticConsists();
             PlayerLocomotive = InitialPlayerLocomotive();
         }
+#else
+        Train InitializeTrains()
+        {
+            Trains = new List<Train>();
+            Train playerTrain = InitializePlayerTrain();
+            InitializeStaticConsists();
+            return (playerTrain);
+        }
+#endif
 
         /// <summary>
 		/// Which locomotive does the activity specify for the player.
@@ -296,6 +323,12 @@ namespace ORTS
 			if (PlayerLocomotive != null)
 			{
 				movingTrains.Add(PlayerLocomotive.Train);
+#if NEW_SIGNALLING
+                if (String.Compare(PlayerLocomotive.Train.LeadLocomotive.CarID, PlayerLocomotive.CarID) != 0)
+                {
+                    PlayerLocomotive = PlayerLocomotive.Train.LeadLocomotive;
+                }
+#endif		
 			}
 
 			foreach (Train train in Trains)
@@ -311,20 +344,12 @@ namespace ORTS
 			foreach (Train train in movingTrains)
 			{
 				train.Update(elapsedClockSeconds);
-                /*
-				if (MPManager.IsMultiPlayer())
-				{
-					if (MultiPlayer.MPManager.IsServer()) 
-                        AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
-			    }
-				else 
-                   AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
-				}
-                */
+#if !NEW_SIGNALLING
 				if (Activity == null || MultiPlayer.MPManager.IsMultiPlayer())
                 {
                     if (train == PlayerLocomotive.Train) AlignTrailingPointSwitches(train, train.MUDirection == Direction.Forward);
                 }
+#endif
             }
 
 			foreach (Train train in movingTrains)
@@ -354,13 +379,16 @@ namespace ORTS
 				RailDriver.Update(PlayerLocomotive);
 			}
 
+#if !NEW_SIGNALLING
 			//client will not do interlocking
 			if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) InterlockingSystem.Update(elapsedClockSeconds);
+#endif
 
 			if (MPManager.IsMultiPlayer()) MPManager.Instance().Update(GameTime);
 
 		}
 
+#if !NEW_SIGNALLING
 		private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead)
 		{
 			drivenTrain.LeadLocomotive = lead;
@@ -394,6 +422,42 @@ namespace ORTS
 
 			drivenTrain.CheckFreight();  // check if train in new consist is freight or passenger
 		}
+#else
+        private void FinishFrontCoupling(Train drivenTrain, Train train, TrainCar lead)
+        {
+            drivenTrain.LeadLocomotive = lead;
+            drivenTrain.CalculatePositionOfCars(0);
+
+            FinishCoupling(drivenTrain, train, true);
+
+            drivenTrain.FirstCar.SignalEvent(EventID.Couple);
+        }
+
+        private void FinishRearCoupling(Train drivenTrain, Train train)
+        {
+            drivenTrain.RepositionRearTraveller();
+            FinishCoupling(drivenTrain, train, false);
+            drivenTrain.LastCar.SignalEvent(EventID.Couple);
+        }
+
+        private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front)
+        {
+            train.RemoveFromTrack();
+            Trains.Remove(train);
+
+            if (train.UncoupledFrom != null)
+                train.UncoupledFrom.UncoupledFrom = null;
+
+            if (PlayerLocomotive != null && PlayerLocomotive.Train == train)
+            {
+                drivenTrain.AITrainThrottlePercent = train.AITrainThrottlePercent;
+                drivenTrain.AITrainBrakePercent = train.AITrainBrakePercent;
+                drivenTrain.LeadLocomotive = PlayerLocomotive;
+            }
+
+            drivenTrain.UpdateTrackActionsCoupling(couple_to_front);
+        }
+#endif
 
 		private void UpdateUncoupled(Train drivenTrain, Train train, float d1, float d2, bool rear)
 		{
@@ -535,6 +599,7 @@ namespace ORTS
 			}
 		}
 
+#if !NEW_SIGNALLING
 		/// <summary>
 		/// Sets the trailing point switches ahead of the train
 		/// </summary>
@@ -790,10 +855,17 @@ namespace ORTS
 			}
 			return false;
 		}
+#endif
 
+#if !NEW_SIGNALLING
 		private void InitializePlayerTrain()
 		{
-            Debug.Assert(Trains != null, "Cannot InitializePlayerTrain() without Simulator.Trains.");
+#else
+        private Train InitializePlayerTrain()
+        {
+#endif
+
+    		Debug.Assert(Trains != null, "Cannot InitializePlayerTrain() without Simulator.Trains.");
            
             // set up the player locomotive
 			// first extract the player service definition from the activity file
@@ -819,13 +891,17 @@ namespace ORTS
             // This is the position of the back end of the train in the database.
 			PATTraveller patTraveller = new PATTraveller(patFileName);
             AIPath aiPath = new AIPath(patFile, TDB, TSectionDat, patFileName);
+
+#if !NEW_SIGNALLING
             PlayerPath = aiPath;
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
 
 			train.Path = aiPath;
 
 			aiPath.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
-            //aiPath.AlignAllSwitches();
+#else
+            train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
+#endif
 
 			// figure out if the next waypoint is forward or back
 			patTraveller.NextWaypoint();
@@ -869,18 +945,58 @@ namespace ORTS
 
 			}// for each rail car
 
+#if !NEW_SIGNALLING
 			if (train.Cars.Count == 0) return;  // Shouldn't we issue an error message if the player's train is empty?
+#else
+			if (train.Cars.Count == 0) return(null);  // Shouldn't we issue an error message if the player's train is empty?
+#endif
 
 			train.CheckFreight();
+
+#if NEW_SIGNALLING
+            if (Activity != null) // activity is defined
+            {
+                train.SetRoutePath(aiPath, Signals);
+                train.BuildWaitingPointList(0.0f);
+
+                train.ConvertPlayerTraffic(Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Player_Traffic_List);
+            }
+            else // explorer mode
+            {
+                train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
+            }
+
+	    bool canPlace = true;
+            Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
+            if (tempRoute.Count == 0 || !canPlace)
+            {
+                throw new InvalidDataException("Player train original position not clear");
+            }
+
+            train.SetInitialTrainRoute(tempRoute);
+            train.CalculatePositionOfCars(0);
+            train.ResetInitialTrainRoute(tempRoute);
+
+			train.CalculatePositionOfCars(0);
+			Trains.Add(train);
+			train.AITrainBrakePercent = 100;
+			train.TrainMaxSpeedMpS = (float) TRK.Tr_RouteFile.SpeedLimit;
+#else
 			train.CalculatePositionOfCars(0);
 
 			Trains.Add(train);
 			train.AITrainBrakePercent = 100;
 			train.RouteMaxSpeedMpS = (float) TRK.Tr_RouteFile.SpeedLimit;
             train.InitializeSignals(false); // initialize without existing speed limits
+#endif
+
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
             InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
+
+#if NEW_SIGNALLING
+	    return (train);
+#endif
         }
 
 		/// <summary>
@@ -950,8 +1066,15 @@ namespace ORTS
 
 					train.CalculatePositionOfCars(0);
 					train.InitializeBrakes();
+
+#if !NEW_SIGNALLING
                     train.InitializeSignals(false);  // initialize without existing speed limits
                     Trains.Add(train);
+#else
+                    bool validPosition = train.PostInit();
+                    if (validPosition)
+                        Trains.Add(train);
+#endif
 				}
 				catch (Exception error)
 				{
@@ -974,6 +1097,8 @@ namespace ORTS
 					}
 				}
 			}
+
+#if !NEW_SIGNALLING
 			outf.Write(Trains.Count);
 			foreach (Train train in Trains)
 			{
@@ -985,10 +1110,33 @@ namespace ORTS
                     throw new InvalidDataException(String.Format("Unable to save a train of type {0}", train.GetType()));
 				train.Save(outf);
 			}
+#else
+
+            // do not save AI trains (done by AITrain)
+
+            foreach (Train train in Trains)
+            {
+                if (train.TrainType != Train.TRAINTYPE.AI)
+                {
+                    outf.Write(0);
+                    train.Save(outf);
+                }
+            }
+            outf.Write(-1);
+#endif
+
 		}
 
-        private void RestoreTrains(BinaryReader inf)
+         //================================================================================================//
+        //
+        // Restore trains
+        // NEW_SIGNALLING : do not restore AI trains - that is handled by AI
+        //
+
+	 	private void RestoreTrains(BinaryReader inf)
 		{
+
+#if !NEW_SIGNALLING
 			int count = inf.ReadInt32();
 			Trains = new List<Train>();
 			for (int i = 0; i < count; ++i)
@@ -1008,6 +1156,16 @@ namespace ORTS
  // REMOVED from this location to restore of Train itself [R.Roeterdink]
  //           foreach (var train in Trains)
  //               train.InitializeSignals();
+#else
+            Trains = new List<Train>();
+
+            int trainType = inf.ReadInt32();
+            while (trainType >= 0)
+            {
+                Trains.Add(new Train(this, inf));
+                trainType = inf.ReadInt32();
+            }
+#endif
         }
 
 		/// <summary>
@@ -1047,7 +1205,8 @@ namespace ORTS
 		}
 
         public void UncoupleBehind( int carPosition ) {
-            UncoupleBehind( PlayerLocomotive.Train.Cars[carPosition] );
+            // check on car position in case of mouse jitter
+            if (carPosition <= PlayerLocomotive.Train.Cars.Count-1) UncoupleBehind( PlayerLocomotive.Train.Cars[carPosition] );
         }
 
 		public void UncoupleBehind(TrainCar car)
@@ -1062,7 +1221,12 @@ namespace ORTS
 
 			TrainCar lead = train.LeadLocomotive;
 			// move rest of cars to the new train
+#if !NEW_SIGNALLING
 			Train train2 = new Train(this);
+#else
+            Train train2 = new Train(this, train);
+#endif
+
 			for (int k = i; k < train.Cars.Count; ++k)
 			{
 				TrainCar newcar = train.Cars[k];
@@ -1078,15 +1242,28 @@ namespace ORTS
 
 			train.LastCar.CouplerSlackM = 0;
 
+#if NEW_SIGNALLING
+            // ensure player train keeps no. 0
+            if (PlayerLocomotive != null && PlayerLocomotive.Train == train2)
+            {
+                train.Number = train2.Number;    // train gets new number
+                train2.Number = 0;               // player train keeps number 0
+            }
+#endif
+
 			// and fix up the travellers
 			train2.RearTDBTraveller = new Traveller(train.RearTDBTraveller);
 			train2.CalculatePositionOfCars(0);  // fix the front traveller
 			train.RepositionRearTraveller();    // fix the rear traveller
+#if !NEW_SIGNALLING
             train2.InitializeSignals(false);  // initialize signals without existing speed information
+#endif
 
 			Trains.Add(train2);
+#if !NEW_SIGNALLING
 			train2.LeadLocomotive = lead;
 			train.LeadLocomotive = lead;
+#endif
 			train.UncoupledFrom = train2;
 			train2.UncoupledFrom = train;
 			train2.SpeedMpS = train.SpeedMpS;
@@ -1098,11 +1275,23 @@ namespace ORTS
 				train.AITrainThrottlePercent = 0;
 				train2.TrainType = Train.TRAINTYPE.PLAYER;
 				train.TrainType = Train.TRAINTYPE.STATIC;
+#if NEW_SIGNALLING
+                train2.LeadLocomotive = lead;
+                train.LeadLocomotive = null;
+#endif
 			}
 			else
 			{
 				train2.TrainType = Train.TRAINTYPE.STATIC;
+#if NEW_SIGNALLING
+                train2.LeadLocomotive = null;
+#endif
 			}
+
+#if NEW_SIGNALLING
+            train.UpdateTrackActionsUncoupling(true);
+            train2.UpdateTrackActionsUncoupling(false);
+#endif
 
 			if (MPManager.IsMultiPlayer() && !MPManager.IsServer())
 			{

@@ -9,7 +9,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using MSTSMath;
+#if !NEW_SIGNALLING
 using ORTS.Interlocking;
+#endif
 
 namespace MSTS
 {

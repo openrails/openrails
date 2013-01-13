@@ -154,7 +154,11 @@ namespace ORTS
                 Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
                 Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
                 Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
+#if !NEW_SIGNALLING
                 Logger.Data(TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+#else
+                Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+#endif
                 Logger.Data((Viewer.PlayerLocomotive.GravityForceN / (Viewer.PlayerLocomotive.MassKG * 9.81f)).ToString("F0"));
                 Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F0"));
                 Logger.End();

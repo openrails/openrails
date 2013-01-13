@@ -38,7 +38,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Program</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -187,10 +187,6 @@
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />
     <Compile Include="AI\AITrain.cs" />
-    <Compile Include="AI\Dispatcher.cs" />
-    <Compile Include="AI\Heap.cs" />
-    <Compile Include="AI\TimeTable.cs" />
-    <Compile Include="AI\TrackAuthority.cs" />
     <Compile Include="Common\BrakeCurves.cs" />
     <Compile Include="Common\Conversions.cs" />
     <Compile Include="Common\Coordinates.cs" />
@@ -220,17 +216,6 @@
     <Compile Include="Debugging\MessageViewer.Designer.cs">
       <DependentUpon>MessageViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="Interlocking\AutomaticBlock.cs" />
-    <Compile Include="Interlocking\InterlockingBuffer.cs" />
-    <Compile Include="Interlocking\InterlockingItem.cs" />
-    <Compile Include="Interlocking\InterlockingSignal.cs" />
-    <Compile Include="Interlocking\InterlockingSwitch.cs" />
-    <Compile Include="Interlocking\InterlockingSystem.cs" />
-    <Compile Include="Interlocking\InterlockingSystem.Routes.cs" />
-    <Compile Include="Interlocking\InterlockingTerminator.cs" />
-    <Compile Include="Interlocking\InterlockingTrack.cs" />
-    <Compile Include="Interlocking\MovementAuthority\Route.cs" />
-    <Compile Include="Interlocking\MovementAuthority\RouteCollection.cs" />
     <Compile Include="MultiPlayer\ClientComm.cs" />
     <Compile Include="MultiPlayer\Decoder.cs" />
     <Compile Include="MultiPlayer\MPManager.cs" />

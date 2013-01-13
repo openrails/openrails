@@ -1906,16 +1906,22 @@ namespace ORTS
     public class TDBObjects
     {
         private MSTSWagon _car;
+#if !NEW_SIGNALLING
         private Dispatcher _dp;
+#endif
         TrackNode[] trackNodes;
         TrItem[] trItems;
         private AIPath _aiPath = null;
+#if !NEW_SIGNALLING
         private TrackAuthority _ta;
+#endif
 
         public TDBObjects(MSTSWagon Car, Viewer3D Viewer)
         {
             _car = Car;
+#if !NEW_SIGNALLING
             _dp = Viewer.Simulator.AI.Dispatcher;
+#endif
             trackNodes = Viewer.Simulator.TDB.TrackDB.TrackNodes;
             trItems = Viewer.Simulator.TDB.TrackDB.TrItemTable;
         }
@@ -1924,6 +1930,7 @@ namespace ORTS
         {
             AIPathNode retval = null;
 
+#if !NEW_SIGNALLING
             if (_aiPath == null)
             {
 
@@ -1940,16 +1947,24 @@ namespace ORTS
             {
                 retval = _aiPath.FindTrackNode(_ta.Path.FirstNode, _car.Train.FrontTDBTraveller.TrackNodeIndex);
             }
+#endif
 
             return retval;
         }
 
 		private AIPathNode GetNextNode(AIPathNode node)
 		{
+#if !NEW_SIGNALLING
 			if ((_ta != null && node == _ta.SidingNode) || node.NextMainNode == null)
 				return node.NextSidingNode;
 			else
 				return node.NextMainNode;
+#else
+                        if (node.NextMainNode == null)
+                                return node.NextSidingNode;
+                        else
+                                return node.NextMainNode;
+#endif
 		}
 
         private AIPathNode GetPrevNode(AIPathNode node)
@@ -1979,10 +1994,17 @@ namespace ORTS
             if (node == null)
                 return -1;
 
+#if !NEW_SIGNALLING
             if ((_ta != null && node == _ta.SidingNode) || node.NextMainNode == null)
 				return node.NextSidingTVNIndex;
 			else
 				return node.NextMainTVNIndex;
+#else
+			if (node.NextMainNode == null)
+                                return node.NextSidingTVNIndex;
+                        else
+                                return node.NextMainTVNIndex;
+#endif
 		}
 
         public TrItem FindNextItem<T>(out float distance)

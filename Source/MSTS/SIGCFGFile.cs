@@ -220,7 +220,12 @@ namespace MSTS
 		public IList<SignalLight> Lights;
 		public IDictionary<string, SignalDrawState> DrawStates;
 		public IList<SignalAspect> Aspects;
-		public uint NumClearAhead;
+#if NEW_SIGNALLING
+		public int NumClearAhead_MSTS;
+		public int NumClearAhead_ORTS;
+#else
+		public int NumClearAhead;
+#endif
 		public float SemaphoreInfo = -1; //[Rob Roeterdink] default -1 as 0 is active value
 
 	public SignalType(FnTypes reqType, ORTS.SignalHead.SIGASP reqAspect)
@@ -241,13 +246,22 @@ namespace MSTS
         {
             stf.MustMatch("(");
             Name = stf.ReadString().ToLowerInvariant();
+#if NEW_SIGNALLING
+            int numClearAhead = -2;
+            int numdefs = 0;
+#endif
+
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalfntype", ()=>{ FnType = ReadFnType(stf); }),  //[Rob Roeterdink] value was not passed
                 new STFReader.TokenProcessor("signallighttex", ()=>{ LightTextureName = stf.ReadStringBlock("").ToLowerInvariant(); }),
                 new STFReader.TokenProcessor("signallights", ()=>{ Lights = ReadLights(stf); }),
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
                 new STFReader.TokenProcessor("signalaspects", ()=>{ Aspects = ReadAspects(stf); }),
-                new STFReader.TokenProcessor("signalnumclearahead", ()=>{ NumClearAhead = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
+#if NEW_SIGNALLING
+                new STFReader.TokenProcessor("signalnumclearahead", ()=>{ numClearAhead = numClearAhead >= -1 ? numClearAhead : stf.ReadIntBlock(STFReader.UNITS.None, null); numdefs++;}),
+#else
+                new STFReader.TokenProcessor("signalnumclearahead", ()=>{ NumClearAhead = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+#endif
                 new STFReader.TokenProcessor("semaphoreinfo", ()=>{ SemaphoreInfo = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("sigflashduration", ()=>{
                     stf.MustMatch("(");
@@ -267,6 +281,10 @@ namespace MSTS
                         }
                 }),
             });
+#if NEW_SIGNALLING
+            NumClearAhead_MSTS = numdefs == 1 ? numClearAhead : -2;
+            NumClearAhead_ORTS = numdefs == 2 ? numClearAhead : -2;
+#endif
         }
 
 		static FnTypes ReadFnType(STFReader stf)

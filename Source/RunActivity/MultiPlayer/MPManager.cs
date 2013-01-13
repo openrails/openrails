@@ -313,12 +313,15 @@ namespace ORTS.MultiPlayer
 			var speed = Math.Abs(Locomotive.SpeedMpS);
 			if (speed > maxSpeed) spad = true;
 			//if (train.TMaspect == ORTS.Popups.TrackMonitorSignalAspect.Stop && Math.Abs(train.distanceToSignal) < 2*speed && speed > 5) spad = true; //red light and cannot stop within 2 seconds, if the speed is large
+
+#if !NEW_SIGNALLING
 			if (spad == true || train.spad2)
 			{
 				Locomotive.SetEmergency();
 				Program.Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
 				train.spad2 = false;
 			}
+#endif
 
 
 		}
@@ -371,10 +374,13 @@ namespace ORTS.MultiPlayer
 		static public void BroadcastSignal()
 		{
 		}
+
+#if !NEW_SIGNALLING
 		static public void BroadcastSignal(Signal s)
 		{
 
 		}
+#endif
 
 		public static void StopDispatcher()
 		{
@@ -573,6 +579,7 @@ namespace ORTS.MultiPlayer
 						//player is not in this train
 						if (p.Train != null && p.Train != Program.Simulator.PlayerLocomotive.Train)
 						{
+#if !NEW_SIGNALLING
 							if (p.Train.TrackAuthority != null)
 							{
 								Program.Simulator.AI.Dispatcher.SetAuthorization(p.Train.TrackAuthority, null, null, 0);
@@ -580,6 +587,7 @@ namespace ORTS.MultiPlayer
 								Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(p.Train.TrackAuthority);
 								p.Train.TrackAuthority = null;
 							}
+#endif
 
 							//make sure this train has no other player on it
 							bool hasOtherPlayer = false;
@@ -640,6 +648,7 @@ namespace ORTS.MultiPlayer
 							if (t1.Number == t.Number) { hasIt = true; break; }
 						}
 						if (!hasIt) Program.Simulator.Trains.Add(t);
+#if !NEW_SIGNALLING
 						if (IsServer())
 						{
 							if (t.Path != null && !PreferGreen)
@@ -651,7 +660,7 @@ namespace ORTS.MultiPlayer
 							}
 							else t.TrackAuthority = null;
 						}
-
+#endif
 					}
 					addedTrains.Clear();
 				}
@@ -665,6 +674,7 @@ namespace ORTS.MultiPlayer
 					foreach (var t in removedTrains)
 					{
 						Program.Simulator.Trains.Remove(t);
+#if !NEW_SIGNALLING
 						if (t.TrackAuthority != null)
 						{
 							Program.Simulator.AI.Dispatcher.SetAuthorization(t.TrackAuthority, null, null, 0);
@@ -672,7 +682,7 @@ namespace ORTS.MultiPlayer
 							Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(t.TrackAuthority);
 							t.TrackAuthority = null;
 						}
-
+#endif
 					}
 					removedTrains.Clear();
 				}

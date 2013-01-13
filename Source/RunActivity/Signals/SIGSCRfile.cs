@@ -13,6 +13,9 @@
 // This file also contains the functions to process the information when running, and as such is linked with signals.cs
 //
 // Debug flags :
+// #define DEBUG_ALLOWCRASH
+// removes catch and allows program to crash on error statement
+//
 // #define DEBUG_PRINT_IN
 // prints details of the file as read from input
 //
@@ -104,9 +107,9 @@ namespace ORTS
         public enum SCRTermOperator
         {
             NONE,        // used for first term
+            MINUS,       // needs to come first to avoid it being interpreted as range separator
             MULTIPLY,
             PLUS,
-            MINUS,
             DIVIDE,
             MODULO,
         }
@@ -128,22 +131,18 @@ namespace ORTS
         private static IDictionary<string, SCRAndOr> TranslateAndOr;
 
 #if DEBUG_PRINT_IN
-        //                public static string din_fileLoc = String.Empty;    /* file path for debug files */
         public static string din_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
 #if DEBUG_PRINT_OUT
-        //                public static string dout_fileLoc = String.Empty;   /* file path for debug files */
         public static string dout_fileLoc = @"C:\temp\";    /* file path for debug files */
 #endif
 
 #if DEBUG_PRINT_PROCESS
         public static int[] TDB_debug_ref;                 /* signal TDB idents         */
-        //                public static string dpr_fileLoc = String.Empty;    /* file path for debug files */
         public static string dpr_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 #if DEBUG_PRINT_ENABLED
-        //                public static string dpe_fileLoc = String.Empty;    /* file path for debug files */
         public static string dpe_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
@@ -184,15 +183,15 @@ namespace ORTS
 
             TranslateOperator = new Dictionary<string, SCRTermOperator>();
             TranslateOperator.Add("?", SCRTermOperator.NONE);
+            TranslateOperator.Add("-", SCRTermOperator.MINUS);  // needs to come first to avoid it being interpreted as range separator
             TranslateOperator.Add("*", SCRTermOperator.MULTIPLY);
             TranslateOperator.Add("+", SCRTermOperator.PLUS);
-            TranslateOperator.Add("-", SCRTermOperator.MINUS);
             TranslateOperator.Add("/", SCRTermOperator.DIVIDE);
             TranslateOperator.Add("%", SCRTermOperator.MODULO);
 
 
 #if DEBUG_PRINT_PROCESS
-            TDB_debug_ref = new int[10] { 7338, 7339, 7340, 7341, 7342, 7343, 7344, 7345, 7336, 7346 };   /* signal tdb ref.no selected for print-out */
+            TDB_debug_ref = new int[1] { 0 };   /* signal tdb ref.no selected for print-out */
 #endif
 
 #if DEBUG_PRINT_IN
@@ -215,6 +214,9 @@ namespace ORTS
             foreach (string FileName in ScriptFiles)
             {
                 string fullName = String.Concat(RoutePath, @"\", FileName);
+
+
+#if !DEBUG_ALLOWCRASH
                 try
                 {
                     using (StreamReader scrStream = new StreamReader(fullName, true))
@@ -231,10 +233,12 @@ namespace ORTS
                     Trace.TraceInformation(FileName);
                    Trace.WriteLine(error);
                 }
-// for test purposes : without exception catch
-//                StreamReader scrStream = new StreamReader(fullName, true);
-//                sigscrRead(scrStream, SignalTypes);
-//                scrStream.Close();
+#else
+                // for test purposes : without exception catch
+                StreamReader scrStream = new StreamReader(fullName, true);
+                sigscrRead(scrStream, SignalTypes);
+                scrStream.Close();
+#endif
             }
         }// Constructor
 
@@ -373,7 +377,7 @@ namespace ORTS
                     {
                         readInfo.Scriptname = String.Copy(scriptname);
                         ScriptLines.Add(readInfo);
-                        
+
                         //CJ
                         if (readInfo.Linenumber % 1000 == 1)
                         {
@@ -2319,8 +2323,8 @@ namespace ORTS
                             int lastclosepos = nextclosepos;
 
                             nextbrackpos =
-        nextopenbrack < openbrackpos.Length ?
-        openbrackpos[nextopenbrack].Index : keepString.Length + 1;
+                                  nextopenbrack < openbrackpos.Length ?
+                                  openbrackpos[nextopenbrack].Index : keepString.Length + 1;
 
                             while (brackcount > 0)
                             {
@@ -2329,8 +2333,8 @@ namespace ORTS
                                     brackcount++;
                                     nextopenbrack++;
                                     nextbrackpos =
-                nextopenbrack < openbrackpos.Length ?
-                openbrackpos[nextopenbrack].Index : keepString.Length + 1;
+                                        nextopenbrack < openbrackpos.Length ?
+                                        openbrackpos[nextopenbrack].Index : keepString.Length + 1;
                                 }
                                 else
                                 {
@@ -3287,9 +3291,11 @@ namespace ORTS
                 // dist_multi_sig_mr
 
                 case (SCRExternalFunctions.DIST_MULTI_SIG_MR):
+
                     return_value = (int)thisHead.dist_multi_sig_mr(
                             (SignalHead.SIGFN)parameter1_value,
                             (SignalHead.SIGFN)parameter2_value);
+
                     break;
 
                 // sig_feature
@@ -3329,9 +3335,6 @@ namespace ORTS
             }
 #endif
 
-
-
-
             // check sign
 
             if (thisTerm.TermOperator == SCRTermOperator.MINUS)
@@ -3352,8 +3355,8 @@ namespace ORTS
                     int[] localFloats, SIGSCRfile sigscr)
         {
 
-            //                                        SCRScripts.SCRConditionBlock thisCond = (SCRScripts.SCRConditionBlock) scriptstat;
-            //                                        SH_processIfCondition(thisHead, thisCond, localFloats, sigscr);
+            //                                SCRScripts.SCRConditionBlock thisCond = (SCRScripts.SCRConditionBlock) scriptstat;
+            //                                SH_processIfCondition(thisHead, thisCond, localFloats, sigscr);
             //                                public ArrayList       Conditions;
             //                                public SCRBlock        IfBlock;
             //                                public List <SCRBlock> ElseIfBlock;

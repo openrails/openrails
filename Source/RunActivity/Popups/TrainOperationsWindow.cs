@@ -39,6 +39,9 @@ namespace ORTS.Popups {
                 int carPosition = 0;
                 foreach( var car in PlayerTrain.Cars ) {
                     var carLabel = new Label( CarWidth, CarListHeight, car.CarID, LabelAlignment.Center );
+#if NEW_SIGNALLING
+                    if (car == PlayerTrain.LeadLocomotive) carLabel.Color = Color.Red;
+#endif
                     scrollbox.Add( carLabel );
                     if( car != PlayerTrain.Cars.Last() )
                         scrollbox.Add( new TrainOperationsCoupler( 0, (CarListHeight - CouplerSize) / 2, Owner.Viewer, car, carPosition ) );

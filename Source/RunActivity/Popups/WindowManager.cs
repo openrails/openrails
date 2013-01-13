@@ -42,6 +42,10 @@ namespace ORTS.Popups
         public readonly WindowTextFont TextFontDefault;
         public readonly WindowTextFont TextFontDefaultOutlined;
 
+#if NEW_SIGNALLING
+        public readonly WindowTextFont TextFontSmall;
+#endif
+
         readonly Material WindowManagerMaterial;
         readonly PopupWindowMaterial PopupWindowMaterial;
         readonly List<Window> Windows = new List<Window>();
@@ -61,6 +65,9 @@ namespace ORTS.Popups
             TextManager = new WindowTextManager();
             TextFontDefault = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular);
             TextFontDefaultOutlined = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular, 1);
+#if NEW_SIGNALLING
+            TextFontSmall = TextManager.Get("Arial", 7, System.Drawing.FontStyle.Regular);
+#endif
 
             SpriteBatch = new SpriteBatch(Viewer.GraphicsDevice);
 

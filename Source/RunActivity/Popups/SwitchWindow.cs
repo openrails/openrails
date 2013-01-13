@@ -23,10 +23,20 @@ namespace ORTS.Popups
 		Image SwitchForwards;
 		Image SwitchBackwards;
 
+#if NEW_SIGNALLING
+        Image TrainDirection;
+        Image ForwardEye;
+        Image BackwardEye;
+#endif
+
         static Texture2D SwitchStates;
 
 		public SwitchWindow(WindowManager owner)
-			: base(owner, Window.DecorationSize.X + 2 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
+#if NEW_SIGNALLING
+            : base(owner, Window.DecorationSize.X + (int)2.5 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
+#else
+            : base(owner, Window.DecorationSize.X + 2 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
+#endif
 		{
         }
 
@@ -37,6 +47,7 @@ namespace ORTS.Popups
                 SwitchStates = Owner.Viewer.RenderProcess.Content.Load<Texture2D>("SwitchStates");
         }
 
+#if !NEW_SIGNALLING
 		protected override ControlLayout Layout(ControlLayout layout)
 		{
 			var vbox = base.Layout(layout).AddLayoutVertical();
@@ -49,10 +60,35 @@ namespace ORTS.Popups
 			}
 			return vbox;
 		}
+#else
+        protected override ControlLayout Layout(ControlLayout layout)
+        {
+            var hbox = base.Layout(layout).AddLayoutHorizontal();
+            {
+                var vbox1 = hbox.AddLayoutVertical(SwitchImageSize);
+                vbox1.Add(ForwardEye = new Image(0, 0, SwitchImageSize, SwitchImageSize / 2));
+                vbox1.Add(TrainDirection = new Image(0, 0, SwitchImageSize, SwitchImageSize));
+                vbox1.Add(BackwardEye = new Image(0, 0, SwitchImageSize, SwitchImageSize / 2));
+
+                var vbox2 = hbox.AddLayoutVertical(hbox.RemainingWidth);
+                vbox2.Add(SwitchForwards = new Image(0, 0, SwitchImageSize, SwitchImageSize));
+                vbox2.Add(SwitchBackwards = new Image(0, 0, SwitchImageSize, SwitchImageSize));
+                SwitchForwards.Texture = SwitchBackwards.Texture = SwitchStates;
+                SwitchForwards.Click += new Action<Control, Point>(SwitchForwards_Click);
+                SwitchBackwards.Click += new Action<Control, Point>(SwitchBackwards_Click);
+                TrainDirection.Texture = ForwardEye.Texture = BackwardEye.Texture = SwitchStates;
+            }
+            return hbox;
+        }
+#endif
 
 		void SwitchForwards_Click(Control arg1, Point arg2)
 		{
+#if !NEW_SIGNALLING
             if( Owner.Viewer.Simulator.SwitchTrackAhead(Owner.Viewer.PlayerTrain) )
+#else
+            if (Owner.Viewer.Simulator.Signals.RequestSetSwitch(Owner.Viewer.PlayerTrain, Direction.Forward) )
+#endif
             {
                 new ToggleSwitchAheadCommand(Owner.Viewer.Log);
             }
@@ -60,7 +96,11 @@ namespace ORTS.Popups
 
 		void SwitchBackwards_Click(Control arg1, Point arg2)
 		{
+#if !NEW_SIGNALLING
             if( Owner.Viewer.Simulator.SwitchTrackBehind(Owner.Viewer.PlayerTrain) )
+#else
+            if ( Owner.Viewer.Simulator.Signals.RequestSetSwitch(Owner.Viewer.PlayerTrain, Direction.Reverse) )
+#endif
             {
                 new ToggleSwitchBehindCommand(Owner.Viewer.Log);
             }
@@ -79,6 +119,11 @@ namespace ORTS.Popups
 					UpdateSwitch(SwitchBackwards, train, false);
 				}
 				catch (Exception) { }
+#if NEW_SIGNALLING
+                UpdateDirection(TrainDirection, train);
+                UpdateEye(ForwardEye, train, true);
+                UpdateEye(BackwardEye, train, false);
+#endif
             }
         }
 
@@ -86,7 +131,11 @@ namespace ORTS.Popups
 		{
 			image.Source = new Rectangle(0, 0, SwitchImageSize, SwitchImageSize);
 
+#if !NEW_SIGNALLING
             var traveller = front ^ train.LeadLocomotive.Flipped ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
+#else
+            var traveller = front ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
+#endif
 			TrackNode SwitchPreviousNode = traveller.TN;
 			TrackNode SwitchNode = null;
 			while (traveller.NextSection())
@@ -115,6 +164,33 @@ namespace ORTS.Popups
 
 			image.Source.X = ((switchBranchesAwayFromUs == front ? 1 : 3) + (switchMainRouteIsLeft ? 1 : 0)) * SwitchImageSize;
 			image.Source.Y = SwitchNode.TrJunctionNode.SelectedRoute * SwitchImageSize;
+
+#if NEW_SIGNALLING
+            TrackCircuitSection switchSection = Owner.Viewer.Simulator.Signals.TrackCircuitList[SwitchNode.TCCrossReference[0].CrossRefIndex];
+            if (switchSection.CircuitState.HasTrainsOccupying() || 
+                (switchSection.CircuitState.TrainReserved != null && switchSection.CircuitState.TrainReserved.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL))
+                image.Source.Y += 2 * SwitchImageSize;
+#endif
 		}
+
+#if NEW_SIGNALLING
+        void UpdateDirection(Image image, Train train)
+        {
+            image.Source = new Rectangle(0, 0, SwitchImageSize, SwitchImageSize);
+            image.Source.Y = 4 * SwitchImageSize;
+            image.Source.X = train.MUDirection == Direction.Forward ? 2 * SwitchImageSize :
+                (train.MUDirection == Direction.Reverse ? 1 * SwitchImageSize : 0);
+        }
+
+        void UpdateEye(Image image, Train train, bool front)
+        {
+            image.Source = new Rectangle(0, 0, SwitchImageSize, SwitchImageSize / 2);
+            image.Source.Y = (int)(4.25 * SwitchImageSize);
+            bool flipped = train.LeadLocomotive.Flipped ^ train.LeadLocomotive.GetCabFlipped();
+            image.Source.X = (front ^ !flipped) ? 0 : 3 * SwitchImageSize;
+        }
+
+#endif
+
 	}
 }

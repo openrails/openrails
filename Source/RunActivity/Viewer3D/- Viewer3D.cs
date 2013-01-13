@@ -646,19 +646,41 @@ namespace ORTS
                 CheckReplaying();
                 new UseHeadOutBackCameraCommand( Log );
             }
+#if !NEW_SIGNALLING
             if( UserInput.IsPressed( UserCommands.GameSwitchAhead ) )
                 if( Simulator.SwitchTrackAhead( PlayerTrain ) )
                     new ToggleSwitchAheadCommand( Log );
             if( UserInput.IsPressed( UserCommands.GameSwitchBehind ) )
                 if( Simulator.SwitchTrackBehind( PlayerTrain ) )
                     new ToggleSwitchBehindCommand( Log );
+#else
+            if (UserInput.IsPressed(UserCommands.GameSwitchAhead)) 
+		    if (Simulator.Signals.RequestSetSwitch(PlayerTrain,Direction.Forward) )
+                    new ToggleSwitchAheadCommand( Log );
+            if (UserInput.IsPressed(UserCommands.GameSwitchBehind)) 
+		    if (Simulator.Signals.RequestSetSwitch(PlayerTrain,Direction.Reverse) )
+                    new ToggleSwitchBehindCommand( Log );
+#endif
+
+#if !NEW_SIGNALLING
 			if (UserInput.IsPressed(UserCommands.DebugResetSignal))
 			{
 				if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) MPManager.Instance().RequestSignalReset();
 				else PlayerTrain.ResetSignal(true);
 			}
-			if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
 
+#else
+            if (UserInput.IsPressed(UserCommands.GameResetSignalForward)) PlayerTrain.RequestSignalPermission(Direction.Forward);
+			if (UserInput.IsPressed(UserCommands.GameResetSignalBackward)) PlayerTrain.RequestSignalPermission(Direction.Reverse);
+			if (UserInput.IsPressed(UserCommands.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
+			if (UserInput.IsPressed(UserCommands.GameShuntLockAOn)) PlayerTrain.RequestShuntLock(1,1);
+			if (UserInput.IsPressed(UserCommands.GameShuntLockAOff)) PlayerTrain.RequestShuntLock(1,0);
+			if (UserInput.IsPressed(UserCommands.GameShuntLockBOn)) PlayerTrain.RequestShuntLock(2,1);
+			if (UserInput.IsPressed(UserCommands.GameShuntLockBOff)) PlayerTrain.RequestShuntLock(2,0);
+#endif
+
+			if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
+#if !NEW_SIGNALLING
 			if (UserInput.IsPressed(UserCommands.GameSwitchPicked) && (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer()))
 			{
 				if (Program.DebugViewer != null && Program.DebugViewer.Enabled && Program.DebugViewer.switchPickedItem != null)
@@ -729,6 +751,7 @@ namespace ORTS
 				}
 				//Program.DebugViewer.signalPickedItemHandled = true;
 			}
+#endif
 
 			if (UserInput.IsPressed(UserCommands.CameraJumpSeeSwitch))
 			{
@@ -875,8 +898,10 @@ namespace ORTS
             if (!loco.Train.IsChangeCabAvailable()) return;
 
             loco.Train.ChangeToNextCab();
+#if !NEW_SIGNALLING
             loco.Train.CalculatePositionOfCars( 0 );  // fix the front traveller
             loco.Train.RepositionRearTraveller();     // fix the rear traveller
+#endif
             PlayerLocomotiveViewer = World.Trains.GetViewer( loco );
             PlayerTrainLength = 0;
 			FrontCamera.Reset();
@@ -889,11 +914,15 @@ namespace ORTS
         }
 
         public void ToggleSwitchAhead() {
+#if !NEW_SIGNALLING
             Simulator.ToggleSwitchTrackAhead( PlayerTrain );
+#endif
         }
 
         public void ToggleSwitchBehind() {
+#if !NEW_SIGNALLING
             Simulator.ToggleSwitchTrackBehind( PlayerTrain );
+#endif
         }
 
         [CallOnThread("Loader")]
@@ -1010,9 +1039,13 @@ namespace ORTS
         /// </summary>
         void TryThrowSwitchAt()
         {
+#if !NEW_SIGNALLING
             TrJunctionNode bestNode = null;
-            float bestD = 10;
             int index = 0;
+#else
+            TrackNode bestTn = null;
+#endif
+            float bestD = 10;
             // check each switch
             for (int j = 0; j < Simulator.TDB.TrackDB.TrackNodes.Count(); j++)
             {
@@ -1022,6 +1055,8 @@ namespace ORTS
 
                     Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z));
                     float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, UserInput.NearPoint, UserInput.FarPoint);
+
+#if !NEW_SIGNALLING
                     if (bestD > d && !Simulator.SwitchIsOccupied(j))
                     {
                         bestNode = tn.TrJunctionNode;
@@ -1034,13 +1069,25 @@ namespace ORTS
             {
                 new ToggleAnySwitchCommand(Log, index);
             }
+#else
+                    if (bestD > d)
+                    {
+                        bestTn = tn;
+                        bestD = d;
+                    }
+        	}
+            }
+	    if (bestTn != null) Simulator.Signals.RequestSetSwitch(bestTn);
+#endif
         }
 
+#if !NEW_SIGNALLING
         public void ToggleAnySwitch( int index )
         {
             TrackNode tn = Simulator.TDB.TrackDB.TrackNodes[index];
             TrJunctionNode bestNode = tn.TrJunctionNode;
             bestNode.SelectedRoute = 1 - bestNode.SelectedRoute;
         }
+#endif
     }
 }

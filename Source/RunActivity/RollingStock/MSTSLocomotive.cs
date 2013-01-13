@@ -442,6 +442,7 @@ namespace ORTS
             outf.Write(AverageForceN);
             outf.Write(LocomotiveAxle.AxleSpeedMpS);
             outf.Write( CabLightOn );
+            outf.Write(UsingRearCab);
             ControllerFactory.Save(ThrottleController, outf);
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
@@ -463,6 +464,7 @@ namespace ORTS
             AverageForceN = inf.ReadSingle();
             LocomotiveAxle.Reset(inf.ReadSingle());
             CabLightOn = inf.ReadBoolean();
+            UsingRearCab = inf.ReadBoolean();
             ThrottleController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             TrainBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
             EngineBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
@@ -643,6 +645,7 @@ namespace ORTS
                 AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
             }
 
+#if !NEW_SIGNALLING
             if (this.IsLeadLocomotive())
             {
                 switch (Direction)
@@ -696,6 +699,78 @@ namespace ORTS
                     break;
                 } // foreach
             } // end when not lead loco
+#else
+            if (Train.TrainType == Train.TRAINTYPE.PLAYER) // for player locomotives
+            {
+
+                if (this.IsLeadLocomotive())
+                {
+                    switch (Direction)
+                    {
+                        case Direction.Forward:
+                            //MotiveForceN *= 1;     //Not necessary
+                            break;
+                        case Direction.Reverse:
+                            MotiveForceN *= -1;
+                            break;
+                        case Direction.N:
+                        default:
+                            MotiveForceN *= 0;
+                            break;
+                    }
+                }
+                else
+                {
+                    int carCount = 0;
+                    int controlEngine = -1;
+
+                    // When not LeadLocomotive; check if lead is in Neutral
+                    // if so this loco will have no motive force
+
+                    var LeadLocomotive = Program.Simulator.PlayerLocomotive.Train;
+
+                    foreach (TrainCar car in LeadLocomotive.Cars)
+                    {
+                        if (car.IsDriveable)
+                            if (controlEngine == -1)
+                            {
+                                controlEngine = carCount;
+                                if (car.Direction == Direction.N)
+                                    MotiveForceN *= 0;
+                                else
+                                {
+                                    switch (Direction)
+                                    {
+                                        case Direction.Forward:
+                                            MotiveForceN *= 1;     //Not necessary
+                                            break;
+                                        case Direction.Reverse:
+                                            MotiveForceN *= -1;
+                                            break;
+                                        case Direction.N:
+                                        default:
+                                            MotiveForceN *= 0;
+                                            break;
+                                    }
+                                }
+                            }
+                        break;
+                    } // foreach
+                } // end when not lead loco
+            }// end Player locomotive
+
+            else // for AI locomotives
+            {
+                switch (Direction)
+                {
+                    case Direction.Reverse:
+                        MotiveForceN *= -1;
+                        break;
+                    default:
+                        break;
+                }
+            }// end AI locomotive
+#endif
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
@@ -994,6 +1069,7 @@ namespace ORTS
                 }
             }
 
+#if !NEW_SIGNALLING
             if (direction == Direction.N)
             {
                 Program.Simulator.AI.Dispatcher.ReleasePlayerAuthorization();
@@ -1002,6 +1078,7 @@ namespace ORTS
             {
                 Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(false);
             }
+#endif
         }
 
         public virtual void StartReverseIncrease( float? target )
@@ -1538,6 +1615,13 @@ namespace ORTS
             SignalEvent( Wiper ? EventID.WiperOff : EventID.WiperOn );
         }
 
+#if NEW_SIGNALLING
+        public override bool GetCabFlipped()
+        {
+            return UsingRearCab;
+        }
+#endif
+
         public class Alerter
         {
             int AlerterStartTime;
@@ -2028,7 +2112,11 @@ namespace ORTS
                             }
                             if (oi.speed_passenger == -1)
                             {
+#if !NEW_SIGNALLING
                                 data = MpS.FromMpS(this.Train.RouteMaxSpeedMpS, metric);
+#else
+                                data = MpS.FromMpS(this.Train.TrainMaxSpeedMpS, metric);
+#endif
                                 break;
                             }
                             else
@@ -2389,8 +2477,10 @@ namespace ORTS
 
             if( UserInput.IsPressed( UserCommands.ControlHeadlightDecrease ) ) new HeadlightCommand( Viewer.Log, false );
             if( UserInput.IsPressed( UserCommands.ControlHeadlightIncrease ) ) new HeadlightCommand( Viewer.Log, true );
+#if !NEW_SIGNALLING
             if (UserInput.IsPressed(UserCommands.DebugForcePlayerAuthorization))
                 Program.Simulator.AI.Dispatcher.ExtendPlayerAuthorization(true);
+#endif
 
             // By GeorgeS
             if( UserInput.IsPressed( UserCommands.ControlLight ) ) {

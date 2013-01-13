@@ -26,7 +26,11 @@ namespace ORTS
         public TSectionDatFile TSectionDat;
         public AIPathNode FirstNode;    // path starting node
         public AIPathNode LastVisitedNode;
+#if !NEW_SIGNALLING
         List<AIPathNode> Nodes = new List<AIPathNode>();
+#else
+        public List<AIPathNode> Nodes = new List<AIPathNode>();
+#endif
 
         /// <summary>
         /// Creates an AIPath from PAT file information.
@@ -137,6 +141,7 @@ namespace ORTS
                 outf.Write(node.Index);
         }
 
+#if !NEW_SIGNALLING
         /// <summary>
         /// Aligns the switch for the specified juction node so that the specified
         /// vector node will be used as the selected route.
@@ -249,6 +254,7 @@ namespace ORTS
             // By GeorgeS
             //tn.TrJunctionNode.SelectedRoute = (int)ts.MainRoute;
         }
+#endif
 
         /// <summary>
         /// returns true if the specified vector node is at the facing point end of

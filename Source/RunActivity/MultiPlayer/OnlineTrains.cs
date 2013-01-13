@@ -152,12 +152,22 @@ namespace ORTS.MultiPlayer
 				{
 					PATFile patFile = new PATFile(p.path);
 					AIPath aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
-
+#if !NEW_SIGNALLING
 					train.Path = aiPath;
+#endif
+
 				}
-				catch (Exception) { train.Path = null; MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
-			}
+#if !NEW_SIGNALLING
+                    catch (Exception) { train.Path = null; MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
+#else 
+                    catch (Exception) {MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
+#endif
+            }
+
+#if !NEW_SIGNALLING
 			else train.Path = null;
+#endif
+
 			try
 			{
 				train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, player.TileX, player.TileZ, player.X, player.Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
@@ -224,6 +234,7 @@ namespace ORTS.MultiPlayer
 			
 			if (MPManager.IsServer() && MPManager.Instance().PreferGreen == false) //prefer red light always, thus need to have path included
 			{
+#if !NEW_SIGNALLING
 				if (train.Path != null)
 				{
 					train.TrackAuthority = new TrackAuthority(train, train.Number + 100000, 10, train.Path);
@@ -232,6 +243,7 @@ namespace ORTS.MultiPlayer
 					//train.Path.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
 				}
 				else train.TrackAuthority = null;
+#endif
 			}
 			 
 			Players.Add(player.user, p);

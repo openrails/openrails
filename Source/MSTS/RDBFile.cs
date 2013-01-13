@@ -6,7 +6,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+#if !NEW_SIGNALLING
 using ORTS.Interlocking;
+#endif
 
 namespace MSTS
 {

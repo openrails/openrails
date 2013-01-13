@@ -1,8 +1,7 @@
 ﻿// Debug flags :
 // #define DEBUG_PRINT
+// #define DEBUG_REPORTS
 // prints details of the derived signal structure
-#define CHECKED_ROUTE_SET
-// Checks route to next signal
 
 using System;
 using System.Collections.Generic;
@@ -18,3152 +17,9105 @@ using ORTS.Popups;
 namespace ORTS
 {
 
-  //================================================================================================//
-  //
-  // class Signals
-  //
-  //================================================================================================//
 
-        public class Signals
+    //================================================================================================//
+    //
+    // class Signals
+    //
+    //================================================================================================//
+
+    public class Signals
+    {
+
+        //================================================================================================//
+        // local data
+        //================================================================================================//
+
+        public TrackDB trackDB;
+        private TSectionDatFile tsectiondat;
+        private TDBFile tdbfile;
+
+        private SignalObject[] signalObjects;
+        private List<SignalWorldObject> SignalWorldList = new List<SignalWorldObject>();
+        private Dictionary<uint, SignalRefObject> SignalRefList;
+        private Dictionary<uint, SignalObject> SignalHeadList;
+        public static SIGSCRfile scrfile;
+
+        public int noSignals = 0;
+        private int foundSignals = 0;
+
+        private static int updatecount = 0;
+
+        public List<TrackCircuitSection> TrackCircuitList;
+        private Dictionary<int, CrossOverItem> CrossOverList = new Dictionary<int, CrossOverItem>();
+        public List<PlatformDetails> PlatformDetailsList = new List<PlatformDetails>();
+        public Dictionary<int, int> PlatformXRefList = new Dictionary<int, int>();
+
+        //================================================================================================//
+        ///
+        /// Constructor
+        ///
+
+        public Signals(Simulator simulator, SIGCFGFile sigcfg)
         {
 
-  //================================================================================================//
-  // local data
-  //================================================================================================//
-
-                private TrackDB trackDB;
-                private TSectionDatFile tsectiondat;
-                private TDBFile tdbfile;
-
-                private int[,] visited;
-                private SignalObject[] signalObjects;
-                private List<SignalWorldObject> SignalWorldList = new List<SignalWorldObject>();
-                private Dictionary<uint, SignalRefObject> SignalRefList; 
-                public static SIGSCRfile scrfile;
-
-                public int noSignals = 0;
-                private int foundSignals = 0;
-
-                private static int updatecount=0;
-
-  //================================================================================================//
-  ///
-  /// Constructor
-  ///
-
-                public Signals(Simulator simulator, SIGCFGFile sigcfg)
-                {
-
-                        SignalRefList = new Dictionary <uint, SignalRefObject> ();
-
-                        trackDB = simulator.TDB.TrackDB;
-                        tsectiondat = simulator.TSectionDat;
-                        tdbfile = Program.Simulator.TDB;
-
-  // read SIGSCR files
-
-                        Trace.Write(" SIGSCR ");
-                        scrfile = new SIGSCRfile(simulator.RoutePath, sigcfg.ScriptFiles, sigcfg.SignalTypes);
-
-  // build list of signal world file information
-
-                        BuildSignalWorld(simulator, sigcfg); 
-
-  // build list of signals in TDB file
-
-                        BuildSignalList(trackDB.TrItemTable, trackDB.TrackNodes, tsectiondat, tdbfile);
-
-                        if (foundSignals > 0)
-                        {
-  // Add CFG info
-
-                                AddCFG(sigcfg);
-
-  // Add World info
-
-                                AddWorldInfo();
-
-  // check for any backfacing heads in signals
-  // if found, split signal
-
-                                SplitBackfacing(trackDB.TrItemTable, trackDB.TrackNodes);
-                        }
-
-#if DEBUG_PRINT
-                        for (int isignal=0; isignal < signalObjects.Length-1; isignal++)
-                        {
-                                SignalObject singleSignal = signalObjects[isignal];
-                                if (singleSignal == null)
-                                {
-                                        File.AppendAllText(@"SignalObjects.txt","\nInvalid entry : "+isignal.ToString()+"\n");
-                        }
-                                else
-                                {
-                                        File.AppendAllText(@"SignalObjects.txt","\nSignal ref item     : "+singleSignal.thisRef.ToString()+"\n");
-                                        File.AppendAllText(@"SignalObjects.txt","Track node + index  : "+singleSignal.trackNode.ToString()+" + "+
-                                                                                                        singleSignal.trRefIndex.ToString()+"\n");
-
-                                        foreach (SignalHead thisHead in singleSignal.SignalHeads)
-                                        {
-                                           File.AppendAllText(@"SignalObjects.txt","Type name           : "+thisHead.signalType.Name.ToString()+"\n");
-                                           File.AppendAllText(@"SignalObjects.txt","Type                : "+thisHead.signalType.FnType.ToString()+"\n");
-                                           File.AppendAllText(@"SignalObjects.txt","item Index          : "+thisHead.trItemIndex.ToString()+"\n");
-                                           File.AppendAllText(@"SignalObjects.txt","TDB  Index          : "+thisHead.TDBIndex.ToString()+"\n");
-                                        }
-                                }
-                        }
-
-                        foreach (KeyValuePair <string, MSTS.SignalShape> sshape in sigcfg.SignalShapes)
-                        {
-                                File.AppendAllText(@"SignalShapes.txt","\n==========================================\n");
-                                File.AppendAllText(@"SignalShapes.txt","Shape key   : "+sshape.Key.ToString()+"\n");
-                                MSTS.SignalShape thisshape = sshape.Value;
-                                File.AppendAllText(@"SignalShapes.txt","Filename    : "+thisshape.ShapeFileName.ToString()+"\n");
-                                File.AppendAllText(@"SignalShapes.txt","Description : "+thisshape.Description.ToString()+"\n");
-
-                                foreach (MSTS.SignalShape.SignalSubObj ssobj in thisshape.SignalSubObjs)
-                                {
-                                   File.AppendAllText(@"SignalShapes.txt","\nSubobj Index : "+ssobj.Index.ToString()+"\n");
-                                   File.AppendAllText(@"SignalShapes.txt","Matrix       : "+ssobj.MatrixName.ToString()+"\n");
-                                   File.AppendAllText(@"SignalShapes.txt","Description  : "+ssobj.Description.ToString()+"\n");
-                                   File.AppendAllText(@"SignalShapes.txt","Sub Type (I) : "+ssobj.SignalSubType.ToString()+"\n");
-                                   if (ssobj.SignalSubSignalType != null)
-                                   {
-                                      File.AppendAllText(@"SignalShapes.txt","Sub Type (C) : "+ssobj.SignalSubSignalType.ToString()+"\n");
-                                   }
-                                   else
-                                   {
-                                      File.AppendAllText(@"SignalShapes.txt","Sub Type (C) : not set \n");
-                                   }
-                                   File.AppendAllText(@"SignalShapes.txt","Optional     : "+ssobj.Optional.ToString()+"\n");
-                                   File.AppendAllText(@"SignalShapes.txt","Default      : "+ssobj.Default.ToString()+"\n");
-                                   File.AppendAllText(@"SignalShapes.txt","BackFacing   : "+ssobj.BackFacing.ToString()+"\n");
-                                   File.AppendAllText(@"SignalShapes.txt","JunctionLink : "+ssobj.JunctionLink.ToString()+"\n");
-                                }
-                                File.AppendAllText(@"SignalShapes.txt","\n==========================================\n");
-                        }
+#if DEBUG_REPORTS
+            File.Delete(@"C:\temp\printproc.txt");
 #endif
 
-  // Clear world lists to save memory
+            SignalRefList = new Dictionary<uint, SignalRefObject>();
+            SignalHeadList = new Dictionary<uint, SignalObject>();
+            Dictionary<int, int> platformList = new Dictionary<int, int>();
 
-                        SignalWorldList.Clear();
-                        SignalRefList.Clear();
+            trackDB = simulator.TDB.TrackDB;
+            tsectiondat = simulator.TSectionDat;
+            tdbfile = Program.Simulator.TDB;
 
-                }
+            // read SIGSCR files
 
-  //================================================================================================//
-  ///
-  /// Overlay constructor for restore after saved game (empty)
-  ///
+            Trace.Write(" SIGSCR ");
+            scrfile = new SIGSCRfile(simulator.RoutePath, sigcfg.ScriptFiles, sigcfg.SignalTypes);
 
-                public Signals(Simulator simulator, SIGCFGFile sigcfg, BinaryReader inf)
-                     : this(simulator, sigcfg)
+            // build list of signal world file information
+
+            BuildSignalWorld(simulator, sigcfg);
+
+            // build list of signals in TDB file
+
+            BuildSignalList(trackDB.TrItemTable, trackDB.TrackNodes, tsectiondat, tdbfile, platformList);
+
+            if (foundSignals > 0)
+            {
+                // Add CFG info
+
+                AddCFG(sigcfg);
+
+                // Add World info
+
+                AddWorldInfo();
+
+                // check for any backfacing heads in signals
+                // if found, split signal
+
+                SplitBackfacing(trackDB.TrItemTable, trackDB.TrackNodes);
+            }
+
+            SetNumSignalHeads();
+
+            //
+            // Create trackcircuit database
+            //
+
+            CreateTrackCircuits(trackDB.TrItemTable, trackDB.TrackNodes,
+                                       tsectiondat, tdbfile);
+
+            //
+            // Process platform information
+            //
+
+            ProcessPlatforms(platformList, trackDB.TrItemTable, trackDB.TrackNodes);
+
+            //
+            // Print all info (DEBUG only)
+            //
+
+#if DEBUG_PRINT
+
+            PrintTCBase(trackDB.TrackNodes);
+
+            if (File.Exists(@"C:\temp\SignalObjects.txt"))
+            {
+                File.Delete(@"C:\temp\SignalObjects.txt");
+            }
+            if (File.Exists(@"C:\temp\SignalShapes.txt"))
+            {
+                File.Delete(@"C:\temp\SignalShapes.txt");
+            }
+
+            for (int isignal = 0; isignal < signalObjects.Length - 1; isignal++)
+            {
+                SignalObject singleSignal = signalObjects[isignal];
+                if (singleSignal == null)
                 {
+                    File.AppendAllText(@"C:\temp\SignalObjects.txt", "\nInvalid entry : " + isignal.ToString() + "\n");
                 }
-
-  //================================================================================================//
-  ///
-  /// Save game (empty)
-  ///
-
-                public void Save(BinaryWriter outf)
+                else
                 {
-                }
+                    File.AppendAllText(@"C:\temp\SignalObjects.txt", "\nSignal ref item     : " + singleSignal.thisRef.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalObjects.txt", "Track node + index  : " + singleSignal.trackNode.ToString() + " + " +
+                                                                                    singleSignal.trRefIndex.ToString() + "\n");
 
-  //================================================================================================//
-  /// 
-  /// Gets an array of all the SignalObjects.
-  ///
-
-                internal SignalObject[] SignalObjects
-                {
-                        get
-                        {
-                                return signalObjects;
-                        }
-                }
-
-  //================================================================================================//
-  ///
-  /// Read all world files to get signal flags
-  ///
-
-                private void BuildSignalWorld(Simulator simulator, SIGCFGFile sigcfg)
-                {
-
-                    // get all files with extention .w in World directory
-
-                    Trace.WriteLine("");
-                    var WFilePath = simulator.RoutePath + @"\WORLD\";
-                    var FileEntries = Directory.GetFiles(WFilePath, "*.w");
-
-                    var Tokens = new List<TokenID>{ TokenID.Signal };
-
-                    // loop through files, skip w+1000000+1000000.w file
-
-                    foreach (string filePath in FileEntries)
+                    foreach (SignalHead thisHead in singleSignal.SignalHeads)
                     {
-
-                        // check if valid file
-
-                        var validFile = true;
-
-                        try
-                        {
-                            var fileName = Path.GetFileName(filePath);
-                            var TileX = int.Parse(fileName.Substring(1, 7));
-                            var TileZ = int.Parse(fileName.Substring(8, 7));
-                        }
-                        catch (Exception)
-                        {
-                            validFile = false;
-                        }
-
-                        if (validFile)
-                        {
-
-                            // read w-file, get SignalObjects only
-
-                            Trace.Write("W");
-                            var WFile = new WFile(filePath, Tokens);
-
-                            // loop through all signals
-
-                            foreach (var worldObject in WFile.Tr_Worldfile)
-                            {
-                                if (worldObject.GetType() == typeof(MSTS.SignalObj))
-                                {
-                                    var thisWorldObject = (MSTS.SignalObj)worldObject;
-                                    var SignalWorldSignal = new SignalWorldObject(thisWorldObject, sigcfg);
-                                    SignalWorldList.Add(SignalWorldSignal);
-                                    foreach (var thisref in SignalWorldSignal.HeadReference)
-                                    {
-                                        var thisSignalCount = SignalWorldList.Count() - 1;    // Index starts at 0
-                                        var thisRefObject = new SignalRefObject(thisSignalCount, thisref.Value);
-                                        if (!SignalRefList.ContainsKey(thisref.Key))
-                                            SignalRefList.Add(thisref.Key, thisRefObject);
-                                    }
-                                }
-                            }
-                        }
+                        File.AppendAllText(@"C:\temp\SignalObjects.txt", "Type name           : " + thisHead.signalType.Name.ToString() + "\n");
+                        File.AppendAllText(@"C:\temp\SignalObjects.txt", "Type                : " + thisHead.signalType.FnType.ToString() + "\n");
+                        File.AppendAllText(@"C:\temp\SignalObjects.txt", "item Index          : " + thisHead.trItemIndex.ToString() + "\n");
+                        File.AppendAllText(@"C:\temp\SignalObjects.txt", "TDB  Index          : " + thisHead.TDBIndex.ToString() + "\n");
                     }
-                    Trace.WriteLine("");
 
-#if DEBUG_PRINT
-                        foreach ( KeyValuePair <uint, SignalRefObject> thisref in SignalRefList)
-                        {
-                            uint headref;
-                                uint TBDRef = thisref.Key;
-                                SignalRefObject signalRef = thisref.Value;
-
-                                SignalWorldObject reffedObject = SignalWorldList[(int) signalRef.SignalWorldIndex];
-                                if ( !reffedObject.HeadReference.TryGetValue(TBDRef, out headref))
-                                {
-                                        File.AppendAllText(@"WorldSignalList.txt","Incorrect Ref : "+TBDRef.ToString()+"\n");
-                                        foreach ( KeyValuePair <uint, uint> headindex in reffedObject.HeadReference)
-                                        {
-                                                File.AppendAllText(@"WorldSignalList.txt","TDB : "+headindex.Key.ToString()+
-                                                                " + "+headindex.Value.ToString()+"\n");
-                                        }
-                                }
-                        }
-#endif
-
-                }  //BuildSignalWorld
-
-
-  //================================================================================================//
-  /// 
-  /// Update : perform signal updates
-  /// 
-
-                public void Update(float elapsedClockSeconds)
-                {
-					if (MultiPlayer.MPManager.IsMultiPlayer() && !MultiPlayer.MPManager.IsServer()) return;
-                        if (foundSignals > 0)
-                        {
-
-  // loop through all signals
-  // update required part
-
-                                int totalSignal = signalObjects.Length - 1;
-                                int updatestep  = (totalSignal/20)+1;
-                                for (int icount = updatecount; icount < Math.Min(totalSignal, updatecount+updatestep); icount++)
-                                {
-                                        SignalObject signal = signalObjects[icount];
-                                        if (signal != null) // to cater for orphans. RE bug!
-                                        {
-                                                signal.Update();
-                                        }
-                                }
-
-                                updatecount += updatestep;
-                                updatecount = updatecount > totalSignal ? 0 : updatecount;
-                        }
-                }  //Update
-
-  //================================================================================================//
-  ///
-  /// Build signal list from TDB
-  ///
-
-                private void BuildSignalList(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat, TDBFile tdbfile)
-                {
-                        visited = new int[trackNodes.Length, 2];
-                        for (int i = 0; i < trackNodes.Length; i++)
-                        {
-                                visited[i, 0] = 0;
-                                visited[i, 1] = 0;
-                        }
-  //
-  //  Determaine the number of signals in the track Objects list
-  //
-                        noSignals = 0;
-                        if (TrItems == null) return;                // No track Objects in route.
-                        foreach (TrItem trItem in TrItems)
-                        {
-                                if (trItem != null)
-                                {
-                                        if (trItem.ItemType == TrItem.trItemType.trSIGNAL)
-                                        {
-                                                noSignals++;
-                                        }
-                                        else if (trItem.ItemType == TrItem.trItemType.trSPEEDPOST)
-                                        {
-                                                SpeedPostItem Speedpost = (SpeedPostItem) trItem;
-                                                if (Speedpost.IsLimit)
-                                                {
-                                                        noSignals++;
-                                }
-                        }
-                                }
-                        }
-  //
-  //  Only continue if one or more signals in route.
-  //
-                        if (noSignals > 0)
-                        {
-                                signalObjects = new SignalObject[noSignals];
-                                SignalObject.trackNodes = trackNodes;
-                                SignalObject.signalObjects = signalObjects;
-                                SignalObject.trItems = TrItems;
-
-                                for (int i = 1; i < trackNodes.Length; i++)
-                                {
-                                        ScanSection(TrItems, trackNodes, i, tsectiondat, tdbfile);
-                                        }
-                                }
-
-                } //BuildSignalList
-
-                
-  //================================================================================================//
-  ///
-  /// Split backfacing signals
-  ///
-
-                private void SplitBackfacing(TrItem[] TrItems, TrackNode[] TrackNodes)
-                {
-                
-                        List <SignalObject> newSignals = new List<SignalObject> ();
-                        int newindex = foundSignals+1;
-
-  //
-  // Loop through all signals to check on Backfacing heads
-  //
-
-                        for (int isignal=0; isignal < signalObjects.Length-1; isignal++)
-                        {
-                                SignalObject singleSignal = signalObjects[isignal];
-                                if (singleSignal != null && singleSignal.isSignal && 
-                                                singleSignal.WorldObject != null && singleSignal.WorldObject.Backfacing.Count > 0)
-                                {
-
-  //
-  // create new signal - copy of existing signal
-  // use Backfacing flags and reset head indication
-  //
-
-                                        SignalObject newSignal = new SignalObject(singleSignal);
-
-                                        newSignal.thisRef = newindex;
-                                        newSignal.signalRef = this;
-                                        newSignal.trRefIndex = 0;
-
-                                        newSignal.WorldObject.FlagsSet = new bool [singleSignal.WorldObject.FlagsSetBackfacing.Length];
-                                        singleSignal.WorldObject.FlagsSetBackfacing.CopyTo (newSignal.WorldObject.FlagsSet, 0);
-
-                                        for (int iindex = 0; iindex < newSignal.WorldObject.HeadsSet.Length; iindex++)
-                                        {
-                                                newSignal.WorldObject.HeadsSet[iindex] = false;
-                                        }
-
-  //
-  // Somehow, the original and not the new signal must be reversed
-  //
-
-                                        singleSignal.direction = singleSignal.direction == 0 ? 1 : 0;           // reverse //
-                                        singleSignal.tdbtraveller.ReverseDirection();                           // reverse //
-
-
-  //
-  // loop through the list with headreferences, check this agains the list with backfacing heads
-  // use the TDBreference to find the actual head
-  //
-
-                                        List<int> removeHead = new List<int> ();  // list to keep trace of heads which are moved //
-
-                                        foreach (KeyValuePair <uint, uint> thisHeadRef in singleSignal.WorldObject.HeadReference)
-                                        {
-                                                for (int iindex = singleSignal.WorldObject.Backfacing.Count - 1; iindex >= 0; iindex --)
-                                                {
-                                                        int ihead = singleSignal.WorldObject.Backfacing[iindex];
-                                                        if (thisHeadRef.Value == ihead)
-                                                        {
-                                                                for (int ihIndex=0; ihIndex < singleSignal.SignalHeads.Count; ihIndex++)
-                                                                {
-                                                                        SignalHead thisHead = singleSignal.SignalHeads[ihIndex];
-
-  //
-  // backfacing head found - add to new signal, set to remove from exising signal
-  //
-
-                                                                        if (thisHead.TDBIndex == thisHeadRef.Key)
-                                                                        {
-                                                                                removeHead.Add(ihIndex);
-
-                                                                                thisHead.mainSignal = newSignal;
-                                                                                newSignal.SignalHeads.Add(thisHead);
-                                                                        }
-                                                                }
-                                                        }
-
-  //
-  // update flags for available heads
-  //
-
-                                                        newSignal.WorldObject.HeadsSet[ihead] = true;
-                                                        singleSignal.WorldObject.HeadsSet[ihead] = false;
-                                                }
-                                        }
-
-  //
-  // remove moved heads from existing signal
-  //
-
-                                        for (int ihead = singleSignal.SignalHeads.Count-1; ihead >= 0; ihead--)
-                                        {
-                                                if (removeHead.Contains(ihead))
-                                                {
-                                                        singleSignal.SignalHeads.RemoveAt(ihead);
-                                                }
-                                        }
-
-
-  //
-  // set correct trRefIndex for this signal, and set cross-reference for all backfacing trRef items
-  //
-
-                                        for (int i = 0; i < TrackNodes[newSignal.trackNode].TrVectorNode.noItemRefs; i++)
-                                        {
-                                                int TDBRef = TrackNodes[newSignal.trackNode].TrVectorNode.TrItemRefs[i];
-                                                if (TrItems[TDBRef] != null)
-                                                {
-                                                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
-                                                        {
-                                                                foreach (SignalHead thisHead in newSignal.SignalHeads)
-                                                                {
-                                                                        if (TDBRef == thisHead.TDBIndex)
-                                                                        {
-                                                                                SignalItem sigItem = (SignalItem) TrItems[TDBRef];
-                                                                                sigItem.sigObj = newSignal.thisRef;
-                                                                                newSignal.trRefIndex = i;
-
-                                                                                // remove this key from the original signal //
-                                                                                singleSignal.WorldObject.HeadReference.Remove((uint) TDBRef);
-                                                                        }
-                                                                }
-                                                        }
-                                                }
-                                        }
-
-  //
-  // reset cross-references for original signal (it may have been set for a backfacing head)
-  //
-
-                                        for (int i = 0; i < TrackNodes[newSignal.trackNode].TrVectorNode.noItemRefs; i++)
-                                        {
-                                                int TDBRef = TrackNodes[newSignal.trackNode].TrVectorNode.TrItemRefs[i];
-                                                if (TrItems[TDBRef] != null)
-                                                {
-                                                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
-                                                        {
-                                                                foreach (SignalHead thisHead in singleSignal.SignalHeads)
-                                                                {
-                                                                        if (TDBRef == thisHead.TDBIndex)
-                                                                        {
-                                                                                SignalItem sigItem = (SignalItem) TrItems[TDBRef];
-                                                                                sigItem.sigObj = singleSignal.thisRef;
-                                                                                singleSignal.trRefIndex = i;
-
-                                                                                // remove this key from the new signal //
-                                                                                newSignal.WorldObject.HeadReference.Remove((uint) TDBRef);
-                                                                        }
-                                                                }
-                                                        }
-                                                }
-                                        }
-
-                                        newindex++;
-                                        newSignals.Add(newSignal);
-                                }
-                        }
-
-  //
-  // add all new signals to the signalObject array
-  // length of array was set to all possible signals, so there will be space to spare
-  //
-
-                        newindex = foundSignals+1;
-                        foreach(SignalObject newSignal in newSignals)
-                        {
-                                signalObjects[newindex] = newSignal;
-                                newindex++;
-                        }
-
-                        foundSignals = newindex;
+                    File.AppendAllText(@"C:\temp\SignalObjects.txt", "TC Reference   : " + singleSignal.TCReference.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalObjects.txt", "TC Direction   : " + singleSignal.TCDirection.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalObjects.txt", "TC Position    : " + singleSignal.TCOffset.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalObjects.txt", "TC TCNextTC    : " + singleSignal.TCNextTC.ToString() + "\n");
                 }
+            }
 
-  //================================================================================================//
-  //
-  //  ScanSection : This method checks a section in the TDB for signals or speedposts
-  //
+            foreach (KeyValuePair<string, MSTS.SignalShape> sshape in sigcfg.SignalShapes)
+            {
+                File.AppendAllText(@"C:\temp\SignalShapes.txt", "\n==========================================\n");
+                File.AppendAllText(@"C:\temp\SignalShapes.txt", "Shape key   : " + sshape.Key.ToString() + "\n");
+                MSTS.SignalShape thisshape = sshape.Value;
+                File.AppendAllText(@"C:\temp\SignalShapes.txt", "Filename    : " + thisshape.ShapeFileName.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\SignalShapes.txt", "Description : " + thisshape.Description.ToString() + "\n");
 
-                private void ScanSection(TrItem[] TrItems, TrackNode[] trackNodes, int index, 
-                                       TSectionDatFile tsectiondat, TDBFile tdbfile)
+                foreach (MSTS.SignalShape.SignalSubObj ssobj in thisshape.SignalSubObjs)
                 {
-                        int lastSignal = -1;                // Index to last signal found in path -1 if none
-
-                        if (trackNodes[index].TrEndNode) return;
-
-  //  Is it a vector node then it may contain objects.
-                        if (trackNodes[index].TrVectorNode != null && trackNodes[index].TrVectorNode.noItemRefs > 0)
-                                {
-  // Any obects ?
-                                                        for (int i = 0; i < trackNodes[index].TrVectorNode.noItemRefs; i++)
-                                                        {
-                                                                if (TrItems[trackNodes[index].TrVectorNode.TrItemRefs[i]] != null)
-                                                                {
-
-  // Track Item is signal
-                                                                        int TDBRef = trackNodes[index].TrVectorNode.TrItemRefs[i];
-                                                                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
-                                                                        {
-                                                                                SignalItem sigItem = (SignalItem)TrItems[TDBRef];
-                                                                                        sigItem.sigObj = foundSignals;
-
-                                                                                        if (sigItem.noSigDirs > 0)
-                                                                                        {
-                                                                                        SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
-                                                                                        }
-
-                                                                                        lastSignal = AddSignal(index, i, sigItem, lastSignal,
-                                                                                                               TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
-                                                                                        sigItem.sigObj = lastSignal;
-                                                                                }
-                                                else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSPEEDPOST)
-                                                {
-                                                        SpeedPostItem speedItem = (SpeedPostItem) TrItems[TDBRef];
-                                                        if (speedItem.IsLimit)
-                                                        {
-                                                                speedItem.sigObj = foundSignals;
-
-                                                                lastSignal = AddSpeed(index, i, speedItem, lastSignal,
-                                                                                                               TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
-                                                                speedItem.sigObj = lastSignal;
-                                                                                }
-                                                                        }
-                                                                }
-                                                        }
-                                                }
-                }   //ScanSection 
-
-  //================================================================================================//
-  ///
-  /// This method adds a new Signal to the list
-  ///
-
-                private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int prevSignal, 
-                                TrItem[] TrItems, TrackNode[] trackNodes, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
-                {
-                        if (prevSignal >= 0)
-                        {
-                                if (signalObjects[prevSignal].isSignal)
-                                {
-                                if (signalObjects[prevSignal].isSignalHead((SignalItem)TrItems[trackNodes[trackNode].TrVectorNode.TrItemRefs[nodeIndx]]))
-                                {
-                                        signalObjects[prevSignal].AddHead(nodeIndx, TDBRef, sigItem);
-                                        return prevSignal;
-                                }
-                        }
-                        }
-                        signalObjects[foundSignals] = new SignalObject();
-                        signalObjects[foundSignals].isSignal  = true;
-                        signalObjects[foundSignals].direction = (int) sigItem.Direction;
-                        signalObjects[foundSignals].trackNode = trackNode;
-                        signalObjects[foundSignals].trRefIndex = nodeIndx;
-                        signalObjects[foundSignals].prevSignal = prevSignal;
-                        signalObjects[foundSignals].thisRef = foundSignals;
-                        signalObjects[foundSignals].signalRef = this;
-
-                        signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
-                            sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z, (Traveller.TravellerDirection)(1 - sigItem.Direction));
-							signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, sigItem);
-
-						signalObjects[foundSignals].WorldObject = null;
-                        foundSignals++;
-                        return foundSignals - 1;
-                } // AddSignal
-
-                
-  //================================================================================================//
-  ///
-  /// This method adds a new Speedpost to the list
-  ///
-
-                private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int prevSignal, 
-                                TrItem[] TrItems, TrackNode[] trackNodes, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
-                {
-                        signalObjects[foundSignals] = new SignalObject();
-                        signalObjects[foundSignals].isSignal  = false;
-                        signalObjects[foundSignals].direction = 0;                  // preset - direction not yet known //
-                        signalObjects[foundSignals].trackNode = trackNode;
-                        signalObjects[foundSignals].trRefIndex = nodeIndx;
-                        signalObjects[foundSignals].prevSignal = prevSignal;
-                        signalObjects[foundSignals].thisRef = foundSignals;
-                        signalObjects[foundSignals].signalRef = this;
-
-                        signalObjects[foundSignals].tdbtraveller = new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
-                            speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z, (Traveller.TravellerDirection)signalObjects[foundSignals].direction);
-						signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
-
-                        double delta_angle = signalObjects[foundSignals].tdbtraveller.RotY - ((Math.PI/2) - speedItem.Angle);
-                        float delta_float = (float)delta_angle;
-                        MSTSMath.M.NormalizeRadians( ref delta_float);
-                        if (Math.Abs(delta_float) < (Math.PI/2))
-                        {
-                            signalObjects[foundSignals].direction = signalObjects[foundSignals].tdbtraveller.Direction == 0 ? 1 : 0;
-                        }
-                        else
-                        {
-                            signalObjects[foundSignals].direction = (int)signalObjects[foundSignals].tdbtraveller.Direction;
-                            signalObjects[foundSignals].tdbtraveller.ReverseDirection();
-                        }
-
-#if DEBUG_PRINT
-                        string dumpstring = "\nPlaced : ";
-                        dumpstring = String.Concat(dumpstring," at : ");
-                        dumpstring = String.Concat(dumpstring,speedItem.TileX.ToString()," ");
-                        dumpstring = String.Concat(dumpstring,speedItem.TileZ.ToString(),":");
-                        dumpstring = String.Concat(dumpstring,speedItem.X.ToString()," ");
-                        dumpstring = String.Concat(dumpstring,speedItem.Z.ToString()," ");
-                        dumpstring = String.Concat(dumpstring,"; angle - track : ");
-                        dumpstring = String.Concat(dumpstring,speedItem.Angle.ToString(),":",
-                                        signalObjects[foundSignals].tdbtraveller.Roty.ToString());
-                        dumpstring = String.Concat(dumpstring,"; delta : ",delta_angle.ToString());
-                        dumpstring = String.Concat(dumpstring,"; dir : ",signalObjects[foundSignals].direction.ToString());
-                        Trace.Write(dumpstring);
-#endif
-
-                        signalObjects[foundSignals].WorldObject = null;
-                        foundSignals++;
-                        return foundSignals - 1;
-                } // AddSpeed
-
-  //================================================================================================//
-  /// 
-  ///  This method returns the index of the next signal along the set path. -1 if no signal found
-  /// 
-
-                public int FindNextSignal(int startIndex, int startDir, TrItem[] TrItems, TrackNode[] trackNodes)
-                {
-                        SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
-                        fn_type_array [0] = SignalHead.SIGFN.NORMAL;
-                        int newindex = Find_Next_Object(null, startIndex, startDir, true, null, false, -1, TrItems, trackNodes, fn_type_array);
-
-                        return newindex<0 ? -1 : newindex;
-                } //FindNextSignal
-
-  //================================================================================================//
-  //
-  // NextNode : find next junction node in path
-  //
-
-                private void NextNode(TrackNode[] trackNodes, ref int node, ref int direction, ref int prevNode)
-                {
-                    
-                    SignalObject.NextNode(ref node, ref direction, ref prevNode);
-                    if (node == prevNode)
-                        node = 0;
-                    return;
-                    
-                        if (trackNodes[node].TrJunctionNode != null)
-                        {
-                                if (direction == 0)
-                                {
-                                        if (trackNodes[node].Inpins > 1)
-                                        {
-                                                if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
-                                                {
-                                                        direction = trackNodes[node].TrPins[0].Direction;
-                                                        node = trackNodes[node].TrPins[0].Link;
-                                                }
-                                                else
-                                                {
-                                                        direction = trackNodes[node].TrPins[1].Direction;
-                                                        node = trackNodes[node].TrPins[1].Link;
-                                                }
-                                        }
-                                        else
-                                        {
-                                                direction = trackNodes[node].TrPins[0].Direction;
-                                                node = trackNodes[node].TrPins[0].Link;
-                                        }
-                                }
-                                else
-                                {
-                                        if (trackNodes[node].Outpins > 1)
-                                        {
-                                                if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
-                                                {
-                                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                                                }
-                                                else
-                                                {
-                                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Direction;
-                                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link;
-                                                }
-                                        }
-                                        else
-                                        {
-                                                direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                                node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                                        }
-                                }
-                        }
-                        else
-                        {
-                                if (direction == 0)
-                                {
-                                        direction = trackNodes[node].TrPins[0].Direction;
-                                        node = trackNodes[node].TrPins[0].Link;
-                                }
-                                else
-                                {
-                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                                }
-                        }
-                     
-                } //NextNode
-
-  //================================================================================================//
-  //
-  //      AddCFG : This method adds the sigcfg reference to each signal object.
-  //
-
-                private void AddCFG(SIGCFGFile sigCFG)
-                {
-                        foreach (SignalObject signal in signalObjects)
-                        {
-                                if (signal != null)
-                                {
-                                        if (signal.isSignal)
-                                        {
-                                        signal.SetSignalType(sigCFG);
-                                }
-                        }
-                        }
-                }//AddCFG
-
-  //================================================================================================//
-  //
-  //     AddWorldInfo : add info from signal world objects to signal
-  //
-
-                private void AddWorldInfo()
-                {
-
-  // loop through all signal and all heads
-
-                        foreach (SignalObject signal in signalObjects)
-                        {
-                                if (signal != null)
-                                {
-                                        foreach (SignalHead head in signal.SignalHeads)
-                                        {
-
-  // get reference using TDB index from head
-
-                                                uint TDBRef = Convert.ToUInt32(head.TDBIndex);
-                                                SignalRefObject thisRef;
-
-                                                if (SignalRefList.TryGetValue(TDBRef, out thisRef))
-                                                {
-                                                        uint signalIndex = thisRef.SignalWorldIndex;
-                                                        if (signal.WorldObject == null)
-                                                        {
-                                                                 signal.WorldObject = SignalWorldList[(int) signalIndex];
-                                                        }
-                                                        SignalRefList.Remove(TDBRef);
-                                                }
-                                        }
-                                }
-                        }
-
-                }//AddWorldInfo
-
-
-  //================================================================================================//
-  /// 
-  /// This method resets junction signals to indeterminate state
-  /// 
-  // #TODO# : make this more specific
-  
-                public void ResetJunction()
-                {
-                        foreach (SignalObject signal in signalObjects)
-                        {
-                                if (signal != null)
-                                {
-                                        if (signal.isJunction) signal.nextSignal = -2;
-                                }
-                        }
-                }//ResetJunction
-
-  //================================================================================================//
-  /// 
-  /// Get index of next (NORMAL)signal to the current point in the tdbtraveller
-  /// Returns -1 if one cannot be found.
-  ///
-  //
-                public int FindNextSignal(Traveller tdbtraveller)
-                {
-                        int startNode = tdbtraveller.TrackNodeIndex;
-                        int currDir = (int)tdbtraveller.Direction;
-
-                        SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
-                        fn_type_array [0] = SignalHead.SIGFN.NORMAL;
-
-                        int newindex = Find_Next_Object(null, startNode, currDir, true, tdbtraveller, true, -1,
-                                        trackDB.TrItemTable, trackDB.TrackNodes, fn_type_array);
-
-                        return newindex<0 ? -1 : newindex;
-                }//FindNextSignal
-
-  //================================================================================================//
-  ///
-  // Get signal object of nearest signal in direction of travel
-  ///
-  /// 
-                public Signal FindNearestSignal(Traveller tdbtraveller)
-                {
-                        int sigRef = FindNextSignal(tdbtraveller);
-                        return new Signal(this, signalObjects, sigRef);
-                }//FindNearestSignal
-
-  //================================================================================================//
-  ///
-  // Initialize Signal object (for track occupancy)
-  ///
-  /// 
-                public Signal InitSignalItem(int sigRef)
-                {
-                        return new Signal(this, signalObjects, sigRef);
-                }//FindNearestSignal
-
-
-  //================================================================================================//
-  ///
-  //  Get index of previous signal in direction of travel
-  ///
-                public int FindPrevSignal(Traveller tdbtraveller)
-                {
-                        Traveller revTDBtraveller = new Traveller(tdbtraveller, Traveller.TravellerDirection.Backward);
-
-                        int startNode = tdbtraveller.TrackNodeIndex;
-                        int currDir = (int)tdbtraveller.Direction;
-
-                        SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
-                        fn_type_array [0] = SignalHead.SIGFN.NORMAL;
-
-                        int newindex = Find_Next_Object(null, startNode, currDir, false, revTDBtraveller, true, -1,
-                                        trackDB.TrItemTable, trackDB.TrackNodes, fn_type_array);
-
-                        return newindex<0 ? -1 : newindex;
-
-                }//FindPrevSignal
-  //================================================================================================//
-  ///
-  //  FindByTrItem : find required signalObj + signalHead
-  ///
-
-                public KeyValuePair<SignalObject, SignalHead>? FindByTrItem(uint trItem)
-                {
-                        foreach (var signal in signalObjects)
-                                if (signal != null)
-                                        foreach (var head in signal.SignalHeads)
-                                        {
-                                                int tempint = SignalObject.trackNodes[signal.trackNode].TrVectorNode.TrItemRefs[head.trItemIndex];
-                                                if (SignalObject.trackNodes[signal.trackNode].TrVectorNode.TrItemRefs[head.trItemIndex] == (int)trItem)
-                                                        return new KeyValuePair<SignalObject, SignalHead>(signal, head);
-                                        }
-                        return null;
-                }//FindByTrItem
-
-  //================================================================================================//
-  //
-  // Find_Next_Object : find next item along path of train
-  //
-  // Usage :
-  //   always set : Tritems, trackNodes, fn_type, in_direction_of_travel
-  //
-  //   from existing object :
-  //     set startObjRef
-  //
-  //   from train :
-  //     set nodestartindex, startDirection, tdbtraveller, min_distance_check,
-  //     optional : maxdistance
-  //
-  // returned :
-  //   > 0 : signal object reference
-  //   -1  : end if track
-  //   -2  : no item within required distance
-  //   -3  : trackref. 0 found - error in tdb
-  //   -4  : track looped - error in tdb
-  //
-
-                public int Find_Next_Object(SignalObject startObj, int nodestartindex,
-                                int startDirection, bool in_direction_of_travel,
-                                Traveller tdbtraveller, bool min_distance_check, float maxdistance,
-                                TrItem[] Tritems, TrackNode[] trackNodes,
-                                       SignalHead.SIGFN[] fn_type)
-                {
-
-                    int locstate = 0;                                                                // local processing state     //
-                    int actindex = 0;                                                                // present node               //
-                    int actrefindex = -1;                                                            // first index to check       //
-                    int lastrefindex = 0;                                                            // next index for loop        //
-                    int direction = 0;                                                               // travel direction           //
-                    int prevnodeindex = -1;
-                    TrackNode thisTrackNode = null;
-                    TrItem thisTrItem = null;
-
-                    // check if search from object or train
-
-                    if (startObj == null)
+                    File.AppendAllText(@"C:\temp\SignalShapes.txt", "\nSubobj Index : " + ssobj.Index.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalShapes.txt", "Matrix       : " + ssobj.MatrixName.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalShapes.txt", "Description  : " + ssobj.Description.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalShapes.txt", "Sub Type (I) : " + ssobj.SignalSubType.ToString() + "\n");
+                    if (ssobj.SignalSubSignalType != null)
                     {
-                        actindex = nodestartindex;
-                        direction = startDirection;
+                        File.AppendAllText(@"C:\temp\SignalShapes.txt", "Sub Type (C) : " + ssobj.SignalSubSignalType.ToString() + "\n");
                     }
                     else
                     {
-                        actindex = startObj.trackNode;
-                        actrefindex = startObj.trRefIndex;
-                        direction = startObj.revDir;
+                        File.AppendAllText(@"C:\temp\SignalShapes.txt", "Sub Type (C) : not set \n");
+                    }
+                    File.AppendAllText(@"C:\temp\SignalShapes.txt", "Optional     : " + ssobj.Optional.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalShapes.txt", "Default      : " + ssobj.Default.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalShapes.txt", "BackFacing   : " + ssobj.BackFacing.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\SignalShapes.txt", "JunctionLink : " + ssobj.JunctionLink.ToString() + "\n");
+                }
+                File.AppendAllText(@"C:\temp\SignalShapes.txt", "\n==========================================\n");
+            }
+#endif
+
+            // Clear world lists to save memory
+
+            SignalWorldList.Clear();
+            SignalRefList.Clear();
+            SignalHeadList.Clear();
+
+            foreach (SignalObject thisSignal in SignalObjects)
+            {
+                if (thisSignal != null)
+                {
+                    if (thisSignal.isSignalNormal())
+                    {
+                        if (thisSignal.TCNextTC < 0)
+                        {
+                            Trace.TraceInformation("Signal " + thisSignal.thisRef.ToString() +
+                                " ; TC : " + thisSignal.TCReference.ToString() +
+                                " ; NextTC : " + thisSignal.TCNextTC.ToString() +
+                                " ; TN : " + thisSignal.trackNode.ToString());
+                        }
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        ///
+        /// Overlay constructor for restore after saved game
+        ///
+
+        public Signals(Simulator simulator, SIGCFGFile sigcfg, BinaryReader inf)
+            : this(simulator, sigcfg)
+        {
+            int signalRef = inf.ReadInt32();
+            while (signalRef >= 0)
+            {
+                SignalObject thisSignal = SignalObjects[signalRef];
+                thisSignal.Restore(inf);
+                signalRef = inf.ReadInt32();
+            }
+
+            int tcListCount = inf.ReadInt32();
+
+            if (tcListCount != TrackCircuitList.Count)
+            {
+                Trace.TraceError("Mismatch between saved : {0} and existing : {1} TrackCircuits",
+                        tcListCount.ToString(), TrackCircuitList.Count.ToString());
+            }
+            else
+            {
+                foreach (TrackCircuitSection thisSection in TrackCircuitList)
+                {
+                    thisSection.Restore(inf);
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Restore Train links
+        // Train links must be restored separately as Trains is restored later as Signals
+        //
+
+        public void RestoreTrains(List<Train> trains)
+        {
+            foreach (TrackCircuitSection thisSection in TrackCircuitList)
+            {
+                thisSection.CircuitState.RestoreTrains(this, trains);
+            }
+
+            // restore train information
+            foreach (SignalObject thisSignal in SignalObjects)
+            {
+                if (thisSignal != null)
+                {
+                    thisSignal.RestoreTrains(trains);
+                }
+            }
+
+            // restore correct aspects
+            foreach (SignalObject thisSignal in SignalObjects)
+            {
+                if (thisSignal != null)
+                {
+                    thisSignal.RestoreAspect();
+                }
+            }
+
+        }
+
+        //================================================================================================//
+        ///
+        /// Save game
+        ///
+
+        public void Save(BinaryWriter outf)
+        {
+            foreach (SignalObject thisSignal in SignalObjects)
+            {
+                if (thisSignal != null)
+                {
+                    outf.Write(thisSignal.thisRef);
+                    thisSignal.Save(outf);
+                }
+            }
+            outf.Write(-1);
+
+            outf.Write(TrackCircuitList.Count);
+            foreach (TrackCircuitSection thisSection in TrackCircuitList)
+            {
+                thisSection.Save(outf);
+            }
+        }
+
+        //================================================================================================//
+        /// 
+        /// Gets an array of all the SignalObjects.
+        ///
+
+        internal SignalObject[] SignalObjects
+        {
+            get
+            {
+                return signalObjects;
+            }
+        }
+
+        //================================================================================================//
+        ///
+        /// Read all world files to get signal flags
+        ///
+
+        private void BuildSignalWorld(Simulator simulator, SIGCFGFile sigcfg)
+        {
+
+            // get all filesnames in World directory
+
+            Trace.Write("\n");
+            string WFilePath = simulator.RoutePath + @"\WORLD\";
+            string[] FileEntries = Directory.GetFiles(WFilePath);
+
+            List<TokenID> Tokens = new List<TokenID>();
+            Tokens.Add(TokenID.Signal);
+
+            // loop through files, use only extention .w, skip w+1000000+1000000.w file
+
+            foreach (string fileName in FileEntries)
+            {
+                string[] fparts = fileName.Split('.');
+                string[] fparts2 = fparts[fparts.Length - 2].Split('\\');
+
+                // check if valid file
+
+                bool validFile = true;
+
+                try
+                {
+                    int p = fileName.ToUpper().LastIndexOf("\\WORLD\\W");
+                    int TileX = int.Parse(fileName.Substring(p + 8, 7));
+                    int TileZ = int.Parse(fileName.Substring(p + 15, 7));
+                }
+                catch (Exception)
+                {
+                    validFile = false;
+                }
+
+                if (string.Compare(fparts[fparts.Length - 1], "w") == 0 && validFile)
+                {
+
+                    // read w-file, get SignalObjects only
+
+                    Trace.Write("W");
+                    WFile WFile = new WFile(fileName, Tokens);
+
+                    // loop through all signals
+
+                    foreach (WorldObject worldObject in WFile.Tr_Worldfile)
+                    {
+                        if (worldObject.GetType() == typeof(MSTS.SignalObj))
+                        {
+                            MSTS.SignalObj thisWorldObject = worldObject as MSTS.SignalObj;
+                            SignalWorldObject SignalWorldSignal = new SignalWorldObject(thisWorldObject, sigcfg);
+                            SignalWorldList.Add(SignalWorldSignal);
+                            foreach (KeyValuePair<uint, uint> thisref in SignalWorldSignal.HeadReference)
+                            {
+                                int thisSignalCount = SignalWorldList.Count() - 1;    // Index starts at 0
+                                SignalRefObject thisRefObject = new SignalRefObject(thisSignalCount, thisref.Value);
+                                if (SignalRefList.ContainsKey(thisref.Key))
+                                {
+                                    SignalRefObject DoubleObject = SignalRefList[thisref.Key];
+                                }
+                                else
+                                {
+                                    SignalRefList.Add(thisref.Key, thisRefObject);
+                                }
+                            }
+                        }
                     }
 
-                    int sigObjRef = -99;                                                                 // ref to signalObject index //
+                    // clear worldfile info
 
-                    if (!in_direction_of_travel)
+                    WFile = null;
+                }
+            }
+            Trace.Write("\n");
+
+#if DEBUG_PRINT
+            foreach (KeyValuePair<uint, SignalRefObject> thisref in SignalRefList)
+            {
+                uint headref;
+                uint TBDRef = thisref.Key;
+                SignalRefObject signalRef = thisref.Value;
+
+                SignalWorldObject reffedObject = SignalWorldList[(int)signalRef.SignalWorldIndex];
+                if (!reffedObject.HeadReference.TryGetValue(TBDRef, out headref))
+                {
+                    File.AppendAllText(@"WorldSignalList.txt", "Incorrect Ref : " + TBDRef.ToString() + "\n");
+                    foreach (KeyValuePair<uint, uint> headindex in reffedObject.HeadReference)
                     {
-                        direction = direction == 0 ? 1 : 0;
+                        File.AppendAllText(@"WorldSignalList.txt", "TDB : " + headindex.Key.ToString() +
+                                                " + " + headindex.Value.ToString() + "\n");
+                    }
+                }
+            }
+#endif
+
+        }  //BuildSignalWorld
+
+
+        //================================================================================================//
+        /// 
+        /// Update : perform signal updates
+        /// 
+
+        public void Update(float elapsedClockSeconds)
+        {
+            if (foundSignals > 0)
+            {
+
+                // loop through all signals
+                // update required part
+
+                int totalSignal = signalObjects.Length - 1;
+                int updatestep = (totalSignal / 20) + 1;
+                for (int icount = updatecount; icount < Math.Min(totalSignal, updatecount + updatestep); icount++)
+                {
+                    SignalObject signal = signalObjects[icount];
+                    if (signal != null) // to cater for orphans
+                    {
+                        signal.Update();
+                    }
+                }
+
+                updatecount += updatestep;
+                updatecount = updatecount > totalSignal ? 0 : updatecount;
+            }
+        }  //Update
+
+        //================================================================================================//
+        ///
+        /// Build signal list from TDB
+        ///
+
+        private void BuildSignalList(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat,
+                TDBFile tdbfile, Dictionary<int, int> platformList)
+        {
+
+            //  Determaine the number of signals in the track Objects list
+
+            noSignals = 0;
+            if (TrItems == null)
+                return;                // No track Objects in route.
+            foreach (TrItem trItem in TrItems)
+            {
+                if (trItem != null)
+                {
+                    if (trItem.ItemType == TrItem.trItemType.trSIGNAL)
+                    {
+                        noSignals++;
+                    }
+                    else if (trItem.ItemType == TrItem.trItemType.trSPEEDPOST)
+                    {
+                        SpeedPostItem Speedpost = (SpeedPostItem)trItem;
+                        if (Speedpost.IsLimit)
+                        {
+                            noSignals++;
+                        }
+                    }
+                }
+            }
+
+            //  Only continue if one or more signals in route.
+
+            if (noSignals > 0)
+            {
+                signalObjects = new SignalObject[noSignals];
+                SignalObject.trackNodes = trackNodes;
+                SignalObject.signalObjects = signalObjects;
+                SignalObject.trItems = TrItems;
+
+                for (int i = 1; i < trackNodes.Length; i++)
+                {
+                    ScanSection(TrItems, trackNodes, i, tsectiondat, tdbfile, platformList);
+                }
+
+                // using world cross-reference list, merge heads to single signal
+
+                MergeHeads();
+
+                // rebuild list - clear out null elements
+
+                int firstfree = -1;
+                for (int iSignal = 0; iSignal < SignalObjects.Length; iSignal++)
+                {
+                    if (SignalObjects[iSignal] == null && firstfree < 0)
+                    {
+                        firstfree = iSignal;
+                    }
+                    else if (SignalObjects[iSignal] != null && firstfree >= 0)
+                    {
+                        SignalObjects[firstfree] = SignalObjects[iSignal];
+                        SignalObjects[iSignal] = null;
+                        firstfree++;
+                    }
+                }
+
+                if (firstfree < 0)
+                    firstfree = SignalObjects.Length - 1;
+
+                // restore all links and indices
+
+                for (int iSignal = 0; iSignal < SignalObjects.Length; iSignal++)
+                {
+                    if (SignalObjects[iSignal] != null)
+                    {
+                        SignalObject thisObject = SignalObjects[iSignal];
+                        thisObject.thisRef = iSignal;
+
+                        foreach (SignalHead thisHead in thisObject.SignalHeads)
+                        {
+                            thisHead.mainSignal = thisObject;
+                            var trackItem = TrItems[thisHead.TDBIndex];
+                            if (trackItem is SignalItem)
+                            {
+                                SignalItem sigItem = trackItem as SignalItem;
+                                sigItem.sigObj = thisObject.thisRef;
+                            }
+                            else if (trackItem is SpeedPostItem)
+                            {
+                                SpeedPostItem speedItem = trackItem as SpeedPostItem;
+                                speedItem.sigObj = thisObject.thisRef;
+                            }
+                        }
+                    }
+                }
+
+                foundSignals = firstfree;
+
+            }
+            else
+            {
+                signalObjects = new SignalObject[0];
+            }
+
+        } //BuildSignalList
+
+
+        //================================================================================================//
+        ///
+        /// Split backfacing signals
+        ///
+
+        private void SplitBackfacing(TrItem[] TrItems, TrackNode[] TrackNodes)
+        {
+
+            List<SignalObject> newSignals = new List<SignalObject>();
+            int newindex = foundSignals + 1;
+
+            //
+            // Loop through all signals to check on Backfacing heads
+            //
+
+            for (int isignal = 0; isignal < signalObjects.Length - 1; isignal++)
+            {
+                SignalObject singleSignal = signalObjects[isignal];
+                if (singleSignal != null && singleSignal.isSignal &&
+                                singleSignal.WorldObject != null && singleSignal.WorldObject.Backfacing.Count > 0)
+                {
+
+                    //
+                    // create new signal - copy of existing signal
+                    // use Backfacing flags and reset head indication
+                    //
+
+                    SignalObject newSignal = new SignalObject(singleSignal);
+
+                    newSignal.thisRef = newindex;
+                    newSignal.signalRef = this;
+                    newSignal.trRefIndex = 0;
+
+                    newSignal.WorldObject.FlagsSet = new bool[singleSignal.WorldObject.FlagsSetBackfacing.Length];
+                    singleSignal.WorldObject.FlagsSetBackfacing.CopyTo(newSignal.WorldObject.FlagsSet, 0);
+
+                    for (int iindex = 0; iindex < newSignal.WorldObject.HeadsSet.Length; iindex++)
+                    {
+                        newSignal.WorldObject.HeadsSet[iindex] = false;
                     }
 
                     //
-                    // loop through nodes until :
-                    //  - end of track is found
-                    //  - required item is found
-                    //  - max distance is covered
-                    //  - broken or looped tdb is found
+                    // loop through the list with headreferences, check this agains the list with backfacing heads
+                    // use the TDBreference to find the actual head
                     //
 
-                    while (locstate == 0)
+                    List<int> removeHead = new List<int>();  // list to keep trace of heads which are moved //
+
+                    foreach (KeyValuePair<uint, uint> thisHeadRef in singleSignal.WorldObject.HeadReference)
                     {
-                        if (trackNodes[actindex].TrEndNode)
+                        for (int iindex = singleSignal.WorldObject.Backfacing.Count - 1; iindex >= 0; iindex--)
                         {
-                            locstate = -2;
-                        }
-
-                        if (trackNodes[actindex].TrVectorNode != null)
-                        {
-                            if (direction == 1)
+                            int ihead = singleSignal.WorldObject.Backfacing[iindex];
+                            if (thisHeadRef.Value == ihead)
                             {
-                                lastrefindex = actrefindex == -1 ? 0 : ++actrefindex;
-                            }
-                            else
-                            {
-                                lastrefindex = actrefindex == -1 ? trackNodes[actindex].TrVectorNode.noItemRefs - 1 : --actrefindex;
-                            }
-                        }
-
-                        while (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
-                        {
-                            // find next item within node
-
-                            if (direction == 1)
-                            {
-                                for (int refindex = lastrefindex; refindex < trackNodes[actindex].TrVectorNode.noItemRefs && locstate == 0; refindex++)
+                                for (int ihIndex = 0; ihIndex < singleSignal.SignalHeads.Count; ihIndex++)
                                 {
-                                    if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
-                                                    TrItem.trItemType.trSIGNAL)
+                                    SignalHead thisHead = singleSignal.SignalHeads[ihIndex];
+
+                                    //
+                                    // backfacing head found - add to new signal, set to remove from exising signal
+                                    //
+
+                                    if (thisHead.TDBIndex == thisHeadRef.Key)
                                     {
-                                        thisTrackNode = trackNodes[actindex];
-                                        thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
-                                        SignalItem sigitem = (SignalItem)thisTrItem;
-                                        sigObjRef = sigitem.sigObj;
-                                        locstate = 1;
-                                        lastrefindex = ++refindex;
-                                    }
-                                    else if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
-                                                    TrItem.trItemType.trSPEEDPOST)
-                                    {
-                                        thisTrackNode = trackNodes[actindex];
-                                        thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
-                                        SpeedPostItem spditem = (SpeedPostItem)thisTrItem;
-                                        sigObjRef = spditem.sigObj;
-                                        locstate = 1;
-                                        lastrefindex = ++refindex;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                for (int refindex = lastrefindex; refindex >= 0 && locstate == 0; refindex--)
-                                {
-                                    if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
-                                                    TrItem.trItemType.trSIGNAL)
-                                    {
-                                        thisTrackNode = trackNodes[actindex];
-                                        thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
-                                        SignalItem sigitem = (SignalItem)thisTrItem;
-                                        sigObjRef = sigitem.sigObj;
-                                        locstate = 1;
-                                        lastrefindex = --refindex;
-                                    }
-                                    else if (Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]].ItemType ==
-                                                    TrItem.trItemType.trSPEEDPOST)
-                                    {
-                                        thisTrackNode = trackNodes[actindex];
-                                        thisTrItem = Tritems[trackNodes[actindex].TrVectorNode.TrItemRefs[refindex]];
-                                        SpeedPostItem spditem = (SpeedPostItem)thisTrItem;
-                                        sigObjRef = spditem.sigObj;
-                                        locstate = 1;
-                                        lastrefindex = --refindex;
+                                        removeHead.Add(ihIndex);
+
+                                        thisHead.mainSignal = newSignal;
+                                        newSignal.SignalHeads.Add(thisHead);
                                     }
                                 }
                             }
 
-                            // check if any item found
+                            //
+                            // update flags for available heads
+                            //
 
-                            if (sigObjRef == -99)
-                            {
-                                locstate = -10;
-                            }
-
-                            // check if valid item
-
-                            if (locstate > 0 && (sigObjRef < 0 || signalObjects[sigObjRef] == null))
-                            {
-                                locstate = 0;
-                                sigObjRef = -99;
-                            }
-
-                            // check if not head of same signal
-
-                            if (locstate > 0 && startObj != null)
-                            {
-                                if (sigObjRef == startObj.thisRef)
-                                {
-                                    locstate = 0;
-                                    sigObjRef = -99;
-                                }
-                            }
-
-                            // check if item has correct direction
-
-                            if (locstate > 0)
-                            {
-                                int sigdirection = signalObjects[sigObjRef].revDir;
-
-                                if (in_direction_of_travel)
-                                {
-                                    if (sigdirection != direction)
-                                    {
-                                        locstate = 0;
-                                        sigObjRef = -99;
-                                    }
-                                }
-                                else
-                                {
-                                    if (sigdirection == direction)
-                                    {
-                                        locstate = 0;
-                                        sigObjRef = -99;
-                                    }
-                                }
-                            }
-
-                            // check if item is of correct type
-
-                            if (locstate > 0 && !signalObjects[sigObjRef].isSignalType(fn_type))
-                            {
-                                locstate = 0;
-                                sigObjRef = -99;
-                            }
-
-                            // check if ahead of position
-
-                            if (locstate > 0 && min_distance_check && tdbtraveller != null)
-                            {
-                                float mindistance =
-                                        tdbtraveller.DistanceTo(thisTrackNode, thisTrItem.TileX, thisTrItem.TileZ,
-                                                                thisTrItem.X, thisTrItem.Y, thisTrItem.Z);
-                                if (mindistance < 0)
-                                {
-                                    locstate = 0;
-                                    sigObjRef = -99;
-                                }
-                            }
-
-                            // check if not beyond maximum distance
-
-                            if (locstate > 0 && tdbtraveller != null && maxdistance > 0)
-                            {
-                                float actdistance =
-                                        tdbtraveller.DistanceTo(thisTrackNode, thisTrItem.TileX, thisTrItem.TileZ,
-                                                                thisTrItem.X, thisTrItem.Y, thisTrItem.Z);
-                                if (actdistance > maxdistance)
-                                {
-                                    locstate = -2;
-                                    sigObjRef = -99;
-                                }
-                            }
-                        }
-
-                        // no items in currect node - go to next node
-
-                        if (locstate == -10)
-                        {
-                            locstate = 0;    // set to valid again for next node //
-                        }
-
-                        int nextvalidnode = 0;
-                        while (locstate == 0 && nextvalidnode == 0)
-                        {
-                            NextNode(trackNodes, ref actindex, ref direction, ref prevnodeindex);
-
-                            if (actindex == 0 || actindex > trackNodes.Length || prevnodeindex == actindex)
-                            {
-                                locstate = -3;
-                            }
-
-                            else if (actindex == nodestartindex)
-                            {
-                                locstate = -4;
-                            }
-
-                            else if (trackNodes[actindex].TrEndNode)
-                            {
-                                locstate = -1;
-                            }
-
-                            else if (locstate == 0 && trackNodes[actindex].TrVectorNode != null)
-                            {
-                                nextvalidnode = 1;
-                                actrefindex = -1;
-                            }
+                            newSignal.WorldObject.HeadsSet[ihead] = true;
+                            singleSignal.WorldObject.HeadsSet[ihead] = false;
                         }
                     }
 
-                    return locstate == 1 ? sigObjRef : locstate;
-                }//Find_Next_Object
+                    //
+                    // check if there were actually any backfacing signal heads
+                    //
 
-  //================================================================================================//
-  ///
-  //  Find item from train
-  ///
-  /// <summary>
-  /// getNextObject : to get next object from forward or backward from train
-  /// Parameters :
-  /// TDBTraveller : tdbtraveller linked with train
-  /// ObjectItemInfo.ObjectItemType : required type of object
-  /// bool : forward indication (true = forward, false = backward)
-  /// float : required max. distance; set to -1 if no check required
-  /// ref ObjectItemInfo.ObjectItemFindState : returned state; > 0 : Object Reference; <= 0 : error or warning according to ObjectItemFindState
-  /// Returned parameter :
-  /// ObjectItemInfo : class holding required info on found object; only valid if returned state > 0
-  /// </summary>
+                    if (removeHead.Count > 0)
+                    {
 
-                public ObjectItemInfo getNextObject(Traveller tdbtraveller, ObjectItemInfo.ObjectItemType req_type,
-                                bool forward, float maxdistance, ref ObjectItemInfo.ObjectItemFindState return_state)
+                        //
+                        // remove moved heads from existing signal
+                        //
+
+                        for (int ihead = singleSignal.SignalHeads.Count - 1; ihead >= 0; ihead--)
+                        {
+                            if (removeHead.Contains(ihead))
+                            {
+                                singleSignal.SignalHeads.RemoveAt(ihead);
+                            }
+                        }
+
+                        //
+                        // Check direction of heads to set correct direction for signal
+                        //
+
+                        if (singleSignal.SignalHeads.Count > 0)
+                        {
+                            SignalItem thisItemOld = TrItems[singleSignal.SignalHeads[0].TDBIndex] as SignalItem;
+                            if (singleSignal.direction != thisItemOld.Direction)
+                            {
+                                singleSignal.direction = (int)thisItemOld.Direction;
+                                singleSignal.tdbtraveller.ReverseDirection();                           // reverse //
+                            }
+                        }
+
+                        SignalItem thisItemNew = TrItems[newSignal.SignalHeads[0].TDBIndex] as SignalItem;
+                        if (newSignal.direction != thisItemNew.Direction)
+                        {
+                            newSignal.direction = (int)thisItemNew.Direction;
+                            newSignal.tdbtraveller.ReverseDirection();                           // reverse //
+                        }
+
+                        //
+                        // set correct trRefIndex for this signal, and set cross-reference for all backfacing trRef items
+                        //
+
+                        for (int i = 0; i < TrackNodes[newSignal.trackNode].TrVectorNode.noItemRefs; i++)
+                        {
+                            int TDBRef = TrackNodes[newSignal.trackNode].TrVectorNode.TrItemRefs[i];
+                            if (TrItems[TDBRef] != null)
+                            {
+                                if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
+                                {
+                                    foreach (SignalHead thisHead in newSignal.SignalHeads)
+                                    {
+                                        if (TDBRef == thisHead.TDBIndex)
+                                        {
+                                            SignalItem sigItem = (SignalItem)TrItems[TDBRef];
+                                            sigItem.sigObj = newSignal.thisRef;
+                                            newSignal.trRefIndex = i;
+
+                                            // remove this key from the original signal //
+
+                                            singleSignal.WorldObject.HeadReference.Remove((uint)TDBRef);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //
+                        // reset cross-references for original signal (it may have been set for a backfacing head)
+                        //
+
+                        for (int i = 0; i < TrackNodes[newSignal.trackNode].TrVectorNode.noItemRefs; i++)
+                        {
+                            int TDBRef = TrackNodes[newSignal.trackNode].TrVectorNode.TrItemRefs[i];
+                            if (TrItems[TDBRef] != null)
+                            {
+                                if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
+                                {
+                                    foreach (SignalHead thisHead in singleSignal.SignalHeads)
+                                    {
+                                        if (TDBRef == thisHead.TDBIndex)
+                                        {
+                                            SignalItem sigItem = (SignalItem)TrItems[TDBRef];
+                                            sigItem.sigObj = singleSignal.thisRef;
+                                            singleSignal.trRefIndex = i;
+
+                                            // remove this key from the new signal //
+
+                                            newSignal.WorldObject.HeadReference.Remove((uint)TDBRef);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //
+                        // add new signal to signal list
+                        //
+
+                        newindex++;
+                        newSignals.Add(newSignal);
+
+                        //
+                        // revert existing signal to NULL if no heads remain
+                        //
+
+                        if (singleSignal.SignalHeads.Count <= 0)
+                        {
+                            signalObjects[isignal] = null;
+                        }
+                    }
+                }
+            }
+
+            //
+            // add all new signals to the signalObject array
+            // length of array was set to all possible signals, so there will be space to spare
+            //
+
+            newindex = foundSignals + 1;
+            foreach (SignalObject newSignal in newSignals)
+            {
+                signalObjects[newindex] = newSignal;
+                newindex++;
+            }
+
+            foundSignals = newindex;
+        }
+
+        //================================================================================================//
+        //
+        //  ScanSection : This method checks a section in the TDB for signals or speedposts
+        //
+
+        private void ScanSection(TrItem[] TrItems, TrackNode[] trackNodes, int index,
+                               TSectionDatFile tsectiondat, TDBFile tdbfile, Dictionary<int, int> platformList)
+        {
+            int lastSignal = -1;                // Index to last signal found in path -1 if none
+
+            if (trackNodes[index].TrEndNode)
+                return;
+
+            //  Is it a vector node then it may contain objects.
+            if (trackNodes[index].TrVectorNode != null && trackNodes[index].TrVectorNode.noItemRefs > 0)
+            {
+                // Any obects ?
+                for (int i = 0; i < trackNodes[index].TrVectorNode.noItemRefs; i++)
                 {
-                        int startNode = tdbtraveller.TrackNodeIndex;
-                        int currDir = (int)tdbtraveller.Direction;
-                        SignalObject last_object = null;
+                    if (TrItems[trackNodes[index].TrVectorNode.TrItemRefs[i]] != null)
+                    {
+                        int TDBRef = trackNodes[index].TrVectorNode.TrItemRefs[i];
 
-                        ObjectItemInfo return_item = null;
-
- //
- // preset search info
- //
-
-                        SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [2];
-                        fn_type_array[0] = SignalHead.SIGFN.NORMAL;
-                        fn_type_array[1] = SignalHead.SIGFN.SPEED;
-
-                        SignalHead.SIGFN [] fn_type_signal  = new SignalHead.SIGFN [1];
-                        fn_type_signal[0] = SignalHead.SIGFN.NORMAL;
-                        SignalHead.SIGFN [] fn_type_speed   = new SignalHead.SIGFN [1];
-                        fn_type_speed[0]  = SignalHead.SIGFN.SPEED;
-
-                        float total_distance = 0.00F;
-
-                        ObjectItemInfo.ObjectItemFindState find_state = ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
- //
- // loop until item found or search ended
- //
-
-                        while (find_state == ObjectItemInfo.ObjectItemFindState.NONE_FOUND)
+                        // Track Item is signal
+                        if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIGNAL)
                         {
-                                int newindex = Find_Next_Object(last_object, startNode, currDir, forward, tdbtraveller, true, maxdistance,
-                                        trackDB.TrItemTable, trackDB.TrackNodes, fn_type_array);
+                            SignalItem sigItem = (SignalItem)TrItems[TDBRef];
+                            sigItem.sigObj = foundSignals;
 
-                                if (newindex == -1)
-                                {
-                                        find_state = ObjectItemInfo.ObjectItemFindState.END_OF_TRACK;
-                                }
-                                else if (newindex == -2)
-                                {
-                                        find_state = ObjectItemInfo.ObjectItemFindState.PASSED_MAXDISTANCE;
-                                }
-                                else if (newindex < 0)
-                                {
-                                        find_state = ObjectItemInfo.ObjectItemFindState.TDB_ERROR;
-                                }
-                                else
-                                {
+                            if (sigItem.noSigDirs > 0)
+                            {
+                                SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
+                            }
 
- //
- // check on item found
- // set info according to type
- //
-
-                                        SignalObject found_object = SignalObjects[newindex];
-                                        last_object = found_object;
-                                        bool found_signal = found_object.isSignalType(fn_type_signal);
-                                        bool found_speed  = found_object.isSignalType(fn_type_speed);
-                                        total_distance = found_object.DistanceTo(tdbtraveller);
-
-                                        if (found_signal)
-                                        {
-                                                SignalHead.SIGASP sigaspect = found_object.this_sig_lr(SignalHead.SIGFN.NORMAL);
-                                                if (req_type == ObjectItemInfo.ObjectItemType.SPEEDLIMIT && sigaspect == SignalHead.SIGASP.STOP)
-                                                {
-                                                        find_state = ObjectItemInfo.ObjectItemFindState.PASSED_DANGER;
-                                                }
-                                                else if (req_type == ObjectItemInfo.ObjectItemType.ANY ||
-                                                        req_type == ObjectItemInfo.ObjectItemType.SIGNAL)
-                                                {
-                                                        find_state = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
-                                                        return_item = new ObjectItemInfo('T', 'S', found_object, total_distance);
-                                                }
-                                        }
-                                        else if (found_speed)
-                                        {
-                                                if (req_type == ObjectItemInfo.ObjectItemType.ANY ||
-                                                req_type == ObjectItemInfo.ObjectItemType.SPEEDLIMIT)
-                                                {
-                                                        find_state = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
-                                                        return_item = new ObjectItemInfo('T', 'L', found_object, total_distance);
-                                                }
-                                        }
-                                }
+                            lastSignal = AddSignal(index, i, sigItem, lastSignal,
+                                                    TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
+                            sigItem.sigObj = lastSignal;
                         }
 
-                        return_state = find_state;
-                        return return_item;
-                }//getNextObject(1)
-  //================================================================================================//
-  ///
-  //  Find item from object
-  ///
-  /// <summary>
-  /// getNextObject : to get next object forward from another object
-  /// Parameters :
-  /// SignalObject : object from which to search
-  /// ObjectItemInfo.ObjectItemType : required type of object
-  /// TDBTraveller : tdbtraveller of train linked with request; optional, but required if max. distance is set
-  /// float : required max. distance; set to -1 if no check required
-  /// ref ObjectItemInfo.ObjectItemFindState : returned state; > 0 : Object Reference; <= 0 : error or warning according to ObjectItemFindState
-  /// Returned parameter :
-  /// ObjectItemInfo : class holding required info on found object; only valid if returned state > 0
-  /// </summary>
+        // Track Item is speedpost - check if really limit
+                        else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSPEEDPOST)
+                        {
+                            SpeedPostItem speedItem = (SpeedPostItem)TrItems[TDBRef];
+                            if (speedItem.IsLimit)
+                            {
+                                speedItem.sigObj = foundSignals;
 
-                public ObjectItemInfo getNextObject(SignalObject SignalObj, ObjectItemInfo.ObjectItemType req_type,
-                                Traveller tdbtraveller, float maxdistance, ref ObjectItemInfo.ObjectItemFindState return_state)
+                                lastSignal = AddSpeed(index, i, speedItem, lastSignal,
+                                                 TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
+                                speedItem.sigObj = lastSignal;
+
+                            }
+                        }
+                        else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trPLATFORM)
+                        {
+                            platformList.Add(TDBRef, index);
+                        }
+
+                        else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIDING)
+                        {
+                            platformList.Add(TDBRef, index);
+                        }
+                    }
+                }
+            }
+        }   //ScanSection 
+
+        //================================================================================================//
+        //
+        // Merge Heads
+        //
+
+        public void MergeHeads()
+        {
+            //            foreach (SignalWorldObject thisWorldObject in SignalWorldList)
+            //            {
+            for (int iWorldIndex = 0; iWorldIndex < SignalWorldList.Count; iWorldIndex++)
+            {
+                SignalWorldObject thisWorldObject = SignalWorldList[iWorldIndex];
+                SignalObject MainSignal = null;
+                if (thisWorldObject.HeadReference.Count > 1)
                 {
-                        ObjectItemInfo return_item = null;
-                        SignalObject last_object = SignalObj;
-
- //
- // preset search info
- //
-
-                        SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [2];
-                        fn_type_array[0] = SignalHead.SIGFN.NORMAL;
-                        fn_type_array[1] = SignalHead.SIGFN.SPEED;
-
-                        SignalHead.SIGFN [] fn_type_signal  = new SignalHead.SIGFN [1];
-                        fn_type_signal[0] = SignalHead.SIGFN.NORMAL;
-                        SignalHead.SIGFN [] fn_type_speed   = new SignalHead.SIGFN [1];
-                        fn_type_speed[0]  = SignalHead.SIGFN.SPEED;
-
-                        float total_distance = 0.00F;
-
-                        ObjectItemInfo.ObjectItemFindState find_state = ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
-                        bool maxdist_req = (tdbtraveller != null);
-
- //
- // if item to search from is signal and state is stop, abandone search
- //
-
-                        if (last_object.isSignal)
+                    foreach (KeyValuePair<uint, uint> thisReference in thisWorldObject.HeadReference)
+                    {
+                        if (SignalHeadList.ContainsKey(thisReference.Key))
                         {
-                                SignalHead.SIGASP lastState = last_object.this_sig_lr(SignalHead.SIGFN.NORMAL);
-                                if (lastState == SignalHead.SIGASP.STOP)
+                            if (MainSignal == null)
+                            {
+                                MainSignal = SignalHeadList[thisReference.Key];
+                            }
+                            else
+                            {
+                                SignalObject AddSignal = SignalHeadList[thisReference.Key];
+                                foreach (SignalHead thisHead in AddSignal.SignalHeads)
                                 {
-                                        find_state = ObjectItemInfo.ObjectItemFindState.PASSED_DANGER;
+                                    MainSignal.SignalHeads.Add(thisHead);
+                                    SignalObjects[AddSignal.thisRef] = null;
                                 }
+                            }
                         }
- //
- // loop until object found or search stopped
- //
-
-                        while (find_state == ObjectItemInfo.ObjectItemFindState.NONE_FOUND)
+                        else
                         {
-
-                                int newindex = Find_Next_Object(last_object, 0, 0, true, tdbtraveller, maxdist_req, maxdistance,
-                                        trackDB.TrItemTable, trackDB.TrackNodes, fn_type_array);
-
-                                if (newindex == -1)
-                                {
-                                        find_state = ObjectItemInfo.ObjectItemFindState.END_OF_TRACK;
-                                }
-                                else if (newindex == -2)
-                                {
-                                        find_state = ObjectItemInfo.ObjectItemFindState.PASSED_MAXDISTANCE;
-                                }
-                                else if (newindex < 0)
-                                {
-                                        find_state = ObjectItemInfo.ObjectItemFindState.TDB_ERROR;
-                                }
-                                else
-                                {
-
- //
- // check on item found
- //
-
-                                        SignalObject found_object = SignalObjects[newindex];
-                                        last_object=found_object;
-                                        bool found_signal = found_object.isSignalType(fn_type_signal);
-                                        bool found_speed  = found_object.isSignalType(fn_type_speed);
-                                        total_distance = found_object.DistanceTo(SignalObj.tdbtraveller);
-
- //
- // if signal is found at danger while searching for speedlimit, set to invalid
- //
-
-                                        if (found_signal)
-                                        {
-                                                SignalHead.SIGASP sigaspect = found_object.this_sig_lr(SignalHead.SIGFN.NORMAL);
-                                                if (req_type == ObjectItemInfo.ObjectItemType.SPEEDLIMIT && sigaspect == SignalHead.SIGASP.STOP)
-                                                {
-                                                        find_state = ObjectItemInfo.ObjectItemFindState.PASSED_DANGER;
-                                                }
-                                                else if (req_type == ObjectItemInfo.ObjectItemType.ANY ||
-                                                        req_type == ObjectItemInfo.ObjectItemType.SIGNAL)
-                                                {
-                                                        find_state = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
-                                                        return_item = new ObjectItemInfo('O', 'S', found_object, total_distance);
-                                                }
-                                        }
-                                        else if (found_speed)
-                                        {
-                                                if (req_type == ObjectItemInfo.ObjectItemType.ANY ||
-                                                req_type == ObjectItemInfo.ObjectItemType.SPEEDLIMIT)
-                                                {
-                                                        find_state = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
-                                                        return_item = new ObjectItemInfo('O', 'L', found_object, total_distance);
-                                                }
-                                        }
-                                }
+                            Trace.TraceInformation("Signal found in Worldfile but not in TDB - TDB Index : " +
+                                thisReference.Key.ToString());
+                            MainSignal = null;
                         }
+                    }
+                }
+            }
+        }
 
-                        return_state = find_state;
-                        return return_item;
-                }//getNextObject(2)
+        //================================================================================================//
+        ///
+        /// This method adds a new Signal to the list
+        ///
 
-  //================================================================================================//
+        private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int prevSignal,
+                        TrItem[] TrItems, TrackNode[] trackNodes, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
+        {
+            signalObjects[foundSignals] = new SignalObject();
+            signalObjects[foundSignals].isSignal = true;
+            signalObjects[foundSignals].direction = (int)sigItem.Direction;
+            signalObjects[foundSignals].trackNode = trackNode;
+            signalObjects[foundSignals].trRefIndex = nodeIndx;
+            signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, sigItem);
+            signalObjects[foundSignals].thisRef = foundSignals;
+            signalObjects[foundSignals].signalRef = this;
 
-        }//EndofClass
+            signalObjects[foundSignals].tdbtraveller =
+            new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
+                    sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z,
+            (Traveller.TravellerDirection)(1 - sigItem.Direction));
 
-  //================================================================================================//
-  //
-  //  class SignalObject
-  //
-  //================================================================================================//
+            signalObjects[foundSignals].WorldObject = null;
 
-        public class SignalObject
+            SignalHeadList.Add((uint)TDBRef, signalObjects[foundSignals]);
+
+            foundSignals++;
+            return foundSignals - 1;
+        } // AddSignal
+
+
+        //================================================================================================//
+        ///
+        /// This method adds a new Speedpost to the list
+        ///
+
+        private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int prevSignal,
+                        TrItem[] TrItems, TrackNode[] trackNodes, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
+        {
+            signalObjects[foundSignals] = new SignalObject();
+            signalObjects[foundSignals].isSignal = false;
+            signalObjects[foundSignals].direction = 0;                  // preset - direction not yet known //
+            signalObjects[foundSignals].trackNode = trackNode;
+            signalObjects[foundSignals].trRefIndex = nodeIndx;
+            signalObjects[foundSignals].AddHead(nodeIndx, TDBRef, speedItem);
+            signalObjects[foundSignals].thisRef = foundSignals;
+            signalObjects[foundSignals].signalRef = this;
+
+            signalObjects[foundSignals].tdbtraveller =
+            new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
+                    speedItem.TileX, speedItem.TileZ, speedItem.X, speedItem.Z,
+                    (Traveller.TravellerDirection)signalObjects[foundSignals].direction);
+
+            double delta_angle = signalObjects[foundSignals].tdbtraveller.RotY - ((Math.PI / 2) - speedItem.Angle);
+            float delta_float = (float)delta_angle;
+            MSTSMath.M.NormalizeRadians(ref delta_float);
+            if (Math.Abs(delta_float) < (Math.PI / 2))
+            {
+                signalObjects[foundSignals].direction = signalObjects[foundSignals].tdbtraveller.Direction == 0 ? 1 : 0;
+            }
+            else
+            {
+                signalObjects[foundSignals].direction = (int)signalObjects[foundSignals].tdbtraveller.Direction;
+                signalObjects[foundSignals].tdbtraveller.ReverseDirection();
+            }
+
+#if DEBUG_PRINT
+            string dumpstring = "\nPlaced : ";
+            dumpstring = String.Concat(dumpstring, " at : ");
+            dumpstring = String.Concat(dumpstring, speedItem.TileX.ToString(), " ");
+            dumpstring = String.Concat(dumpstring, speedItem.TileZ.ToString(), ":");
+            dumpstring = String.Concat(dumpstring, speedItem.X.ToString(), " ");
+            dumpstring = String.Concat(dumpstring, speedItem.Z.ToString(), " ");
+            dumpstring = String.Concat(dumpstring, "; angle - track : ");
+            dumpstring = String.Concat(dumpstring, speedItem.Angle.ToString(), ":",
+                            signalObjects[foundSignals].tdbtraveller.RotY.ToString());
+            dumpstring = String.Concat(dumpstring, "; delta : ", delta_angle.ToString());
+            dumpstring = String.Concat(dumpstring, "; dir : ", signalObjects[foundSignals].direction.ToString());
+            File.AppendAllText(@"C:\temp\speedpost.txt", dumpstring + "\n");
+#endif
+
+            signalObjects[foundSignals].WorldObject = null;
+            foundSignals++;
+            return foundSignals - 1;
+        } // AddSpeed
+
+        //================================================================================================//
+        //
+        //      AddCFG : This method adds the sigcfg reference to each signal object.
+        //
+
+        private void AddCFG(SIGCFGFile sigCFG)
+        {
+            foreach (SignalObject signal in signalObjects)
+            {
+                if (signal != null)
+                {
+                    if (signal.isSignal)
+                    {
+                        signal.SetSignalType(sigCFG);
+                    }
+                }
+            }
+        }//AddCFG
+
+        //================================================================================================//
+        //
+        //     AddWorldInfo : add info from signal world objects to signal
+        //
+
+        private void AddWorldInfo()
         {
 
-                public enum BLOCKSTATE
+            // loop through all signal and all heads
+
+            foreach (SignalObject signal in signalObjects)
+            {
+                if (signal != null)
                 {
-                        CLEAR,                                        // Block ahead is clear
-                        OCCUPIED,                                // Block ahead is occupied by one or more wagons/locos
-                        JN_OBSTRUCTED                // Block ahead is impassable due to the state of a switch
-                }
-
-                public Signals signalRef;               // reference to overlaying Signal class
-                public static SignalObject[] signalObjects;
-                public static TrackNode[] trackNodes;
-                public static TrItem[] trItems;
-                public List<SignalHead> SignalHeads = new List<SignalHead>();
-                public int trackNode;                   // Track node which contains this signal
-                public int nextNode;                    // Next Track node which follows this signal
-                public int trRefIndex;                  // Index to TrItemRef within Track Node 
-                public int thisRef;                     // This signal's reference.
-                public int direction;                   // Direction facing on track
-                public int draw_state;
-                public bool enabled = true;
-                public bool isJunction = false;         // Indicates whether the signal controls a junction.
-                public bool canUpdate = true;           // Signal can be updated automatically
-                public bool isAuto = true;
-                public bool isSignal = true;            // if signal, false if speedpost //
-                public bool useScript = false;
-                public BLOCKSTATE blockState = BLOCKSTATE.CLEAR;
-                public Signal.PERMISSION hasPermission = Signal.PERMISSION.DENIED;  // Permission to pass red signal
-                public int nextSignal = -2;             // Index to next signal. -1 if none -2 indeterminate
-                public int prevSignal = -2;             // Index to previous signal -1 if none -2 indeterminate
-                public SignalWorldObject WorldObject;   // Signal World Object information
-                public int [] sigfound = new int [(int) SignalHead.SIGFN.UNKNOWN];
-                public Traveller tdbtraveller;       // TDB traveller to determine distance between objects
-                public uint SignalNumClearAhead = 0;    // Overall maximum SignalNumClearAhead over all heads
-
-  //================================================================================================//
-  ///
-  //  Constructor for empty item
-  ///
-  
-                public SignalObject()
-                {
-                }
-
-#if DUMP_DISPATCHER
-                public void Dump(StringBuilder sta, Traveller t)
-                {
-                    sta.AppendFormat("|trackNode|{0}\r\n", trackNode);
-                    if (t != null) sta.AppendFormat("|DistanceTo|{0}\r\n", DistanceTo(t));
-                    sta.AppendFormat("|enabled|{0}\r\n", enabled);
-                    if (WorldObject != null && WorldObject.FlagsSet != null)
-                        sta.AppendFormat("|sigfeat|{0}\r\n", string.Join(":", WorldObject.FlagsSet.Select<bool, string>(f => f.ToString()).ToArray()) );
-                    sta.AppendFormat("|block_state|{0}\r\n", blockState);
-                    sta.AppendFormat("|block_state()|{0}\r\n", block_state());
-                    sta.AppendFormat("|this_sig_lr()|{0}\r\n", this_sig_lr(SignalHead.SIGFN.NORMAL));
-                    sta.AppendFormat("|nextSignal|{0}\r\n", nextSignal);
-
-                    foreach (SignalHead sh in SignalHeads)
+                    foreach (SignalHead head in signal.SignalHeads)
                     {
-                        sh.Dump(sta);
+
+                        // get reference using TDB index from head
+
+                        uint TDBRef = Convert.ToUInt32(head.TDBIndex);
+                        SignalRefObject thisRef;
+
+                        if (SignalRefList.TryGetValue(TDBRef, out thisRef))
+                        {
+                            uint signalIndex = thisRef.SignalWorldIndex;
+                            if (signal.WorldObject == null)
+                            {
+                                signal.WorldObject = SignalWorldList[(int)signalIndex];
+                            }
+                            SignalRefList.Remove(TDBRef);
+                        }
                     }
                 }
-#endif
-  //================================================================================================//
-  ///
-  //  Constructor for Copy 
-  ///
-  
-                public SignalObject(SignalObject copy)
-                {
-                         signalRef            = copy.signalRef;
-                         trackNode            = copy.trackNode;
-                         nextNode             = copy.nextNode;
-                         direction            = copy.direction;
-                         draw_state           = copy.draw_state;
-                         enabled              = copy.enabled;
-                         isJunction           = copy.isJunction;
-                         canUpdate            = copy.canUpdate;
-                         isAuto               = copy.isAuto;
-                         isSignal             = copy.isSignal;
-                         useScript            = copy.useScript;
-                         blockState           = copy.blockState;
-                         hasPermission        = copy.hasPermission;
-                         nextSignal           = copy.nextSignal;
-                         prevSignal           = copy.prevSignal;
-                         WorldObject          = new SignalWorldObject(copy.WorldObject);
-                         tdbtraveller         = new Traveller(copy.tdbtraveller);
-                         SignalNumClearAhead  = copy.SignalNumClearAhead;
+            }
 
-                         sigfound = new int [copy.sigfound.Length];
-                         copy.sigfound.CopyTo(sigfound, 0);
-                }
+        }//AddWorldInfo
 
-  //================================================================================================//
-  ///
-  //  revDir : reverse direction
-  //  Needed because signal faces train!
-  ///
-                public int revDir
-                {
-                        get { return direction == 0 ? 1 : 0; }
-                }//revDir
+        //================================================================================================//
+        ///
+        //  FindByTrItem : find required signalObj + signalHead
+        ///
 
-  //================================================================================================//
-  ///
-  // BLOCKSTATE : get blockstate
-  ///
-
-                public BLOCKSTATE block_state()
-                {
-                    int trainId = Dispatcher.Reservations[trackNode];
-                    
-                    if (Program.Simulator.Activity == null && nextSignal == -1)
-                    {
-                        return BLOCKSTATE.JN_OBSTRUCTED;
-                    }
-                    
-                    if (trainId >= 0)
-                    {
-                        
-                        Traveller traveller=null;
-						if (trainId == 0)
-							traveller = new Traveller(Program.Simulator.PlayerLocomotive.Train.dFrontTDBTraveller);
-						else if (trainId > 100000)
-						{
-							foreach (var t in Program.Simulator.Trains)
-							{
-								if (t.Number == trainId - 100000) { traveller = new Traveller(t.dFrontTDBTraveller); break; }
-							}
-						}
-						else 
-                            traveller = new Traveller(Program.Simulator.AI.AITrainDictionary[trainId].dFrontTDBTraveller);
-
-						if (traveller == null) return BLOCKSTATE.OCCUPIED;//hopefully this will not be the case
-                        while (traveller.TrackNodeIndex != trackNode && traveller.NextSection()) ;
-                        if (traveller.TrackNodeIndex != trackNode)
-                        {
-                            if (!Train.IsUnderObserving(thisRef))
-                                return BLOCKSTATE.OCCUPIED;
-                        }
-                        else
-                        {
-                            if (this.revDir != (int)traveller.Direction)
-                                return BLOCKSTATE.OCCUPIED;
-                        }
-
-                        // More logic to allow enter into straight area
-                        int nextreservid = -2;
-                        int nextSig = nextSignal;
-                        int nextNode = -2;
-                        int nextnextNode = -2;
-                        int nextheads = 0;
-
-                        if (nextSig > 0)
-                        {
-                            SignalObject nextSignalObject = signalObjects[nextSig];
-                            nextheads = nextSignalObject.SignalHeads.Count;
-
-                            nextNode = nextSignalObject.trackNode;
-                            nextreservid = Dispatcher.Reservations[nextNode];
-
-                            nextSig = nextSignalObject.GetNextSignal();
-                            if (nextSig > 0)
-                            {
-                                nextSignalObject = signalObjects[nextSig];
-                                nextnextNode = nextSignalObject.trackNode;
-                            }
-                        }
-                        
-                        if (trainId != nextreservid && nextreservid > -2)
-                        {
-                            if (nextNode != -2 && nextNode != nextnextNode)
-                                return BLOCKSTATE.OCCUPIED;
-                        }
-                    }   
-                    return blockState;
-                    //return BLOCKSTATE.OCCUPIED;
-                }//BLOCKSTATE
-
-  //================================================================================================//
-  ///
-  // isSignalNormal : Returns true if at least one signal head is type normal.
-  ///
-
-                public bool isSignalNormal()
-                {
-                        foreach (SignalHead sigHead in SignalHeads)
-                        {
-                                if (sigHead.sigFunction == SignalHead.SIGFN.NORMAL) return true;
-                        }
-                        return false;
-                }
-
-  //================================================================================================//
-  ///
-  // isSignalType : Returns true if at least one signal head is of required type
-  ///
-
-                public bool isSignalType(SignalHead.SIGFN [] reqSIGFN)
-                {
-                        foreach (SignalHead sigHead in SignalHeads)
-                        {
-                                if (reqSIGFN.Contains(sigHead.sigFunction)) return true;
-                        }
-                        return false;
-                }
-
-  //================================================================================================//
-  ///
-  // next_sig_mr : returns most restrictive state of next signal of required type
-  ///
-  ///
-
-                public SignalHead.SIGASP next_sig_mr(SignalHead.SIGFN fn_type)
-                {
-
-                        SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
-                        fn_type_array [0] = fn_type;
-
-                        nextSignal = sigfound[(int) fn_type];
-                        if (nextSignal < 0)
-                        {
-                                nextSignal = SONextSignal(fn_type_array);
-                        }
-                        if (nextSignal >= 0)
-                        {
-                                return signalObjects[nextSignal].this_sig_mr(fn_type);
-                        }
-                        else
-                        {
-                                return SignalHead.SIGASP.STOP;
-                        }
-                }
-
-  //================================================================================================//
-  ///
-  // next_sig_lr : returns least restrictive state of next signal of required type
-  ///
-  ///
-
-                public SignalHead.SIGASP next_sig_lr(SignalHead.SIGFN fn_type)
-                {
-                        SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
-                        fn_type_array [0] = fn_type;
-
-                        nextSignal = sigfound[(int) fn_type];
-                        if (nextSignal < 0)
-                        {
-                                nextSignal = SONextSignal(fn_type_array);
-                                sigfound[(int) fn_type] = nextSignal;
-                        }
-                        if (nextSignal >= 0)
-                        {
-                                return signalObjects[nextSignal].this_sig_lr(fn_type);
-                        }
-                        else
-                        {
-                                return SignalHead.SIGASP.STOP;
-                        }
-                }
-
-  //================================================================================================//
-  ///
-  //  NextSignal : Finds the next signal down the line from this one.
-  //  Returns -1 if one cannot be found.
-  ///
-  /// #TODO# : limit search to reserved section
-
-                private int SONextSignal(SignalHead.SIGFN [] fn_type)
-                {
-                        int sigIndex = this.signalRef.Find_Next_Object(this, -1, -1,
-                                               true, null, false, -1, trItems, trackNodes, fn_type);
-
-                        return sigIndex<0 ? -1 : sigIndex;
-                }//NextSignal
-
-  //================================================================================================//
-  //
-  // NextNode : Returns the next node and direction in the TDB
-  //
-
-                public static void NextNode(ref int node, ref int direction, ref int prevnode)
-                {
-                    try
-                    {
-                        if (trackNodes[node] != null && trackNodes[node].TrVectorNode != null)
-                        {
-                            if (direction == 0)
-                            {
-                                prevnode = node;
-                                direction = trackNodes[node].TrPins[0].Direction;
-                                node = trackNodes[node].TrPins[0].Link;
-                            }
-                            else
-                            {
-                                prevnode = node;
-                                direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                            }
-                        }
-                        else if (trackNodes[node] != null && trackNodes[node].TrJunctionNode != null)
-                        {
-                            if (direction == 0)
-                            {
-                                if (trackNodes[node].Inpins > 1)
-                                {
-                                    if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
-                                    {
-                                        prevnode = node;
-                                        direction = trackNodes[node].TrPins[0].Direction;
-                                        node = trackNodes[node].TrPins[0].Link;
-                                    }
-                                    else
-                                    {
-                                        prevnode = node;
-                                        direction = trackNodes[node].TrPins[1].Direction;
-                                        node = trackNodes[node].TrPins[1].Link;
-                                    }
-                                }
-                                else
-                                {
-                                    if (prevnode == -1 ||
-                                        (trackNodes[node].TrJunctionNode.SelectedRoute == 0 &&
-                                        trackNodes[node].TrPins[trackNodes[node].Inpins].Link == prevnode) ||
-                                        (trackNodes[node].TrJunctionNode.SelectedRoute == 1 &&
-                                        trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link == prevnode))
-                                    {
-                                        prevnode = node;
-                                        direction = trackNodes[node].TrPins[0].Direction;
-                                        node = trackNodes[node].TrPins[0].Link;
-                                    }
-                                    else
-                                    {
-                                        prevnode = node;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (trackNodes[node].Outpins > 1)
-                                {
-                                    if (trackNodes[node].TrJunctionNode.SelectedRoute == 0)
-                                    {
-                                        prevnode = node;
-                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                                    }
-                                    else
-                                    {
-                                        prevnode = node;
-                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Direction;
-                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins + 1].Link;
-                                    }
-                                }
-                                else
-                                {
-                                    if (prevnode == -1 ||
-                                        (trackNodes[node].TrJunctionNode.SelectedRoute == 0 &&
-                                        trackNodes[node].TrPins[0].Link == prevnode) ||
-                                        (trackNodes[node].TrJunctionNode.SelectedRoute == 1 &&
-                                        trackNodes[node].TrPins[1].Link == prevnode))
-                                    {
-                                        prevnode = node;
-                                        direction = trackNodes[node].TrPins[trackNodes[node].Inpins].Direction;
-                                        node = trackNodes[node].TrPins[trackNodes[node].Inpins].Link;
-                                    }
-                                    else
-                                    {
-                                        prevnode = node;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            prevnode = node = 0;
-                        }
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(error);
-                        prevnode = node;
-                    }
-                }//NextNode
-
-  //================================================================================================//
-  //
-  // opp_sig_mr : not yet implemented
-  //
-
-                public SignalHead.SIGASP opp_sig_mr(SignalHead.SIGFN fn_type)
-                {
-                        return SignalHead.SIGASP.STOP;
-                }//opp_sig_mr
-
-  //================================================================================================//
-  //
-  // opp_sig_lr : not yet implemented
-  //
-
-                public SignalHead.SIGASP opp_sig_lr(SignalHead.SIGFN fn_type)
-                {
-                        return SignalHead.SIGASP.STOP;
-                }//opp_sig_lr
-
-  //================================================================================================//
-  //
-  // this_sig_mr : Returns the most restrictive state of this signal's heads of required type
-  //
-
-                public SignalHead.SIGASP this_sig_mr(SignalHead.SIGFN fn_type)
-                {
-                        SignalHead.SIGASP sigAsp = SignalHead.SIGASP.UNKNOWN;
-                        foreach (SignalHead sigHead in SignalHeads)
-                        {
-                                if (sigHead.sigFunction == fn_type && sigHead.state < sigAsp)
-                                {
-                                        sigAsp = sigHead.state;
-                                }
-                        }
-                        if (sigAsp == SignalHead.SIGASP.UNKNOWN)
-                        {
-                                return SignalHead.SIGASP.STOP;
-                        }
-                        else
-                        {
-                                return sigAsp;
-                        }
-                }//this_sig_mr
-
-  //================================================================================================//
-  //
-  // this_sig_lr : Returns the least restrictive state of this signal's heads of required type
-  //
-                public SignalHead.SIGASP this_sig_lr(SignalHead.SIGFN fn_type)
-                {
-                        SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
-                        bool sigAspSet = false;
-                        foreach (SignalHead sigHead in SignalHeads)
-                        {
-                                if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
-                                {
-                                        sigAsp = sigHead.state;
-                                        sigAspSet = true;
-                                }
-                        }
-                        if (sigAspSet)
-                        {
-                                return sigAsp;
-                        }
-                        else if (fn_type == SignalHead.SIGFN.NORMAL)
-                        {
-                                return SignalHead.SIGASP.CLEAR_2;
-                        }
-                        else
-                        {
-                                return SignalHead.SIGASP.STOP;
-                        }
-                }//this_sig_lr
-
-  //================================================================================================//
-  //
-  // this_sig_speed : Returns the speed related to the least restrictive aspect (for normal signal)
-  //
-
-                public ObjectSpeedInfo this_sig_speed(SignalHead.SIGFN fn_type)
-                {
-                        SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
-                        ObjectSpeedInfo set_speed = new ObjectSpeedInfo(-1, -1, false);
-
-                        foreach (SignalHead sigHead in SignalHeads)
-                        {
-                                if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
-                                {
-                                        sigAsp = sigHead.state;
-                                        int AspIndex = Convert.ToInt32(sigAsp);
-                                        set_speed = sigHead.speed_info[AspIndex];
-                                }
-                        }
-                        return set_speed;
-                }//this_sig_speed
-
-  //================================================================================================//
-  //
-  // this_lim_speed : Returns the lowest allowed speed (for speedpost and speed signal)
-  //
-
-                public ObjectSpeedInfo this_lim_speed(SignalHead.SIGFN fn_type)
-                {
-                        SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
-                        ObjectSpeedInfo set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false);
-
-                        foreach (SignalHead sigHead in SignalHeads)
-                        {
-                                if (sigHead.sigFunction == fn_type)
-                                {
-                                        sigAsp = sigHead.state;
-                                        int AspIndex = Convert.ToInt32(sigAsp);
-                                        ObjectSpeedInfo this_speed = sigHead.speed_info[AspIndex];
-                                        if (this_speed != null)
-                                        {
-                                        if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
-                                        {
-                                                set_speed.speed_pass = this_speed.speed_pass;
-                                                set_speed.speed_flag = 0;
-                                        }
-
-                                        if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
-                                        {
-                                                set_speed.speed_freight = this_speed.speed_freight;
-                                                set_speed.speed_flag = 0;
-                                        }
-                                        }
-
-                                }
-                        }
-
-                        if (set_speed.speed_pass    > 1E9f) set_speed.speed_pass    = -1;
-                        if (set_speed.speed_freight > 1E9f) set_speed.speed_freight = -1;
-
-                        return set_speed;
-                }//this_lim_speed
-//================================================================================================//
-  //
-  // route_set : check if required route is set
-  //
-
-                public bool route_set (int req_mainnode)
-                {
-                    bool rs;
-
-                        int thisreservid = Dispatcher.Reservations[trackNode];
-                        int nextreservid = Dispatcher.Reservations[req_mainnode];
-
-                        rs = (thisreservid >= 0 && thisreservid == nextreservid);
-
-                        int ctn = this.trackNode;
-                        int ptn = -1;
-                        int dir = revDir;
-                        while (ctn != ptn && ctn != req_mainnode)
-                        {
-                            NextNode(ref ctn, ref dir, ref ptn);
-                        }
-                        rs |= (ctn == req_mainnode);
-
-                        return rs;
-                }
-
-#if CHECKED_ROUTE_SET
-                //================================================================================================//
-  //
-  // route_set : check if required route is set
-  //
-
-                public bool route_set ()
-                {
-                    return nextSignal != -1;
-                }
-#endif
-
-                //================================================================================================//
-  //
-  // Update : Perform the update for each head on this signal.
-  //
-
-			//a signal maybe forced by the dispatcher, need to release it if it is 300 seconds ago (if server set auto switch), or a train has passed.
-			//this function will only be checked when forceTime > 0, which is when a manual set is chosen
-				private bool ReleaseLock()
-				{
-					if (Program.Simulator.GameTime > forcedTime + 300 && MultiPlayer.MPManager.Instance().AllowedManualSwitch) { enabled = false; canUpdate = true; forcedTime = 0; return true; }
-					try
-					{
-						var minimumDist = 1000f;
-						var predicted = 50f;
-						var totalDist = minimumDist;
-
-						var item = Program.Simulator.TDB.TrackDB.TrItemTable[this.trItem];
-						var sigLoc = new WorldLocation(item.TileX, item.TileZ, item.X, item.Y, item.Z);
-						foreach (var train in Program.Simulator.Trains)
-						{
-							if (!WorldLocation.Within(sigLoc, train.FrontTDBTraveller.WorldLocation, totalDist) && !WorldLocation.Within(sigLoc, train.RearTDBTraveller.WorldLocation, totalDist))
-								continue;
-
-							if (Math.Abs(train.SpeedMpS) < 0.0001) continue;//stopped, not need to worry
-							predicted = 50f;
-							if (predicted > train.Length / 2) predicted = train.Length / 2;
-							var speedMpS = train.SpeedMpS;
-							// Distances forward from the front and rearwards from the rear.
-							var frontDist = this.DistanceTo(train.FrontTDBTraveller);
-							if (frontDist < 0)
-							{
-								frontDist = -this.DistanceTo(new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward));
-								if (frontDist > 0)
-								{
-									// Train cannot find crossing.
-									continue;
-								}
-							}
-							var rearDist = -frontDist - train.Length;
-
-							if (speedMpS < 0)
-							{
-								// Train is reversing; swap distances so frontDist is always the front.
-								var temp = rearDist;
-								rearDist = frontDist;
-								frontDist = temp;
-							}
-
-							if (frontDist <= 1 && rearDist <= predicted)
-							{
-								//System.Console.WriteLine(" get back");
-								this.canUpdate = true; forcedTime = 0; this.enabled = true; this.Update(); return true;
-							}
-						}
-					}
-					catch { }
-					return false;
-				}
-
-				public double forcedTime = 0;
-
-                public void Update()
-                {
-					if (forcedTime > 1) ReleaseLock();//forced by the dispatcher, will try to release the lock. forcedTime will only be set to be > 0 in MP mode
-                        if (canUpdate)
-                        {
-
-  // clear next signal flags
-
-                                for (int isig = 0 ; isig < sigfound.Length; isig++)
-                                {
-                                        sigfound[isig] = -1;
-                                }
-
-  // get next normal signal
-
-                                int nextreservid = -2;
-                                int nextSignal = GetNextSignal();
-                                nextNode = -2;
-
-                                if (nextSignal > 0)
-                                {
-                                        SignalObject nextSignalObject = signalObjects[nextSignal];
-                                        sigfound[(int) SignalHead.SIGFN.NORMAL]=nextSignal;
-
-                                        nextNode   = nextSignalObject.trackNode;
-                                        nextreservid = Dispatcher.Reservations[nextNode];
-                                }
-
-  // set enabled
-
-                                if (Program.Simulator.Activity == null && !MultiPlayer.MPManager.IsMultiPlayer())
-                                {
-                                    enabled = true;
-                                }
-                                else
-                                {
-                                    int thisreservid = Dispatcher.Reservations[trackNode];
-                                    if (thisreservid >= 0)
-                                    {
-                                        // By GeorgeS
-                                        if (nextreservid < -1)
-                                        {
-                                            enabled = true;
-                                        }
-                                        else
-                                        {
-                                            enabled = (thisreservid == nextreservid || trackNode == signalObjects[nextSignal].trackNode);
-
-                                            if (!enabled)
-                                            {
-                                                int trainId = Dispatcher.Reservations[trackNode];
-
-                                                if (trainId >= 0)
-                                                {
-                                                    int ctn = this.trackNode;
-                                                    int ptn = -1;
-                                                    int dir = revDir;
-                                                    while (ctn != ptn && ctn != nextNode)
-                                                    {
-                                                        NextNode(ref ctn, ref dir, ref ptn);
-                                                    }
-                                                    enabled = ctn == nextNode;
-
-                                                    //if (!enabled)
-                                                    //{
-                                                    //    enabled = Train.IsUnderObserving(thisRef);
-                                                    //}
-
-                                                }
-                                            }
-
-                                        }
-                                    }
-                                    else
-                                    {
-										if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.Instance().PreferGreen) enabled = true; //in MP, wants green always
-										else enabled = false;
-                                    }
-                                }
-  // update all heads
-
-                                foreach (SignalHead sigHead in SignalHeads)
-                                {
-                                        sigHead.Update();
-                                }
-                        }
-
-                } // Update
-
-  //================================================================================================//
-  //
-  // DistanceTo : Returns the distance from the TDBtraveller to this signal. 
-  //
-
-                public float DistanceTo(Traveller tdbTraveller)
-                {
-                        int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
-                        return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z);
-                }//DistanceTo
-
-  //================================================================================================//
-  //
-  // DistanceToRef : Returns the distance from the TDBtraveller to this signal and sets the Traveller at the signal. 
-  //
-
-                public float DistanceToRef(ref Traveller tdbTraveller)
-                {
-                        int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
-                        return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z, out tdbTraveller);
-                }//DistanceTo
-
-//================================================================================================//
-  //
-  // ObjectDistance : Returns the distance from this object to the next object
-  //
-
-                public float ObjectDistance(SignalObject nextObject)
-                {
-                        int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
-                        int nextTrItem = trackNodes[nextObject.trackNode].TrVectorNode.TrItemRefs[nextObject.trRefIndex];
-                        return this.tdbtraveller.DistanceTo(
-                                                trItems[nextTrItem].TileX, trItems[nextTrItem].TileZ, 
-                                                trItems[nextTrItem].X, trItems[nextTrItem].Y, trItems[nextTrItem].Z);
-                }//ObjectDistance
-
-  //================================================================================================//
-  //
-  // isSignalHead : Check Whether signal head is for this signal.
-  //
-
-                public bool isSignalHead(SignalItem signalItem)
-                {
-  // Tritem for this signal
-                        SignalItem thisSignalItem = (SignalItem)trItems[this.trItem];
-  // Same Tile
-                        if (signalItem.TileX == thisSignalItem.TileX && signalItem.TileZ == thisSignalItem.TileZ)
-                        {
-  // Same position
-                                if ((Math.Abs(signalItem.X - thisSignalItem.X) < 0.01) &&
-                                    (Math.Abs(signalItem.Y - thisSignalItem.Y) < 0.01) &&
-                                    (Math.Abs(signalItem.Z - thisSignalItem.Z) < 0.01))
-                                {
-                                        return true;
-                                }
-                        }
-                        return false;
-                }//isSignalHead
-
-  //================================================================================================//
-  //
-  // AddHead : Adds a head to this signal.
-  //
-
-                public void AddHead(int trItem, int TDBRef, SignalItem sigItem)
-                {
-  // create SignalHead
-                        SignalHead head = new SignalHead(this, trItem, TDBRef, sigItem);
-
-  // set junction link
-                        if (head.TrackJunctionNode != 0)
-                        {
-                                if (head.JunctionPath == 0)
-                                {
-                                    head.JunctionMainNode =
-                                       trackNodes[head.TrackJunctionNode].TrPins[trackNodes[head.TrackJunctionNode].Inpins].Link;
-                                }
-                                else
-                                {
-                                    head.JunctionMainNode =
-                                       trackNodes[head.TrackJunctionNode].TrPins[trackNodes[head.TrackJunctionNode].Inpins + 1].Link;
-                                }
-                        }
-                        SignalHeads.Add(head);
-
-                }//AddHead (signal)
-
-  //================================================================================================//
-  //
-  // AddHead : Adds a head to this signal (for speedpost).
-  //
-
-                public void AddHead(int trItem, int TDBRef, SpeedPostItem speedItem)
-                {
-  // create SignalHead
-                        SignalHead head = new SignalHead(this, trItem, TDBRef, speedItem);
-                        SignalHeads.Add(head);
-
-                }//AddHead (speedpost)
-
-  //================================================================================================//
-  //
-  // trItem : Gets the correspnding TrItem from the TDB.
-  //
-
-                public int trItem
-                {
-                        get
-                        {
-                                return trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
-                        }
-                }//trItem
-
-  //================================================================================================//
-  //
-  // SetSignalType : Sets the signal type from the sigcfg file for each signal head.
-  //
-
-                public void SetSignalType(SIGCFGFile sigCFG)
-                {
-                        foreach (SignalHead sigHead in SignalHeads)
-                        {
-                                sigHead.SetSignalType(trItems, sigCFG);
-                        }
-                }//SetSignalType
-
-  //================================================================================================//
-  //
-  // SetSignalState : set state 
-  //
-
-                public void SetSignalState(Signal.SIGNALSTATE state)
-                {
-                        switch (state)
-                        {
-                                case Signal.SIGNALSTATE.STOP:
-                                        canUpdate = false;
-                                        foreach (SignalHead sigHead in SignalHeads)
-                                        {
-                                                sigHead.state = SignalHead.SIGASP.STOP;
-                                        }
-                                        break;
-                                case Signal.SIGNALSTATE.CLEAR:
-                                        canUpdate = true;
-                                        break;
-                                case Signal.SIGNALSTATE.UNKNOWN:
-                                        break;
-                                default:
-                                        break;
-                        }
-                } // SetSignalState
-
-  //================================================================================================//
-  //
-  // GetNextSignal : get next NORMAL signal (for train aspect)
-  //
-
-                public int GetNextSignal()
-                {
-                        SignalHead.SIGFN [] fn_type_array  = new SignalHead.SIGFN [1];
-                        fn_type_array [0] = SignalHead.SIGFN.NORMAL;
-                        nextSignal = SONextSignal(fn_type_array);
-                        return nextSignal;
-                }//GetNextSignal
-
-  //================================================================================================//
-  //
-  // ??????
-  // #TODO# : check intention of this routine !!!
-  //
-
-                public void TrackStateChanged()
-                {
-                        //if(isJunction) nextSignal=-2;
-                        nextSignal = -2;
-                }//TrackStateChanged
-
-  //================================================================================================//
-  //
-  // TranslateTMAspect : Gets the display aspect for the track monitor.
-  //
-
-                public TrackMonitorSignalAspect TranslateTMAspect(SignalHead.SIGASP SigState)
-                {
-                        switch (SigState)
-                        {
-                                case SignalHead.SIGASP.STOP:
-                                        if (hasPermission == Signal.PERMISSION.GRANTED)
-                                                return TrackMonitorSignalAspect.Warning;
-                                        else
-                                                return TrackMonitorSignalAspect.Stop;
-                                case SignalHead.SIGASP.STOP_AND_PROCEED:
-                                case SignalHead.SIGASP.RESTRICTING:
-                                                return TrackMonitorSignalAspect.Warning;
-                                case SignalHead.SIGASP.APPROACH_1:
-                                case SignalHead.SIGASP.APPROACH_2:
-                                case SignalHead.SIGASP.APPROACH_3:
-                                        return TrackMonitorSignalAspect.Warning;
-                                case SignalHead.SIGASP.CLEAR_1:
-                                case SignalHead.SIGASP.CLEAR_2:
-                                        return TrackMonitorSignalAspect.Clear;
-                                default:
-                                        return TrackMonitorSignalAspect.None;
-                        }
-                } // GetMonitorAspect
-
-        }  // SignalObject
-
-  //================================================================================================//
-  //
-  // class SignalHead
-  //
-  //================================================================================================//
-
-        public class SignalHead
+        public KeyValuePair<SignalObject, SignalHead>? FindByTrItem(uint trItem)
         {
-                public enum SIGASP
-                {
-                        STOP,
-                        STOP_AND_PROCEED,
-                        RESTRICTING,
-                        APPROACH_1,
-                        APPROACH_2,
-                        APPROACH_3,
-                        CLEAR_1,
-                        CLEAR_2,
-                        UNKNOWN
-                }
+            foreach (var signal in signalObjects)
+                if (signal != null)
+                    foreach (var head in signal.SignalHeads)
+                    {
+                        int tempint = SignalObject.trackNodes[signal.trackNode].TrVectorNode.TrItemRefs[head.trItemIndex];
+                        if (SignalObject.trackNodes[signal.trackNode].TrVectorNode.TrItemRefs[head.trItemIndex] == (int)trItem)
+                            return new KeyValuePair<SignalObject, SignalHead>(signal, head);
+                    }
+            return null;
+        }//FindByTrItem
 
-                public enum SIGFN
-                {
-                        NORMAL,
-                        DISTANCE,
-                        REPEATER,
-                        SHUNTING,
-                        INFO,
-                        SPEED,
-                        ALERT,
-                        UNKNOWN
-                }
+        //================================================================================================//
+        /// 
+        /// Count number of normal signal heads
+        ///
 
-                public SignalType signalType = null;    // from sigcfg file
-                public SIGASP state = SIGASP.STOP;
-				public int draw_state;
-                public int trItemIndex;                 // Index to trItem   
-                public uint TrackJunctionNode;          // Track Junction Node (= 0 if not set)
-                public uint JunctionPath;               // Required Junction Path
-                public int JunctionMainNode;            // Main node following junction
-                public int TDBIndex;                    // Index to TDB Signal Item
-                public ObjectSpeedInfo[] speed_info;      // speed limit info (per aspect)
-
-                public SignalObject mainSignal;        //  This is the signal which this head forms a part.
-
-  //================================================================================================//
-  //
-  // Constructor for signals
-  //
-
-                public SignalHead(SignalObject sigOoject, int trItem, int TDBRef, SignalItem sigItem)
-                {
-                        mainSignal = sigOoject;
-                        trItemIndex = trItem;
-                        TDBIndex = TDBRef;
-                        draw_state = 0;
-
-                        TrackJunctionNode = 0;
-                        JunctionMainNode  = 0;
-
-                        if (sigItem.noSigDirs > 0)
-                        {
-                                TrackJunctionNode = sigItem.TrSignalDirs[0].TrackNode;
-                                JunctionPath = sigItem.TrSignalDirs[0].linkLRPath;
-                        }
-
-                        Array sigasp_values = SIGASP.GetValues(typeof (SIGASP));
-                        speed_info    = new ObjectSpeedInfo[sigasp_values.Length];
-                }
-
-  //================================================================================================//
-  //
-  // Constructor for speedposts
-  //
-
-                public SignalHead(SignalObject sigOoject, int trItem, int TDBRef, SpeedPostItem speedItem)
-                {
-                        mainSignal = sigOoject;
-                        trItemIndex = trItem;
-                        TDBIndex = TDBRef;
-                        draw_state = 1;
-                        state      = SIGASP.CLEAR_2;
-                        signalType = new SignalType(SignalType.FnTypes.Speed, SIGASP.CLEAR_2);
-
-                        TrackJunctionNode = 0;
-                        JunctionMainNode  = 0;
-
-                        Array sigasp_values = SIGASP.GetValues(typeof (SIGASP));
-                        speed_info    = new ObjectSpeedInfo[sigasp_values.Length];
-
-                        float speedMpS = MpS.ToMpS(speedItem.SpeedInd, !speedItem.IsMPH);
-                        if (speedItem.IsResume) speedMpS = 999f;
-
-                        float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
-                        float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
-                        ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false);
-                        speed_info[Convert.ToInt32(state)] = speedinfo;
-                }
-
-#if DUMP_DISPATCHER
-                public void Dump(StringBuilder sta)
-                {
-                    sta.AppendFormat("||SignalType.Name|{0}\r\n", signalType.Name);
-                    sta.AppendFormat("||SignalType.SigFn|{0}\r\n", signalType.FnType);
-                    sta.AppendFormat("||TrackJunctionNode|{0}\r\n", TrackJunctionNode);
-                    sta.AppendFormat("||JunctionMainNode|{0}\r\n", JunctionMainNode);
-                    sta.AppendFormat("||JunctionPath|{0}\r\n", JunctionPath);
-                    sta.AppendFormat("||route_set()|{0}\r\n", route_set());
-                    sta.AppendFormat("||next_sig_lr()|{0}\r\n", next_sig_lr(SIGFN.NORMAL));
-                    sta.AppendFormat("||state|{0}\r\n", this.state);
-                    sta.AppendLine();
-                }
-#endif
-  //================================================================================================//
-  //
-  // SetSignalType : This method sets the signal type object from the CIGCFG file
-  //
-
-                public void SetSignalType(TrItem[] TrItems, SIGCFGFile sigCFG)
-                {
-                        SignalItem sigItem = (SignalItem)TrItems[TDBIndex];
-
-  // set signal type
-                        if (sigCFG.SignalTypes.ContainsKey(sigItem.SignalType))
-                        {
-                                signalType = sigCFG.SignalTypes[sigItem.SignalType];
-
-  // set signal speeds
-                                foreach (SignalAspect thisAspect in signalType.Aspects)
-                                {
-                                        int arrindex = Convert.ToInt32(thisAspect.Aspect);
-                                        speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap);
-                                }
-
-  // update overall SignalNumClearAhead
-                                mainSignal.SignalNumClearAhead = Math.Max(mainSignal.SignalNumClearAhead, signalType.NumClearAhead);
-
-                        }
-                        else
-                        {
-                            Trace.TraceWarning("Signal {0} at track node {1} has head with invalid type {2}", mainSignal.trItem, mainSignal.trackNode, sigItem.SignalType);
-                        }
-
-
-                }//SetSignalType
-
-  //================================================================================================//
-  //
-  // sigfunction : returns signal type
-  //
-
-                public SIGFN sigFunction
-                {
-                        get
-                        {
-                                if (signalType != null) return (SIGFN)signalType.FnType; else return SIGFN.UNKNOWN;
-                        }
-                }//sigfunction
-
-  //================================================================================================//
-  //
-  //  The type name from CFG Signal type
-  //
-
-                public String SignalTypeName
-                {
-                        get
-                        {
-                                if (signalType != null) return signalType.Name; else return "";
-                        }
-                }
-
-  //================================================================================================//
-  //
-  //  Following methods used in scipting
-  //
-
-                public SIGASP next_sig_mr(SIGFN sigFN)
-                {
-                        return mainSignal.next_sig_mr(sigFN);
-                }
-
-                public SIGASP next_sig_lr(SIGFN sigFN)
-                {
-                        return mainSignal.next_sig_lr(sigFN);
-                }
-
-                public SIGASP this_sig_lr(SIGFN sigFN)
-                {
-                        return mainSignal.this_sig_lr(sigFN);
-                }
-
-                public SIGASP this_sig_mr(SIGFN sigFN)
-                {
-                        return mainSignal.this_sig_mr(sigFN);
-                }
-
-                public SIGASP opp_sig_mr(SIGFN sigFN)
-                {
-                        return mainSignal.this_sig_mr(sigFN);
-                }
-
-                public SIGASP opp_sig_lr(SIGFN sigFN)
-                {
-                        return mainSignal.this_sig_lr(sigFN);
-                }
-
-  //================================================================================================//
-  //
-  //  dist_multi_sig_mr : Returns most restrictive state of signal type A, for all type A upto type B
-  //  #TODO# : write code
-  //  
-  //
-
-                public SIGASP dist_multi_sig_mr(SIGFN sigFN1, SIGFN sigFN2)
-                {
-                        return SIGASP.CLEAR_2;
-                }
-
-  //================================================================================================//
-  //
-  //  sig_feature : return state of requested feature through signal head flags
-  //  
-  //
-
-                public bool sig_feature(int feature)
-                {
-                        bool flag_value = true;
-
-                        if (mainSignal.WorldObject != null)
-                        {
-                                if (feature < mainSignal.WorldObject.FlagsSet.Length)
-                                {
-                                        flag_value = mainSignal.WorldObject.FlagsSet[feature];
-                                }
-                        }
-
-                        return flag_value;
-                }
-
-  //================================================================================================//
-  //
-  //  def_draw_state : Returns the default draw state for this signal head from the SIGCFG file
-  //  Retruns -1 id no draw state.
-  //
-
-                public int def_draw_state(SIGASP state)
-                {
-                        if (signalType != null) return signalType.def_draw_state(state); else return -1;
-                }//def_draw_state
-
-  //================================================================================================//
-  //
-  //  SetMostRestrictiveAspect : Sets the state to the most restrictive aspect for this head.
-  //
-
-                public void SetMostRestrictiveAspect()
-                {
-                        if (signalType != null) state = signalType.GetMostRestrictiveAspect(); else state = SignalHead.SIGASP.STOP;
-                        def_draw_state(state);
-                }//SetMostRestrictiveAspect
-
-  //================================================================================================//
-  //
-  //  SetLeastRestrictiveAspect : Sets the state to the least restrictive aspect for this head.
-  //
-
-                public void SetLeastRestrictiveAspect()
-                {
-                        if (signalType != null) state = signalType.GetLeastRestrictiveAspect(); else state = SignalHead.SIGASP.CLEAR_2;
-                        def_draw_state(state);
-                }//SetLeastRestrictiveAspect
-
-  //================================================================================================//
-  //
-  //  route_set : check if linked route is set
-  //
-
-                public int route_set()
-                {
-                        bool juncfound = true;
-
-  // call route_set routine from main signal
-
-                        if (TrackJunctionNode > 0)
-                        {
-                            juncfound = mainSignal.route_set(JunctionMainNode);
-                        }
-#if CHECKED_ROUTE_SET
-                        else
-                        {
-                            juncfound = mainSignal.route_set();
-                        }
-#endif
-                        if (juncfound)
-                        {
-                                return 1;
-                        }
-                        else
-                        {
-                                return 0;
-                        }
-                }//route_set
-
-  //================================================================================================//
-  //
-  //  Default update process
-  //
-
-                public void Update()
-                {
-                        SIGASP oldstate;
-                        SignalObject.BLOCKSTATE block;
-                        StringBuilder s = new StringBuilder();
-                        
-                        oldstate = state;
-
-                        SIGSCRfile.SH_update(this, Signals.scrfile);
-
-                        if (state != oldstate && state == SIGASP.STOP)
-                        {
-                                block=mainSignal.block_state();
-                        }
-                }
-        } //Update
-
-  //================================================================================================//
-  //
-  // class Signal
-  //
-  //================================================================================================//
-
-        public class Signal
+        public void SetNumSignalHeads()
         {
-                public enum SIGNALSTATE
+            foreach (SignalObject thisSignal in signalObjects)
+            {
+                if (thisSignal != null)
                 {
-                        STOP,
-                        CLEAR,
-                        UNKNOWN
-                }
-
-                public enum PERMISSION
-                {
-                        GRANTED,
-                        DENIED
-                }
-
-                public static SignalObject[] signalObjects = null;
-                public static Signals signals = null;
-                public int nextSigRef = -1;                          // Index to next signal from front TDB. -1 if none.         
-                public int rearSigRef = -2;                          // Index to next signal from rear TDB. -1 if none -2 indeterminate.
-                public int prevSigRef = -2;                          // Index to Signal behind train. -1 if none -2 indeterminate.
-
-  //================================================================================================//
-  //
-  // Constructor
-  //
-
-                public Signal(Signals sigNals, SignalObject[] sigObjects, int sigRef)
-                {
-                        nextSigRef = sigRef;
-                        if (signalObjects == null) signalObjects = sigObjects;
-                        if (signals == null) signals = sigNals;
-                }
-
-  //================================================================================================//
-  //
-  //   Reset : This method is invoked if the train has changed direction or the switch ahead has changed ('G' pressed.)
-  //   Ensures that the train 'sees' the correct signal.
-  //
-
-                public void Reset(Traveller tdbTraveller, bool askPermission)
-                {
-                        if (signals != null)
+                    foreach (SignalHead thisHead in thisSignal.SignalHeads)
+                    {
+                        if (thisHead.sigFunction == SignalHead.SIGFN.NORMAL)
                         {
-                                nextSigRef = signals.FindNextSignal(tdbTraveller);
-                                SetSignalState(SIGNALSTATE.CLEAR);
-                                TrackStateChanged();
-                                rearSigRef = -2;
-                                prevSigRef = -2;
-                                if (nextSigRef >= 0 && askPermission) signalObjects[nextSigRef].hasPermission = Signal.PERMISSION.GRANTED;
+                            thisSignal.SignalNumNormalHeads++;
                         }
-                }//Reset
+                    }
+                }
+            }
+        }
 
-                //================================================================================================//
+        //================================================================================================//
+        //
+        // Find_Next_Object_InRoute : find next item along path of train - using Route List (only forward)
+        // Objects to search for : SpeedPost, Normal Signal
+        //
+        // Usage :
+        //   always set : RouteList, RouteNodeIndex, distance along RouteNode, fnType
+        //
+        //   from train :
+        //     optional : maxdistance
+        //
+        // returned :
+        //   >= 0 : signal object reference
+        //   -1  : end of track 
+        //   -3  : no item within required distance
+        //   -5  : end of authority
+        //   -6  : end of (sub)route
+        //
+
+        public TrackCircuitSignalItem Find_Next_Object_InRoute(Train.TCSubpathRoute routePath,
+                int routeIndex, float routePosition, float maxDistance, SignalHead.SIGFN fn_type)
+        {
+
+            ObjectItemInfo.ObjectItemFindState locstate = ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
+            // local processing state     //
+
+            int actRouteIndex = routeIndex;      // present node               //
+            Train.TCRouteElement thisElement = routePath[actRouteIndex];
+            int actSection = thisElement.TCSectionIndex;
+            int actDirection = thisElement.Direction;
+            TrackCircuitSection thisSection = TrackCircuitList[actSection];
+            float totalLength = 0;
+            float lengthOffset = routePosition;
+
+            SignalObject foundObject = null;
+            TrackCircuitSignalItem thisItem = null;
+
+            //
+            // loop through trackcircuits until :
+            //  - end of track or route is found
+            //  - end of authorization is found
+            //  - required item is found
+            //  - max distance is covered
+            //
+
+            while (locstate == ObjectItemInfo.ObjectItemFindState.NONE_FOUND)
+            {
+
+                // normal signal
+                if (fn_type == SignalHead.SIGFN.NORMAL)
+                {
+                    if (thisSection.EndSignals[actDirection] != null)
+                    {
+                        foundObject = thisSection.EndSignals[actDirection];
+                        totalLength += (thisSection.Length - lengthOffset);
+                        locstate = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
+                    }
+                }
+
+        // speedpost
+                else if (fn_type == SignalHead.SIGFN.SPEED)
+                {
+                    TrackCircuitSignalList thisSpeedpostList =
+                               thisSection.CircuitItems.TrackCircuitSpeedPosts[actDirection];
+                    locstate = ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
+
+                    for (int iPost = 0;
+                             iPost < thisSpeedpostList.TrackCircuitItem.Count &&
+                                     locstate == ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
+                             iPost++)
+                    {
+                        TrackCircuitSignalItem thisSpeedpost = thisSpeedpostList.TrackCircuitItem[iPost];
+                        if (thisSpeedpost.SignalLocation > lengthOffset)
+                        {
+                            locstate = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
+                            foundObject = thisSpeedpost.SignalRef;
+                            totalLength += (thisSpeedpost.SignalLocation - lengthOffset);
+                        }
+                    }
+                }
+
+                // next section accessed via next route element
+
+                if (locstate == ObjectItemInfo.ObjectItemFindState.NONE_FOUND)
+                {
+                    totalLength += (thisSection.Length - lengthOffset);
+                    lengthOffset = 0;
+
+                    int setSection = thisSection.ActivePins[thisElement.OutPin[0], thisElement.OutPin[1]].Link;
+                    actRouteIndex++;
+
+                    if (setSection < 0)
+                    {
+                        locstate = ObjectItemInfo.ObjectItemFindState.END_OF_AUTHORITY;
+                    }
+                    else if (actRouteIndex >= routePath.Count)
+                    {
+                        locstate = ObjectItemInfo.ObjectItemFindState.END_OF_PATH;
+                    }
+                    else if (maxDistance > 0 && totalLength > maxDistance)
+                    {
+                        locstate = ObjectItemInfo.ObjectItemFindState.PASSED_MAXDISTANCE;
+                    }
+                    else
+                    {
+                        thisElement = routePath[actRouteIndex];
+                        actSection = thisElement.TCSectionIndex;
+                        actDirection = thisElement.Direction;
+                        thisSection = TrackCircuitList[actSection];
+                    }
+                }
+            }
+
+            if (foundObject != null)
+            {
+                thisItem = new TrackCircuitSignalItem(foundObject, totalLength);
+            }
+            else
+            {
+                thisItem = new TrackCircuitSignalItem(locstate);
+            }
+
+            return (thisItem);
+        }
+
+        //================================================================================================//
+        //
+        // GetNextObject_InRoute : find next item along path of train - using Route List (only forward)
+        //
+        // Usage :
+        //   always set : Train (may be null), RouteList, RouteNodeIndex, distance along RouteNode, fn_type
+        //
+        //   from train :
+        //     optional : maxdistance
+        //
+        // returned :
+        //   >= 0 : signal object reference
+        //   -1  : end of track 
+        //   -2  : passed signal at danger
+        //   -3  : no item within required distance
+        //   -5  : end of authority
+        //   -6  : end of (sub)route
+        //
+
+        public ObjectItemInfo GetNextObject_InRoute(Train.TrainRouted thisTrain, Train.TCSubpathRoute routePath,
+                    int routeIndex, float routePosition, float maxDistance, ObjectItemInfo.ObjectItemType req_type)
+        {
+
+            TrackCircuitSignalItem foundItem = null;
+
+            bool findSignal = false;
+            bool findSpeedpost = false;
+
+            float signalDistance = -1f;
+            float speedpostDistance = -1f;
+
+            int sigObjRef = 0;
+            int speedObjRef = 0;
+
+            if (req_type == ObjectItemInfo.ObjectItemType.ANY ||
+                req_type == ObjectItemInfo.ObjectItemType.SIGNAL)
+            {
+                findSignal = true;
+            }
+
+            if (req_type == ObjectItemInfo.ObjectItemType.ANY ||
+                req_type == ObjectItemInfo.ObjectItemType.SPEEDLIMIT)
+            {
+                findSpeedpost = true;
+            }
+
+            // if routeIndex is not valid, build temp route from present position to first node or signal
+
+            Train.TCSubpathRoute usedRoute = routePath;
+            Train.TCPosition thisPosition = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
+
+            if (routeIndex < 0)
+            {
+                List<int> tempSections = ScanRoute(thisTrain.Train, thisPosition.TCSectionIndex,
+                    thisPosition.TCOffset, thisPosition.TCDirection,
+                    true, 200f, false, true, true, false, true, false, false, true, false, thisTrain.Train.IsFreight);
+
+                Train.TCSubpathRoute tempRoute = new Train.TCSubpathRoute();
+                int prevSection = -2;
+
+                foreach (int sectionIndex in tempSections)
+                {
+                    Train.TCRouteElement thisElement =
+                        new Train.TCRouteElement(TrackCircuitList[Math.Abs(sectionIndex)],
+                            sectionIndex > 0 ? 0 : 1, this, prevSection);
+                    tempRoute.Add(thisElement);
+                    prevSection = Math.Abs(sectionIndex);
+                }
+                usedRoute = tempRoute;
+                routeIndex = 0;
+            }
+
+            // always find signal to check for signal at danger
+
+            ObjectItemInfo.ObjectItemFindState signalState = ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
+
+            TrackCircuitSignalItem nextSignal =
+                Find_Next_Object_InRoute(usedRoute, routeIndex, routePosition,
+                        maxDistance, SignalHead.SIGFN.NORMAL);
+
+            signalState = nextSignal.SignalState;
+            if (nextSignal.SignalState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+            {
+                signalDistance = nextSignal.SignalLocation;
+                SignalObject foundSignal = nextSignal.SignalRef;
+                sigObjRef = foundSignal.thisRef;
+                if (foundSignal.this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.STOP)
+                {
+                    signalState = ObjectItemInfo.ObjectItemFindState.PASSED_DANGER;
+                }
+                else if (thisTrain != null && foundSignal.enabledTrain != thisTrain)
+                {
+                    signalState = ObjectItemInfo.ObjectItemFindState.PASSED_DANGER;
+                    nextSignal.SignalState = signalState;  // do not return OBJECT_FOUND - signal is not valid
+                }
+
+            }
+
+            // look for speedpost only if required
+
+            if (findSpeedpost)
+            {
+                TrackCircuitSignalItem nextSpeedpost =
+                    Find_Next_Object_InRoute(usedRoute, routeIndex, routePosition,
+                        maxDistance, SignalHead.SIGFN.SPEED);
+
+                if (nextSpeedpost.SignalState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+                {
+                    speedpostDistance = nextSpeedpost.SignalLocation;
+                    SignalObject foundSignal = nextSpeedpost.SignalRef;
+                    speedObjRef = foundSignal.thisRef;
+                }
+
+
+                if (signalDistance > 0 && speedpostDistance > 0)
+                {
+                    if (signalDistance < speedpostDistance)
+                    {
+                        if (findSignal)
+                        {
+                            foundItem = nextSignal;
+                        }
+                        else
+                        {
+                            foundItem = nextSpeedpost;
+                            if (signalState == ObjectItemInfo.ObjectItemFindState.PASSED_DANGER)
+                            {
+                                foundItem.SignalState = signalState;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foundItem = nextSpeedpost;
+                    }
+                }
+                else if (signalDistance > 0)
+                {
+                    foundItem = nextSignal;
+                }
+                else if (speedpostDistance > 0)
+                {
+                    foundItem = nextSpeedpost;
+                }
+            }
+            else if (findSignal)
+            {
+                foundItem = nextSignal;
+            }
+
+
+            ObjectItemInfo returnItem = null;
+
+            if (foundItem == null)
+            {
+                returnItem = new ObjectItemInfo(ObjectItemInfo.ObjectItemFindState.NONE_FOUND);
+            }
+            else if (foundItem.SignalState != ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+            {
+                returnItem = new ObjectItemInfo(foundItem.SignalState);
+            }
+            else
+            {
+                returnItem = new ObjectItemInfo(foundItem.SignalRef, foundItem.SignalLocation);
+            }
+
+            return (returnItem);
+        }
+
+        //
+        //================================================================================================//
+        //
+        // Create Track Circuits
+        //
+
+        private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes,
+            TSectionDatFile tsectiondat, TDBFile tdbfile)
+        {
+
+            //
+            // Create dummy element as first to keep indexes equal
+            //
+
+            TrackCircuitList = new List<TrackCircuitSection>();
+            TrackCircuitList.Add(new TrackCircuitSection(0, this));
+
+            //
+            // Create new default elements from existing base
+            //
+
+            for (int iNode = 1; iNode < trackNodes.Length; iNode++)
+            {
+                TrackNode trackNode = trackNodes[iNode];
+                TrackCircuitSection defaultSection =
+                    new TrackCircuitSection(trackNode, iNode, tsectiondat, this);
+                TrackCircuitList.Add(defaultSection);
+            }
+
+            //
+            // loop through original default elements
+            // collect track items
+            //
+
+            int originalNodes = TrackCircuitList.Count;
+            for (int iNode = 1; iNode < originalNodes; iNode++)
+            {
+                ProcessNodes(iNode, TrItems, trackNodes, tsectiondat, tdbfile);
+            }
+
+            //
+            // loop through original default elements
+            // split on crossover items
+            //
+
+            originalNodes = TrackCircuitList.Count;
+            int nextNode = originalNodes;
+            foreach (KeyValuePair<int, CrossOverItem> CrossOver in CrossOverList)
+            {
+                nextNode = SplitNodesCrossover(CrossOver.Value, tsectiondat, nextNode);
+            }
+
+            //
+            // loop through original default elements
+            // split on normal signals
+            //
+
+            originalNodes = TrackCircuitList.Count;
+            nextNode = originalNodes;
+
+            for (int iNode = 1; iNode < originalNodes; iNode++)
+            {
+                nextNode = SplitNodesSignals(iNode, nextNode);
+            }
+
+            //
+            // loop through all items
+            // perform link test
+            //
+
+            originalNodes = TrackCircuitList.Count;
+            nextNode = originalNodes;
+            for (int iNode = 1; iNode < originalNodes; iNode++)
+            {
+                nextNode = performLinkTest(iNode, nextNode);
+            }
+
+            //
+            // loop through all items
+            // reset active links
+            // set fixed active links for none-junction links
+            // set trailing junction flags
+            //
+
+            originalNodes = TrackCircuitList.Count;
+            for (int iNode = 1; iNode < originalNodes; iNode++)
+            {
+                setActivePins(iNode);
+            }
+
+            //
+            // Set cross-reference
+            //
+
+            for (int iNode = 1; iNode < originalNodes; iNode++)
+            {
+                setCrossReference(iNode, trackNodes);
+            }
+            for (int iNode = 1; iNode < originalNodes; iNode++)
+            {
+                setCrossReferenceCrossOver(iNode, trackNodes);
+            }
+
+            //
+            // Set cross-reference for signals
+            //
+
+            for (int iNode = 0; iNode < TrackCircuitList.Count; iNode++)
+            {
+                setSignalCrossReference(iNode);
+            }
+
+            //
+            // Set default next signal and fixed route information
+            //
+
+            for (int iSignal = 0; signalObjects != null && iSignal < signalObjects.Length; iSignal++)
+            {
+                SignalObject thisSignal = signalObjects[iSignal];
+                if (thisSignal != null)
+                {
+                    thisSignal.setSignalDefaultNextSignal();
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Print TC Information
+        //
+
+
+        private void PrintTCBase(TrackNode[] trackNodes)
+        {
+
+            //
+            // Test : print TrackCircuitList
+            //
+
+#if DEBUG_PRINT
+            if (File.Exists(@"C:\temp\TCBase.txt"))
+            {
+                File.Delete(@"C:\temp\TCBase.txt");
+            }
+
+            for (int iNode = 0; iNode < TrackCircuitList.Count; iNode++)
+            {
+                TrackCircuitSection thisSection = TrackCircuitList[iNode];
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                   "\nIndex : " + iNode.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                   "{\n     Section    : " + thisSection.Index.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     OrgSection : " + thisSection.OriginalIndex.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Type       : " + thisSection.CircuitType.ToString() + "\n");
+
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Pins (0,0) : " + thisSection.Pins[0, 0].Direction.ToString() +
+                               " " + thisSection.Pins[0, 0].Link.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Pins (0,1) : " + thisSection.Pins[0, 1].Direction.ToString() +
+                               " " + thisSection.Pins[0, 1].Link.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Pins (1,0) : " + thisSection.Pins[1, 0].Direction.ToString() +
+                               " " + thisSection.Pins[1, 0].Link.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Pins (1,1) : " + thisSection.Pins[1, 1].Direction.ToString() +
+                               " " + thisSection.Pins[1, 1].Link.ToString() + "\n");
+
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Active Pins (0,0) : " + thisSection.ActivePins[0, 0].Direction.ToString() +
+                               " " + thisSection.ActivePins[0, 0].Link.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Active Pins (0,1) : " + thisSection.ActivePins[0, 1].Direction.ToString() +
+                               " " + thisSection.ActivePins[0, 1].Link.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Active Pins (1,0) : " + thisSection.ActivePins[1, 0].Direction.ToString() +
+                               " " + thisSection.ActivePins[1, 0].Link.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Active Pins (1,1) : " + thisSection.ActivePins[1, 1].Direction.ToString() +
+                               " " + thisSection.ActivePins[1, 1].Link.ToString() + "\n");
+
+                if (thisSection.EndIsTrailingJunction[0])
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Trailing Junction : direction 0\n");
+                }
+
+                if (thisSection.EndIsTrailingJunction[1])
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Trailing Junction : direction 1\n");
+                }
+
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     Length         : " + thisSection.Length.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     OffsetLength 0 : " + thisSection.OffsetLength[0].ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt",
+                      "     OffsetLength 1 : " + thisSection.OffsetLength[1].ToString() + "\n");
+
+                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL && thisSection.CircuitItems != null)
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "\nSignals : \n");
+                    for (int iDirection = 0; iDirection <= 1; iDirection++)
+                    {
+                        if (thisSection.EndSignals[iDirection] != null)
+                        {
+                            File.AppendAllText(@"C:\temp\TCBase.txt",
+                                  "    End Signal " + iDirection.ToString() + " : " +
+                                  thisSection.EndSignals[iDirection].thisRef.ToString() + "\n");
+                        }
+
+                        for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+                        {
+                            SignalHead.SIGFN thisFN = (SignalHead.SIGFN)fntype;
+                            File.AppendAllText(@"C:\temp\TCBase.txt",
+                                  "    Direction " + iDirection.ToString() +
+                                  " - Function : " + thisFN.ToString() + " : \n");
+                            TrackCircuitSignalList thisSignalList =
+                                    thisSection.CircuitItems.TrackCircuitSignals[iDirection, fntype];
+                            foreach (TrackCircuitSignalItem thisItem in thisSignalList.TrackCircuitItem)
+                            {
+                                SignalObject thisSignal = thisItem.SignalRef;
+                                float signalDistance = thisItem.SignalLocation;
+
+                                if (thisSignal.WorldObject == null)
+                                {
+                                    File.AppendAllText(@"C:\temp\TCBase.txt", "         " +
+                                        thisSignal.thisRef.ToString() + " = **UNKNOWN** at " +
+                                        signalDistance.ToString() + "\n");
+                                }
+                                else
+                                {
+                                    File.AppendAllText(@"C:\temp\TCBase.txt", "         " +
+                                        thisSignal.thisRef.ToString() + " = " +
+                                        thisSignal.WorldObject.SFileName + " at " +
+                                        signalDistance.ToString() + "\n");
+                                }
+                            }
+                            File.AppendAllText(@"C:\temp\TCBase.txt", "\n");
+                        }
+                    }
+
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "\nSpeedposts : \n");
+                    for (int iDirection = 0; iDirection <= 1; iDirection++)
+                    {
+                        File.AppendAllText(@"C:\temp\TCBase.txt", "    Direction " + iDirection.ToString() + "\n");
+
+                        TrackCircuitSignalList thisSpeedpostList =
+                                thisSection.CircuitItems.TrackCircuitSpeedPosts[iDirection];
+                        foreach (TrackCircuitSignalItem thisItem in thisSpeedpostList.TrackCircuitItem)
+                        {
+                            SignalObject thisSpeedpost = thisItem.SignalRef;
+                            float speedpostDistance = thisItem.SignalLocation;
+
+                            ObjectItemInfo speedInfo = new ObjectItemInfo(thisSpeedpost, speedpostDistance);
+                            File.AppendAllText(@"C:\temp\TCBase.txt", thisSpeedpost.thisRef.ToString() +
+                              " = pass : " + speedInfo.speed_passenger.ToString() +
+                                                  " ; freight : " + speedInfo.speed_freight.ToString());
+                            File.AppendAllText(@"C:\temp\TCBase.txt", " - at distance " + speedpostDistance.ToString() + "\n");
+                        }
+
+                        File.AppendAllText(@"C:\temp\TCBase.txt", "\n");
+                    }
+                }
+                else if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt",
+                                    "    Overlap : " + thisSection.Overlap.ToString() + "\n");
+                }
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "}\n");
+            }
+
+            File.AppendAllText(@"C:\temp\TCBase.txt", "\n\nCROSSOVERS\n\n");
+            foreach (KeyValuePair<int, CrossOverItem> CrossItem in CrossOverList)
+            {
+                CrossOverItem thisCross = CrossItem.Value;
+                File.AppendAllText(@"C:\temp\TCBase.txt", "   Indices : " + thisCross.ItemIndex[0].ToString() + " - " +
+                                                                 thisCross.ItemIndex[1].ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt", "   Sections: " + thisCross.SectionIndex[0].ToString() + " - " +
+                                                                 thisCross.SectionIndex[1].ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt", "\n");
+            }
+
+            File.AppendAllText(@"C:\temp\TCBase.txt", "\n\nTRACK SECTIONS\n\n");
+            foreach (TrackNode thisTrack in trackNodes)
+            {
+                if (thisTrack == null)
+                {
+                }
+                else if (thisTrack.TCCrossReference == null)
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt",
+            "   ERROR : no track circuit cross-reference \n");
+                    Trace.TraceWarning("ERROR : Track Node without Track Circuit cross-reference");
+                }
+                else
+                {
+
+                    TrackCircuitXRefList thisXRef = thisTrack.TCCrossReference;
+
+                    TrackCircuitSection thisSection = TrackCircuitList[thisXRef[0].CrossRefIndex];
+                    File.AppendAllText(@"C:\temp\TCBase.txt",
+                        "     Original node : " + thisSection.OriginalIndex.ToString() + "\n");
+
+                    foreach (TrackCircuitCrossReference thisReference in thisXRef)
+                    {
+                        File.AppendAllText(@"C:\temp\TCBase.txt",
+                            "        Ref Index : " + thisReference.CrossRefIndex.ToString() + " : " +
+                            "Length : " + thisReference.Length.ToString() + " at : " +
+                            thisReference.Position[0] + " - " + thisReference.Position[1] + "\n");
+                    }
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "\n");
+
+                    if (thisXRef[thisXRef.Count - 1].Position[1] != 0)
+                    {
+                        File.AppendAllText(@"C:\temp\TCBASE.txt", " >>> INVALID XREF\n");
+                    }
+                }
+            }
+
+            File.AppendAllText(@"C:\temp\TCBase.txt", "\n\n PLATFORMS \n --------- \n\n");
+
+            foreach (KeyValuePair<int, int> platformXRef in PlatformXRefList)
+            {
+                PlatformDetails thisPlatform = PlatformDetailsList[platformXRef.Value];
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Index " + platformXRef.Key.ToString() +
+                " : Platform " + platformXRef.Value.ToString() +
+                " [" + thisPlatform.PlatformReference[0].ToString() +
+                " ," + thisPlatform.PlatformReference[1].ToString() + "]\n");
+            }
+
+            File.AppendAllText(@"C:\temp\TCBase.txt", "\n\n");
+
+            for (int iPlatform = 0; iPlatform < PlatformDetailsList.Count; iPlatform++)
+            {
+                PlatformDetails thisPlatform = PlatformDetailsList[iPlatform];
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Platform : " + iPlatform.ToString() + "\n");
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Name     : " + thisPlatform.Name + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Time     : " + thisPlatform.MinWaitingTime.ToString() + "\n");
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Sections : ");
+                for (int iSection = 0; iSection < thisPlatform.TCSectionIndex.Count; iSection++)
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt", " " + thisPlatform.TCSectionIndex[iSection].ToString());
+                }
+                File.AppendAllText(@"C:\temp\TCBase.txt", "\n");
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Platform References    : " +
+                        thisPlatform.PlatformReference[0].ToString() + " + " +
+                        thisPlatform.PlatformReference[1].ToString() + "\n");
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Section Offset : [0,0] : " +
+                        thisPlatform.TCOffset[0, 0].ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt", "                 [0,1] : " +
+                        thisPlatform.TCOffset[0, 1].ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt", "                 [1,0] : " +
+                        thisPlatform.TCOffset[1, 0].ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt", "                 [1,1] : " +
+                        thisPlatform.TCOffset[1, 1].ToString() + "\n");
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Length                 : " +
+                        thisPlatform.Length.ToString() + "\n");
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Node Offset    : [0]   : " +
+                        thisPlatform.nodeOffset[0].ToString() + "\n");
+                File.AppendAllText(@"C:\temp\TCBase.txt", "Node Offset    : [1]   : " +
+                        thisPlatform.nodeOffset[1].ToString() + "\n");
+
+                if (thisPlatform.EndSignals[0] == -1)
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "End Signal     : [0]   : -None-\n");
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "End Signal     : [0]   : " +
+                            thisPlatform.EndSignals[0].ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "Distance               : " +
+                            thisPlatform.DistanceToSignals[0].ToString() + "\n");
+                }
+                if (thisPlatform.EndSignals[1] == -1)
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "End Signal     : [1]   : -None-\n");
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "End Signal     : [1]   : " +
+                            thisPlatform.EndSignals[1].ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\TCBase.txt", "Distance               : " +
+                            thisPlatform.DistanceToSignals[1].ToString() + "\n");
+                }
+
+                File.AppendAllText(@"C:\temp\TCBase.txt", "\n");
+            }
+#endif
+        }
+
+        //================================================================================================//
+        //
+        // ProcessNodes
+        //
+
+        public void ProcessNodes(int iNode, TrItem[] TrItems, TrackNode[] trackNodes,
+                TSectionDatFile tsectiondat, TDBFile tdbfile)
+        {
+
+            //
+            // Check if original tracknode had trackitems
+            //
+
+            TrackCircuitSection thisCircuit = TrackCircuitList[iNode];
+            TrackNode thisNode = trackNodes[thisCircuit.OriginalIndex];
+
+            if (thisNode.TrVectorNode != null && thisNode.TrVectorNode.noItemRefs > 0)
+            {
                 //
-                //   Reset : This method is invoked if the train has been removed.
-                //   Ensures that occupancy is updated to disappear.
+                // Create TDBtraveller at start of section to calculate distances
                 //
-                //================================================================================================//
-  //
-  //   Clear : This method is invoked if the train has been removed.
-  //   Ensures that occupancy is updated to disappear.
-  //
 
-                public void Clear()
+                TrVectorSection firstSection = thisNode.TrVectorNode.TrVectorSections[0];
+                Traveller TDBTrav = new Traveller(tsectiondat, trackNodes, thisNode,
+                                firstSection.TileX, firstSection.TileZ,
+                                firstSection.X, firstSection.Z, (Traveller.TravellerDirection)1);
+
+                //
+                // Process all items (do not split yet)
+                //
+
+                float[] lastDistance = new float[2] { -1.0f, -1.0f };
+                for (int iRef = 0; iRef < thisNode.TrVectorNode.noItemRefs; iRef++)
                 {
-                    if (prevSigRef >= 0) signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.CLEAR;
-                }//Clear
-
-  //================================================================================================//
-  //
-  // UpdateTrackOccupancy : update track state
-  //
-
-                public void UpdateTrackOcupancy(Traveller rearTDBTraveller)
-                {
-                        if (rearSigRef < -1)
-                        {
-                                if (signals != null)
-                                {
-                                        rearSigRef = signals.FindNextSignal(rearTDBTraveller);
-                                        if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
-                                        {
-											if (signalObjects == null) return;
-                                                signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
-                                                if ( !MultiPlayer.MPManager.IsClient()) signalObjects[rearSigRef].Update();
-                                        }
-                                }
-                        }
-                        if (prevSigRef < -1)
-                        {
-                                if (signals != null)
-                                {
-                                        prevSigRef = signals.FindPrevSignal(rearTDBTraveller);
-                                        if (prevSigRef >= 0)
-                                        {
-											if (signalObjects == null) return;
-                                            signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
-											if (!MultiPlayer.MPManager.IsClient()) signalObjects[prevSigRef].Update();
-                                        }
-                                }
-                        }
-                    // By GeorgeS
-                        else
-                        {
-                                if (signals != null)
-                                {
-                                        int newprevSigRef = signals.FindPrevSignal(rearTDBTraveller);
-                                        if (newprevSigRef != prevSigRef)
-                                        {
-                                                if (prevSigRef > 0)
-                                                {
-													if (signalObjects == null) return;
-                                                    signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.CLEAR;
-                                                }
-                                                prevSigRef = newprevSigRef;
-                                                if (prevSigRef > 0)
-                                                {
-													if (signalObjects == null) return;
-                                                    signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
-													if (!MultiPlayer.MPManager.IsClient()) signalObjects[prevSigRef].Update();
-                                                }
-                                        }
-                                }
-                        }
-                        if (rearSigRef >= 0)
-                        {
-							if (signalObjects == null) return;
-							float dist = signalObjects[rearSigRef].DistanceTo(rearTDBTraveller);
-                                // The rear of the train has passed this signal so set previous signal to BLOCKSTATE.CLEAR
-                                if (dist <= 0)
-                                {
-                                        if (prevSigRef >= 0) signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.CLEAR;
-                                        prevSigRef = rearSigRef;
-                                    // By GeorgeS    
-                                        if (prevSigRef >= 0)
-                                        {
-                                            signalObjects[prevSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;
-											if (!MultiPlayer.MPManager.IsClient()) signalObjects[prevSigRef].Update();
-                                        }
-
-                                        rearSigRef = signals.FindNextSignal(rearTDBTraveller);
-                                        if ((rearSigRef >= 0) && (rearSigRef != nextSigRef))
-                                        {
-                                                signalObjects[rearSigRef].blockState = SignalObject.BLOCKSTATE.OCCUPIED;  // Train spans signal
-												if (!MultiPlayer.MPManager.IsClient()) signalObjects[rearSigRef].Update();
-                                        }
-                                }
-
-                        }
-                }//UpdateTrackOcupancy
-
-  //================================================================================================//
-  //
-  //  NextSignal : Next NORMAL Signal along the line. Returns -1 if no signal found
-  //
-
-                public void SNextSignal()
-                {
-                        if (nextSigRef >= 0)
-                        {
-                                int TDBRef = signalObjects[nextSigRef].SignalHeads[0].TDBIndex;
-                                signalObjects[nextSigRef].hasPermission = PERMISSION.DENIED;
-                                nextSigRef = signalObjects[nextSigRef].GetNextSignal();
-                        }
-                } // NextSignal
-
-  //================================================================================================//
-  //
-  //  DistanceToSignal: Returns Distance to next NORMAL signal from current TDBTraveller position.
-  //
-
-                public float DistanceToSignal(Traveller tdbTraverler)
-                {
-                        return nextSigRef >= 0 ? signalObjects[nextSigRef].DistanceTo(tdbTraverler) : 0.01F;
-                }  // DistanceToSignal
-
-  //================================================================================================//
-  //
-  //   GetAspect : Returns the signal aspect. Least restricting if Multiple head.
-  //
-
-                public SignalHead.SIGASP GetAspect()
-                {
-                        return nextSigRef >= 0 ? signalObjects[nextSigRef].this_sig_lr(SignalHead.SIGFN.NORMAL) : SignalHead.SIGASP.UNKNOWN;
-                }//GetAspect
-
-  //================================================================================================//
-  //
-  //   SetSignalState : set state of signal
-  //
-
-                public void SetSignalState(Signal.SIGNALSTATE state)
-                {
-                        if (nextSigRef >= 0) signalObjects[nextSigRef].SetSignalState(state);
+                    int TDBRef = thisNode.TrVectorNode.TrItemRefs[iRef];
+                    if (TrItems[TDBRef] != null)
+                    {
+                        lastDistance = InsertNode(thisCircuit, TrItems[TDBRef], TDBTrav, trackNodes, lastDistance);
+                    }
                 }
-
-  //================================================================================================//
-  //
-  //  TrackStateChanged : set action on track state change
-  //
-
-                public void TrackStateChanged()
-                {
-                        if (nextSigRef >= 0) signalObjects[nextSigRef].TrackStateChanged();
-                }
-
-  //================================================================================================//
-  //
-  //  HasPermissionToProceed : manual permission allowed
-  //
-
-                public PERMISSION HasPermissionToProceed()
-                {
-                        if (nextSigRef > 0) return signalObjects[nextSigRef].hasPermission; else return PERMISSION.DENIED;
-                }
+            }
         }
 
-  //================================================================================================//
-  //
-  // class SignalInfo
-  //
-  //================================================================================================//
+        //================================================================================================//
+        //
+        // InsertNode
+        //
 
-        public class SignalRefObject
+        public float[] InsertNode(TrackCircuitSection thisCircuit, TrItem thisItem,
+                        Traveller TDBTrav, TrackNode[] trackNodes, float[] lastDistance)
         {
-                public uint SignalWorldIndex;
-                public uint HeadIndex;
 
-  //================================================================================================//
-  //
-  // Constructor
-  //
+            float[] newLastDistance = new float[2];
+            lastDistance.CopyTo(newLastDistance, 0);
 
-                public SignalRefObject(int WorldIndexIn, uint HeadItemIn)
+            //
+            // Insert signal
+            //
+
+            if (thisItem.ItemType == TrItem.trItemType.trSIGNAL)
+            {
+                SignalItem sigItem = (SignalItem)thisItem;
+                if (sigItem.sigObj >= 0)
                 {
-                        SignalWorldIndex = Convert.ToUInt32(WorldIndexIn);
-                        HeadIndex        = HeadItemIn;
+                    SignalObject thisSignal = SignalObjects[sigItem.sigObj];
+                    float signalDistance = thisSignal.DistanceTo(TDBTrav);
+                    if (thisSignal.direction == 1)
+                    {
+                        signalDistance = thisCircuit.Length - signalDistance;
+                    }
+
+                    for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+                    {
+                        SignalHead.SIGFN[] reqfntype = new SignalHead.SIGFN[1];
+                        reqfntype[0] = (SignalHead.SIGFN)fntype;
+
+                        if (thisSignal.isSignalType(reqfntype))
+                        {
+                            TrackCircuitSignalItem thisTCItem =
+                                    new TrackCircuitSignalItem(thisSignal, signalDistance);
+
+                            int directionList = thisSignal.direction == 0 ? 1 : 0;
+                            TrackCircuitSignalList thisSignalList =
+                                    thisCircuit.CircuitItems.TrackCircuitSignals[directionList, fntype];
+
+                            bool signalset = false;
+                            foreach (TrackCircuitSignalItem inItem in thisSignalList.TrackCircuitItem)
+                            {
+                                if (inItem.SignalRef == thisSignal)
+                                {
+                                    signalset = true;
+                                }
+                            }
+
+                            if (!signalset)
+                            {
+                                if (directionList == 0)
+                                {
+                                    thisSignalList.TrackCircuitItem.Insert(0, thisTCItem);
+                                }
+                                else
+                                {
+                                    thisSignalList.TrackCircuitItem.Add(thisTCItem);
+                                }
+                            }
+                        }
+                    }
+                    newLastDistance[thisSignal.direction] = signalDistance;
                 }
-        }
-        
-  //================================================================================================//
-  //
-  // class SignalWorldInfo
-  //
-  //================================================================================================//
+            }
 
-        public class SignalWorldObject
-        {
-                public string SFileName;
-                public Dictionary <uint, uint> HeadReference;     // key=TDBIndex, value=headindex
-                public bool [] HeadsSet;                          // Flags heads which are set
-                public bool [] FlagsSet;                          // Flags signal-flags which are set
-                public bool [] FlagsSetBackfacing;                // Flags signal-flags which are set
-                                                                         //    for backfacing signal
-                public List<int> Backfacing = new List<int> ();   // Flags heads which are backfacing
+        //
+            // Insert speedpost
+            //
 
-				public STFPositionItem Position;
-  //================================================================================================//
-  //
-  // Constructor
-  //
-
-                public SignalWorldObject(MSTS.SignalObj SignalWorldItem,SIGCFGFile sigcfg)
+            else if (thisItem.ItemType == TrItem.trItemType.trSPEEDPOST)
+            {
+                SpeedPostItem speedItem = (SpeedPostItem)thisItem;
+                if (speedItem.sigObj >= 0)
                 {
-                        MSTS.SignalShape thisCFGShape;
+                    SignalObject thisSpeedpost = SignalObjects[speedItem.sigObj];
+                    float speedpostDistance = thisSpeedpost.DistanceTo(TDBTrav);
+                    if (thisSpeedpost.direction == 1)
+                    {
+                        speedpostDistance = thisCircuit.Length - speedpostDistance;
+                    }
 
-						Position = SignalWorldItem.Position;
-                        HeadReference = new Dictionary <uint, uint>();
+                    if (speedpostDistance == lastDistance[thisSpeedpost.direction]) // if at same position as last item
+                    {
+                        speedpostDistance = speedpostDistance + 0.001f;  // shift 1 mm so it will be found
+                    }
 
-  // set flags with length to number of possible SubObjects type
+                    TrackCircuitSignalItem thisTCItem =
+                            new TrackCircuitSignalItem(thisSpeedpost, speedpostDistance);
 
-                        FlagsSet           = new bool [MSTS.SignalShape.SignalSubObj.SignalSubTypes.Count];
-                        FlagsSetBackfacing = new bool [MSTS.SignalShape.SignalSubObj.SignalSubTypes.Count];
-                        for (uint iFlag = 0; iFlag < FlagsSet.Length; iFlag++)
-                        {
-                                FlagsSet[iFlag] = false;
-                                FlagsSetBackfacing[iFlag] = false;
-                        }
+                    int directionList = thisSpeedpost.direction == 0 ? 1 : 0;
+                    TrackCircuitSignalList thisSignalList =
+                            thisCircuit.CircuitItems.TrackCircuitSpeedPosts[directionList];
 
-  // get filename in Uppercase
+                    if (directionList == 0)
+                    {
+                        thisSignalList.TrackCircuitItem.Insert(0, thisTCItem);
+                    }
+                    else
+                    {
+                        thisSignalList.TrackCircuitItem.Add(thisTCItem);
+                    }
 
-                        SFileName = SignalWorldItem.FileName.ToUpper();
-
-  // search defined shapes in SIGCFG to find signal definition
-
-                        if (sigcfg.SignalShapes.TryGetValue(SFileName, out thisCFGShape))
-                        {
-
-  // set array length to actual no. of heade
-
-                                foreach (MSTS.SignalUnit signalUnitInfo in SignalWorldItem.SignalUnits.Units)
-                                {
-                                        uint TrItemRef = signalUnitInfo.TrItem;
-                                        if (TrItemRef == 1511)
-                                        {
-                                                TrItemRef = 1511;
-                                        }
-                                }
- 
-                                HeadsSet = new bool [thisCFGShape.SignalSubObjs.Count];
-
-  // loop through all heads and check SubObj flag per bit to check if head is set
-
-                                uint iMask = 1;
-
-                                for (int iHead = 0; iHead < thisCFGShape.SignalSubObjs.Count; iHead++)
-                                {
-                                        HeadsSet[iHead] = false;
-                                        uint headSet = SignalWorldItem.SignalSubObj & iMask;
-                                        MSTS.SignalShape.SignalSubObj thisSubObjs = thisCFGShape.SignalSubObjs[iHead];
-                                        if (headSet != 0)
-                                        {
-
-  // set head, and if head is flag, also set flag
-
-                                                HeadsSet[iHead] = true;
-                                                
-                                                if (thisSubObjs.BackFacing)
-                                                {
-                                                        Backfacing.Add(iHead);
-                                                        if (thisSubObjs.SignalSubType >= 1)
-                                                        {
-                                                                 FlagsSetBackfacing[thisSubObjs.SignalSubType] = true;
-                                                        }
-                                                }
-                                                else if (thisSubObjs.SignalSubType >= 1)
-                                                {
-                                                         FlagsSet[thisSubObjs.SignalSubType] = true;
-                                                }
-                                        }
-                                        iMask = iMask << 1;
-                                }
-
-  // get TDB and head reference from World file
-
-                                foreach (MSTS.SignalUnit signalUnitInfo in SignalWorldItem.SignalUnits.Units)
-                                {
-                                        uint TrItemRef = signalUnitInfo.TrItem;
-                                        uint HeadRef   = Convert.ToUInt32(signalUnitInfo.SubObj);
-                                        HeadReference.Add(TrItemRef, HeadRef);
-                                }
-                        }
-                        else
-                        {
-                                Trace.TraceWarning("Signal {0} not found in SIGCFG.DAT", SFileName);
-                        }
-                                
+                    newLastDistance[thisSpeedpost.direction] = speedpostDistance;
                 }
+            }
 
+        //
+            // Insert crossover in special crossover list
+            //
 
-  //================================================================================================//
-  //
-  // Constructor for copy
-  //
+            else if (thisItem.ItemType == TrItem.trItemType.trCROSSOVER)
+            {
+                CrossoverItem crossItem = (CrossoverItem)thisItem;
 
-                public SignalWorldObject(SignalWorldObject copy)
+                float cdist = TDBTrav.DistanceTo(trackNodes[thisCircuit.OriginalIndex],
+                crossItem.TileX, crossItem.TileZ,
+                                crossItem.X, crossItem.Y, crossItem.Z);
+
+                int thisId = (int)crossItem.TrItemId;
+                int crossId = (int)crossItem.TrackNode;
+                CrossOverItem exItem = null;
+
+                // search in Dictionary for combined item //
+
+                if (CrossOverList.ContainsKey(crossId))
                 {
-                        SFileName  = String.Copy(copy.SFileName);
-                        Backfacing = copy.Backfacing;
-
-                        HeadsSet = new bool [copy.HeadsSet.Length];
-                        FlagsSet = new bool [copy.FlagsSet.Length];
-                        FlagsSetBackfacing = new bool [copy.FlagsSet.Length];
-                        copy.HeadsSet.CopyTo(HeadsSet, 0);
-                        copy.FlagsSet.CopyTo(FlagsSet, 0);
-                        copy.FlagsSetBackfacing.CopyTo(FlagsSet, 0);
-
-                        HeadReference = new Dictionary <uint, uint> ();
-                        foreach ( KeyValuePair <uint, uint> thisRef in copy.HeadReference)
-                        {
-                                HeadReference.Add(thisRef.Key, thisRef.Value);
-                        }
+                    exItem = CrossOverList[crossId];
+                    exItem.Position[1] = cdist;
+                    exItem.SectionIndex[1] = thisCircuit.Index;
                 }
+                else
+                {
+                    exItem = new CrossOverItem();
+                    exItem.SectionIndex[0] = thisCircuit.Index;
+                    exItem.SectionIndex[1] = -1;
 
+                    exItem.Position[0] = cdist;
+                    exItem.ItemIndex[0] = thisId;
+                    exItem.ItemIndex[1] = crossId;
+
+                    exItem.TrackShape = crossItem.CID1;
+
+                    CrossOverList.Add(thisId, exItem);
+                }
+            }
+
+            return (newLastDistance);
         }
 
-  //================================================================================================//
-  //
-  // class ObjectItemInfo
-  //
-  //================================================================================================//
+        //================================================================================================//
+        //
+        // Split on Signals
+        //
 
-        public class ObjectItemInfo
+        private int SplitNodesSignals(int thisNode, int nextNode)
         {
-                public enum ObjectItemType
+            int thisIndex = thisNode;
+            int newIndex = -1;
+            List<int> addIndex = new List<int>();
+
+            //
+            // in direction 0, check original item only
+            // keep list of added items
+            //
+
+            TrackCircuitSection thisSection = TrackCircuitList[thisIndex];
+
+            newIndex = -1;
+            if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL)
+            {
+                addIndex.Add(thisNode);
+
+                List<TrackCircuitSignalItem> sectionSignals =
+                         thisSection.CircuitItems.TrackCircuitSignals[0, (int)SignalHead.SIGFN.NORMAL].TrackCircuitItem;
+
+                while (sectionSignals.Count > 0)
                 {
-                        ANY,
-                        SIGNAL,
-                        SPEEDLIMIT,
+                    TrackCircuitSignalItem thisSignal = sectionSignals[0];
+                    sectionSignals.RemoveAt(0);
+
+                    newIndex = nextNode;
+                    nextNode++;
+
+                    splitSection(thisIndex, newIndex, thisSection.Length - thisSignal.SignalLocation);
+                    TrackCircuitSection newSection = TrackCircuitList[newIndex];
+                    newSection.EndSignals[0] = thisSignal.SignalRef;
+                    thisSection = TrackCircuitList[thisIndex];
+                    addIndex.Add(newIndex);
+
+                    // restore list (link is lost as item is replaced)
+                    sectionSignals = thisSection.CircuitItems.TrackCircuitSignals[0, (int)SignalHead.SIGFN.NORMAL].TrackCircuitItem;
                 }
+            }
 
-                public enum ObjectItemFindState
+            //
+            // in direction 1, check original item and all added items
+            //
+
+            foreach (int actIndex in addIndex)
+            {
+                thisIndex = actIndex;
+
+                while (thisIndex > 0)
                 {
-                        NONE_FOUND = 0,
-                        OBJECT_FOUND = 1,
-                        END_OF_TRACK = -1,
-                        PASSED_DANGER = -2,
-                        PASSED_MAXDISTANCE = -3,
-                        TDB_ERROR = -4,
-                }
+                    thisSection = TrackCircuitList[thisIndex];
 
-                public ObjectItemType               ObjectType;                     // type information
+                    newIndex = -1;
+                    if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                    {
 
-                public SignalObject                 ObjectDetails;                  // actual object 
+                        List<TrackCircuitSignalItem> sectionSignals =
+                           thisSection.CircuitItems.TrackCircuitSignals[1, (int)SignalHead.SIGFN.NORMAL].TrackCircuitItem;
 
-                public float                        distance_to_train;
-                public float                        distance_to_object;
-
-                public SignalHead.SIGASP            signal_state;                   // UNKNOWN if type = speedlimit
-                                                                                    // set active by TRAIN
-                public float                        speed_passenger;                // -1 if not set
-                public float                        speed_freight;                  // -1 if not set
-                public uint                         speed_flag;
-                public float                        actual_speed;                   // set active by TRAIN
-
-  //================================================================================================//
-  //
-  // Constructor
-  //
-
-                public ObjectItemInfo(char reference, char found_type, SignalObject thisObject, float distance)
-                {
-                        ObjectSpeedInfo speed_info;
-
-                        if (reference == 'T')
+                        if (sectionSignals.Count > 0)
                         {
-                                distance_to_train = distance;
-                                distance_to_object = -1;
+                            TrackCircuitSignalItem thisSignal = sectionSignals[0];
+                            sectionSignals.RemoveAt(0);
+
+                            newIndex = nextNode;
+                            nextNode++;
+
+                            splitSection(thisIndex, newIndex, thisSignal.SignalLocation);
+                            TrackCircuitSection newSection = TrackCircuitList[newIndex];
+                            newSection.EndSignals[0] = null;
+                            thisSection = TrackCircuitList[thisIndex];
+                            thisSection.EndSignals[1] = thisSignal.SignalRef;
+
+                            // restore list (link is lost as item is replaced)
+                            sectionSignals = thisSection.CircuitItems.TrackCircuitSignals[1, (int)SignalHead.SIGFN.NORMAL].TrackCircuitItem;
+                        }
+                    }
+                    thisIndex = thisSection.CircuitItems.TrackCircuitSignals[1, (int)SignalHead.SIGFN.NORMAL].TrackCircuitItem.Count > 0 ? thisIndex : newIndex;
+                }
+            }
+
+            return (nextNode);
+        }
+
+        //================================================================================================//
+        //
+        // Split CrossOvers
+        //
+
+        private int SplitNodesCrossover(CrossOverItem CrossOver,
+                TSectionDatFile tsectiondat, int nextNode)
+        {
+            bool processCrossOver = true;
+            int sectionIndex0 = 0;
+            int sectionIndex1 = 0;
+
+            if (CrossOver.SectionIndex[0] < 0 || CrossOver.SectionIndex[1] < 0)
+            {
+                Trace.TraceWarning("Incomplete crossover : indices {0} and {1}",
+                            CrossOver.ItemIndex[0], CrossOver.ItemIndex[1]);
+                processCrossOver = false;
+            }
+            if (CrossOver.SectionIndex[0] == CrossOver.SectionIndex[1])
+            {
+                Trace.TraceWarning("Invalid crossover : indices {0} and {1} : equal section : {2}",
+                            CrossOver.ItemIndex[0], CrossOver.ItemIndex[1],
+                CrossOver.SectionIndex[0]);
+                processCrossOver = false;
+            }
+
+            if (processCrossOver)
+            {
+                sectionIndex0 = getCrossOverSectionIndex(CrossOver, 0);
+                sectionIndex1 = getCrossOverSectionIndex(CrossOver, 1);
+
+                if (sectionIndex0 < 0 || sectionIndex1 < 0)
+                {
+                    processCrossOver = false;
+                }
+            }
+
+            if (processCrossOver)
+            {
+                int newSection0 = nextNode;
+                nextNode++;
+                int newSection1 = nextNode;
+                nextNode++;
+                int jnSection = nextNode;
+                nextNode++;
+
+                splitSection(sectionIndex0, newSection0, CrossOver.Position[0]);
+                splitSection(sectionIndex1, newSection1, CrossOver.Position[1]);
+
+                addCrossoverJunction(sectionIndex0, newSection0, sectionIndex1, newSection1,
+                                jnSection, CrossOver, tsectiondat);
+            }
+
+            return (nextNode);
+        }
+
+        //================================================================================================//
+        //
+        // Get cross-over section index
+        //
+
+        private int getCrossOverSectionIndex(CrossOverItem CrossOver, int Index)
+        {
+            int sectionIndex = CrossOver.SectionIndex[Index];
+            float position = CrossOver.Position[Index];
+            TrackCircuitSection section = TrackCircuitList[sectionIndex];
+
+            // to overcome tdb errors, check if still in original tracknode
+            int firstSectionOriginalIndex = section.OriginalIndex;
+            int firstSectionIndex = sectionIndex;
+
+            while (position > 0 && position > section.Length)
+            // while (position > 0 && position > section.Length && section.OriginalIndex == firstSectionOriginalIndex)
+            {
+                int prevSection = sectionIndex;
+                position = position - section.Length;
+                CrossOver.Position[Index] = position;
+                sectionIndex = section.Pins[1, 0].Link;
+
+                if (sectionIndex > 0)
+                {
+                    section = TrackCircuitList[sectionIndex];
+                    if (section.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                    {
+                        if (section.Pins[0, 0].Link == prevSection)
+                        {
+                            sectionIndex = section.Pins[1, 0].Link;
                         }
                         else
                         {
-                                distance_to_train = -1;
-                                distance_to_object = distance;
+                            sectionIndex = section.Pins[1, 1].Link;
                         }
-
-                        ObjectDetails = thisObject;
-
-                        if (found_type == 'S')
-                        {
-                                ObjectType = ObjectItemType.SIGNAL;
-                                signal_state = SignalHead.SIGASP.UNKNOWN;  // set active by TRAIN
-                                speed_passenger = -1;                      // set active by TRAIN
-                                speed_freight   = -1;                      // set active by TRAIN
-                                speed_flag      = 0;                       // set active by TRAIN
-                                }
-                        else
-                        {
-                                ObjectType = ObjectItemType.SPEEDLIMIT;
-                                signal_state = SignalHead.SIGASP.UNKNOWN;
-                                speed_info = thisObject.this_lim_speed(SignalHead.SIGFN.SPEED);
-                        speed_passenger = speed_info.speed_pass;
-                        speed_freight   = speed_info.speed_freight;
-                        speed_flag      = speed_info.speed_flag;
+                        section = TrackCircuitList[sectionIndex];
+                    }
                 }
-        }
+                else
+                {
+                    position = -1;  // no position found //
+                }
+            }
+
+            if (position < 0)
+            {
+                Trace.TraceWarning("Cannot locate CrossOver {0} in Section {1}",
+                                CrossOver.ItemIndex[0], CrossOver.SectionIndex[0]);
+                sectionIndex = -1;
+            }
+
+            //           if (section.OriginalIndex == firstSectionOriginalIndex)  // if correct circuit found (part of original tracknode)
+            //           {
+            return (sectionIndex);
+            //           }
+            //           else                                                     // if not, return first section (is wrong but best we have)
+            //           {
+            //               Trace.TraceInformation("Cannot locate proper section for CrossOver {0} in Section {1}",
+            //                   CrossOver.ItemIndex[0], CrossOver.SectionIndex[0]);
+            //               return (firstSectionIndex);
+            //           }
         }
 
-  //================================================================================================//
-  //
-  // class ObjectSpeedInfo
-  //
-  //================================================================================================//
+        //================================================================================================//
+        //
+        // Split section
+        //
 
-        public class ObjectSpeedInfo
+        private void splitSection(int orgSectionIndex, int newSectionIndex, float position)
+        {
+            TrackCircuitSection orgSection = TrackCircuitList[orgSectionIndex];
+            TrackCircuitSection newSection = orgSection.CopyBasic(newSectionIndex);
+            TrackCircuitSection replSection = orgSection.CopyBasic(orgSectionIndex);
+
+            replSection.OriginalIndex = newSection.OriginalIndex = orgSection.OriginalIndex;
+            replSection.CircuitType = newSection.CircuitType = TrackCircuitSection.CIRCUITTYPE.NORMAL;
+
+            replSection.Length = position;
+            newSection.Length = orgSection.Length - position;
+
+            // take care of rounding errors
+
+            if (newSection.Length < 0 || Math.Abs(newSection.Length) < 0.01f)
+            {
+                newSection.Length = 0.01f;
+            }
+            if (replSection.Length < 0 || Math.Abs(replSection.Length) < 0.01f)
+            {
+                replSection.Length = 0.01f;
+            }
+
+            // check for invalid lengths - report and correct
+
+            if (newSection.Length < 0)
+            {
+                Trace.TraceWarning("Invalid Length for new section {0}: length {1}, split on {2}",
+                        newSection.Index, orgSection.Length, position);
+                newSection.Length = 0.1f;
+            }
+            if (replSection.Length < 0)
+            {
+                Trace.TraceWarning("Invalid Length for replacement section {0}: length {1}, split on {2}",
+                        newSection.Index, orgSection.Length, position);
+                replSection.Length = 0.1f;
+            }
+
+            // set lengths and offset
+
+            replSection.OffsetLength[0] = orgSection.OffsetLength[0] + newSection.Length;
+            replSection.OffsetLength[1] = orgSection.OffsetLength[1];
+
+            newSection.OffsetLength[0] = orgSection.OffsetLength[0];
+            newSection.OffsetLength[1] = orgSection.OffsetLength[1] + replSection.Length;
+
+            // set new pins
+
+            replSection.Pins[0, 0].Direction = orgSection.Pins[0, 0].Direction;
+            replSection.Pins[0, 0].Link = orgSection.Pins[0, 0].Link;
+            replSection.Pins[1, 0].Direction = 1;
+            replSection.Pins[1, 0].Link = newSectionIndex;
+
+            newSection.Pins[0, 0].Direction = 0;
+            newSection.Pins[0, 0].Link = orgSectionIndex;
+            newSection.Pins[1, 0].Direction = orgSection.Pins[1, 0].Direction;
+            newSection.Pins[1, 0].Link = orgSection.Pins[1, 0].Link;
+
+            // update pins on adjacent sections
+
+            int refLinkIndex = newSection.Pins[1, 0].Link;
+            int refLinkDirIndex = newSection.Pins[1, 0].Direction == 0 ? 1 : 0;
+            TrackCircuitSection refLink = TrackCircuitList[refLinkIndex];
+            if (refLink.Pins[refLinkDirIndex, 0].Link == orgSectionIndex)
+            {
+                refLink.Pins[refLinkDirIndex, 0].Link = newSectionIndex;
+            }
+            else if (refLink.Pins[refLinkDirIndex, 1].Link == orgSectionIndex)
+            {
+                refLink.Pins[refLinkDirIndex, 1].Link = newSectionIndex;
+            }
+
+            // copy signal information
+
+            for (int itype = 0; itype < orgSection.CircuitItems.TrackCircuitSignals.GetLength(1); itype++)
+            {
+                TrackCircuitSignalList orgSigList = orgSection.CircuitItems.TrackCircuitSignals[0, itype];
+                TrackCircuitSignalList replSigList = replSection.CircuitItems.TrackCircuitSignals[0, itype];
+                TrackCircuitSignalList newSigList = newSection.CircuitItems.TrackCircuitSignals[0, itype];
+
+                foreach (TrackCircuitSignalItem thisSignal in orgSigList.TrackCircuitItem)
+                {
+                    float sigLocation = thisSignal.SignalLocation;
+                    if (sigLocation <= newSection.Length)
+                    {
+                        newSigList.TrackCircuitItem.Add(thisSignal);
+                    }
+                    else
+                    {
+                        thisSignal.SignalLocation -= newSection.Length;
+                        replSigList.TrackCircuitItem.Add(thisSignal);
+                    }
+                }
+            }
+
+            for (int itype = 0; itype < orgSection.CircuitItems.TrackCircuitSignals.GetLength(1); itype++)
+            {
+                TrackCircuitSignalList orgSigList = orgSection.CircuitItems.TrackCircuitSignals[1, itype];
+                TrackCircuitSignalList replSigList = replSection.CircuitItems.TrackCircuitSignals[1, itype];
+                TrackCircuitSignalList newSigList = newSection.CircuitItems.TrackCircuitSignals[1, itype];
+
+                foreach (TrackCircuitSignalItem thisSignal in orgSigList.TrackCircuitItem)
+                {
+                    float sigLocation = thisSignal.SignalLocation;
+                    if (sigLocation > replSection.Length)
+                    {
+                        thisSignal.SignalLocation -= replSection.Length;
+                        newSigList.TrackCircuitItem.Add(thisSignal);
+                    }
+                    else
+                    {
+                        replSigList.TrackCircuitItem.Add(thisSignal);
+                    }
+                }
+            }
+
+            // copy speedpost information
+
+            TrackCircuitSignalList orgSpeedList = orgSection.CircuitItems.TrackCircuitSpeedPosts[0];
+            TrackCircuitSignalList replSpeedList = replSection.CircuitItems.TrackCircuitSpeedPosts[0];
+            TrackCircuitSignalList newSpeedList = newSection.CircuitItems.TrackCircuitSpeedPosts[0];
+
+            foreach (TrackCircuitSignalItem thisSpeedpost in orgSpeedList.TrackCircuitItem)
+            {
+                float sigLocation = thisSpeedpost.SignalLocation;
+                if (sigLocation < newSection.Length)
+                {
+                    newSpeedList.TrackCircuitItem.Add(thisSpeedpost);
+                }
+                else
+                {
+                    thisSpeedpost.SignalLocation -= newSection.Length;
+                    replSpeedList.TrackCircuitItem.Add(thisSpeedpost);
+                }
+            }
+
+            orgSpeedList = orgSection.CircuitItems.TrackCircuitSpeedPosts[1];
+            replSpeedList = replSection.CircuitItems.TrackCircuitSpeedPosts[1];
+            newSpeedList = newSection.CircuitItems.TrackCircuitSpeedPosts[1];
+
+            foreach (TrackCircuitSignalItem thisSpeedpost in orgSpeedList.TrackCircuitItem)
+            {
+                float sigLocation = thisSpeedpost.SignalLocation;
+                if (sigLocation > replSection.Length)
+                {
+                    thisSpeedpost.SignalLocation -= replSection.Length;
+                    newSpeedList.TrackCircuitItem.Add(thisSpeedpost);
+                }
+                else
+                {
+                    replSpeedList.TrackCircuitItem.Add(thisSpeedpost);
+                }
+            }
+
+            // copy milepost information
+
+            foreach (TrackCircuitMilepost thisMilePost in orgSection.CircuitItems.MilePosts)
+            {
+                if (thisMilePost.MilepostLocation[0] > replSection.Length)
+                {
+                    thisMilePost.MilepostLocation[0] -= replSection.Length;
+                    newSection.CircuitItems.MilePosts.Add(thisMilePost);
+                }
+                else
+                {
+                    thisMilePost.MilepostLocation[1] -= newSection.Length;
+                    replSection.CircuitItems.MilePosts.Add(thisMilePost);
+                }
+            }
+
+            // update list
+
+            TrackCircuitList.RemoveAt(orgSectionIndex);
+            TrackCircuitList.Insert(orgSectionIndex, replSection);
+            TrackCircuitList.Add(newSection);
+        }
+
+
+        //================================================================================================//
+        //
+        // Add junction sections for Crossover
+        //
+
+        private void addCrossoverJunction(int leadSectionIndex0, int trailSectionIndex0,
+                        int leadSectionIndex1, int trailSectionIndex1, int JnIndex,
+                        CrossOverItem CrossOver, TSectionDatFile tsectiondat)
+        {
+            TrackCircuitSection leadSection0 = TrackCircuitList[leadSectionIndex0];
+            TrackCircuitSection leadSection1 = TrackCircuitList[leadSectionIndex1];
+            TrackCircuitSection trailSection0 = TrackCircuitList[trailSectionIndex0];
+            TrackCircuitSection trailSection1 = TrackCircuitList[trailSectionIndex1];
+            TrackCircuitSection JnSection = new TrackCircuitSection(JnIndex, this);
+
+            JnSection.OriginalIndex = leadSection0.OriginalIndex;
+            JnSection.CircuitType = TrackCircuitSection.CIRCUITTYPE.CROSSOVER;
+            JnSection.Length = 0;
+
+            leadSection0.Pins[1, 0].Link = JnIndex;
+            leadSection1.Pins[1, 0].Link = JnIndex;
+            trailSection0.Pins[0, 0].Link = JnIndex;
+            trailSection1.Pins[0, 0].Link = JnIndex;
+
+            JnSection.Pins[0, 0].Direction = 0;
+            JnSection.Pins[0, 0].Link = leadSectionIndex0;
+            JnSection.Pins[0, 1].Direction = 0;
+            JnSection.Pins[0, 1].Link = leadSectionIndex1;
+            JnSection.Pins[1, 0].Direction = 1;
+            JnSection.Pins[1, 0].Link = trailSectionIndex0;
+            JnSection.Pins[1, 1].Direction = 1;
+            JnSection.Pins[1, 1].Link = trailSectionIndex1;
+
+            JnSection.Overlap = tsectiondat.TrackShapes[CrossOver.TrackShape].ClearanceDistance;
+
+            JnSection.SignalsPassingRoutes = new List<int>();
+
+            TrackCircuitList.Add(JnSection);
+        }
+
+        //================================================================================================//
+        //
+        // Check pin links
+        //
+
+        private int performLinkTest(int thisNode, int nextNode)
         {
 
-                public float         speed_pass;
-                public float         speed_freight;
-                public uint          speed_flag;
+            TrackCircuitSection thisSection = TrackCircuitList[thisNode];
 
-  //================================================================================================//
-  //
-  // Constructor
-  //
-
-                public ObjectSpeedInfo(float pass, float freight, bool asap)
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                for (int iPin = 0; iPin <= 1; iPin++)
                 {
-                        speed_pass    = pass;
-                        speed_freight = freight;
-                        if (asap)
+                    int linkedNode = thisSection.Pins[iDirection, iPin].Link;
+                    int linkedDirection = thisSection.Pins[iDirection, iPin].Direction == 0 ? 1 : 0;
+
+                    if (linkedNode > 0)
+                    {
+                        TrackCircuitSection linkedSection = TrackCircuitList[linkedNode];
+
+                        bool linkfound = false;
+                        bool doublelink = false;
+                        int doublenode = -1;
+
+                        for (int linkedPin = 0; linkedPin <= 1; linkedPin++)
                         {
-                                 speed_flag = 1;
+                            if (linkedSection.Pins[linkedDirection, linkedPin].Link == thisNode)
+                            {
+                                linkfound = true;
+                                if (linkedSection.ActivePins[linkedDirection, linkedPin].Link == -1)
+                                {
+                                    linkedSection.ActivePins[linkedDirection, linkedPin].Link = thisNode;
+                                }
+                                else
+                                {
+                                    doublelink = true;
+                                    doublenode = linkedSection.ActivePins[linkedDirection, linkedPin].Link;
+                                }
+                            }
                         }
+
+                        if (!linkfound)
+                        {
+                            Trace.TraceWarning("Invalid link in section {0} : Pin [{1},{2}] : section {3}",
+                                thisNode, iDirection, iPin, linkedNode);
+                            int endNode = nextNode;
+                            nextNode++;
+                            insertEndNode(thisNode, iDirection, iPin, endNode);
+                        }
+
+                        if (doublelink)
+                        {
+                            Trace.TraceWarning("Section {0}, Pin [{1},{2}] links to section {3} already linked by {4}",
+                                    thisNode, iDirection, iPin, linkedNode, doublenode);
+                            int endNode = nextNode;
+                            nextNode++;
+                            insertEndNode(thisNode, iDirection, iPin, endNode);
+                        }
+                    }
+                    else if (linkedNode == 0)
+                    {
+                        Trace.TraceWarning("Section {0}, Pin [{1},{2}] is 0 reference",
+                            thisNode, iDirection, iPin);
+                        int endNode = nextNode;
+                        nextNode++;
+                        insertEndNode(thisNode, iDirection, iPin, endNode);
+                    }
                 }
+            }
+
+            return (nextNode);
         }
 
-  //================================================================================================//
+        //================================================================================================//
+        //
+        // insert end node to capture database break
+        //
+
+        private void insertEndNode(int thisNode, int direction, int pin, int endNode)
+        {
+
+            TrackCircuitSection thisSection = TrackCircuitList[thisNode];
+            TrackCircuitSection endSection = new TrackCircuitSection(endNode, this);
+
+            endSection.CircuitType = TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK;
+            int endDirection = direction == 0 ? 1 : 0;
+            int iDirection = thisSection.Pins[direction, pin].Direction == 0 ? 1 : 0;
+            endSection.Pins[iDirection, 0].Direction = endDirection;
+            endSection.Pins[iDirection, 0].Link = thisNode;
+
+            thisSection.Pins[direction, pin].Link = endNode;
+
+            TrackCircuitList.Add(endSection);
+        }
+
+        //================================================================================================//
+        //
+        // set active pins for non-junction links
+        // set trailing link indications
+        //
+
+        private void setActivePins(int thisNode)
+        {
+            TrackCircuitSection thisSection = TrackCircuitList[thisNode];
+
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                for (int iPin = 0; iPin <= 1; iPin++)
+                {
+                    if (thisSection.Pins[iDirection, iPin].Link > 0)
+                    {
+                        TrackCircuitSection nextSection = null;
+
+                        if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                        {
+                            int nextIndex = thisSection.Pins[iDirection, iPin].Link;
+                            nextSection = TrackCircuitList[nextIndex];
+
+                            if (thisSection.Pins[iDirection, 1].Link > 0)    // Junction end
+                            {
+                                thisSection.ActivePins[iDirection, iPin].Direction =
+                                    thisSection.Pins[iDirection, iPin].Direction;
+                                thisSection.ActivePins[iDirection, iPin].Link = -1;
+                            }
+                            else
+                            {
+                                thisSection.ActivePins[iDirection, iPin].Direction =
+                                    thisSection.Pins[iDirection, iPin].Direction;
+                                thisSection.ActivePins[iDirection, iPin].Link =
+                                    thisSection.Pins[iDirection, iPin].Link;
+                            }
+                        }
+                        else if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                        {
+                            int nextIndex = thisSection.Pins[iDirection, iPin].Link;
+                            nextSection = TrackCircuitList[nextIndex];
+
+                            thisSection.ActivePins[iDirection, iPin].Direction =
+                                thisSection.Pins[iDirection, iPin].Direction;
+                            thisSection.ActivePins[iDirection, iPin].Link = -1;
+                        }
+                        else
+                        {
+                            int nextIndex = thisSection.Pins[iDirection, iPin].Link;
+                            nextSection = TrackCircuitList[nextIndex];
+
+                            thisSection.ActivePins[iDirection, iPin].Direction =
+                                thisSection.Pins[iDirection, iPin].Direction;
+                            thisSection.ActivePins[iDirection, iPin].Link =
+                                thisSection.Pins[iDirection, iPin].Link;
+                        }
+
+
+                        if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                        {
+                            thisSection.ActivePins[iDirection, iPin].Link = -1;
+                            if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                            {
+                                thisSection.EndIsTrailingJunction[iDirection] = true;
+                            }
+                        }
+                        else if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                        {
+                            int nextDirection = thisSection.Pins[iDirection, iPin].Direction == 0 ? 1 : 0;
+                            //                          int nextDirection = thisSection.Pins[iDirection, iPin].Direction;
+                            if (nextSection.Pins[nextDirection, 1].Link > 0)
+                            {
+                                thisSection.ActivePins[iDirection, iPin].Link = -1;
+                                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                                {
+                                    thisSection.EndIsTrailingJunction[iDirection] = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // set cross-reference to tracknodes
+        //
+
+        private void setCrossReference(int thisNode, TrackNode[] trackNodes)
+        {
+            TrackCircuitSection thisSection = TrackCircuitList[thisNode];
+            if (thisSection.OriginalIndex > 0 && thisSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+            {
+                TrackNode thisTrack = trackNodes[thisSection.OriginalIndex];
+                float offset0 = thisSection.OffsetLength[0];
+                float offset1 = thisSection.OffsetLength[1];
+
+                TrackCircuitCrossReference newReference = new TrackCircuitCrossReference(thisSection);
+
+                bool inserted = false;
+
+                if (thisTrack.TCCrossReference == null)
+                {
+                    thisTrack.TCCrossReference = new TrackCircuitXRefList();
+                    TrackCircuitXRefList thisXRef = thisTrack.TCCrossReference;
+                }
+                else
+                {
+                    TrackCircuitXRefList thisXRef = thisTrack.TCCrossReference;
+                    for (int iPart = 0; iPart < thisXRef.Count && !inserted; iPart++)
+                    {
+                        TrackCircuitCrossReference thisReference = thisXRef[iPart];
+                        if (offset0 < thisReference.Position[0])
+                        {
+                            thisXRef.Insert(iPart, newReference);
+                            inserted = true;
+                        }
+                        else if (offset1 > thisReference.Position[1])
+                        {
+                            thisXRef.Insert(iPart, newReference);
+                            inserted = true;
+                        }
+                    }
+                }
+
+                if (!inserted)
+                {
+                    TrackCircuitXRefList thisXRef = thisTrack.TCCrossReference;
+                    thisXRef.Add(newReference);
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // set cross-reference to tracknodes for CrossOver items
+        //
+
+        private void setCrossReferenceCrossOver(int thisNode, TrackNode[] trackNodes)
+        {
+            TrackCircuitSection thisSection = TrackCircuitList[thisNode];
+            if (thisSection.OriginalIndex > 0 && thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+            {
+                for (int iPin = 0; iPin <= 1; iPin++)
+                {
+                    int prevIndex = thisSection.Pins[0, iPin].Link;
+                    TrackCircuitSection prevSection = TrackCircuitList[prevIndex];
+
+                    TrackCircuitCrossReference newReference = new TrackCircuitCrossReference(thisSection);
+                    TrackNode thisTrack = trackNodes[prevSection.OriginalIndex];
+                    TrackCircuitXRefList thisXRef = thisTrack.TCCrossReference;
+
+                    bool inserted = false;
+                    for (int iPart = 0; iPart < thisXRef.Count && !inserted; iPart++)
+                    {
+                        TrackCircuitCrossReference thisReference = thisXRef[iPart];
+                        if (thisReference.CrossRefIndex == prevIndex)
+                        {
+                            newReference.Position[0] = thisReference.Position[0];
+                            newReference.Position[1] = thisReference.Position[1] + thisReference.Length;
+                            thisXRef.Insert(iPart, newReference);
+                            inserted = true;
+                        }
+                    }
+
+                    if (!inserted)
+                    {
+                        Trace.TraceWarning("ERROR : cannot find XRef for leading track to crossover {0}",
+                            thisNode);
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Set trackcircuit cross reference for signal items
+        //
+
+        private void setSignalCrossReference(int thisNode)
+        {
+
+            TrackCircuitSection thisSection = TrackCircuitList[thisNode];
+
+            // process end signals
+
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                SignalObject thisSignal = thisSection.EndSignals[iDirection];
+                if (thisSignal != null)
+                {
+                    thisSignal.TCReference = thisNode;
+                    thisSignal.TCOffset = thisSection.Length;
+                    thisSignal.TCDirection = iDirection;
+
+                    //                  int pinIndex = iDirection == 0 ? 1 : 0;
+                    int pinIndex = iDirection;
+                    thisSignal.TCNextTC = thisSection.Pins[pinIndex, 0].Link;
+                    thisSignal.TCNextDirection = thisSection.Pins[pinIndex, 0].Direction;
+                }
+            }
+
+            // process other signals - only set info if not already set
+
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+                {
+                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[iDirection, fntype];
+                    foreach (TrackCircuitSignalItem thisItem in thisList.TrackCircuitItem)
+                    {
+                        SignalObject thisSignal = thisItem.SignalRef;
+
+                        if (thisSignal.TCReference <= 0)
+                        {
+                            thisSignal.TCReference = thisNode;
+                            thisSignal.TCOffset = thisItem.SignalLocation;
+                            thisSignal.TCDirection = iDirection;
+                        }
+                    }
+                }
+            }
+
+
+            // process speedposts
+
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSpeedPosts[iDirection];
+                foreach (TrackCircuitSignalItem thisItem in thisList.TrackCircuitItem)
+                {
+                    SignalObject thisSignal = thisItem.SignalRef;
+
+                    if (thisSignal.TCReference <= 0)
+                    {
+                        thisSignal.TCReference = thisNode;
+                        thisSignal.TCOffset = thisItem.SignalLocation;
+                        thisSignal.TCDirection = iDirection;
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Set physical switch
+        //
+
+        public void setSwitch(int nodeIndex, int switchPos, TrackCircuitSection thisSection)
+        {
+            TrackNode thisNode = trackDB.TrackNodes[nodeIndex];
+            thisNode.TrJunctionNode.SelectedRoute = switchPos;
+            thisSection.JunctionLastRoute = switchPos;
+        }
+
+        //================================================================================================//
+        //
+        // Node control track clearance update request
+        //
+
+        public void requestClearNode(Train.TrainRouted thisTrain, Train.TCSubpathRoute routePart)
+        {
+
+#if DEBUG_REPORTS
+            String report = "Request for clear node from train ";
+            report = String.Concat(report, thisTrain.Train.Number.ToString());
+            report = String.Concat(report, " at section ", thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex.ToString());
+            report = String.Concat(report, " starting from ", thisTrain.Train.LastReservedSection.ToString());
+            File.AppendAllText(@"C:\temp\printproc.txt", report + "\n");
+#endif
+            if (thisTrain.Train.CheckTrain)
+            {
+                String reportCT = "Request for clear node from train ";
+                reportCT = String.Concat(reportCT, thisTrain.Train.Number.ToString());
+                reportCT = String.Concat(reportCT, " at section ", thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex.ToString());
+                reportCT = String.Concat(reportCT, " starting from ", thisTrain.Train.LastReservedSection.ToString());
+                File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
+            }
+
+            // check if present clearance is beyond required maximum distance
+
+            int sectionIndex = -1;
+            Train.TCRouteElement thisElement = null;
+            TrackCircuitSection thisSection = null;
+
+            float clearedDistanceM = 0.0f;
+            Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
+
+            int routeIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+            thisElement = routePart[routeIndex];
+            sectionIndex = thisElement.TCSectionIndex;
+            float maxDistance = Math.Max(thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
+
+            int lastReserved = thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex];
+            int endListIndex = -1;
+
+            bool furthestRouteCleared = false;
+
+            Train.TCSubpathRoute thisRoute = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex];
+            Train.TCPosition thisPosition = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
+
+            if (lastReserved > 0)
+            {
+
+                endListIndex = thisRoute.GetRouteIndex(lastReserved, thisPosition.RouteListIndex);
+
+                // check if backward in route - if so, route is valid and obstacle is in present section
+
+                if (endListIndex < 0)
+                {
+                    int prevListIndex = -1;
+                    for (int iNode = thisPosition.RouteListIndex; iNode >= 0 && prevListIndex < 0; iNode--)
+                    {
+                        thisElement = thisRoute[iNode];
+                        if (thisElement.TCSectionIndex == lastReserved)
+                        {
+                            prevListIndex = iNode;
+                        }
+                    }
+
+                    if (prevListIndex < 0)     // section is really off route - perform request from present position
+                    {
+                        Trace.TraceWarning("Switch to Node Control for train {0} with off route section", thisTrain.Train.Number);
+                        BreakDownRoute(thisPosition.TCSectionIndex, thisTrain);
+                    }
+                }
+            }
+
+            if (thisTrain.Train.CheckTrain)
+            {
+                if (endListIndex >= 0)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                            "Index in route list : " + endListIndex + " = " +
+                            thisRoute[endListIndex].TCSectionIndex.ToString() + "\n");
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                            "Index in route list : " + endListIndex + "\n");
+                }
+            }
+
+            // if section is (still) set, check if this is at maximum distance
+
+            if (endListIndex >= 0)
+            {
+                routeIndex = endListIndex;
+                clearedDistanceM = thisTrain.Train.GetDistanceToTrain(lastReserved, 0.0f);
+
+                if (clearedDistanceM > maxDistance)
+                {
+                    endAuthority = Train.END_AUTHORITY.MAX_DISTANCE;
+                    furthestRouteCleared = true;
+                    if (thisTrain.Train.CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt",
+                                "Cleared Distance : " +
+                                            FormatStrings.FormatDistance(clearedDistanceM, true) +
+                            " > Max Distance \n");
+                    }
+
+                }
+            }
+            else
+            {
+                routeIndex = thisPosition.RouteListIndex;   // obstacle is in present section
+            }
+
+            int lastRouteIndex = routeIndex;
+            float offset = 0.0f;
+            if (routeIndex == thisPosition.RouteListIndex)
+            {
+                offset = thisPosition.TCOffset;
+            }
+
+            // try to clear further ahead if required
+
+            if (!furthestRouteCleared)
+            {
+
+                if (thisTrain.Train.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                            "Starting check from : " +
+                            "Index in route list : " + routeIndex + " = " +
+                            thisRoute[routeIndex].TCSectionIndex.ToString() + "\n");
+                }
+
+                // check if train ahead still in last available section
+
+                bool routeAvailable = true;
+                thisSection = TrackCircuitList[routePart[routeIndex].TCSectionIndex];
+                Dictionary<Train, float> trainAhead =
+                        thisSection.TestTrainAhead(thisTrain.Train, thisPosition.TCOffset, thisPosition.TCDirection);
+
+                if (thisTrain.Train.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                            "Train ahead in section " + thisSection.Index.ToString() + " : " +
+                            trainAhead.Count.ToString() + "\n");
+                }
+
+                if (trainAhead.Count > 0)
+                {
+                    routeAvailable = false;
+                    lastRouteIndex = routeIndex - 1;
+                    if (thisTrain.Train.CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt",
+                                "Set last valid section : " +
+                                "Index in route list : " + lastRouteIndex + " = " +
+                                thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][lastRouteIndex].TCSectionIndex.ToString() + "\n");
+                    }
+                }
+
+                // train ahead has moved on, check next sections
+
+                while (routeIndex < routePart.Count && routeAvailable && !furthestRouteCleared)
+                {
+                    if (thisTrain.Train.CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt",
+                                "Checking : Index in route list : " + routeIndex + " = " +
+                                thisRoute[routeIndex].TCSectionIndex.ToString() + "\n");
+                    }
+
+                    thisElement = routePart[routeIndex];
+                    sectionIndex = thisElement.TCSectionIndex;
+                    thisSection = TrackCircuitList[sectionIndex];
+
+                    if (thisSection.IsAvailable(thisTrain))
+                    {
+                        lastReserved = thisSection.Index;
+                        lastRouteIndex = routeIndex;
+                        clearedDistanceM += thisSection.Length - offset;
+                        if (thisTrain.Train.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt",
+                                    "Section clear \n");
+                        }
+
+                        routeIndex++;
+                        offset = 0.0f;
+
+                        if (!thisSection.CircuitState.ThisTrainOccupying(thisTrain) &&
+                            thisSection.CircuitState.TrainReserved == null)
+                        {
+                            thisSection.Reserve(thisTrain, routePart);
+                        }
+
+                        if (thisSection.EndSignals[thisElement.Direction] != null)
+                        {
+                            thisTrain.Train.SwitchToSignalControl(thisSection.EndSignals[thisElement.Direction]);
+                            furthestRouteCleared = true;
+                            if (thisTrain.Train.CheckTrain)
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt",
+                                     "Has end signal : " + thisSection.EndSignals[thisElement.Direction].thisRef.ToString() + "\n");
+                            }
+                        }
+
+                        if (clearedDistanceM > thisTrain.Train.minCheckDistanceM &&
+                                        clearedDistanceM > (thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS))
+                        {
+                            endAuthority = Train.END_AUTHORITY.MAX_DISTANCE;
+                            furthestRouteCleared = true;
+                        }
+
+
+                    }
+                    else
+                    {
+                        if (thisTrain.Train.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt",
+                                    "Section blocked \n");
+                        }
+                        lastRouteIndex = routeIndex - 1;
+                        lastReserved = lastRouteIndex >= 0 ? routePart[lastRouteIndex].TCSectionIndex : -1;
+                        routeAvailable = false;
+                    }
+                }
+            }
+
+            // if not cleared to max distance, determine reason
+
+            if (!furthestRouteCleared && lastRouteIndex > 0)
+            {
+
+                thisElement = routePart[lastRouteIndex];
+                sectionIndex = thisElement.TCSectionIndex;
+                thisSection = TrackCircuitList[sectionIndex];
+
+                if (thisTrain.Train.CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                            "Last section cleared in route list : " + lastRouteIndex + " = " +
+                            thisRoute[lastRouteIndex].TCSectionIndex.ToString() + "\n");
+                }
+                // end of track reached
+
+                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                {
+                    endAuthority = Train.END_AUTHORITY.END_OF_TRACK;
+                    furthestRouteCleared = true;
+                    if (thisTrain.Train.CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt",
+                                "End od track \n");
+                    }
+                }
+
+                // end of path reached
+
+                if (!furthestRouteCleared)
+                {
+                    if (lastRouteIndex >= (routePart.Count - 1))
+                    {
+                        endAuthority = Train.END_AUTHORITY.END_OF_PATH;
+                        furthestRouteCleared = true;
+                        if (thisTrain.Train.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt",
+                                    "End of path \n");
+                        }
+                    }
+                }
+            }
+
+            // check if next section is switch held against train
+
+            if (!furthestRouteCleared && lastRouteIndex < (routePart.Count - 1))
+            {
+                Train.TCRouteElement nextElement = routePart[lastRouteIndex + 1];
+                sectionIndex = nextElement.TCSectionIndex;
+                thisSection = TrackCircuitList[sectionIndex];
+                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
+                    thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                {
+                    if (!thisSection.IsAvailable(thisTrain))
+                    {
+                        endAuthority = Train.END_AUTHORITY.RESERVED_SWITCH;
+                        furthestRouteCleared = true;
+                        if (thisTrain.Train.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt",
+                                    "Reserved Switch \n");
+                        }
+                    }
+                }
+            }
+
+            // check if next section is occupied by stationary train or train moving in similar direction
+            // if so calculate distance to end of train
+            // only allowed for NORMAL sections
+
+            if (!furthestRouteCleared && lastRouteIndex < (routePart.Count - 1))
+            {
+                Train.TCRouteElement nextElement = routePart[lastRouteIndex + 1];
+                int reqDirection = nextElement.Direction;
+                int revDirection = nextElement.Direction == 0 ? 1 : 0;
+
+                sectionIndex = nextElement.TCSectionIndex;
+                thisSection = TrackCircuitList[sectionIndex];
+
+                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL &&
+                           thisSection.CircuitState.HasTrainsOccupying())
+                {
+                    if (thisSection.CircuitState.HasTrainsOccupying(revDirection, false))
+                    {
+                        endAuthority = Train.END_AUTHORITY.TRAIN_AHEAD;
+                        furthestRouteCleared = true;
+                        if (thisTrain.Train.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt",
+                                    "Train Ahead \n");
+                        }
+                    }
+                    else
+                    {
+                        Dictionary<Train, float> trainAhead =
+                                                thisSection.TestTrainAhead(thisTrain.Train, offset, reqDirection);
+
+                        if (trainAhead.Count > 0)
+                        {
+                            foreach (KeyValuePair<Train, float> thisTrainAhead in trainAhead)  // there is only one value
+                            {
+                                endAuthority = Train.END_AUTHORITY.TRAIN_AHEAD;
+                                clearedDistanceM += thisTrainAhead.Value;
+                                furthestRouteCleared = true;
+                                if (thisTrain.Train.CheckTrain)
+                                {
+                                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                                            "Train Ahead \n");
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (!thisSection.IsAvailable(thisTrain))
+                {
+                    endAuthority = Train.END_AUTHORITY.END_OF_AUTHORITY;
+                    furthestRouteCleared = true;
+                }
+            }
+
+            // update train details
+
+            thisTrain.Train.EndAuthorityType[thisTrain.TrainRouteDirectionIndex] = endAuthority;
+            thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex] = lastReserved;
+            thisTrain.Train.DistanceToEndNodeAuthorityM[thisTrain.TrainRouteDirectionIndex] = clearedDistanceM;
+            if (thisTrain.Train.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                        "Returned : \n" +
+                        "    State : " + endAuthority.ToString() + "\n" +
+                        "    Dist  : " + FormatStrings.FormatDistance(clearedDistanceM, true) + "\n" +
+                        "    Sect  : " + lastReserved);
+
+                File.AppendAllText(@"C:\temp\checktrain.txt", "\n");
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Break down reserved route
+        //
+
+        public void BreakDownRoute(int firstSectionIndex, Train.TrainRouted reqTrain)
+        {
+            if (firstSectionIndex < 0)
+                return; // no route to break down
+
+            TrackCircuitSection firstSection = TrackCircuitList[firstSectionIndex];
+            Train.TrainRouted thisTrain = firstSection.CircuitState.TrainReserved;
+
+            // if occupied by train - skip actions and proceed to next section
+
+            if (firstSection.CircuitState.ThisTrainOccupying(reqTrain))
+            {
+
+                // if not reserved - no further route ahead
+
+                if (thisTrain == null)
+                {
+                    return;
+                }
+
+                if (thisTrain != reqTrain)
+                {
+                    return;   // section reserved for other train - stop action
+                }
+
+                // unreserve first section
+
+                firstSection.UnreserveTrain(thisTrain, true);
+            }
+
+            // check which direction to go
+
+            TrackCircuitSection nextSection = null;
+            int nextDirection = 0;
+
+            for (int iPinLink = 0; iPinLink <= 1; iPinLink++)
+            {
+                for (int iPinIndex = 0; iPinIndex <= 1; iPinIndex++)
+                {
+                    int trySectionIndex = firstSection.Pins[iPinLink, iPinIndex].Link;
+                    if (trySectionIndex > 0)
+                    {
+                        TrackCircuitSection trySection = TrackCircuitList[trySectionIndex];
+                        if (trySection.CircuitState.TrainReserved == reqTrain)
+                        {
+                            nextSection = trySection;
+                            nextDirection = firstSection.Pins[iPinLink, iPinIndex].Direction;
+                        }
+                    }
+                }
+            }
+
+            // run back through all reserved sections
+
+            while (nextSection != null)
+            {
+                nextSection.UnreserveTrain(reqTrain, true);
+                TrackCircuitSection thisSection = nextSection;
+                nextSection = null;
+
+                // try to find next section using active links
+
+                TrackCircuitSection trySection = null;
+
+                int iPinLink = nextDirection == 0 ? 1 : 0;
+                for (int iPinIndex = 0; iPinIndex <= 1; iPinIndex++)
+                {
+                    int trySectionIndex = thisSection.ActivePins[iPinLink, iPinIndex].Link;
+                    if (trySectionIndex > 0)
+                    {
+                        trySection = TrackCircuitList[trySectionIndex];
+                        if (trySection.CircuitState.TrainReserved == reqTrain)
+                        {
+                            nextSection = trySection;
+                            nextDirection = thisSection.ActivePins[iPinLink, iPinIndex].Direction;
+                        }
+                    }
+                }
+
+                // not found, then try possible links
+
+                for (int iPinIndex = 0; iPinIndex <= 1; iPinIndex++)
+                {
+                    int trySectionIndex = thisSection.Pins[iPinLink, iPinIndex].Link;
+                    if (trySectionIndex > 0)
+                    {
+                        trySection = TrackCircuitList[trySectionIndex];
+                        if (trySection.CircuitState.TrainReserved == reqTrain)
+                        {
+                            nextSection = trySection;
+                            nextDirection = thisSection.Pins[iPinLink, iPinIndex].Direction;
+                        }
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Break down reserved route using route list
+        //
+
+        public void BreakDownRouteList(Train.TCSubpathRoute reqRoute, int firstRouteIndex, Train.TrainRouted reqTrain)
+        {
+            for (int iindex = reqRoute.Count - 1; iindex >= 0 && iindex >= firstRouteIndex; iindex--)
+            {
+                TrackCircuitSection thisSection = TrackCircuitList[reqRoute[iindex].TCSectionIndex];
+                if (!thisSection.CircuitState.ThisTrainOccupying(reqTrain.Train))
+                {
+                    thisSection.RemoveTrain(reqTrain.Train, true);
+                }
+                else
+                {
+                    SignalObject thisSignal = thisSection.EndSignals[reqRoute[iindex].Direction];
+                    if (thisSignal != null)
+                    {
+                        thisSignal.ResetSignal(false);
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Build temp route for train
+        // Used for trains without path (eg stationary constists), manual operation
+        //
+
+        public Train.TCSubpathRoute BuildTempRoute(Train thisTrain,
+                int firstSectionIndex, float firstOffset, int firstDirection,
+                float routeLength, bool stopAtSignal, bool overrideManualSwitchState, bool autoAlign)
+        {
+            bool honourManualSwitchState = !overrideManualSwitchState;
+            List<int> sectionList = ScanRoute(thisTrain, firstSectionIndex, firstOffset, firstDirection,
+                    true, routeLength, honourManualSwitchState, autoAlign, false, false, true, false, false, false, false, false);
+            Train.TCSubpathRoute tempRoute = new Train.TCSubpathRoute();
+            int lastIndex = -1;
+
+            foreach (int nextSectionIndex in sectionList)
+            {
+                int curDirection = nextSectionIndex < 0 ? 1 : 0;
+                int thisSectionIndex = nextSectionIndex < 0 ? -nextSectionIndex : nextSectionIndex;
+                TrackCircuitSection thisSection = TrackCircuitList[thisSectionIndex];
+
+                Train.TCRouteElement thisElement = new Train.TCRouteElement(thisSection, curDirection, this, lastIndex);
+                tempRoute.Add(thisElement);
+                lastIndex = thisSectionIndex;
+            }
+
+            return (tempRoute);
+        }
+
+        //================================================================================================//
+        //
+        // Follow default route for train
+        // Use for :
+        //   - build temp list for trains without route (eg stat objects)
+        //   - build list for train under Manual control
+        //   - build list of sections when train slip backward
+        //   - search signal or speedpost ahead or at the rear of the train (either in facing or backward direction)
+        //
+        // Search ends :
+        //   - if required object is found
+        //   - if required length is covered
+        //   - if valid path only is requested and unreserved section is found (variable thisTrain required)
+        //   - end of track
+        //   - looped track
+        //
+        // Returned is list of sections, with positive no. indicating direction 0 and negative no. indicating direction 1
+        // If signal or speedpost is required, list will contain index of required item (>0 facing direction, <0 backing direction)
+        //
+
+        public List<int> ScanRoute(Train thisTrain, int firstSectionIndex, float firstOffset, int firstDirection, bool forward,
+                float routeLength, bool honourManualSwitch, bool autoAlign, bool stopAtFacingSignal, bool reservedOnly, bool returnSections,
+                bool searchFacingSignal, bool searchBackwardSignal, bool searchFacingSpeedpost, bool searchBackwardSpeedpost,
+                bool isFreight)
+        {
+
+            int sectionIndex = firstSectionIndex;
+
+            int lastIndex = -2;   // set to values not encountered for pin links
+            int thisIndex = sectionIndex;
+
+            float offset = firstOffset;
+            int curDirection = firstDirection;
+            int nextDirection = curDirection;
+
+            TrackCircuitSection thisSection = TrackCircuitList[sectionIndex];
+
+            float coveredLength = firstOffset;
+            if (forward || (firstDirection == 1 && !forward))
+            {
+                coveredLength = thisSection.Length - firstOffset;
+            }
+
+            bool endOfRoute = false;
+            List<int> foundItems = new List<int>();
+            List<int> foundObject = new List<int>();
+
+            while (!endOfRoute)
+            {
+
+                // check looped
+
+                int routedIndex = curDirection == 0 ? thisIndex : -thisIndex;
+                if (foundItems.Contains(routedIndex))
+                {
+                    break;
+                }
+
+                // add section
+                foundItems.Add(routedIndex);
+
+                // set length, pin index and opp direction
+
+                int oppDirection = curDirection == 0 ? 1 : 0;
+
+                int outPinIndex = forward ? curDirection : oppDirection;
+                int inPinIndex = outPinIndex == 0 ? 1 : 0;
+
+                // check all conditions and objects as required
+
+                if (stopAtFacingSignal && thisSection.EndSignals[curDirection] != null)           // stop at facing signal
+                {
+                    endOfRoute = true;
+                }
+
+                if (searchFacingSignal && thisSection.EndSignals[curDirection] != null)           // search facing signal
+                {
+                    foundObject.Add(thisSection.EndSignals[curDirection].thisRef);
+                    endOfRoute = true;
+                }
+
+                // search facing speedpost
+                if (searchFacingSpeedpost && thisSection.CircuitItems.TrackCircuitSpeedPosts[curDirection].TrackCircuitItem.Count > 0)
+                {
+                    List<TrackCircuitSignalItem> thisItemList = thisSection.CircuitItems.TrackCircuitSpeedPosts[curDirection].TrackCircuitItem;
+
+                    if (forward)
+                    {
+                        for (int iObject = 0; iObject < thisItemList.Count && !endOfRoute; iObject++)
+                        {
+                            TrackCircuitSignalItem thisItem = thisItemList[iObject];
+
+                            SignalObject thisSpeedpost = thisItem.SignalRef;
+                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalHead.SIGFN.SPEED);
+
+                            if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0))
+                            {
+                                if (thisItem.SignalLocation > offset)
+                                {
+                                    foundObject.Add(thisItem.SignalRef.thisRef);
+                                    endOfRoute = true;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int iObject = thisItemList.Count - 1; iObject >= 0 && !endOfRoute; iObject--)
+                        {
+                            TrackCircuitSignalItem thisItem = thisItemList[iObject];
+
+                            SignalObject thisSpeedpost = thisItem.SignalRef;
+                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalHead.SIGFN.SPEED);
+
+                            if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0))
+                            {
+                                if (offset == 0 || thisItem.SignalLocation < offset)
+                                {
+                                    foundObject.Add(thisItem.SignalRef.thisRef);
+                                    endOfRoute = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // search backward speedpost
+                if (searchBackwardSpeedpost && thisSection.CircuitItems.TrackCircuitSpeedPosts[oppDirection].TrackCircuitItem.Count > 0)
+                {
+                    List<TrackCircuitSignalItem> thisItemList = thisSection.CircuitItems.TrackCircuitSpeedPosts[oppDirection].TrackCircuitItem;
+
+                    if (forward)
+                    {
+                        for (int iObject = thisItemList.Count - 1; iObject >= 0 && !endOfRoute; iObject--)
+                        {
+                            TrackCircuitSignalItem thisItem = thisItemList[iObject];
+
+                            SignalObject thisSpeedpost = thisItem.SignalRef;
+                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalHead.SIGFN.SPEED);
+
+                            if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0))
+                            {
+                                if (thisItem.SignalLocation < thisSection.Length - offset)
+                                {
+                                    endOfRoute = true;
+                                    foundObject.Add(-(thisItem.SignalRef.thisRef));
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int iObject = 0; iObject < thisItemList.Count - 1 && !endOfRoute; iObject++)
+                        {
+                            TrackCircuitSignalItem thisItem = thisItemList[iObject];
+
+                            SignalObject thisSpeedpost = thisItem.SignalRef;
+                            ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalHead.SIGFN.SPEED);
+
+                            if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0))
+                            {
+                                if (offset == 0 || thisItem.SignalLocation > thisSection.Length - offset)
+                                {
+                                    endOfRoute = true;
+                                    foundObject.Add(-(thisItem.SignalRef.thisRef));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // move to next section
+                // follow active links if set, otherwise default links (=0)
+
+                int nextIndex = -1;
+                switch (thisSection.CircuitType)
+                {
+                    case TrackCircuitSection.CIRCUITTYPE.CROSSOVER:
+                        if (thisSection.Pins[inPinIndex, 0].Link == lastIndex)
+                        {
+                            nextIndex = thisSection.Pins[outPinIndex, 0].Link;
+                            nextDirection = thisSection.Pins[outPinIndex, 0].Direction;
+                        }
+                        else if (thisSection.Pins[inPinIndex, 1].Link == lastIndex)
+                        {
+                            nextIndex = thisSection.Pins[outPinIndex, 1].Link;
+                            nextDirection = thisSection.Pins[outPinIndex, 1].Direction;
+                        }
+                        break;
+
+                    case TrackCircuitSection.CIRCUITTYPE.JUNCTION:
+                        if (thisSection.ActivePins[outPinIndex, 0].Link > 0)
+                        {
+                            nextIndex = thisSection.ActivePins[outPinIndex, 0].Link;
+                            nextDirection = thisSection.ActivePins[outPinIndex, 0].Direction;
+                        }
+                        else if (thisSection.ActivePins[outPinIndex, 1].Link > 0)
+                        {
+                            nextIndex = thisSection.ActivePins[outPinIndex, 1].Link;
+                            nextDirection = thisSection.ActivePins[outPinIndex, 1].Direction;
+                        }
+                        else if (honourManualSwitch && thisSection.JunctionSetManual >= 0)
+                        {
+                            nextIndex = thisSection.Pins[outPinIndex, thisSection.JunctionSetManual].Link;
+                            nextDirection = thisSection.Pins[outPinIndex, thisSection.JunctionSetManual].Direction;
+                        }
+                        else if (!reservedOnly)
+                        {
+                            nextIndex = thisSection.Pins[outPinIndex, thisSection.JunctionLastRoute].Link;
+                            nextDirection = thisSection.Pins[outPinIndex, thisSection.JunctionLastRoute].Direction;
+                        }
+                        break;
+
+                    case TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK:
+                        break;
+
+                    default:
+                        nextIndex = thisSection.Pins[outPinIndex, 0].Link;
+                        nextDirection = thisSection.Pins[outPinIndex, 0].Direction;
+
+                        TrackCircuitSection nextSection = TrackCircuitList[nextIndex];
+
+                        // if next section is junction : check if locked agains AI and if auto-alignment allowed
+                        // switchable end of switch is always pin direction 1
+                        if (nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                        {
+                            int nextPinDirection = nextDirection == 0 ? 1 : 0;
+                            int nextPinIndex = nextSection.Pins[(nextDirection == 0 ? 1 : 0), 0].Link == thisIndex ? 0 : 1;
+                            if (nextPinDirection == 1 && nextSection.JunctionLastRoute != nextPinIndex)
+                            {
+                                if (nextSection.AILock && thisTrain.TrainType == Train.TRAINTYPE.AI)
+                                {
+                                    endOfRoute = true;
+                                }
+
+                                if (!autoAlign)
+                                {
+                                    endOfRoute = true;
+                                }
+                            }
+                        }
+
+                        break;
+                }
+
+                if (nextIndex < 0)
+                {
+                    endOfRoute = true;
+                }
+                else
+                {
+                    lastIndex = thisIndex;
+                    thisIndex = nextIndex;
+                    thisSection = TrackCircuitList[thisIndex];
+                    curDirection = forward ? nextDirection : nextDirection == 0 ? 1 : 0;
+                    oppDirection = curDirection == 0 ? 1 : 0;
+
+                    if (searchBackwardSignal && thisSection.EndSignals[oppDirection] != null)
+                    {
+                        endOfRoute = true;
+                        foundObject.Add(-(thisSection.EndSignals[oppDirection].thisRef));
+                    }
+                }
+
+                if (!endOfRoute)
+                {
+                    offset = 0.0f;
+
+                    if (thisTrain != null && reservedOnly)
+                    {
+                        TrackCircuitState thisState = thisSection.CircuitState;
+
+                        if (!thisState.TrainOccupy.ContainsKey(thisTrain.routedForward) && thisState.TrainReserved != thisTrain.routedForward &&
+                            !thisState.TrainOccupy.ContainsKey(thisTrain.routedBackward) && thisState.TrainReserved != thisTrain.routedBackward)
+                        {
+                            endOfRoute = true;
+                        }
+                    }
+                }
+
+                if (!endOfRoute && routeLength > 0)
+                {
+                    endOfRoute = (coveredLength > routeLength);
+                    coveredLength += thisSection.Length;
+                }
+
+            }
+
+            if (returnSections)
+            {
+                return (foundItems);
+            }
+            else
+            {
+                return (foundObject);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Process Platforms
+        //
+
+        private void ProcessPlatforms(Dictionary<int, int> platformList, TrItem[] TrItems,
+                TrackNode[] trackNodes)
+        {
+            foreach (KeyValuePair<int, int> thisPlatformIndex in platformList)
+            {
+                int thisPlatformDetailsIndex;
+
+                // get platform item
+
+                int thisIndex = thisPlatformIndex.Key;
+
+                var thisPlatform = TrItems[thisIndex] is PlatformItem ? (PlatformItem)TrItems[thisIndex] : new PlatformItem((SidingItem)TrItems[thisIndex]);
+
+                if (TrItems[thisIndex] is PlatformItem)
+                {
+                    thisPlatform = (PlatformItem)TrItems[thisIndex];
+                }
+
+                TrackNode thisNode = trackNodes[thisPlatformIndex.Value];
+
+                // check if entry already created for related entry
+
+                int relatedIndex = (int)thisPlatform.LinkedPlatformItemId;
+
+                PlatformDetails thisDetails;
+                int refIndex;
+                bool splitPlatform = false;
+
+                // get related platform details
+
+                if (PlatformXRefList.ContainsKey(relatedIndex))
+                {
+                    thisPlatformDetailsIndex = PlatformXRefList[relatedIndex];
+                    thisDetails = PlatformDetailsList[thisPlatformDetailsIndex];
+                    PlatformXRefList.Add(thisIndex, thisPlatformDetailsIndex);
+                    refIndex = 1;
+                }
+
+        // create new platform details
+
+                else
+                {
+                    thisDetails = new PlatformDetails(thisIndex);
+                    PlatformDetailsList.Add(thisDetails);
+                    thisPlatformDetailsIndex = PlatformDetailsList.Count - 1;
+                    PlatformXRefList.Add(thisIndex, thisPlatformDetailsIndex);
+                    refIndex = 0;
+                }
+
+                // get tracksection
+
+                int TCSectionIndex = -1;
+                int TCXRefIndex = -1;
+
+                for (int iXRef = thisNode.TCCrossReference.Count - 1; iXRef >= 0 && TCSectionIndex < 0; iXRef--)
+                {
+                    if (thisPlatform.SData1 <
+                     (thisNode.TCCrossReference[iXRef].Position[1] + thisNode.TCCrossReference[iXRef].Length))
+                    {
+                        TCSectionIndex = thisNode.TCCrossReference[iXRef].CrossRefIndex;
+                        TCXRefIndex = iXRef;
+                    }
+                }
+
+                if (TCSectionIndex < 0)
+                {
+                    Trace.TraceInformation("Cannot locate TCSection for platform {0}", thisIndex);
+                    TCSectionIndex = thisNode.TCCrossReference[0].CrossRefIndex;
+                    TCXRefIndex = 0;
+                }
+
+                // if first entry, set tracksection
+
+                if (refIndex == 0)
+                {
+                    thisDetails.TCSectionIndex.Add(TCSectionIndex);
+                }
+
+        // if second entry, test if equal - if not, build list
+
+                else
+                {
+                    if (TCSectionIndex != thisDetails.TCSectionIndex[0])
+                    {
+                        int firstXRef = -1;
+                        for (int iXRef = thisNode.TCCrossReference.Count - 1; iXRef >= 0 && firstXRef < 0; iXRef--)
+                        {
+                            if (thisNode.TCCrossReference[iXRef].CrossRefIndex == thisDetails.TCSectionIndex[0])
+                            {
+                                firstXRef = iXRef;
+                            }
+                        }
+
+                        if (firstXRef < 0)  // platform is split by junction !!!
+                        {
+                            ResolveSplitPlatform(ref thisDetails, TCSectionIndex, thisPlatform, thisNode,
+                                    TrItems, trackNodes);
+                            splitPlatform = true;
+                            Trace.TraceInformation("Platform split by junction at " + thisDetails.Name);
+                        }
+                        else if (TCXRefIndex < firstXRef)
+                        {
+                            thisDetails.TCSectionIndex.Clear();
+                            for (int iXRef = TCXRefIndex; iXRef <= firstXRef; iXRef++)
+                            {
+                                thisDetails.TCSectionIndex.Add(thisNode.TCCrossReference[iXRef].CrossRefIndex);
+                            }
+                        }
+                        else
+                        {
+                            thisDetails.TCSectionIndex.Clear();
+                            for (int iXRef = firstXRef; iXRef <= TCXRefIndex; iXRef++)
+                            {
+                                thisDetails.TCSectionIndex.Add(thisNode.TCCrossReference[iXRef].CrossRefIndex);
+                            }
+                        }
+                    }
+                }
+
+                // set details (if not split platform)
+
+                if (!splitPlatform)
+                {
+                    TrackCircuitSection thisSection = TrackCircuitList[TCSectionIndex];
+
+                    thisDetails.PlatformReference[refIndex] = thisIndex;
+                    thisDetails.nodeOffset[refIndex] = thisPlatform.SData1;
+                    thisDetails.TCOffset[refIndex, 1] = thisPlatform.SData1 - thisSection.OffsetLength[1];
+                    thisDetails.TCOffset[refIndex == 1 ? 0 : 1, 0] = thisSection.Length - thisDetails.TCOffset[refIndex, 1];
+                }
+
+                if (refIndex == 0)
+                {
+                    thisDetails.Name = String.Copy(thisPlatform.Station);
+                    thisDetails.MinWaitingTime = thisPlatform.PlatformMinWaitingTime;
+                }
+                else if (!splitPlatform)
+                {
+                    thisDetails.Length = Math.Abs(thisDetails.nodeOffset[1] - thisDetails.nodeOffset[0]);
+                }
+
+                // check if direction correct, else swap 0 - 1 entries for offsets etc.
+
+                if (refIndex == 1 && thisDetails.nodeOffset[1] < thisDetails.nodeOffset[0] && !splitPlatform)
+                {
+                    float tf;
+                    tf = thisDetails.nodeOffset[0];
+                    thisDetails.nodeOffset[0] = thisDetails.nodeOffset[1];
+                    thisDetails.nodeOffset[1] = tf;
+
+                    for (int iDir = 0; iDir <= 1; iDir++)
+                    {
+                        tf = thisDetails.TCOffset[iDir, 0];
+                        thisDetails.TCOffset[iDir, 0] = thisDetails.TCOffset[iDir, 1];
+                        thisDetails.TCOffset[iDir, 1] = tf;
+                    }
+                }
+
+                // search for end signals
+
+                thisNode = trackNodes[TrackCircuitList[thisDetails.TCSectionIndex[0]].OriginalIndex];
+
+                if (refIndex == 1)
+                {
+                    float distToSignal = 0.0f;
+                    float offset = thisDetails.TCOffset[1, 0];
+                    int firstSection = thisDetails.TCSectionIndex[0];
+                    int firstSectionXRef = -1;
+
+                    for (int iXRef = 0; iXRef < thisNode.TCCrossReference.Count; iXRef++)
+                    {
+                        if (firstSection == thisNode.TCCrossReference[iXRef].CrossRefIndex)
+                        {
+                            firstSectionXRef = iXRef;
+                            break;
+                        }
+                    }
+
+                    for (int iXRef = firstSectionXRef; iXRef < thisNode.TCCrossReference.Count; iXRef++)
+                    {
+                        int sectionIndex = thisNode.TCCrossReference[iXRef].CrossRefIndex;
+                        TrackCircuitSection thisSection = TrackCircuitList[sectionIndex];
+
+                        distToSignal += thisSection.Length - offset;
+                        offset = 0.0f;
+
+                        if (thisSection.EndSignals[0] != null)
+                        {
+                            if (!thisSection.EndSignals[0].hasFixedRoute)
+                            {
+                                thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
+                                thisDetails.DistanceToSignals[0] = distToSignal;
+                            }
+                            break;
+                        }
+                    }
+
+                    distToSignal = 0.0f;
+                    offset = thisDetails.TCOffset[1, 1];
+                    int lastSection = thisDetails.TCSectionIndex[thisDetails.TCSectionIndex.Count - 1];
+                    int lastSectionXRef = firstSectionXRef;
+
+                    if (lastSection != firstSection)
+                    {
+                        for (int iXRef = 0; iXRef < thisNode.TCCrossReference.Count; iXRef++)
+                        {
+                            if (lastSection == thisNode.TCCrossReference[iXRef].CrossRefIndex)
+                            {
+                                lastSectionXRef = iXRef;
+                                break;
+                            }
+                        }
+                    }
+
+                    for (int iXRef = lastSectionXRef; iXRef >= 0; iXRef--)
+                    {
+                        int sectionIndex = thisNode.TCCrossReference[iXRef].CrossRefIndex;
+                        TrackCircuitSection thisSection = TrackCircuitList[sectionIndex];
+
+                        distToSignal += thisSection.Length - offset;
+                        offset = 0.0f;
+
+                        if (thisSection.EndSignals[1] != null)
+                        {
+                            if (!thisSection.EndSignals[1].hasFixedRoute)
+                            {
+                                thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
+                                thisDetails.DistanceToSignals[1] = distToSignal;
+                            }
+                            break;
+                        }
+
+                    }
+                }
+
+                // set section crossreference
+
+
+                if (refIndex == 1)
+                {
+                    foreach (int sectionIndex in thisDetails.TCSectionIndex)
+                    {
+                        TrackCircuitSection thisSection = TrackCircuitList[sectionIndex];
+                        thisSection.PlatformIndex.Add(thisPlatformDetailsIndex);
+                    }
+                }
+            }
+        }// ProcessPlatforms
+
+        //================================================================================================//
+        //
+        // Resolve split platforms
+        //
+
+        public void ResolveSplitPlatform(ref PlatformDetails thisDetails, int secondSectionIndex,
+                PlatformItem secondPlatform, TrackNode secondNode,
+                    TrItem[] TrItems, TrackNode[] trackNodes)
+        {
+            // get all positions related to tile of first platform item
+
+            PlatformItem firstPlatform = (TrItems[thisDetails.PlatformReference[0]] is PlatformItem) ?
+                    (PlatformItem)TrItems[thisDetails.PlatformReference[0]] :
+                    new PlatformItem((SidingItem)TrItems[thisDetails.PlatformReference[0]]);
+
+            int firstSectionIndex = thisDetails.TCSectionIndex[0];
+            TrackCircuitSection thisSection = TrackCircuitList[firstSectionIndex];
+            TrackNode firstNode = trackNodes[thisSection.OriginalIndex];
+
+            // first platform
+            int TileX1 = firstPlatform.TileX;
+            int TileZ1 = firstPlatform.TileZ;
+            float X1 = firstPlatform.X;
+            float Z1 = firstPlatform.Z;
+
+            // start node position
+            int TS1TileX = firstNode.TrVectorNode.TrVectorSections[0].TileX;
+            int TS1TileZ = firstNode.TrVectorNode.TrVectorSections[0].TileZ;
+            float TS1X = firstNode.TrVectorNode.TrVectorSections[0].X;
+            float TS1Z = firstNode.TrVectorNode.TrVectorSections[0].Z;
+
+            float TS1Xc = TS1X + (TS1TileX - TileX1) * 2048;
+            float TS1Zc = TS1Z + (TS1TileZ - TileZ1) * 2048;
+
+            // second platform
+            int TileX2 = secondPlatform.TileX;
+            int TileZ2 = secondPlatform.TileZ;
+            float X2 = secondPlatform.X;
+            float Z2 = secondPlatform.Z;
+
+            float X2c = X2 + (TileX2 - TileX1) * 2048;
+            float Z2c = Z2 + (TileZ2 - TileZ1) * 2048;
+
+            int TS2TileX = secondNode.TrVectorNode.TrVectorSections[0].TileX;
+            int TS2TileZ = secondNode.TrVectorNode.TrVectorSections[0].TileZ;
+            float TS2X = secondNode.TrVectorNode.TrVectorSections[0].X;
+            float TS2Z = secondNode.TrVectorNode.TrVectorSections[0].Z;
+
+            float TS2Xc = TS2X + (TS2TileX - TileX1) * 2048;
+            float TS2Zc = TS2Z + (TS2TileZ - TileZ1) * 2048;
+
+            // determine if 2nd platform is towards end or begin of tracknode - use largest delta for check
+
+            float dXplatform = X2c - X1;
+            float dXnode = TS1Xc - X1;
+            float dZplatform = Z2c - Z1;
+            float dZnode = TS1Zc - Z1;
+
+            float dplatform = Math.Abs(dXplatform) > Math.Abs(dZplatform) ? dXplatform : dZplatform;
+            float dnode = Math.Abs(dXplatform) > Math.Abs(dXplatform) ? dXnode : dZnode;  // use same delta direction!
+
+            // if towards begin : build list of sections from start
+
+            List<int> PlSections1 = new List<int>();
+            bool reqSectionFound = false;
+            float totalLength1 = 0;
+            int direction1 = 0;
+
+            if (Math.Sign(dplatform) == Math.Sign(dnode))
+            {
+                for (int iXRef = firstNode.TCCrossReference.Count - 1; iXRef >= 0 && !reqSectionFound; iXRef--)
+                {
+                    int thisIndex = firstNode.TCCrossReference[iXRef].CrossRefIndex;
+                    PlSections1.Add(thisIndex);
+                    totalLength1 += TrackCircuitList[thisIndex].Length;
+                    reqSectionFound = (thisIndex == firstSectionIndex);
+                }
+                totalLength1 -= thisDetails.TCOffset[1, 0];  // correct for offset
+            }
+            else
+            {
+                for (int iXRef = 0; iXRef < firstNode.TCCrossReference.Count && !reqSectionFound; iXRef++)
+                {
+                    int thisIndex = firstNode.TCCrossReference[iXRef].CrossRefIndex;
+                    PlSections1.Add(thisIndex);
+                    totalLength1 += TrackCircuitList[thisIndex].Length;
+                    reqSectionFound = (thisIndex == firstSectionIndex);
+                    direction1 = 1;
+                }
+                totalLength1 -= thisDetails.TCOffset[0, 1];  // correct for offset
+            }
+
+            // determine if 1st platform is towards end or begin of tracknode - use largest delta for check
+
+            dXplatform = X1 - X2c;
+            dXnode = TS2Xc - X2c;
+            dZplatform = Z1 - Z2c;
+            dZnode = TS2Zc - Z2c;
+
+            dplatform = Math.Abs(dXplatform) > Math.Abs(dZplatform) ? dXplatform : dZplatform;
+            dnode = Math.Abs(dXplatform) > Math.Abs(dXplatform) ? dXnode : dZnode;  // use same delta direction!
+
+            // if towards begin : build list of sections from start
+
+            List<int> PlSections2 = new List<int>();
+            reqSectionFound = false;
+            float totalLength2 = 0;
+            int direction2 = 0;
+
+            if (Math.Sign(dplatform) == Math.Sign(dnode))
+            {
+                for (int iXRef = secondNode.TCCrossReference.Count - 1; iXRef >= 0 && !reqSectionFound; iXRef--)
+                {
+                    int thisIndex = secondNode.TCCrossReference[iXRef].CrossRefIndex;
+                    PlSections2.Add(thisIndex);
+                    totalLength2 += TrackCircuitList[thisIndex].Length;
+                    reqSectionFound = (thisIndex == secondSectionIndex);
+                }
+                totalLength2 -= (TrackCircuitList[secondSectionIndex].Length - secondPlatform.SData1);
+            }
+            else
+            {
+                for (int iXRef = 0; iXRef < secondNode.TCCrossReference.Count && !reqSectionFound; iXRef++)
+                {
+                    int thisIndex = secondNode.TCCrossReference[iXRef].CrossRefIndex;
+                    PlSections2.Add(thisIndex);
+                    totalLength2 += TrackCircuitList[thisIndex].Length;
+                    reqSectionFound = (thisIndex == secondSectionIndex);
+                    direction2 = 1;
+                }
+                totalLength2 -= secondPlatform.SData1; // correct for offset
+            }
+
+            // use largest part
+
+            thisDetails.TCSectionIndex.Clear();
+
+            if (totalLength1 > totalLength2)
+            {
+                foreach (int thisIndex in PlSections1)
+                {
+                    thisDetails.TCSectionIndex.Add(thisIndex);
+                }
+
+                thisDetails.Length = totalLength1;
+
+                if (direction1 == 0)
+                {
+                    thisDetails.nodeOffset[0] = 0.0f;
+                    thisDetails.nodeOffset[1] = firstPlatform.SData1;
+                    thisDetails.TCOffset[0, 0] = TrackCircuitList[PlSections1[PlSections1.Count - 1]].Length - totalLength1;
+                    for (int iSection = 0; iSection < PlSections1.Count - 2; iSection++)
+                    {
+                        thisDetails.TCOffset[0, 0] += TrackCircuitList[PlSections1[iSection]].Length;
+                    }
+                    thisDetails.TCOffset[0, 1] = 0.0f;
+                    thisDetails.TCOffset[1, 0] = TrackCircuitList[PlSections1[0]].Length;
+                    thisDetails.TCOffset[1, 1] = firstPlatform.SData1;
+                    for (int iSection = 0; iSection < PlSections1.Count - 2; iSection++)
+                    {
+                        thisDetails.TCOffset[0, 0] -= TrackCircuitList[PlSections1[iSection]].Length;
+                    }
+                }
+                else
+                {
+                    thisDetails.nodeOffset[0] = firstPlatform.SData1;
+                    thisDetails.nodeOffset[1] = thisDetails.nodeOffset[0] + totalLength1;
+                    thisDetails.TCOffset[0, 0] = 0.0f;
+                    thisDetails.TCOffset[0, 1] = TrackCircuitList[PlSections1[0]].Length - totalLength1;
+                    for (int iSection = 1; iSection < PlSections1.Count - 1; iSection++)
+                    {
+                        thisDetails.TCOffset[0, 0] += TrackCircuitList[PlSections1[iSection]].Length;
+                    }
+                    thisDetails.TCOffset[1, 0] = totalLength1;
+                    for (int iSection = 1; iSection < PlSections1.Count - 1; iSection++)
+                    {
+                        thisDetails.TCOffset[0, 0] -= TrackCircuitList[PlSections1[iSection]].Length;
+                    }
+                    thisDetails.TCOffset[1, 1] = TrackCircuitList[PlSections1[PlSections1.Count - 1]].Length;
+                }
+            }
+            else
+            {
+                foreach (int thisIndex in PlSections2)
+                {
+                    thisDetails.TCSectionIndex.Add(thisIndex);
+                }
+
+                thisDetails.Length = totalLength2;
+
+                if (direction2 == 0)
+                {
+                    thisDetails.nodeOffset[0] = 0.0f;
+                    thisDetails.nodeOffset[1] = secondPlatform.SData1;
+                    thisDetails.TCOffset[0, 0] = TrackCircuitList[PlSections2.Count - 1].Length - totalLength2;
+                    for (int iSection = 0; iSection < PlSections2.Count - 2; iSection++)
+                    {
+                        thisDetails.TCOffset[0, 0] += TrackCircuitList[PlSections2[iSection]].Length;
+                    }
+                    thisDetails.TCOffset[0, 1] = 0.0f;
+                    thisDetails.TCOffset[1, 0] = TrackCircuitList[PlSections2[0]].Length;
+                    thisDetails.TCOffset[1, 1] = secondPlatform.SData1;
+                    for (int iSection = 0; iSection < PlSections2.Count - 2; iSection++)
+                    {
+                        thisDetails.TCOffset[0, 0] -= TrackCircuitList[PlSections2[iSection]].Length;
+                    }
+                }
+                else
+                {
+                    thisDetails.nodeOffset[0] = secondPlatform.SData1;
+                    thisDetails.nodeOffset[1] = thisDetails.nodeOffset[0] + totalLength2;
+                    thisDetails.TCOffset[0, 0] = 0.0f;
+                    thisDetails.TCOffset[0, 1] = TrackCircuitList[PlSections2[0]].Length - totalLength2;
+                    for (int iSection = 1; iSection < PlSections2.Count - 1; iSection++)
+                    {
+                        thisDetails.TCOffset[0, 0] += TrackCircuitList[PlSections2[iSection]].Length;
+                    }
+                    thisDetails.TCOffset[1, 0] = totalLength2;
+                    for (int iSection = 1; iSection < PlSections2.Count - 1; iSection++)
+                    {
+                        thisDetails.TCOffset[0, 0] -= TrackCircuitList[PlSections2[iSection]].Length;
+                    }
+                    thisDetails.TCOffset[1, 1] = TrackCircuitList[PlSections2[PlSections2.Count - 1]].Length;
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Find Train
+        // Find train in list using number, to restore reference after restore
+        //
+
+        public Train FindTrain(int number, List<Train> trains)
+        {
+            foreach (Train thisTrain in trains)
+            {
+                if (thisTrain.Number == number)
+                {
+                    return (thisTrain);
+                }
+            }
+
+            return (null);
+        }
+
+        //================================================================================================//
+        //
+        // Request set switch
+        // Manual request to set switch, either from train or direct from node
+        //
+
+        public bool RequestSetSwitch(Train thisTrain, Direction direction)
+        {
+            if (thisTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+            {
+                return (thisTrain.ProcessRequestManualSetSwitch(direction));
+            }
+            else if (thisTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+            {
+                return (thisTrain.ProcessRequestExplorerSetSwitch(direction));
+            }
+            return (false);
+        }
+
+        public bool RequestSetSwitch(TrackNode switchNode)
+        {
+            TrackCircuitSection switchSection = TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            Train thisTrain = switchSection.CircuitState.TrainReserved == null ? null : switchSection.CircuitState.TrainReserved.Train;
+            bool switchSet = false;
+
+            // set physical state
+
+            if (!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
+            {
+                switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
+                setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
+                switchSet = true;
+            }
+
+            // if switch reserved by manual train then notify train
+
+            else if (thisTrain != null && thisTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+            {
+                switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
+                switchSet = thisTrain.ProcessRequestManualSetSwitch(switchSection.Index);
+            }
+            else if (thisTrain != null && thisTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+            {
+                switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
+                switchSet = thisTrain.ProcessRequestExplorerSetSwitch(switchSection.Index);
+            }
+
+            return (switchSet);
+        }
+
+        //================================================================================================//
+
+    }// class Signals
+
+    //================================================================================================//
+    //
+    // class TrackCircuitSection
+    //
+    //================================================================================================//
+    //
+    // Class for track circuit and train control
+    //
+
+    public class TrackCircuitSection
+    {
+        public enum CIRCUITTYPE
+        {
+            NORMAL,
+            JUNCTION,
+            CROSSOVER,
+            END_OF_TRACK,
+            EMPTY,
+        }
+
+        public Signals signalRef;                                 // reference to Signals class //
+        public int Index;                                         // section index              //
+        public int OriginalIndex;                                 // original TDB section index //
+        public CIRCUITTYPE CircuitType;                           // type of section            //
+
+        public TrPin[,] Pins = new TrPin[2, 2];                   // next sections              //
+        public TrPin[,] ActivePins = new TrPin[2, 2];             // active next sections       //
+        public bool[] EndIsTrailingJunction = new bool[2];        // next section is trailing jn//
+
+        public int JunctionDefaultRoute = -1;                     // jn default route, value is out-pin      //
+        public int JunctionLastRoute = -1;                        // jn last route, value is out-pin         //
+        public int JunctionSetManual = -1;                        // jn set manual, value is out-pin         //
+        public bool AILock = false;                               // jn is locked agains AI trains           //
+        public List<int> SignalsPassingRoutes;                    // list of signals reading passed junction //
+
+        public SignalObject[] EndSignals = new SignalObject[2];   // signals at either end      //
+
+        public float Length;                                      // full length                //
+        public float[] OffsetLength = new float[2];               // offset length in orig sect //
+
+        public double Overlap;                                    // overlap for junction nodes //
+        public List<int> PlatformIndex = new List<int>();         // platforms along section    //
+
+        public TrackCircuitItems CircuitItems;                    // all items                  //
+        public TrackCircuitState CircuitState;                    // normal states              //
+        public Dictionary<int, List<int>> DeadlockTraps;          // deadlock traps             //
+        public List<int> DeadlockActives;                         // list of trains with active deadlock traps //
+        public List<int> DeadlockAwaited;                              // train is waiting for deadlock to clear //
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+
+        public TrackCircuitSection(TrackNode thisNode, int orgINode,
+                        TSectionDatFile tsectiondat, Signals thisSignals)
+        {
+
+            //
+            // Copy general info
+            //
+
+            signalRef = thisSignals;
+
+            Index = orgINode;
+            OriginalIndex = orgINode;
+
+            if (thisNode.TrEndNode)
+            {
+                CircuitType = CIRCUITTYPE.END_OF_TRACK;
+            }
+            else if (thisNode.TrJunctionNode != null)
+            {
+                CircuitType = CIRCUITTYPE.JUNCTION;
+            }
+            else
+            {
+                CircuitType = CIRCUITTYPE.NORMAL;
+            }
+
+
+            //
+            // Preset pins, then copy pin info
+            //
+
+            for (int direction = 0; direction < 2; direction++)
+            {
+                for (int pin = 0; pin < 2; pin++)
+                {
+                    Pins[direction, pin] = new TrPin();
+                    Pins[direction, pin].Direction = -1;
+                    Pins[direction, pin].Link = -1;
+                    ActivePins[direction, pin] = new TrPin();
+                    ActivePins[direction, pin].Direction = -1;
+                    ActivePins[direction, pin].Link = -1;
+                }
+            }
+
+            int PinNo = 0;
+            for (int pin = 0; pin < thisNode.Inpins; pin++)
+            {
+                Pins[0, pin] = thisNode.TrPins[PinNo].Copy();
+                PinNo++;
+            }
+            for (int pin = 0; pin < thisNode.Outpins; pin++)
+            {
+                Pins[1, pin] = thisNode.TrPins[PinNo].Copy();
+                PinNo++;
+            }
+
+
+            //
+            // preset no end signals
+            // preset no trailing junction
+            //
+
+            for (int direction = 0; direction < 2; direction++)
+            {
+                EndSignals[direction] = null;
+                EndIsTrailingJunction[direction] = false;
+            }
+
+            //
+            // Preset length and offset
+            // If section index not in tsectiondat, set length to 0.
+            //
+
+            float totalLength = 0.0f;
+
+            if (thisNode.TrVectorNode != null && thisNode.TrVectorNode.TrVectorSections != null)
+            {
+                foreach (TrVectorSection thisSection in thisNode.TrVectorNode.TrVectorSections)
+                {
+                    float thisLength = 0.0f;
+
+                    if (tsectiondat.TrackSections.ContainsKey(thisSection.SectionIndex))
+                    {
+                        MSTS.TrackSection TS = tsectiondat.TrackSections[thisSection.SectionIndex];
+
+                        if (TS.SectionCurve != null)
+                        {
+                            thisLength =
+                                    MSTSMath.M.Radians(Math.Abs(TS.SectionCurve.Angle)) *
+                                    TS.SectionCurve.Radius;
+                        }
+                        else
+                        {
+                            thisLength = TS.SectionSize.Length;
+
+                        }
+                    }
+
+                    totalLength += thisLength;
+                }
+            }
+
+            Length = totalLength;
+
+            for (int direction = 0; direction < 2; direction++)
+            {
+                OffsetLength[direction] = 0;
+            }
+
+            Overlap = 0;
+
+            //
+            // set signal list for junctions
+            //
+
+            if (CircuitType == CIRCUITTYPE.JUNCTION)
+            {
+                SignalsPassingRoutes = new List<int>();
+            }
+            else
+            {
+                SignalsPassingRoutes = null;
+            }
+
+            // for Junction nodes, obtain default route
+            // set switch to default route
+
+            if (CircuitType == CIRCUITTYPE.JUNCTION)
+            {
+                uint trackShapeIndex = thisNode.TrJunctionNode.ShapeIndex;
+                TrackShape trackShape = tsectiondat.TrackShapes[trackShapeIndex];
+                JunctionDefaultRoute = (int)trackShape.MainRoute;
+                JunctionLastRoute = JunctionDefaultRoute;
+                signalRef.setSwitch(OriginalIndex, JunctionLastRoute, this);
+            }
+
+            //
+            // Create circuit items
+            //
+
+            CircuitItems = new TrackCircuitItems();
+            CircuitState = new TrackCircuitState();
+            DeadlockTraps = new Dictionary<int, List<int>>();
+            DeadlockActives = new List<int>();
+            DeadlockAwaited = new List<int>();
+        }
+
+        //================================================================================================//
+        //
+        // Constructor for empty entries
+        //
+
+        public TrackCircuitSection(int INode, Signals thisSignals)
+        {
+
+            signalRef = thisSignals;
+
+            Index = INode;
+            OriginalIndex = -1;
+            CircuitType = CIRCUITTYPE.EMPTY;
+
+            for (int iDir = 0; iDir < 2; iDir++)
+            {
+                EndIsTrailingJunction[iDir] = false;
+                EndSignals[iDir] = null;
+                OffsetLength[iDir] = 0;
+            }
+
+            for (int iDir = 0; iDir < 2; iDir++)
+            {
+                for (int pin = 0; pin < 2; pin++)
+                {
+                    Pins[iDir, pin] = new TrPin();
+                    Pins[iDir, pin].Direction = -1;
+                    Pins[iDir, pin].Link = -1;
+                    ActivePins[iDir, pin] = new TrPin();
+                    ActivePins[iDir, pin].Direction = -1;
+                    ActivePins[iDir, pin].Link = -1;
+                }
+            }
+
+            Length = 0;
+            Overlap = 0;
+
+            CircuitItems = new TrackCircuitItems();
+            CircuitState = new TrackCircuitState();
+            DeadlockTraps = new Dictionary<int, List<int>>();
+            DeadlockActives = new List<int>();
+            DeadlockAwaited = new List<int>();
+
+            SignalsPassingRoutes = null;
+        }
+
+        //================================================================================================//
+        //
+        // Restore
+        //
+
+        public void Restore(BinaryReader inf)
+        {
+            ActivePins[0, 0].Link = inf.ReadInt32();
+            ActivePins[0, 0].Direction = inf.ReadInt32();
+            ActivePins[1, 0].Link = inf.ReadInt32();
+            ActivePins[1, 0].Direction = inf.ReadInt32();
+            ActivePins[0, 1].Link = inf.ReadInt32();
+            ActivePins[0, 1].Direction = inf.ReadInt32();
+            ActivePins[1, 1].Link = inf.ReadInt32();
+            ActivePins[1, 1].Direction = inf.ReadInt32();
+
+            JunctionSetManual = inf.ReadInt32();
+            JunctionLastRoute = inf.ReadInt32();
+            AILock = inf.ReadBoolean();
+
+            CircuitState.Restore(inf);
+
+            // if physical junction, throw switch
+
+            if (CircuitType == CIRCUITTYPE.JUNCTION)
+            {
+                signalRef.setSwitch(OriginalIndex, JunctionLastRoute, this);
+            }
+
+            int deadlockTrapsCount = inf.ReadInt32();
+            for (int iDeadlock = 0; iDeadlock < deadlockTrapsCount; iDeadlock++)
+            {
+                int deadlockKey = inf.ReadInt32();
+                int deadlockListCount = inf.ReadInt32();
+                List<int> deadlockList = new List<int>();
+
+                for (int iDeadlockInfo = 0; iDeadlockInfo < deadlockListCount; iDeadlockInfo++)
+                {
+                    int deadlockDetail = inf.ReadInt32();
+                    deadlockList.Add(deadlockDetail);
+                }
+                DeadlockTraps.Add(deadlockKey, deadlockList);
+            }
+
+            int deadlockActivesCount = inf.ReadInt32();
+            for (int iDeadlockActive = 0; iDeadlockActive < deadlockActivesCount; iDeadlockActive++)
+            {
+                int deadlockActiveDetails = inf.ReadInt32();
+                DeadlockActives.Add(deadlockActiveDetails);
+            }
+
+            int deadlockWaitCount = inf.ReadInt32();
+            for (int iDeadlockWait = 0; iDeadlockWait < deadlockWaitCount; iDeadlockWait++)
+            {
+                int deadlockWaitDetails = inf.ReadInt32();
+                DeadlockAwaited.Add(deadlockWaitDetails);
+            }
+
+        }
+
+        //================================================================================================//
+        //
+        // Save
+        //
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(ActivePins[0, 0].Link);
+            outf.Write(ActivePins[0, 0].Direction);
+            outf.Write(ActivePins[1, 0].Link);
+            outf.Write(ActivePins[1, 0].Direction);
+            outf.Write(ActivePins[0, 1].Link);
+            outf.Write(ActivePins[0, 1].Direction);
+            outf.Write(ActivePins[1, 1].Link);
+            outf.Write(ActivePins[1, 1].Direction);
+
+            outf.Write(JunctionSetManual);
+            outf.Write(JunctionLastRoute);
+            outf.Write(AILock);
+
+            CircuitState.Save(outf);
+
+            outf.Write(DeadlockTraps.Count);
+            foreach (KeyValuePair<int, List<int>> thisTrap in DeadlockTraps)
+            {
+                outf.Write(thisTrap.Key);
+                outf.Write(thisTrap.Value.Count);
+
+                foreach (int thisDeadlockRef in thisTrap.Value)
+                {
+                    outf.Write(thisDeadlockRef);
+                }
+            }
+
+            outf.Write(DeadlockActives.Count);
+            foreach (int thisDeadlockActive in DeadlockActives)
+            {
+                outf.Write(thisDeadlockActive);
+            }
+
+            outf.Write(DeadlockAwaited.Count);
+            foreach (int thisDeadlockWait in DeadlockAwaited)
+            {
+                outf.Write(thisDeadlockWait);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Copy basic info only
+        //
+
+        public TrackCircuitSection CopyBasic(int INode)
+        {
+            TrackCircuitSection newSection = new TrackCircuitSection(INode, this.signalRef);
+
+            newSection.OriginalIndex = this.OriginalIndex;
+            newSection.CircuitType = this.CircuitType;
+
+            newSection.EndSignals[0] = this.EndSignals[0];
+            newSection.EndSignals[1] = this.EndSignals[1];
+
+            newSection.Length = this.Length;
+
+            Array.Copy(this.OffsetLength, newSection.OffsetLength, this.OffsetLength.Length);
+
+            return (newSection);
+        }
+
+        //================================================================================================//
+        //
+        // Check if set for train
+        //
+
+        public bool IsSet(Train.TrainRouted thisTrain)   // using routed train
+        {
+
+            // if train in this section, return true; if other train in this section, return false
+
+            if (CircuitState.ThisTrainOccupying(thisTrain))
+            {
+                return (true);
+            }
+
+            // check reservation
+
+            if (CircuitState.TrainReserved == thisTrain)
+            {
+                return (CircuitState.TrainReserved == thisTrain);
+            }
+
+            // check claim
+
+            if (CircuitState.TrainClaimed.Count > 0)
+            {
+                return (CircuitState.TrainClaimed.Peek() == thisTrain);
+            }
+
+            // section is not yet set for this train
+
+            return (false);
+        }
+
+        public bool IsSet(Train thisTrain)    // using unrouted train
+        {
+            if (IsSet(thisTrain.routedForward))
+            {
+                return (true);
+            }
+            else
+            {
+                return (IsSet(thisTrain.routedBackward));
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Check available state for train
+        //
+
+        public bool IsAvailable(Train.TrainRouted thisTrain)    // using routed train
+        {
+
+            // if train in this section, return true; if other train in this section, return false
+
+            if (CircuitState.ThisTrainOccupying(thisTrain))
+            {
+                return (true);
+            }
+            if (CircuitState.HasOtherTrainsOccupying(thisTrain))
+            {
+                return (false);
+            }
+
+            // check reservation
+
+            if (CircuitState.TrainReserved != null)
+            {
+                return (CircuitState.TrainReserved == thisTrain);
+            }
+
+            // check claim
+
+            if (CircuitState.TrainClaimed.Count > 0)
+            {
+                return (CircuitState.TrainClaimed.Peek() == thisTrain);
+            }
+
+            // check deadlock trap
+
+            if (DeadlockTraps.ContainsKey(thisTrain.Train.Number))
+            {
+                if (!DeadlockAwaited.Contains(thisTrain.Train.Number))
+                    DeadlockAwaited.Add(thisTrain.Train.Number); // train is waiting for deadlock to clear
+                return (false);
+            }
+
+            // check deadlock is in use - only if train has valid route
+
+            if (thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex] != null)
+            {
+                int routeElementIndex = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex].GetRouteIndex(Index, 0);
+                if (routeElementIndex >= 0)
+                {
+                    Train.TCRouteElement thisElement = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][routeElementIndex];
+                    if (thisElement.StartAlternativePath != null)
+                    {
+                        TrackCircuitSection endSection = signalRef.TrackCircuitList[thisElement.StartAlternativePath[1]];
+                        if (endSection.CheckDeadlockAwaited(thisTrain.Train.Number))
+                        {
+                            return (false);
+                        }
+                    }
+                }
+            }
+
+            // section is clear
+
+            return (true);
+        }
+
+        public bool IsAvailable(Train thisTrain)    // using unrouted train
+        {
+            if (IsAvailable(thisTrain.routedForward))
+            {
+                return (true);
+            }
+            else
+            {
+                return (IsAvailable(thisTrain.routedBackward));
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Reserve : set reserve state
+        //
+
+        public void Reserve(Train.TrainRouted thisTrain, Train.TCSubpathRoute thisRoute)
+        {
+
+#if DEBUG_REPORTS
+            String report = "Reserve section ";
+            report = String.Concat(report, this.Index.ToString());
+            report = String.Concat(report, " for train ", thisTrain.Train.Number.ToString());
+            File.AppendAllText(@"C:\temp\printproc.txt", report + "\n");
+#endif
+            if (thisTrain.Train.CheckTrain)
+            {
+                String reportCT = "Reserve section ";
+                reportCT = String.Concat(reportCT, this.Index.ToString());
+                reportCT = String.Concat(reportCT, " for train ", thisTrain.Train.Number.ToString());
+                File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
+            }
+
+            Train.TCRouteElement thisElement;
+
+            if (!CircuitState.ThisTrainOccupying(thisTrain.Train))
+            {
+                CircuitState.TrainReserved = thisTrain;
+            }
+
+            // remove from claim or deadlock claim
+
+            if (CircuitState.TrainClaimed.Contains(thisTrain))
+            {
+                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
+            }
+
+            // get element in routepath to find required alignment
+
+            int thisIndex = -1;
+
+            for (int iElement = 0; iElement < thisRoute.Count && thisIndex < 0; iElement++)
+            {
+                thisElement = thisRoute[iElement];
+                if (thisElement.TCSectionIndex == Index)
+                {
+                    thisIndex = iElement;
+                }
+            }
+
+            // if junction or crossover, align pins
+            // also reset manual set (path will have followed setting)
+
+            if (CircuitType == CIRCUITTYPE.JUNCTION || CircuitType == CIRCUITTYPE.CROSSOVER)
+            {
+                // set active pins for leading section
+
+                JunctionSetManual = -1;  // reset manual setting (will have been honoured in route definition if applicable)
+
+                int leadSectionIndex = -1;
+                if (thisIndex > 0)
+                {
+                    thisElement = thisRoute[thisIndex - 1];
+                    leadSectionIndex = thisElement.TCSectionIndex;
+
+                    alignSwitchPins(leadSectionIndex);
+                }
+
+                // set active pins for trailing section
+
+                int trailSectionIndex = -1;
+                if (thisIndex <= thisRoute.Count - 2)
+                {
+                    thisElement = thisRoute[thisIndex + 1];
+                    trailSectionIndex = thisElement.TCSectionIndex;
+
+                    alignSwitchPins(trailSectionIndex);
+                }
+
+                // reset signals which routed through this junction
+
+                foreach (int thisSignalIndex in SignalsPassingRoutes)
+                {
+                    SignalObject thisSignal = signalRef.SignalObjects[thisSignalIndex];
+                    thisSignal.ResetRoute(Index);
+                }
+                SignalsPassingRoutes.Clear();
+            }
+
+            // enable all signals along section in direction of train
+            // do not enable those signals who are part of NORMAL signal
+
+            thisElement = thisRoute[thisIndex];
+            int direction = thisElement.Direction;
+
+            for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+            {
+                TrackCircuitSignalList thisSignalList = CircuitItems.TrackCircuitSignals[direction, fntype];
+                foreach (TrackCircuitSignalItem thisItem in thisSignalList.TrackCircuitItem)
+                {
+                    SignalObject thisSignal = thisItem.SignalRef;
+                    if (!thisSignal.isSignalNormal())
+                    {
+                        thisSignal.enabledTrain = thisTrain;
+                    }
+                }
+            }
+
+            // set deadlock trap if required
+
+            if (thisTrain.Train.DeadlockInfo.ContainsKey(Index))
+            {
+                SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[Index]);
+            }
+
+            // if start of alternative route, set deadlock keys for other end
+
+            if (thisElement.StartAlternativePath != null)
+            {
+                TrackCircuitSection endSection = signalRef.TrackCircuitList[thisElement.StartAlternativePath[1]];
+                // no deadlock yet active
+                if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
+                {
+                    endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
+                }
+                else if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
+                {
+                    endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // insert Claim
+        //
+
+        public void Claim(Train.TrainRouted thisTrain)
+        {
+            if (!CircuitState.TrainClaimed.Contains(thisTrain))
+            {
+                CircuitState.TrainClaimed.Enqueue(thisTrain);
+            }
+
+            // set deadlock trap if required
+
+            if (thisTrain.Train.DeadlockInfo.ContainsKey(Index))
+            {
+                SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[Index]);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // insert pre-reserve
+        //
+
+        public void PreReserve(Train.TrainRouted thisTrain)
+        {
+            if (!CircuitState.TrainPreReserved.Contains(thisTrain))
+            {
+                CircuitState.TrainPreReserved.Enqueue(thisTrain);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // set track occupied
+        //
+
+        public void SetOccupied(Train.TrainRouted thisTrain)
+        {
+
+#if DEBUG_REPORTS
+            String report = "Occupy section ";
+            report = String.Concat(report, this.Index.ToString());
+            report = String.Concat(report, " for train ", thisTrain.Train.Number.ToString());
+            File.AppendAllText(@"C:\temp\printproc.txt", report + "\n");
+#endif
+            if (thisTrain.Train.CheckTrain)
+            {
+                String reportCT = "Occupy section ";
+                reportCT = String.Concat(reportCT, this.Index.ToString());
+                reportCT = String.Concat(reportCT, " for train ", thisTrain.Train.Number.ToString());
+                File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
+            }
+
+            int direction = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCDirection;
+            CircuitState.TrainOccupy.Add(thisTrain, direction);
+            thisTrain.Train.OccupiedTrack.Add(this);
+
+            // clear all reservations
+            CircuitState.TrainReserved = null;
+
+            if (CircuitState.TrainClaimed.Contains(thisTrain))
+            {
+                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
+            }
+
+            if (CircuitState.TrainPreReserved.Contains(thisTrain))
+            {
+                CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
+            }
+
+            // add to clear list of train
+
+            float distanceToClear = thisTrain.Train.DistanceTravelledM + Length + thisTrain.Train.standardOverlapM;
+
+            if (CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
+                CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+            {
+                distanceToClear = thisTrain.Train.DistanceTravelledM + Length + thisTrain.Train.junctionOverlapM;
+            }
+
+            Train.TCPosition presentFront = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
+            int reverseDirectionIndex = thisTrain.TrainRouteDirectionIndex == 0 ? 1 : 0;
+            Train.TCPosition presentRear = thisTrain.Train.PresentPosition[reverseDirectionIndex];
+
+            // correct offset if position direction is not equal to route direction
+            float frontOffset = presentFront.TCOffset;
+            if (presentFront.RouteListIndex >= 0 &&
+                presentFront.TCDirection != thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][presentFront.RouteListIndex].Direction)
+                frontOffset = Length - frontOffset;
+
+            float rearOffset = presentRear.TCOffset;
+            if (presentRear.RouteListIndex >= 0 &&
+                presentRear.TCDirection != thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][presentFront.RouteListIndex].Direction)
+                rearOffset = Length - rearOffset;
+
+            if (presentFront.TCSectionIndex == Index)
+            {
+                distanceToClear += thisTrain.Train.Length - frontOffset;
+            }
+            else if (presentRear.TCSectionIndex == Index)
+            {
+                distanceToClear -= rearOffset;
+            }
+            else
+            {
+                distanceToClear += thisTrain.Train.Length;
+            }
+            thisTrain.Train.requiredActions.InsertAction(new Train.ClearSectionItem(distanceToClear, Index));
+
+            // set deadlock trap if required
+
+            if (thisTrain.Train.DeadlockInfo.ContainsKey(Index))
+            {
+                SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[Index]);
+            }
+
+            // check for deadlock trap if taking alternative path
+
+            if (thisTrain.Train.TCRoute != null && thisTrain.Train.TCRoute.activeAltpath >= 0)
+            {
+                Train.TCSubpathRoute altRoute = thisTrain.Train.TCRoute.TCAlternativePaths[thisTrain.Train.TCRoute.activeAltpath];
+                Train.TCRouteElement startElement = altRoute[0];
+                if (Index == startElement.TCSectionIndex)
+                {
+                    TrackCircuitSection endSection = signalRef.TrackCircuitList[altRoute[altRoute.Count - 1].TCSectionIndex];
+
+                    // set deadlock trap for next section
+
+                    if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
+                    {
+                        endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // clear track occupied
+        //
+
+        // routed train
+        public void ClearOccupied(Train.TrainRouted thisTrain, bool resetEndSignal)
+        {
+
+#if DEBUG_REPORTS
+            String report = "Clear section ";
+            report = String.Concat(report, this.Index.ToString());
+            report = String.Concat(report, " for train ", thisTrain.Train.Number.ToString());
+            File.AppendAllText(@"C:\temp\printproc.txt", report + "\n");
+#endif
+            if (thisTrain.Train.CheckTrain)
+            {
+                String reportCT = "Clear section ";
+                reportCT = String.Concat(reportCT, this.Index.ToString());
+                reportCT = String.Concat(reportCT, " for train ", thisTrain.Train.Number.ToString());
+                File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
+            }
+
+            if (CircuitState.TrainOccupy.ContainsKey(thisTrain))
+            {
+                CircuitState.TrainOccupy.Remove(thisTrain);
+                thisTrain.Train.OccupiedTrack.Remove(this);
+            }
+
+            RemoveTrain(thisTrain, false);   // clear occupy first to prevent loop, next clear all hanging references
+
+            // if signal at either end is still enabled for this train, reset the signal
+
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                if (EndSignals[iDirection] != null)
+                {
+                    SignalObject endSignal = EndSignals[iDirection];
+                    if (endSignal.enabledTrain == thisTrain && resetEndSignal)
+                    {
+                        endSignal.resetSignalEnabled();
+                    }
+                }
+
+                // disable all signals along section if enabled for this train
+
+                for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+                {
+                    TrackCircuitSignalList thisSignalList = CircuitItems.TrackCircuitSignals[iDirection, fntype];
+                    foreach (TrackCircuitSignalItem thisItem in thisSignalList.TrackCircuitItem)
+                    {
+                        SignalObject thisSignal = thisItem.SignalRef;
+                        if (thisSignal.enabledTrain == thisTrain)
+                        {
+                            thisSignal.resetSignalEnabled();
+                        }
+                    }
+                }
+            }
+
+            // if section is Junction or Crossover, reset active pins
+
+            if (CircuitType == CIRCUITTYPE.JUNCTION || CircuitType == CIRCUITTYPE.CROSSOVER)
+            {
+                deAlignSwitchPins();
+
+                // reset signals which routed through this junction
+
+                foreach (int thisSignalIndex in SignalsPassingRoutes)
+                {
+                    SignalObject thisSignal = signalRef.SignalObjects[thisSignalIndex];
+                    thisSignal.ResetRoute(Index);
+                }
+                SignalsPassingRoutes.Clear();
+            }
+
+            // reset manual junction setting if train is in manual mode
+
+            if (thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && CircuitType == CIRCUITTYPE.JUNCTION && JunctionSetManual >= 0)
+            {
+                JunctionSetManual = -1;
+            }
+
+            // if no longer occupied and pre-reserved not empty, promote first entry of prereserved
+
+            if (CircuitState.TrainOccupy.Count <= 0 && CircuitState.TrainPreReserved.Count > 0)
+            {
+                Train.TrainRouted nextTrain = CircuitState.TrainPreReserved.Dequeue();
+                Train.TCSubpathRoute RoutePart = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex];
+
+                Reserve(nextTrain, RoutePart);
+            }
+
+        }
+
+        // unrouted train
+        public void ClearOccupied(Train thisTrain, bool resetEndSignal)
+        {
+            ClearOccupied(thisTrain.routedForward, resetEndSignal); // forward
+            ClearOccupied(thisTrain.routedBackward, resetEndSignal);// backward
+        }
+
+        // only reset occupied state - use in case of reversal or mode change when train has not actually moved
+        // routed train
+        public void ResetOccupied(Train.TrainRouted thisTrain)
+        {
+
+            if (CircuitState.TrainOccupy.ContainsKey(thisTrain))
+            {
+                CircuitState.TrainOccupy.Remove(thisTrain);
+                thisTrain.Train.OccupiedTrack.Remove(this);
+            }
+
+        }
+
+        // unrouted train
+        public void ResetOccupied(Train thisTrain)
+        {
+            ResetOccupied(thisTrain.routedForward); // forward
+            ResetOccupied(thisTrain.routedBackward);// backward
+        }
+
+        //================================================================================================//
+        //
+        // Remove train from section
+        //
+
+        // routed train
+        public void RemoveTrain(Train.TrainRouted thisTrain, bool resetEndSignal)
+        {
+#if DEBUG_REPORTS
+            String report = "Remove train from section ";
+            report = String.Concat(report, this.Index.ToString());
+            report = String.Concat(report, " for train ", thisTrain.Train.Number.ToString());
+            File.AppendAllText(@"C:\temp\printproc.txt", report + "\n");
+#endif
+            if (thisTrain.Train.CheckTrain)
+            {
+                String reportCT = "Remove train from section ";
+                reportCT = String.Concat(reportCT, this.Index.ToString());
+                reportCT = String.Concat(reportCT, " for train ", thisTrain.Train.Number.ToString());
+                File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
+            }
+
+            if (CircuitState.ThisTrainOccupying(thisTrain))
+            {
+                ClearOccupied(thisTrain, resetEndSignal);
+            }
+
+            if (CircuitState.TrainReserved == thisTrain)
+            {
+                CircuitState.TrainReserved = null;
+                ClearOccupied(thisTrain, resetEndSignal);    // call clear occupy to reset signals and switches //
+            }
+
+            if (CircuitState.TrainClaimed.Contains(thisTrain))
+            {
+                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
+            }
+
+            if (CircuitState.TrainPreReserved.Contains(thisTrain))
+            {
+                CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
+            }
+
+            ClearDeadlockTrap(thisTrain.Train.Number);
+        }
+
+
+        // unrouted train
+        public void RemoveTrain(Train thisTrain, bool resetEndSignal)
+        {
+            RemoveTrain(thisTrain.routedForward, resetEndSignal);
+            RemoveTrain(thisTrain.routedBackward, resetEndSignal);
+        }
+
+        //================================================================================================//
+        //
+        // Remove train reservations from section
+        //
+
+        public void UnreserveTrain(Train.TrainRouted thisTrain, bool resetEndSignal)
+        {
+            if (CircuitState.TrainReserved == thisTrain)
+            {
+                CircuitState.TrainReserved = null;
+                ClearOccupied(thisTrain, resetEndSignal);    // call clear occupy to reset signals and switches //
+            }
+
+            if (CircuitState.TrainClaimed.Contains(thisTrain))
+            {
+                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
+            }
+
+            if (CircuitState.TrainPreReserved.Contains(thisTrain))
+            {
+                CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
+            }
+
+            ClearDeadlockTrap(thisTrain.Train.Number);
+        }
+
+        //================================================================================================//
+        //
+        // Remove specified train from queue
+        //
+
+        private Queue<Train.TrainRouted> removeFromQueue(Queue<Train.TrainRouted> thisQueue, Train.TrainRouted thisTrain)
+        {
+            List<Train.TrainRouted> tempList = new List<Train.TrainRouted>();
+            Queue<Train.TrainRouted> newQueue = new Queue<Train.TrainRouted>();
+
+            // extract trains from queue and store in list - this will revert the order!
+            // do not store train which is to be removed
+
+            int queueCount = thisQueue.Count;
+            while (queueCount > 0)
+            {
+                Train.TrainRouted queueTrain = thisQueue.Dequeue();
+                if (queueTrain != thisTrain)
+                {
+                    tempList.Add(queueTrain);
+                }
+                queueCount = thisQueue.Count;
+            }
+
+            // restore the order by requeing
+
+            foreach (Train.TrainRouted queueTrain in tempList)
+            {
+                newQueue.Enqueue(queueTrain);
+            }
+
+            return (newQueue);
+        }
+
+        //================================================================================================//
+        //
+        // align pins switch or crossover
+        //
+
+        public void alignSwitchPins(int linkedSectionIndex)
+        {
+
+            int alignDirection = -1;  // pin direction for leading section
+            int alignLink = -1;       // link index for leading section
+
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                for (int iLink = 0; iLink <= 1; iLink++)
+                {
+                    if (Pins[iDirection, iLink].Link == linkedSectionIndex)
+                    {
+                        alignDirection = iDirection;
+                        alignLink = iLink;
+                    }
+                }
+            }
+
+            if (alignDirection >= 0)
+            {
+                ActivePins[alignDirection, 0].Link = -1;
+                ActivePins[alignDirection, 1].Link = -1;
+
+                ActivePins[alignDirection, alignLink].Link =
+                        Pins[alignDirection, alignLink].Link;
+                ActivePins[alignDirection, alignLink].Direction =
+                        Pins[alignDirection, alignLink].Direction;
+
+                TrackCircuitSection linkedSection = signalRef.TrackCircuitList[linkedSectionIndex];
+                for (int iDirection = 0; iDirection <= 1; iDirection++)
+                {
+                    for (int iLink = 0; iLink <= 1; iLink++)
+                    {
+                        if (linkedSection.Pins[iDirection, iLink].Link == Index)
+                        {
+                            linkedSection.ActivePins[iDirection, iLink].Link = Index;
+                            linkedSection.ActivePins[iDirection, iLink].Direction =
+                                    linkedSection.Pins[iDirection, iLink].Direction;
+                        }
+                    }
+                }
+            }
+
+            // if junction, align physical switch
+
+            if (CircuitType == CIRCUITTYPE.JUNCTION)
+            {
+                int switchPos = -1;
+                if (ActivePins[1, 0].Link != -1)
+                    switchPos = 0;
+                if (ActivePins[1, 1].Link != -1)
+                    switchPos = 1;
+
+                if (switchPos >= 0)
+                {
+                    signalRef.setSwitch(OriginalIndex, switchPos, this);
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // de-align active switch pins
+        //
+
+        public void deAlignSwitchPins()
+        {
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                if (Pins[iDirection, 1].Link > 0)     // active switchable end
+                {
+                    for (int iLink = 0; iLink <= 1; iLink++)
+                    {
+                        int activeLink = Pins[iDirection, iLink].Link;
+                        int activeDirection = Pins[iDirection, iLink].Direction == 0 ? 1 : 0;
+                        ActivePins[iDirection, iLink].Link = -1;
+
+                        TrackCircuitSection linkSection = signalRef.TrackCircuitList[activeLink];
+                        linkSection.ActivePins[activeDirection, 0].Link = -1;
+                    }
+                }
+            }
+        }
+
+
+        //================================================================================================//
+        //
+        // Get state of single section
+        //
+
+        public SignalObject.INTERNAL_BLOCKSTATE getSectionState(Train.TrainRouted thisTrain, int direction,
+                        SignalObject.INTERNAL_BLOCKSTATE passedBlockstate, Train.TCSubpathRoute thisRoute)
+        {
+            SignalObject.INTERNAL_BLOCKSTATE thisBlockstate;
+            SignalObject.INTERNAL_BLOCKSTATE localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVABLE;  // default value
+            bool stateSet = false;
+
+            TrackCircuitState thisState = CircuitState;
+
+            bool checkTrailingJunction = false;
+
+            // track occupied - check speed and direction - only for normal sections
+
+            if (thisTrain != null && thisState.TrainOccupy.ContainsKey(thisTrain))
+            {
+                localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED;  // occupied by own train counts as reserved
+                stateSet = true;
+            }
+            else if (thisState.HasTrainsOccupying(direction, true))
+            {
+                {
+                    localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR;
+                    stateSet = true;
+                }
+            }
+            else
+            {
+                int reqDirection = direction == 0 ? 1 : 0;
+                if (thisState.HasTrainsOccupying(reqDirection, false))
+                {
+                    localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.OCCUPIED_OPPDIR;
+                    stateSet = true;
+                }
+            }
+
+            // for junctions or cross-overs, check route selection
+
+            if (CircuitType == CIRCUITTYPE.JUNCTION || CircuitType == CIRCUITTYPE.CROSSOVER)
+            {
+                if (thisState.HasTrainsOccupying())    // there is a train on the switch
+                {
+                    if (thisRoute == null)  // no route from signal - always report switch blocked
+                    {
+                        localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.BLOCKED;
+                        stateSet = true;
+                    }
+                    else
+                    {
+                        int reqPinIndex = -1;
+                        for (int iPinIndex = 0; iPinIndex <= 1 && reqPinIndex < 0; iPinIndex++)
+                        {
+                            if (Pins[iPinIndex, 1].Link > 0)
+                                reqPinIndex = iPinIndex;  // switchable end
+                        }
+
+                        int switchEnd = -1;
+                        for (int iSwitch = 0; iSwitch <= 1; iSwitch++)
+                        {
+                            int nextSectionIndex = Pins[reqPinIndex, iSwitch].Link;
+                            int routeListIndex = thisRoute.GetRouteIndex(nextSectionIndex, 0);
+                            if (routeListIndex > 0)
+                                switchEnd = iSwitch;  // required exit
+                        }
+                        if (switchEnd < 0 || ActivePins[reqPinIndex, switchEnd].Link < 0) // no free exit available or switch misaligned
+                        {
+                            localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.BLOCKED;
+                            stateSet = true;
+                        }
+                    }
+                }
+            }
+
+            // track reserved - check direction
+
+            if (thisState.TrainReserved != null && !stateSet)
+            {
+                Train.TrainRouted reservedTrain = thisState.TrainReserved;
+                if (reservedTrain == thisTrain)
+                {
+                    localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED;
+                    stateSet = true;
+                }
+                else
+                {
+                    localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED_OTHER;
+
+                    // if end is trailing junction, set to check junction
+
+                    checkTrailingJunction = EndIsTrailingJunction[direction];
+                }
+            }
+
+            // track claimed
+
+            if (!stateSet && thisState.TrainClaimed.Count > 0 && thisState.TrainClaimed.Peek() != thisTrain)
+            {
+                localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.OPEN;
+            }
+
+            // deadlock trap
+
+            if (thisTrain != null && DeadlockTraps.ContainsKey(thisTrain.Train.Number))
+            {
+                localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.BLOCKED;
+                if (!DeadlockAwaited.Contains(thisTrain.Train.Number))
+                    DeadlockAwaited.Add(thisTrain.Train.Number);
+            }
+
+            thisBlockstate = localBlockstate > passedBlockstate ? localBlockstate : passedBlockstate;
+            return (thisBlockstate);
+        }
+
+
+        //================================================================================================//
+        //
+        // Test if train ahead and calculate distance to that train (front or rear depending on direction)
+        //
+
+        public Dictionary<Train, float> TestTrainAhead(Train thisTrain, float offset, int direction)
+        {
+            Train trainFound = null;
+            float distanceTrainAheadM = Length + 1.0f; // ensure train is always within section
+
+            List<Train.TrainRouted> trainsInSection = CircuitState.TrainsOccupying();
+
+            // remove own train
+            if (thisTrain != null)
+            {
+                for (int iindex = trainsInSection.Count - 1; iindex >= 0; iindex--)
+                {
+                    if (trainsInSection[iindex].Train == thisTrain)
+                        trainsInSection.RemoveAt(iindex);
+                }
+            }
+
+            // search for trains in section
+            foreach (Train.TrainRouted nextTrain in trainsInSection)
+            {
+                int routeIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(Index, 0);
+                if (routeIndex >= 0)
+                {
+                    Train.TCPosition nextFront = nextTrain.Train.PresentPosition[nextTrain.TrainRouteDirectionIndex];
+                    int reverseDirection = nextTrain.TrainRouteDirectionIndex == 0 ? 1 : 0;
+                    Train.TCPosition nextRear = nextTrain.Train.PresentPosition[reverseDirection];
+
+                    Train.TCRouteElement thisElement = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex][routeIndex];
+                    if (thisElement.Direction == direction) // same direction, so if the train is in front we're looking at the rear of the train
+                    {
+                        if (nextRear.TCSectionIndex == Index) // rear of train is in same section
+                        {
+                            float thisTrainDistanceM = nextRear.TCOffset;
+
+                            if (thisTrainDistanceM < distanceTrainAheadM && nextRear.TCOffset >= offset) // train is nearest train and in front
+                            {
+                                distanceTrainAheadM = thisTrainDistanceM;
+                                trainFound = nextTrain.Train;
+                            }
+                        }
+                        else
+                        {
+                            int nextRouteFrontIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(nextFront.TCSectionIndex, 0);
+                            int nextRouteRearIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(nextRear.TCSectionIndex, 0);
+
+                            if (nextRouteRearIndex < routeIndex)
+                            {
+                                if (nextRouteFrontIndex > routeIndex) // train spans section, so position of train in section is 0 //
+                                {
+                                    distanceTrainAheadM = 0.0f;
+                                    trainFound = nextTrain.Train;
+                                } // otherwise train is not in front, so don't use it
+                            }
+                            else  // if index is greater, train has moved on - return section length
+                            {
+                                distanceTrainAheadM = Length;
+                                trainFound = nextTrain.Train;
+                            }
+                        }
+                    }
+                    else // reverse direction, so we're looking at the front - use section length - offset as position
+                    {
+                        float thisTrainOffset = Length - nextFront.TCOffset;
+                        if (nextFront.TCSectionIndex == Index)  // front of train in section
+                        {
+                            float thisTrainDistanceM = thisTrainOffset;
+
+                            if (thisTrainDistanceM < distanceTrainAheadM && thisTrainOffset >= offset) // train is nearest train and in front
+                            {
+                                distanceTrainAheadM = thisTrainDistanceM;
+                                trainFound = nextTrain.Train;
+                            }
+                        }
+                        else
+                        {
+                            int nextRouteFrontIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(nextFront.TCSectionIndex, 0);
+                            int nextRouteRearIndex = nextTrain.Train.ValidRoute[nextTrain.TrainRouteDirectionIndex].GetRouteIndex(nextRear.TCSectionIndex, 0);
+
+                            if (nextRouteFrontIndex < routeIndex)
+                            {
+                                if (nextRouteRearIndex > routeIndex)  // train spans section so offset in section is 0//
+                                {
+                                    distanceTrainAheadM = 0;
+                                    trainFound = nextTrain.Train;
+                                } // else train is not in front of us
+                            }
+                            else  // if index is greater, train has moved on - return section length
+                            {
+                                distanceTrainAheadM = Length;
+                                trainFound = nextTrain.Train;
+                            }
+                        }
+
+                    }
+                }
+                else
+                {
+                    distanceTrainAheadM = 0; // train is off its route - assume full section occupied //
+                    trainFound = nextTrain.Train;
+                }
+            }
+
+            Dictionary<Train, float> result = new Dictionary<Train, float>();
+            if (trainFound != null)
+                result.Add(trainFound, (distanceTrainAheadM - offset));
+            return (result);
+        }
+
+        //================================================================================================//
+        //
+        // Get next active link
+        //
+
+        public TrPin GetNextActiveLink(int direction, int lastIndex)
+        {
+
+            // Crossover
+
+            if (CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+            {
+                int inPinIndex = direction == 0 ? 1 : 0;
+                if (Pins[inPinIndex, 0].Link == lastIndex)
+                {
+                    return (ActivePins[direction, 0]);
+                }
+                else if (Pins[inPinIndex, 1].Link == lastIndex)
+                {
+                    return (ActivePins[direction, 1]);
+                }
+                else
+                {
+                    TrPin dummyPin = new TrPin();
+                    dummyPin.Direction = -1;
+                    dummyPin.Link = -1;
+                    return (dummyPin);
+                }
+            }
+
+            // All other sections
+
+            if (ActivePins[direction, 0].Link > 0)
+            {
+                return (ActivePins[direction, 0]);
+            }
+
+            return (ActivePins[direction, 1]);
+        }
+
+        //================================================================================================//
+        //
+        // Get distance between objects
+        //
+
+        public float GetDistanceBetweenObjects(int startSectionIndex, float startOffset, int startDirection,
+            int endSectionIndex, float endOffset)
+        {
+            int thisSectionIndex = startSectionIndex;
+            int direction = startDirection;
+
+            TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+
+            float distanceM = 0.0f;
+            int lastIndex = -2;  // set to non-occuring value
+
+            while (thisSectionIndex != endSectionIndex && thisSectionIndex > 0)
+            {
+                distanceM += thisSection.Length;
+                TrPin nextLink = thisSection.GetNextActiveLink(direction, lastIndex);
+
+                lastIndex = thisSectionIndex;
+                thisSectionIndex = nextLink.Link;
+                direction = nextLink.Direction;
+
+                if (thisSectionIndex > 0)
+                    thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+            }
+
+            // use found distance, correct for begin and end offset
+
+            if (thisSectionIndex == endSectionIndex)
+            {
+                distanceM += endOffset - startOffset;
+                return (distanceM);
+            }
+
+            return (-1.0f);
+        }
+
+        //================================================================================================//
+        //
+        // Check if train can be placed in section
+        //
+
+        public bool CanPlaceTrain(Train thisTrain, float offset, float trainLength)
+        {
+
+            if (!IsAvailable(thisTrain))
+            {
+                if (CircuitState.TrainReserved != null ||
+                CircuitState.TrainClaimed.Count > 0)
+                {
+                    return (false);
+                }
+
+                if (DeadlockTraps.ContainsKey(thisTrain.Number))
+                {
+                    return (false);  // prevent deadlock
+                }
+
+                if (CircuitType != CIRCUITTYPE.NORMAL) // other than normal and not clear - return false
+                {
+                    return (false);
+                }
+
+                if (offset == 0 && trainLength > Length) // train spans section
+                {
+                    return (false);
+                }
+
+                // get other trains in section
+
+                Dictionary<Train, float> trainInfo = new Dictionary<Train, float>();
+                float offsetFromStart = offset;
+
+                // test train ahead of rear end (for non-placed trains, always use direction 0)
+
+                if (thisTrain.PresentPosition[1].TCSectionIndex == Index)
+                {
+                    trainInfo = TestTrainAhead(thisTrain,
+                            offsetFromStart, thisTrain.PresentPosition[1].TCDirection); // rear end in this section, use offset
+                }
+                else
+                {
+                    offsetFromStart = 0.0f;
+                    trainInfo = TestTrainAhead(thisTrain,
+                            0.0f, thisTrain.PresentPosition[1].TCDirection); // test from start
+                }
+
+                if (trainInfo.Count > 0)
+                {
+                    foreach (KeyValuePair<Train, float> trainAhead in trainInfo)
+                    {
+                        if (trainAhead.Value < trainLength) // train ahead not clear
+                        {
+                            return (false);
+                        }
+                    }
+                }
+
+                // test train behind of front end
+
+                int revDirection = thisTrain.PresentPosition[0].TCDirection == 0 ? 1 : 0;
+                if (thisTrain.PresentPosition[0].TCSectionIndex == Index)
+                {
+                    float offsetFromEnd = Length - trainLength + offsetFromStart;
+                    trainInfo = TestTrainAhead(thisTrain, offsetFromEnd, revDirection); // test remaining length
+                }
+                else
+                {
+                    trainInfo = TestTrainAhead(thisTrain, 0.0f, revDirection); // test full section
+                }
+
+                if (trainInfo.Count > 0)
+                {
+                    foreach (KeyValuePair<Train, float> trainAhead in trainInfo)
+                    {
+                        if (trainAhead.Value < trainLength) // train behind not clear
+                        {
+                            return (false);
+                        }
+                    }
+                }
+
+            }
+
+            return (true);
+        }
+
+        //================================================================================================//
+        //
+        // Set deadlock trap for all trains which deadlock from this section at begin section
+        //
+
+        public void SetDeadlockTrap(Train thisTrain, List<Dictionary<int, int>> thisDeadlock)
+        {
+            foreach (Dictionary<int, int> deadlockInfo in thisDeadlock)
+            {
+                foreach (KeyValuePair<int, int> deadlockDetails in deadlockInfo)
+                {
+                    int otherTrainNumber = deadlockDetails.Key;
+                    int endSectionIndex = deadlockDetails.Value;
+
+                    TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+
+                    if (DeadlockTraps.ContainsKey(thisTrain.Number))
+                    {
+                        List<int> thisTrap = DeadlockTraps[thisTrain.Number];
+                        if (thisTrap.Contains(otherTrainNumber))
+                            break;  // cannot set deadlock for train which has deadlock on this end
+                    }
+
+                    if (endSection.DeadlockTraps.ContainsKey(otherTrainNumber))
+                    {
+                        if (!endSection.DeadlockTraps[otherTrainNumber].Contains(thisTrain.Number))
+                        {
+                            endSection.DeadlockTraps[otherTrainNumber].Add(thisTrain.Number);
+                        }
+                    }
+                    else
+                    {
+                        List<int> deadlockList = new List<int>();
+                        deadlockList.Add(thisTrain.Number);
+                        endSection.DeadlockTraps.Add(otherTrainNumber, deadlockList);
+                    }
+
+                    if (!endSection.DeadlockActives.Contains(thisTrain.Number))
+                    {
+                        endSection.DeadlockActives.Add(thisTrain.Number);
+                    }
+                }
+            }
+        }
+        //================================================================================================//
+        //
+        // Set deadlock trap for individual train at end section
+        //
+
+        public void SetDeadlockTrap(int thisTrainNumber, int otherTrainNumber)
+        {
+            if (DeadlockTraps.ContainsKey(otherTrainNumber))
+            {
+                if (!DeadlockTraps[otherTrainNumber].Contains(thisTrainNumber))
+                {
+                    DeadlockTraps[otherTrainNumber].Add(thisTrainNumber);
+                }
+            }
+            else
+            {
+                List<int> deadlockList = new List<int>();
+                deadlockList.Add(thisTrainNumber);
+                DeadlockTraps.Add(otherTrainNumber, deadlockList);
+            }
+
+            if (!DeadlockActives.Contains(thisTrainNumber))
+            {
+                DeadlockActives.Add(thisTrainNumber);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Clear deadlock trap
+        //
+
+        public void ClearDeadlockTrap(int thisTrainNumber)
+        {
+            List<int> deadlocksCleared = new List<int>();
+
+            if (DeadlockActives.Contains(thisTrainNumber))
+            {
+                foreach (KeyValuePair<int, List<int>> thisDeadlock in DeadlockTraps)
+                {
+                    if (thisDeadlock.Value.Contains(thisTrainNumber))
+                    {
+                        thisDeadlock.Value.Remove(thisTrainNumber);
+                        if (thisDeadlock.Value.Count <= 0)
+                        {
+                            deadlocksCleared.Add(thisDeadlock.Key);
+                        }
+                    }
+                }
+                DeadlockActives.Remove(thisTrainNumber);
+            }
+
+            foreach (int deadlockKey in deadlocksCleared)
+            {
+                DeadlockTraps.Remove(deadlockKey);
+            }
+
+            DeadlockAwaited.Remove(thisTrainNumber);
+
+        }
+        //================================================================================================//
+        //
+        // Check if train is waiting for deadlock
+        //
+
+        public bool CheckDeadlockAwaited(int trainNumber)
+        {
+            int totalCount = DeadlockAwaited.Count;
+            if (DeadlockAwaited.Contains(trainNumber))
+                totalCount--;
+            return (totalCount > 0);
+        }
+
+        //================================================================================================//
+
+    }// class TrackCircuitSection
+
+    //================================================================================================//
+    //
+    // class TrackCircuitItems
+    //
+    //================================================================================================//
+    //
+    // Class for track circuit item storage
+    //
+
+    public class TrackCircuitItems
+    {
+        public TrackCircuitSignalList[,]
+            TrackCircuitSignals = new TrackCircuitSignalList[2, (int)SignalHead.SIGFN.UNKNOWN];
+        // List of signals (per direction and per type) //
+        public TrackCircuitSignalList[]
+            TrackCircuitSpeedPosts = new TrackCircuitSignalList[2];
+        // List of speedposts (per direction) //
+        public List<TrackCircuitMilepost> MilePosts = new List<TrackCircuitMilepost>();
+        // List of mileposts //
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public TrackCircuitItems()
+        {
+            TrackCircuitSignalList thisList;
+
+            for (int iDirection = 0; iDirection <= 1; iDirection++)
+            {
+                for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+                {
+                    thisList = new TrackCircuitSignalList();
+                    TrackCircuitSignals[iDirection, fntype] = thisList;
+                }
+
+                thisList = new TrackCircuitSignalList();
+                TrackCircuitSpeedPosts[iDirection] = thisList;
+            }
+        }
+    }
+
+    //================================================================================================//
+    //
+    // class MilepostObject
+    //
+    //================================================================================================//
+    //
+    // Class for track circuit mileposts
+    //
+
+    public class TrackCircuitMilepost
+    {
+        public float MilepostValue;                        // milepost value                   //
+        public float[] MilepostLocation = new float[2];    // milepost location from both ends //
+    }
+
+    //================================================================================================//
+    //
+    // class TrackCircuitSignalList
+    //
+    //================================================================================================//
+    //
+    // Class for track circuit signal list
+    //
+
+    public class TrackCircuitSignalList
+    {
+        public List<TrackCircuitSignalItem> TrackCircuitItem = new List<TrackCircuitSignalItem>();
+        // List of signal items //
+    }
+
+    //================================================================================================//
+    //
+    // class TrackCircuitSignalItem
+    //
+    //================================================================================================//
+    //
+    // Class for track circuit signal item
+    //
+
+    public class TrackCircuitSignalItem
+    {
+        public ObjectItemInfo.ObjectItemFindState SignalState;  // returned state // 
+        public SignalObject SignalRef;            // related SignalObject     //
+        public float SignalLocation;              // relative signal position //
+
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public TrackCircuitSignalItem(SignalObject thisRef, float thisLocation)
+        {
+            SignalState = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
+            SignalRef = thisRef;
+            SignalLocation = thisLocation;
+        }
+
+
+        public TrackCircuitSignalItem(ObjectItemInfo.ObjectItemFindState thisState)
+        {
+            SignalState = thisState;
+            SignalRef = null;
+            SignalLocation = 0.0f;
+        }
+    }
+
+    //================================================================================================//
+    //
+    // class TrackCircuitState
+    //
+    //================================================================================================//
+    //
+    // Class for track circuit state
+    //
+
+    public class TrackCircuitState
+    {
+        public Dictionary<Train.TrainRouted, int> TrainOccupy;     // trains occupying section      //
+        public Train.TrainRouted TrainReserved;                    // train reserving section       //
+        public Queue<Train.TrainRouted> TrainPreReserved;          // trains with pre-reservation   //
+        public Queue<Train.TrainRouted> TrainClaimed;              // trains with normal claims     //
+
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public TrackCircuitState()
+        {
+            TrainOccupy = new Dictionary<Train.TrainRouted, int>();
+            TrainReserved = null;
+            TrainPreReserved = new Queue<Train.TrainRouted>();
+            TrainClaimed = new Queue<Train.TrainRouted>();
+        }
+
+
+        //================================================================================================//
+        //
+        // Restore
+        // IMPORTANT : trains are restored to dummy value, will be restored to full contents later
+        //
+
+        public void Restore(BinaryReader inf)
+        {
+            int noOccupy = inf.ReadInt32();
+            for (int trainNo = 0; trainNo < noOccupy; trainNo++)
+            {
+                int trainNumber = inf.ReadInt32();
+                int trainRouteIndex = inf.ReadInt32();
+                int trainDirection = inf.ReadInt32();
+                Train thisTrain = new Train(trainNumber);
+                Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndex);
+                TrainOccupy.Add(thisRouted, trainDirection);
+            }
+
+            int trainReserved = inf.ReadInt32();
+            if (trainReserved >= 0)
+            {
+                int trainRouteIndexR = inf.ReadInt32();
+                Train thisTrain = new Train(trainReserved);
+                Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndexR);
+                TrainReserved = thisRouted;
+            }
+
+            int noPreReserve = inf.ReadInt32();
+            for (int trainNo = 0; trainNo < noPreReserve; trainNo++)
+            {
+                int trainNumber = inf.ReadInt32();
+                int trainRouteIndex = inf.ReadInt32();
+                Train thisTrain = new Train(trainNumber);
+                Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndex);
+                TrainPreReserved.Enqueue(thisRouted);
+            }
+
+            int noClaimed = inf.ReadInt32();
+            for (int trainNo = 0; trainNo < noClaimed; trainNo++)
+            {
+                int trainNumber = inf.ReadInt32();
+                int trainRouteIndex = inf.ReadInt32();
+                Train thisTrain = new Train(trainNumber);
+                Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndex);
+                TrainClaimed.Enqueue(thisRouted);
+            }
+
+        }
+
+        //================================================================================================//
+        //
+        // Reset train references after restore
+        //
+
+        public void RestoreTrains(Signals signalRef, List<Train> trains)
+        {
+
+            // Occupy
+
+            Dictionary<int[], int> tempTrains = new Dictionary<int[], int>();
+
+            foreach (KeyValuePair<Train.TrainRouted, int> thisOccupy in TrainOccupy)
+            {
+                int[] trainKey = new int[2];
+                trainKey[0] = thisOccupy.Key.Train.Number;
+                trainKey[1] = thisOccupy.Key.TrainRouteDirectionIndex;
+                int direction = thisOccupy.Value;
+                tempTrains.Add(trainKey, direction);
+            }
+
+            TrainOccupy.Clear();
+
+            foreach (KeyValuePair<int[], int> thisTemp in tempTrains)
+            {
+                int[] trainKey = thisTemp.Key;
+                int number = trainKey[0];
+                int routeIndex = trainKey[1];
+                int direction = thisTemp.Value;
+                Train thisTrain = signalRef.FindTrain(number, trains);
+                if (thisTrain != null)
+                {
+                    Train.TrainRouted thisTrainRouted = routeIndex == 0 ? thisTrain.routedForward : thisTrain.routedBackward;
+                    TrainOccupy.Add(thisTrainRouted, direction);
+                }
+            }
+
+            // Reserved
+
+            if (TrainReserved != null)
+            {
+                int number = TrainReserved.Train.Number;
+                Train reservedTrain = signalRef.FindTrain(number, trains);
+                if (reservedTrain != null)
+                {
+                    int reservedDirection = TrainReserved.TrainRouteDirectionIndex;
+                    TrainReserved = reservedDirection == 0 ? reservedTrain.routedForward : reservedTrain.routedBackward;
+                }
+                else
+                {
+                    TrainReserved = null;
+                }
+            }
+
+            // PreReserved
+
+            Queue<Train.TrainRouted> tempQueue = new Queue<Train.TrainRouted>();
+
+            foreach (Train.TrainRouted thisTrainRouted in TrainPreReserved)
+            {
+                tempQueue.Enqueue(thisTrainRouted);
+            }
+            TrainPreReserved.Clear();
+            foreach (Train.TrainRouted thisTrainRouted in tempQueue)
+            {
+                Train thisTrain = signalRef.FindTrain(thisTrainRouted.Train.Number, trains);
+                int routeIndex = thisTrainRouted.TrainRouteDirectionIndex;
+                if (thisTrain != null)
+                {
+                    Train.TrainRouted foundTrainRouted = routeIndex == 0 ? thisTrain.routedForward : thisTrain.routedBackward;
+                    TrainPreReserved.Enqueue(foundTrainRouted);
+                }
+            }
+
+            // Claimed
+
+            tempQueue.Clear();
+
+            foreach (Train.TrainRouted thisTrainRouted in TrainClaimed)
+            {
+                tempQueue.Enqueue(thisTrainRouted);
+            }
+            TrainClaimed.Clear();
+            foreach (Train.TrainRouted thisTrainRouted in tempQueue)
+            {
+                Train thisTrain = signalRef.FindTrain(thisTrainRouted.Train.Number, trains);
+                int routeIndex = thisTrainRouted.TrainRouteDirectionIndex;
+                if (thisTrain != null)
+                {
+                    Train.TrainRouted foundTrainRouted = routeIndex == 0 ? thisTrain.routedForward : thisTrain.routedBackward;
+                    TrainClaimed.Enqueue(foundTrainRouted);
+                }
+            }
+
+        }
+
+        //================================================================================================//
+        //
+        // Save
+        //
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(TrainOccupy.Count);
+            foreach (KeyValuePair<Train.TrainRouted, int> thisOccupy in TrainOccupy)
+            {
+                Train.TrainRouted thisTrain = thisOccupy.Key;
+                outf.Write(thisTrain.Train.Number);
+                outf.Write(thisTrain.TrainRouteDirectionIndex);
+                outf.Write(thisOccupy.Value);
+            }
+
+            if (TrainReserved == null)
+            {
+                outf.Write(-1);
+            }
+            else
+            {
+                outf.Write(TrainReserved.Train.Number);
+                outf.Write(TrainReserved.TrainRouteDirectionIndex);
+            }
+
+            outf.Write(TrainPreReserved.Count);
+            foreach (Train.TrainRouted thisTrain in TrainPreReserved)
+            {
+                outf.Write(thisTrain.Train.Number);
+                outf.Write(thisTrain.TrainRouteDirectionIndex);
+            }
+
+            outf.Write(TrainClaimed.Count);
+            foreach (Train.TrainRouted thisTrain in TrainClaimed)
+            {
+                outf.Write(thisTrain.Train.Number);
+                outf.Write(thisTrain.TrainRouteDirectionIndex);
+            }
+
+        }
+
+        //================================================================================================//
+        //
+        // Get list of trains occupying track, in required direction if required
+        //
+
+        public List<Train.TrainRouted> TrainsOccupying()
+        {
+            List<Train.TrainRouted> reqList = new List<Train.TrainRouted>();
+            foreach (KeyValuePair<Train.TrainRouted, int> thisTCT in TrainOccupy)
+            {
+                reqList.Add(thisTCT.Key);
+            }
+            return (reqList);
+        }
+
+        public List<Train.TrainRouted> TrainsOccupying(int reqDirection)
+        {
+            List<Train.TrainRouted> reqList = new List<Train.TrainRouted>();
+            foreach (KeyValuePair<Train.TrainRouted, int> thisTCT in TrainOccupy)
+            {
+                if (thisTCT.Value == reqDirection)
+                {
+                    reqList.Add(thisTCT.Key);
+                }
+            }
+            return (reqList);
+        }
+
+        //================================================================================================//
+        //
+        // check if any trains occupy track, in required direction if required
+        //
+
+        public bool HasTrainsOccupying()
+        {
+            return (TrainOccupy.Count > 0);
+        }
+
+        public bool HasTrainsOccupying(int reqDirection, bool stationary)
+        {
+            foreach (KeyValuePair<Train.TrainRouted, int> thisTCT in TrainOccupy)
+            {
+                if (thisTCT.Value == reqDirection)
+                {
+                    if (Math.Abs(thisTCT.Key.Train.SpeedMpS) > 0.5f)
+                        return (true);   // exclude (almost) stationary trains
+                }
+
+                if ((Math.Abs(thisTCT.Key.Train.SpeedMpS) <= 0.5f) && stationary)
+                    return (true);   // (almost) stationay trains
+            }
+
+            return (false);
+        }
+
+        public bool HasOtherTrainsOccupying(Train.TrainRouted thisTrain)
+        {
+            if (TrainOccupy.Count == 0)  // no trains
+            {
+                return (false);
+            }
+
+            if (TrainOccupy.Count == 1 && TrainOccupy.ContainsKey(thisTrain))  // only one train and that one is us
+            {
+                return (false);
+            }
+
+            return (true);
+        }
+
+        //================================================================================================//
+        //
+        // check if this train occupies track
+        //
+
+        // routed train
+        public bool ThisTrainOccupying(Train.TrainRouted thisTrain)
+        {
+            return (TrainOccupy.ContainsKey(thisTrain));
+        }
+
+        // unrouted train
+        public bool ThisTrainOccupying(Train thisTrain)
+        {
+            if (ThisTrainOccupying(thisTrain.routedForward)) // try forward
+            {
+                return (true);
+            }
+            else
+            {
+                return (TrainOccupy.ContainsKey(thisTrain.routedBackward)); // try backward
+            }
+        }
+
+    }
+
+    //================================================================================================//
+    //
+    // class CrossOverItem
+    //
+    //================================================================================================//
+    //
+    // Class for cross over items
+    //
+
+    public class CrossOverItem
+    {
+        public float[] Position = new float[2];        // position within track sections //
+        public int[] SectionIndex = new int[2];          // indices of original sections   //
+        public int[] ItemIndex = new int[2];             // TDB item indices               //
+        public uint TrackShape;
+    }
+
+    //================================================================================================//
+    //
+    // class TrackCircuitXRefList
+    //
+
+    public class TrackCircuitXRefList : List<TrackCircuitCrossReference>
+    {
+
+        //================================================================================================//
+        //
+        // get XRef index
+        //
+
+        private int GetXRefIndex(float offset, int direction)
+        {
+            int foundSection = -1;
+
+            if (direction == 0)
+            {
+                for (int TC = 1; TC < this.Count && foundSection < 0; TC++)
+                {
+                    TrackCircuitCrossReference thisReference = this[TC];
+                    if (thisReference.Position[direction] > offset)
+                    {
+                        foundSection = TC - 1;
+                    }
+                }
+
+                if (foundSection < 0)
+                {
+                    TrackCircuitCrossReference thisReference = this[this.Count - 1];
+                    if (offset <= (thisReference.Position[direction] + thisReference.Length))
+                    {
+                        foundSection = this.Count - 1;
+                    }
+                }
+            }
+            else
+            {
+                for (int TC = this.Count - 2; TC >= 0 && foundSection < 0; TC--)
+                {
+                    TrackCircuitCrossReference thisReference = this[TC];
+                    if (thisReference.Position[direction] > offset)
+                    {
+                        foundSection = TC + 1;
+                    }
+                }
+
+                if (foundSection < 0)
+                {
+                    TrackCircuitCrossReference thisReference = this[0];
+                    if (offset <= (thisReference.Position[direction] + thisReference.Length))
+                    {
+                        foundSection = 0;
+                    }
+                }
+            }
+
+            if (foundSection < 0)
+            {
+                if (direction == 0)
+                {
+                    foundSection = 0;
+                }
+                else
+                {
+                    foundSection = this.Count - 1;
+                }
+            }
+
+            return (foundSection);
+        }
+
+        //================================================================================================//
+        //
+        // Get Section index
+        //
+
+        public int GetSectionIndex(float offset, int direction)
+        {
+            int XRefIndex = GetXRefIndex(offset, direction);
+
+            if (XRefIndex >= 0)
+            {
+                TrackCircuitCrossReference thisReference = this[XRefIndex];
+                return (thisReference.CrossRefIndex);
+            }
+            else
+            {
+                return (-1);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Get TCPosition
+        //
+
+        public void GetTCPosition(float offset, int direction, ref Train.TCPosition thisPosition)
+        {
+            int XRefIndex = GetXRefIndex(offset, direction);
+
+            if (XRefIndex >= 0)
+            {
+                TrackCircuitCrossReference thisReference = this[XRefIndex];
+                thisPosition.TCSectionIndex = thisReference.CrossRefIndex;
+                thisPosition.TCDirection = direction;
+                thisPosition.TCOffset = offset - thisReference.Position[direction];
+            }
+        }
+
+    } // class TrackCircuitXRefList
+
+    //================================================================================================//
+    //
+    // class TrackCircuitCrossReference
+    //
+    //================================================================================================//
+    //
+    // Class for track circuit cross reference, added to TDB info
+    //
+
+    public class TrackCircuitCrossReference
+    {
+        public int CrossRefIndex;
+        public float Length;
+        public float[] Position = new float[2];
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public TrackCircuitCrossReference(ORTS.TrackCircuitSection thisSection)
+        {
+            CrossRefIndex = thisSection.Index;
+            Length = thisSection.Length;
+            Position[0] = thisSection.OffsetLength[0];
+            Position[1] = thisSection.OffsetLength[1];
+        }
+
+    }
+
+    //================================================================================================//
+    //
+    //  class SignalObject
+    //
+    //================================================================================================//
+
+    public class SignalObject
+    {
+
+        public enum BLOCKSTATE
+        {
+            CLEAR,         // Block ahead is clear and accesible
+            OCCUPIED,      // Block ahead is occupied by one or more wagons/locos not moving in opposite direction
+            JN_OBSTRUCTED  // Block ahead is impassable due to the state of a switch or occupied by moving train or not accesible
+        }
+
+        public enum INTERNAL_BLOCKSTATE
+        {
+            RESERVED,              // all sections reserved for requiring train       //
+            RESERVABLE,            // all secetions clear and reservable for train    //
+            OCCUPIED_SAMEDIR,      // occupied by train moving in same direction      //
+            RESERVED_OTHER,        // reserved for other train                        //
+            OCCUPIED_OPPDIR,       // occupied by train moving in opposite direction  //
+            OPEN,                  // sections are claimed and not accesible          //
+            BLOCKED                // switch locked against train                     //
+        }
+
+        public enum PERMISSION
+        {
+            GRANTED,
+            REQUESTED,
+            DENIED
+        }
+
+        public enum HOLDSTATE                   // signal is locked in hold
+        {
+            NONE,                           // signal is clear
+            STATION_STOP,                   // because of station stop
+            MANUAL_LOCK                     // because of manual lock
+        }
+
+        //
+        // for future extention
+        //
+        //              public enum CONTROLSTATE
+        //              {
+        //                      AUTO,                           // signal is in AUTO mode
+        //                      MANUAL                          // signal is under MANUAL control
+        //              }
+
+        public Signals signalRef;               // reference to overlaying Signal class
+        public static SignalObject[] signalObjects;
+        public static TrackNode[] trackNodes;
+        public static TrItem[] trItems;
+        public SignalWorldObject WorldObject;   // Signal World Object information
+
+        public int trackNode;                   // Track node which contains this signal
+        public int trRefIndex;                  // Index to TrItemRef within Track Node 
+
+        public int TCReference = -1;            // Reference to TrackCircuit (index)
+        public float TCOffset;                  // Position within TrackCircuit
+        public int TCDirection;                 // Direction within TrackCircuit
+        public int TCNextTC = -1;               // Index of next TrackCircuit (NORMAL signals only)
+        public int TCNextDirection;             // Direction of next TrackCircuit 
+
+        public List<int> JunctionsPassed = new List<int>();  // Junctions which are passed checking next signal //
+
+        public int thisRef;                     // This signal's reference.
+        public int direction;                   // Direction facing on track
+
+        public bool isSignal = true;            // if signal, false if speedpost //
+        public List<SignalHead> SignalHeads = new List<SignalHead>();
+
+        public int SignalNumClearAhead_MSTS = -2;    // Overall maximum SignalNumClearAhead over all heads (MSTS calculation)
+        public int SignalNumClearAhead_ORTS = -2;    // Overall maximum SignalNumClearAhead over all heads (ORTS calculation)
+        public int SignalNumNormalHeads = 0;         // no. of normal signal heads in signal
+        public int ReqNumClearAhead = 0;        // Passed on value for SignalNumClearAhead
+
+        public int draw_state;                  // actual signal state
+
+        public Train.TrainRouted enabledTrain = null; // full train structure for which signal is enabled
+
+        private INTERNAL_BLOCKSTATE internalBlockState = INTERNAL_BLOCKSTATE.OPEN;    // internal blockstate
+        public PERMISSION hasPermission = PERMISSION.DENIED;  // Permission to pass red signal
+        public HOLDSTATE holdState = HOLDSTATE.NONE;
+        //              public CONTROLSTATE controlState = CONTROLSTATE.AUTO;   // future extension
+
+        public int[] sigfound = new int[(int)SignalHead.SIGFN.UNKNOWN];  // active next signal
+        private int[] defaultNextSignal = new int[(int)SignalHead.SIGFN.UNKNOWN];  // default next signal
+        public Traveller tdbtraveller;          // TDB traveller to determine distance between objects
+
+        public Train.TCSubpathRoute signalRoute = new Train.TCSubpathRoute();  // train route from signal
+        public int trainRouteDirectionIndex = 0;// direction index in train route array (usually 0, value 1 valid for Manual only)
+        private int thisTrainRouteIndex;        // index of section after signal in train route list
+
+        private Train.TCSubpathRoute fixedRoute = new Train.TCSubpathRoute();     // fixed route from signal
+        public bool hasFixedRoute = false;       // signal has no fixed route
+        private bool fullRoute = false;          // required route is full route to next signal or end-of-track
+        private bool propagated = false;         // route request propagated to next signal
+        private bool isPropagated = false;       // route request for this signal was propagated from previous signal
+
+        public bool enabled
+        {
+            get
+            {
+                return (enabledTrain != null);
+            }
+        }
+
+        public BLOCKSTATE blockState
+        {
+            get
+            {
+                BLOCKSTATE lstate = BLOCKSTATE.JN_OBSTRUCTED;
+                switch (internalBlockState)
+                {
+                    case INTERNAL_BLOCKSTATE.RESERVED:
+                    case INTERNAL_BLOCKSTATE.RESERVABLE:
+                        lstate = BLOCKSTATE.CLEAR;
+                        break;
+                    case INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR:
+                        lstate = BLOCKSTATE.OCCUPIED;
+                        break;
+                    default:
+                        lstate = BLOCKSTATE.JN_OBSTRUCTED;
+                        break;
+                }
+
+                return (lstate);
+            }
+        }
+
+        public int trItem
+        {
+            get
+            {
+                return trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
+            }
+        }
+
+        public int revDir                //  Needed because signal faces train!
+        {
+            get
+            {
+                return direction == 0 ? 1 : 0;
+            }
+        }
+
+        //================================================================================================//
+        ///
+        //  Constructor for empty item
+        ///
+
+        public SignalObject()
+        {
+        }
+
+        //================================================================================================//
+        ///
+        //  Constructor for Copy 
+        ///
+
+        public SignalObject(SignalObject copy)
+        {
+            signalRef = copy.signalRef;
+            WorldObject = new SignalWorldObject(copy.WorldObject);
+
+            trackNode = copy.trackNode;
+
+            TCReference = copy.TCReference;
+            TCOffset = copy.TCOffset;
+            TCDirection = copy.TCDirection;
+            TCNextTC = copy.TCNextTC;
+            TCNextDirection = copy.TCNextDirection;
+
+            direction = copy.direction;
+            isSignal = copy.isSignal;
+            SignalNumClearAhead_MSTS = copy.SignalNumClearAhead_MSTS;
+            SignalNumClearAhead_ORTS = copy.SignalNumClearAhead_ORTS;
+            SignalNumNormalHeads = copy.SignalNumNormalHeads;
+
+            draw_state = copy.draw_state;
+            internalBlockState = copy.internalBlockState;
+            hasPermission = copy.hasPermission;
+
+            tdbtraveller = new Traveller(copy.tdbtraveller);
+
+            sigfound = new int[copy.sigfound.Length];
+            copy.sigfound.CopyTo(sigfound, 0);
+            defaultNextSignal = new int[copy.defaultNextSignal.Length];
+            copy.defaultNextSignal.CopyTo(defaultNextSignal, 0);
+        }
+
+        //================================================================================================//
+        //
+        // Constructor for restore
+        // IMPORTANT : enabled train is restore temporarily as Trains are restored later as Signals
+        // Full restore of train link follows in RestoreTrains
+        //
+
+        public void Restore(BinaryReader inf)
+        {
+            int trainNumber = inf.ReadInt32();
+
+            for (int iSig = 0; iSig < sigfound.Length; iSig++)
+            {
+                sigfound[iSig] = inf.ReadInt32();
+            }
+
+            bool validRoute = inf.ReadBoolean();
+
+            if (validRoute)
+            {
+                signalRoute = new Train.TCSubpathRoute(inf);
+            }
+
+            thisTrainRouteIndex = inf.ReadInt32();
+            holdState = (HOLDSTATE)inf.ReadInt32();
+
+            int totalJnPassed = inf.ReadInt32();
+
+            for (int iJn = 0; iJn < totalJnPassed; iJn++)
+            {
+                int thisJunction = inf.ReadInt32();
+                JunctionsPassed.Add(thisJunction);
+                signalRef.TrackCircuitList[thisJunction].SignalsPassingRoutes.Add(thisRef);
+            }
+
+            fullRoute = inf.ReadBoolean();
+            propagated = inf.ReadBoolean();
+            isPropagated = inf.ReadBoolean();
+            ReqNumClearAhead = inf.ReadInt32();
+
+            // set dummy train, route direction index will be set later on restore of train
+
+            enabledTrain = null;
+            if (trainNumber >= 0)
+            {
+                Train thisTrain = new Train(trainNumber);
+                Train.TrainRouted thisTrainRouted = new Train.TrainRouted(thisTrain, 0);
+                enabledTrain = thisTrainRouted;
+            }
+
+        }
+
+        //================================================================================================//
+        //
+        // Restore Train Reference
+        //
+
+        public void RestoreTrains(List<Train> trains)
+        {
+            if (enabledTrain != null)
+            {
+                int number = enabledTrain.Train.Number;
+                int routeIndex = enabledTrain.TrainRouteDirectionIndex;
+
+                Train foundTrain = signalRef.FindTrain(number, trains);
+
+                // check if this signal is next signal forward for this train
+
+                if (foundTrain != null && foundTrain.NextSignalObject[0] != null && this.thisRef == foundTrain.NextSignalObject[0].thisRef)
+                {
+                    enabledTrain = foundTrain.routedForward;
+                    foundTrain.NextSignalObject[0] = this;
+                }
+
+                // check if this signal is next signal backward for this train
+
+                else if (foundTrain != null && foundTrain.NextSignalObject[1] != null && this.thisRef == foundTrain.NextSignalObject[1].thisRef)
+                {
+                    enabledTrain = foundTrain.routedBackward;
+                    foundTrain.NextSignalObject[1] = this;
+                }
+                else
+                {
+                    // check if this section is reserved for this train
+
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
+                    if (thisSection.CircuitState.TrainReserved != null && thisSection.CircuitState.TrainReserved.Train.Number == number)
+                    {
+                        enabledTrain = thisSection.CircuitState.TrainReserved;
+                    }
+                    else
+                    {
+                        enabledTrain = null; // reset - train not found
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Restore Signal Aspect based on train information
+        // Process non-propagated signals only, others are updated through propagation
+        //
+
+        public void RestoreAspect()
+        {
+            if (enabledTrain != null && !isPropagated)
+            {
+                if (isSignalNormal())
+                {
+                    checkRouteState(false, signalRoute, enabledTrain);
+                    propagateRequest();
+                    StateUpdate();
+                }
+                else
+                {
+                    getBlockState_notRouted();
+                    StateUpdate();
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Save
+        //
+
+        public void Save(BinaryWriter outf)
+        {
+            if (enabledTrain == null)
+            {
+                outf.Write(-1);
+            }
+            else
+            {
+                outf.Write(enabledTrain.Train.Number);
+            }
+
+            foreach (int thisSig in sigfound)
+            {
+                outf.Write(thisSig);
+            }
+
+            if (signalRoute == null)
+            {
+                outf.Write(false);
+            }
+            else
+            {
+                outf.Write(true);
+                signalRoute.Save(outf);
+            }
+
+            outf.Write(thisTrainRouteIndex);
+            outf.Write((int)holdState);
+
+            outf.Write(JunctionsPassed.Count);
+            if (JunctionsPassed.Count > 0)
+            {
+                foreach (int thisJunction in JunctionsPassed)
+                {
+                    outf.Write(thisJunction);
+                }
+            }
+
+            outf.Write(fullRoute);
+            outf.Write(propagated);
+            outf.Write(isPropagated);
+            outf.Write(ReqNumClearAhead);
+        }
+
+        //================================================================================================//
+        //
+        // return blockstate
+        //
+
+        public BLOCKSTATE block_state()
+        {
+            return (blockState);
+        }
+
+        //================================================================================================//
+        ///
+        // setSignalDefaultNextSignal : set default next signal based on non-Junction tracks ahead
+        // this routine also sets fixed routes for signals which do not lead onto junction or crossover
+        //
+        ///
+
+        public void setSignalDefaultNextSignal()
+        {
+            int thisTC = TCReference;
+            float position = TCOffset;
+            int direction = TCDirection;
+            bool setFixedRoute = false;
+
+            // for normal signals : start at next TC
+
+            if (TCNextTC > 0)
+            {
+                thisTC = TCNextTC;
+                direction = TCNextDirection;
+                position = 0.0f;
+                setFixedRoute = true;
+            }
+
+            bool completedFixedRoute = !setFixedRoute;
+
+            // get trackcircuit
+
+            TrackCircuitSection thisSection = null;
+            if (thisTC > 0)
+            {
+                thisSection = signalRef.TrackCircuitList[thisTC];
+            }
+
+            // set default
+
+            for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+            {
+                defaultNextSignal[fntype] = -1;
+            }
+
+            // loop through valid sections
+
+            while (thisSection != null && thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL)
+            {
+
+                if (!completedFixedRoute)
+                {
+                    fixedRoute.Add(new Train.TCRouteElement(thisSection.Index, direction));
+                }
+
+                // normal signal
+
+                if (defaultNextSignal[(int)SignalHead.SIGFN.NORMAL] < 0)
+                {
+                    if (thisSection.EndSignals[direction] != null)
+                    {
+                        defaultNextSignal[(int)SignalHead.SIGFN.NORMAL] = thisSection.EndSignals[direction].thisRef;
+                        completedFixedRoute = true;
+                    }
+                }
+
+                // other signals
+
+                for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+                {
+                    if (fntype != (int)SignalHead.SIGFN.NORMAL && fntype != (int)SignalHead.SIGFN.UNKNOWN)
+                    {
+                        TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction, fntype];
+                        bool signalFound = defaultNextSignal[fntype] >= 0;
+                        for (int iItem = 0; iItem < thisList.TrackCircuitItem.Count && !signalFound; iItem++)
+                        {
+                            TrackCircuitSignalItem thisItem = thisList.TrackCircuitItem[iItem];
+                            if (thisItem.SignalLocation > position)
+                            {
+                                defaultNextSignal[fntype] = thisItem.SignalRef.thisRef;
+                                signalFound = true;
+                            }
+                        }
+                    }
+                }
+
+                int pinIndex = direction;
+                direction = thisSection.Pins[pinIndex, 0].Direction;
+                thisSection = signalRef.TrackCircuitList[thisSection.Pins[pinIndex, 0].Link];
+            }
+
+            // copy default as valid items
+
+            for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+            {
+                sigfound[fntype] = defaultNextSignal[fntype];
+            }
+
+            // Allow use of fixed route if ended on END_OF_TRACK
+
+            if (thisSection != null && thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+            {
+                completedFixedRoute = true;
+            }
+
+            // if valid next normal signal found, signal has fixed route
+
+            if (setFixedRoute && completedFixedRoute)
+            {
+                hasFixedRoute = true;
+                fullRoute = true;
+            }
+            else
+            {
+                hasFixedRoute = false;
+                fixedRoute.Clear();
+            }
+        }
+
+        //================================================================================================//
+        ///
+        // isSignalNormal : Returns true if at least one signal head is type normal.
+        ///
+
+        public bool isSignalNormal()
+        {
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction == SignalHead.SIGFN.NORMAL)
+                    return true;
+            }
+            return false;
+        }
+
+        //================================================================================================//
+        ///
+        // isSignalType : Returns true if at least one signal head is of required type
+        ///
+
+        public bool isSignalType(SignalHead.SIGFN[] reqSIGFN)
+        {
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (reqSIGFN.Contains(sigHead.sigFunction))
+                    return true;
+            }
+            return false;
+        }
+
+        //================================================================================================//
+        ///
+        // next_sig_mr : returns most restrictive state of next signal of required type
+        ///
+        ///
+
+        public SignalHead.SIGASP next_sig_mr(SignalHead.SIGFN fn_type)
+        {
+
+            SignalHead.SIGFN[] fn_type_array = new SignalHead.SIGFN[1];
+
+            int nextSignal = sigfound[(int)fn_type];
+            if (nextSignal < 0)
+            {
+                nextSignal = SONextSignal(fn_type);
+                sigfound[(int)fn_type] = nextSignal;
+            }
+
+            if (nextSignal >= 0)
+            {
+                return signalObjects[nextSignal].this_sig_mr(fn_type);
+            }
+            else
+            {
+                return SignalHead.SIGASP.STOP;
+            }
+        }
+
+        //================================================================================================//
+        ///
+        // next_sig_lr : returns least restrictive state of next signal of required type
+        ///
+        ///
+
+        public SignalHead.SIGASP next_sig_lr(SignalHead.SIGFN fn_type)
+        {
+            SignalHead.SIGFN[] fn_type_array = new SignalHead.SIGFN[1];
+
+            int nextSignal = sigfound[(int)fn_type];
+            if (nextSignal < 0)
+            {
+                nextSignal = SONextSignal(fn_type);
+                sigfound[(int)fn_type] = nextSignal;
+            }
+            if (nextSignal >= 0)
+            {
+                return signalObjects[nextSignal].this_sig_lr(fn_type);
+            }
+            else
+            {
+                return SignalHead.SIGASP.STOP;
+            }
+        }
+
+        //================================================================================================//
+        //
+        // opp_sig_mr : not yet implemented
+        //
+
+        public SignalHead.SIGASP opp_sig_mr(SignalHead.SIGFN fn_type)
+        {
+            return SignalHead.SIGASP.STOP;
+        }//opp_sig_mr
+
+        //================================================================================================//
+        //
+        // opp_sig_lr : not yet implemented
+        //
+
+        public SignalHead.SIGASP opp_sig_lr(SignalHead.SIGFN fn_type)
+        {
+            return SignalHead.SIGASP.STOP;
+        }//opp_sig_lr
+
+        //================================================================================================//
+        //
+        // this_sig_mr : Returns the most restrictive state of this signal's heads of required type
+        //
+
+        public SignalHead.SIGASP this_sig_mr(SignalHead.SIGFN fn_type)
+        {
+            SignalHead.SIGASP sigAsp = SignalHead.SIGASP.UNKNOWN;
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction == fn_type && sigHead.state < sigAsp)
+                {
+                    sigAsp = sigHead.state;
+                }
+            }
+            if (sigAsp == SignalHead.SIGASP.UNKNOWN)
+            {
+                return SignalHead.SIGASP.STOP;
+            }
+            else
+            {
+                return sigAsp;
+            }
+        }//this_sig_mr
+
+        //================================================================================================//
+        //
+        // this_sig_lr : Returns the least restrictive state of this signal's heads of required type
+        //
+
+        public SignalHead.SIGASP this_sig_lr(SignalHead.SIGFN fn_type)
+        {
+            SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
+            bool sigAspSet = false;
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
+                {
+                    sigAsp = sigHead.state;
+                    sigAspSet = true;
+                }
+            }
+            if (sigAspSet)
+            {
+                return sigAsp;
+            }
+            else if (fn_type == SignalHead.SIGFN.NORMAL)
+            {
+                return SignalHead.SIGASP.CLEAR_2;
+            }
+            else
+            {
+                return SignalHead.SIGASP.STOP;
+            }
+        }//this_sig_lr
+
+        //================================================================================================//
+        //
+        // this_sig_speed : Returns the speed related to the least restrictive aspect (for normal signal)
+        //
+
+        public ObjectSpeedInfo this_sig_speed(SignalHead.SIGFN fn_type)
+        {
+            SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
+            ObjectSpeedInfo set_speed = new ObjectSpeedInfo(-1, -1, false);
+
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
+                {
+                    sigAsp = sigHead.state;
+                    int AspIndex = Convert.ToInt32(sigAsp);
+                    set_speed = sigHead.speed_info[AspIndex];
+                }
+            }
+            return set_speed;
+        }//this_sig_speed
+
+        //================================================================================================//
+        //
+        // this_lim_speed : Returns the lowest allowed speed (for speedpost and speed signal)
+        //
+
+        public ObjectSpeedInfo this_lim_speed(SignalHead.SIGFN fn_type)
+        {
+            SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
+            ObjectSpeedInfo set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false);
+
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction == fn_type)
+                {
+                    sigAsp = sigHead.state;
+                    int AspIndex = Convert.ToInt32(sigAsp);
+                    ObjectSpeedInfo this_speed = sigHead.speed_info[AspIndex];
+                    if (this_speed != null)
+                    {
+                        if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
+                        {
+                            set_speed.speed_pass = this_speed.speed_pass;
+                            set_speed.speed_flag = 0;
+                        }
+
+                        if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
+                        {
+                            set_speed.speed_freight = this_speed.speed_freight;
+                            set_speed.speed_flag = 0;
+                        }
+                    }
+
+                }
+            }
+
+            if (set_speed.speed_pass > 1E9f)
+                set_speed.speed_pass = -1;
+            if (set_speed.speed_freight > 1E9f)
+                set_speed.speed_freight = -1;
+
+            return set_speed;
+        }//this_lim_speed
+
+        //================================================================================================//
+        //
+        // route_set : check if required route is set
+        //
+
+        public bool route_set(int req_mainnode)
+        {
+            bool routeset = false;
+
+            // if signal is enabled for a train, check if required section is in train route path
+
+            if (enabledTrain != null)
+            {
+                Train.TCSubpathRoute RoutePart = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex];
+
+                TrackNode thisNode = signalRef.trackDB.TrackNodes[req_mainnode];
+                for (int iSection = 0; iSection <= thisNode.TCCrossReference.Count - 1 && !routeset; iSection++)
+                {
+                    int sectionIndex = thisNode.TCCrossReference[iSection].CrossRefIndex;
+
+                    for (int iElement = 0; iElement < RoutePart.Count && !routeset; iElement++)
+                    {
+                        routeset = (sectionIndex == RoutePart[iElement].TCSectionIndex);
+                    }
+                }
+            }
+            // not enabled, check routes from next switch only
+            else
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
+                int curDirection = TCDirection;
+
+                bool switchFound = thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION;
+                while (!switchFound && thisSection != null)
+                {
+                    if (thisSection.Pins[curDirection, 0].Link > 0)
+                    {
+                        int newDirection = thisSection.Pins[curDirection, 0].Direction;
+                        thisSection = signalRef.TrackCircuitList[thisSection.Pins[curDirection, 0].Link];
+                        curDirection = newDirection;
+                        switchFound = thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION;
+                    }
+                    else
+                    {
+                        thisSection = null;
+                    }
+                }
+
+                if (switchFound)
+                {
+                    if (thisSection.JunctionLastRoute > 0)
+                    {
+                        routeset = (thisSection.Pins[1, thisSection.JunctionLastRoute].Link == req_mainnode);
+                    }
+                }
+            }
+
+            return (routeset);
+        }
+
+        //================================================================================================//
+        //
+        // Find next signal of specified type along set sections - not for NORMAL signals
+        //
+
+        private int SONextSignal(SignalHead.SIGFN fntype)
+        {
+            int thisTC = TCReference;
+            int direction = TCDirection;
+            int signalFound = -1;
+            TrackCircuitSection thisSection = null;
+
+            // for normal signals : can not be done using this function, is done while clearing route
+
+            if (fntype == SignalHead.SIGFN.NORMAL)
+            {
+                return (-1);
+            }
+
+        // for other signals : move to next TC (signal would have been default if within same section)
+
+            else
+            {
+                thisSection = signalRef.TrackCircuitList[thisTC];
+                int pinIndex = direction;
+                thisTC = thisSection.ActivePins[pinIndex, 0].Link;
+                direction = thisSection.ActivePins[pinIndex, 0].Direction;
+            }
+
+            // loop through valid sections
+
+            while (thisTC > 0 && signalFound < 0)
+            {
+                thisSection = signalRef.TrackCircuitList[thisTC];
+
+                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
+                    thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                {
+                    if (!JunctionsPassed.Contains(thisTC))
+                        JunctionsPassed.Add(thisTC);  // set reference to junction section
+                    if (!thisSection.SignalsPassingRoutes.Contains(thisRef))
+                        thisSection.SignalsPassingRoutes.Add(thisRef);
+                }
+
+                // check if required type of signal is along this section
+
+                TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction, (int)fntype];
+                if (thisList.TrackCircuitItem.Count > 0)
+                {
+                    signalFound = thisList.TrackCircuitItem[0].SignalRef.thisRef;
+                }
+
+                // get next section if active link is set
+
+                if (signalFound < 0)
+                {
+                    int pinIndex = direction;
+                    thisTC = thisSection.ActivePins[pinIndex, 0].Link;
+                    direction = thisSection.ActivePins[pinIndex, 0].Direction;
+                    if (thisTC == -1)
+                    {
+                        thisTC = thisSection.ActivePins[pinIndex, 1].Link;
+                        direction = thisSection.ActivePins[pinIndex, 1].Direction;
+                    }
+
+                    // if no active link but signal has train and route allocated, use train route to find next section
+
+                    if (thisTC == -1 && enabledTrain != null)
+                    {
+                        int thisIndex = signalRoute.GetRouteIndex(thisSection.Index, 0);
+                        if (thisIndex >= 0 && thisIndex <= signalRoute.Count - 2)
+                        {
+                            thisTC = signalRoute[thisIndex + 1].TCSectionIndex;
+                            direction = signalRoute[thisIndex + 1].Direction;
+                        }
+                    }
+                }
+            }
+
+            return (signalFound);
+        }
+
+        //================================================================================================//
+        //
+        // Find next signal of specified type along set sections - NORMAL signals ONLY
+        //
+
+        private int SONextSignalNormal()
+        {
+            int thisTC = TCNextTC;
+            int direction = TCDirection;
+            int signalFound = -1;
+            TrackCircuitSection thisSection = null;
+
+            int pinIndex = direction;
+
+            if (thisTC < 0)
+            {
+                thisTC = TCReference;
+                thisSection = signalRef.TrackCircuitList[thisTC];
+                pinIndex = direction;
+                thisTC = thisSection.ActivePins[pinIndex, 0].Link;
+                direction = thisSection.ActivePins[pinIndex, 0].Direction;
+            }
+
+            // loop through valid sections
+
+            while (thisTC > 0 && signalFound < 0)
+            {
+                thisSection = signalRef.TrackCircuitList[thisTC];
+
+                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
+                    thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                {
+                    if (!JunctionsPassed.Contains(thisTC))
+                        JunctionsPassed.Add(thisTC);  // set reference to junction section
+                    if (!thisSection.SignalsPassingRoutes.Contains(thisRef))
+                        thisSection.SignalsPassingRoutes.Add(thisRef);
+                }
+
+                // check if normal signal is along this section
+
+                if (thisSection.EndSignals[direction] != null)
+                {
+                    signalFound = thisSection.EndSignals[direction].thisRef;
+                }
+
+                // get next section if active link is set
+
+                if (signalFound < 0)
+                {
+                    pinIndex = direction;
+                    thisTC = thisSection.ActivePins[pinIndex, 0].Link;
+                    direction = thisSection.ActivePins[pinIndex, 0].Direction;
+                    if (thisTC == -1)
+                    {
+                        thisTC = thisSection.ActivePins[pinIndex, 1].Link;
+                        direction = thisSection.ActivePins[pinIndex, 1].Direction;
+                    }
+
+                    // if no active link but signal has train and route allocated, use train route to find next section
+
+                    if (thisTC == -1 && enabledTrain != null)
+                    {
+                        int thisIndex = signalRoute.GetRouteIndex(thisSection.Index, 0);
+                        if (thisIndex >= 0 && thisIndex <= signalRoute.Count - 2)
+                        {
+                            thisTC = signalRoute[thisIndex + 1].TCSectionIndex;
+                            direction = signalRoute[thisIndex + 1].Direction;
+                        }
+                    }
+                }
+            }
+
+            return (signalFound);
+        }
+
+        //================================================================================================//
+        //
+        // Update : perform route check and state update
+        //
+
+        public void Update()
+        {
+
+            // perform route update for normal signals if enabled
+
+            if (isSignalNormal())
+            {
+
+                // if in hold, set to most restrictive for each head
+
+                if (holdState != HOLDSTATE.NONE)
+                {
+                    foreach (SignalHead sigHead in SignalHeads)
+                    {
+                        sigHead.SetMostRestrictiveAspect();
+                    }
+                    return;
+                }
+
+
+                // if enabled - perform full update and propagate if not yet done
+
+                if (enabledTrain != null)
+                {
+                    // if internal state is not reserved (route fully claimed), perform route check
+
+                    if (internalBlockState != INTERNAL_BLOCKSTATE.RESERVED)
+                    {
+                        checkRouteState(isPropagated, signalRoute, enabledTrain);
+                    }
+
+                    // propagate request
+
+                    if (!isPropagated)
+                    {
+                        propagateRequest();
+                    }
+
+                    StateUpdate();
+
+                    // propagate request if not yet done
+
+                    if (!propagated && enabledTrain != null)
+                    {
+                        propagateRequest();
+                    }
+                }
+
+        // fixed route - check route and update
+
+                else if (hasFixedRoute)
+                {
+
+                    // if internal state is not reserved (route fully claimed), perform route check
+
+                    if (internalBlockState != INTERNAL_BLOCKSTATE.RESERVED)
+                    {
+                        checkRouteState(true, fixedRoute, null);
+                    }
+
+                    StateUpdate();
+
+                }
+
+        // no route - perform update only
+
+                else
+                {
+                    StateUpdate();
+                }
+
+            }
+
+        // check blockstate for other signals
+
+            else
+            {
+                getBlockState_notRouted();
+                StateUpdate();
+            }
+        }
+
+        //================================================================================================//
+        //
+        // reset signal as train has passed
+        //
+
+        public void resetSignalEnabled()
+        {
+
+            // reset train information
+
+            enabledTrain = null;
+            trainRouteDirectionIndex = 0;
+            signalRoute.Clear();
+            fullRoute = hasFixedRoute;
+            thisTrainRouteIndex = -1;
+
+            isPropagated = false;
+            propagated = false;
+
+            // reset block state to most restrictive
+
+            internalBlockState = INTERNAL_BLOCKSTATE.BLOCKED;
+
+            // reset next signal information to default
+
+            for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+            {
+                sigfound[fntype] = defaultNextSignal[fntype];
+            }
+
+            foreach (int thisSectionIndex in JunctionsPassed)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+                thisSection.SignalsPassingRoutes.Remove(thisRef);
+            }
+
+            // reset permission //
+
+            hasPermission = PERMISSION.DENIED;
+
+            StateUpdate();
+
+        }
+
+        //================================================================================================//
+        //
+        // StateUpdate : Perform the update for each head on this signal to determine state of signal.
+        //
+
+        public void StateUpdate()
+        {
+            // update all normal heads first
+
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction == SignalHead.SIGFN.NORMAL)
+                    sigHead.Update();
+            }
+
+            // next, update all other heads
+
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                if (sigHead.sigFunction != SignalHead.SIGFN.NORMAL)
+                    sigHead.Update();
+            }
+
+        } // Update
+
+        //================================================================================================//
+        //
+        // DistanceTo : Returns the distance from the TDBtraveller to this signal. 
+        //
+
+        public float DistanceTo(Traveller tdbTraveller)
+        {
+            int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
+            return tdbTraveller.DistanceTo(trItems[trItem].TileX, trItems[trItem].TileZ, trItems[trItem].X, trItems[trItem].Y, trItems[trItem].Z);
+        }//DistanceTo
+
+        //================================================================================================//
+        //
+        // ObjectDistance : Returns the distance from this object to the next object
+        //
+
+        public float ObjectDistance(SignalObject nextObject)
+        {
+            int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
+            int nextTrItem = trackNodes[nextObject.trackNode].TrVectorNode.TrItemRefs[nextObject.trRefIndex];
+            return this.tdbtraveller.DistanceTo(
+                                    trItems[nextTrItem].TileX, trItems[nextTrItem].TileZ,
+                                    trItems[nextTrItem].X, trItems[nextTrItem].Y, trItems[nextTrItem].Z);
+        }//ObjectDistance
+
+        //================================================================================================//
+        //
+        // isSignalHead : Check Whether signal head is for this signal.
+        //
+
+        public bool isSignalHead(SignalItem signalItem)
+        {
+            // Tritem for this signal
+            SignalItem thisSignalItem = (SignalItem)trItems[this.trItem];
+            // Same Tile
+            if (signalItem.TileX == thisSignalItem.TileX && signalItem.TileZ == thisSignalItem.TileZ)
+            {
+                // Same position
+                if ((Math.Abs(signalItem.X - thisSignalItem.X) < 0.01) &&
+                    (Math.Abs(signalItem.Y - thisSignalItem.Y) < 0.01) &&
+                    (Math.Abs(signalItem.Z - thisSignalItem.Z) < 0.01))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }//isSignalHead
+
+        //================================================================================================//
+        //
+        // AddHead : Adds a head to this signal.
+        //
+
+        public void AddHead(int trItem, int TDBRef, SignalItem sigItem)
+        {
+            // create SignalHead
+            SignalHead head = new SignalHead(this, trItem, TDBRef, sigItem);
+
+            // set junction link
+            if (head.TrackJunctionNode != 0)
+            {
+                if (head.JunctionPath == 0)
+                {
+                    head.JunctionMainNode =
+                       trackNodes[head.TrackJunctionNode].TrPins[trackNodes[head.TrackJunctionNode].Inpins].Link;
+                }
+                else
+                {
+                    head.JunctionMainNode =
+                       trackNodes[head.TrackJunctionNode].TrPins[trackNodes[head.TrackJunctionNode].Inpins + 1].Link;
+                }
+            }
+            SignalHeads.Add(head);
+
+        }//AddHead (signal)
+
+        //================================================================================================//
+        //
+        // AddHead : Adds a head to this signal (for speedpost).
+        //
+
+        public void AddHead(int trItem, int TDBRef, SpeedPostItem speedItem)
+        {
+            // create SignalHead
+            SignalHead head = new SignalHead(this, trItem, TDBRef, speedItem);
+            SignalHeads.Add(head);
+
+        }//AddHead (speedpost)
+
+        //================================================================================================//
+        //
+        // SetSignalType : Sets the signal type from the sigcfg file for each signal head.
+        //
+
+        public void SetSignalType(SIGCFGFile sigCFG)
+        {
+            foreach (SignalHead sigHead in SignalHeads)
+            {
+                sigHead.SetSignalType(trItems, sigCFG);
+            }
+        }//SetSignalType
+
+        //================================================================================================//
+        //
+        // TranslateTMAspect : Gets the display aspect for the track monitor.
+        //
+
+        public TrackMonitorSignalAspect TranslateTMAspect(SignalHead.SIGASP SigState)
+        {
+            switch (SigState)
+            {
+                case SignalHead.SIGASP.STOP:
+                    if (hasPermission == PERMISSION.GRANTED)
+                        return TrackMonitorSignalAspect.Permission;
+                    else
+                        return TrackMonitorSignalAspect.Stop;
+                case SignalHead.SIGASP.STOP_AND_PROCEED:
+                    return TrackMonitorSignalAspect.StopAndProceed;
+                case SignalHead.SIGASP.RESTRICTING:
+                    return TrackMonitorSignalAspect.Restricted;
+                case SignalHead.SIGASP.APPROACH_1:
+                    return TrackMonitorSignalAspect.Approach_1;
+                case SignalHead.SIGASP.APPROACH_2:
+                    return TrackMonitorSignalAspect.Approach_2;
+                case SignalHead.SIGASP.APPROACH_3:
+                    return TrackMonitorSignalAspect.Approach_3;
+                case SignalHead.SIGASP.CLEAR_1:
+                    return TrackMonitorSignalAspect.Clear_1;
+                case SignalHead.SIGASP.CLEAR_2:
+                    return TrackMonitorSignalAspect.Clear_2;
+                default:
+                    return TrackMonitorSignalAspect.None;
+            }
+        } // GetMonitorAspect
+
+        //================================================================================================//
+        //
+        // request to clear signal in explorer mode
+        //
+
+        public Train.TCSubpathRoute requestClearSignalExplorer(Train.TCSubpathRoute thisRoute,
+            float reqDistance, Train.TrainRouted thisTrain, bool propagated, int signalNumClearAhead)
+        {
+            // build output route from input route
+            Train.TCSubpathRoute newRoute = new Train.TCSubpathRoute(thisRoute);
+
+            // if signal has fixed route, use that else build route
+            if (fixedRoute != null && fixedRoute.Count > 0)
+            {
+                signalRoute = new Train.TCSubpathRoute(fixedRoute);
+            }
+
+            // build route from signal, upto next signal or max distance, take into account manual switch settings
+            else
+            {
+                List<int> nextRoute = signalRef.ScanRoute(thisTrain.Train, TCNextTC, 0.0f, TCNextDirection, true, reqDistance, true, true, true, false,
+                true, false, false, false, false, thisTrain.Train.IsFreight);
+
+                signalRoute = new Train.TCSubpathRoute();
+
+                foreach (int sectionIndex in nextRoute)
+                {
+                    Train.TCRouteElement thisElement = new Train.TCRouteElement(Math.Abs(sectionIndex), sectionIndex >= 0 ? 0 : 1);
+                    signalRoute.Add(thisElement);
+                }
+            }
+
+            // set full route if route ends with signal
+            TrackCircuitSection lastSection = signalRef.TrackCircuitList[signalRoute[signalRoute.Count - 1].TCSectionIndex];
+            int lastDirection = signalRoute[signalRoute.Count - 1].Direction;
+
+            fullRoute = (lastSection.EndSignals[lastDirection] != null);
+
+            // try and clear signal
+
+            enabledTrain = thisTrain;
+            checkRouteState(propagated, signalRoute, thisTrain);
+
+            // extend route if block is clear or permission is granted, even if signal is not cleared (signal state may depend on next signal)
+            bool extendRoute = false;
+            if (this_sig_lr(SignalHead.SIGFN.NORMAL) > SignalHead.SIGASP.STOP) extendRoute = true;
+            if (internalBlockState <= INTERNAL_BLOCKSTATE.RESERVABLE) extendRoute = true;
+
+            // if signal is cleared or permission is granted, extend route with signal route
+
+            if (extendRoute || hasPermission == PERMISSION.GRANTED)
+            {
+                foreach (Train.TCRouteElement thisElement in signalRoute)
+                {
+                    newRoute.Add(thisElement);
+                }
+            }
+
+            // if signal is cleared, propagate request if required
+            if (extendRoute && fullRoute)
+            {
+                isPropagated = propagated;
+                int ReqNumClearAhead = 0;
+
+                if (SignalNumClearAhead_MSTS > -2)
+                {
+                    ReqNumClearAhead = propagated ?
+                        signalNumClearAhead - SignalNumNormalHeads : SignalNumClearAhead_MSTS - SignalNumNormalHeads;
+                }
+                else
+                {
+                    if (SignalNumClearAhead_ORTS == -1)
+                    {
+                        ReqNumClearAhead = propagated ? signalNumClearAhead : 1;
+                    }
+                    else if (SignalNumClearAhead_ORTS == 0)
+                    {
+                        ReqNumClearAhead = 0;
+                    }
+                    else
+                    {
+                        ReqNumClearAhead = isPropagated ? signalNumClearAhead - 1 : SignalNumClearAhead_ORTS - 1;
+                    }
+                }
+
+
+                if (ReqNumClearAhead > 0)
+                {
+                    int nextSignalIndex = sigfound[(int) SignalHead.SIGFN.NORMAL];
+                    if (nextSignalIndex >= 0)
+                    {
+                        SignalObject nextSignal = signalObjects[nextSignalIndex];
+                        newRoute = nextSignal.requestClearSignalExplorer(newRoute, thisTrain.Train.minCheckDistanceM, thisTrain, true, ReqNumClearAhead);
+                    }
+                }
+            }
+
+            return (newRoute);
+        }
+
+        //================================================================================================//
+        //
+        // request to clear signal
+        //
+
+        public void requestClearSignal(Train.TCSubpathRoute RoutePart, Train.TrainRouted thisTrain,
+                        int clearNextSignals, bool requestIsPropagated, SignalObject lastSignal)
+        {
+
+#if DEBUG_REPORTS
+            String report = "Request for clear signal from train ";
+            report = String.Concat(report, thisTrain.Train.Number.ToString());
+            report = String.Concat(report, " at section ", thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex.ToString());
+            report = String.Concat(report, " for signal ", thisRef.ToString());
+            File.AppendAllText(@"C:\temp\printproc.txt", report + "\n");
+#endif
+            if (thisTrain.Train.CheckTrain)
+            {
+                String reportCT = "Request for clear signal from train ";
+                reportCT = String.Concat(reportCT, thisTrain.Train.Number.ToString());
+                reportCT = String.Concat(reportCT, " at section ", thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex.ToString());
+                reportCT = String.Concat(reportCT, " for signal ", thisRef.ToString());
+                File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
+            }
+
+            int procstate = 0;
+            int foundFirstSection = -1;
+            int foundLastSection = -1;
+            SignalObject nextSignal = null;
+
+            isPropagated = requestIsPropagated;
+            propagated = false;   // always pass on request
+
+            // check if signal not yet enabled - if it is, give warning and quit
+
+            if (enabledTrain != null && enabledTrain != thisTrain)
+            {
+                Trace.TraceWarning("Request to clear signal {0} from train {1}, signal already enabled for train {2}",
+                                       thisRef, thisTrain.Train.Number, enabledTrain.Train.Number);
+                procstate = -1;
+            }
+            else
+            {
+                if (enabledTrain != thisTrain) // new allocation - reset next signals
+                {
+                    for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+                    {
+                        sigfound[fntype] = defaultNextSignal[fntype];
+                    }
+                }
+                enabledTrain = thisTrain;
+            }
+
+            // find section in route part which follows signal
+
+            if (procstate == 0)
+            {
+                signalRoute.Clear();
+
+                int firstIndex = -1;
+                if (lastSignal != null)
+                {
+                    firstIndex = lastSignal.thisTrainRouteIndex;
+                }
+                if (firstIndex < 0)
+                {
+                    firstIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+                }
+
+                if (firstIndex >= 0)
+                {
+                    for (int iNode = firstIndex;
+                             iNode < RoutePart.Count && foundFirstSection < 0;
+                             iNode++)
+                    {
+                        Train.TCRouteElement thisElement = RoutePart[iNode];
+                        if (thisElement.TCSectionIndex == TCNextTC)
+                        {
+                            foundFirstSection = iNode;
+                            thisTrainRouteIndex = iNode;
+                        }
+                    }
+                }
+
+                if (foundFirstSection < 0)
+                {
+                    // no route from this signal - reset enable and exit
+                    enabledTrain = null;
+                    return;
+                }
+            }
+
+            // copy sections upto next normal signal
+
+            if (procstate == 0)
+            {
+                for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
+                {
+                    Train.TCRouteElement thisElement = RoutePart[iNode];
+                    signalRoute.Add(thisElement);
+
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+
+                    if (thisSection.EndSignals[thisElement.Direction] != null)
+                    {
+                        foundLastSection = iNode;
+                        nextSignal = thisSection.EndSignals[thisElement.Direction];
+                    }
+                }
+            }
+
+            // check if end of track reached
+
+            Train.TCRouteElement lastSignalElement = signalRoute[signalRoute.Count - 1];
+            TrackCircuitSection lastSignalSection = signalRef.TrackCircuitList[lastSignalElement.TCSectionIndex];
+
+            fullRoute = true;
+
+            // if end of signal route is not a signal or end-of-track it is not a full route
+
+            if (nextSignal == null && lastSignalSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+            {
+                fullRoute = false;
+            }
+
+            // if next signal is found and relevant, set reference
+
+            if (nextSignal != null)
+            {
+                sigfound[(int)SignalHead.SIGFN.NORMAL] = nextSignal.thisRef;
+            }
+            else
+            {
+                sigfound[(int)SignalHead.SIGFN.NORMAL] = -1;
+            }
+
+            // set number of signals to clear ahead
+
+            if (SignalNumClearAhead_MSTS > -2)
+            {
+                ReqNumClearAhead = isPropagated ?
+                    clearNextSignals - SignalNumNormalHeads : SignalNumClearAhead_MSTS - SignalNumNormalHeads;
+            }
+            else
+            {
+                if (SignalNumClearAhead_ORTS == -1)
+                {
+                    ReqNumClearAhead = isPropagated ? clearNextSignals : 1;
+                }
+                else if (SignalNumClearAhead_ORTS == 0)
+                {
+                    ReqNumClearAhead = 0;
+                }
+                else
+                {
+                    ReqNumClearAhead = isPropagated ? clearNextSignals - 1 : SignalNumClearAhead_ORTS - 1;
+                }
+            }
+
+            // perform route check
+
+            checkRouteState(isPropagated, signalRoute, thisTrain);
+
+            // propagate request
+
+            if (!isPropagated)
+            {
+                propagateRequest();
+            }
+        }
+
+        //================================================================================================//
+        //
+        // check and update Route State
+        //
+
+        public void checkRouteState(bool isPropagated, Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
+        {
+
+            // check if signal must be hold
+
+            bool signalHold = (holdState != HOLDSTATE.NONE);
+            if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && holdState != HOLDSTATE.MANUAL_LOCK)
+            {
+                holdState = HOLDSTATE.STATION_STOP;
+                signalHold = true;
+            }
+            else if (holdState == HOLDSTATE.STATION_STOP)
+            {
+                if (enabledTrain == null || !enabledTrain.Train.HoldingSignals.Contains(thisRef))
+                {
+                    holdState = HOLDSTATE.NONE;
+                    signalHold = false;
+                }
+            }
+
+            // test clearance for full route section
+
+            if (!signalHold)
+            {
+                if (fullRoute)
+                {
+                    bool newroute = getBlockState(thisRoute, thisTrain);
+                    if (newroute)
+                        thisRoute = this.signalRoute;
+                }
+
+                // test clearance for sections in route only if first signal ahead of train
+
+                else if (enabledTrain != null && !isPropagated)
+                {
+                    getPartBlockState(thisRoute);
+                }
+            }
+
+            // else consider route blocked
+
+            else
+            {
+                internalBlockState = INTERNAL_BLOCKSTATE.BLOCKED;
+            }
+
+            // derive signal state
+
+            StateUpdate();
+            SignalHead.SIGASP signalState = this_sig_lr(SignalHead.SIGFN.NORMAL);
+
+            float lengthReserved = 0.0f;
+
+            // check for permission
+
+            if (internalBlockState == INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR && hasPermission == PERMISSION.REQUESTED && !isPropagated)
+            {
+                hasPermission = PERMISSION.GRANTED;
+            }
+            else if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && signalState == SignalHead.SIGASP.STOP &&
+                internalBlockState <= INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR && hasPermission == PERMISSION.REQUESTED)
+            {
+                hasPermission = PERMISSION.GRANTED;
+            }
+
+            // reserve full section if allowed
+
+            if (enabledTrain != null)
+            {
+                if (internalBlockState == INTERNAL_BLOCKSTATE.RESERVABLE)
+                {
+                    foreach (Train.TCRouteElement thisElement in thisRoute)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                        if (thisSection.CircuitState.TrainReserved == null)
+                            thisSection.Reserve(enabledTrain, thisRoute);
+                        enabledTrain.Train.LastReservedSection[enabledTrain.TrainRouteDirectionIndex] = thisElement.TCSectionIndex;
+                        lengthReserved += thisSection.Length;
+                    }
+
+                    internalBlockState = INTERNAL_BLOCKSTATE.RESERVED;
+                    enabledTrain.Train.ClaimState = false;
+                }
+
+            // reserve partial sections if signal clears on occupied track or permission is granted
+
+                else if ((signalState > SignalHead.SIGASP.STOP || hasPermission == PERMISSION.GRANTED) &&
+                internalBlockState != INTERNAL_BLOCKSTATE.RESERVED)
+                {
+
+                    // reserve upto available section
+
+                    int lastSectionIndex = 0;
+                    bool reservable = true;
+
+                    for (int iSection = 0; iSection < thisRoute.Count && reservable; iSection++)
+                    {
+                        Train.TCRouteElement thisElement = thisRoute[iSection];
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+
+                        if (thisSection.IsAvailable(enabledTrain))
+                        {
+                            if (thisSection.CircuitState.TrainReserved == null)
+                            {
+                                thisSection.Reserve(enabledTrain, thisRoute);
+                            }
+                            enabledTrain.Train.LastReservedSection[enabledTrain.TrainRouteDirectionIndex] = thisElement.TCSectionIndex;
+                            lastSectionIndex = iSection;
+                            lengthReserved += thisSection.Length;
+                        }
+                        else
+                        {
+                            reservable = false;
+                        }
+                    }
+
+                    // set pre-reserved or reserved for all other sections
+
+                    for (int iSection = lastSectionIndex++; iSection < thisRoute.Count; iSection++)
+                    {
+                        Train.TCRouteElement thisElement = thisRoute[iSection];
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+
+                        if (thisSection.IsAvailable(enabledTrain) && thisSection.CircuitState.TrainReserved == null)
+                        {
+                            thisSection.Reserve(enabledTrain, thisRoute);
+                        }
+                        else if (thisSection.CircuitState.HasOtherTrainsOccupying(enabledTrain))
+                        {
+                            thisSection.PreReserve(enabledTrain);
+                        }
+                        else if (thisSection.CircuitState.TrainReserved != enabledTrain)
+                        {
+                            thisSection.PreReserve(enabledTrain);
+                        }
+                    }
+                    enabledTrain.Train.ClaimState = false;
+                }
+
+            // if claim allowed - reserve free sections and claim all other if first signal ahead of train
+
+                else if (enabledTrain.Train.ClaimState && internalBlockState != INTERNAL_BLOCKSTATE.RESERVED && !isPropagated)
+                {
+                    foreach (Train.TCRouteElement thisElement in thisRoute)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                        if (thisSection.IsAvailable(enabledTrain) && thisSection.CircuitState.TrainReserved == null)
+                        {
+                            thisSection.Reserve(enabledTrain, thisRoute);
+                        }
+                        else if (thisSection.CircuitState.TrainReserved != enabledTrain)
+                        {
+                            thisSection.Claim(enabledTrain);
+                        }
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // propagate clearance request
+        //
+
+        private void propagateRequest()
+        {
+            // no. of next signals to clear : as passed on -1 if signal has normal clear ahead
+            // if passed on < 0, use this signals num to clear
+
+            SignalObject nextSignal = null;
+            if (sigfound[(int)SignalHead.SIGFN.NORMAL] >= 0)
+            {
+                nextSignal = signalObjects[sigfound[(int)SignalHead.SIGFN.NORMAL]];
+            }
+
+            Train.TCSubpathRoute RoutePart;
+            if (enabledTrain != null)
+            {
+                RoutePart = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex];   // if known which route to use
+            }
+            else
+            {
+                RoutePart = signalRoute; // else use signal route
+            }
+
+            if (ReqNumClearAhead > 0 && nextSignal != null && internalBlockState == INTERNAL_BLOCKSTATE.RESERVED)
+            {
+                nextSignal.requestClearSignal(RoutePart, enabledTrain, ReqNumClearAhead, true, this);
+                propagated = true;
+            }
+
+        } //propagateRequest
+
+        //================================================================================================//
+        //
+        // get block state - not routed
+        // Check blockstate for normal signal which is not enabled
+        // Check blockstate for other types of signals
+        //
+
+        private void getBlockState_notRouted()
+        {
+
+            INTERNAL_BLOCKSTATE localBlockState = INTERNAL_BLOCKSTATE.RESERVED; // preset to lowest option
+
+            // check fixed route for normal signals
+
+            if (isSignalNormal() && hasFixedRoute)
+            {
+                foreach (Train.TCRouteElement thisElement in fixedRoute)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    if (thisSection.CircuitState.HasTrainsOccupying())
+                    {
+                        localBlockState = INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR;
+                    }
+                }
+            }
+
+        // otherwise follow sections upto first non-set switch or next signal
+            else
+            {
+                int thisTC = TCReference;
+                int direction = TCDirection;
+                int nextTC = -1;
+
+                // for normal signals : start at next TC
+
+                if (TCNextTC > 0)
+                {
+                    thisTC = TCNextTC;
+                    direction = TCNextDirection;
+                }
+
+                // get trackcircuit
+
+                TrackCircuitSection thisSection = null;
+                if (thisTC > 0)
+                {
+                    thisSection = signalRef.TrackCircuitList[thisTC];
+                }
+
+                // loop through valid sections
+
+                while (thisSection != null)
+                {
+
+                    // set blockstate
+
+                    if (thisSection.CircuitState.HasTrainsOccupying())
+                    {
+                        if (thisSection.Index == TCReference)  // for section where signal is placed, check if train is ahead
+                        {
+                            Dictionary<Train, float> trainAhead =
+                                                    thisSection.TestTrainAhead(null, TCOffset, TCDirection);
+                            if (trainAhead.Count > 0)
+                                localBlockState = INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR;
+                        }
+                        else
+                        {
+                            localBlockState = INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR;
+                        }
+                    }
+
+                    // if section has signal at end stop check
+
+                    if (thisSection.EndSignals[direction] != null)
+                    {
+                        thisSection = null;
+                    }
+
+        // get next section if active link is set
+
+                    else
+                    {
+                        //                     int pinIndex = direction == 0 ? 1 : 0;
+                        int pinIndex = direction;
+                        nextTC = thisSection.ActivePins[pinIndex, 0].Link;
+                        direction = thisSection.ActivePins[pinIndex, 0].Direction;
+                        if (nextTC == -1)
+                        {
+                            nextTC = thisSection.ActivePins[pinIndex, 1].Link;
+                            direction = thisSection.ActivePins[pinIndex, 1].Direction;
+                        }
+
+                        // set state to blocked if ending at unset or unaligned switch
+
+                        if (nextTC >= 0)
+                        {
+                            thisSection = signalRef.TrackCircuitList[nextTC];
+                        }
+                        else
+                        {
+                            thisSection = null;
+                            localBlockState = INTERNAL_BLOCKSTATE.BLOCKED;
+                        }
+                    }
+                }
+            }
+
+            internalBlockState = localBlockState;
+        }
+
+        //================================================================================================//
+        //
+        // Get block state
+        // Get internal state of full block for normal enabled signal upto next signal for clear request
+        // returns true if train set to use alternative route
+        //
+
+        private bool getBlockState(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
+        {
+
+            bool returnvalue = false;
+
+            INTERNAL_BLOCKSTATE blockstate = INTERNAL_BLOCKSTATE.RESERVED;  // preset to lowest possible state //
+
+            // loop through all sections in route list
+
+            Train.TCRouteElement lastElement = null;
+
+            foreach (Train.TCRouteElement thisElement in thisRoute)
+            {
+                lastElement = thisElement;
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                int direction = thisElement.Direction;
+                blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute);
+                if (blockstate > INTERNAL_BLOCKSTATE.RESERVABLE)
+                    break;           // break on first non-reservable section //
+
+                // if alternative path from section available but train already waiting for deadlock, set blocked
+                if (thisElement.StartAlternativePath != null)
+                {
+                    TrackCircuitSection endSection = signalRef.TrackCircuitList[thisElement.StartAlternativePath[1]];
+                    if (endSection.CheckDeadlockAwaited(thisTrain.Train.Number))
+                    {
+                        blockstate = INTERNAL_BLOCKSTATE.BLOCKED;
+                        lastElement = thisElement;
+                        break;
+                    }
+                }
+            }
+
+            // check if alternative route available
+
+            int lastElementIndex = thisRoute.GetRouteIndex(lastElement.TCSectionIndex, 0);
+
+            if (blockstate > INTERNAL_BLOCKSTATE.RESERVABLE && thisTrain != null)
+            {
+                int startAlternativeRoute = -1;
+                int altRoute = -1;
+
+                Train.TCSubpathRoute trainRoute = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex];
+                Train.TCPosition thisPosition = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
+
+                for (int iElement = lastElementIndex; iElement >= 0; iElement--)
+                {
+                    Train.TCRouteElement prevElement = thisRoute[iElement];
+                    if (prevElement.StartAlternativePath != null)
+                    {
+                        startAlternativeRoute =
+                            trainRoute.GetRouteIndex(thisRoute[iElement].TCSectionIndex, thisPosition.RouteListIndex);
+                        altRoute = prevElement.StartAlternativePath[0];
+                        break;
+                    }
+                }
+
+                // check if alternative path may be used
+
+                if (startAlternativeRoute > 0)
+                {
+                    Train.TCRouteElement startElement = trainRoute[startAlternativeRoute];
+                    int endSectionIndex = startElement.StartAlternativePath[1];
+                    TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+                    if (endSection.CheckDeadlockAwaited(thisTrain.Train.Number))
+                    {
+                        startAlternativeRoute = -1; // reset use of alternative route
+                    }
+                }
+
+                // if available, select part of route upto next signal
+
+                if (startAlternativeRoute > 0)
+                {
+                    Train.TCSubpathRoute altRoutePart = thisTrain.Train.ExtractAlternativeRoute(altRoute);
+
+                    // check availability of alternative route
+
+                    INTERNAL_BLOCKSTATE newblockstate = INTERNAL_BLOCKSTATE.RESERVABLE;
+
+                    foreach (Train.TCRouteElement thisElement in altRoutePart)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                        int direction = thisElement.Direction;
+                        newblockstate = thisSection.getSectionState(enabledTrain, direction, newblockstate, thisRoute);
+                        if (newblockstate > INTERNAL_BLOCKSTATE.RESERVABLE)
+                            break;           // break on first non-reservable section //
+                    }
+
+                    // if available, use alternative route
+
+                    if (newblockstate <= INTERNAL_BLOCKSTATE.RESERVABLE)
+                    {
+                        blockstate = newblockstate;
+                        thisTrain.Train.SetAlternativeRoute(startAlternativeRoute, altRoute, this);
+                        returnvalue = true;
+                    }
+                }
+            }
+
+            // check if approaching deadlock part, and if alternative route must be taken - if point where alt route start is not yet reserved
+            // alternative route may not be taken if there is a train already waiting for the deadlock
+            else if (thisTrain != null)
+            {
+                int startAlternativeRoute = -1;
+                int altRoute = -1;
+                TrackCircuitSection startSection = null;
+                TrackCircuitSection endSection = null;
+
+                Train.TCSubpathRoute trainRoute = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex];
+                Train.TCPosition thisPosition = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
+
+                for (int iElement = lastElementIndex; iElement >= 0; iElement--)
+                {
+                    Train.TCRouteElement prevElement = thisRoute[iElement];
+                    if (prevElement.StartAlternativePath != null)
+                    {
+                        endSection = signalRef.TrackCircuitList[prevElement.StartAlternativePath[1]];
+                        if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.CheckDeadlockAwaited(thisTrain.Train.Number))
+                        {
+                            altRoute = prevElement.StartAlternativePath[0];
+                            startAlternativeRoute =
+                                trainRoute.GetRouteIndex(prevElement.TCSectionIndex, thisPosition.RouteListIndex);
+                            startSection = signalRef.TrackCircuitList[prevElement.TCSectionIndex];
+                        }
+                        break;
+                    }
+                }
+
+                // use alternative route
+
+                if (startAlternativeRoute > 0 && startSection.CircuitState.TrainReserved != thisTrain)
+                {
+                    Train.TCSubpathRoute altRoutePart = thisTrain.Train.ExtractAlternativeRoute(altRoute);
+
+                    // check availability of alternative route
+
+                    INTERNAL_BLOCKSTATE newblockstate = INTERNAL_BLOCKSTATE.RESERVABLE;
+
+                    foreach (Train.TCRouteElement thisElement in altRoutePart)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                        int direction = thisElement.Direction;
+                        newblockstate = thisSection.getSectionState(enabledTrain, direction, newblockstate, thisRoute);
+                        if (newblockstate > INTERNAL_BLOCKSTATE.RESERVABLE)
+                            break;           // break on first non-reservable section //
+                    }
+
+                    // if available, use alternative route
+
+                    if (newblockstate <= INTERNAL_BLOCKSTATE.RESERVABLE)
+                    {
+                        blockstate = newblockstate;
+                        thisTrain.Train.SetAlternativeRoute(startAlternativeRoute, altRoute, this);
+                        if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
+                            endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
+                        returnvalue = true;
+
+                    }
+                }
+            }
+
+            internalBlockState = blockstate;
+            return (returnvalue);
+        }
+
+        //================================================================================================//
+        //
+        // Get part block state
+        // Get internal state of part of block for normal enabled signal upto next signal for clear request
+        // if there are no switches before next signal or end of track, treat as full block
+        //
+
+        private void getPartBlockState(Train.TCSubpathRoute thisRoute)
+        {
+
+            // check beyond last section for next signal or end of track 
+
+            int listIndex = (thisRoute.Count > 0) ? (thisRoute.Count - 1) : thisTrainRouteIndex;
+
+            Train.TCRouteElement lastElement = thisRoute[listIndex];
+            int thisSectionIndex = lastElement.TCSectionIndex;
+            int direction = lastElement.Direction;
+
+            Train.TCSubpathRoute additionalElements = new Train.TCSubpathRoute();
+
+            bool end_of_info = false;
+
+            while (!end_of_info)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+
+                TrackCircuitSection.CIRCUITTYPE thisType = thisSection.CircuitType;
+
+                switch (thisType)
+                {
+                    case (TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK):
+                        end_of_info = true;
+                        break;
+
+                    case (TrackCircuitSection.CIRCUITTYPE.JUNCTION):
+                    case (TrackCircuitSection.CIRCUITTYPE.CROSSOVER):
+                        end_of_info = true;
+                        break;
+
+                    default:
+                        Train.TCRouteElement newElement = new Train.TCRouteElement(thisSectionIndex, direction);
+                        additionalElements.Add(newElement);
+
+                        if (thisSection.EndSignals[direction] != null)
+                        {
+                            end_of_info = true;
+                        }
+                        break;
+                }
+
+                if (!end_of_info)
+                {
+                    thisSectionIndex = thisSection.Pins[direction, 0].Link;
+                    direction = thisSection.Pins[direction, 0].Direction;
+                }
+            }
+
+            INTERNAL_BLOCKSTATE blockstate = INTERNAL_BLOCKSTATE.RESERVED;  // preset to lowest possible state //
+
+            int lastSectionIndex = -1;
+
+            // check all elements in original route
+
+            foreach (Train.TCRouteElement thisElement in thisRoute)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                direction = thisElement.Direction;
+                blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute);
+                if (blockstate > INTERNAL_BLOCKSTATE.RESERVABLE)
+                    break;           // break on first non-reservable section //
+                lastSectionIndex = thisSection.Index;
+            }
+
+            // check all additional elements upto signal, junction or end-of-track
+
+            if (blockstate <= INTERNAL_BLOCKSTATE.RESERVABLE)
+            {
+                foreach (Train.TCRouteElement thisElement in additionalElements)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    direction = thisElement.Direction;
+                    blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, additionalElements);
+                    if (blockstate > INTERNAL_BLOCKSTATE.RESERVABLE)
+                        break;           // break on first non-reservable section //
+                }
+            }
+
+            //          if (blockstate <= INTERNAL_BLOCKSTATE.RESERVABLE && end_at_junction)
+            //          {
+            //              blockstate = INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR;  // set restricted state
+            //          }
+
+            internalBlockState = blockstate;
+
+        }
+
+        //================================================================================================//
+        //
+        // Reset signal and clear all train sections
+        //
+
+        public void ResetSignal(bool propagateReset)
+        {
+            Train.TrainRouted thisTrain = enabledTrain;
+
+            // search for last signal enabled for this train, start reset from there //
+
+            SignalObject thisSignal = this;
+            List<SignalObject> passedSignals = new List<SignalObject>();
+            int thisSignalIndex = thisSignal.thisRef;
+
+            if (propagateReset)
+            {
+                while (thisSignalIndex >= 0 && thisSignal.enabledTrain == thisTrain)
+                {
+                    thisSignal = signalObjects[thisSignalIndex];
+                    passedSignals.Add(thisSignal);
+                    thisSignalIndex = thisSignal.sigfound[(int)SignalHead.SIGFN.NORMAL];
+                }
+            }
+            else
+            {
+                passedSignals.Add(thisSignal);
+            }
+
+            foreach (SignalObject nextSignal in passedSignals)
+            {
+                if (nextSignal.signalRoute != null)
+                {
+                    List<TrackCircuitSection> sectionsToClear = new List<TrackCircuitSection>();
+                    foreach (Train.TCRouteElement thisElement in nextSignal.signalRoute)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                        sectionsToClear.Add(thisSection);  // store in list as signalRoute is lost during remove action
+                    }
+                    foreach (TrackCircuitSection thisSection in sectionsToClear)
+                    {
+                        thisSection.RemoveTrain(thisTrain, false);
+                    }
+                }
+
+                nextSignal.resetSignalEnabled();
+            }
+
+        }
+
+        //================================================================================================//
+        //
+        // Reset signal route and next signal list as switch in route is reset
+        //
+
+        public void ResetRoute(int resetSectionIndex)
+        {
+
+            // remove this signal from any other junctions
+
+            foreach (int thisSectionIndex in JunctionsPassed)
+            {
+                if (thisSectionIndex != resetSectionIndex)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
+                    thisSection.SignalsPassingRoutes.Remove(thisRef);
+                }
+            }
+
+            JunctionsPassed.Clear();
+
+            for (int fntype = 0; fntype < (int)SignalHead.SIGFN.UNKNOWN; fntype++)
+            {
+                sigfound[fntype] = defaultNextSignal[fntype];
+            }
+
+            // if signal is enabled, ensure next normal signal is reset
+
+            if (enabledTrain != null && sigfound[(int)SignalHead.SIGFN.NORMAL] < 0)
+            {
+                sigfound[(int)SignalHead.SIGFN.NORMAL] = SONextSignalNormal();
+            }
+
+#if DEBUG_REPORTS
+            File.AppendAllText(@"C:\temp\printproc.txt", "Signal " + thisRef.ToString() + " reset on Junction Change\n");
+
+            if (enabledTrain != null)
+            {
+                File.AppendAllText(@"C:\temp\printproc.txt", "Train " + enabledTrain.Train.Number.ToString() + " affected; " +
+                        "new NORMAL signal : " + sigfound[(int)SignalHead.SIGFN.NORMAL].ToString() + "\n");
+            }
+#endif
+            if (enabledTrain != null && enabledTrain.Train.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Signal " + thisRef.ToString() + " reset on Junction Change\n");
+
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + enabledTrain.Train.Number.ToString() + " affected; " +
+                        "new NORMAL signal : " + sigfound[(int)SignalHead.SIGFN.NORMAL].ToString() + "\n");
+            }
+        }
+
+        //================================================================================================//
+
+    }  // SignalObject
+
+
+    //================================================================================================//
+    //
+    // class SignalHead
+    //
+    //================================================================================================//
+
+    public class SignalHead
+    {
+        public enum SIGASP
+        {
+            STOP,
+            STOP_AND_PROCEED,
+            RESTRICTING,
+            APPROACH_1,
+            APPROACH_2,
+            APPROACH_3,
+            CLEAR_1,
+            CLEAR_2,
+            UNKNOWN
+        }
+
+        public enum SIGFN
+        {
+            NORMAL,
+            DISTANCE,
+            REPEATER,
+            SHUNTING,
+            INFO,
+            SPEED,
+            ALERT,
+            UNKNOWN
+        }
+
+        public SignalType signalType = null;    // from sigcfg file
+        public SIGASP state = SIGASP.STOP;
+        public int draw_state;
+        public int trItemIndex;                 // Index to trItem   
+        public uint TrackJunctionNode;          // Track Junction Node (= 0 if not set)
+        public uint JunctionPath;               // Required Junction Path
+        public int JunctionMainNode;            // Main node following junction
+        public int TDBIndex;                    // Index to TDB Signal Item
+        public ObjectSpeedInfo[] speed_info;      // speed limit info (per aspect)
+
+        public SignalObject mainSignal;        //  This is the signal which this head forms a part.
+
+        public SIGFN sigFunction
+        {
+            get
+            {
+                if (signalType != null)
+                    return (SIGFN)signalType.FnType;
+                else
+                    return SIGFN.UNKNOWN;
+            }
+        }
+
+        public String SignalTypeName
+        {
+            get
+            {
+                if (signalType != null)
+                    return signalType.Name;
+                else
+                    return "";
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Constructor for signals
+        //
+
+        public SignalHead(SignalObject sigOoject, int trItem, int TDBRef, SignalItem sigItem)
+        {
+            mainSignal = sigOoject;
+            trItemIndex = trItem;
+            TDBIndex = TDBRef;
+            draw_state = 0;
+
+            TrackJunctionNode = 0;
+            JunctionMainNode = 0;
+
+            if (sigItem.noSigDirs > 0)
+            {
+                TrackJunctionNode = sigItem.TrSignalDirs[0].TrackNode;
+                JunctionPath = sigItem.TrSignalDirs[0].linkLRPath;
+            }
+
+            Array sigasp_values = SIGASP.GetValues(typeof(SIGASP));
+            speed_info = new ObjectSpeedInfo[sigasp_values.Length];
+        }
+
+        //================================================================================================//
+        //
+        // Constructor for speedposts
+        //
+
+        public SignalHead(SignalObject sigOoject, int trItem, int TDBRef, SpeedPostItem speedItem)
+        {
+            mainSignal = sigOoject;
+            trItemIndex = trItem;
+            TDBIndex = TDBRef;
+            draw_state = 1;
+            state = SIGASP.CLEAR_2;
+            signalType = new SignalType(SignalType.FnTypes.Speed, SIGASP.CLEAR_2);
+
+            TrackJunctionNode = 0;
+            JunctionMainNode = 0;
+
+            Array sigasp_values = SIGASP.GetValues(typeof(SIGASP));
+            speed_info = new ObjectSpeedInfo[sigasp_values.Length];
+
+            float speedMpS = MpS.ToMpS(speedItem.SpeedInd, !speedItem.IsMPH);
+            if (speedItem.IsResume)
+                speedMpS = 999f;
+
+            float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
+            float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
+            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false);
+            speed_info[Convert.ToInt32(state)] = speedinfo;
+        }
+
+        //================================================================================================//
+        //
+        // SetSignalType : This method sets the signal type object from the CIGCFG file
+        //
+
+        public void SetSignalType(TrItem[] TrItems, SIGCFGFile sigCFG)
+        {
+            SignalItem sigItem = (SignalItem)TrItems[TDBIndex];
+
+            // set signal type
+            if (sigCFG.SignalTypes.ContainsKey(sigItem.SignalType))
+            {
+                signalType = sigCFG.SignalTypes[sigItem.SignalType];
+
+                // set signal speeds
+                foreach (SignalAspect thisAspect in signalType.Aspects)
+                {
+                    int arrindex = Convert.ToInt32(thisAspect.Aspect);
+                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap);
+                }
+
+                // update overall SignalNumClearAhead
+
+                if (sigFunction == SIGFN.NORMAL)
+                {
+                    mainSignal.SignalNumClearAhead_MSTS = Math.Max(mainSignal.SignalNumClearAhead_MSTS, signalType.NumClearAhead_MSTS);
+                    mainSignal.SignalNumClearAhead_ORTS = Math.Max(mainSignal.SignalNumClearAhead_ORTS, signalType.NumClearAhead_ORTS);
+                }
+            }
+            else
+            {
+                Trace.TraceWarning("SignalObject trItem={0}, trackNode={1} has SignalHead with undefined SignalType {2}.",
+                                  mainSignal.trItem, mainSignal.trackNode, sigItem.SignalType);
+            }
+
+
+        }//SetSignalType
+
+        //================================================================================================//
+        //
+        //  Following methods used in scipting
+        //
+
+        public SIGASP next_sig_mr(SIGFN sigFN)
+        {
+            return mainSignal.next_sig_mr(sigFN);
+        }
+
+        public SIGASP next_sig_lr(SIGFN sigFN)
+        {
+            return mainSignal.next_sig_lr(sigFN);
+        }
+
+        public SIGASP this_sig_lr(SIGFN sigFN)
+        {
+            return mainSignal.this_sig_lr(sigFN);
+        }
+
+        public SIGASP this_sig_mr(SIGFN sigFN)
+        {
+            return mainSignal.this_sig_mr(sigFN);
+        }
+
+        public SIGASP opp_sig_mr(SIGFN sigFN)
+        {
+            return mainSignal.this_sig_mr(sigFN);
+        }
+
+        public SIGASP opp_sig_lr(SIGFN sigFN)
+        {
+            return mainSignal.this_sig_lr(sigFN);
+        }
+
+        //================================================================================================//
+        //
+        //  dist_multi_sig_mr : Returns most restrictive state of signal type A, for all type A upto type B
+        //  
+        //
+
+        public SIGASP dist_multi_sig_mr(SIGFN sigFN1, SIGFN sigFN2)
+        {
+            SIGASP foundState = SIGASP.CLEAR_2;
+
+            int sig2Index = mainSignal.sigfound[(int)sigFN2];
+            if (sig2Index < 0)
+            {
+                return (SIGASP.STOP);    // no signal of type 2 available
+            }
+
+            SignalObject thisSignal = mainSignal;
+
+            while (thisSignal.sigfound[(int)sigFN1] >= 0)
+            {
+                thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[(int)sigFN1]];
+                if (thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
+                {
+                    return (foundState);
+                }
+
+                SIGASP thisState = thisSignal.this_sig_mr(sigFN1);
+                foundState = foundState < thisState ? foundState : thisState;
+            }
+
+            return (SIGASP.STOP);   // running out of signals before finding type 2
+        }
+
+        //================================================================================================//
+        //
+        //  sig_feature : return state of requested feature through signal head flags
+        //  
+        //
+
+        public bool sig_feature(int feature)
+        {
+            bool flag_value = true;
+
+            if (mainSignal.WorldObject != null)
+            {
+                if (feature < mainSignal.WorldObject.FlagsSet.Length)
+                {
+                    flag_value = mainSignal.WorldObject.FlagsSet[feature];
+                }
+            }
+
+            return flag_value;
+        }
+
+        //================================================================================================//
+        //
+        //  def_draw_state : Returns the default draw state for this signal head from the SIGCFG file
+        //  Retruns -1 id no draw state.
+        //
+
+        public int def_draw_state(SIGASP state)
+        {
+            if (signalType != null)
+                return signalType.def_draw_state(state);
+            else
+                return -1;
+        }//def_draw_state
+
+        //================================================================================================//
+        //
+        //  SetMostRestrictiveAspect : Sets the state to the most restrictive aspect for this head.
+        //
+
+        public void SetMostRestrictiveAspect()
+        {
+            if (signalType != null)
+                state = signalType.GetMostRestrictiveAspect();
+            else
+                state = SignalHead.SIGASP.STOP;
+            def_draw_state(state);
+        }//SetMostRestrictiveAspect
+
+        //================================================================================================//
+        //
+        //  SetLeastRestrictiveAspect : Sets the state to the least restrictive aspect for this head.
+        //
+
+        public void SetLeastRestrictiveAspect()
+        {
+            if (signalType != null)
+                state = signalType.GetLeastRestrictiveAspect();
+            else
+                state = SignalHead.SIGASP.CLEAR_2;
+            def_draw_state(state);
+        }//SetLeastRestrictiveAspect
+
+        //================================================================================================//
+        //
+        //  route_set : check if linked route is set
+        //
+
+        public int route_set()
+        {
+            bool juncfound = true;
+
+            // call route_set routine from main signal
+
+            if (TrackJunctionNode > 0)
+            {
+                juncfound = mainSignal.route_set(JunctionMainNode);
+            }
+
+            if (juncfound)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }//route_set
+
+        //================================================================================================//
+        //
+        //  Default update process
+        //
+
+        public void Update()
+        {
+            SIGSCRfile.SH_update(this, Signals.scrfile);
+        }
+    } //Update
+
+
+    //================================================================================================//
+    //
+    // class SignalRefObject
+    //
+    //================================================================================================//
+
+    public class SignalRefObject
+    {
+        public uint SignalWorldIndex;
+        public uint HeadIndex;
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public SignalRefObject(int WorldIndexIn, uint HeadItemIn)
+        {
+            SignalWorldIndex = Convert.ToUInt32(WorldIndexIn);
+            HeadIndex = HeadItemIn;
+        }
+    }
+
+    //================================================================================================//
+    //
+    // class SignalWorldInfo
+    //
+    //================================================================================================//
+
+    public class SignalWorldObject
+    {
+        public string SFileName;
+        public Dictionary<uint, uint> HeadReference;     // key=TDBIndex, value=headindex
+        public bool[] HeadsSet;                          // Flags heads which are set
+        public bool[] FlagsSet;                          // Flags signal-flags which are set
+        public bool[] FlagsSetBackfacing;                // Flags signal-flags which are set
+        //    for backfacing signal
+        public List<int> Backfacing = new List<int>();   // Flags heads which are backfacing
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public SignalWorldObject(MSTS.SignalObj SignalWorldItem, SIGCFGFile sigcfg)
+        {
+            MSTS.SignalShape thisCFGShape;
+
+            HeadReference = new Dictionary<uint, uint>();
+
+            // set flags with length to number of possible SubObjects type
+
+            FlagsSet = new bool[MSTS.SignalShape.SignalSubObj.SignalSubTypes.Count];
+            FlagsSetBackfacing = new bool[MSTS.SignalShape.SignalSubObj.SignalSubTypes.Count];
+            for (uint iFlag = 0; iFlag < FlagsSet.Length; iFlag++)
+            {
+                FlagsSet[iFlag] = false;
+                FlagsSetBackfacing[iFlag] = false;
+            }
+
+            // get filename in Uppercase
+
+            SFileName = SignalWorldItem.FileName.ToUpper();
+
+            // search defined shapes in SIGCFG to find signal definition
+
+            if (sigcfg.SignalShapes.TryGetValue(SFileName, out thisCFGShape))
+            {
+
+                HeadsSet = new bool[thisCFGShape.SignalSubObjs.Count];
+
+                // loop through all heads and check SubObj flag per bit to check if head is set
+
+                uint iMask = 1;
+
+                for (int iHead = 0; iHead < thisCFGShape.SignalSubObjs.Count; iHead++)
+                {
+                    HeadsSet[iHead] = false;
+                    uint headSet = SignalWorldItem.SignalSubObj & iMask;
+                    MSTS.SignalShape.SignalSubObj thisSubObjs = thisCFGShape.SignalSubObjs[iHead];
+                    if (headSet != 0)
+                    {
+
+                        // set head, and if head is flag, also set flag
+
+                        HeadsSet[iHead] = true;
+
+                        if (thisSubObjs.BackFacing)
+                        {
+                            Backfacing.Add(iHead);
+                            if (thisSubObjs.SignalSubType >= 1)
+                            {
+                                FlagsSetBackfacing[thisSubObjs.SignalSubType] = true;
+                            }
+                        }
+                        else if (thisSubObjs.SignalSubType >= 1)
+                        {
+                            FlagsSet[thisSubObjs.SignalSubType] = true;
+                        }
+                    }
+                    iMask = iMask << 1;
+                }
+
+                // get TDB and head reference from World file
+
+                foreach (MSTS.SignalUnit signalUnitInfo in SignalWorldItem.SignalUnits.Units)
+                {
+                    uint TrItemRef = signalUnitInfo.TrItem;
+                    uint HeadRef = Convert.ToUInt32(signalUnitInfo.SubObj);
+                    HeadReference.Add(TrItemRef, HeadRef);
+                }
+            }
+            else
+            {
+                Trace.TraceWarning("Signal not found : {0} n", SFileName);
+            }
+
+        }
+
+
+        //================================================================================================//
+        //
+        // Constructor for copy
+        //
+
+        public SignalWorldObject(SignalWorldObject copy)
+        {
+            SFileName = String.Copy(copy.SFileName);
+            Backfacing = copy.Backfacing;
+
+            HeadsSet = new bool[copy.HeadsSet.Length];
+            FlagsSet = new bool[copy.FlagsSet.Length];
+            FlagsSetBackfacing = new bool[copy.FlagsSet.Length];
+            copy.HeadsSet.CopyTo(HeadsSet, 0);
+            copy.FlagsSet.CopyTo(FlagsSet, 0);
+            copy.FlagsSetBackfacing.CopyTo(FlagsSet, 0);
+
+            HeadReference = new Dictionary<uint, uint>();
+            foreach (KeyValuePair<uint, uint> thisRef in copy.HeadReference)
+            {
+                HeadReference.Add(thisRef.Key, thisRef.Value);
+            }
+        }
+
+    }
+
+    //================================================================================================//
+    //
+    // class ObjectItemInfo
+    //
+    //================================================================================================//
+
+    public class ObjectItemInfo
+    {
+        public enum ObjectItemType
+        {
+            ANY,
+            SIGNAL,
+            SPEEDLIMIT,
+        }
+
+        public enum ObjectItemFindState
+        {
+            NONE_FOUND = 0,
+            OBJECT_FOUND = 1,
+            END_OF_TRACK = -1,
+            PASSED_DANGER = -2,
+            PASSED_MAXDISTANCE = -3,
+            TDB_ERROR = -4,
+            END_OF_AUTHORITY = -5,
+            END_OF_PATH = -6,
+        }
+
+        public ObjectItemType ObjectType;                     // type information
+        public ObjectItemFindState ObjectState;               // state information
+
+        public SignalObject ObjectDetails;                    // actual object 
+
+        public float distance_found;
+        public float distance_to_train;
+        public float distance_to_object;
+
+        public SignalHead.SIGASP signal_state;                   // UNKNOWN if type = speedlimit
+        // set active by TRAIN
+        public float speed_passenger;                // -1 if not set
+        public float speed_freight;                  // -1 if not set
+        public uint speed_flag;
+        public float actual_speed;                   // set active by TRAIN
+
+        public bool processed;                       // for AI trains, set active by TRAIN
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public ObjectItemInfo(SignalObject thisObject, float distance)
+        {
+            ObjectSpeedInfo speed_info;
+            ObjectState = ObjectItemFindState.OBJECT_FOUND;
+
+            distance_found = distance;
+
+            ObjectDetails = thisObject;
+
+            if (thisObject.isSignal)
+            {
+                ObjectType = ObjectItemType.SIGNAL;
+                signal_state = SignalHead.SIGASP.UNKNOWN;  // set active by TRAIN
+                speed_passenger = -1;                      // set active by TRAIN
+                speed_freight = -1;                      // set active by TRAIN
+                speed_flag = 0;                       // set active by TRAIN
+            }
+            else
+            {
+                ObjectType = ObjectItemType.SPEEDLIMIT;
+                signal_state = SignalHead.SIGASP.UNKNOWN;
+                speed_info = thisObject.this_lim_speed(SignalHead.SIGFN.SPEED);
+                speed_passenger = speed_info.speed_pass;
+                speed_freight = speed_info.speed_freight;
+                speed_flag = speed_info.speed_flag;
+            }
+        }
+
+
+
+        public ObjectItemInfo(ObjectItemFindState thisState)
+        {
+            ObjectState = thisState;
+        }
+
+    }
+
+    //================================================================================================//
+    //
+    // class ObjectSpeedInfo
+    //
+    //================================================================================================//
+
+    public class ObjectSpeedInfo
+    {
+
+        public float speed_pass;
+        public float speed_freight;
+        public uint speed_flag;
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public ObjectSpeedInfo(float pass, float freight, bool asap)
+        {
+            speed_pass = pass;
+            speed_freight = freight;
+            if (asap)
+            {
+                speed_flag = 1;
+            }
+        }
+    }
+
+    //================================================================================================//
+    //
+    // Class Platform Details
+    //
+    //================================================================================================//
+
+    public class PlatformDetails
+    {
+        public List<int> TCSectionIndex = new List<int>();
+        public int[] PlatformReference = new int[2];
+        public float[,] TCOffset = new float[2, 2];
+        public float[] nodeOffset = new float[2];
+        public float Length;
+        public int[] EndSignals = new int[2] { -1, -1 };
+        public float[] DistanceToSignals = new float[2];
+        public string Name;
+        public uint MinWaitingTime;
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public PlatformDetails(int platformReference)
+        {
+            PlatformReference[0] = platformReference;
+        }
+    }
+
+    //================================================================================================//
 
 }
 

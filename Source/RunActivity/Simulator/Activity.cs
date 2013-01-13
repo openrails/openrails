@@ -60,6 +60,8 @@ namespace ORTS {
                 if( sd.Player_Traffic_Definition.Player_Traffic_List.Count > 0 ) {
                     PlatformItem Platform = null;
                     ActivityTask task = null;
+
+#if !NEW_SIGNALLING
                     foreach( var i in sd.Player_Traffic_Definition.Player_Traffic_List ) {
                         Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem;
                         if( Platform != null ) {
@@ -68,6 +70,26 @@ namespace ORTS {
                                 i.DepartTime,
                                 Platform, Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem ) );
                         }
+#else
+                    foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List)
+                    {
+                        Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem ?
+                            Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem : 
+                            new PlatformItem(Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as SidingItem);
+
+                        if (Platform != null)
+                        {
+                            PlatformItem Platform2 = Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] is PlatformItem ?
+                            Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem :
+                            new PlatformItem(Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as SidingItem);
+
+                            Tasks.Add(task = new ActivityTaskPassengerStopAt(task,
+                                i.ArrivalTime,
+                                i.DepartTime,
+                                Platform, Platform2));
+                        }
+#endif
+
                     }
                     Current = Tasks[0];
                 }
@@ -452,6 +474,7 @@ namespace ORTS {
         }
 
         public bool IsMissedStation() {
+#if !NEW_SIGNALLING
             // Calc all distances
             TDBTravellerDistanceCalculatorHelper helper =
                 new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.dFrontTDBTraveller );
@@ -472,6 +495,29 @@ namespace ORTS {
                     PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z );
             distanceend4 = helper.CalculateToPoint( PlatformEnd2.TileX,
                     PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z );
+#else
+            // Calc all distances
+            TDBTravellerDistanceCalculatorHelper helper =
+                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
+
+            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
+                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
+                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
+
+            helper =
+                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller);
+
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
+            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
+            distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
+                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+            distanceend4 = helper.CalculateToPoint(PlatformEnd2.TileX,
+                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
+
+#endif
 
             // If all behind then missed
             return (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
@@ -528,7 +574,10 @@ namespace ORTS {
                     CompletedAt = ActDepart.Value;
                     // Completeness is depend on the elapsed waiting time
                     IsCompleted = maydepart;
-                }
+#if NEW_SIGNALLING
+                    Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
+#endif
+		}
             } else if( EventType == ActivityEventType.Timer ) {
                 // Waiting at a station
                 if( arrived ) {
@@ -536,6 +585,13 @@ namespace ORTS {
                     if (remaining < 1) DisplayColor = Color.LightGreen;
                     else if (remaining < 11) DisplayColor = new Color(255, 255, 128);
                     else DisplayColor = Color.White;
+
+#if NEW_SIGNALLING
+                    if (remaining < 120)
+                    {
+                         Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
+                    }
+#endif
 
                     // Still have to wait
                     if( remaining > 0 ) {
@@ -553,6 +609,9 @@ namespace ORTS {
                     int tmp = (int)(Program.Simulator.ClockTime % 10);
                     if( tmp != TimerChk ) {
                         if( IsMissedStation() ) {
+#if NEW_SIGNALLING
+                            Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
+#endif
                             IsCompleted = false;
                         }
                     }
@@ -704,11 +763,11 @@ namespace ORTS {
                     i = SidingEnd1.Flags2;
                     SidingEnd2 = Simulator.TDB.TrackDB.TrItemTable[i] as SidingItem;
                 }
-                catch (IndexOutOfRangeException error)
+                catch (IndexOutOfRangeException)
                 {
                     Trace.TraceWarning(String.Format("Siding {0} is not in track database.", i));
                 }
-                catch (NullReferenceException error)
+                catch (NullReferenceException)
                 {
                     Trace.TraceWarning(String.Format("Item {0} in track database is not a siding.", i));
                 }

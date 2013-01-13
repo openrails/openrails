@@ -161,11 +161,19 @@ namespace ORTS
                 Index = index;
                 SignalHead = signalHead;
                 MatrixIndex = signalShape.SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName);
+
+#if !NEW_SIGNALLING
                 if (MatrixIndex == -1)
                     throw new InvalidDataException(String.Format("Skipped {0} signal {1} unit {2} with sub-object {3} which is missing from shape {4}", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.MatrixName, signalShape.SharedShape.FilePath));
+#endif
 
                 if (!viewer.SIGCFG.SignalTypes.ContainsKey(mstsSignalSubObj.SignalSubSignalType))
+#if !NEW_SIGNALLING
                     throw new InvalidDataException(String.Format("Skipped {0} signal {1} unit {2} with SigSubSType {3} which is not defined in SignalTypes", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
+#else
+		return;
+#endif
+
                 var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
 
                 SemaphoreInfo = mstsSignalType.SemaphoreInfo;
@@ -204,7 +212,11 @@ namespace ORTS
                 if (DisplayState < 0 || !SignalTypeData.DrawAspects.ContainsKey(DisplayState))
                     return;
 
+#if !NEW_SIGNALLING
                 if (SignalTypeData.Semaphore)
+#else
+                if (SignalTypeData.Semaphore && MatrixIndex >= 0)
+#endif
                 {
                     // We reset the animation matrix before preparing the lights, because they need to be positioned
                     // based on the original matrix only.
@@ -227,7 +239,11 @@ namespace ORTS
                     frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
                 }
 
+#if !NEW_SIGNALLING
                 if (SignalTypeData.Semaphore)
+#else
+                if (SignalTypeData.Semaphore && MatrixIndex >= 0)
+#endif
                 {
                     // Now we update and re-animate the semaphore arm.
                     // Set arm to final position immediately if semaphoreinfo = 0

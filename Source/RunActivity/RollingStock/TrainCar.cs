@@ -192,6 +192,13 @@ namespace ORTS
             }
         }
 
+#if NEW_SIGNALLING
+        public virtual bool GetCabFlipped()
+        {
+            return false;
+        }
+#endif
+
         public virtual float GetCouplerZeroLengthM()
         {
             return 0;
