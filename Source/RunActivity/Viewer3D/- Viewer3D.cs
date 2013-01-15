@@ -508,9 +508,15 @@ namespace ORTS
             if ((AboveGroundCamera == null) && Camera.IsUnderground)
             {
                 AboveGroundCamera = Camera;
-                CabCamera.Activate();
+                //CJ
+                if (Simulator.PlayerLocomotive.HasFrontCab)
+                {
+                    CabCamera.Activate();
+                }
             }
-			else if (AboveGroundCamera != null && Camera.AttachedCar != null && Camera.AttachedCar.Train == Simulator.PlayerLocomotive.Train)
+			else if (AboveGroundCamera != null 
+                && Camera.AttachedCar != null 
+                && Camera.AttachedCar.Train == Simulator.PlayerLocomotive.Train)
 			{
 				// Make sure to keep the old camera updated...
 				AboveGroundCamera.Update(elapsedTime);
