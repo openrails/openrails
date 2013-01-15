@@ -606,7 +606,17 @@ namespace ORTS
                 }
             }
 
-            if( UserInput.IsPressed( UserCommands.CameraCab ) && CabCamera.IsAvailable ) new UseCabCameraCommand( Log );
+            if (UserInput.IsPressed(UserCommands.CameraCab))
+            {
+                if (CabCamera.IsAvailable)
+                {
+                    new UseCabCameraCommand(Log);
+                }
+                else
+                {
+                    Simulator.Confirmer.Warning("Cab view not available");
+                }
+            }
             if( UserInput.IsPressed( UserCommands.CameraOutsideFront ) ) {
                 CheckReplaying();
                 new UseFrontCameraCommand( Log );
