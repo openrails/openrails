@@ -226,7 +226,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
-            Receiver.AdjustNotchedThrottle( ToState );
+            Receiver.AdjustNotchedThrottle(ToState);
             // Report();
         }
 

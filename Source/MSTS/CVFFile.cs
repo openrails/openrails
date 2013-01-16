@@ -192,7 +192,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
                 new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
                 new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCDiscrete(stf, basepath)); }), 
-                new STFReader.TokenProcessor("digitalclock", ()=>{ Add(new CVCDigital(stf, basepath)); })
+                new STFReader.TokenProcessor("digitalclock", ()=>{ Add(new CVCDigitalClock(stf, basepath)); })
             });
             //TODO Uncomment when parsed all type
             /*

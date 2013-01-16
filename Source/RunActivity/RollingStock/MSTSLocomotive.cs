@@ -3932,7 +3932,9 @@ namespace ORTS
                 {
                     int startTime = (int) _Locomotive.Simulator.ClockTime;
                     displayedText = InfoDisplay.FormattedTime(startTime);
-                    textColor = Color.White;
+                    // Digit responds to ControlColour value
+                    var text = _CabViewControl as MSTS.CVCDigital; 
+                    textColor = new Color(text.PositiveColor.R, text.PositiveColor.G, text.PositiveColor.B);
                 }
 
                 if (_CabViewControl.ControlType == CABViewControlTypes.SPEEDOMETER)

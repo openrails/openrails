@@ -508,10 +508,13 @@ namespace ORTS
             if ((AboveGroundCamera == null) && Camera.IsUnderground)
             {
                 AboveGroundCamera = Camera;
-                //CJ
                 if (Simulator.PlayerLocomotive.HasFrontCab)
                 {
                     CabCamera.Activate();
+                }
+                else
+                {
+                    Simulator.Confirmer.Warning("Cab view not available");
                 }
             }
 			else if (AboveGroundCamera != null 
