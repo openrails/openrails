@@ -574,7 +574,7 @@ namespace ORTS
                     AnimationKey -= elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
                 if (AnimationKey > AnimationFrames) AnimationKey -= AnimationFrames;
             }
-            else
+            else if (CrossingObj.levelCrTiming.animTiming > 0)
             {
                 if (Opening)
                     AnimationKey -= elapsedTime.ClockSeconds / CrossingObj.levelCrTiming.animTiming;
