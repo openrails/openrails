@@ -137,24 +137,8 @@ namespace ORTS.Popups
                 table.Cells = newCells;
             }
             Debug.Assert(!format.Contains('\n'), "HUD table cells must not contain newlines. Use the table positioning instead.");
-            table.Cells[cellRow, cellColumn] = String.Format(format, args);
+            table.Cells[cellRow, cellColumn] = args.Length > 0 ? String.Format(format, args) : format;
         }
-
-#if NEW_SIGNALLING
-        void TableSetCellUnformatted(TableData table, int cellRow, int cellColumn, string format)
-        {
-            if (cellRow > table.Cells.GetUpperBound(0) || cellColumn > table.Cells.GetUpperBound(1))
-            {
-                var newCells = new string[Math.Max(cellRow + 1, table.Cells.GetLength(0)), Math.Max(cellColumn + 1, table.Cells.GetLength(1))];
-                for (var row = 0; row < table.Cells.GetLength(0); row++)
-                    for (var column = 0; column < table.Cells.GetLength(1); column++)
-                        newCells[row, column] = table.Cells[row, column];
-                table.Cells = newCells;
-            }
-            Debug.Assert(!format.Contains('\n'), "HUD table cells must not contain newlines. Use the table positioning instead.");
-            table.Cells[cellRow, cellColumn] = String.Copy(format);
-        }
-#endif
 
         void TableSetCells(TableData table, int startColumn, params string[] columns)
         {
@@ -202,15 +186,15 @@ namespace ORTS.Popups
             TableSetLabelValueColumns(table, 0, 2);
             TableAddLabelValue(table, "Version", Program.Version.Length > 0 ? Program.Version : Program.Build);
             TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
-            if( Viewer.IsReplaying ) {
-                TableAddLabelValue( table, "Replay", InfoDisplay.FormattedTime( Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime ) );
+            if (Viewer.IsReplaying)
+            {
+                TableAddLabelValue(table, "Replay", InfoDisplay.FormattedTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
             }
 #if !NEW_SIGNALLING
             TableAddLabelValue(table, "Speed", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
 #else
             TableAddLabelValue(table, "Speed", FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
 #endif
-            TableAddLabelValue(table, "Acceleration", "{0:F3} m/s/s", Viewer.PlayerLocomotive.AccelerationMpSS);
             TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
             TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
@@ -245,7 +229,6 @@ namespace ORTS.Popups
             TableAddLine(table);
 #if !NEW_SIGNALLING
             locomotiveStatus = Viewer.Simulator.AI.GetStatus();
-#endif
             if (locomotiveStatus != null)
             {
                 var lines = locomotiveStatus.Split('\n');
@@ -253,6 +236,7 @@ namespace ORTS.Popups
                     if (line.Length > 0)
                         TableAddLine(table, line);
             }
+#endif
             if (Viewer.PlayerLocomotive.WheelSlip)
                 TableAddLine(table, "Wheel slip");
             else if ((mstsLocomotive != null) && mstsLocomotive.LocomotiveAxle.IsWheelSlipWarning)
@@ -260,15 +244,13 @@ namespace ORTS.Popups
             if (Viewer.PlayerLocomotive.GetSanderOn())
                 TableAddLine(table, "Sander on");
 
-			if (MultiPlayer.MPManager.IsMultiPlayer())
-			{
-				TableAddLine(table, "MultiPlayer Status");
-				var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
-				string[] temp = text.Split('\t');
-				foreach(string t in temp) TableAddLabelValue(table, "", "{0}", t);
-
-
-			}
+            if (MultiPlayer.MPManager.IsMultiPlayer())
+            {
+                TableAddLine(table, "MultiPlayer Status");
+                var text = MultiPlayer.MPManager.Instance().GetOnlineUsersInfo();
+                var temp = text.Split('\t');
+                foreach (var t in temp) TableAddLabelValue(table, "", "{0}", t);
+            }
         }
 
         void TextPageBrakeInfo(TableData table)
@@ -297,7 +279,7 @@ namespace ORTS.Popups
             var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
             if (mstsLocomotive != null)
             {
-                if ((mstsLocomotive.Simulator.UseAdvancedAdhesion)&&(!mstsLocomotive.AntiSlip))
+                if ((mstsLocomotive.Simulator.UseAdvancedAdhesion) && (!mstsLocomotive.AntiSlip))
                 {
                     TableAddLabelValue(table, "Wheel slip", "{0:F0}% ({1:F0}%/s)", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS);
                     TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);
@@ -344,20 +326,7 @@ namespace ORTS.Popups
             TextPageHeading(table, "DISPATCHER INFORMATION");
 
 #if NEW_SIGNALLING
-	    TableSetCellUnformatted(table, table.CurrentRow,  0, "Num");
-	    TableSetCellUnformatted(table, table.CurrentRow,  1, "DistTrav");
-	    TableSetCellUnformatted(table, table.CurrentRow,  2, "ActSpd");
-	    TableSetCellUnformatted(table, table.CurrentRow,  3, "MaxSpd");
-	    TableSetCellUnformatted(table, table.CurrentRow,  4, "AI MOVM");
-	    TableSetCellUnformatted(table, table.CurrentRow,  5, "Acc&Brk");
-	    TableSetCellUnformatted(table, table.CurrentRow,  6, "MODE");
-	    TableSetCellUnformatted(table, table.CurrentRow,  7, "AUTH");
-	    TableSetCellUnformatted(table, table.CurrentRow,  8, "Dist");
-	    TableSetCellUnformatted(table, table.CurrentRow,  9, "Signal");
-	    TableSetCellUnformatted(table, table.CurrentRow, 10, "Dist");
-	    TableSetCellUnformatted(table, table.CurrentRow, 11, "Consist");
-	    TableSetCellUnformatted(table, table.CurrentRow, 12, "Path");
-
+            TableSetCells(table, 0, "Train", "Travelled", "Speed", "Max", "AI mode", "AI data", "Mode", "Auth", "Distance", "Signal", "Distance", "Consist", "Path");
 #else	    
             TableSetCells(table, 0, "Train", "Speed", "Signal aspect", "", "Distance", "Path");
 #endif
@@ -369,32 +338,28 @@ namespace ORTS.Popups
                 var status = auth.GetStatus();
                 TableSetCells(table, 0, status.TrainID.ToString(), TrackMonitorWindow.FormatSpeed(status.Train.SpeedMpS, Viewer.MilepostUnitsMetric), status.Train.GetNextSignalAspect().ToString(), "", TrackMonitorWindow.FormatDistance(status.Train.distanceToSignal, Viewer.MilepostUnitsMetric), status.Path);
                 TableAddLine(table);
-#else
-	    foreach (Train thisTrain in Program.Simulator.Trains)
-	    {
-		    if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER)
-		    {
-		    String [] status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
-
-		    for (int iCell = 0; iCell < status.Length; iCell++)
-		    {
-		    TableSetCellUnformatted(table, table.CurrentRow, iCell, status[iCell]);
-		    }
-            TableAddLine(table);
-		    }
-	    }
-
-	    foreach (AITrain thisTrain in Program.Simulator.AI.AITrains)
-	    {
-		    String []  status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
-		    status = thisTrain.AddMovementState(status,Viewer.MilepostUnitsMetric);
-		    for (int iCell = 0; iCell < status.Length; iCell++)
-		    {
-		    TableSetCellUnformatted(table, table.CurrentRow, iCell, status[iCell]);
-		    }
-            TableAddLine(table);
-#endif 
             }
+#else
+            foreach (var thisTrain in Viewer.Simulator.Trains)
+            {
+                if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER)
+                {
+                    var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+                    for (var iCell = 0; iCell < status.Length; iCell++)
+                        TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                    TableAddLine(table);
+                }
+            }
+
+            foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
+            {
+                var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+                status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
+                for (var iCell = 0; iCell < status.Length; iCell++)
+                    TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                TableAddLine(table);
+            }
+#endif
         }
 
         void TextPageDebugInfo(TableData table)

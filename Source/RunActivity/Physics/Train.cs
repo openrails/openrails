@@ -64,6 +64,7 @@ namespace ORTS
         public float Length;                             // length of train from FrontTDBTraveller to RearTDBTraveller
         public float SpeedMpS = 0.0f;                    // meters per second +ve forward, -ve when backing
         float LastSpeedMpS;                              // variable to remember last speed used for projected speed
+        SmoothedData AccelerationMpSpS = new SmoothedData(); // smoothed acceleration data
         public float ProjectedSpeedMpS;                  // projected speed
         public float LastReportedSpeed;
 
@@ -1048,19 +1049,11 @@ namespace ORTS
             CalculatePositionOfCars(distanceM);
 
             // calculate projected speed
-            if (elapsedClockSeconds < 5.0f)  // update within last 5 seconds to ensure stability
-            {
-                SmoothedData AccelerationMpSpS = new SmoothedData(100.0f * elapsedClockSeconds); // smoothed acceleration data
+            if (elapsedClockSeconds < AccelerationMpSpS.SmoothPeriodS)
                 AccelerationMpSpS.Update(elapsedClockSeconds, (SpeedMpS - LastSpeedMpS) / elapsedClockSeconds);
-                float rate = AccelerationMpSpS.SmoothPeriodS / elapsedClockSeconds;
-                ProjectedSpeedMpS = SpeedMpS + 60 * AccelerationMpSpS.SmoothedValue;
-                ProjectedSpeedMpS = SpeedMpS > float.Epsilon ? Math.Max(0, ProjectedSpeedMpS) : SpeedMpS < -float.Epsilon ? Math.Min(0, ProjectedSpeedMpS) : 0;
-            }
-            else
-            {
-                ProjectedSpeedMpS = SpeedMpS;
-            }
             LastSpeedMpS = SpeedMpS;
+            ProjectedSpeedMpS = SpeedMpS + 60 * AccelerationMpSpS.SmoothedValue;
+            ProjectedSpeedMpS = SpeedMpS > float.Epsilon ? Math.Max(0, ProjectedSpeedMpS) : SpeedMpS < -float.Epsilon ? Math.Min(0, ProjectedSpeedMpS) : 0;
         }
 
         //================================================================================================//
