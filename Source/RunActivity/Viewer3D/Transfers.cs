@@ -18,12 +18,14 @@ namespace ORTS
     {
         readonly Material Material;
         readonly TransferMesh Primitive;
+        readonly float Radius;
 
         public TransferShape(Viewer3D viewer, MSTS.TransferObj transfer, WorldPosition position)
             : base(viewer, null, RemoveRotation(position), ShapeFlags.AutoZBias)
         {
             Material = viewer.MaterialManager.Load("Transfer", Helpers.GetTransferTextureFile(viewer.Simulator, transfer.FileName));
             Primitive = new TransferMesh(viewer, transfer.Width, transfer.Height, position);
+            Radius = (float)Math.Sqrt(transfer.Width * transfer.Width + transfer.Height * transfer.Height) / 2;
         }
 
         static WorldPosition RemoveRotation(WorldPosition position)
@@ -37,13 +39,13 @@ namespace ORTS
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            // Locate relative to the camera
             var dTileX = Location.TileX - Viewer.Camera.TileX;
             var dTileZ = Location.TileZ - Viewer.Camera.TileZ;
+            var mstsLocation = Location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
             var xnaTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
             Matrix.Multiply(ref Location.XNAMatrix, ref xnaTileTranslation, out xnaTileTranslation);
 
-            frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.World, ref xnaTileTranslation, Flags);
+            frame.AddAutoPrimitive(mstsLocation, Radius, Viewer.Settings.ViewingDistance, Material, Primitive, RenderPrimitiveGroup.World, ref xnaTileTranslation, Flags);
         }
 
         internal override void Mark()

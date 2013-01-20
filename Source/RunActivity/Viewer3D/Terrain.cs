@@ -215,12 +215,12 @@ namespace ORTS
 
         public void PrepareFrame(RenderFrame frame)
         {
-            int dTileX = TileX - Viewer.Camera.TileX;
-            int dTileZ = TileZ - Viewer.Camera.TileZ;
-            Vector3 mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
-            Matrix xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
+            var dTileX = TileX - Viewer.Camera.TileX;
+            var dTileZ = TileZ - Viewer.Camera.TileZ;
+            var mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
+            var xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-            frame.AddAutoPrimitive(mstsLocation, 180f, Viewer.Settings.ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
+            frame.AddAutoPrimitive(mstsLocation, 90f, Viewer.Settings.ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
         }
 
         /// <summary>
