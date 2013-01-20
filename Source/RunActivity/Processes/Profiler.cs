@@ -95,22 +95,22 @@ namespace ORTS
 
         public void Mark()
         {
-            // Stop timers.
+            // Collect timing data from the timers while they're running and reset them.
             var running = TimeRunning.IsRunning;
-            TimeTotal.Stop();
-            TimeRunning.Stop();
-            // Calculate the Wall and CPU times from timers.
-            Wall.Update(TimeTotal.ElapsedMilliseconds / 1000f, 100f * (float)TimeRunning.ElapsedMilliseconds / (float)TimeTotal.ElapsedMilliseconds);
-            CPU.Update(TimeTotal.ElapsedMilliseconds / 1000f, 100f * (float)TimeCPU.TotalMilliseconds / (float)TimeTotal.ElapsedMilliseconds);
-            Wait.Update(TimeTotal.ElapsedMilliseconds / 1000f, Math.Max(0, Wall.Value - CPU.Value));
-            // Resume timers.
+            var timeTotal = (float)TimeTotal.ElapsedMilliseconds;
+            var timeRunning = (float)TimeRunning.ElapsedMilliseconds;
+            var timeCPU = (float)TimeCPU.TotalMilliseconds;
+
             TimeTotal.Reset();
-            TimeRunning.Reset();
-            TimeCPU = TimeSpan.Zero;
             TimeTotal.Start();
+            TimeRunning.Reset();
             if (running) TimeRunning.Start();
-            if (ProcessThread != null)
-                LastCPU = ProcessThread.TotalProcessorTime;
+            TimeCPU = TimeSpan.Zero;
+
+            // Calculate the Wall and CPU times from timer data.
+            Wall.Update(timeTotal / 1000, 100f * timeRunning / timeTotal);
+            CPU.Update(timeTotal / 1000, 100f * timeCPU / timeTotal);
+            Wait.Update(timeTotal / 1000, Math.Max(0, (timeRunning - timeCPU) / timeTotal));
         }
     }
 }
