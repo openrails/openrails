@@ -33,11 +33,6 @@
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonSummary = new System.Windows.Forms.Button();
             this.gridTestActivities = new System.Windows.Forms.DataGridView();
-            this.testBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.buttonDetails = new System.Windows.Forms.Button();
-            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxOverride = new System.Windows.Forms.CheckBox();
-            this.buttonNoSort = new System.Windows.Forms.Button();
             this.toTestDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.activityFilePathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.defaultSortDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -49,6 +44,11 @@
             this.loadDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fpsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.blankDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.testBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.buttonDetails = new System.Windows.Forms.Button();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxOverride = new System.Windows.Forms.CheckBox();
+            this.buttonNoSort = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gridTestActivities)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.testBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -140,43 +140,6 @@
             this.gridTestActivities.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.gridTestActivities.Size = new System.Drawing.Size(850, 379);
             this.gridTestActivities.TabIndex = 0;
-            // 
-            // testBindingSource
-            // 
-            this.testBindingSource.DataSource = typeof(ORTS.TestingForm.TestActivity);
-            // 
-            // buttonDetails
-            // 
-            this.buttonDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonDetails.Location = new System.Drawing.Point(787, 397);
-            this.buttonDetails.Name = "buttonDetails";
-            this.buttonDetails.Size = new System.Drawing.Size(75, 23);
-            this.buttonDetails.TabIndex = 7;
-            this.buttonDetails.Text = "Details";
-            this.buttonDetails.UseVisualStyleBackColor = true;
-            this.buttonDetails.Click += new System.EventHandler(this.buttonDetails_Click);
-            // 
-            // checkBoxOverride
-            // 
-            this.checkBoxOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBoxOverride.Location = new System.Drawing.Point(255, 397);
-            this.checkBoxOverride.Name = "checkBoxOverride";
-            this.checkBoxOverride.Size = new System.Drawing.Size(364, 23);
-            this.checkBoxOverride.TabIndex = 4;
-            this.checkBoxOverride.Text = "Override user settings when running tests";
-            this.checkBoxOverride.UseVisualStyleBackColor = true;
-            // 
-            // buttonNoSort
-            // 
-            this.buttonNoSort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonNoSort.Location = new System.Drawing.Point(625, 397);
-            this.buttonNoSort.Name = "buttonNoSort";
-            this.buttonNoSort.Size = new System.Drawing.Size(75, 23);
-            this.buttonNoSort.TabIndex = 5;
-            this.buttonNoSort.Text = "Clear sort";
-            this.buttonNoSort.UseVisualStyleBackColor = true;
-            this.buttonNoSort.Click += new System.EventHandler(this.buttonNoSort_Click);
             // 
             // toTestDataGridViewCheckBoxColumn
             // 
@@ -276,10 +239,47 @@
             this.blankDataGridViewTextBoxColumn.ReadOnly = true;
             this.blankDataGridViewTextBoxColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
+            // testBindingSource
+            // 
+            this.testBindingSource.DataSource = typeof(ORTS.TestingForm.TestActivity);
+            // 
+            // buttonDetails
+            // 
+            this.buttonDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDetails.Location = new System.Drawing.Point(787, 397);
+            this.buttonDetails.Name = "buttonDetails";
+            this.buttonDetails.Size = new System.Drawing.Size(75, 23);
+            this.buttonDetails.TabIndex = 7;
+            this.buttonDetails.Text = "Details";
+            this.buttonDetails.UseVisualStyleBackColor = true;
+            this.buttonDetails.Click += new System.EventHandler(this.buttonDetails_Click);
+            // 
+            // checkBoxOverride
+            // 
+            this.checkBoxOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkBoxOverride.Location = new System.Drawing.Point(255, 397);
+            this.checkBoxOverride.Name = "checkBoxOverride";
+            this.checkBoxOverride.Size = new System.Drawing.Size(364, 23);
+            this.checkBoxOverride.TabIndex = 4;
+            this.checkBoxOverride.Text = "Override user settings when running tests";
+            this.checkBoxOverride.UseVisualStyleBackColor = true;
+            // 
+            // buttonNoSort
+            // 
+            this.buttonNoSort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonNoSort.Location = new System.Drawing.Point(625, 397);
+            this.buttonNoSort.Name = "buttonNoSort";
+            this.buttonNoSort.Size = new System.Drawing.Size(75, 23);
+            this.buttonNoSort.TabIndex = 5;
+            this.buttonNoSort.Text = "Clear sort";
+            this.buttonNoSort.UseVisualStyleBackColor = true;
+            this.buttonNoSort.Click += new System.EventHandler(this.buttonNoSort_Click);
+            // 
             // TestingForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(874, 432);
             this.Controls.Add(this.buttonNoSort);
             this.Controls.Add(this.buttonDetails);
