@@ -520,8 +520,7 @@ namespace ORTS
                 rs.AlphaFunction = CompareFunction.GreaterEqual;
                 rs.ReferenceAlpha = 200;
             }
-
-            if ((Options & SceneryMaterialOptions.AlphaBlendingMask) != 0)
+            else if ((Options & SceneryMaterialOptions.AlphaBlendingMask) != 0)
             {
                 rs.AlphaBlendEnable = true;
                 rs.DestinationBlend = (Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend ? Blend.InverseSourceAlpha : Blend.One;
@@ -629,7 +628,7 @@ namespace ORTS
 
 		public override bool GetBlending()
 		{
-            return (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;
+            return (Options & SceneryMaterialOptions.AlphaTest) == 0 && (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;
 		}
 
 		public override Texture2D GetShadowTexture()
