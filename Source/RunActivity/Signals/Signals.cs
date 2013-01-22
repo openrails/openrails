@@ -100,7 +100,8 @@ namespace ORTS
                 SplitBackfacing(trackDB.TrItemTable, trackDB.TrackNodes);
             }
 
-            SetNumSignalHeads();
+            if (SignalObjects != null)
+                SetNumSignalHeads();
 
             //
             // Create trackcircuit database
@@ -197,18 +198,21 @@ namespace ORTS
             SignalRefList.Clear();
             SignalHeadList.Clear();
 
-            foreach (SignalObject thisSignal in SignalObjects)
+            if (SignalObjects != null)
             {
-                if (thisSignal != null)
+                foreach (SignalObject thisSignal in SignalObjects)
                 {
-                    if (thisSignal.isSignalNormal())
+                    if (thisSignal != null)
                     {
-                        if (thisSignal.TCNextTC < 0)
+                        if (thisSignal.isSignalNormal())
                         {
-                            Trace.TraceInformation("Signal " + thisSignal.thisRef.ToString() +
-                                " ; TC : " + thisSignal.TCReference.ToString() +
-                                " ; NextTC : " + thisSignal.TCNextTC.ToString() +
-                                " ; TN : " + thisSignal.trackNode.ToString());
+                            if (thisSignal.TCNextTC < 0)
+                            {
+                                Trace.TraceInformation("Signal " + thisSignal.thisRef.ToString() +
+                                    " ; TC : " + thisSignal.TCReference.ToString() +
+                                    " ; NextTC : " + thisSignal.TCNextTC.ToString() +
+                                    " ; TN : " + thisSignal.trackNode.ToString());
+                            }
                         }
                     }
                 }
@@ -261,23 +265,26 @@ namespace ORTS
             }
 
             // restore train information
-            foreach (SignalObject thisSignal in SignalObjects)
+
+            if (SignalObjects != null)
             {
-                if (thisSignal != null)
+                foreach (SignalObject thisSignal in SignalObjects)
                 {
-                    thisSignal.RestoreTrains(trains);
+                    if (thisSignal != null)
+                    {
+                        thisSignal.RestoreTrains(trains);
+                    }
+                }
+
+                // restore correct aspects
+                foreach (SignalObject thisSignal in SignalObjects)
+                {
+                    if (thisSignal != null)
+                    {
+                        thisSignal.RestoreAspect();
+                    }
                 }
             }
-
-            // restore correct aspects
-            foreach (SignalObject thisSignal in SignalObjects)
-            {
-                if (thisSignal != null)
-                {
-                    thisSignal.RestoreAspect();
-                }
-            }
-
         }
 
         //================================================================================================//
@@ -287,12 +294,15 @@ namespace ORTS
 
         public void Save(BinaryWriter outf)
         {
-            foreach (SignalObject thisSignal in SignalObjects)
+            if (SignalObjects != null)
             {
-                if (thisSignal != null)
+                foreach (SignalObject thisSignal in SignalObjects)
                 {
-                    outf.Write(thisSignal.thisRef);
-                    thisSignal.Save(outf);
+                    if (thisSignal != null)
+                    {
+                        outf.Write(thisSignal.thisRef);
+                        thisSignal.Save(outf);
+                    }
                 }
             }
             outf.Write(-1);
@@ -1206,8 +1216,21 @@ namespace ORTS
         //   -6  : end of (sub)route
         //
 
+
+        // call without position
         public ObjectItemInfo GetNextObject_InRoute(Train.TrainRouted thisTrain, Train.TCSubpathRoute routePath,
                     int routeIndex, float routePosition, float maxDistance, ObjectItemInfo.ObjectItemType req_type)
+        {
+
+            Train.TCPosition thisPosition = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
+
+            return (GetNextObject_InRoute(thisTrain, routePath, routeIndex, routePosition, maxDistance, req_type, thisPosition));
+        }
+
+        // call with position
+        public ObjectItemInfo GetNextObject_InRoute(Train.TrainRouted thisTrain, Train.TCSubpathRoute routePath,
+                    int routeIndex, float routePosition, float maxDistance, ObjectItemInfo.ObjectItemType req_type,
+                    Train.TCPosition thisPosition)
         {
 
             TrackCircuitSignalItem foundItem = null;
@@ -1233,16 +1256,18 @@ namespace ORTS
                 findSpeedpost = true;
             }
 
-            // if routeIndex is not valid, build temp route from present position to first node or signal
-
             Train.TCSubpathRoute usedRoute = routePath;
-            Train.TCPosition thisPosition = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
+
+            // if routeIndex is not valid, build temp route from present position to first node or signal
 
             if (routeIndex < 0)
             {
+                bool thisIsFreight = thisTrain != null ? thisTrain.Train.IsFreight : false;
+
                 List<int> tempSections = ScanRoute(thisTrain.Train, thisPosition.TCSectionIndex,
                     thisPosition.TCOffset, thisPosition.TCDirection,
-                    true, 200f, false, true, true, false, true, false, false, true, false, thisTrain.Train.IsFreight);
+                    true, 200f, false, true, true, false, true, false, false, true, false, thisIsFreight);
+
 
                 Train.TCSubpathRoute tempRoute = new Train.TCSubpathRoute();
                 int prevSection = -2;
@@ -2805,7 +2830,6 @@ namespace ORTS
 
                     if (prevListIndex < 0)     // section is really off route - perform request from present position
                     {
-                        Trace.TraceWarning("Switch to Node Control for train {0} with off route section", thisTrain.Train.Number);
                         BreakDownRoute(thisPosition.TCSectionIndex, thisTrain);
                     }
                 }
@@ -2876,6 +2900,7 @@ namespace ORTS
 
                 bool routeAvailable = true;
                 thisSection = TrackCircuitList[routePart[routeIndex].TCSectionIndex];
+
                 Dictionary<Train, float> trainAhead =
                         thisSection.TestTrainAhead(thisTrain.Train, thisPosition.TCOffset, thisPosition.TCDirection);
 
@@ -3155,7 +3180,7 @@ namespace ORTS
                     if (trySectionIndex > 0)
                     {
                         TrackCircuitSection trySection = TrackCircuitList[trySectionIndex];
-                        if (trySection.CircuitState.TrainReserved == reqTrain)
+                        if (trySection.CircuitState.TrainReserved != null && reqTrain != null && trySection.CircuitState.TrainReserved.Train == reqTrain.Train)
                         {
                             nextSection = trySection;
                             nextDirection = firstSection.Pins[iPinLink, iPinIndex].Direction;
@@ -3183,7 +3208,7 @@ namespace ORTS
                     if (trySectionIndex > 0)
                     {
                         trySection = TrackCircuitList[trySectionIndex];
-                        if (trySection.CircuitState.TrainReserved == reqTrain)
+                        if (trySection.CircuitState.TrainReserved != null && reqTrain != null && trySection.CircuitState.TrainReserved.Train == reqTrain.Train)
                         {
                             nextSection = trySection;
                             nextDirection = thisSection.ActivePins[iPinLink, iPinIndex].Direction;
@@ -3199,7 +3224,7 @@ namespace ORTS
                     if (trySectionIndex > 0)
                     {
                         trySection = TrackCircuitList[trySectionIndex];
-                        if (trySection.CircuitState.TrainReserved == reqTrain)
+                        if (trySection.CircuitState.TrainReserved != null && reqTrain != null && trySection.CircuitState.TrainReserved.Train == reqTrain.Train)
                         {
                             nextSection = trySection;
                             nextDirection = thisSection.Pins[iPinLink, iPinIndex].Direction;
@@ -3494,7 +3519,7 @@ namespace ORTS
                             int nextPinIndex = nextSection.Pins[(nextDirection == 0 ? 1 : 0), 0].Link == thisIndex ? 0 : 1;
                             if (nextPinDirection == 1 && nextSection.JunctionLastRoute != nextPinIndex)
                             {
-                                if (nextSection.AILock && thisTrain.TrainType == Train.TRAINTYPE.AI)
+                                if (nextSection.AILock && thisTrain != null && thisTrain.TrainType == Train.TRAINTYPE.AI)
                                 {
                                     endOfRoute = true;
                                 }
@@ -3536,8 +3561,8 @@ namespace ORTS
                     {
                         TrackCircuitState thisState = thisSection.CircuitState;
 
-                        if (!thisState.TrainOccupy.ContainsKey(thisTrain.routedForward) && thisState.TrainReserved != thisTrain.routedForward &&
-                            !thisState.TrainOccupy.ContainsKey(thisTrain.routedBackward) && thisState.TrainReserved != thisTrain.routedBackward)
+                        if (!thisState.TrainOccupy.ContainsTrain(thisTrain) && 
+                            (thisState.TrainReserved != null && thisState.TrainReserved.Train != thisTrain))
                         {
                             endOfRoute = true;
                         }
@@ -3579,11 +3604,6 @@ namespace ORTS
                 int thisIndex = thisPlatformIndex.Key;
 
                 var thisPlatform = TrItems[thisIndex] is PlatformItem ? (PlatformItem)TrItems[thisIndex] : new PlatformItem((SidingItem)TrItems[thisIndex]);
-
-                if (TrItems[thisIndex] is PlatformItem)
-                {
-                    thisPlatform = (PlatformItem)TrItems[thisIndex];
-                }
 
                 TrackNode thisNode = trackNodes[thisPlatformIndex.Value];
 
@@ -3733,19 +3753,19 @@ namespace ORTS
                 {
                     float distToSignal = 0.0f;
                     float offset = thisDetails.TCOffset[1, 0];
-                    int firstSection = thisDetails.TCSectionIndex[0];
-                    int firstSectionXRef = -1;
+                    int lastSection = thisDetails.TCSectionIndex[thisDetails.TCSectionIndex.Count - 1];
+                    int lastSectionXRef = -1;
 
                     for (int iXRef = 0; iXRef < thisNode.TCCrossReference.Count; iXRef++)
                     {
-                        if (firstSection == thisNode.TCCrossReference[iXRef].CrossRefIndex)
+                        if (lastSection == thisNode.TCCrossReference[iXRef].CrossRefIndex)
                         {
-                            firstSectionXRef = iXRef;
+                            lastSectionXRef = iXRef;
                             break;
                         }
                     }
 
-                    for (int iXRef = firstSectionXRef; iXRef < thisNode.TCCrossReference.Count; iXRef++)
+                    for (int iXRef = lastSectionXRef; iXRef < thisNode.TCCrossReference.Count; iXRef++)
                     {
                         int sectionIndex = thisNode.TCCrossReference[iXRef].CrossRefIndex;
                         TrackCircuitSection thisSection = TrackCircuitList[sectionIndex];
@@ -3766,22 +3786,22 @@ namespace ORTS
 
                     distToSignal = 0.0f;
                     offset = thisDetails.TCOffset[1, 1];
-                    int lastSection = thisDetails.TCSectionIndex[thisDetails.TCSectionIndex.Count - 1];
-                    int lastSectionXRef = firstSectionXRef;
+                    int firstSection = thisDetails.TCSectionIndex[0];
+                    int firstSectionXRef = lastSectionXRef;
 
                     if (lastSection != firstSection)
                     {
                         for (int iXRef = 0; iXRef < thisNode.TCCrossReference.Count; iXRef++)
                         {
-                            if (lastSection == thisNode.TCCrossReference[iXRef].CrossRefIndex)
+                            if (firstSection == thisNode.TCCrossReference[iXRef].CrossRefIndex)
                             {
-                                lastSectionXRef = iXRef;
+                                firstSectionXRef = iXRef;
                                 break;
                             }
                         }
                     }
 
-                    for (int iXRef = lastSectionXRef; iXRef >= 0; iXRef--)
+                    for (int iXRef = firstSectionXRef; iXRef >= 0; iXRef--)
                     {
                         int sectionIndex = thisNode.TCCrossReference[iXRef].CrossRefIndex;
                         TrackCircuitSection thisSection = TrackCircuitList[sectionIndex];
@@ -4509,17 +4529,17 @@ namespace ORTS
             }
 
             // check reservation
-
-            if (CircuitState.TrainReserved == thisTrain)
+            
+            if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train == thisTrain.Train)
             {
-                return (CircuitState.TrainReserved == thisTrain);
+                return (true);
             }
 
             // check claim
 
             if (CircuitState.TrainClaimed.Count > 0)
             {
-                return (CircuitState.TrainClaimed.Peek() == thisTrain);
+                return (CircuitState.TrainClaimed.PeekTrain() == thisTrain.Train);
             }
 
             // section is not yet set for this train
@@ -4560,16 +4580,16 @@ namespace ORTS
 
             // check reservation
 
-            if (CircuitState.TrainReserved != null)
+            if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train == thisTrain.Train)
             {
-                return (CircuitState.TrainReserved == thisTrain);
+                return (true);
             }
 
             // check claim
 
             if (CircuitState.TrainClaimed.Count > 0)
             {
-                return (CircuitState.TrainClaimed.Peek() == thisTrain);
+                return (CircuitState.TrainClaimed.PeekTrain() == thisTrain.Train);
             }
 
             // check deadlock trap
@@ -4648,7 +4668,7 @@ namespace ORTS
 
             // remove from claim or deadlock claim
 
-            if (CircuitState.TrainClaimed.Contains(thisTrain))
+            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
             }
@@ -4755,7 +4775,7 @@ namespace ORTS
 
         public void Claim(Train.TrainRouted thisTrain)
         {
-            if (!CircuitState.TrainClaimed.Contains(thisTrain))
+            if (!CircuitState.TrainClaimed.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainClaimed.Enqueue(thisTrain);
             }
@@ -4775,7 +4795,7 @@ namespace ORTS
 
         public void PreReserve(Train.TrainRouted thisTrain)
         {
-            if (!CircuitState.TrainPreReserved.Contains(thisTrain))
+            if (!CircuitState.TrainPreReserved.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainPreReserved.Enqueue(thisTrain);
             }
@@ -4810,12 +4830,12 @@ namespace ORTS
             // clear all reservations
             CircuitState.TrainReserved = null;
 
-            if (CircuitState.TrainClaimed.Contains(thisTrain))
+            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
             }
 
-            if (CircuitState.TrainPreReserved.Contains(thisTrain))
+            if (CircuitState.TrainPreReserved.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
             }
@@ -4909,9 +4929,9 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
             }
 
-            if (CircuitState.TrainOccupy.ContainsKey(thisTrain))
+            if (CircuitState.TrainOccupy.ContainsTrain(thisTrain))
             {
-                CircuitState.TrainOccupy.Remove(thisTrain);
+                CircuitState.TrainOccupy.RemoveTrain(thisTrain);
                 thisTrain.Train.OccupiedTrack.Remove(this);
             }
 
@@ -4993,9 +5013,9 @@ namespace ORTS
         public void ResetOccupied(Train.TrainRouted thisTrain)
         {
 
-            if (CircuitState.TrainOccupy.ContainsKey(thisTrain))
+            if (CircuitState.TrainOccupy.ContainsTrain(thisTrain))
             {
-                CircuitState.TrainOccupy.Remove(thisTrain);
+                CircuitState.TrainOccupy.RemoveTrain(thisTrain);
                 thisTrain.Train.OccupiedTrack.Remove(this);
             }
 
@@ -5035,18 +5055,18 @@ namespace ORTS
                 ClearOccupied(thisTrain, resetEndSignal);
             }
 
-            if (CircuitState.TrainReserved == thisTrain)
+            if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train == thisTrain.Train)
             {
                 CircuitState.TrainReserved = null;
                 ClearOccupied(thisTrain, resetEndSignal);    // call clear occupy to reset signals and switches //
             }
 
-            if (CircuitState.TrainClaimed.Contains(thisTrain))
+            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
             }
 
-            if (CircuitState.TrainPreReserved.Contains(thisTrain))
+            if (CircuitState.TrainPreReserved.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
             }
@@ -5069,18 +5089,18 @@ namespace ORTS
 
         public void UnreserveTrain(Train.TrainRouted thisTrain, bool resetEndSignal)
         {
-            if (CircuitState.TrainReserved == thisTrain)
+            if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train == thisTrain.Train)
             {
                 CircuitState.TrainReserved = null;
                 ClearOccupied(thisTrain, resetEndSignal);    // call clear occupy to reset signals and switches //
             }
 
-            if (CircuitState.TrainClaimed.Contains(thisTrain))
+            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
             }
 
-            if (CircuitState.TrainPreReserved.Contains(thisTrain))
+            if (CircuitState.TrainPreReserved.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
             }
@@ -5093,10 +5113,10 @@ namespace ORTS
         // Remove specified train from queue
         //
 
-        private Queue<Train.TrainRouted> removeFromQueue(Queue<Train.TrainRouted> thisQueue, Train.TrainRouted thisTrain)
+        private TrainQueue removeFromQueue(TrainQueue thisQueue, Train.TrainRouted thisTrain)
         {
             List<Train.TrainRouted> tempList = new List<Train.TrainRouted>();
-            Queue<Train.TrainRouted> newQueue = new Queue<Train.TrainRouted>();
+            TrainQueue newQueue = new TrainQueue();
 
             // extract trains from queue and store in list - this will revert the order!
             // do not store train which is to be removed
@@ -5105,7 +5125,7 @@ namespace ORTS
             while (queueCount > 0)
             {
                 Train.TrainRouted queueTrain = thisQueue.Dequeue();
-                if (queueTrain != thisTrain)
+                if (thisTrain == null || queueTrain.Train != thisTrain.Train)
                 {
                     tempList.Add(queueTrain);
                 }
@@ -5230,7 +5250,7 @@ namespace ORTS
 
             // track occupied - check speed and direction - only for normal sections
 
-            if (thisTrain != null && thisState.TrainOccupy.ContainsKey(thisTrain))
+            if (thisTrain != null && thisState.TrainOccupy.ContainsTrain(thisTrain))
             {
                 localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED;  // occupied by own train counts as reserved
                 stateSet = true;
@@ -5311,7 +5331,7 @@ namespace ORTS
 
             // track claimed
 
-            if (!stateSet && thisState.TrainClaimed.Count > 0 && thisState.TrainClaimed.Peek() != thisTrain)
+            if (!stateSet && thisState.TrainClaimed.Count > 0 && thisState.TrainClaimed.PeekTrain() != thisTrain.Train)
             {
                 localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.OPEN;
             }
@@ -5846,6 +5866,61 @@ namespace ORTS
 
     //================================================================================================//
     //
+    // subclass for TrackCircuitState
+    //
+    //================================================================================================//
+    //
+    // Class for track circuit state train occupied
+    //
+
+    public class TrainOccupyState : Dictionary<Train.TrainRouted, int>
+    {
+        // Contains
+        public bool ContainsTrain(Train.TrainRouted thisTrain)
+        {
+            if (thisTrain == null) return (false);
+            return (ContainsKey(thisTrain.Train.routedForward) || ContainsKey(thisTrain.Train.routedBackward));
+        }
+
+        public bool ContainsTrain(Train thisTrain)
+        {
+            if (thisTrain == null) return (false);
+            return (ContainsKey(thisTrain.routedForward) || ContainsKey(thisTrain.routedBackward));
+        }
+
+        // Remove
+        public void RemoveTrain(Train.TrainRouted thisTrain)
+        {
+            if (thisTrain != null)
+            {
+                if (ContainsTrain(thisTrain.Train.routedForward)) Remove(thisTrain.Train.routedForward);
+                if (ContainsTrain(thisTrain.Train.routedBackward)) Remove(thisTrain.Train.routedBackward);
+            }
+        }
+    }
+
+    //
+    // Class for track circuit state train occupied
+    //
+
+    public class TrainQueue : Queue<Train.TrainRouted>
+    {
+        public Train PeekTrain()
+        {
+            if (Count <= 0) return (null);
+            Train.TrainRouted thisTrain = Peek();
+            return (thisTrain.Train);
+        }
+
+        public bool ContainsTrain(Train.TrainRouted thisTrain)
+        {
+            if (thisTrain == null) return (false);
+            return (Contains(thisTrain.Train.routedForward) || Contains(thisTrain.Train.routedBackward));
+        }
+    }
+
+    //================================================================================================//
+    //
     // class TrackCircuitState
     //
     //================================================================================================//
@@ -5855,10 +5930,10 @@ namespace ORTS
 
     public class TrackCircuitState
     {
-        public Dictionary<Train.TrainRouted, int> TrainOccupy;     // trains occupying section      //
+        public TrainOccupyState TrainOccupy;                       // trains occupying section      //
         public Train.TrainRouted TrainReserved;                    // train reserving section       //
-        public Queue<Train.TrainRouted> TrainPreReserved;          // trains with pre-reservation   //
-        public Queue<Train.TrainRouted> TrainClaimed;              // trains with normal claims     //
+        public TrainQueue TrainPreReserved;                        // trains with pre-reservation   //
+        public TrainQueue TrainClaimed;                            // trains with normal claims     //
 
 
         //================================================================================================//
@@ -5868,10 +5943,10 @@ namespace ORTS
 
         public TrackCircuitState()
         {
-            TrainOccupy = new Dictionary<Train.TrainRouted, int>();
+            TrainOccupy = new TrainOccupyState();
             TrainReserved = null;
-            TrainPreReserved = new Queue<Train.TrainRouted>();
-            TrainClaimed = new Queue<Train.TrainRouted>();
+            TrainPreReserved = new TrainQueue();
+            TrainClaimed = new TrainQueue();
         }
 
 
@@ -6125,7 +6200,7 @@ namespace ORTS
                 return (false);
             }
 
-            if (TrainOccupy.Count == 1 && TrainOccupy.ContainsKey(thisTrain))  // only one train and that one is us
+            if (TrainOccupy.Count == 1 && TrainOccupy.ContainsTrain(thisTrain))  // only one train and that one is us
             {
                 return (false);
             }
@@ -6141,20 +6216,13 @@ namespace ORTS
         // routed train
         public bool ThisTrainOccupying(Train.TrainRouted thisTrain)
         {
-            return (TrainOccupy.ContainsKey(thisTrain));
+            return (TrainOccupy.ContainsTrain(thisTrain));
         }
 
         // unrouted train
         public bool ThisTrainOccupying(Train thisTrain)
         {
-            if (ThisTrainOccupying(thisTrain.routedForward)) // try forward
-            {
-                return (true);
-            }
-            else
-            {
-                return (TrainOccupy.ContainsKey(thisTrain.routedBackward)); // try backward
-            }
+            return (TrainOccupy.ContainsTrain(thisTrain));
         }
 
     }
@@ -7257,12 +7325,10 @@ namespace ORTS
 
         public void Update()
         {
-
             // perform route update for normal signals if enabled
 
             if (isSignalNormal())
             {
-
                 // if in hold, set to most restrictive for each head
 
                 if (holdState != HOLDSTATE.NONE)
@@ -7680,7 +7746,9 @@ namespace ORTS
             {
                 Trace.TraceWarning("Request to clear signal {0} from train {1}, signal already enabled for train {2}",
                                        thisRef, thisTrain.Train.Number, enabledTrain.Train.Number);
+                thisTrain.Train.ControlMode = Train.TRAIN_CONTROL.AUTO_NODE; // keep train in NODE control mode
                 procstate = -1;
+                return;
             }
             else
             {
@@ -7729,6 +7797,9 @@ namespace ORTS
                 {
                     // no route from this signal - reset enable and exit
                     enabledTrain = null;
+
+                    // if signal on holding list, set hold state
+                    if (thisTrain.Train.HoldingSignals.Contains(thisRef)) holdState = HOLDSTATE.STATION_STOP;
                     return;
                 }
             }
@@ -7948,7 +8019,7 @@ namespace ORTS
                         {
                             thisSection.PreReserve(enabledTrain);
                         }
-                        else if (thisSection.CircuitState.TrainReserved != enabledTrain)
+                        else if (thisSection.CircuitState.TrainReserved == null || thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train)
                         {
                             thisSection.PreReserve(enabledTrain);
                         }
@@ -7967,7 +8038,7 @@ namespace ORTS
                         {
                             thisSection.Reserve(enabledTrain, thisRoute);
                         }
-                        else if (thisSection.CircuitState.TrainReserved != enabledTrain)
+                        else if (thisSection.CircuitState.TrainReserved == null || thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train)
                         {
                             thisSection.Claim(enabledTrain);
                         }
@@ -8258,7 +8329,8 @@ namespace ORTS
 
                 // use alternative route
 
-                if (startAlternativeRoute > 0 && startSection.CircuitState.TrainReserved != thisTrain)
+                if (startAlternativeRoute > 0 && 
+                    (startSection.CircuitState.TrainReserved == null || startSection.CircuitState.TrainReserved.Train != thisTrain.Train))
                 {
                     Train.TCSubpathRoute altRoutePart = thisTrain.Train.ExtractAlternativeRoute(altRoute);
 
@@ -8769,7 +8841,8 @@ namespace ORTS
                 state = signalType.GetMostRestrictiveAspect();
             else
                 state = SignalHead.SIGASP.STOP;
-            def_draw_state(state);
+
+            draw_state = def_draw_state(state);
         }//SetMostRestrictiveAspect
 
         //================================================================================================//

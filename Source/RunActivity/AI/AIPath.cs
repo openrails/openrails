@@ -18,7 +18,7 @@ using MSTS;
 
 namespace ORTS
 {
-    public enum AIPathNodeType { Other, Stop, SidingStart, SidingEnd, Uncouple, Reverse };
+    public enum AIPathNodeType { Other, Stop, SidingStart, SidingEnd, Uncouple, Reverse, Invalid };
 
     public class AIPath
     {
@@ -350,8 +350,16 @@ namespace ORTS
             {
                 if ((tpn.A & 01) != 0)
                     Type = AIPathNodeType.Reverse;
-                else
+
+		else
+                {
                     Type = AIPathNodeType.Stop;
+                    if (pdp.B == 9) // not a valid point
+                    {
+                        Type = AIPathNodeType.Invalid;
+                    }
+                }
+
                 WaitTimeS = (int)((tpn.A >> 16) & 0xffff);
                 if (WaitTimeS >= 30000 && WaitTimeS < 40000)
                 {

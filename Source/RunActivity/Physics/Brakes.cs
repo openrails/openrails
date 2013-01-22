@@ -916,6 +916,16 @@ namespace ORTS
             if (f < MaxHandbrakeForceN * HandbrakePercent / 100)
                 f = MaxHandbrakeForceN * HandbrakePercent / 100;
             Car.BrakeForceN = f;
+
+// Temporary patch until problem with vacuum brakes is solved
+// This will immediately fully release the brakes
+	    if (Car.Train.AITrainBrakePercent == 0)
+	    {
+		    CylPressurePSIA = 0;
+		    Car.BrakeForceN = 0;
+	    }
+// End of patch
+
         }
 
         public override void PropagateBrakePressure(float elapsedClockSeconds)

@@ -206,12 +206,11 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 40)
+            if (Number == 35)
             {
                 CheckTrain = true;
             }
 #endif
-
             // check deadlocks
 
             CheckDeadlock(ValidRoute[0], Number);
@@ -368,7 +367,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 40)
+            if (Number == 35)
             {
                 CheckTrain = true;
             }
@@ -429,7 +428,7 @@ namespace ORTS
                     TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex :
                     TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex;
 
-                if (PresentPosition[1].RouteListIndex >= reqSection)
+                if (reqSection >= 0 && PresentPosition[1].RouteListIndex >= reqSection)
                 {
                     float reqDistance = SpeedMpS * SpeedMpS * MaxDecelMpSS; 
                     reqDistance = nextActionInfo != null ? Math.Min(nextActionInfo.RequiredDistance,reqDistance) : reqDistance;
@@ -563,10 +562,10 @@ namespace ORTS
 #if DEBUG_REPORTS
                 File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                     Number.ToString() + " forced stop : calculated " +
-                    TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + " > " +
-                    TrackMonitorWindow.FormatDistance(distanceM, true) + " set to " +
-                    "0.0 > " + TrackMonitorWindow.FormatDistance(NextStopDistanceM, true) + " at " +
-                    TrackMonitorWindow.FormatDistance(DistanceTravelledM, true) + "\n");
+                    FormatStrings.FormatSpeed(SpeedMpS, true) + " > " +
+                    FormatStrings.FormatDistance(distanceM, true) + " set to " +
+                    "0.0 > " + FormatStrings.FormatDistance(NextStopDistanceM, true) + " at " +
+                    FormatStrings.FormatDistance(DistanceTravelledM, true) + "\n");
 #endif
 
                 if (CheckTrain)
@@ -820,17 +819,17 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
                             Number.ToString() + ", type STATION_STOP (" +
                             StationStops[0].PlatformItem.Name + "), at " +
-                            TrackMonitorWindow.FormatDistance(distancesM[0], true) + ", trigger at " +
-                            TrackMonitorWindow.FormatDistance(distancesM[1], true) + " (now at " +
-                            TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                            FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
+                            FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
+                            FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
             }
             else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
             {
                 File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
                             Number.ToString() + ", type WAITING_POINT (" +
-                            TrackMonitorWindow.FormatDistance(distancesM[0], true) + ", trigger at " +
-                            TrackMonitorWindow.FormatDistance(distancesM[1], true) + " (now at " +
-                            TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                            FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
+                            FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
+                            FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
             }
 #endif
 
@@ -1150,7 +1149,7 @@ namespace ORTS
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                                 Number.ToString() + " , forced to BRAKING from invalid stop (now at " +
-                                TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                                FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
 #endif
 
                 }
@@ -1424,7 +1423,7 @@ namespace ORTS
                         if (CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
-                                                    "Brake mode - auto node - action cleard while stopped - to stop state\n");
+                                                    "Brake mode - auto node - action cleared while stopped - to stop state\n");
                         }
                     }
                     return;
@@ -1444,11 +1443,11 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                           Number.ToString() + " : signal " +
                           nextActionInfo.ActiveItem.ObjectDetails.thisRef.ToString() + " : speed : " +
-                          TrackMonitorWindow.FormatSpeed(nextActionInfo.ActiveItem.actual_speed, true) + " >= limit : " +
-                          TrackMonitorWindow.FormatSpeed(AllowedMaxSpeedMpS, true) + " at " +
-                          TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
-                          TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                          TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                          FormatStrings.FormatSpeed(nextActionInfo.ActiveItem.actual_speed, true) + " >= limit : " +
+                          FormatStrings.FormatSpeed(AllowedMaxSpeedMpS, true) + " at " +
+                          FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
+                          FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                          FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
 #endif
                     if (CheckTrain)
                     {
@@ -1476,9 +1475,9 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                           Number.ToString() + " : signal " +
                           nextActionInfo.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                          TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " cleared (now at " +
-                          TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                          TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                          FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " cleared (now at " +
+                          FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                          FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
 #endif
                     if (CheckTrain)
                     {
@@ -1500,9 +1499,9 @@ namespace ORTS
                         File.AppendAllText(@"C:\temp\printproc.txt",
                           Number.ToString() + " : signal " +
                           nextActionInfo.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                          TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " cleared (now at " +
-                          TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                          TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                          FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " cleared (now at " +
+                          FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                          FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
 #endif
                         if (CheckTrain)
                         {
@@ -1529,9 +1528,9 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt",
                       Number.ToString() + " : signal " +
                       nextActionInfo.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                      TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " cleared (now at " +
-                      TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                      TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                      FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " cleared (now at " +
+                      FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                      FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
 #endif
                     if (CheckTrain)
                     {
@@ -1565,11 +1564,11 @@ namespace ORTS
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                           Number.ToString() + " : speed : " +
-                          TrackMonitorWindow.FormatSpeed(nextActionInfo.RequiredSpeedMpS, true) + " >= limit : " +
-                          TrackMonitorWindow.FormatSpeed(AllowedMaxSpeedMpS, true) + " at " +
-                          TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
-                          TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                          TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                          FormatStrings.FormatSpeed(nextActionInfo.RequiredSpeedMpS, true) + " >= limit : " +
+                          FormatStrings.FormatSpeed(AllowedMaxSpeedMpS, true) + " at " +
+                          FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
+                          FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                          FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
 #endif
                     if (CheckTrain)
                     {
@@ -1590,11 +1589,11 @@ namespace ORTS
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                           Number.ToString() + " : speed : " +
-                          TrackMonitorWindow.FormatSpeed(nextActionInfo.RequiredSpeedMpS, true) + " changed to : " +
-			  TrackMonitorWindow.FormatSpeed(nextActionInfo.ActiveItem.actual_speed, true) + " at " +
-                          TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
-                          TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                          TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                          FormatStrings.FormatSpeed(nextActionInfo.RequiredSpeedMpS, true) + " changed to : " +
+                          FormatStrings.FormatSpeed(nextActionInfo.ActiveItem.actual_speed, true) + " at " +
+                          FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
+                          FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                          FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
 #endif
                     if (CheckTrain)
                     {
@@ -2098,8 +2097,8 @@ namespace ORTS
                     {
                         trainInfo = thisSection.TestTrainAhead(this,
                              PresentPosition[0].TCOffset, PresentPosition[0].TCDirection);
-                        if (trainInfo.Count < 0)
-                        accDistance = thisSection.Length - PresentPosition[0].TCOffset;  // compensate for offset
+                        if (trainInfo.Count <= 0)
+                        accDistance -= PresentPosition[0].TCOffset;  // compensate for offset
                     }
                     else
                     {
@@ -2165,6 +2164,8 @@ namespace ORTS
                         if (OtherTrain.SpeedMpS == 0.0f)
                         {
                             float keepDistanceStatTrainM = (OtherTrain.IsFreight || IsFreight) ? keepDistanceStatTrainM_F : keepDistanceStatTrainM_P;
+                            if (PreUpdate) keepDistanceStatTrainM = keepDistanceMovingTrainM;
+
                             float brakingDistance = SpeedMpS * SpeedMpS * 0.5f * (0.5f * MaxDecelMpSS);
 
                             float minspeedMpS = Math.Min(2.0f * creepSpeedMpS, AllowedMaxSpeedMpS - (5.0f * hysterisMpS));
@@ -2647,6 +2648,7 @@ namespace ORTS
 
         public override void BuildWaitingPointList(float clearingDistanceM)
         {
+            int prevSection = -1;
 
             // loop through all waiting points - back to front as the processing affects the actual routepaths
 
@@ -2658,7 +2660,26 @@ namespace ORTS
                 int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
                 int lastIndex = routeIndex;
 
+                // check if waiting point is in route - else give warning and skip
+                if (routeIndex < 0)
+                {
+                    Trace.TraceInformation("Waiting point for train " + Number.ToString() + " is not on route - point removed");
+                    break;
+                }
+
+                // waiting point is in same section as previous - add time to previous point, remove this point
+                if (waitingPoint[1] == prevSection)
+                {
+                    int[] prevWP = TCRoute.WaitingPoints[iWait + 1];
+                    prevWP[2] += waitingPoint[2];
+                    TCRoute.WaitingPoints.RemoveAt(iWait);
+                    Trace.TraceInformation("Waiting points for train " + Number.ToString() + " combined, total time set to " + prevWP[2].ToString());
+                    break;
+                }
+
                 // check if section has signal
+
+                prevSection = waitingPoint[1];  // save
 
                 SignalObject exitSignal = null;
                 float offset = 0.0f;
@@ -2851,6 +2872,21 @@ namespace ORTS
         {
             RemoveFromTrack();
 
+            // clear deadlocks
+            foreach (KeyValuePair<int, List<Dictionary<int, int>>> thisDeadlock in DeadlockInfo)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisDeadlock.Key];
+                foreach (Dictionary<int, int> deadlockTrapInfo in thisDeadlock.Value)
+                {
+                    foreach (KeyValuePair<int, int> deadlockedTrain in deadlockTrapInfo)
+                    {
+                        thisSection.ClearDeadlockTrap(deadlockedTrain.Key);
+                        TrackCircuitSection otherSection = signalRef.TrackCircuitList[deadlockedTrain.Value];
+                        otherSection.ClearDeadlockTrap(Number);
+                    }
+                }
+            }
+
             // remove train
 
             AI.TrainsToRemove.Add(this);
@@ -2898,18 +2934,24 @@ namespace ORTS
             }
 
                 // if brake from max speed is possible taking into account acc up to full speed, use it as braking distance
-            else if (fullPartRangeM < (remainingRangeM - ((TrainMaxSpeedMpS - reqSpeedMpS) * (TrainMaxSpeedMpS - reqSpeedMpS) * 0.5 / MaxAccelMpSS)))
+            else if (fullPartRangeM < (remainingRangeM - ((AllowedMaxSpeedMpS - reqSpeedMpS) * (AllowedMaxSpeedMpS - reqSpeedMpS) * 0.5 / MaxAccelMpSS)))
             {
                 triggerDistanceM = activateDistanceTravelledM - fullPartRangeM;
             }
 
                 // if distance from max speed is too long and from present speed too short and train not at max speed,
-            // split remaining distance based on relation between acceleration and deceleration
+                // remaining distance calculation :
+                // max. time to reach allowed max speed : Tacc = (Vmax - Vnow) / MaxAccel
+                // max. time to reduce speed from max back to present speed : Tdec = (Vmax - Vnow) / 0.25 * MaxDecel
+                // convered distance : R = Vnow*(Tacc + Tdec) + 0.5 * MaxAccel * Tacc**2 + 0.5 * 0*25 * MaxDecel * Tdec**2
             else
             {
-                if (presentSpeedMpS < TrainMaxSpeedMpS)
+                secndPartRangeM = 0;
+                if (SpeedMpS < presentSpeedMpS)
                 {
-                    secndPartRangeM = (remainingRangeM - firstPartRangeM) * (2.0f * MaxDecelMpSS) / (MaxDecelMpSS + MaxAccelMpSS);
+                    float Tacc = (presentSpeedMpS - SpeedMpS) / MaxAccelMpSS;
+                    float Tdec = (presentSpeedMpS - SpeedMpS) / 0.25f * MaxDecelMpSS;
+                    secndPartRangeM = (SpeedMpS * (Tacc + Tdec)) + (0.5f * MaxAccelMpSS * (Tacc * Tacc)) + (0.5f * 0.25f * MaxDecelMpSS * (Tdec * Tdec));
                 }
 
                 triggerDistanceM = activateDistanceTravelledM - (firstPartRangeM + secndPartRangeM);
@@ -2929,18 +2971,18 @@ namespace ORTS
                          Number.ToString() + ", type " +
                          thisAction.ToString() + " for signal " +
                          thisItem.ObjectDetails.thisRef.ToString() + ", at " +
-                         TrackMonitorWindow.FormatDistance(activateDistanceTravelledM, true) + ", trigger at " +
-                         TrackMonitorWindow.FormatDistance(triggerDistanceM, true) + " (now at " +
-                         TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                         FormatStrings.FormatDistance(activateDistanceTravelledM, true) + ", trigger at " +
+                         FormatStrings.FormatDistance(triggerDistanceM, true) + " (now at " +
+                         FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
             }
             else
             {
                 File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
                          Number.ToString() + ", type " +
                          thisAction.ToString() + " at " +
-                         TrackMonitorWindow.FormatDistance(activateDistanceTravelledM, true) + ", trigger at " +
-                         TrackMonitorWindow.FormatDistance(triggerDistanceM, true) + " (now at " +
-                         TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                         FormatStrings.FormatDistance(activateDistanceTravelledM, true) + ", trigger at " +
+                         FormatStrings.FormatDistance(triggerDistanceM, true) + " (now at " +
+                         FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
             }
 #endif
             if (CheckTrain)
@@ -3008,17 +3050,17 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\printproc.txt", "Reset all for train " +
                          Number.ToString() + ", type " +
                          nextActionInfo.NextAction.ToString() + ", at " +
-                         TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + ", trigger at " +
-                         TrackMonitorWindow.FormatDistance(nextActionInfo.RequiredDistance, true) + " (now at " +
-                         TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                         TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                         FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + ", trigger at " +
+                         FormatStrings.FormatDistance(nextActionInfo.RequiredDistance, true) + " (now at " +
+                         FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                         FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
             }
             else
             {
                 File.AppendAllText(@"C:\temp\printproc.txt", "Reset all for train " +
                          Number.ToString() + " (now at " +
-                         TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                         TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                         FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                         FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
             }
 #endif
             if (CheckTrain)
@@ -3127,20 +3169,20 @@ namespace ORTS
                          Number.ToString() + ", type " +
                          thisItem.NextAction.ToString() + " for signal " +
                          thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + ", at " +
-                         TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + ", trigger at " +
-                         TrackMonitorWindow.FormatDistance(thisItem.RequiredDistance, true) + " (now at " +
-                         TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                         TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                         FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + ", trigger at " +
+                         FormatStrings.FormatDistance(thisItem.RequiredDistance, true) + " (now at " +
+                         FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                         FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
             }
             else
             {
                 File.AppendAllText(@"C:\temp\printproc.txt", "Activated for train " +
                          Number.ToString() + ", type " +
                          thisItem.NextAction.ToString() + " at " +
-                         TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + ", trigger at " +
-                         TrackMonitorWindow.FormatDistance(thisItem.RequiredDistance, true) + " (now at " +
-                         TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                         TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                         FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + ", trigger at " +
+                         FormatStrings.FormatDistance(thisItem.RequiredDistance, true) + " (now at " +
+                         FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                         FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
             }
 #endif
             if (CheckTrain)
@@ -3195,7 +3237,7 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                             Number.ToString() + " : signal " +
                             thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                            TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + " is held for station stop\n");
+                            FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + " is held for station stop\n");
 #endif
                     if (CheckTrain)
                     {
@@ -3217,7 +3259,7 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                             Number.ToString() + " : signal " +
                             thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                            TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + " cleared\n");
+                            FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + " cleared\n");
 #endif
                     if (CheckTrain)
                     {
@@ -3241,7 +3283,7 @@ namespace ORTS
                         File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                             Number.ToString() + " : signal " +
                             thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                            TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + " set to RESTRICTED\n");
+                            FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + " set to RESTRICTED\n");
 #endif
                         if (CheckTrain)
                         {
@@ -3285,10 +3327,10 @@ namespace ORTS
                              Number.ToString() + ", type " +
                              thisItem.NextAction.ToString() + " for signal " +
                              thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + ", at " +
-                             TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + ", trigger at " +
-                             TrackMonitorWindow.FormatDistance(thisItem.RequiredDistance, true) + " (now at " +
-                             TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                             TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                             FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + ", trigger at " +
+                             FormatStrings.FormatDistance(thisItem.RequiredDistance, true) + " (now at " +
+                             FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                             FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
 #endif
                         if (CheckTrain)
                         {
@@ -3318,7 +3360,7 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                             Number.ToString() + " : signal " +
                             thisItem.ActiveItem.ObjectDetails.thisRef.ToString() + " at " +
-                            TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + " cleared\n");
+                            FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + " cleared\n");
 #endif
                     if (CheckTrain)
                     {
@@ -3346,10 +3388,10 @@ namespace ORTS
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "StationStop rescheduled for train " +
                         Number.ToString() + ", at " +
-                        TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + ", trigger at " +
-                        TrackMonitorWindow.FormatDistance(thisItem.RequiredDistance, true) + " ( now at " +
-                        TrackMonitorWindow.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
-                        TrackMonitorWindow.FormatSpeed(SpeedMpS, true) + ")\n");
+                        FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + ", trigger at " +
+                        FormatStrings.FormatDistance(thisItem.RequiredDistance, true) + " ( now at " +
+                        FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                        FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
 #endif
                     if (CheckTrain)
                     {
@@ -3453,10 +3495,10 @@ namespace ORTS
 #if DEBUG_REPORTS
                         File.AppendAllText(@"C:\temp\printproc.txt", "Rejected : Train " +
                              Number.ToString() + " : this " +
-                             TrackMonitorWindow.FormatSpeed(thisItem.RequiredSpeedMpS, true) + " at " +
-                             TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + ", active " +
-                             TrackMonitorWindow.FormatSpeed(nextActionInfo.RequiredSpeedMpS, true) + " at " +
-                             TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + "\n");
+                             FormatStrings.FormatSpeed(thisItem.RequiredSpeedMpS, true) + " at " +
+                             FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + ", active " +
+                             FormatStrings.FormatSpeed(nextActionInfo.RequiredSpeedMpS, true) + " at " +
+                             FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + "\n");
 #endif
                         if (CheckTrain)
                         {
@@ -3473,10 +3515,10 @@ namespace ORTS
 #if DEBUG_REPORTS
                         File.AppendAllText(@"C:\temp\printproc.txt", "Accepted : Train " +
                              Number.ToString() + " : this " +
-                             TrackMonitorWindow.FormatSpeed(thisItem.RequiredSpeedMpS, true) + " at " +
-                             TrackMonitorWindow.FormatDistance(thisItem.ActivateDistanceM, true) + ", active " +
-                             TrackMonitorWindow.FormatSpeed(nextActionInfo.RequiredSpeedMpS, true) + " at " +
-                             TrackMonitorWindow.FormatDistance(nextActionInfo.ActivateDistanceM, true) + "\n");
+                             FormatStrings.FormatSpeed(thisItem.RequiredSpeedMpS, true) + " at " +
+                             FormatStrings.FormatDistance(thisItem.ActivateDistanceM, true) + ", active " +
+                             FormatStrings.FormatSpeed(nextActionInfo.RequiredSpeedMpS, true) + " at " +
+                             FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + "\n");
 #endif
                         if (CheckTrain)
                         {

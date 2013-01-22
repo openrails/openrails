@@ -247,6 +247,12 @@ namespace ORTS
 
             }// for each rail car
 
+            if (train.Cars.Count <= 0)
+            {
+                Trace.TraceInformation("Empty consists for AI train - train removed");
+                return null;
+            }
+
             train.Cars[0].Headlight = 2;//AI train always has light on
 
             train.CreateRoute(false);  // create route without use of FrontTDBtraveller

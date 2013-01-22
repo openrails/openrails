@@ -233,7 +233,12 @@ namespace ORTS
                         continue;
 
                     var xnaMatrix = Matrix.Identity;
+#if !NEW_SIGNALLING
                     Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
+#else
+                    if (MatrixIndex >= 0)
+                       Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
+#endif
                     Matrix.Multiply(ref xnaMatrix, ref xnaTileTranslation, out xnaMatrix);
 
                     frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);

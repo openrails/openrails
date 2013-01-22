@@ -289,18 +289,18 @@ namespace ORTS
                 Train.TCPosition thisPosition = new Train.TCPosition();
                 TrackNode tn = trackNode.TN;
                 float offset = trackNode.TrackNodeOffset;
-                int direction = (int) trackNode.Direction;
+                int direction = (int)trackNode.Direction;
 
                 tn.TCCrossReference.GetTCPosition(offset, direction, ref thisPosition);
                 Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex,
                     thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, true, false);
 
-                ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextObject_InRoute(null, tempRoute, 0, 
-                    thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.SIGNAL);
+                ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextObject_InRoute(null, tempRoute, 0,
+                    thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.SIGNAL, thisPosition);
 
                 var signal = thisInfo.ObjectDetails;
-		if (signal == null)
-			break;
+                if (signal == null)
+                    break;
                 if (signal.this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.UNKNOWN)
                     break;
                 var signalDistance = thisInfo.distance_found;
