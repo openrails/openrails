@@ -4585,6 +4585,11 @@ namespace ORTS
                 return (true);
             }
 
+            if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train != thisTrain.Train)
+            {
+                return (false);
+            }
+
             // check claim
 
             if (CircuitState.TrainClaimed.Count > 0)
@@ -5392,6 +5397,11 @@ namespace ORTS
                             if (thisTrainDistanceM < distanceTrainAheadM && nextRear.TCOffset >= offset) // train is nearest train and in front
                             {
                                 distanceTrainAheadM = thisTrainDistanceM;
+                                trainFound = nextTrain.Train;
+                            }
+                            else if (nextRear.TCOffset < offset && nextRear.TCOffset + nextTrain.Train.Length > offset) // our end is in the middle of the train
+                            {
+                                distanceTrainAheadM = 0; // set distance to 0
                                 trainFound = nextTrain.Train;
                             }
                         }
@@ -7172,6 +7182,7 @@ namespace ORTS
             int direction = TCDirection;
             int signalFound = -1;
             TrackCircuitSection thisSection = null;
+            bool sectionSet = false;
 
             // for normal signals : can not be done using this function, is done while clearing route
 
@@ -7185,14 +7196,19 @@ namespace ORTS
             else
             {
                 thisSection = signalRef.TrackCircuitList[thisTC];
-                int pinIndex = direction;
-                thisTC = thisSection.ActivePins[pinIndex, 0].Link;
-                direction = thisSection.ActivePins[pinIndex, 0].Direction;
+                sectionSet = enabledTrain == null ? false : thisSection.IsSet(enabledTrain);
+
+                if (sectionSet)
+                {
+                    int pinIndex = direction;
+                    thisTC = thisSection.ActivePins[pinIndex, 0].Link;
+                    direction = thisSection.ActivePins[pinIndex, 0].Direction;
+                }
             }
 
             // loop through valid sections
 
-            while (thisTC > 0 && signalFound < 0)
+            while (sectionSet && thisTC > 0 && signalFound < 0)
             {
                 thisSection = signalRef.TrackCircuitList[thisTC];
 
@@ -7218,24 +7234,30 @@ namespace ORTS
                 if (signalFound < 0)
                 {
                     int pinIndex = direction;
-                    thisTC = thisSection.ActivePins[pinIndex, 0].Link;
-                    direction = thisSection.ActivePins[pinIndex, 0].Direction;
-                    if (thisTC == -1)
+                    sectionSet = thisSection.IsSet(enabledTrain);
+                    if (sectionSet)
                     {
-                        thisTC = thisSection.ActivePins[pinIndex, 1].Link;
-                        direction = thisSection.ActivePins[pinIndex, 1].Direction;
-                    }
-
-                    // if no active link but signal has train and route allocated, use train route to find next section
-
-                    if (thisTC == -1 && enabledTrain != null)
-                    {
-                        int thisIndex = signalRoute.GetRouteIndex(thisSection.Index, 0);
-                        if (thisIndex >= 0 && thisIndex <= signalRoute.Count - 2)
+                        thisTC = thisSection.ActivePins[pinIndex, 0].Link;
+                        direction = thisSection.ActivePins[pinIndex, 0].Direction;
+                        if (thisTC == -1)
                         {
-                            thisTC = signalRoute[thisIndex + 1].TCSectionIndex;
-                            direction = signalRoute[thisIndex + 1].Direction;
+                            thisTC = thisSection.ActivePins[pinIndex, 1].Link;
+                            direction = thisSection.ActivePins[pinIndex, 1].Direction;
                         }
+                    }
+                }
+            }
+
+            if (signalFound < 0 && enabledTrain != null) // if signal not found following switches use signal route
+            {
+                for (int iSection = 0; iSection <= (signalRoute.Count - 1) && signalFound < 0; iSection++)
+                {
+                    thisSection = signalRef.TrackCircuitList[signalRoute[iSection].TCSectionIndex];
+                    direction = signalRoute[iSection].Direction;
+                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction, (int)fntype];
+                    if (thisList.TrackCircuitItem.Count > 0)
+                    {
+                        signalFound = thisList.TrackCircuitItem[0].SignalRef.thisRef;
                     }
                 }
             }

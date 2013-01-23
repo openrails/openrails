@@ -2737,7 +2737,7 @@ namespace ORTS
                 if (thisSection.CanPlaceTrain(this, offset, remLength))
                 {
                     placementSections.Add(thisSection);
-                    remLength -= thisSection.Length;
+                    remLength -= (thisSection.Length - offset);
 
                     if (remLength > 0)
                     {
