@@ -22,7 +22,7 @@
  * TODO, add note re abandoning Viewer.Components
  *      - control over render order - ie sorting by material to minimize state changes
  *      - multitasking issues
- *      - multipass techniques, such as shadow mapping
+ *      - multipass techniques, such as shadow mapping 
  * 
  * 
  */
@@ -99,7 +99,13 @@ namespace ORTS
         public TracksideCamera TracksideCamera; // Camera 4
         public PassengerCamera PassengerCamera; // Camera 5
         public BrakemanCamera BrakemanCamera; // Camera 6
-        public FreeRoamCamera FreeRoamCamera;  // Camera 8
+        public List<FreeRoamCamera> FreeRoamCameraList = new List<FreeRoamCamera>();
+        public FreeRoamCamera FreeRoamCamera // Camera 8
+        {
+            get
+            { return FreeRoamCameraList[0]; }
+            set {}
+        }
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
         // 2.1 sets the limit at just under a right angle as get unwanted swivel at the full right angle.
         public CameraAngleClamper VerticalClamper = new CameraAngleClamper( -MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f );
@@ -390,8 +396,29 @@ namespace ORTS
             ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
             UseCameraCommand.Receiver = this;
             MoveCameraCommand.Receiver = this;
-            MoveCameraCommand.Receiver = this;
             SaveCommand.Receiver = this;
+        }
+
+        public void ChangeToPreviousFreeRoamCamera()
+        {
+            if (Camera == FreeRoamCamera)
+            {
+                // If 8 is the current camera, rotate the list and then activate a different camera.
+                RotateFreeRoamCameraList();
+                FreeRoamCamera.Activate();
+            }
+            else
+            {
+                FreeRoamCamera.Activate();
+                RotateFreeRoamCameraList();
+            }
+        }
+
+        void RotateFreeRoamCameraList()
+        {
+            // Rotate list moving 1 to 0 etc. (by adding 0 to end, then removing 0)
+            FreeRoamCameraList.Add(FreeRoamCamera);
+            FreeRoamCameraList.RemoveAt(0);
         }
 
         public void AdjustCabHeight(int windowWidth, int windowHeight) {
@@ -656,8 +683,19 @@ namespace ORTS
             if( UserInput.IsPressed( UserCommands.CameraFree ) ) {
                 CheckReplaying();
                 new UseFreeRoamCameraCommand( Log );
+                Simulator.Confirmer.Message(ConfirmLevel.None, String.Format(
+                    "{0} viewpoints stored. Use Shift+8 to restore viewpoints.", FreeRoamCameraList.Count));
             }
-            if( UserInput.IsPressed( UserCommands.CameraHeadOutForward ) && HeadOutForwardCamera.IsAvailable ) {
+            if (UserInput.IsPressed(UserCommands.CameraPreviousFree))
+            {
+                if (FreeRoamCameraList.Count > 0)
+                {
+                    CheckReplaying();
+                    new UsePreviousFreeRoamCameraCommand(Log);
+                }
+            } 
+            if (UserInput.IsPressed(UserCommands.CameraHeadOutForward) && HeadOutForwardCamera.IsAvailable)
+            {
                 CheckReplaying();
                 new UseHeadOutForwardCameraCommand( Log );
             }

@@ -348,7 +348,10 @@ namespace ORTS
                 // First use the .save file to check the validity and extract the route and activity.
                 string saveFile = GetSaveFile( args );
                 using( BinaryReader inf = new BinaryReader( new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) ) {
-                    ValidateSave( inf );
+                    //CJ
+                    //ValidateSave( inf );
+                    var revision = inf.ReadString();
+                    var build = inf.ReadString();
                     savedValues values = GetSavedValues( inf );
                     InitSimulator( settings, values.args, "Replay" );
                     Simulator.Start();

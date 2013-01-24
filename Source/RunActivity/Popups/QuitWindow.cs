@@ -67,6 +67,7 @@ namespace ORTS.Popups
             if( Owner.Viewer.Log.PauseState == ReplayPauseState.During ) {
                 Owner.Viewer.Log.PauseState = ReplayPauseState.Done;
             }
+            Owner.Viewer.ResumeReplaying();
         }
     }
 }

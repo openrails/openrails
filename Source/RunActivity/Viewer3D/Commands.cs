@@ -923,20 +923,6 @@ namespace ORTS {
     }
 
     [Serializable()]
-    public class UseFreeRoamCameraCommand : UseCameraCommand {
-
-        public UseFreeRoamCameraCommand( CommandLog log )
-            : base( log ) {
-            Redo();
-        }
-
-        public override void Redo() {
-            new FreeRoamCamera( Receiver, Receiver.Camera ).Activate();
-            // Report();
-        }
-    }
-
-    [Serializable()]
     public class UseHeadOutForwardCameraCommand : UseCameraCommand {
 
         public UseHeadOutForwardCameraCommand( CommandLog log )
@@ -950,6 +936,59 @@ namespace ORTS {
         }
     }
 
+    [Serializable()]
+    public class UseFreeRoamCameraCommand : UseCameraCommand {
+
+        public UseFreeRoamCameraCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            // Make a new camera that adopts the same viewpoint as the current camera.
+            //new FreeRoamCamera(Receiver, Receiver.Camera).Activate();
+            //CJ
+            //Receiver.FreeRoamCamera = new FreeRoamCamera(Receiver, Receiver.Camera);
+            //Receiver.FreeRoamCameraList[0] = new FreeRoamCamera(Receiver, Receiver.Camera);
+            // Add new camera at head of list
+            Receiver.FreeRoamCameraList.Insert(0, new FreeRoamCamera(Receiver, Receiver.Camera)); 
+            Receiver.FreeRoamCamera.Activate();
+            // Report();
+        }
+    }
+    
+    [Serializable()]
+    public class UsePreviousFreeRoamCameraCommand : UseCameraCommand {
+
+        public UsePreviousFreeRoamCameraCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.ChangeToPreviousFreeRoamCamera();
+            //var length = Receiver.FreeRoamCameraList.Count;
+            //// Rotate list moving 1 to 0 etc. (by adding 0 to end, then removing 0)
+            //if (Receiver.Camera == Receiver.FreeRoamCamera)
+            //{
+            //    Receiver.FreeRoamCameraList.Add(Receiver.FreeRoamCamera);
+            //    Receiver.FreeRoamCameraList.RemoveAt(0);
+            //    Receiver.FreeRoamCamera.Activate();
+            //}
+            //else
+            //{
+            //    Receiver.FreeRoamCamera.Activate();
+            //    Receiver.FreeRoamCameraList.Add(Receiver.FreeRoamCamera);
+            //    Receiver.FreeRoamCameraList.RemoveAt(0);
+            //}
+            // Report();
+        }
+    }
+    
     [Serializable()]
     public class UseHeadOutBackCameraCommand : UseCameraCommand {
 

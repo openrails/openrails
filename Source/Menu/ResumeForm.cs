@@ -6,7 +6,7 @@
 /*
 This form adds the ability to save the state of the simulator (a Save) multiple times and replace the previous 
 single save to the file SAVE.BIN.
-
+ = false
 Saves are made to the folder Program.UserDataFolder (e.g.
     C:\Users\Chris\AppData\Roaming\Open Rails\ 
 and take the form  <activity file name> <date> <time>.save. E.g.
@@ -219,13 +219,14 @@ namespace ORTS
                     buttonDelete.Enabled = true;
                     buttonResume.Enabled = save.Valid;
                     var replayFileName = Path.ChangeExtension(save.File, "replay");
-                    buttonReplayFromStart.Enabled
-                        = buttonReplayFromPreviousSave.Enabled
-                        = (save.Valid && File.Exists(replayFileName));
+                    buttonReplayFromPreviousSave.Enabled = (save.Valid && File.Exists(replayFileName));
+                    buttonReplayFromStart.Enabled = File.Exists(replayFileName);
                 }
                 else
                 {
-                    buttonDelete.Enabled = buttonResume.Enabled = buttonReplayFromStart.Enabled
+                    buttonDelete.Enabled 
+                        = buttonResume.Enabled 
+                        = buttonReplayFromStart.Enabled
                         = buttonReplayFromPreviousSave.Enabled = false;
                 }
             }
@@ -336,15 +337,12 @@ namespace ORTS
         private void InitiateReplay()
         {
             var save = saveBindingSource.Current as Save;
-            if (save.Valid)
+            if (Found(save) )
             {
-                if (Found(save) )
-                {
-                    SelectedSaveFile = save.File;
-                    Settings.ReplayPauseBeforeEnd = checkBoxReplayPauseBeforeEnd.Checked;
-                    Settings.ReplayPauseBeforeEndS = (int)numericReplayPauseBeforeEnd.Value;
-                    DialogResult = DialogResult.OK; // Anything but DialogResult.Cancel
-                }
+                SelectedSaveFile = save.File;
+                Settings.ReplayPauseBeforeEnd = checkBoxReplayPauseBeforeEnd.Checked;
+                Settings.ReplayPauseBeforeEndS = (int)numericReplayPauseBeforeEnd.Value;
+                DialogResult = DialogResult.OK; // Anything but DialogResult.Cancel
             }
         }
 
@@ -355,7 +353,7 @@ namespace ORTS
             {
                 form.ShowDialog();
             }
-            LoadSaves(); // <CJ Comment> Should update list of saves but doesn't refresh the form as I was hoping.</CJ Comment>
+            LoadSaves();
         }
 
         /// <summary>
