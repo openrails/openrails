@@ -92,43 +92,67 @@ namespace ORTS
             var settings = GetSettings(options);
             InputSettings.Initialize(options);
 
-            // Do the action specified or write out some help.
-            switch (action)
+            try{
+                // Do the action specified or write out some help.
+                switch (action)
+                {
+                    case "start":
+                    case "start-profile":
+                        InitLogging( settings, args );
+                        Start(settings, data);
+                        break;
+                    case "resume":
+                        InitLogging( settings, args );
+                        Resume(settings, data);
+                        break;
+                    case "test":
+                        // Any log file is deleted by Menu.exe
+                        InitLogging( settings, args, true );
+                        // set Exit code to be returned to Menu.exe 
+                        Environment.ExitCode = Test(settings, data);
+                        break;
+                    case "testall":
+                        InitLogging( settings, args );
+                        TestAll(data);
+                        break;
+                    case "replay":
+                        InitLogging( settings, args );
+                        Replay( settings, data );
+                        break;
+                    case "replay_from_save":
+                        InitLogging( settings, args );
+                        ReplayFromSave( settings, data );
+                        break;
+                    default:
+                        Console.WriteLine("Supply missing activity file name");
+                        Console.WriteLine("   i.e.: RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA1\\ACTIVITIES\\xxx.act\"");
+                        Console.WriteLine();
+                        Console.WriteLine("or launch the program OpenRails.exe and select from the menu.");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+            catch (FileNotFoundException error)
             {
-                case "start":
-                case "start-profile":
-                    InitLogging( settings, args );
-                    Start(settings, data);
-                    break;
-                case "resume":
-                    InitLogging( settings, args );
-                    Resume(settings, data);
-                    break;
-                case "test":
-                    // Any log file is deleted by Menu.exe
-                    InitLogging( settings, args, true );
-                    // set Exit code to be returned to Menu.exe 
-                    Environment.ExitCode = Test(settings, data);
-                    break;
-                case "testall":
-                    InitLogging( settings, args );
-                    TestAll(data);
-                    break;
-                case "replay":
-                    InitLogging( settings, args );
-                    Replay( settings, data );
-                    break;
-                case "replay_from_save":
-                    InitLogging( settings, args );
-                    ReplayFromSave( settings, data );
-                    break;
-                default:
-                    Console.WriteLine("Supply missing activity file name");
-                    Console.WriteLine("   i.e.: RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA1\\ACTIVITIES\\xxx.act\"");
-                    Console.WriteLine();
-                    Console.WriteLine("or launch the program OpenRails.exe and select from the menu.");
-                    Console.ReadKey();
-                    break;
+                Trace.WriteLine(error);
+                if (settings.ShowErrorDialogs)
+                    MessageBox.Show(String.Format(
+                        "Fatal error: Essential file not found so Open Rails cannnot continue.\n\n" +
+                        "Missing file = {0}",
+                        error.FileName),
+                    Application.ProductName);
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(error);
+                if (settings.ShowErrorDialogs)
+                    MessageBox.Show(String.Format(
+                        "Fatal error: " + error.Message + "Open Rails cannot continue.\n\n" +
+                        ">>> Please report this event using the OR Bug Tracker <<<\n\n" +
+                        "This error may be result of bad data or a bug.\n" +
+                        "You can help improve OR by reporting this at http://launchpad.net/or\n" +
+                        "(our bug tracker) and attaching the Desktop file OpenRailsLog.txt"),
+                    Application.ProductName);
             }
         }
 
@@ -175,20 +199,9 @@ namespace ORTS
                 {
                     start();
                 }
-                catch (FileNotFoundException error)
+                catch
                 {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(String.Format(
-                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
-                            error.FileName), 
-                        Application.ProductName);
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(error.ToString(), Application.ProductName);
+                    throw;
                 }
             }
         }
@@ -256,20 +269,9 @@ namespace ORTS
                 {
                     save();
                 }
-                catch (FileNotFoundException error)
+                catch
                 {
-                    Trace.WriteLine(error);
-                    if (Simulator.Settings.ShowErrorDialogs)
-                        MessageBox.Show(String.Format(
-                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
-                            error.FileName),
-                        Application.ProductName);
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(error);
-                    if (Simulator.Settings.ShowErrorDialogs)
-                        MessageBox.Show(error.ToString(), Application.ProductName);
+                    throw;
                 }
             }
         }
@@ -326,20 +328,9 @@ namespace ORTS
                 {
                     resume();
                 }
-                catch (FileNotFoundException error)
+                catch
                 {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(String.Format(
-                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
-                            error.FileName),
-                        Application.ProductName);
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(error.ToString(), Application.ProductName);
+                    throw;
                 }
             }
         }
@@ -388,20 +379,9 @@ namespace ORTS
                 {
                     replay();
                 }
-                catch (FileNotFoundException error)
+                catch
                 {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(String.Format(
-                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
-                            error.FileName),
-                        Application.ProductName);
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(error.ToString(), Application.ProductName);
+                    throw;
                 }
             }
         }
@@ -484,20 +464,9 @@ namespace ORTS
                 try {
                     replayFromSave();
                 }
-                catch (FileNotFoundException error)
+                catch
                 {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(String.Format(
-                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
-                            error.FileName),
-                        Application.ProductName);
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine( error );
-                    if( settings.ShowErrorDialogs )
-                        MessageBox.Show( error.ToString(), Application.ProductName );
+                    throw;
                 }
             }
         }
@@ -577,20 +546,9 @@ namespace ORTS
                 {
                     testAll();
                 }
-                catch (FileNotFoundException error)
+                catch
                 {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(String.Format(
-                            "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
-                            error.FileName),
-                        Application.ProductName);
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(error);
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(error.ToString(), Application.ProductName);
+                    throw;
                 }
             }
         }
@@ -614,20 +572,9 @@ namespace ORTS
                 loadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
                 passed = true;
             }
-            catch (FileNotFoundException error)
+            catch
             {
-                var message = String.Format(
-                    "Fatal error: File not found so Open Rails cannnot continue.\n\nMissing file = {0}",
-                    error.FileName);
-                Trace.WriteLine(error);
-                if (settings.ShowErrorDialogs)
-                    MessageBox.Show(message, Application.ProductName);
-            }
-            catch (Exception error)
-            {
-                Trace.WriteLine(error);
-                if (settings.ShowErrorDialogs)
-                    MessageBox.Show(error.ToString(), Application.ProductName);
+                throw;
             }
             ExportTestSummary(settings, args, passed, loadTime);
             return passed ? 0 : 1;

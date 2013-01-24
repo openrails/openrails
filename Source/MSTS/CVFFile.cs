@@ -545,168 +545,199 @@ namespace MSTS
     {
         public List<int> Positions = new List<int>();
 
-        private int _PositionsRead = 0;
         private int _ValuesRead = 0;
 
         public CVCDiscrete(STFReader stf, string basepath)
         {
-            stf.MustMatch("(");
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
-                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
-                new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
-                new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
-                new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
-                new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
-
-                new STFReader.TokenProcessor("numframes", ()=>{
-                    stf.MustMatch("(");
-                    FramesCount = stf.ReadInt(STFReader.UNITS.None, null);
-                    FramesX = stf.ReadInt(STFReader.UNITS.None, null);
-                    FramesY = stf.ReadInt(STFReader.UNITS.None, null);
-                    stf.SkipRestOfBlock();
-                }),
-                new STFReader.TokenProcessor("numpositions", ()=>{
-                    stf.MustMatch("(");
-                    // If Positions are not filled before by Values
-                    bool shouldFill = (Positions.Count == 0);
-                    stf.ReadInt(STFReader.UNITS.None, null); // Number of Positions - Ignore it
-                    while (!stf.EndOfBlock())
-                    {
-                        int p = stf.ReadInt(STFReader.UNITS.None, null);
-                        // If Positions are not filled before by Values
-                        if (shouldFill) Positions.Add(p);
-                    }
-                }),
-                new STFReader.TokenProcessor("numvalues", ()=>{
-                    stf.MustMatch("(");
-                    stf.ReadDouble(STFReader.UNITS.None, null); // Number of Values - ignore it
-                    while (!stf.EndOfBlock())
-                    {
-                        double v = stf.ReadDouble(STFReader.UNITS.None, null);
-                        // If the Positions are less than expected add new Position(s)
-                        while (Positions.Count <= _ValuesRead)
-                        {
-                            Positions.Add(_ValuesRead);
-                            _PositionsRead++;
-                        }
-                        // Avoid later repositioning, put every value to its Position
-                        // But before resize Values if needed
-                        while (Values.Count <= Positions[_ValuesRead])
-                        {
-                            Values.Add(0);
-                        }
-                        // Avoid later repositioning, put every value to its Position
-                        Values[Positions[_ValuesRead]] = v;
-                        _ValuesRead++;
-                    }
-                }),
-            });
-
-            // If no ACE, just don't need any fixup
-            // Because Values are tied to the image Frame to be shown
-            if (string.IsNullOrEmpty(ACEFile)) return;
-
-            // Now, we have an ACE.
-
-            // If read any Values, or the control requires Values to control
-            //     The twostate, tristate, signal displays are not in these
-            // Need check the Values collection for validity
-            if (_ValuesRead > 0 || ControlStyle == CABViewControlStyles.SPRUNG || ControlStyle == CABViewControlStyles.NOT_SPRUNG)
+            try
             {
-                // Check max number of Frames
-                if (FramesCount == 0)
-                {
-                    // Check valid Frame information
-                    if (FramesX == 0 || FramesY == 0)
-                    {
-                        // Give up, it won't work
-                        // Because later we won't know how to display frames from that
-                        Trace.TraceWarning("Invalid Frames information given for ACE {0} in {1}", ACEFile, stf.FileName);
-                        ACEFile = "";
-                        return;
-                    }
+                stf.MustMatch("(");
+                stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                    new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                    new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
+                    new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
+                    new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
+                    new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
-                    // Valid frames info, set FramesCount
-                    FramesCount = FramesX * FramesY;
-                }
+                    new STFReader.TokenProcessor("numframes", ()=>{
+                        stf.MustMatch("(");
+                        FramesCount = stf.ReadInt(STFReader.UNITS.None, null);
+                        FramesX = stf.ReadInt(STFReader.UNITS.None, null);
+                        FramesY = stf.ReadInt(STFReader.UNITS.None, null);
+                        stf.SkipRestOfBlock();
+                    }),
+                        // <CJ Comment> Would like to revise this, as it is difficult to follow and debug.
+                        // Can't do that until interaction of ScaleRange, NumFrames, NumPositions and NumValues is more fully specified.
+                        // What is needed is samples of data that must be accommodated.
+                        // Some decisions appear unwise but they might be a pragmatic solution to a real problem. </CJ Comment>
+                        //
+                        // Code accommodates:
+                        // - NumValues before NumPositions or the other way round.
+                        // - More NumValues than NumPositions and the other way round - perhaps unwise.
+                        // - The count of NumFrames, NumValues and NumPositions is ignored - perhaps unwise.
+                        // - Abbreviated definitions so that values at intermediate unspecified positions can be omitted.
+                        //   Strangely, these values are set to 0 and worked out later when drawing.
+                        // Max and min NumValues which don't match the ScaleRange are ignored - perhaps unwise.
+                        new STFReader.TokenProcessor("numpositions", ()=>{
+                        stf.MustMatch("(");
+                        // If Positions are not filled before by Values
+                        bool shouldFill = (Positions.Count == 0);
+                        stf.ReadInt(STFReader.UNITS.None, null); // Number of Positions - Ignore it
 
-                // Now we have an ACE and Frames for it.
-
-                // Fixup Positions and Values collections first
-
-                // If the read Positions and Values are not match
-                // Or we didn't read Values but have Frames to draw
-                // Do not test if FramesCount equals Values count, we trust in the creator -
-                //     maybe did not want to display all Frames
-                // (If there are more Values than Frames it will checked at draw time)
-                // Need to fix the whole Values
-                if (Positions.Count != _ValuesRead || (FramesCount > 0 && Values.Count == 0))
-                {
-                    // Clear existing
-                    Positions.Clear();
-                    Values.Clear();
-
-                    // Add the two sure positions, the two ends
-                    Positions.Add(0);
-                    // We will need the FramesCount later!
-                    // We use Positions only here
-                    Positions.Add(FramesCount);
-
-                    // Fill empty Values
-                    for (int i = 0; i < FramesCount; i++)
-                        Values.Add(0);
-                    Values[0] = MinValue;
-
-                    Values.Add(MaxValue);
-                }
-                // The Positions, Values are correct
-                else
-                {
-                    // Check if read Values at all
-                    if (Values.Count > 0)
-                        // Set Min for sure
-                        Values[0] = MinValue;
-                    else
-                        Values.Add(MinValue);
-
-                    // Fill empty Values
-                    for (int i = Values.Count; i < FramesCount; i++)
-                        Values.Add(0);
-
-                    // Add the maximums to the end, the Value will be removed
-                    // We use Positions only here
-                    Values.Add(MaxValue);
-                    Positions.Add(FramesCount);
-                }
-
-                // OK, we have a valid size of Positions and Values
-
-                // Now it is the time for checking holes in the given data
-                if (Positions.Count < FramesCount - 1)
-                {
-                    int j = 1;
-                    int p = 0;
-                    // Skip the 0 element, that is the default MinValue
-                    for (int i = 1; i < Positions.Count; i++)
-                    {
-                        // Found a hole
-                        if (Positions[i] != p + 1)
+                        var minPosition = 0;
+                        var positionsRead = 0;
+                        while (!stf.EndOfBlock())
                         {
-                            // Iterate to the next valid data and fill the hole
-                            for (j = p + 1; j < Positions[i]; j++)
-                            {
-                                // Extrapolate into the hole
-                                Values[j] = MathHelper.Lerp((float)Values[p], (float)Values[Positions[i]], (float)j / (float)Positions[i]);
-                            }
+                            int p = stf.ReadInt(STFReader.UNITS.None, null);
+
+                            // If positions do not start at 0, add offset to shift them all so they do.
+                            // An example of this is RENFE 400 (from http://www.trensim.com/lib/msts/index.php?act=view&id=186)
+                            // which has a COMBINED_CONTROL with:
+                            //   NumPositions ( 21 -11 -10 -9 -8 -7 -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7 8 9 )
+                            if (positionsRead == 0 && p != 0)
+                                minPosition = -p;
+                            p += minPosition;
+
+                            // If Positions are not filled before by Values
+                            if (shouldFill) Positions.Add(p);
                         }
-                        p = Positions[i];
+                    }),
+                    new STFReader.TokenProcessor("numvalues", ()=>{
+                        stf.MustMatch("(");
+                        stf.ReadDouble(STFReader.UNITS.None, null); // Number of Values - ignore it
+                        while (!stf.EndOfBlock())
+                        {
+                            double v = stf.ReadDouble(STFReader.UNITS.None, null);
+                            // If the Positions are less than expected add new Position(s)
+                            while (Positions.Count <= _ValuesRead)
+                            {
+                                Positions.Add(_ValuesRead);
+                            }
+                            // Avoid later repositioning, put every value to its Position
+                            // But before resize Values if needed
+                            while (Values.Count <= Positions[_ValuesRead])
+                            {
+                                Values.Add(0);
+                            }
+                            // Avoid later repositioning, put every value to its Position
+                            Values[Positions[_ValuesRead]] = v;
+                            _ValuesRead++;
+                        }
+                    }),
+                });
+
+                // If no ACE, just don't need any fixup
+                // Because Values are tied to the image Frame to be shown
+                if (string.IsNullOrEmpty(ACEFile)) return;
+
+                // Now, we have an ACE.
+
+                // If read any Values, or the control requires Values to control
+                //     The twostate, tristate, signal displays are not in these
+                // Need check the Values collection for validity
+                if (_ValuesRead > 0 || ControlStyle == CABViewControlStyles.SPRUNG || ControlStyle == CABViewControlStyles.NOT_SPRUNG)
+                {
+                    // Check max number of Frames
+                    if (FramesCount == 0)
+                    {
+                        // Check valid Frame information
+                        if (FramesX == 0 || FramesY == 0)
+                        {
+                            // Give up, it won't work
+                            // Because later we won't know how to display frames from that
+                            Trace.TraceWarning("Invalid Frames information given for ACE {0} in {1}", ACEFile, stf.FileName);
+                            ACEFile = "";
+                            return;
+                        }
+
+                        // Valid frames info, set FramesCount
+                        FramesCount = FramesX * FramesY;
                     }
+
+                    // Now we have an ACE and Frames for it.
+
+                    // Fixup Positions and Values collections first
+
+                    // If the read Positions and Values are not match
+                    // Or we didn't read Values but have Frames to draw
+                    // Do not test if FramesCount equals Values count, we trust in the creator -
+                    //     maybe did not want to display all Frames
+                    // (If there are more Values than Frames it will checked at draw time)
+                    // Need to fix the whole Values
+                    if (Positions.Count != _ValuesRead || (FramesCount > 0 && Values.Count == 0))
+                    {
+                        // Clear existing
+                        Positions.Clear();
+                        Values.Clear();
+
+                        // Add the two sure positions, the two ends
+                        Positions.Add(0);
+                        // We will need the FramesCount later!
+                        // We use Positions only here
+                        Positions.Add(FramesCount);
+
+                        // Fill empty Values
+                        for (int i = 0; i < FramesCount; i++)
+                            Values.Add(0);
+                        Values[0] = MinValue;
+
+                        Values.Add(MaxValue);
+                    }
+                    // The Positions, Values are correct
+                    else
+                    {
+                        // Check if read Values at all
+                        if (Values.Count > 0)
+                            // Set Min for sure
+                            Values[0] = MinValue;
+                        else
+                            Values.Add(MinValue);
+
+                        // Fill empty Values
+                        for (int i = Values.Count; i < FramesCount; i++)
+                            Values.Add(0);
+
+                        // Add the maximums to the end, the Value will be removed
+                        // We use Positions only here
+                        Values.Add(MaxValue);
+                        Positions.Add(FramesCount);
+                    }
+
+                    // OK, we have a valid size of Positions and Values
+
+                    // Now it is the time for checking holes in the given data
+                    if (Positions.Count < FramesCount - 1)
+                    {
+                        int j = 1;
+                        int p = 0;
+                        // Skip the 0 element, that is the default MinValue
+                        for (int i = 1; i < Positions.Count; i++)
+                        {
+                            // Found a hole
+                            if (Positions[i] != p + 1)
+                            {
+                                // Iterate to the next valid data and fill the hole
+                                for (j = p + 1; j < Positions[i]; j++)
+                                {
+                                    // Extrapolate into the hole
+                                    Values[j] = MathHelper.Lerp((float)Values[p], (float)Values[Positions[i]], (float)j / (float)Positions[i]);
+                                }
+                            }
+                            p = Positions[i];
+                        }
+                    }
+
+                    // Don't need the MaxValue added before, remove it
+                    Values.RemoveAt(FramesCount);
                 }
-
-                // Don't need the MaxValue added before, remove it
-                Values.RemoveAt(FramesCount);
-
+            }
+            catch (Exception error)
+            {
+                if (error is STFException) // Parsing error, so pass it on
+                    throw;
+                else                       // Unexpected error, so provide a hint
+                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
             } // End of Need check the Values collection for validity
         } // End of Constructor
     }

@@ -935,14 +935,17 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    Trace.TraceInformation(wagonFilePath);
                     // First wagon is the player's loco and required, so issue a fatal error message
                     if (wagon == conFile.Train.TrainCfg.WagonList[0])
-                        throw new InvalidDataException("Error loading the player locomotive.", error);
+                    {
+                        throw new Exception("Error loading the player locomotive.\n", error);
+                    }
                     else
+                    {
+                        Trace.TraceInformation(wagonFilePath);
                         Trace.WriteLine(error);
+                    }
                 }
-
 			}// for each rail car
 
 #if !NEW_SIGNALLING
