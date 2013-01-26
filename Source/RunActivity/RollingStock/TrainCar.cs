@@ -281,7 +281,7 @@ namespace ORTS
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(0, 0));
             // Validate the axles' assigned bogies and count up the axles on each bogie.
-            foreach (var w in WheelAxles)
+            foreach (WheelAxle w in WheelAxles)
             {
                 if (w.BogieIndex >= Parts.Count)
                     w.BogieIndex = 0;
@@ -304,14 +304,14 @@ namespace ORTS
                 if (Parts[i].SumWgt > 1.5)
                     Parts[0].SumWgt++;
             // Check for articulation and if we have enough wheels.
-            var articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
-            var articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
+            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
+            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             if (!articulatedFront && !articulatedRear && (Parts[0].SumWgt < 1.5))
             {
                 // Not articulated, but not enough wheels/bogies attached to the car.
                 Trace.TraceWarning("Car with less than two axles/bogies ({1} axles, {2} bogies) in {0}", WagFilePath, WheelAxles.Count, Parts.Count - 1);
                 // Put all the axles directly on the car, ignoring any bogies.
-                foreach (var w in WheelAxles)
+                foreach (WheelAxle w in WheelAxles)
                 {
                     w.BogieIndex = 0;
                     w.Part = Parts[0];
@@ -329,18 +329,18 @@ namespace ORTS
             foreach (var p in Parts)
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
-
-            if (Train != null && Train.Cars.All(c => c.WheelAxlesLoaded))
-                foreach (var car in Train.Cars)
-                    car.SetUpWheelsArticulation();
-        }
+            // Initial code that was here was not executing SetUpWheelsArticulation()
+            // Since this function is for articulated cars, a test is performed.
+                if (articulatedFront || articulatedRear)
+                    SetUpWheelsArticulation();
+        } // end SetUpWheels()
 
         void SetUpWheelsArticulation()
         {
             // If there are no forward wheels, this car is articulated (joined
             // to the car in front) at the front. Likewise for the rear.
-            var articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
-            var articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
+            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
+            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             // If the car is articulated, steal some wheels from nearby cars.
             if (articulatedFront || articulatedRear)
             {
