@@ -47,7 +47,10 @@ namespace ORTS
                 var tileList = new List<Tile>(tiles.List);
                 while (tileList.Count >= MaximumCachedTiles)
                     tileList.RemoveAt(0);
-                tileList.Add(new Tile(FilePath, tileX, tileZ));
+                Tile newTile = new Tile(FilePath, tileX, tileZ);
+                // Ignore if newTile is not complete
+                if (newTile.TFile != null && newTile.YFile != null && newTile.FFile != null)
+                    tileList.Add(newTile);
                 Tiles = new TileList(tileList);
             }
         }
@@ -149,16 +152,40 @@ namespace ORTS
 
         public bool IsEmpty { get { return TFile == null; } }
 
+        static List<string> TileWarnings = new List<string>();  // Keep track to avoid repetitive warning messages as missing tile may be linked from several places.
+
         public Tile(string filePath, int tileX, int tileZ)
         {
             TileX = tileX;
             TileZ = tileZ;
             var fileName = filePath + TileNameConversion.GetTileNameFromTileXZ(tileX, tileZ);
-            if (File.Exists(fileName + ".t"))
+            var name = fileName + ".t";
+            if (File.Exists(name))
             {
-                TFile = new TFile(fileName + ".t");
-                YFile = new YFile(fileName + "_y.raw");
-                FFile = new FFile(fileName + "_f.raw");
+                try
+                {
+                    TFile = new TFile(name);
+                    name = fileName + "_y.raw";
+                    YFile = new YFile(name);
+                    name = fileName + "_f.raw";
+                    FFile = new FFile(name);
+                }
+                catch (Exception error) // errors thrown by SBR
+                {
+                    if (!TileWarnings.Contains(name))
+                    {
+                        TileWarnings.Add(name);
+                        Trace.TraceWarning(error.Message); // E.g. "File not found" or "Unknown header"
+                    }
+                }
+            }
+            else
+            {
+                if (!TileWarnings.Contains(name))
+                {
+                    TileWarnings.Add(name);
+                    Trace.TraceWarning("File {0} not found", name);
+                }
             }
         }
 

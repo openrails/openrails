@@ -948,10 +948,6 @@ namespace ORTS {
         public override void Redo()
         {
             // Make a new camera that adopts the same viewpoint as the current camera.
-            //new FreeRoamCamera(Receiver, Receiver.Camera).Activate();
-            //CJ
-            //Receiver.FreeRoamCamera = new FreeRoamCamera(Receiver, Receiver.Camera);
-            //Receiver.FreeRoamCameraList[0] = new FreeRoamCamera(Receiver, Receiver.Camera);
             // Add new camera at head of list
             Receiver.FreeRoamCameraList.Insert(0, new FreeRoamCamera(Receiver, Receiver.Camera)); 
             Receiver.FreeRoamCamera.Activate();
