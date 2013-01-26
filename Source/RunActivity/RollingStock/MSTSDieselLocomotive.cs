@@ -453,6 +453,7 @@ namespace ORTS
                 case Train.TRAINTYPE.AI:
                     if (!PowerOn)
                         PowerOn = true;
+                    LimitMotiveForce(elapsedClockSeconds);
                     break;
                 case Train.TRAINTYPE.STATIC:
                     break;

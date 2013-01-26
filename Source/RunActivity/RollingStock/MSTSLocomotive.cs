@@ -795,6 +795,7 @@ namespace ORTS
                         Pan = true;
                         Pan1Up = true;
                     }
+                    LimitMotiveForce(elapsedClockSeconds);
                     break;
                 case Train.TRAINTYPE.STATIC:
                     break;

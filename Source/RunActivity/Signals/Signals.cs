@@ -1,4 +1,12 @@
-﻿// Debug flags :
+﻿// 
+// This module covers all classes and code for signal, speed post, track occupation and track reservation control
+//
+/// COPYRIGHT 2012 by the Open Rails project.
+/// This code is provided to enable you to contribute improvements to the open rails program.  
+/// Use of the code for any other purpose or distribution of the code to anyone else
+/// is prohibited without specific written permission from admin@openrails.org.
+//
+// Debug flags :
 // #define DEBUG_PRINT
 // #define DEBUG_REPORTS
 // prints details of the derived signal structure
@@ -2783,7 +2791,7 @@ namespace ORTS
                 String reportCT = "Request for clear node from train ";
                 reportCT = String.Concat(reportCT, thisTrain.Train.Number.ToString());
                 reportCT = String.Concat(reportCT, " at section ", thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex.ToString());
-                reportCT = String.Concat(reportCT, " starting from ", thisTrain.Train.LastReservedSection.ToString());
+                reportCT = String.Concat(reportCT, " starting from ", thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex].ToString());
                 File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
             }
 
@@ -4867,7 +4875,7 @@ namespace ORTS
 
             float rearOffset = presentRear.TCOffset;
             if (presentRear.RouteListIndex >= 0 &&
-                presentRear.TCDirection != thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][presentFront.RouteListIndex].Direction)
+                presentRear.TCDirection != thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][presentRear.RouteListIndex].Direction)
                 rearOffset = Length - rearOffset;
 
             if (presentFront.TCSectionIndex == Index)
@@ -5301,7 +5309,7 @@ namespace ORTS
                         for (int iSwitch = 0; iSwitch <= 1; iSwitch++)
                         {
                             int nextSectionIndex = Pins[reqPinIndex, iSwitch].Link;
-                            int routeListIndex = thisRoute.GetRouteIndex(nextSectionIndex, 0);
+                            int routeListIndex = thisRoute == null ? -1 : thisRoute.GetRouteIndex(nextSectionIndex, 0);
                             if (routeListIndex > 0)
                                 switchEnd = iSwitch;  // required exit
                         }
@@ -5316,10 +5324,10 @@ namespace ORTS
 
             // track reserved - check direction
 
-            if (thisState.TrainReserved != null && !stateSet)
+            if (thisState.TrainReserved != null && thisTrain != null && !stateSet)
             {
                 Train.TrainRouted reservedTrain = thisState.TrainReserved;
-                if (reservedTrain == thisTrain)
+                if (reservedTrain.Train == thisTrain.Train)
                 {
                     localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED;
                     stateSet = true;
@@ -5336,7 +5344,7 @@ namespace ORTS
 
             // track claimed
 
-            if (!stateSet && thisState.TrainClaimed.Count > 0 && thisState.TrainClaimed.PeekTrain() != thisTrain.Train)
+            if (!stateSet && thisTrain != null && thisState.TrainClaimed.Count > 0 && thisState.TrainClaimed.PeekTrain() != thisTrain.Train)
             {
                 localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.OPEN;
             }
@@ -5418,9 +5426,9 @@ namespace ORTS
                                     trainFound = nextTrain.Train;
                                 } // otherwise train is not in front, so don't use it
                             }
-                            else  // if index is greater, train has moved on - return section length
+                            else  // if index is greater, train has moved on - return section length minus offset
                             {
-                                distanceTrainAheadM = Length;
+                                distanceTrainAheadM = Length - offset;
                                 trainFound = nextTrain.Train;
                             }
                         }
@@ -5451,9 +5459,9 @@ namespace ORTS
                                     trainFound = nextTrain.Train;
                                 } // else train is not in front of us
                             }
-                            else  // if index is greater, train has moved on - return section length
+                            else  // if index is greater, train has moved on - return section length minus offset
                             {
-                                distanceTrainAheadM = Length;
+                                distanceTrainAheadM = Length - offset;
                                 trainFound = nextTrain.Train;
                             }
                         }
@@ -5619,7 +5627,7 @@ namespace ORTS
                 int revDirection = thisTrain.PresentPosition[0].TCDirection == 0 ? 1 : 0;
                 if (thisTrain.PresentPosition[0].TCSectionIndex == Index)
                 {
-                    float offsetFromEnd = Length - trainLength + offsetFromStart;
+                    float offsetFromEnd = Length - (trainLength + offsetFromStart);
                     trainInfo = TestTrainAhead(thisTrain, offsetFromEnd, revDirection); // test remaining length
                 }
                 else
@@ -8481,6 +8489,21 @@ namespace ORTS
 
             internalBlockState = blockstate;
 
+        }
+
+        //================================================================================================//
+        //
+        // Set signal default route and next signal list as switch in route is reset
+        // Used in manual mode for signals which clear by default
+        //
+
+        public void SetDefaultRoute()
+        {
+            signalRoute = new Train.TCSubpathRoute(fixedRoute);
+            for (int iSigtype = 0; iSigtype <= defaultNextSignal.Length - 1; iSigtype++)
+            {
+                sigfound[iSigtype] = defaultNextSignal[iSigtype];
+            }
         }
 
         //================================================================================================//

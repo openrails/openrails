@@ -549,7 +549,7 @@ namespace MSTS
 
         public CVCDiscrete(STFReader stf, string basepath)
         {
-            try
+//            try
             {
                 stf.MustMatch("(");
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -591,16 +591,23 @@ namespace MSTS
                         {
                             int p = stf.ReadInt(STFReader.UNITS.None, null);
 
+                            minPosition = positionsRead == 0 ? p : Math.Min(minPosition, p);  // used to get correct offset
+                            positionsRead++;
+
+                            // If Positions are not filled before by Values
+                            if (shouldFill) Positions.Add(p);
+                        }
+                        
                             // If positions do not start at 0, add offset to shift them all so they do.
                             // An example of this is RENFE 400 (from http://www.trensim.com/lib/msts/index.php?act=view&id=186)
                             // which has a COMBINED_CONTROL with:
                             //   NumPositions ( 21 -11 -10 -9 -8 -7 -6 -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7 8 9 )
-                            if (positionsRead == 0 && p != 0)
-                                minPosition = -p;
-                            p += minPosition;
+                            // Also handles definitions with position in reverse order, e.g.
+                            //   NumPositions ( 5 8 7 2 1 0 )
 
-                            // If Positions are not filled before by Values
-                            if (shouldFill) Positions.Add(p);
+                        for (int iPos = 0; iPos <= Positions.Count - 1; iPos++)
+                        {
+                            Positions[iPos] -= minPosition;
                         }
                     }),
                     new STFReader.TokenProcessor("numvalues", ()=>{
@@ -732,13 +739,13 @@ namespace MSTS
                     Values.RemoveAt(FramesCount);
                 }
             }
-            catch (Exception error)
-            {
-                if (error is STFException) // Parsing error, so pass it on
-                    throw;
-                else                       // Unexpected error, so provide a hint
-                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
-            } // End of Need check the Values collection for validity
+//            catch (Exception error)
+//            {
+//                if (error is STFException) // Parsing error, so pass it on
+//                    throw;
+//                else                       // Unexpected error, so provide a hint
+//                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
+//            } // End of Need check the Values collection for validity
         } // End of Constructor
     }
     #endregion

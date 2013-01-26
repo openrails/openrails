@@ -1527,6 +1527,14 @@ namespace ORTS
                 }
             }
 
+            // reset next signal object if none found
+
+            if (SignalObjectItems.Count <= 0 || (SignalObjectItems.Count == 1 && SignalObjectItems[0].ObjectType == ObjectItemInfo.ObjectItemType.SPEEDLIMIT))
+            {
+                NextSignalObject[0] = null;
+                distanceToSignal = 0;
+            }
+
             //
             // process further if any object available
             //
@@ -3441,7 +3449,7 @@ namespace ORTS
 
                     // cant find next part of route - check if really at end of this route, if so, error, else just wait and see (train stopped for other reason)
 
-                    if (PresentPosition[0].RouteListIndex == ValidRoute[0].Count)
+                    if (PresentPosition[0].RouteListIndex == ValidRoute[0].Count - 1)
                     {
                         if (firstRouteIndex < 0)
                         {
@@ -3493,8 +3501,17 @@ namespace ORTS
                     if (NextSignalObject[0] != null && NextSignalObject[0].enabledTrain == routedForward)
                     {
                         NextSignalObject[0].resetSignalEnabled();
+                        int nextRouteIndex = ValidRoute[0].GetRouteIndex(NextSignalObject[0].TCNextTC, 0);
+
+                        // clear rest of route to avoid accidental signal activation
+                        if (nextRouteIndex >= 0)
+                        {
+                            signalRef.BreakDownRouteList(ValidRoute[0], nextRouteIndex, routedForward);
+                            ValidRoute[0].RemoveRange(nextRouteIndex, ValidRoute[0].Count - nextRouteIndex);
+                        }
                     }
                 }
+
 #if DEBUG_REPORTS
                 File.AppendAllText(@"C:\temp\printproc.txt",
                                 "Train " + Number.ToString() + " at end of path\n");
@@ -4228,6 +4245,11 @@ namespace ORTS
                     {
                         endWithSignal = true;
                         sectionWithSignalIndex = iindex;
+                    }
+                    else if (endSignal.enabledTrain == null && endSignal.hasFixedRoute) // signal cleared by default - make sure train is set
+                    {
+                        endSignal.enabledTrain = thisRouted;
+                        endSignal.SetDefaultRoute();
                     }
                 }
             }
@@ -10945,8 +10967,17 @@ namespace ORTS
                 ExitSignal = exitSignal;
                 HoldSignal = holdSignal;
                 StopOffset = stopOffset;
-                ArrivalTime = Math.Max(0, arrivalTime);
-                DepartTime = Math.Max(0, departTime);
+                if (actualStopType == STOPTYPE.STATION_STOP)
+                {
+                    ArrivalTime = Math.Max(0, arrivalTime);
+                    DepartTime = Math.Max(0, departTime);
+                }
+                else
+                    // times may be <0 for waiting point
+                {
+                    ArrivalTime = arrivalTime;
+                    DepartTime = departTime;
+                }
                 ActualArrival = arrivalTime;
                 ActualDepart = departTime;
                 DistanceToTrainM = 9999999f;

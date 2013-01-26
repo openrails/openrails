@@ -206,7 +206,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 35)
+            if (Number == 12)
             {
                 CheckTrain = true;
             }
@@ -367,7 +367,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 35)
+            if (Number == 12)
             {
                 CheckTrain = true;
             }
@@ -383,7 +383,7 @@ namespace ORTS
             }
 
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
-            if ((SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
+            if (MovementState == AI_MOVEMENT_STATE.STOPPED || MovementState == AI_MOVEMENT_STATE.STATION_STOP)
             {
                 SpeedMpS = 0;
                 foreach (TrainCar car in Cars)
@@ -1326,7 +1326,7 @@ namespace ORTS
                 {
                     File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
                                 Number.ToString() + " departs station " +
-                                StationStops[0].PlatformItem.Name + " at " +
+                                thisStation.PlatformItem.Name + " at " +
                                 depTimeCT.ToString("HH:mm:ss") + "\n");
                 }
                 else if (thisStation.ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
@@ -2225,10 +2225,37 @@ namespace ORTS
                                     MovementState = AI_MOVEMENT_STATE.STOPPED;
 
                                     // check if stopped in next station
+                                    // conditions : 
+                                    // next action must be station stop
+                                    // next station must be in this subroute
+                                    // if next train is AI and that trains state is STATION_STOP, station must be ahead of present position
+                                    // else this train must be in station section
 
-                                    if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP &&
-                                        StationStops[0].SubrouteIndex == TCRoute.activeSubpath &&
-                                        ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, PresentPosition[0].RouteListIndex) >= PresentPosition[0].RouteListIndex)
+                                    bool otherTrainInStation = false;
+
+                                    if (OtherTrain.TrainType == TRAINTYPE.AI)
+                                    {
+                                        AITrain OtherAITrain = OtherTrain as AITrain;
+                                        otherTrainInStation = (OtherAITrain.MovementState == AI_MOVEMENT_STATE.STATION_STOP);
+                                    }
+
+                                    bool thisTrainInStation = (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP);
+                                    if (thisTrainInStation) thisTrainInStation = (StationStops[0].SubrouteIndex == TCRoute.activeSubpath);
+                                    if (thisTrainInStation)
+                                    {
+                                        if (otherTrainInStation)
+                                        {
+                                            thisTrainInStation =
+                                                (ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, PresentPosition[0].RouteListIndex) >= PresentPosition[0].RouteListIndex);
+                                        }
+                                        else
+                                        {
+                                            thisTrainInStation =
+                                                (ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, PresentPosition[0].RouteListIndex) == PresentPosition[0].RouteListIndex);
+                                        }
+                                    }
+
+                                    if (thisTrainInStation)
                                     {
                                         MovementState = AI_MOVEMENT_STATE.STATION_STOP;
                                         StationStop thisStation = StationStops[0];
@@ -2268,6 +2295,55 @@ namespace ORTS
                                                      StationStops[0].PlatformItem.Name + " at " +
                                                      arrTimeCT.ToString("HH:mm:ss") + "\n");
                                             }
+                                        }
+                                        else if (thisStation.ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
+                                        {
+                                            thisStation.ActualArrival = presentTime;
+
+                                            // delta time set
+                                            if (thisStation.DepartTime < 0)
+                                            {
+                                                thisStation.ActualDepart = presentTime - thisStation.DepartTime; // depart time is negative!!
+                                            }
+                                            // actual time set
+                                            else
+                                            {
+                                                thisStation.ActualDepart = thisStation.DepartTime;
+                                            }
+
+                                            // if waited behind other train, move remaining track sections to next subroute if required
+
+                                            // scan sections in backward order
+                                            TCSubpathRoute nextRoute = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath+1];
+
+                                            for (int iIndex = ValidRoute[0].Count - 1; iIndex > PresentPosition[0].RouteListIndex; iIndex--)
+                                            {
+                                                int nextSectionIndex = ValidRoute[0][iIndex].TCSectionIndex;
+                                                if (nextRoute.GetRouteIndex(nextSectionIndex, 0) <= 0)
+                                                {
+                                                    nextRoute.Insert(0, ValidRoute[0][iIndex]);
+                                                }
+                                                ValidRoute[0].RemoveAt(iIndex);
+                                            }
+
+#if DEBUG_REPORTS
+                                            DateTime baseDT = new DateTime();
+                                            DateTime arrTime = baseDT.AddSeconds(presentTime);
+
+                                            File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
+                                                Number.ToString() + " arrives waiting point at " +
+                                                arrTime.ToString("HH:mm:ss") + "\n");
+#endif
+                                            if (CheckTrain)
+                                            {
+                                                DateTime baseDTCT = new DateTime();
+                                                DateTime arrTimeCT = baseDTCT.AddSeconds(presentTime);
+
+                                                File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                                                     Number.ToString() + " arrives waiting point at " +
+                                                     arrTimeCT.ToString("HH:mm:ss") + "\n");
+                                            }
+
                                         }
                                     }
                                 }
@@ -3416,17 +3492,35 @@ namespace ORTS
                 {
                     actionValid = false;
 #if DEBUG_REPORTS
-                    File.AppendAllText(@"C:\temp\printproc.txt", "Rejected : Train " +
-                         Number.ToString() + " : signal " +
-                         signalIdent.ToString() + " is exit signal for " +
-                         StationStops[0].PlatformItem.Name + "\n");
-#endif
-                    if (CheckTrain)
+                    if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
                     {
                         File.AppendAllText(@"C:\temp\checktrain.txt", "Rejected : Train " +
                              Number.ToString() + " : signal " +
                              signalIdent.ToString() + " is exit signal for " +
                              StationStops[0].PlatformItem.Name + "\n");
+                    }
+                    else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Rejected : Train " +
+                             Number.ToString() + " : signal " +
+                             signalIdent.ToString() + " is exit signal for Waiting Point \n");
+                    }
+#endif
+                    if (CheckTrain)
+                    {
+                        if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Rejected : Train " +
+                                 Number.ToString() + " : signal " +
+                                 signalIdent.ToString() + " is exit signal for " +
+                                 StationStops[0].PlatformItem.Name + "\n");
+                        }
+                        else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Rejected : Train " +
+                                 Number.ToString() + " : signal " +
+                                 signalIdent.ToString() + " is exit signal for Waiting Point \n");
+                        }
                     }
                 }
             }
