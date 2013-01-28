@@ -961,7 +961,6 @@ namespace ORTS
 
         public virtual void Update(float elapsedClockSeconds)
         {
-
             // Update train physics, position and movement
 
             physicsUpdate(elapsedClockSeconds);
@@ -1820,7 +1819,7 @@ namespace ORTS
         /// Initialize brakes
         /// <\summary>
 
-        public void InitializeBrakes()
+        public virtual void InitializeBrakes()
         {
             if (SpeedMpS != 0)
             {
@@ -1852,7 +1851,7 @@ namespace ORTS
             BrakeLine2PressurePSI = maxPressurePSI;
             foreach (TrainCar car in Cars)
             {
-                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI);
+                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI, false);
                 if (LeadLocomotiveIndex < 0)
                     car.BrakeSystem.BrakeLine1PressurePSI = -1;
             }
@@ -3136,6 +3135,7 @@ namespace ORTS
                     PresentPosition[1].CopyTo(ref overlapPosition);
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[overlapPosition.TCSectionIndex];
                     overlapPosition.TCOffset = thisSection.Length - PresentPosition[1].TCOffset + rearPositionOverlap;
+                    overlapPosition.TCDirection = overlapPosition.TCDirection == 0 ? 1 : 0; // looking backwards, so reverse direction
 
                     TrackCircuitSection rearSection = signalRef.TrackCircuitList[RearSignalObject.TCNextTC];
                     if (!ValidRoute[0].IsAheadOfTrain(rearSection, 0.0f, overlapPosition))
@@ -8696,6 +8696,17 @@ namespace ORTS
             }
 
             nextSignal.signalRoute = newSignalRoute;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Get other train from number
+        /// Use Simulator.Trains to get other train
+        /// </summary>
+
+        public Train GetOtherTrainByNumber(int reqNumber)
+        {
+            return Simulator.Trains.GetTrainByNumber(reqNumber);
         }
 
         //================================================================================================//

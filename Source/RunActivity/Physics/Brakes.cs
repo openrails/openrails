@@ -33,7 +33,7 @@ namespace ORTS
 
         public abstract void PropagateBrakePressure(float elapsedClockSeconds);
 
-        public abstract void Initialize(bool handbrakeOn, float maxPressurePSI);
+        public abstract void Initialize(bool handbrakeOn, float maxPressurePSI, bool immediateRelease);
         public abstract void Connect();
         public abstract void Disconnect();
         public abstract void SetHandbrakePercent(float percent);
@@ -198,7 +198,7 @@ namespace ORTS
             TripleValveState = (ValveState)inf.ReadInt32();
         }
 
-        public override void Initialize(bool handbrakeOn, float maxPressurePSI)
+        public override void Initialize(bool handbrakeOn, float maxPressurePSI, bool immediateRelease)
         {
             BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSI;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
@@ -208,6 +208,9 @@ namespace ORTS
             AutoCylPressurePSI = (maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
             if (AutoCylPressurePSI > MaxCylPressurePSI)
                 AutoCylPressurePSI = MaxCylPressurePSI;
+            // release brakes immediately (for AI trains)
+            if (immediateRelease)
+                AutoCylPressurePSI = 0;
             TripleValveState = ValveState.Lap;
             HandbrakePercent = handbrakeOn ? 100 : 0;
         }
@@ -218,7 +221,7 @@ namespace ORTS
         }
         public override void Disconnect()
         {
-            Initialize(false, 0);
+            Initialize(false, 0, false);
             BrakeLine1PressurePSI = -1;
             BrakeLine2PressurePSI = 0;
         }
@@ -862,7 +865,7 @@ namespace ORTS
             VacResPressurePSIA = inf.ReadSingle();
         }
 
-        public override void Initialize(bool handbrakeOn, float maxVacuumInHg)
+        public override void Initialize(bool handbrakeOn, float maxVacuumInHg, bool immediateRelease)
         {
             CylPressurePSIA = BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSI);
             VacResPressurePSIA = V2P(maxVacuumInHg);

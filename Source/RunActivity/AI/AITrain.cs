@@ -5,7 +5,7 @@
  * invisible.  This is done so the rendering code can discover the model it needs to draw.
  * 
  * 
-/// COPYRIGHT 2009 by the Open Rails project.
+/// COPYRIGHT 2012 by the Open Rails project.
 /// This code is provided to enable you to contribute improvements to the open rails program.  
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
@@ -206,7 +206,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 12)
+            if (Number == 9)
             {
                 CheckTrain = true;
             }
@@ -367,7 +367,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 12)
+            if (Number == 9)
             {
                 CheckTrain = true;
             }
@@ -634,8 +634,7 @@ namespace ORTS
             {
                 ResetActions(true);
                 NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - 2.0f * junctionOverlapM;
-                CreateTrainAction(SpeedMpS, 0.0f,
-                           PresentPosition[0].DistanceTravelledM + NextStopDistanceM, null,
+                CreateTrainAction(SpeedMpS, 0.0f, NextStopDistanceM, null,
                            AIActionItem.AI_ACTION_TYPE.END_OF_AUTHORITY);
             }
             // first handle outstanding actions
@@ -1461,6 +1460,30 @@ namespace ORTS
                               FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
                     }
                 }
+                else if (nextActionInfo.ActiveItem.actual_speed < 0)
+                {
+                    clearAction = true;
+
+#if DEBUG_REPORTS
+                    File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
+                          Number.ToString() + " : signal " +
+                          nextActionInfo.ActiveItem.ObjectDetails.thisRef.ToString() + " : speed : " +
+                          FormatStrings.FormatSpeed(nextActionInfo.ActiveItem.actual_speed, true) + cleared at " +
+                          FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
+                          FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                          FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
+#endif
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                              Number.ToString() + " : signal " +
+                              nextActionInfo.ActiveItem.ObjectDetails.thisRef.ToString() + " : speed : " +
+                              FormatStrings.FormatSpeed(nextActionInfo.ActiveItem.actual_speed, true) + " cleared at " +
+                              FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
+                              FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
+                              FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
+                    }
+                }
             }
 
         // check if STOP signal cleared
@@ -1780,6 +1803,7 @@ namespace ORTS
                         {
                             AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 10);
                         }
+
                         if (CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
@@ -1795,6 +1819,13 @@ namespace ORTS
 #if DEBUG_EXTRAINFO
                             Trace.TraceWarning("Forced stop for signal at danger for train {0} at speed {1}", Number, SpeedMpS);
 #endif
+                            if (CheckTrain)
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt",
+                                                        "Signal forced stop : " +
+                                               "Speed : " + FormatStrings.FormatSpeed(SpeedMpS, true) + "\n");
+                            }
+
                             SpeedMpS = 0.0f;
                             foreach (TrainCar car in Cars)
                             {
@@ -1840,7 +1871,7 @@ namespace ORTS
                 maxPossSpeedMpS =
                         (float)Math.Sqrt(0.12f * MaxDecelMpSS * Math.Max(0.0f, distanceToGoM - (3.0f * signalApproachDistanceM)));
                 idealSpeedMpS = Math.Min(AllowedMaxSpeedMpS, Math.Max(maxPossSpeedMpS + requiredSpeedMpS, lowestSpeedMpS)) -
-            (2f * hysterisMpS);
+                                    (2f * hysterisMpS);
             }
 
             float idealLowBandMpS = Math.Max(lowestSpeedMpS, idealSpeedMpS - (3f * hysterisMpS));
@@ -1868,7 +1899,11 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\checktrain.txt",
                                "     Actual: " + FormatStrings.FormatSpeed(SpeedMpS, true) + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt",
+                               "     Allwd : " + FormatStrings.FormatSpeed(AllowedMaxSpeedMpS, true) + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt",
                                "     Reqd  : " + FormatStrings.FormatSpeed(requiredSpeedMpS, true) + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                               "     Ideal : " + FormatStrings.FormatSpeed(idealSpeedMpS, true) + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt",
                                "     lowest: " + FormatStrings.FormatSpeed(lowestSpeedMpS, true) + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt",
@@ -1881,6 +1916,8 @@ namespace ORTS
                                "     3low  : " + FormatStrings.FormatSpeed(ideal3LowBandMpS, true) + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt",
                                "     dist  : " + FormatStrings.FormatDistance(distanceToGoM, true) + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                               "     A&B(S): " + AITrainThrottlePercent.ToString() + " - " + AITrainBrakePercent.ToString() + "\n");
             }
 
             // keep speed withing band 
@@ -1968,6 +2005,7 @@ namespace ORTS
                     if (AITrainThrottlePercent > 50)
                     {
                         AdjustControlsAccelLess(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
+                        Alpha10 = 5;
                     }
                 }
                 else
@@ -1980,20 +2018,23 @@ namespace ORTS
                     {
                         AdjustControlsBrakeOff();
                     }
+                    else
+                    {
+                        AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
+                    }
                 }
-                Alpha10 = 0;
             }
             else if (SpeedMpS > ideal3LowBandMpS)
             {
                 if (AITrainBrakePercent > 0)
                 {
-                    AdjustControlsBrakeLess(0.0f, elapsedClockSeconds, 20);
+                    AdjustControlsBrakeLess(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
                 }
-                else if (LastSpeedMpS > SpeedMpS && AITrainThrottlePercent > 0)
+                else if (LastSpeedMpS > SpeedMpS)
                 {
                     if (Alpha10 <= 0)
                     {
-                        AdjustControlsAccelLess(0.0f, elapsedClockSeconds, 10);
+                        AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
                         Alpha10 = 5;
                     }
                 }
@@ -2019,6 +2060,11 @@ namespace ORTS
                 AdjustControlsAccelMore(0.25f * MaxAccelMpSS, elapsedClockSeconds, 10);
             }
 
+            if (CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                     "     A&B(E): " + AITrainThrottlePercent.ToString() + " - " + AITrainBrakePercent.ToString() + "\n");
+            }
         }
 
         //================================================================================================//
@@ -2031,17 +2077,7 @@ namespace ORTS
 
             // check speed
 
-            float highThresholdMpS = Math.Min(AllowedMaxSpeedMpS,
-                        Math.Max(creepSpeedMpS, AllowedMaxSpeedMpS - 4.0f * hysterisMpS));
-
-            if (SpeedMpS > highThresholdMpS) // reduce accelerating
-            {
-                if (AITrainThrottlePercent > 50)
-                {
-                    AdjustControlsAccelLess(Efficiency * 0.3f * MaxAccelMpSS, elapsedClockSeconds, 20);
-                }
-            }
-            else if (((SpeedMpS - LastSpeedMpS) / elapsedClockSeconds) < 0.5f * MaxAccelMpSS)
+            if (((SpeedMpS - LastSpeedMpS) / elapsedClockSeconds) < 0.5f * MaxAccelMpSS)
             {
                 AdjustControlsAccelMore(Efficiency * 0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
             }
@@ -2518,26 +2554,24 @@ namespace ORTS
             {
                 MovementState = AI_MOVEMENT_STATE.FOLLOWING;
                 AITrainThrottlePercent = 25;
-                AITrainBrakePercent = 0;
+                AdjustControlsBrakeOff();
             }
             else if (ControlMode == TRAIN_CONTROL.AUTO_NODE && EndAuthorityType[0] == END_AUTHORITY.TRAIN_AHEAD)
             {
                 MovementState = AI_MOVEMENT_STATE.FOLLOWING;
                 AITrainThrottlePercent = 0;
-                AITrainBrakePercent = 0;
             }
             else if (reason == AI_START_MOVEMENT.NEW)
             {
                 MovementState = AI_MOVEMENT_STATE.STOPPED;
                 AITrainThrottlePercent = 0;
-                AITrainBrakePercent = 10;
             }
             else
             {
                 MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                 Alpha10 = 10;
                 AITrainThrottlePercent = 25;
-                AITrainBrakePercent = 0;
+                AdjustControlsBrakeOff();
             }
 
             if (FirstCar != null)
@@ -2597,7 +2631,7 @@ namespace ORTS
             {
                 AITrainBrakePercent -= stepSize;
                 if (AITrainBrakePercent < 0)
-                    AITrainBrakePercent = 0;
+                    AdjustControlsBrakeOff();
             }
             else
             {
@@ -2619,6 +2653,7 @@ namespace ORTS
         public void AdjustControlsBrakeOff()
         {
             AITrainBrakePercent = 0;
+            InitializeBrakes();
 
             if (FirstCar != null)
             {
@@ -2651,7 +2686,7 @@ namespace ORTS
         {
             if (AITrainBrakePercent > 0)
             {
-                AITrainBrakePercent = 0;
+                AdjustControlsBrakeOff();
             }
 
             if (AITrainThrottlePercent < 100)
@@ -2682,7 +2717,7 @@ namespace ORTS
         {
             if (AITrainBrakePercent > 0)
             {
-                AITrainBrakePercent = 0;
+                AdjustControlsBrakeOff();
             }
 
             if (AITrainThrottlePercent > 0)
@@ -2858,6 +2893,22 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
+        /// Initialize brakes for AI trains
+        /// <\summary>
+
+        public override void InitializeBrakes()
+        {
+            float maxPressurePSI = 90;
+            BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
+            BrakeLine1PressurePSI = BrakeLine2PressurePSI = maxPressurePSI;
+            foreach (TrainCar car in Cars)
+            {
+                car.BrakeSystem.Initialize(false, maxPressurePSI, true);
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Process end of path 
         /// <\summary>
 
@@ -2956,7 +3007,17 @@ namespace ORTS
                 {
                     foreach (KeyValuePair<int, int> deadlockedTrain in deadlockTrapInfo)
                     {
-                        thisSection.ClearDeadlockTrap(deadlockedTrain.Key);
+                        Train otherTrain = GetOtherTrainByNumber(deadlockedTrain.Key);
+
+                        if (otherTrain.DeadlockInfo.ContainsKey(deadlockedTrain.Value))
+                        {
+                            otherTrain.DeadlockInfo.Remove(deadlockedTrain.Value);
+
+                            if (otherTrain.DeadlockInfo.Count <= 0)
+                            {
+                                thisSection.ClearDeadlockTrap(otherTrain.Number);
+                            }
+                        }
                         TrackCircuitSection otherSection = signalRef.TrackCircuitList[deadlockedTrain.Value];
                         otherSection.ClearDeadlockTrap(Number);
                     }
@@ -2995,7 +3056,7 @@ namespace ORTS
             float triggerDistanceM = PresentPosition[0].DistanceTravelledM; // worst case
 
             // braking distance based on max speed - use 0.25 * MaxDecelMpSS as average deceleration (due to braking delay)
-            float fullPartTime = (TrainMaxSpeedMpS - reqSpeedMpS) / (0.25f * MaxDecelMpSS);
+            float fullPartTime = (AllowedMaxSpeedMpS - reqSpeedMpS) / (0.25f * MaxDecelMpSS);
             float fullPartRangeM = 0.5f * 0.25f * MaxDecelMpSS * fullPartTime * fullPartTime;
 
             if (presentSpeedMpS > reqSpeedMpS)   // if present speed higher, brake distance is always required

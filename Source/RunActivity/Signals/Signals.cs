@@ -5663,9 +5663,15 @@ namespace ORTS
                 foreach (KeyValuePair<int, int> deadlockDetails in deadlockInfo)
                 {
                     int otherTrainNumber = deadlockDetails.Key;
+                    Train otherTrain = thisTrain.GetOtherTrainByNumber(deadlockDetails.Key);
+
                     int endSectionIndex = deadlockDetails.Value;
 
                     TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+
+                    // if other section allready set do not set deadlock
+                    if (otherTrain != null && endSection.IsSet(otherTrain)) 
+                        break;
 
                     if (DeadlockTraps.ContainsKey(thisTrain.Number))
                     {

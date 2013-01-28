@@ -68,7 +68,7 @@ namespace ORTS
 		public TRKFile TRK;
 		public TRPFile TRP; // Track profile file
 		public TSectionDatFile TSectionDat;
-		public List<Train> Trains;
+		public TrainList Trains;
 		public Signals Signals;
 		public AI AI;
 		public RailDriverHandler RailDriver;
@@ -268,7 +268,7 @@ namespace ORTS
 #else
         Train InitializeTrains()
         {
-            Trains = new List<Train>();
+            Trains = new TrainList();
             Train playerTrain = InitializePlayerTrain();
             InitializeStaticConsists();
             return (playerTrain);
@@ -1160,7 +1160,7 @@ namespace ORTS
  //           foreach (var train in Trains)
  //               train.InitializeSignals();
 #else
-            Trains = new List<Train>();
+            Trains = new TrainList();
 
             int trainType = inf.ReadInt32();
             while (trainType >= 0)
@@ -1318,5 +1318,52 @@ namespace ORTS
 				MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
             if( Confirmer.Viewer.IsReplaying ) Confirmer.Confirm( CabControl.Uncouple, train.LastCar.CarID );
 		}
+
+        /// <summary>
+        /// Class TrainList extends class List<Train> with extra search methods
+        /// </summary>
+
+        public class TrainList : List<Train>
+        {
+
+            /// <summary>
+            /// basis constructor
+            /// </summary>
+
+            public TrainList()
+            {
+            }
+
+            /// <summary>
+            /// Search and return TRAIN by number - any type
+            /// </summary>
+
+            public Train GetTrainByNumber(int reqNumber)
+            {
+                Train returnTrain = null;
+                for (int iTrain = 0; iTrain <= this.Count - 1; iTrain++)
+                {
+                    if (this[iTrain].Number == reqNumber)
+                        returnTrain = this[iTrain];
+                }
+                return (returnTrain);
+            }
+
+            /// <summary>
+            /// Search and return AITrain by number
+            /// </summary>
+
+            public AITrain GetAITrainByNumber(int reqNumber)
+            {
+                AITrain returnTrain = null;
+                for (int iTrain = 0; iTrain <= this.Count - 1; iTrain++)
+                {
+                    if (this[iTrain].Number == reqNumber && this[iTrain].TrainType == Train.TRAINTYPE.AI)
+                        returnTrain = this[iTrain] as AITrain;
+                }
+                return (returnTrain);
+            }
+        } // TrainList
+
 	} // Simulator
 }
