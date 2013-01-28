@@ -264,7 +264,7 @@ namespace ORTS
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
 
-            // No axles but we have bogies.
+           // No axles but we have bogies.
            if (WheelAxles.Count == 0 && Parts.Count > 1)
             {
                 // Fake the axles by pretending each has 1 axle.
@@ -326,7 +326,12 @@ namespace ORTS
                     w.Part = Parts[0];
                 }
             }
-                                               
+            // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
+            if (WheelAxles.Count > 2)
+            {
+                WheelAxlesLoaded = true;
+            }
+                                                                                 
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
             Console.WriteLine("  length {0,10:F4}", Length);
@@ -336,11 +341,14 @@ namespace ORTS
             foreach (var p in Parts)
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
-
-            if (Train != null && Train.Cars.All(c => c.WheelAxlesLoaded == true))
+            // Decided to control what is sent to SetUpWheelsArticulation()by using
+            // WheelAxlesLoaded as a flag.  This way, wagons that have to be processed are included
+            // and the rest left out.
+            if (Train != null)
                 foreach (var car in Train.Cars)
                 {
-                    car.SetUpWheelsArticulation();
+                    if (car.WheelAxlesLoaded)
+                        car.SetUpWheelsArticulation();
                 }
         } // end SetUpWheels()
 
@@ -351,48 +359,49 @@ namespace ORTS
             bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
             bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             // If the car is articulated, steal some wheels from nearby cars.
-            // Performed test for EOT to leave out of process.
-           if (articulatedFront || articulatedRear && !Train.Cars.Any(c => c.WagFilePath.Contains("EOT")))
-            {
-                var carIndex = Train.Cars.IndexOf(this);
-                if (articulatedFront && carIndex > 0)
+            
+                if (articulatedFront || articulatedRear)
                 {
-                    var otherCar = Train.Cars[carIndex - 1];
-                    var otherPart = otherCar.Parts.OrderBy(p => -p.OffsetM).FirstOrDefault();
-                    if (otherPart == null)
+                    var carIndex = Train.Cars.IndexOf(this);
+                    if (articulatedFront && carIndex > 0)
                     {
-                        WheelAxles.Add(new WheelAxle(Length / 2, 0, 0) { Part = Parts[0] });
+                        var otherCar = Train.Cars[carIndex - 1];
+                        var otherPart = otherCar.Parts.OrderBy(p => -p.OffsetM).FirstOrDefault();
+                        if (otherPart == null)
+                        {
+                            WheelAxles.Add(new WheelAxle(Length / 2, 0, 0) { Part = Parts[0] });
+                        }
+                        else
+                        {
+                            var offset = otherCar.Length / 2 + Length / 2;
+                            var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
+                            var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex == otherPartIndex);
+                            var part = new TrainCarPart(otherPart.OffsetM - offset, 0) { SumWgt = otherPart.SumWgt };
+                            WheelAxles.AddRange(otherAxles.Select(a => new WheelAxle(a.OffsetM - offset, Parts.Count, 0) { Part = part }));
+                            Parts.Add(part);
+                        }
                     }
-                    else
+                    if (articulatedRear && carIndex < Train.Cars.Count - 1)
                     {
-                        var offset = otherCar.Length / 2 + Length / 2;
-                        var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
-                        var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex == otherPartIndex);
-                        var part = new TrainCarPart(otherPart.OffsetM - offset, 0) { SumWgt = otherPart.SumWgt };
-                        WheelAxles.AddRange(otherAxles.Select(a => new WheelAxle(a.OffsetM - offset, Parts.Count, 0) { Part = part }));
-                        Parts.Add(part);
+                        var otherCar = Train.Cars[carIndex + 1];
+                        var otherPart = otherCar.Parts.OrderBy(p => p.OffsetM).FirstOrDefault();
+                        if (otherPart == null)
+                        {
+                            WheelAxles.Add(new WheelAxle(-Length / 2, 0, 0) { Part = Parts[0] });
+                        }
+                        else
+                        {
+                            var offset = otherCar.Length / 2 + Length / 2;
+                            var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
+                            var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex == otherPartIndex);
+                            var part = new TrainCarPart(otherPart.OffsetM + offset, 0) { SumWgt = otherPart.SumWgt };
+                            WheelAxles.AddRange(otherAxles.Select(a => new WheelAxle(a.OffsetM + offset, Parts.Count, 0) { Part = part }));
+                            Parts.Add(part);
+                        }
                     }
+                    WheelAxles.Sort(WheelAxles[0]);
                 }
-                if (articulatedRear && carIndex < Train.Cars.Count - 1)
-                {
-                    var otherCar = Train.Cars[carIndex + 1];
-                    var otherPart = otherCar.Parts.OrderBy(p => p.OffsetM).FirstOrDefault();
-                    if (otherPart == null)
-                    {
-                        WheelAxles.Add(new WheelAxle(-Length / 2, 0, 0) { Part = Parts[0] });
-                    }
-                    else
-                    {
-                        var offset = otherCar.Length / 2 + Length / 2;
-                        var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
-                        var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex == otherPartIndex);
-                        var part = new TrainCarPart(otherPart.OffsetM + offset, 0) { SumWgt = otherPart.SumWgt };
-                        WheelAxles.AddRange(otherAxles.Select(a => new WheelAxle(a.OffsetM + offset, Parts.Count, 0) { Part = part }));
-                        Parts.Add(part);
-                    }
-                }
-                WheelAxles.Sort(WheelAxles[0]);
-            } 
+           
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
             Console.WriteLine("  length {0,10:F4}", Length);
