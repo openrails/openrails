@@ -254,6 +254,7 @@ namespace ORTS
 
         public void SetUpWheels()
         {
+            
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
             Console.WriteLine("  length {0,10:F4}", Length);
@@ -264,7 +265,7 @@ namespace ORTS
 #endif
 
             // No axles but we have bogies.
-            if (WheelAxles.Count == 0 && Parts.Count > 1)
+           if (WheelAxles.Count == 0 && Parts.Count > 1)
             {
                 // Fake the axles by pretending each has 1 axle.
                 foreach (var part in Parts.Skip(1))
@@ -272,33 +273,40 @@ namespace ORTS
                 Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, Parts.Count - 1);
             }
             // Less that two axles is bad.
-            if (WheelAxles.Count < 2)
-            {
-                Trace.TraceWarning("Car has less than two axles in {0}", WagFilePath);
-                return;
-            }
+            // In this situation, it is not bad because spine car lacks both WheelAxles and Parts
+           //if (WheelAxles.Count < 2)
+           //{
+           //    Trace.TraceWarning("Car has less than two axles in {0}", WagFilePath);
+           //    return;
+           //}
             // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(0, 0));
             // Validate the axles' assigned bogies and count up the axles on each bogie.
-            foreach (WheelAxle w in WheelAxles)
+            if (WheelAxles.Count > 0)
             {
-                if (w.BogieIndex >= Parts.Count)
-                    w.BogieIndex = 0;
-                if (w.BogieMatrix > 0)
+                foreach (var w in WheelAxles)
                 {
-                    for (var i = 0; i < Parts.Count; i++)
-                        if (Parts[i].iMatrix == w.BogieMatrix)
-                        {
-                            w.BogieIndex = i;
-                            break;
-                        }
+                    if (w.BogieIndex >= Parts.Count)
+                        w.BogieIndex = 0;
+                    if (w.BogieMatrix > 0)
+                    {
+                        for (var i = 0; i < Parts.Count; i++)
+                            if (Parts[i].iMatrix == w.BogieMatrix)
+                            {
+                                w.BogieIndex = i;
+                                break;
+                            }
+                    }
+                    w.Part = Parts[w.BogieIndex];
+                    w.Part.SumWgt++;
                 }
-                w.Part = Parts[w.BogieIndex];
-                w.Part.SumWgt++;
+                // Make sure the axles are sorted by OffsetM along the car.
+                // Attempting to sort car w/o WheelAxles will resort to an error.
+                WheelAxles.Sort(WheelAxles[0]);
             }
             // Make sure the axles are sorted by OffsetM along the car.
-            WheelAxles.Sort(WheelAxles[0]);
+            //WheelAxles.Sort(WheelAxles[0]);
             // Count up the number of bogies (parts) with at least 2 axles.
             for (var i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
@@ -306,6 +314,7 @@ namespace ORTS
             // Check for articulation and if we have enough wheels.
             bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
             bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
+            //var carIndex = Train.Cars.IndexOf(this);
             if (!articulatedFront && !articulatedRear && (Parts[0].SumWgt < 1.5))
             {
                 // Not articulated, but not enough wheels/bogies attached to the car.
@@ -317,9 +326,7 @@ namespace ORTS
                     w.Part = Parts[0];
                 }
             }
-
-            WheelAxlesLoaded = true;
-
+                                               
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
             Console.WriteLine("  length {0,10:F4}", Length);
@@ -329,10 +336,12 @@ namespace ORTS
             foreach (var p in Parts)
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
-            // Initial code that was here was not executing SetUpWheelsArticulation()
-            // Since this function is for articulated cars, a test is performed.
-                if (articulatedFront || articulatedRear)
-                    SetUpWheelsArticulation();
+
+            if (Train != null && Train.Cars.All(c => c.WheelAxlesLoaded == true))
+                foreach (var car in Train.Cars)
+                {
+                    car.SetUpWheelsArticulation();
+                }
         } // end SetUpWheels()
 
         void SetUpWheelsArticulation()
@@ -342,7 +351,8 @@ namespace ORTS
             bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
             bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
             // If the car is articulated, steal some wheels from nearby cars.
-            if (articulatedFront || articulatedRear)
+            // Performed test for EOT to leave out of process.
+           if (articulatedFront || articulatedRear && !Train.Cars.Any(c => c.WagFilePath.Contains("EOT")))
             {
                 var carIndex = Train.Cars.IndexOf(this);
                 if (articulatedFront && carIndex > 0)
@@ -382,7 +392,7 @@ namespace ORTS
                     }
                 }
                 WheelAxles.Sort(WheelAxles[0]);
-            }
+            } 
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
             Console.WriteLine("  length {0,10:F4}", Length);
@@ -392,7 +402,7 @@ namespace ORTS
             foreach (var p in Parts)
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
-        }
+        } // end SetUpWheelsArticulation()
 
         public void ComputePosition(Traveller traveler, bool backToFront)
         {
