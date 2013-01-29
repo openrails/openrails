@@ -327,7 +327,7 @@ namespace ORTS
                 }
             }
             // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
-            if (WheelAxles.Count > 2)
+            if (WheelAxles.Count >= 2)
             {
                 WheelAxlesLoaded = true;
             }
