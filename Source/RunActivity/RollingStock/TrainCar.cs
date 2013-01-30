@@ -273,8 +273,7 @@ namespace ORTS
                 Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, Parts.Count - 1);
             }
             // Less that two axles is bad.
-            // In this situation, it is not bad because spine car lacks both WheelAxles and Parts
-           //if (WheelAxles.Count < 2)
+            //if (WheelAxles.Count < 2)
            //{
            //    Trace.TraceWarning("Car has less than two axles in {0}", WagFilePath);
            //    return;
@@ -306,8 +305,7 @@ namespace ORTS
                 WheelAxles.Sort(WheelAxles[0]);
             }
             // Make sure the axles are sorted by OffsetM along the car.
-            //WheelAxles.Sort(WheelAxles[0]);
-            // Count up the number of bogies (parts) with at least 2 axles.
+           // Count up the number of bogies (parts) with at least 2 axles.
             for (var i = 1; i < Parts.Count; i++)
                 if (Parts[i].SumWgt > 1.5)
                     Parts[0].SumWgt++;
