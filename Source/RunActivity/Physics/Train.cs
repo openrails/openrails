@@ -817,7 +817,7 @@ namespace ORTS
             TrainCar oldLead = LeadLocomotive;
 
             LeadLocomotiveIndex = Math.Abs(nextCabIndex)-1;
-            if (!MPManager.IsMultiPlayer()) Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
+            Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
             TrainCar newLead = LeadLocomotive;  // Changing LeadLocomotiveIndex also changed LeadLocomotive
             ((MSTSLocomotive)newLead).UsingRearCab = nextCabIndex < 0;
 
@@ -834,6 +834,49 @@ namespace ORTS
             {
                 Simulator.PlayerLocomotive = newLead;
             }
+        }
+
+        //this function is needed for Multiplayer games as they do not need to have cabs, but need to know lead locomotives
+        // Sets the Lead locomotive to the next in the consist
+        public void LeadNextLocomotive()
+        {
+            // First driveable
+            int firstLead = -1;
+            // Next driveale to the current
+            int nextLead = -1;
+            // Count of driveable locos
+            int coud = 0;
+
+            for (int i = 0; i < Cars.Count; i++)
+            {
+                if (Cars[i].IsDriveable)
+                {
+                    // Count the driveables
+                    coud++;
+
+                    // Get the first driveable
+                    if (firstLead == -1)
+                        firstLead = i;
+
+                    // If later than current select the next
+                    if (LeadLocomotiveIndex < i && nextLead == -1)
+                    {
+                        nextLead = i;
+                    }
+                }
+            }
+
+            TrainCar prevLead = LeadLocomotive;
+
+            // If found one after the current
+            if (nextLead != -1)
+                LeadLocomotiveIndex = nextLead;
+            // If not, and have more than one, set the first
+            else if (coud > 1)
+                LeadLocomotiveIndex = firstLead;
+            TrainCar newLead = LeadLocomotive;
+            if (prevLead != null && newLead != null && prevLead != newLead)
+                newLead.CopyControllerSettings(prevLead);
         }
 
         //================================================================================================//
@@ -1006,7 +1049,11 @@ namespace ORTS
 
         public virtual void physicsUpdate(float elapsedClockSeconds)
         {
-
+            if (this.TrainType == TRAINTYPE.REMOTE)
+            {
+                UpdateRemoteTrainPos(elapsedClockSeconds);
+                return;
+            }
             // Update train physics, position and movement
 
             PropagateBrakePressure(elapsedClockSeconds);
@@ -11259,6 +11306,104 @@ namespace ORTS
             }
         }
 
+        //used by remote train to update location based on message received
+        public int expectedTileX, expectedTileZ, expectedTracIndex, expectedDIr, expectedTDir;
+        public float expectedX, expectedZ, expectedTravelled;
+        public bool updateMSGReceived = false;
+
+        public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir, int tDir)
+        {
+            SpeedMpS = speed;
+            expectedTileX = tX;
+            expectedTileZ = tZ;
+            expectedX = x;
+            expectedZ = z;
+            expectedTravelled = eT;
+            expectedTracIndex = tni;
+            expectedDIr = dir;
+            expectedTDir = tDir;
+            updateMSGReceived = true;
+        }
+
+        public void UpdateRemoteTrainPos(float elapsedClockSeconds)
+        {
+            if (updateMSGReceived)
+            {
+                float move = 0.0f;
+                var requestedSpeed = SpeedMpS;
+                try
+                {
+                    var x = travelled + LastSpeedMpS * elapsedClockSeconds + (SpeedMpS - LastSpeedMpS) / 2 * elapsedClockSeconds;
+                    this.MUDirection = (Direction)expectedDIr;
+
+                    if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 10)
+                    {
+                        CalculatePositionOfCars(expectedTravelled - travelled);
+                        //if something wrong with the switch
+                        if (this.RearTDBTraveller.TrackNodeIndex != expectedTracIndex)
+                        {
+                            Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
+
+                            //move = SpeedMpS > 0 ? 0.001f : -0.001f;
+                            this.travelled = expectedTravelled;
+                            this.RearTDBTraveller = t;
+                            CalculatePositionOfCars(0);
+
+                        }
+                        //}
+                    }
+                    else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
+                    {
+                        SpeedMpS += (expectedTravelled - x) / 1;
+                        CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+                    }
+                }
+                catch (Exception)
+                {
+                    move = expectedTravelled - travelled;
+                }
+                /*if (Math.Abs(requestedSpeed) < 0.00001 && Math.Abs(SpeedMpS) > 0.01) updateMSGReceived = true; //if requested is stop, but the current speed is still moving
+                else*/
+                updateMSGReceived = false;
+
+            }
+            else//no message received, will move at the previous speed
+            {
+                CalculatePositionOfCars(SpeedMpS * elapsedClockSeconds);
+            }
+
+            //update speed for each car, so wheels will rotate
+            foreach (TrainCar car in Cars)
+            {
+                if (car != null)
+                {
+                    if (car.IsDriveable && car is MSTSWagon) (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
+                    car.SpeedMpS = SpeedMpS;
+                    if (car.Flipped) car.SpeedMpS = -car.SpeedMpS;
+
+
+
+#if INDIVIDUAL_CONTROL
+						if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
+						{
+							car.Update(elapsedClockSeconds);
+						}
+#endif
+                }
+            }
+            LastSpeedMpS = SpeedMpS;
+            //Orient();
+            if (MPManager.IsServer())
+            {
+                /*					if (this.NextSignalObject != null && this.NextSignalObject.canUpdate)
+                                    {
+                                        Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);*/
+                //UpdateSignalState();
+                /*					}*/
+            }
+            return;
+
+        }
     }// class Train
 }
 

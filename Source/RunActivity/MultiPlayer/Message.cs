@@ -149,7 +149,6 @@ namespace ORTS.MultiPlayer
 			foreach (MSGMoveItem m in items)
 			{
 				bool found = false; //a train may not be in my sim
-#if !NEW_SIGNALLING
 				if (m.user == MPManager.GetUserName())//about itself, check if the number of car has changed, otherwise ignore
 				{
 					//if I am a remote controlled train now
@@ -168,7 +167,6 @@ namespace ORTS.MultiPlayer
 					catch (Exception) { }*/
 					continue; 
 				}
-#endif
 				if (m.user.Contains("0xAI") || m.user.Contains("0xUC"))
 				{
 					foreach (Train t in Program.Simulator.Trains)
@@ -186,9 +184,7 @@ namespace ORTS.MultiPlayer
 							}
 							if (t.TrainType == Train.TRAINTYPE.REMOTE)
 							{
-#if !NEW_SIGNALLING
 								t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir);
-#endif
 								break;
 							}
 						}
@@ -200,9 +196,7 @@ namespace ORTS.MultiPlayer
 					if (t != null)
 					{
 							found = true;
-#if !NEW_SIGNALLING
 							t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir);
-#endif
 					}
 				}
 				if (found == false) //I do not have the train, tell server to send it to me
@@ -489,7 +483,6 @@ namespace ORTS.MultiPlayer
 						if (Program.Simulator.PlayerLocomotive == null) t = Program.Simulator.Trains[0];
 						else t = Program.Simulator.PlayerLocomotive.Train;
 						t.Number = this.num;
-#if !NEW_SIGNALLING
 						if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
 							new WorldLocation(t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, 0, t.RearTDBTraveller.Z)) > 1000)
 						{
@@ -497,7 +490,6 @@ namespace ORTS.MultiPlayer
 							t.expectedTileX = this.TileX; t.expectedTileZ = this.TileZ; t.expectedX = this.X; t.expectedZ = this.Z;
 							t.expectedDIr = this.dir;
 						}
-#endif
 					}
 					Program.Simulator.Weather = (WeatherType)this.weather;
 					Program.Simulator.ClockTime = this.seconds;
@@ -662,15 +654,10 @@ namespace ORTS.MultiPlayer
 					return;
 				}
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
-#if !NEW_SIGNALLING
-				if (Program.Simulator.SwitchIsOccupied(trj))
-				{
+                bool state = Program.Simulator.Signals.RequestSetSwitch(trj.TN);
+                if (state == false) 
 					MPManager.BroadCast((new MSGMessage(user, "Warning", "Train on the switch, cannot throw")).ToString());
-					return;
-				}
-#endif
-				trj.SelectedRoute = Selection;
-				MPManager.BroadCast(this.ToString()); //server will tell others
+				else MPManager.BroadCast(this.ToString()); //server will tell others
 			}
 			else
 			{
@@ -712,9 +699,7 @@ namespace ORTS.MultiPlayer
 				try
 				{
 					var t = MPManager.Instance().FindPlayerTrain(user);
-#if !NEW_SIGNALLING
-					if (t != null) t.ResetSignal();
-#endif
+                    if (t != null) t.RequestSignalPermission(Direction.Forward);
 					MultiPlayer.MPManager.BroadCast((new MSGSignalStatus()).ToString());
 				}
 				catch (Exception) { }
@@ -2207,7 +2192,7 @@ namespace ORTS.MultiPlayer
 				if (tmpcars2.Count == 0) return;
 				train2.Cars = tmpcars2;
 				train2.LeadLocomotive = null;
-				train2.ChangeToNextCab();
+                train2.LeadNextLocomotive();
 				train2.CheckFreight();
 
 				//train2 may contain myself, and no other players, thus will make myself controlling this train
@@ -2474,7 +2459,7 @@ namespace ORTS.MultiPlayer
 			train.LeadLocomotive = null; train2.LeadLocomotive = null;
 			if (Lead != -1 && Lead < train.Cars.Count ) train.LeadLocomotive = train.Cars[Lead];
 
-			if (train.LeadLocomotive == null) train.ChangeToNextCab();
+            if (train.LeadLocomotive == null) train.LeadNextLocomotive();
 
 			//mine is not the leading locomotive, thus I give up the control
 			if (train.LeadLocomotive != Program.Simulator.PlayerLocomotive)
