@@ -153,6 +153,16 @@ namespace ORTS
                             error.FileName),
                         Application.ProductName);
                 }
+                catch (DirectoryNotFoundException error)
+                {
+                    Trace.WriteLine(error);
+                    if (settings.ShowErrorDialogs)
+                        MessageBox.Show(String.Format(
+                            "Fatal error: Essential folder not found so Open Rails cannnot continue.\n\n" +
+                            "Missing folder = {0}",
+                            error.Message),
+                        Application.ProductName);
+                }
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);

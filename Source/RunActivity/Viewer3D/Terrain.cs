@@ -56,7 +56,10 @@ namespace ORTS
                     {
                         var tile = tiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         if (tile == null)
-                            tile = LoadTile(TileX + x, TileZ + z);
+                        {
+                            var visible = (x == 0 && z == 0);
+                            tile = LoadTile(TileX + x, TileZ + z, visible);
+                        }
                         newTiles.Add(tile);
                     }
                 }
@@ -80,10 +83,10 @@ namespace ORTS
                     tile.PrepareFrame(frame, elapsedTime);
         }
 
-        TerrainTile LoadTile(int tileX, int tileZ)
+        TerrainTile LoadTile(int tileX, int tileZ, bool visible)
         {
             Trace.Write("T");
-            return new TerrainTile(Viewer, tileX, tileZ);
+            return new TerrainTile(Viewer, tileX, tileZ, visible);
         }
 
         [CallOnThread("Loader")]
@@ -108,14 +111,17 @@ namespace ORTS
         TerrainPatch[,] TerrainPatches = new TerrainPatch[16, 16];
         WaterTile WaterTile;
 
-        public TerrainTile(Viewer3D viewer, int tileX, int tileZ)
+        public TerrainTile(Viewer3D viewer, int tileX, int tileZ, bool visible)
         {
             TileX = tileX;
             TileZ = tileZ;
             // Terrain needs all surrounding tiles to correctly join up the meshes.
             for (var x = -1; x <= 1; x++)
                 for (var z = -1; z <= 1; z++)
-                    viewer.Tiles.Load(tileX + x, tileZ + z);
+                {
+                    visible = visible & (x == 0 && z == 0);
+                    viewer.Tiles.Load(tileX + x, tileZ + z, visible);
+                }
             var tile = viewer.Tiles.GetTile(tileX, tileZ);
             if (tile != null && !tile.IsEmpty)
             {

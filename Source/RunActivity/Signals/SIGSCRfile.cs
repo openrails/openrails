@@ -230,8 +230,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    Trace.TraceInformation(FileName);
-                   Trace.WriteLine(error);
+                    Trace.TraceWarning("File missing for signal scripts - {0}", fullName);
                 }
 #else
                 // for test purposes : without exception catch

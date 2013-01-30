@@ -85,9 +85,16 @@ namespace MSTS
 
         public static string GetTRKFileName(string routeFolderPath)
         {
-            string[] TRKFileNames = Directory.GetFiles(routeFolderPath,"*.trk");
-			if (TRKFileNames.Length == 0) throw new FileNotFoundException("TRK file not found in '" + routeFolderPath + "'.", routeFolderPath);
-            return TRKFileNames[0];
+            if (Directory.Exists(routeFolderPath))
+            {
+                string[] TRKFileNames = Directory.GetFiles(routeFolderPath,"*.trk");
+			    if (TRKFileNames.Length == 0) throw new FileNotFoundException("TRK file not found in '" + routeFolderPath + "'.", routeFolderPath);
+                return TRKFileNames[0];
+            }
+            else
+            {
+                throw new DirectoryNotFoundException(routeFolderPath);
+            }
         }
 
         /// <summary>

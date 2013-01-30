@@ -76,8 +76,8 @@ namespace ORTS
                     for (var z = -needed; z <= needed; z++)
                     {
                         var tile = worldFiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
-                        if (tile == null)
-                            tile = LoadWorldFile(TileX + x, TileZ + z);
+                        var visible = (x == 0 && z == 0);   // Indicates whether this tile is visible or an adjacent one.
+                        tile = LoadWorldFile(TileX + x, TileZ + z, visible);
                         newWorldFiles.Add(tile);
                         oldWorldFiles.Remove(tile);
                     }
@@ -120,10 +120,10 @@ namespace ORTS
                     worldFile.PrepareFrame(frame, elapsedTime);
         }
 
-        WorldFile LoadWorldFile(int tileX, int tileZ)
+        WorldFile LoadWorldFile(int tileX, int tileZ, bool visible)
         {
             Trace.Write("W");
-            return new WorldFile(Viewer, tileX, tileZ);
+            return new WorldFile(Viewer, tileX, tileZ, visible);
         }
     }
 
@@ -152,13 +152,15 @@ namespace ORTS
         /// Open the specified WFile and load all the scenery objects into the viewer.
         /// If the file doesn't exist, then return an empty WorldFile object.
         /// </summary>
-        public WorldFile(Viewer3D viewer, int tileX, int tileZ)
+        /// <param name="visible">Tiles adjacent to the current visible tile may not be modelled.
+        /// This flag decides whether a missing file leads to a warning message.</param>
+        public WorldFile(Viewer3D viewer, int tileX, int tileZ, bool visible)
         {
             Viewer = viewer;
             TileX = tileX;
             TileZ = tileZ;
 
-            Viewer.Tiles.Load(tileX, tileZ);
+            Viewer.Tiles.Load(tileX, tileZ, visible);
 
             // determine file path to the WFile at the specified tile coordinates
             var WFileName = WorldFileNameFromTileCoordinates(tileX, tileZ);
@@ -166,7 +168,13 @@ namespace ORTS
 
             // if there isn't a file, then return with an empty WorldFile object
             if (!File.Exists(WFilePath))
+            {
+                if (visible)
+                {
+                    Trace.TraceWarning("World file missing - {0}", WFilePath);
+                }
                 return;
+            }
 
             // read the world file 
             var WFile = new WFile(WFilePath);

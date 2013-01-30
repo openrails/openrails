@@ -34,7 +34,7 @@ namespace ORTS
         }
 
         [CallOnThread("Loader")]
-        public void Load(int tileX, int tileZ)
+        public void Load(int tileX, int tileZ, bool visible)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("Tiles.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
@@ -47,7 +47,7 @@ namespace ORTS
                 var tileList = new List<Tile>(tiles.List);
                 while (tileList.Count >= MaximumCachedTiles)
                     tileList.RemoveAt(0);
-                Tile newTile = new Tile(FilePath, tileX, tileZ);
+                Tile newTile = new Tile(FilePath, tileX, tileZ, visible);
                 // Ignore if newTile is not complete
                 if (newTile.TFile != null && newTile.YFile != null && newTile.FFile != null)
                     tileList.Add(newTile);
@@ -152,9 +152,9 @@ namespace ORTS
 
         public bool IsEmpty { get { return TFile == null; } }
 
-        static List<string> TileWarnings = new List<string>();  // Keep track to avoid repetitive warning messages as missing tile may be linked from several places.
-
-        public Tile(string filePath, int tileX, int tileZ)
+        /// <param name="visible">Tiles adjacent to the current visible tile may not be modelled.
+        /// This flag decides whether a missing file leads to a warning message.</param>
+        public Tile(string filePath, int tileX, int tileZ, bool visible)
         {
             TileX = tileX;
             TileZ = tileZ;
@@ -172,20 +172,15 @@ namespace ORTS
                 }
                 catch (Exception error) // errors thrown by SBR
                 {
-                    if (!TileWarnings.Contains(name))
-                    {
-                        TileWarnings.Add(name);
-                        Trace.TraceWarning(error.Message); // E.g. "File not found" or "Unknown header"
-                    }
+                    Trace.TraceWarning(error.Message); // E.g. "File _y.raw not found" or "Unknown header"
                 }
             }
             else
             {
-                if (!TileWarnings.Contains(name))
-                {
-                    TileWarnings.Add(name);
-                    Trace.TraceWarning("File {0} not found", name);
-                }
+                // Many tiles adjacent to the visible tile may not be modelled, so a warning is not helpful,
+                // so ignore a missing .t file unless it is the currently visible tile.
+                if (visible)
+                    Trace.TraceWarning("Tile file missing - {0}", name);
             }
         }
 

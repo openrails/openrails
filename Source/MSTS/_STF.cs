@@ -147,11 +147,19 @@ namespace MSTS
         /// <para>false - if Tree is not used which signicantly reduces GC</para></param>
 		public STFReader(string filename, bool useTree)
         {
-            streamSTF = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
-            FileName = filename;
-            SimisSignature = streamSTF.ReadLine();
-            LineNumber = 2;
-            if (useTree) tree = new List<string>();
+            var path = Path.GetDirectoryName(filename);
+            if (Directory.Exists(path))
+            {
+                streamSTF = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
+                FileName = filename;
+                SimisSignature = streamSTF.ReadLine();
+                LineNumber = 2;
+                if (useTree) tree = new List<string>();
+            }
+            else
+            {
+                throw new DirectoryNotFoundException(path);
+            }
         }
         /// <summary>Use an open stream for STF parsing, this constructor assumes that the SIMIS signature has already been gathered (or there isn't one)
         /// </summary>

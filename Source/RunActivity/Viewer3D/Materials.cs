@@ -36,7 +36,7 @@ namespace ORTS
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
-            if (path == null)
+            if (path == null || path == "") 
                 return SharedMaterialManager.MissingTexture;
 
             path = path.ToLowerInvariant();
@@ -48,10 +48,12 @@ namespace ORTS
                     Textures.Add(path, texture);
                     return texture;
                 }
-                catch (Exception error)
+                catch
                 {
-                    Trace.TraceInformation(path);
-                    Trace.WriteLine(error);
+                    if (File.Exists(path))
+                        Trace.TraceWarning("Texture file missing - {0}", path);
+                    else
+                        Trace.TraceWarning("Texture file problem - {0}", path);
                     return SharedMaterialManager.MissingTexture;
                 }
             }
