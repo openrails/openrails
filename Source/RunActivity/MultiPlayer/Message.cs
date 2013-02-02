@@ -654,7 +654,7 @@ namespace ORTS.MultiPlayer
 					return;
 				}
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
-                bool state = Program.Simulator.Signals.RequestSetSwitch(trj.TN);
+                bool state = Program.Simulator.Signals.RequestSetSwitch(trj.TN, this.Selection);
                 if (state == false) 
 					MPManager.BroadCast((new MSGMessage(user, "Warning", "Train on the switch, cannot throw")).ToString());
 				else MPManager.BroadCast(this.ToString()); //server will tell others
@@ -662,7 +662,8 @@ namespace ORTS.MultiPlayer
 			else
 			{
 				TrJunctionNode trj = Program.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, WorldID);
-				trj.SelectedRoute = Selection;
+                SetSwitch(trj.TN, Selection);
+                //trj.SelectedRoute = Selection; //although the new signal system request Signals.RequestSetSwitch, client may just change
 				if (user == MPManager.GetUserName() && HandThrown == true)//got the message with my name, will confirm with the player
 				{
 					Program.Simulator.Confirmer.Information("Switched, current route is " + (Selection == 0? "main":"side") + " route");
@@ -670,6 +671,14 @@ namespace ORTS.MultiPlayer
 				}
 			}
 		}
+
+        public void SetSwitch(TrackNode switchNode, int desiredState)
+        {
+            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
+            switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
+        }
+
 	}
 
 	#endregion MGSwitch
@@ -765,12 +774,20 @@ namespace ORTS.MultiPlayer
 				state = (int)switchStatesArray[i];
 				if (t.Value.SelectedRoute != state)
 				{
-					t.Value.SelectedRoute = state;
+                    SetSwitch(t.Value.TN, state);
+					//t.Value.SelectedRoute = state;
 				}
 				i++;
 			}
 
 		}
+
+        public void SetSwitch(TrackNode switchNode, int desiredState)
+        {
+            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
+            switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
+        }
 
 		public override string ToString()
 		{
@@ -875,12 +892,23 @@ namespace ORTS.MultiPlayer
 				state = (int)switchStatesArray[i];
 				if (t.Value.SelectedRoute != state)
 				{
-					if (!SwitchOccupiedByPlayerTrain(t.Value)) t.Value.SelectedRoute = state;
+                    if (!SwitchOccupiedByPlayerTrain(t.Value))
+                    {
+                        SetSwitch(t.Value.TN, state);
+                        //t.Value.SelectedRoute = state;
+                    }
 				}
 				i++;
 			}
 
 		}
+
+        public void SetSwitch(TrackNode switchNode, int desiredState)
+        {
+            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
+            switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
+        }
 
 		private bool SwitchOccupiedByPlayerTrain(TrJunctionNode junctionNode)
 		{

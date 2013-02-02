@@ -332,13 +332,21 @@ namespace ORTS.MultiPlayer
 			else return false;
 		}
 
-		//check if it is in the server mode
+		//check if it is in the client mode
 		public static bool IsClient()
 		{
 			if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) return false;
 			return true;
 		}
-		//user name
+        //check if it is in the server mode && they are players && not allow autoswitch
+        public static bool NoAutoSwitch()
+        {
+            if (!MPManager.IsMultiPlayer()) return false;
+            if (MPManager.IsClient()) return true;
+            if (MPManager.OnlineTrains.Players.Count > 0 && !MPManager.Instance().AllowedManualSwitch) return true;
+            return false;
+        }
+        //user name
 		static public string GetUserName()
 		{
 			if (Program.Server != null) return Program.Server.UserName;

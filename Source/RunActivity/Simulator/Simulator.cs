@@ -204,6 +204,7 @@ namespace ORTS
             {
                 bool valid_position = playerTrain.PostInit();  // place player train after pre-running of AI trains
             }
+            MPManager.Instance().RememberOriginalSwitchState();
 #endif
 
 		}

@@ -444,6 +444,8 @@ namespace ORTS
 
         public void Update(float elapsedClockSeconds)
         {
+            if (MultiPlayer.MPManager.IsClient()) return; //in MP, client will not update
+
             if (foundSignals > 0)
             {
 
@@ -2766,6 +2768,7 @@ namespace ORTS
 
         public void setSwitch(int nodeIndex, int switchPos, TrackCircuitSection thisSection)
         {
+            if (MultiPlayer.MPManager.NoAutoSwitch() ) return;
             TrackNode thisNode = trackDB.TrackNodes[nodeIndex];
             thisNode.TrJunctionNode.SelectedRoute = switchPos;
             thisSection.JunctionLastRoute = switchPos;
@@ -4135,6 +4138,27 @@ namespace ORTS
             {
                 switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
                 switchSet = thisTrain.ProcessRequestExplorerSetSwitch(switchSection.Index);
+            }
+
+            return (switchSet);
+        }
+
+        //only used by MP to manually set a switch to a desired position
+        public bool RequestSetSwitch(TrackNode switchNode, int desiredState)
+        {
+            TrackCircuitSection switchSection = TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            Train thisTrain = switchSection.CircuitState.TrainReserved == null ? null : switchSection.CircuitState.TrainReserved.Train;
+            bool switchSet = false;
+
+            if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return false;
+            // set physical state
+
+            if (true)/*!switchSection.CircuitState.HasTrainsOccupying())*/
+            {
+                switchSection.JunctionSetManual = desiredState;
+                trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
+                switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
+                switchSet = true;
             }
 
             return (switchSet);
@@ -6449,7 +6473,10 @@ namespace ORTS
         {
             NONE,                           // signal is clear
             STATION_STOP,                   // because of station stop
-            MANUAL_LOCK                     // because of manual lock
+            MANUAL_LOCK,                     // because of manual lock. 
+            MANUAL_PASS,                      //Sometime you want to set a light green, especially in MP
+            MANUAL_APPROACH                   //Sometime to set approach, in MP again
+            //PLEASE DO NOT CHANGE THE ORDER OF THESE ENUMS
         }
 
         //
@@ -7371,7 +7398,7 @@ namespace ORTS
                 {
                     foreach (SignalHead sigHead in SignalHeads)
                     {
-                        sigHead.SetMostRestrictiveAspect();
+                        if (holdState == HOLDSTATE.MANUAL_LOCK || holdState == HOLDSTATE.STATION_STOP) sigHead.SetMostRestrictiveAspect();
                     }
                     return;
                 }
@@ -7458,6 +7485,9 @@ namespace ORTS
             isPropagated = false;
             propagated = false;
 
+            //the following is added by JTang
+            if (holdState == HOLDSTATE.MANUAL_PASS || holdState == HOLDSTATE.MANUAL_APPROACH) holdState = HOLDSTATE.NONE;
+
             // reset block state to most restrictive
 
             internalBlockState = INTERNAL_BLOCKSTATE.BLOCKED;
@@ -7491,6 +7521,8 @@ namespace ORTS
         public void StateUpdate()
         {
             // update all normal heads first
+
+            if (MultiPlayer.MPManager.IsClient()) return; //client won't handle signal update
 
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -7930,7 +7962,7 @@ namespace ORTS
             // check if signal must be hold
 
             bool signalHold = (holdState != HOLDSTATE.NONE);
-            if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && holdState != HOLDSTATE.MANUAL_LOCK)
+            if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && holdState < HOLDSTATE.MANUAL_LOCK)
             {
                 holdState = HOLDSTATE.STATION_STOP;
                 signalHold = true;

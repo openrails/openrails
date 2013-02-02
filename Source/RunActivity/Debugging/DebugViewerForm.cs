@@ -2050,12 +2050,14 @@ namespace ORTS.Debugging
 		  switch (type)
 		  {
 			  case 0:
+                  signal.holdState = SignalObject.HOLDSTATE.NONE;
 #if !NEW_SIGNALLING
 				  signal.canUpdate = true;
 				  signal.forcedTime = 0;
 #endif
 				  break;
 			  case 1:
+                  signal.holdState = SignalObject.HOLDSTATE.MANUAL_LOCK;
 #if !NEW_SIGNALLING
 				  signal.enabled = false;
 				  signal.canUpdate = false;
@@ -2069,6 +2071,18 @@ namespace ORTS.Debugging
 #endif
 				  break;
 			  case 2:
+                  signal.holdState = SignalObject.HOLDSTATE.MANUAL_APPROACH;
+                  foreach (var sigHead in signal.SignalHeads)
+                  {
+                      var drawstate1 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_1);
+                      var drawstate2 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_2);
+                      var drawstate3 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_3);
+                      if (drawstate1 > 0) { sigHead.state = SignalHead.SIGASP.APPROACH_1; }
+                      else if (drawstate2 > 0) { sigHead.state = SignalHead.SIGASP.APPROACH_2; }
+                      else { sigHead.state = SignalHead.SIGASP.APPROACH_3; }
+                      sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
+                  }
+
 #if !NEW_SIGNALLING
 				  signal.canUpdate = false;
 				  //signal.
@@ -2087,6 +2101,12 @@ namespace ORTS.Debugging
 #endif
 				  break;
 			  case 3:
+                  signal.holdState = SignalObject.HOLDSTATE.MANUAL_PASS;
+                  foreach (var sigHead in signal.SignalHeads)
+                  {
+                      sigHead.SetLeastRestrictiveAspect();
+                      sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
+                  }
 #if !NEW_SIGNALLING
 				  signal.canUpdate = false;
 				  signal.enabled = true; //force it to be green,
@@ -2138,10 +2158,12 @@ namespace ORTS.Debugging
 			  switch (type)
 			  {
 				  case 0:
-					  sw.SelectedRoute = (int)switchPickedItem.main;
+                      Program.Simulator.Signals.RequestSetSwitch(sw.TN, 0);
+					  //sw.SelectedRoute = (int)switchPickedItem.main;
 					  break;
 				  case 1:
-					  sw.SelectedRoute = 1 - (int)switchPickedItem.main;
+                      Program.Simulator.Signals.RequestSetSwitch(sw.TN, 1);
+                      //sw.SelectedRoute = 1 - (int)switchPickedItem.main;
 					  break;
 			  }
 		  }

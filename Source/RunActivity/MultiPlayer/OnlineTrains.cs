@@ -217,10 +217,24 @@ namespace ORTS.MultiPlayer
 			}
 
 			p.Username = player.user;
-			train.CalculatePositionOfCars(0);
-			train.InitializeBrakes();
+            train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
+            train.CheckFreight();
+            train.InitializeBrakes();
+            bool canPlace = true;
+            Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
+            if (tempRoute.Count == 0 || !canPlace)
+            {
+                throw new InvalidDataException("Remote train original position not clear");
+            }
+
+            train.SetInitialTrainRoute(tempRoute);
+            train.CalculatePositionOfCars(0);
+            train.ResetInitialTrainRoute(tempRoute);
+
+            train.CalculatePositionOfCars(0);
+            train.AITrainBrakePercent = 100;
+
 			if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
-			train.CheckFreight();
 			foreach (var car in train.Cars) {
 				if (car.CarID == p.LeadingLocomotiveID) train.LeadLocomotive = car;
 			}

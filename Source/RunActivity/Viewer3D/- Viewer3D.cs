@@ -535,7 +535,11 @@ namespace ORTS
             if ((AboveGroundCamera == null) && Camera.IsUnderground)
             {
                 AboveGroundCamera = Camera;
-                if (Simulator.PlayerLocomotive.HasFrontCab)
+                bool ViewingPlayer = true;
+                
+                if (Camera.AttachedCar!=null) ViewingPlayer = Camera.AttachedCar.Train == Simulator.PlayerLocomotive.Train;
+
+                if (Simulator.PlayerLocomotive.HasFrontCab && ViewingPlayer)
                 {
                     CabCamera.Activate();
                 }
