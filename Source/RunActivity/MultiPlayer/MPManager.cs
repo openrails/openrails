@@ -604,7 +604,7 @@ namespace ORTS.MultiPlayer
 								if (p == p1.Value) continue;
 								if (p1.Value.Train == p.Train) { hasOtherPlayer = true; break; }//other player has the same train
 							}
-							if (hasOtherPlayer == false) Program.Simulator.Trains.Remove(p.Train);
+                            if (hasOtherPlayer == false) { p.Train.RemoveFromTrack(); Program.Simulator.Trains.Remove(p.Train); }
 						}
 						OnlineTrains.Players.Remove(p.Username);
 					}
@@ -681,6 +681,7 @@ namespace ORTS.MultiPlayer
 				{
 					foreach (var t in removedTrains)
 					{
+                        t.RemoveFromTrack();
 						Program.Simulator.Trains.Remove(t);
 #if !NEW_SIGNALLING
 						if (t.TrackAuthority != null)

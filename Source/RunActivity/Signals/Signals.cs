@@ -4823,7 +4823,7 @@ namespace ORTS
 
             // if start of alternative route, set deadlock keys for other end
 
-            if (thisElement.StartAlternativePath != null)
+            if (thisElement != null && thisElement.StartAlternativePath != null)
             {
                 TrackCircuitSection endSection = signalRef.TrackCircuitList[thisElement.StartAlternativePath[1]];
                 // no deadlock yet active

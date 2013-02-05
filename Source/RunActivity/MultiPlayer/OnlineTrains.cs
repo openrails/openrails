@@ -224,6 +224,7 @@ namespace ORTS.MultiPlayer
             Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
             if (tempRoute.Count == 0 || !canPlace)
             {
+                MPManager.BroadCast((new MSGMessage(p.Username, "Error", "Cannot be placed into the game")).ToString());//server will broadcast this error
                 throw new InvalidDataException("Remote train original position not clear");
             }
 

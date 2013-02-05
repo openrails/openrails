@@ -682,6 +682,9 @@ namespace ORTS.Debugging
 
 				 if (sw.Item.TrJunctionNode.SelectedRoute == sw.main) g.FillEllipse(Brushes.Black, GetRect(scaledItem, width));
 				 else g.FillEllipse(Brushes.Gray, GetRect(scaledItem, width));
+
+                 g.DrawString("" + sw.Item.TrJunctionNode.SelectedRoute, trainFont, trainBrush, scaledItem);
+
 				 sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
 #if false
 				 if (sw.main == sw.Item.TrJunctionNode.SelectedRoute)
@@ -2158,11 +2161,11 @@ namespace ORTS.Debugging
 			  switch (type)
 			  {
 				  case 0:
-                      Program.Simulator.Signals.RequestSetSwitch(sw.TN, 0);
+                      Program.Simulator.Signals.RequestSetSwitch(sw.TN, (int)switchPickedItem.main);
 					  //sw.SelectedRoute = (int)switchPickedItem.main;
 					  break;
 				  case 1:
-                      Program.Simulator.Signals.RequestSetSwitch(sw.TN, 1);
+                      Program.Simulator.Signals.RequestSetSwitch(sw.TN, 1 - (int)switchPickedItem.main);
                       //sw.SelectedRoute = 1 - (int)switchPickedItem.main;
 					  break;
 			  }

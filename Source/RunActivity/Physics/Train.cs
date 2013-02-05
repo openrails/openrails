@@ -2675,6 +2675,7 @@ namespace ORTS
 
             trackClear = true;
 
+            if (MultiPlayer.MPManager.IsMultiPlayer()) return (tempRoute);
             if (!sectionAvailable || !sectionsClear)
             {
                 trackClear = false;
