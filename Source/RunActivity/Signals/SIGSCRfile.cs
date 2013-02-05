@@ -191,7 +191,7 @@ namespace ORTS
 
 
 #if DEBUG_PRINT_PROCESS
-            TDB_debug_ref = new int[1] { 0 };   /* signal tdb ref.no selected for print-out */
+            TDB_debug_ref = new int[8] { 3253,3254,3255,3256,3257,3258,3259,3260 };   /* signal tdb ref.no selected for print-out */
 #endif
 
 #if DEBUG_PRINT_IN
@@ -1183,6 +1183,23 @@ namespace ORTS
                         if (String.Compare(nextline.Substring(0, 1), "{") == 0)
                         {
                             endElsecount = findEndBlock(FEIScriptLines, endElsecount);
+                        }
+                        else if (String.Compare(nextline.Substring(0, Math.Min(3, nextline.Length)), "IF ") == 0)
+                        {
+                            List<int> fullcount = findEndIfBlock(FEIScriptLines, endElsecount);
+                            int lastline = fullcount[fullcount.Count - 1];
+                            string templine = FEIScriptLines[endElsecount].Readline;
+                            FEIScriptLines.RemoveAt(endElsecount);
+                            templine = String.Concat("{ ", templine);
+                            tempinfo = new scrReadInfo(templine, nextinfo.Linenumber, nextinfo.Scriptname);
+                            FEIScriptLines.Insert(endElsecount, tempinfo);
+                            templine = FEIScriptLines[lastline - 1].Readline;
+                            tempnumber = FEIScriptLines[lastline - 1].Linenumber;
+                            FEIScriptLines.RemoveAt(lastline - 1);
+                            templine = String.Concat(templine, " }");
+                            tempinfo = new scrReadInfo(templine, tempnumber, nextinfo.Scriptname);
+                            FEIScriptLines.Insert(lastline - 1, tempinfo);
+                            endElsecount = lastline;
                         }
                         else
                         {
@@ -3242,7 +3259,7 @@ namespace ORTS
                     {
                         File.AppendAllText(dpe_fileLoc + @"printproc.txt",
                                 " NEXT_SIG_LR : Located signal : " +
-                                    thisHead.mainSignal.sigfound[parameter1_value].ToString() + "\n");
+                                               thisHead.mainSignal.sigfound[parameter1_value].ToString() + "\n");
                     }
 #endif
 #if DEBUG_PRINT_PROCESS
@@ -3260,6 +3277,22 @@ namespace ORTS
 
                 case (SCRExternalFunctions.NEXT_SIG_MR):
                     return_value = (int)thisHead.next_sig_mr((SignalHead.SIGFN)parameter1_value);
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        File.AppendAllText(dpe_fileLoc + @"printproc.txt",
+                                " NEXT_SIG_LR : Located signal : " +
+                                               thisHead.mainSignal.sigfound[parameter1_value].ToString() + "\n");
+                    }
+#endif
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        File.AppendAllText(dpr_fileLoc + @"printproc.txt",
+                                        " NEXT_SIG_LR : Located signal : " +
+                                               thisHead.mainSignal.sigfound[parameter1_value].ToString() + "\n");
+                    }
+#endif
                     break;
 
                 // this_sig_lr
@@ -3278,6 +3311,25 @@ namespace ORTS
 
                 case (SCRExternalFunctions.OPP_SIG_LR):
                     return_value = (int)thisHead.opp_sig_lr((SignalHead.SIGFN)parameter1_value);
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        SignalObject foundSignal;
+                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.SIGFN)parameter1_value, ref SignalObject foundSignal);
+                        File.AppendAllText(dpe_fileLoc + @"printproc.txt",
+                                " OPP_SIG_LR : Located signal : " + foundRef.ToString() + "\n");
+                    }
+#endif
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        SignalObject foundSignal = null;
+                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.SIGFN)parameter1_value, ref foundSignal);
+                        int foundRef = foundSignal != null ? foundSignal.thisRef : -1;
+                        File.AppendAllText(dpr_fileLoc + @"printproc.txt",
+                                " OPP_SIG_LR : Located signal : " + foundRef.ToString() + "\n");
+                    }
+#endif
                     break;
 
                 // opp_sig_mr

@@ -25,7 +25,7 @@
 // Compiler flags for debug print-out facilities
 // #define DEBUG_TEST
 // #define DEBUG_REPORTS
-
+// #define DEBUG_DEADLOCK
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -3602,7 +3602,7 @@ namespace ORTS
 
                     PresentPosition[0].Reverse(ValidRoute[0][PresentPosition[0].RouteListIndex].Direction, nextRoute, Length, signalRef);
                     PresentPosition[0].CopyTo(ref PreviousPosition[0]);
-                    PresentPosition[1].Reverse(ValidRoute[0][PresentPosition[0].RouteListIndex].Direction, nextRoute, 0.0f, signalRef);
+                    PresentPosition[1].Reverse(ValidRoute[0][PresentPosition[1].RouteListIndex].Direction, nextRoute, 0.0f, signalRef);
                 }
                 else
                 {
@@ -5872,7 +5872,9 @@ namespace ORTS
 
                 int signalDirection = thisElement.Direction == 0 ? 0 : 1;
 
-                if (thisSection.EndSignals[signalDirection] != null)
+                if (thisSection.EndSignals[signalDirection] != null &&
+                    thisSection.EndSignals[signalDirection].enabledTrain != null &&
+                    thisSection.EndSignals[signalDirection].enabledTrain.Train == this)
                 {
                     firstSignal = thisSection.EndSignals[signalDirection];
                     lastIndex = iindex;
@@ -5977,7 +5979,6 @@ namespace ORTS
 
                 if (endListIndex < 0)
                 {
-                    Trace.TraceWarning("Switch to Node Control for train {0} with off route section", Number);
                     signalRef.BreakDownRoute(thisSectionIndex, routedForward);
                     activeSectionIndex = -1;
                 }
@@ -6947,8 +6948,11 @@ namespace ORTS
                 // clear routes, required actions, traffic details
 
                 ControlMode = TRAIN_CONTROL.UNDEFINED;
-                TCRoute.TCRouteSubpaths.Clear();
-                TCRoute.TCAlternativePaths.Clear();
+                if (TCRoute != null)
+                {
+                    if (TCRoute.TCRouteSubpaths != null) TCRoute.TCRouteSubpaths.Clear();
+                    if (TCRoute.TCAlternativePaths != null) TCRoute.TCAlternativePaths.Clear();
+                }
                 if (ValidRoute[0] != null && ValidRoute[0].Count > 0)
                     signalRef.BreakDownRouteList(ValidRoute[0], 0, routedForward);
                 if (ValidRoute[1] != null && ValidRoute[1].Count > 0)
@@ -7104,6 +7108,22 @@ namespace ORTS
                     }
                 }
             }
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n=================\nTrain : " + Number.ToString() + "\n");
+            foreach (KeyValuePair<int, List<Dictionary<int, int>>> thisDeadlock in DeadlockInfo)
+            {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "Section : " + thisDeadlock.Key.ToString() + "\n");
+                foreach (Dictionary<int, int> actDeadlocks in thisDeadlock.Value)
+                {
+                    foreach (KeyValuePair<int, int> actDeadlockInfo in actDeadlocks)
+                    {
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "  Other Train : " + actDeadlockInfo.Key.ToString() +
+                            " - end Sector : " + actDeadlockInfo.Value.ToString() + "\n");
+                    }
+                }
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n");
+            }
+#endif
         }
 
         //================================================================================================//
@@ -8619,7 +8639,6 @@ namespace ORTS
             File.AppendAllText(@"C:\temp\TCSections.txt", "--------------------------------------------------\n");
             File.AppendAllText(@"C:\temp\TCSections.txt", "Train : " + Number.ToString() + "\n\n");
 #endif
-
             TCRoute = new TCRoutePath(aiPath, (int)FrontTDBTraveller.Direction, Length, signalRef);
             ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
         }
@@ -9090,6 +9109,38 @@ namespace ORTS
                         }
                     }
                 }
+
+                // check if section extends to end of track
+
+                TCRouteElement lastElement = thisSubpath[thisSubpath.Count - 1];
+                TrackCircuitSection lastEndSection = orgSignals.TrackCircuitList[lastElement.TCSectionIndex];
+                int lastDirection = lastElement.Direction;
+
+                List<TCRouteElement> addedElements = new List<TCRouteElement>();
+                if (lastEndSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                {
+                    int thisDirection = lastDirection;
+                    lastDirection = lastEndSection.Pins[thisDirection, 0].Direction;
+                    lastEndSection = orgSignals.TrackCircuitList[lastEndSection.Pins[thisDirection, 0].Link];
+
+                    while (lastEndSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                    {
+                        addedElements.Add(new TCRouteElement(lastEndSection.Index, lastDirection));
+                        thisDirection = lastDirection;
+                        lastDirection = lastEndSection.Pins[thisDirection, 0].Direction;
+                        lastEndSection = orgSignals.TrackCircuitList[lastEndSection.Pins[thisDirection, 0].Link];
+                    }
+
+                    if (lastEndSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                    {
+                        foreach (TCRouteElement addedElement in addedElements)
+                        {
+                            thisSubpath.Add(addedElement);
+                        }
+                        thisSubpath.Add(new TCRouteElement(lastEndSection.Index, lastDirection));
+                    }
+                }
+
 
                 // remove sections beyond reversal points
 
@@ -11384,7 +11435,7 @@ namespace ORTS
 
 
 #if INDIVIDUAL_CONTROL
-						if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
+        		if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
 						{
 							car.Update(elapsedClockSeconds);
 						}
@@ -11395,11 +11446,11 @@ namespace ORTS
             //Orient();
             if (MPManager.IsServer())
             {
-                /*					if (this.NextSignalObject != null && this.NextSignalObject.canUpdate)
-                                    {
-                                        Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);*/
-                //UpdateSignalState();
-                /*					}*/
+ //             if (this.NextSignalObject != null && this.NextSignalObject.canUpdate)
+ //             {
+ //                 Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);*/
+ //                 UpdateSignalState();
+ //             }
             }
             return;
 

@@ -14,6 +14,7 @@
  */
 // #define DEBUG_REPORTS
 // #define DEBUG_CHECKTRAIN
+// #define DEBUG_DEADLOCK
 // #define DEBUG_EXTRAINFO
 // DEBUG flag for debug prints
 
@@ -206,7 +207,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 9)
+            if (Number == 338)
             {
                 CheckTrain = true;
             }
@@ -217,6 +218,7 @@ namespace ORTS
 
             // set initial position and state
 
+            bool atStation = false;
             bool validPosition = InitialTrainPlacement();     // Check track and if clear, set occupied
 
             if (validPosition)
@@ -251,8 +253,6 @@ namespace ORTS
 
                 // check if train starts at station stop
 
-                bool atStation = false;
-
                 if (StationStops.Count > 0)
                 {
                     atStation = CheckInitialStation();
@@ -265,6 +265,20 @@ namespace ORTS
                     MovementState = AI_MOVEMENT_STATE.STOPPED;// start in STOPPED mode to collect info
                 }
             }
+
+            if (CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Train : " + Number.ToString()+"\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Name  : " + Name + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Frght : " + IsFreight.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Length: " + Length.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "MaxSpd: " + TrainMaxSpeedMpS.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Start : " + StartTime.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "State : " + MovementState.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Sttion: " + atStation.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "ValPos: " + validPosition.ToString() + "\n");
+                }
 
             return (validPosition);
         }
@@ -367,7 +381,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 9)
+            if (Number == 338)
             {
                 CheckTrain = true;
             }
@@ -529,6 +543,22 @@ namespace ORTS
 
                 File.AppendAllText(@"C:\temp\checktrain.txt",
                        "StopDst: " + FormatStrings.FormatDistance(NextStopDistanceM, true) + "\n");
+
+                File.AppendAllText(@"C:\temp\checktrain.txt", "\nDeadlock Info\n");
+                foreach (KeyValuePair<int, List<Dictionary<int, int>>> thisDeadlock in DeadlockInfo)
+                {
+                    File.AppendAllText(@"C:\Temp\checktrain.txt", "Section : " + thisDeadlock.Key.ToString() + "\n");
+                    foreach (Dictionary<int, int> actDeadlocks in thisDeadlock.Value)
+                    {
+                        foreach (KeyValuePair<int, int> actDeadlockInfo in actDeadlocks)
+                        {
+                            File.AppendAllText(@"C:\Temp\checktrain.txt", "  Other Train : " + actDeadlockInfo.Key.ToString() +
+                                " - end Sector : " + actDeadlockInfo.Value.ToString() + "\n");
+                        }
+                    }
+                    File.AppendAllText(@"C:\Temp\checktrain.txt", "\n");
+                }
+
             }
 
         }
@@ -1468,7 +1498,7 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                           Number.ToString() + " : signal " +
                           nextActionInfo.ActiveItem.ObjectDetails.thisRef.ToString() + " : speed : " +
-                          FormatStrings.FormatSpeed(nextActionInfo.ActiveItem.actual_speed, true) + cleared at " +
+                          FormatStrings.FormatSpeed(nextActionInfo.ActiveItem.actual_speed, true) + " cleared at " +
                           FormatStrings.FormatDistance(nextActionInfo.ActivateDistanceM, true) + " (now at " +
                           FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + " - " +
                           FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
@@ -3002,6 +3032,10 @@ namespace ORTS
             // clear deadlocks
             foreach (KeyValuePair<int, List<Dictionary<int, int>>> thisDeadlock in DeadlockInfo)
             {
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "Removed Train : " + Number.ToString() + "\n");
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "Deadlock at section : " + thisDeadlock.Key.ToString() + "\n");
+#endif
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisDeadlock.Key];
                 foreach (Dictionary<int, int> deadlockTrapInfo in thisDeadlock.Value)
                 {
@@ -3009,14 +3043,51 @@ namespace ORTS
                     {
                         Train otherTrain = GetOtherTrainByNumber(deadlockedTrain.Key);
 
-                        if (otherTrain.DeadlockInfo.ContainsKey(deadlockedTrain.Value))
+#if DEBUG_DEADLOCK
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "Other train index : " + deadlockedTrain.Key.ToString() + "\n");
+                        if (otherTrain == null)
                         {
-                            otherTrain.DeadlockInfo.Remove(deadlockedTrain.Value);
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", "Other train not found!" + "\n");
+                        }
+                        else
+                        {
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", "CrossRef train info : " + "\n");
+                            foreach (KeyValuePair<int, List<Dictionary<int, int>>> reverseDeadlock in otherTrain.DeadlockInfo)
+                            {
+                                File.AppendAllText(@"C:\Temp\deadlock.txt", "   " + reverseDeadlock.Key.ToString() + "\n");
+                            }
+
+                            foreach (KeyValuePair<int, List<Dictionary<int, int>>> reverseDeadlock in otherTrain.DeadlockInfo)
+                            {
+                                if (reverseDeadlock.Key == deadlockedTrain.Value)
+                                {
+                                    File.AppendAllText(@"C:\Temp\deadlock.txt", "Reverse Info : " + "\n");
+                                    foreach (Dictionary<int, int> sectorList in reverseDeadlock.Value)
+                                    {
+                                        foreach (KeyValuePair<int, int> reverseInfo in sectorList)
+                                        {
+                                            File.AppendAllText(@"C:\Temp\deadlock.txt", "   " + reverseInfo.Key.ToString() + " + " + reverseInfo.Value.ToString() + "\n");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+#endif
+                        if (otherTrain != null && otherTrain.DeadlockInfo.ContainsKey(deadlockedTrain.Value))
+                        {
+                            List<Dictionary<int, int>> otherDeadlock = otherTrain.DeadlockInfo[deadlockedTrain.Value];
+                            for (int iDeadlock = otherDeadlock.Count - 1; iDeadlock >= 0; iDeadlock--)
+                            {
+                                Dictionary<int, int> otherDeadlockInfo = otherDeadlock[iDeadlock];
+                                if (otherDeadlockInfo.ContainsKey(Number)) otherDeadlockInfo.Remove(Number);
+                                if (otherDeadlockInfo.Count <= 0) otherDeadlock.RemoveAt(iDeadlock);
+                            }
+
+                            if (otherDeadlock.Count <= 0)
+                                otherTrain.DeadlockInfo.Remove(deadlockedTrain.Value);
 
                             if (otherTrain.DeadlockInfo.Count <= 0)
-                            {
                                 thisSection.ClearDeadlockTrap(otherTrain.Number);
-                            }
                         }
                         TrackCircuitSection otherSection = signalRef.TrackCircuitList[deadlockedTrain.Value];
                         otherSection.ClearDeadlockTrap(Number);
@@ -3024,6 +3095,24 @@ namespace ORTS
                 }
             }
 
+#if DEBUG_DEADLOCK
+            foreach (TrackCircuitSection thisSection in Simulator.Signals.TrackCircuitList)
+            {
+                if (thisSection.DeadlockTraps.Count > 0)
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", "Section : " + thisSection.Index.ToString() + "\n");
+                    foreach (KeyValuePair<int, List<int>> thisDeadlock in thisSection.DeadlockTraps)
+                    {
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "    Train : " + thisDeadlock.Key.ToString() + "\n");
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "       With : " + "\n");
+                        foreach (int otherTrain in thisDeadlock.Value)
+                        {
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", "          " + otherTrain.ToString() + "\n");
+                        }
+                    }
+                }
+            }
+#endif
             // remove train
 
             AI.TrainsToRemove.Add(this);

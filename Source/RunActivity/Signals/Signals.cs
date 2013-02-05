@@ -9,6 +9,7 @@
 // Debug flags :
 // #define DEBUG_PRINT
 // #define DEBUG_REPORTS
+// #define DEBUG_DEADLOCK
 // prints details of the derived signal structure
 
 using System;
@@ -220,6 +221,15 @@ namespace ORTS
                                     " ; TC : " + thisSignal.TCReference.ToString() +
                                     " ; NextTC : " + thisSignal.TCNextTC.ToString() +
                                     " ; TN : " + thisSignal.trackNode.ToString());
+                            }
+
+                            if (thisSignal.TCReference < 0) // signal is not on any track - remove it!
+                            {
+                                Trace.TraceInformation("Signal removed " + thisSignal.thisRef.ToString() +
+                                    " ; TC : " + thisSignal.TCReference.ToString() +
+                                    " ; NextTC : " + thisSignal.TCNextTC.ToString() +
+                                    " ; TN : " + thisSignal.trackNode.ToString());
+                                SignalObjects[thisSignal.thisRef] = null;
                             }
                         }
                     }
@@ -844,12 +854,27 @@ namespace ORTS
                         }
                         else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trPLATFORM)
                         {
-                            platformList.Add(TDBRef, index);
+                            if (platformList.ContainsKey(TDBRef))
+                            {
+                                Trace.TraceInformation("Double reference to platform ID " + TDBRef.ToString() +
+                                    " in nodes " + platformList[TDBRef].ToString() + " and " + index.ToString() + "\n");
+                            }
+                            else
+                            {
+                                platformList.Add(TDBRef, index);
+                            }
                         }
-
                         else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSIDING)
                         {
-                            platformList.Add(TDBRef, index);
+                            if (platformList.ContainsKey(TDBRef))
+                            {
+                                Trace.TraceInformation("Double reference to siding ID " + TDBRef.ToString() +
+                                    " in nodes " + platformList[TDBRef].ToString() + " and " + index.ToString() + "\n");
+                            }
+                            else
+                            {
+                                platformList.Add(TDBRef, index);
+                            }
                         }
                     }
                 }
@@ -2414,7 +2439,14 @@ namespace ORTS
             JnSection.Pins[1, 1].Direction = 1;
             JnSection.Pins[1, 1].Link = trailSectionIndex1;
 
-            JnSection.Overlap = tsectiondat.TrackShapes[CrossOver.TrackShape].ClearanceDistance;
+            if (tsectiondat.TrackShapes.ContainsKey(CrossOver.TrackShape))
+            {
+                JnSection.Overlap = tsectiondat.TrackShapes[CrossOver.TrackShape].ClearanceDistance;
+            }
+            else
+            {
+                JnSection.Overlap = 0;
+            }
 
             JnSection.SignalsPassingRoutes = new List<int>();
 
@@ -4268,12 +4300,13 @@ namespace ORTS
             }
 
             int PinNo = 0;
-            for (int pin = 0; pin < thisNode.Inpins; pin++)
+            for (int pin = 0; pin < Math.Min(thisNode.Inpins, Pins.GetLength(1)); pin++)
             {
                 Pins[0, pin] = thisNode.TrPins[PinNo].Copy();
                 PinNo++;
             }
-            for (int pin = 0; pin < thisNode.Outpins; pin++)
+            if (PinNo < thisNode.Inpins) PinNo = (int) thisNode.Inpins;
+            for (int pin = 0; pin < Math.Min(thisNode.Outpins, Pins.GetLength(1)); pin++)
             {
                 Pins[1, pin] = thisNode.TrPins[PinNo].Copy();
                 PinNo++;
@@ -7013,22 +7046,38 @@ namespace ORTS
 
         //================================================================================================//
         //
-        // opp_sig_mr : not yet implemented
+        // opp_sig_mr
         //
 
         public SignalHead.SIGASP opp_sig_mr(SignalHead.SIGFN fn_type)
         {
-            return SignalHead.SIGASP.STOP;
+            int signalFound = SONextSignalOpp(fn_type);
+            return (signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(fn_type) : SignalHead.SIGASP.STOP);
+        }//opp_sig_mr
+
+        public SignalHead.SIGASP opp_sig_mr(SignalHead.SIGFN fn_type, ref SignalObject foundSignal) // used for debug print process
+        {
+            int signalFound = SONextSignalOpp(fn_type);
+            foundSignal = signalFound >= 0 ? signalObjects[signalFound] : null;
+            return (signalFound >= 0 ? signalObjects[signalFound].this_sig_mr(fn_type) : SignalHead.SIGASP.STOP);
         }//opp_sig_mr
 
         //================================================================================================//
         //
-        // opp_sig_lr : not yet implemented
+        // opp_sig_lr
         //
 
         public SignalHead.SIGASP opp_sig_lr(SignalHead.SIGFN fn_type)
         {
-            return SignalHead.SIGASP.STOP;
+            int signalFound = SONextSignalOpp(fn_type);
+            return (signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(fn_type) : SignalHead.SIGASP.STOP);
+        }//opp_sig_lr
+
+        public SignalHead.SIGASP opp_sig_lr(SignalHead.SIGFN fn_type, ref SignalObject foundSignal) // used for debug print process
+        {
+            int signalFound = SONextSignalOpp(fn_type);
+            foundSignal = signalFound >= 0 ? signalObjects[signalFound] : null;
+            return (signalFound >= 0 ? signalObjects[signalFound].this_sig_lr(fn_type) : SignalHead.SIGASP.STOP);
         }//opp_sig_lr
 
         //================================================================================================//
@@ -7178,33 +7227,38 @@ namespace ORTS
                     }
                 }
             }
-            // not enabled, check routes from next switch only
+
+            // not enabled, follow set route
             else
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
                 int curDirection = TCDirection;
+                int newDirection = 0;
+                int sectionIndex = -1;
 
-                bool switchFound = thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION;
-                while (!switchFound && thisSection != null)
+                routeset = (req_mainnode == thisSection.OriginalIndex);
+                while (!routeset && thisSection != null)
                 {
-                    if (thisSection.Pins[curDirection, 0].Link > 0)
+                    if (thisSection.ActivePins[curDirection, 0].Link >= 0)
                     {
-                        int newDirection = thisSection.Pins[curDirection, 0].Direction;
-                        thisSection = signalRef.TrackCircuitList[thisSection.Pins[curDirection, 0].Link];
+                        newDirection = thisSection.ActivePins[curDirection, 0].Direction;
+                        sectionIndex = thisSection.ActivePins[curDirection, 0].Link;
+                    }
+                    else
+                    {
+                        newDirection = thisSection.ActivePins[curDirection, 1].Direction;
+                        sectionIndex = thisSection.ActivePins[curDirection, 1].Link;
+                    }
+
+                    if (sectionIndex >= 0)
+                    {
+                        thisSection = signalRef.TrackCircuitList[sectionIndex];
                         curDirection = newDirection;
-                        switchFound = thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION;
+                        routeset = (req_mainnode == thisSection.OriginalIndex);
                     }
                     else
                     {
                         thisSection = null;
-                    }
-                }
-
-                if (switchFound)
-                {
-                    if (thisSection.JunctionLastRoute > 0)
-                    {
-                        routeset = (thisSection.Pins[1, thisSection.JunctionLastRoute].Link == req_mainnode);
                     }
                 }
             }
@@ -7217,7 +7271,7 @@ namespace ORTS
         // Find next signal of specified type along set sections - not for NORMAL signals
         //
 
-        private int SONextSignal(SignalHead.SIGFN fntype)
+        public int SONextSignal(SignalHead.SIGFN fntype)
         {
             int thisTC = TCReference;
             int direction = TCDirection;
@@ -7373,6 +7427,72 @@ namespace ORTS
                         {
                             thisTC = signalRoute[thisIndex + 1].TCSectionIndex;
                             direction = signalRoute[thisIndex + 1].Direction;
+                        }
+                    }
+                }
+            }
+
+            return (signalFound);
+        }
+
+        //================================================================================================//
+        //
+        // SONextSignalOpp : find next signal in opp direction
+        //
+
+        public int SONextSignalOpp(SignalHead.SIGFN fntype)
+        {
+            int thisTC = TCReference;
+            int direction = TCDirection == 0 ? 1 : 0;    // reverse direction
+            int signalFound = -1;
+
+            TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisTC];
+            bool sectionSet = enabledTrain == null ? false : thisSection.IsSet(enabledTrain);
+
+            // loop through valid sections
+
+            while (sectionSet && thisTC > 0 && signalFound < 0)
+            {
+                thisSection = signalRef.TrackCircuitList[thisTC];
+
+                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
+                    thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                {
+                    if (!JunctionsPassed.Contains(thisTC))
+                        JunctionsPassed.Add(thisTC);  // set reference to junction section
+                    if (!thisSection.SignalsPassingRoutes.Contains(thisRef))
+                        thisSection.SignalsPassingRoutes.Add(thisRef);
+                }
+
+                // check if required type of signal is along this section
+
+                if (fntype == SignalHead.SIGFN.NORMAL)
+                {
+                    signalFound = thisSection.EndSignals[direction] != null ? thisSection.EndSignals[direction].thisRef : -1;
+                }
+                else
+                {
+                    TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction, (int)fntype];
+                    if (thisList.TrackCircuitItem.Count > 0)
+                    {
+                        signalFound = thisList.TrackCircuitItem[0].SignalRef.thisRef;
+                    }
+                }
+
+                // get next section if active link is set
+
+                if (signalFound < 0)
+                {
+                    int pinIndex = direction;
+                    sectionSet = thisSection.IsSet(enabledTrain);
+                    if (sectionSet)
+                    {
+                        thisTC = thisSection.ActivePins[pinIndex, 0].Link;
+                        direction = thisSection.ActivePins[pinIndex, 0].Direction;
+                        if (thisTC == -1)
+                        {
+                            thisTC = thisSection.ActivePins[pinIndex, 1].Link;
+                            direction = thisSection.ActivePins[pinIndex, 1].Direction;
                         }
                     }
                 }
@@ -8837,12 +8957,22 @@ namespace ORTS
 
         public SIGASP opp_sig_mr(SIGFN sigFN)
         {
-            return mainSignal.this_sig_mr(sigFN);
+            return mainSignal.opp_sig_mr(sigFN);
+        }
+
+        public SIGASP opp_sig_mr(SIGFN sigFN, ref SignalObject signalFound) // for debug purposes
+        {
+            return mainSignal.opp_sig_mr(sigFN, ref signalFound);
         }
 
         public SIGASP opp_sig_lr(SIGFN sigFN)
         {
-            return mainSignal.this_sig_lr(sigFN);
+            return mainSignal.opp_sig_lr(sigFN);
+        }
+
+        public SIGASP opp_sig_lr(SIGFN sigFN, ref SignalObject signalFound) // for debug purposes
+        {
+            return mainSignal.opp_sig_lr(sigFN, ref signalFound);
         }
 
         //================================================================================================//
@@ -8856,6 +8986,12 @@ namespace ORTS
             SIGASP foundState = SIGASP.CLEAR_2;
 
             int sig2Index = mainSignal.sigfound[(int)sigFN2];
+            if (sig2Index < 0)           // try renewed search with full route
+            {
+                sig2Index = mainSignal.SONextSignal(sigFN2);
+                mainSignal.sigfound[(int)sigFN2] = sig2Index;
+            }
+
             if (sig2Index < 0)
             {
                 return (SIGASP.STOP);    // no signal of type 2 available

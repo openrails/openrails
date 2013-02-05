@@ -10,6 +10,12 @@
 /// Use of the code for any other purpose or distribution of the code to anyone else
 /// is prohibited without specific written permission from admin@openrails.org.
  */
+
+// 
+// Flag to print deadlock info
+// #define DEBUG_DEADLOCK
+//
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -306,6 +312,26 @@ namespace ORTS
                     StartList.InsertTrain(thisTrain);
                 }
             }
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "Added Train : " + thisTrain.Number.ToString() + " , accepted : " + validPosition.ToString()+"\n");
+
+            foreach (TrackCircuitSection thisSection in Simulator.Signals.TrackCircuitList)
+            {
+                if (thisSection.DeadlockTraps.Count > 0)
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", "Section : " + thisSection.Index.ToString() + "\n");
+                    foreach (KeyValuePair<int, List<int>> thisDeadlock in thisSection.DeadlockTraps)
+                    {
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "    Train : " + thisDeadlock.Key.ToString() + "\n");
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "       With : " + "\n");
+                        foreach (int otherTrain in thisDeadlock.Value)
+                        {
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", "          " + otherTrain.ToString() + "\n");
+                        }
+                    }
+                }
+            }
+#endif
         }
 
         /// <summary>
