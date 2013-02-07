@@ -2881,6 +2881,8 @@ namespace ORTS
                 {
                     nextRoute = new TCSubpathRoute();
                     TCRoute.TCRouteSubpaths.Add(nextRoute);
+                    TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
+                    TCRoute.ReversalInfo.Add(nextReversalPoint);
                 }
                 else
                 {
