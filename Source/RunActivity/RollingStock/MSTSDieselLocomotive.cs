@@ -530,7 +530,7 @@ namespace ORTS
                 EngineRPMold = EngineRPM;
             }
 
-            if (MainResPressurePSI < CompressorRestartPressurePSI && !CompressorOn)
+            if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorOn) && (PowerOn))
                 SignalEvent(EventID.CompressorOn);
             else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
                 SignalEvent(EventID.CompressorOff);

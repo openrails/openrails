@@ -149,6 +149,7 @@ namespace ORTS
             if (!(PantographFirstUp || PantographSecondUp))
             {
                 PowerOn = false;
+                CompressorOn = false;
                 if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f) PantographFirstDelay = 0.0f;
                 if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f) PantographSecondDelay = 0.0f;
             }

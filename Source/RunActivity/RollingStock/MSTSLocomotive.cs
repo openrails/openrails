@@ -827,14 +827,14 @@ namespace ORTS
                 default:
                     break;
                 
-            }          
-
-            if (MainResPressurePSI < CompressorRestartPressurePSI && !CompressorOn)
+            }
+            if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorOn) && (PowerOn))
                 SignalEvent(EventID.CompressorOn);
             else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
                 SignalEvent(EventID.CompressorOff);
-            if ((CompressorOn)&&(PowerOn))
+            if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+
 
             base.Update(elapsedClockSeconds);
         } // End Method Update
