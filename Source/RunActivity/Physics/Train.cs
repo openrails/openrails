@@ -1,4 +1,8 @@
-﻿
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+// This code is provided to enable you to contribute improvements to the open rails program.  
+// Use of the code for any other purpose or distribution of the code to anyone else
+// is prohibited without specific written permission from admin@openrails.org.
+
 /* TRAINS
  * 
  * Contains code to represent a train as a list of TrainCars and to handle the physics of moving
@@ -17,11 +21,6 @@
  *  This is consolidated by the train class into overall movement for the train.
  */
 
-/// COPYRIGHT 2010 by the Open Rails project.
-/// This code is provided to enable you to contribute improvements to the open rails program.  
-/// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from admin@openrails.org.
-
 // Compiler flags for debug print-out facilities
 // #define DEBUG_TEST
 // #define DEBUG_REPORTS
@@ -31,12 +30,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using MSTS;
-using ORTS.Popups;
 using ORTS.MultiPlayer;
+using ORTS.Popups;
 
 namespace ORTS
 {
@@ -219,7 +216,7 @@ namespace ORTS
             get
             {
                 return aiBrakePercent;
-            }
+        }
             set
             {
                 aiBrakePercent = value;
@@ -233,7 +230,7 @@ namespace ORTS
             get
             {
                 return MUThrottlePercent;
-            }
+        }
             set
             {
                 MUThrottlePercent = value;
@@ -244,7 +241,7 @@ namespace ORTS
             get
             {
                 return MUDirection == Direction.Forward;
-            }
+        }
             set
             {
                 MUDirection = value ? Direction.Forward : Direction.Reverse;
@@ -990,10 +987,10 @@ namespace ORTS
         /// ie doors open, pantograph up, lights on etc.
         /// </summary>
 
-        public void SignalEvent(EventID eventID)
+        public void SignalEvent(Event evt)
         {
-            foreach (TrainCar car in Cars)
-                car.SignalEvent(eventID);
+            foreach (var car in Cars)
+                car.SignalEvent(evt);
         }
 
 

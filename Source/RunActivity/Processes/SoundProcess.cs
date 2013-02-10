@@ -144,10 +144,10 @@ namespace ORTS
 						ActivityTask at = act.Current;
 						if (at != null)
 						{
-							if (at.SoundNotify != -1)
+							if (at.SoundNotify != Event.None)
 							{
 								if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(at.SoundNotify);
-								at.SoundNotify = -1;
+                                at.SoundNotify = Event.None;
 							}
 						}
 					}

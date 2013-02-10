@@ -227,7 +227,7 @@ namespace ORTS {
 
         public void Warning(CabControl control, CabSetting setting)
         {
-            if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(10);
+            if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(Event.ControlError);
             Message(control, ConfirmLevel.Warning, ConfirmText[(int)control][(int)setting]);
         }
 

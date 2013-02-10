@@ -434,22 +434,21 @@ namespace ORTS
             MSTSBrakeSystem.Update(elapsedClockSeconds);
         }
 
-
-        /// <summary>
-        /// Used when someone want to notify us of an event
-        /// </summary>
-        public override void SignalEvent(EventID eventID)
+        public override void SignalEvent(Event evt)
         {
-            do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
-			{
-                if (eventID == EventID.Pantograph1Up) { Pan1Up = true; Pan = Pan1Up || Pan2Up; break; }  // pan up
-                if (eventID == EventID.Pantograph1Down) { Pan1Up = false; Pan = Pan1Up || Pan2Up; break; } // pan down
-                if (eventID == EventID.Pantograph2Up) { Pan2Up = true; Pan = Pan1Up || Pan2Up; break; }  // pan up
-                if (eventID == EventID.Pantograph2Down) { Pan2Up = false; Pan = Pan1Up || Pan2Up; break; } // pan down
-            } while( false );  // Never repeats
+            switch (evt)
+            {
+                case Event.Pantograph1Up: { Pan1Up = true; Pan = Pan1Up || Pan2Up; break; }
+                case Event.Pantograph1Down: { Pan1Up = false; Pan = Pan1Up || Pan2Up; break; }
+                case Event.Pantograph2Up: { Pan2Up = true; Pan = Pan1Up || Pan2Up; break; }
+                case Event.Pantograph2Down: { Pan2Up = false; Pan = Pan1Up || Pan2Up; break; }
+            }
 
-            foreach (CarEventHandler eventHandler in EventHandlers) // e.g. for HandleCarEvent() in Sounds.cs
-                eventHandler.HandleCarEvent(eventID);
+            // TODO: This should be moved to TrainCar probably.
+            foreach (var eventHandler in EventHandlers) // e.g. for HandleCarEvent() in Sounds.cs
+                eventHandler.HandleEvent(evt);
+
+            base.SignalEvent(evt);
         }
 
         // <CJ Comment> Expected pantograph handling to be in MSTSElectricLocomotive.cs,
@@ -460,9 +459,9 @@ namespace ORTS
                 foreach( TrainCar car in Train.Cars )
                     if( car != this && car is MSTSWagon ) ((MSTSWagon)car).Pan1Up = Pan1Up;
             if( Pan1Up ) {
-                SignalEvent( EventID.Pantograph1Up );
+                SignalEvent(Event.Pantograph1Up);
             } else {
-                SignalEvent( EventID.Pantograph1Down );
+                SignalEvent(Event.Pantograph1Down);
             }
         }
 
@@ -472,9 +471,9 @@ namespace ORTS
                 foreach( TrainCar car in Train.Cars )
                     if( car != this && car is MSTSWagon ) ((MSTSWagon)car).Pan2Up = Pan2Up;
             if( Pan2Up ) {
-                SignalEvent( EventID.Pantograph2Up );
+                SignalEvent(Event.Pantograph2Up);
             } else {
-                SignalEvent( EventID.Pantograph2Down );
+                SignalEvent(Event.Pantograph2Down);
             }
         }
         
@@ -510,7 +509,7 @@ namespace ORTS
         }
 
         // sound sources and viewers can register themselves to get direct notification of an event
-        public List<CarEventHandler> EventHandlers = new List<CarEventHandler>();
+        public List<EventHandler> EventHandlers = new List<EventHandler>();
 
         public MSTSCoupling Coupler
         {
@@ -962,8 +961,8 @@ namespace ORTS
 				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).Pan1Up = MSTSWagon.Pan1Up;
-				if (MSTSWagon.Pan1Up) Car.SignalEvent(EventID.Pantograph1Up);
-				else Car.SignalEvent(EventID.Pantograph1Down);
+                if (MSTSWagon.Pan1Up) Car.SignalEvent(Event.Pantograph1Up);
+                else Car.SignalEvent(Event.Pantograph1Down);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlPantograph2))
 			{
@@ -971,8 +970,8 @@ namespace ORTS
 				if (Viewer.Simulator.PlayerLocomotive == this.Car) //inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).Pan2Up = MSTSWagon.Pan2Up;
-				if (MSTSWagon.Pan2Up) Car.SignalEvent(EventID.Pantograph2Up);
-				else Car.SignalEvent(EventID.Pantograph2Down);
+                if (MSTSWagon.Pan2Up) Car.SignalEvent(Event.Pantograph2Up);
+                else Car.SignalEvent(Event.Pantograph2Down);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
 			{
@@ -980,9 +979,9 @@ namespace ORTS
 				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).DoorLeftOpen = MSTSWagon.DoorLeftOpen;
-				/*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
-				else Car.SignalEvent(EventID.DoorClose);*/
-				//comment out, but can be added back to animate sound
+                /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(Event.DoorOpen);
+                else Car.SignalEvent(Event.DoorClose);*/
+                //comment out, but can be added back to animate sound
                 Viewer.Simulator.Confirmer.Confirm( CabControl.DoorsLeft, MSTSWagon.DoorLeftOpen ? CabSetting.On : CabSetting.Off );
 			}
 			if (UserInput.IsPressed(UserCommands.ControlDoorRight)) //control right door
@@ -991,9 +990,9 @@ namespace ORTS
 				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
 					foreach (TrainCar car in Car.Train.Cars)
 						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).DoorRightOpen = MSTSWagon.DoorRightOpen;
-				/*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
-				else Car.SignalEvent(EventID.DoorClose);*/
-				//comment out, but can be added back to animate sound
+                /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(Event.DoorOpen);
+                else Car.SignalEvent(Event.DoorClose);*/
+                //comment out, but can be added back to animate sound
                 Viewer.Simulator.Confirmer.Confirm( CabControl.DoorsRight, MSTSWagon.DoorRightOpen ? CabSetting.On : CabSetting.Off );
             }
 			if (UserInput.IsPressed(UserCommands.ControlMirror))    // Are these the mirrors on trams which swing out at platforms?

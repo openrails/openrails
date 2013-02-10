@@ -53,7 +53,7 @@ namespace ORTS
         public abstract bool Update();
 
         public MSTSWagon Car = null;          // the sound may be from a train car
-        public Viewer3D Viewer;               // the listener is connected to this viewer
+        public Viewer3D Viewer;                 // the listener is connected to this viewer
 
         public abstract void Dispose();
     }
@@ -198,7 +198,7 @@ namespace ORTS
         public SoundSource(Viewer3D viewer, MSTSWagon car, string smsFilePath)
         {
             Car = car;
-            Initialize(viewer, car.WorldPosition.WorldLocation, smsFilePath);
+            Initialize(viewer, car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
         }
 
         /// <summary>
@@ -206,9 +206,9 @@ namespace ORTS
         /// </summary>
         /// <param name="viewer"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer3D viewer, string smsFilePath)
+        public SoundSource(Viewer3D viewer, Events.Source eventSource, string smsFilePath)
         {
-            Initialize(viewer, null, smsFilePath);
+            Initialize(viewer, null, eventSource, smsFilePath);
         }
 
         /// <summary>
@@ -217,10 +217,10 @@ namespace ORTS
         /// <param name="viewer"></param>
         /// <param name="worldLocation"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, string smsFilePath)
+        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
         {
             IsEnvSound = true;
-            Initialize(viewer, worldLocation, smsFilePath);
+            Initialize(viewer, worldLocation, eventSource, smsFilePath);
         }
 
         /// <summary>
@@ -230,11 +230,11 @@ namespace ORTS
         /// <param name="worldLocation"></param>
         /// <param name="smsFilePath"></param>
         /// <param name="isSlowRolloff"></param>
-        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, string smsFilePath, bool isSlowRolloff)
+        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath, bool isSlowRolloff)
         {
             IsEnvSound = true;
             _isSlowRolloff = isSlowRolloff;
-            Initialize(viewer, worldLocation, smsFilePath);
+            Initialize(viewer, worldLocation, eventSource, smsFilePath);
         }
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace ORTS
 
         List<SoundStream> SoundStreams = new List<SoundStream>();
 
-        public void Initialize(Viewer3D viewer, WorldLocation worldLocation, string smsFilePath)
+        public void Initialize(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
         {
             Viewer = viewer;
             WorldLocation = worldLocation;
@@ -302,20 +302,20 @@ namespace ORTS
                 int cou = 1;
                 foreach (MSTS.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
                 {
-                    SoundStreams.Add(new SoundStream(mstsStream, this, cou++, _isSlowRolloff, ActivationConditions.Distance));
+                    SoundStreams.Add(new SoundStream(mstsStream, eventSource, this, cou++, _isSlowRolloff, ActivationConditions.Distance));
                 }
             }
         }
 
-        public void HandleEvent(EventID eventID)
+        public void HandleEvent(Event eventID)
         {
-            foreach (SoundStream ss in SoundStreams)
+            foreach (var ss in SoundStreams)
             {
-                foreach (ORTSTrigger trg in ss.Triggers)
+                foreach (var trg in ss.Triggers)
                 {
-                    ORTSDiscreteTrigger dt = trg as ORTSDiscreteTrigger;
+                    var dt = trg as ORTSDiscreteTrigger;
                     if (dt != null)
-                        dt.HandleCarEvent(eventID);
+                        dt.HandleEvent(eventID);
                 }
             }
         }
@@ -652,8 +652,8 @@ namespace ORTS
         protected MSTS.SMSStream MSTSStream;
 
         private ORTSInitialTrigger _InitialTrigger = null;
-        
-        public SoundStream( MSTS.SMSStream mstsStream, SoundSource soundSource, int index, bool isSlowRolloff, float factor )
+
+        public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, int index, bool isSlowRolloff, float factor)
         {
             float Threshold = float.NaN;
             Index = index;
@@ -704,13 +704,13 @@ namespace ORTS
                     }
                     else if (trigger.GetType() == typeof(MSTS.Discrete_Trigger) && soundSource.Car != null)
                     {
-                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, (MSTS.Discrete_Trigger)trigger);
+                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (MSTS.Discrete_Trigger)trigger);
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                         SoundSource.Car.EventHandlers.Add(ortsTrigger);  // tell the simulator to call us when the event occurs
                     }
                     else if (trigger.GetType() == typeof(MSTS.Discrete_Trigger))
                     {
-                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, (MSTS.Discrete_Trigger)trigger);
+                        ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (MSTS.Discrete_Trigger)trigger);
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                         DiscreteTriggers++;
                     }
@@ -971,21 +971,21 @@ namespace ORTS
     /// <summary>
     /// Play this sound when a discrete TrainCar event occurs in the simulator
     /// </summary>
-    public class ORTSDiscreteTrigger: ORTSTrigger, CarEventHandler
+    public class ORTSDiscreteTrigger: ORTSTrigger, EventHandler
     {
-        public EventID TriggerID;
+        public Event TriggerID;
         // Added in order to check the activeness of the SoundSource - by GeorgeS
         private SoundStream _soundStream;
 
-        public ORTSDiscreteTrigger(SoundStream soundStream, MSTS.Discrete_Trigger smsData)
+        public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, MSTS.Discrete_Trigger smsData)
         {
-            TriggerID = (EventID)smsData.TriggerID;
+            TriggerID = Events.From(eventSound, smsData.TriggerID);
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
             // Save SoundStream - by GeorgeS
             _soundStream = soundStream;
         }
 
-        public void HandleCarEvent(EventID eventID)
+        public void HandleEvent(Event eventID)
         {
             if (Enabled && eventID == TriggerID)
             {
@@ -1836,10 +1836,10 @@ namespace ORTS
                             var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + fss.SoundSourceFileName);
                             if (fullPath != null)
                             {
-                                var ss = new SoundSource(Viewer, wl, fullPath, true);
-                                if (ss != null)
-                                    ls.Add(ss);
-                            }
+                                var ss = new SoundSource(Viewer, wl, Events.Source.None, fullPath, true);
+                            if (ss != null)
+                                ls.Add(ss);
+                        }
                         }
 
                         lock (SoundRegions)

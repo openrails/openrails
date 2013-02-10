@@ -211,13 +211,13 @@ namespace ORTS
                         cabView = BuildCabView(WagFilePath, reverseCVFFileName, CabViewType.Rear);
                         if (cabView != null)
                             CabViewList.Add(cabView);
-                    }
-                }
+						}
+					}
                 else
                 {
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
+					}
                 }
-            }
 
             IsDriveable = true;
             if (!TrainBrakeController.IsValid())
@@ -456,9 +456,9 @@ namespace ORTS
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
-            if (inf.ReadBoolean()) SignalEvent(EventID.BellOn);
-            if (inf.ReadBoolean()) SignalEvent(EventID.SanderOn);
-            if (inf.ReadBoolean()) SignalEvent(EventID.WiperOn);
+            if (inf.ReadBoolean()) SignalEvent(Event.BellOn);
+            if (inf.ReadBoolean()) SignalEvent(Event.SanderOn);
+            if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             MainResPressurePSI = inf.ReadSingle();
             CompressorOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
@@ -561,9 +561,9 @@ namespace ORTS
                 Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
             }
 
-           if (EngineBrakeController != null)
+            if (EngineBrakeController != null)
              {
-                 EngineBrakeController.Update(elapsedClockSeconds);
+                EngineBrakeController.Update(elapsedClockSeconds);
                 if (EngineBrakeController.UpdateValue > 0.0) {
                     Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
                 }
@@ -573,8 +573,8 @@ namespace ORTS
             }
 
             if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) {
-                 if (this.IsLeadLocomotive())
-                     DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
+                if (this.IsLeadLocomotive())
+                    DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
                 else
                     DynamicBrakeController.Update(elapsedClockSeconds);
             }
@@ -829,9 +829,9 @@ namespace ORTS
                 
             }
             if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorOn) && (PowerOn))
-                SignalEvent(EventID.CompressorOn);
+                SignalEvent(Event.CompressorOn);
             else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
-                SignalEvent(EventID.CompressorOff);
+                SignalEvent(Event.CompressorOff);
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
@@ -1058,16 +1058,11 @@ namespace ORTS
             if ( Direction != direction && ThrottlePercent < 1)
             {
                 Direction = direction;
+                SignalEvent(Event.ReverserChange);
                 if (direction == Direction.Forward)
-                {
-                    SignalEvent(EventID.Forward);
                     Train.MUReverserPercent = 100;
-                }
                 else
-                {
-                    SignalEvent(EventID.Reverse);
                     Train.MUReverserPercent = -100;
-                }
             }
 
 #if !NEW_SIGNALLING
@@ -1118,16 +1113,14 @@ namespace ORTS
             ThrottleController.StartIncrease( target );
             //Not needed, Update() handles it:
             // Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
-            // By GeorgeS
-            if( EventID.IsMSTSBin )
-                SignalEvent( EventID.PowerHandler );
+            SignalEvent(Event.ThrottleChange);
         }
         
         public bool StartThrottleIncrease()
         {
             bool notchedThrottleCommandNeeded = false;
             AlerterReset();
-
+            
             CommandStartTime = Simulator.ClockTime;
 
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
@@ -1147,15 +1140,15 @@ namespace ORTS
                         return notchedThrottleCommandNeeded;
                     }
                     else
-                        StartDynamicBrakeDecrease(null);
-
+                    StartDynamicBrakeDecrease( null );
+                    
                     if (!HasSmoothStruc)
                         StopDynamicBrakeDecrease();
                 }
                 if (DynamicBrakePercent == -1)
                 {
                     if (HasStepCtrl)
-                        notchedThrottleCommandNeeded = true;
+                    notchedThrottleCommandNeeded = true;
                     else
                         StartThrottleIncrease(null);
                 }
@@ -1166,11 +1159,9 @@ namespace ORTS
             }
             else
             {
-                StartThrottleIncrease(null);
+                StartThrottleIncrease( null );
             }
-            // By GeorgeS
-            if (EventID.IsMSTSBin)
-                SignalEvent(EventID.PowerHandler);
+            SignalEvent(Event.ThrottleChange);
             return notchedThrottleCommandNeeded;
         }
 
@@ -1204,16 +1195,14 @@ namespace ORTS
             CommandStartTime = Simulator.ClockTime;
             ThrottleController.StartDecrease( target );
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
-            // By GeorgeS
-            if( EventID.IsMSTSBin )
-                SignalEvent( EventID.PowerHandler );
+            SignalEvent(Event.ThrottleChange);
         }
 
         public bool StartThrottleDecrease()
         {
             bool notchedThrottleCommandNeeded = false;
             AlerterReset();
-
+            
             CommandStartTime = Simulator.ClockTime;
 
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
@@ -1224,7 +1213,7 @@ namespace ORTS
             {
                 if (ThrottlePercent == 0)
                 {
-                    StartDynamicBrakeIncrease(null);
+                    StartDynamicBrakeIncrease( null );
 
                     if (!HasSmoothStruc)
                         StopDynamicBrakeIncrease();
@@ -1232,7 +1221,7 @@ namespace ORTS
                 if (DynamicBrakePercent == -1)
                 {
                     if (HasStepCtrl)
-                        notchedThrottleCommandNeeded = true;
+                    notchedThrottleCommandNeeded = true;
                     else
                         StartThrottleDecrease(null);
                 }
@@ -1244,11 +1233,9 @@ namespace ORTS
             }
             else
             {
-                StartThrottleDecrease(null);
+                StartThrottleDecrease( null );
             }
-            // By GeorgeS
-            if (EventID.IsMSTSBin)
-                SignalEvent(EventID.PowerHandler);
+            SignalEvent(Event.ThrottleChange);
             return notchedThrottleCommandNeeded;
         }
 
@@ -1321,9 +1308,7 @@ namespace ORTS
             AlerterReset();
             TrainBrakeController.StartIncrease( target );
             Simulator.Confirmer.Confirm( CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus() );
-            // By GeorgeS
-            if (EventID.IsMSTSBin)
-                SignalEvent(EventID.TrainBrakeSet);
+                SignalEvent(Event.TrainBrakeChange);
         }
 
         public void StopTrainBrakeIncrease()
@@ -1336,9 +1321,7 @@ namespace ORTS
             AlerterReset();
             TrainBrakeController.StartDecrease( target );
             Simulator.Confirmer.Confirm( CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus() );
-            // By GeorgeS
-            if (EventID.IsMSTSBin)
-                SignalEvent(EventID.TrainBrakeSet);
+            SignalEvent(Event.TrainBrakeChange);
         }
 
         public void StopTrainBrakeDecrease()
@@ -1401,10 +1384,10 @@ namespace ORTS
             if (TrainBrakeController.GetIsEmergency())
                 return;
             if(EmergencyCausesThrottleDown) ThrottleController.SetValue(0.0f);
-            if (EmergencyCausesPowerDown) { SignalEvent(EventID.Pantograph1Down); SignalEvent(EventID.Pantograph2Down); }
-            if (EmergencyEngagesHorn) SignalEvent(EventID.HornOn);
+            if (EmergencyCausesPowerDown) { SignalEvent(Event.Pantograph1Down); SignalEvent(Event.Pantograph2Down); }
+            if (EmergencyEngagesHorn) SignalEvent(Event.HornOn);
             TrainBrakeController.SetEmergency();
-            SignalEvent(EventID.TrainBrakeEmergency);
+            SignalEvent(Event.TrainBrakePressureDecrease);
             Simulator.Confirmer.Confirm( CabControl.EmergencyBrake, CabSetting.On );
         }
 
@@ -1515,8 +1498,8 @@ namespace ORTS
                 {
                     StopDynamicBrakeIncrease();
                     Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
-                }
             }
+        }
         }
 
         public bool StopDynamicBrakeIncrease()
@@ -1541,14 +1524,14 @@ namespace ORTS
                 DynamicBrakePercent = -1;
             else
             {
-                DynamicBrakeController.StartDecrease(target);
+                DynamicBrakeController.StartDecrease( target );
 
                 if (!HasSmoothStruc)
                 {
                     StopDynamicBrakeDecrease();
                     Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
-                }
             }
+        }
         }
 
         public bool StopDynamicBrakeDecrease()
@@ -1608,12 +1591,12 @@ namespace ORTS
 
         public void ToggleCabLight() {
             CabLightOn = !CabLightOn;
-            SignalEvent( EventID.LightSwitchToggle );
+            SignalEvent(Event.LightSwitchToggle);
             Simulator.Confirmer.Confirm( CabControl.CabLight, CabLightOn ? CabSetting.On : CabSetting.Off );
         }
 
         public void ToggleWipers() {
-            SignalEvent( Wiper ? EventID.WiperOff : EventID.WiperOn );
+            SignalEvent(Wiper ? Event.WiperOff : Event.WiperOn);
         }
 
 #if NEW_SIGNALLING
@@ -1683,7 +1666,7 @@ namespace ORTS
             int penaltyAlarm = startTime + 49;
             timerAlerter1.AlerterEnableSetup(startTime, alterterAlarm);
             timerAlerter2.AlerterEnableSetup(startTime, penaltyAlarm);
-            //SignalEvent(EventID.AlerterSndOff);
+            //SignalEvent(Event.AlerterSoundOff);
         }
 
         public void AlerterReset()
@@ -1701,54 +1684,58 @@ namespace ORTS
             AlerterEnableGetTime();
         }
 
-        /// <summary>
-        /// Used when someone want to notify us of an event
-        /// </summary>
-        public override void SignalEvent(EventID eventID)
+        public override void SignalEvent(Event evt)
         {
-            do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
+            switch (evt)
             {
-                if( eventID == EventID.AlerterSndOn ) { AlerterSnd = true; Simulator.Confirmer.Confirm( CabControl.Alerter, CabSetting.On ); break; }
-                if( eventID == EventID.AlerterSndOff ) { AlerterSnd = false; Simulator.Confirmer.Confirm( CabControl.Alerter, CabSetting.Off ); break; }
-                if( eventID == EventID.BellOn ) { Bell = true; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.On ); break; }
-                if( eventID == EventID.BellOff ) { Bell = false; Simulator.Confirmer.Confirm( CabControl.Bell, CabSetting.Off ); break; }
-                if( eventID == EventID.HornOn ) { 
-                    Horn = true;
-					if (this != Program.Simulator.PlayerLocomotive) break;
-                    if( this is MSTSSteamLocomotive) {
-                        Simulator.Confirmer.Confirm( CabControl.Whistle, CabSetting.On );
-                    } else {
-                        Simulator.Confirmer.Confirm( CabControl.Horn, CabSetting.On );
+                case Event.VigilanceAlarmOn: { AlerterSnd = true; Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.On); break; }
+                case Event.VigilanceAlarmOff: { AlerterSnd = false; Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.Off); break; }
+                case Event.BellOn: { Bell = true; Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
+                case Event.BellOff: { Bell = false; Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
+                case Event.HornOn:
+                    {
+                        Horn = true;
+                        if (this != Program.Simulator.PlayerLocomotive) break;
+                        if (this is MSTSSteamLocomotive)
+                        {
+                            Simulator.Confirmer.Confirm(CabControl.Whistle, CabSetting.On);
+                        }
+                        else
+                        {
+                            Simulator.Confirmer.Confirm(CabControl.Horn, CabSetting.On);
+                        }
+                        break;
                     }
-                    break;
-                }
-                if( eventID == EventID.HornOff ) {
-                    Horn = false;
-					if (this != Program.Simulator.PlayerLocomotive) break;
-                    if( this is MSTSSteamLocomotive ) {
-                        Simulator.Confirmer.Confirm( CabControl.Whistle, CabSetting.Off );
-                    } else {
-                        Simulator.Confirmer.Confirm( CabControl.Horn, CabSetting.Off );
+                case Event.HornOff:
+                    {
+                        Horn = false;
+                        if (this != Program.Simulator.PlayerLocomotive) break;
+                        if (this is MSTSSteamLocomotive)
+                        {
+                            Simulator.Confirmer.Confirm(CabControl.Whistle, CabSetting.Off);
+                        }
+                        else
+                        {
+                            Simulator.Confirmer.Confirm(CabControl.Horn, CabSetting.Off);
+                        }
+                        break;
                     }
-                    break;
-                }
-                if( eventID == EventID.SanderOn ) { Sander = true; if (this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.On ); break; }
-                if( eventID == EventID.SanderOff ) { Sander = false; if( this.IsLeadLocomotive() ) Simulator.Confirmer.Confirm( CabControl.Sander, CabSetting.Off ); break; }
-				if (eventID == EventID.WiperOn) { Wiper = true; if (this == Program.Simulator.PlayerLocomotive) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
-				if (eventID == EventID.WiperOff) { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
-                
+                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive()) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
+                case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive()) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
+                case Event.WiperOn: { Wiper = true; if (this == Program.Simulator.PlayerLocomotive) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
+                case Event.WiperOff: { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
+
                 // <CJ Comment> The "H" key doesn't call these SignalEvents yet. </CJ Comment>
-                if( eventID == EventID.HeadlightOff ) { Headlight = 0; break; }
-                if( eventID == EventID.HeadlightDim ) { Headlight = 1; break; }
-                if( eventID == EventID.HeadlightOn ) { Headlight = 2; break; }
+                case Event._HeadlightOff: { Headlight = 0; break; }
+                case Event._HeadlightDim: { Headlight = 1; break; }
+                case Event._HeadlightOn: { Headlight = 2; break; }
 
-                if( eventID == EventID.CompressorOn ) { CompressorOn = true; break; }
-                if( eventID == EventID.CompressorOff ) { CompressorOn = false; break; }
-				if (eventID == EventID.LightSwitchToggle) { break; }
-                if (eventID == EventID.ResetWheelSlip) { LocomotiveAxle.Reset(SpeedMpS); ThrottleController.SetValue(0.0f); break; }
-			} while (false);  // Never repeats
+                case Event.CompressorOn: { CompressorOn = true; break; }
+                case Event.CompressorOff: { CompressorOn = false; break; }
+                case Event._ResetWheelSlip: { LocomotiveAxle.Reset(SpeedMpS); ThrottleController.SetValue(0.0f); break; }
+            }
 
-            base.SignalEvent(eventID );
+            base.SignalEvent(evt);
         }
 
         /// <summary>
@@ -1768,7 +1755,7 @@ namespace ORTS
                 {
                     if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
                         alarm1Fired = true;
-                    //SignalEvent(EventID.AlerterOn);
+                    //SignalEvent(Event.AlerterOn);
                 }
 
                 if (timerAlerter2.AlerterIsEnabled)
@@ -1783,13 +1770,13 @@ namespace ORTS
                 if (alarm1Fired)
                 {
                     if( ! AlerterSnd ) {
-                        SignalEvent( EventID.AlerterSndOn );
+                        SignalEvent(Event.VigilanceAlarmOn);
                     }
                 }
                 else
                 {
                     if( AlerterSnd ) {
-                        SignalEvent( EventID.AlerterSndOff );
+                        SignalEvent(Event.VigilanceAlarmOff);
                     }
                 }
             }
@@ -1994,7 +1981,7 @@ namespace ORTS
                             {
                                 data = 1;
                                 if( ! AlerterSnd ) {
-                                    SignalEvent( EventID.AlerterSndOn );
+                                    SignalEvent(Event.VigilanceAlarmOn);
                                 }
                             }
                             else if (alarm2Fired)
@@ -2003,7 +1990,7 @@ namespace ORTS
                             {
                                 data = 0;
                                 if( AlerterSnd ) {
-                                    SignalEvent( EventID.AlerterSndOff );
+                                    SignalEvent(Event.VigilanceAlarmOff);
                                 }
                             }
                         }
@@ -2494,8 +2481,8 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
 
             // By Matej Pacha
-            if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(EventID.ResetWheelSlip); }
-            if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(EventID.ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
+            if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); }
+            if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
 
             if (UserInput.RDState != null)
             {
@@ -2518,9 +2505,9 @@ namespace ORTS
                         Locomotive.SetEmergency();
                     }
                     if (UserInput.RDState.Wipers == 1 && Locomotive.Wiper)
-                        Locomotive.SignalEvent(EventID.WiperOff);
+                        Locomotive.SignalEvent(Event.WiperOff);
                     if (UserInput.RDState.Wipers != 1 && !Locomotive.Wiper)
-                        Locomotive.SignalEvent(EventID.WiperOn);
+                        Locomotive.SignalEvent(Event.WiperOn);
                     // changing Headlight more than one step at a time doesn't work for some reason
                     if (Locomotive.Headlight < UserInput.RDState.Lights - 1)
                         Locomotive.Headlight++;
@@ -2597,11 +2584,11 @@ namespace ORTS
             {
                 if (Locomotive.CabViewList.Count > 0)
                 {
-                    _hasCabRenderer = true;
+                _hasCabRenderer = true;
                     if (Locomotive.CabViewList[(int)CabViewType.Front].CVFFile != null && Locomotive.CabViewList[(int)CabViewType.Front].CVFFile.TwoDViews.Count > 0)
-                        _CabRenderer = new CabRenderer(Viewer, Locomotive);
-                }
+                    _CabRenderer = new CabRenderer(Viewer, Locomotive);
             }
+        }
         }
 
         internal override void Mark()
@@ -2955,7 +2942,7 @@ namespace ORTS
 
         public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
         {
-            //Sequence = RenderPrimitiveSequence.CabView;
+			//Sequence = RenderPrimitiveSequence.CabView;
             _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
             _Viewer = viewer;
             _Locomotive = car;
@@ -2967,7 +2954,7 @@ namespace ORTS
             // Use same shader for both front-facing and rear-facing cabs.
             if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
             {
-                _Shader = new CabShader(viewer.GraphicsDevice, viewer.RenderProcess.Content,
+                _Shader = new CabShader( viewer.GraphicsDevice, viewer.RenderProcess.Content,
                     _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
                     _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
                     _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
@@ -2982,59 +2969,59 @@ namespace ORTS
             {
                 if (cabView.CVFFile != null)
                 {
-                    // Loading ACE files, skip displaying ERROR messages
+            // Loading ACE files, skip displaying ERROR messages
                     foreach (var cabfile in cabView.CVFFile.TwoDViews)
-                    {
-                        CABTextureManager.LoadTextures(viewer, cabfile);
-                    }
+            {
+                CABTextureManager.LoadTextures(viewer, cabfile);
+            }
 
                     CabViewControlRenderersList.Add(new List<CabViewControlRenderer>());
                     foreach (CabViewControl cvc in cabView.CVFFile.CabViewControls)
+            {
+                    CVCDial dial = cvc as CVCDial;
+                    if (dial != null)
                     {
-                        CVCDial dial = cvc as CVCDial;
-                        if (dial != null)
-                        {
-                            CabViewDialRenderer cvcr = new CabViewDialRenderer(dial, viewer, car, _Shader);
+                        CabViewDialRenderer cvcr = new CabViewDialRenderer(dial, viewer, car, _Shader);
                             CabViewControlRenderersList[i].Add(cvcr);
-                            continue;
-                        }
-                        CVCGauge gauge = cvc as CVCGauge;
-                        if (gauge != null)
-                        {
-                            CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(gauge, viewer, car, _Shader);
+                        continue;
+                    }
+                    CVCGauge gauge = cvc as CVCGauge;
+                    if (gauge != null)
+                    {
+                        CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(gauge, viewer, car, _Shader);
                             CabViewControlRenderersList[i].Add(cvgr);
-                            continue;
-                        }
-                        CVCSignal asp = cvc as CVCSignal;
-                        if (asp != null)
-                        {
-                            CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(asp, viewer, car, _Shader);
+                        continue;
+                    }
+                    CVCSignal asp = cvc as CVCSignal;
+                    if (asp != null)
+                    {
+                        CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(asp, viewer, car, _Shader);
                             CabViewControlRenderersList[i].Add(aspr);
-                            continue;
-                        }
-                        CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
-                        if (multi != null)
-                        {
-                            CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(multi, viewer, car, _Shader);
+                        continue;
+                    }
+                    CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
+                    if (multi != null)
+                    {
+                        CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(multi, viewer, car, _Shader);
                             CabViewControlRenderersList[i].Add(mspr);
-                            continue;
-                        }
-                        CVCDiscrete disc = cvc as CVCDiscrete;
-                        if (disc != null)
-                        {
-                            CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(disc, viewer, car, _Shader);
+                        continue;
+                    }
+                    CVCDiscrete disc = cvc as CVCDiscrete;
+                    if (disc != null)
+                    {
+                        CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(disc, viewer, car, _Shader);
                             CabViewControlRenderersList[i].Add(cvdr);
-                            continue;
-                        }
-                        CVCDigital digital = cvc as CVCDigital;
-                        if (digital != null)
-                        {
-                            CabViewDigitalRenderer cvdr = new CabViewDigitalRenderer(digital, viewer, car, _Shader);
+                        continue;
+                    }
+                    CVCDigital digital = cvc as CVCDigital;
+                    if (digital != null)
+                    {
+                        CabViewDigitalRenderer cvdr = new CabViewDigitalRenderer(digital, viewer, car, _Shader);
                             CabViewControlRenderersList[i].Add(cvdr);
-                            continue;
-                        }
+                        continue;
                     }
                 }
+            }
                 i++;
             }
             #endregion
@@ -3081,7 +3068,7 @@ namespace ORTS
             if (_Location == 0)
                 foreach (var cvcr in CabViewControlRenderersList[i])
                     cvcr.PrepareFrame(frame);
-        }
+                }
         
         public override void Draw(GraphicsDevice graphicsDevice)
         {
@@ -3099,8 +3086,8 @@ namespace ORTS
             }
 
             if (_CabTexture != null)
-                _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, stretchedCab, Color.White);
-                //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
+            _Sprite2DCabView.SpriteBatch.Draw( _CabTexture, stretchedCab, Color.White );
+            //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
 
             if (_Location == 0 && _Shader != null)
             {

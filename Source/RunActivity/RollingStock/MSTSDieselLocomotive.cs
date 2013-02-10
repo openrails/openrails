@@ -159,8 +159,6 @@ namespace ORTS
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
-            // for example
-            //if (inf.ReadBoolean()) SignalEvent(EventID.PantographUp);
             base.Restore(inf);
             DieselLevelL = inf.ReadSingle();
         }
@@ -531,28 +529,13 @@ namespace ORTS
             }
 
             if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorOn) && (PowerOn))
-                SignalEvent(EventID.CompressorOn);
+                SignalEvent(Event.CompressorOn);
             else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
-                SignalEvent(EventID.CompressorOff);
+                SignalEvent(Event.CompressorOff);
             if ((CompressorOn)&&(PowerOn))
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
             base.UpdateParent(elapsedClockSeconds); // Calls the Update() method in the parent class MSTSLocomotive which calls Update() on its parent MSTSWagon which calls ...
-        }
-
-        /// <summary>
-        /// Used when someone want to notify us of an event
-        /// </summary>
-        public override void SignalEvent(EventID eventID)
-        {
-            do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
-            {
-                // for example
-                // case EventID.BellOn: Bell = true; break;
-                // case EventID.BellOff: Bell = false; break;
-  			} while (false);  // Never repeats
-
-            base.SignalEvent(eventID);
         }
 
         public override string GetStatus()

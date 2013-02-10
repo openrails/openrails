@@ -414,9 +414,9 @@ namespace ORTS {
 
         public override void Redo() {
             if( ToState ) {
-                Receiver.Train.SignalEvent( EventID.SanderOff );
+                Receiver.Train.SignalEvent(Event.SanderOff);
             } else {
-                Receiver.Train.SignalEvent( EventID.SanderOn );
+                Receiver.Train.SignalEvent(Event.SanderOn);
             }
             // Report();
         }
@@ -451,7 +451,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
-            Receiver.SignalEvent( ToState ? EventID.HornOn : EventID.HornOff );
+            Receiver.SignalEvent(ToState ? Event.HornOn : Event.HornOff);
             // Report();
         }
 
@@ -470,7 +470,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
-            Receiver.SignalEvent( ToState ? EventID.BellOn : EventID.BellOff );
+            Receiver.SignalEvent(ToState ? Event.BellOn : Event.BellOff);
             // Report();
         }
 
@@ -513,17 +513,13 @@ namespace ORTS {
                     case 0: Receiver.Headlight = 1; Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Neutral ); break;
                     case 1: Receiver.Headlight = 2; Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.On ); break;
                 }
-                // By GeorgeS
-                if( EventID.IsMSTSBin )
-                    Receiver.SignalEvent( EventID.LightSwitchToggle );
+                Receiver.SignalEvent(Event.LightSwitchToggle);
             } else {
                 switch( Receiver.Headlight ) {
                     case 1: Receiver.Headlight = 0; Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Off ); break;
                     case 2: Receiver.Headlight = 1; Receiver.Simulator.Confirmer.Confirm( CabControl.Headlight, CabSetting.Neutral ); break;
                 }
-                // By GeorgeS
-                if( EventID.IsMSTSBin )
-                    Receiver.SignalEvent( EventID.LightSwitchToggle );
+                Receiver.SignalEvent(Event.LightSwitchToggle);
             }
             // Report();
         }

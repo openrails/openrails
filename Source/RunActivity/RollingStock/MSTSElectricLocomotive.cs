@@ -118,12 +118,9 @@ namespace ORTS
             PantographFirstUp = inf.ReadBoolean();
             PantographSecondUp = inf.ReadBoolean();
             PowerOn = inf.ReadBoolean();
-
             Pan = inf.ReadBoolean();
             Pan1Up = inf.ReadBoolean();
             Pan2Up = inf.ReadBoolean();
-
-            //if (inf.ReadBoolean()) SignalEvent(EventID.PantographUp);
             base.Restore(inf);
         }
 
@@ -190,20 +187,17 @@ namespace ORTS
         /// <summary>
         /// Used when someone want to notify us of an event
         /// </summary>
-        public override void SignalEvent( EventID eventID)
+        public override void SignalEvent(Event evt)
         {
-            do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
+            switch (evt)
             {
-                // for example
-                // case EventID.BellOn: Bell = true; break;
-                // case EventID.BellOff: Bell = false; break;
-                if (eventID == EventID.Pantograph1Down) { SetPantographFirst(false); break; }
-                if (eventID == EventID.Pantograph2Down) { SetPantographSecond(false); break; }
-                if (eventID == EventID.Pantograph1Up) { SetPantographFirst(true); break; }
-                if (eventID == EventID.Pantograph2Up) { SetPantographSecond(true); break; }
-            } while( false );  // Never repeats
+                case Event.Pantograph1Up: { SetPantographFirst(true); break; }
+                case Event.Pantograph1Down: { SetPantographFirst(false); break; }
+                case Event.Pantograph2Up: { SetPantographSecond(true); break; }
+                case Event.Pantograph2Down: { SetPantographSecond(false); break; }
+            }
 
-            base.SignalEvent( eventID );
+            base.SignalEvent(evt);
         }
 
         /// <summary>

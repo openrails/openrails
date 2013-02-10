@@ -151,7 +151,7 @@ namespace ORTS.Debugging
          // initialise the timer used to handle user input
          UITimer = new Timer();
          UITimer.Interval = 100;
-         UITimer.Tick += new EventHandler(UITimer_Tick);
+         UITimer.Tick += new System.EventHandler(UITimer_Tick);
          UITimer.Start();
 
          ViewWindow = new RectangleF(0, 0, 5000f, 5000f);

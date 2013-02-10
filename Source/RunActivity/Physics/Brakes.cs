@@ -312,9 +312,8 @@ namespace ORTS
             {
                 switch (TripleValveState)
                 {
-                    case ValveState.Release: Car.SignalEvent(EventID.TrainBrakeRelease); break;
-                    case ValveState.Apply: Car.SignalEvent(EventID.TrainBrakeApply); break;
-                    case ValveState.Emergency: Car.SignalEvent(EventID.TrainBrakeEmergency); break;
+                    case ValveState.Release: Car.SignalEvent(Event.TrainBrakePressureDecrease); break;
+                    case ValveState.Apply: case ValveState.Emergency: Car.SignalEvent(Event.TrainBrakePressureIncrease); break;
                 }
             }
             if (BrakeLine3PressurePSI >= 1000)
@@ -448,8 +447,8 @@ namespace ORTS
                     if (lead.EngineBrakeState != prevState)
                         switch (lead.EngineBrakeState)
                         {
-                            case AirSinglePipe.ValveState.Release: lead.SignalEvent(EventID.EngineBrakeRelease); break;
-                            case AirSinglePipe.ValveState.Apply: lead.SignalEvent(EventID.EngineBrakeApply); break;
+                            case AirSinglePipe.ValveState.Release: lead.SignalEvent(Event.EngineBrakePressureIncrease); break;
+                            case AirSinglePipe.ValveState.Apply: lead.SignalEvent(Event.EngineBrakePressureDecrease); break;
                         }
                     if (lead.BailOff || (lead.DynamicBrakeAutoBailOff && Car.Train.MUDynamicBrakePercent > 0))
                         p += 1000;
@@ -579,9 +578,8 @@ namespace ORTS
             {
                 switch (TripleValveState)
                 {
-                    case ValveState.Release: Car.SignalEvent(EventID.TrainBrakeRelease); break;
-                    case ValveState.Apply: Car.SignalEvent(EventID.TrainBrakeApply); break;
-                    case ValveState.Emergency: Car.SignalEvent(EventID.TrainBrakeEmergency); break;
+                    case ValveState.Release: Car.SignalEvent(Event.TrainBrakePressureIncrease); break;
+                    case ValveState.Apply: case ValveState.Emergency: Car.SignalEvent(Event.TrainBrakePressureDecrease); break;
                 }
             }
             if (BrakeLine3PressurePSI >= 1000)
@@ -673,8 +671,8 @@ namespace ORTS
             {
                 switch (epState)
                 {
-                    case ValveState.Release: Car.SignalEvent(EventID.TrainBrakeRelease); break;
-                    case ValveState.Apply: Car.SignalEvent(EventID.TrainBrakeApply); break;
+                    case ValveState.Release: Car.SignalEvent(Event.TrainBrakePressureDecrease); break;
+                    case ValveState.Apply: Car.SignalEvent(Event.TrainBrakePressureIncrease); break;
                 }
             }
             if (BrakeLine3PressurePSI >= 1000)

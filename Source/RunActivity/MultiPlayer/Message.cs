@@ -1742,7 +1742,7 @@ namespace ORTS.MultiPlayer
 
 			if (EventName == "HORN")
 			{
-				t.SignalEvent(EventState);
+				t.SignalEvent(EventState == 1 ? Event.HornOn : Event.HornOff);
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "PANTO2")
@@ -1769,19 +1769,19 @@ namespace ORTS.MultiPlayer
 			}
 			else if (EventName == "BELL")
 			{
-				if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? EventID.BellOff : EventID.BellOn);
+                if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? Event.BellOff : Event.BellOn);
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "WIPER")
 			{
-				if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? EventID.WiperOff : EventID.WiperOn);
+                if (t.LeadLocomotive != null) t.LeadLocomotive.SignalEvent(EventState == 0 ? Event.WiperOff : Event.WiperOn);
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else if (EventName == "HEADLIGHT")
 			{
-				if (t.LeadLocomotive != null && EventState == 0) t.LeadLocomotive.SignalEvent(EventID.HeadlightOff);
-				if (t.LeadLocomotive != null && EventState == 1) t.LeadLocomotive.SignalEvent(EventID.HeadlightDim);
-				if (t.LeadLocomotive != null && EventState == 2) t.LeadLocomotive.SignalEvent(EventID.HeadlightOn);
+                if (t.LeadLocomotive != null && EventState == 0) t.LeadLocomotive.SignalEvent(Event._HeadlightOff);
+                if (t.LeadLocomotive != null && EventState == 1) t.LeadLocomotive.SignalEvent(Event._HeadlightDim);
+                if (t.LeadLocomotive != null && EventState == 2) t.LeadLocomotive.SignalEvent(Event._HeadlightOn);
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
 			}
 			else return;

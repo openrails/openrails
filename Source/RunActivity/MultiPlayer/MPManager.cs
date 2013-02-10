@@ -729,9 +729,9 @@ namespace ORTS.MultiPlayer
 				RequestControl();
 			}
 
-			if (UserInput.IsPressed(UserCommands.ControlHorn))	Notify((new MSGEvent(GetUserName(), "HORN", EventID.HornOn)).ToString());
+            if (UserInput.IsPressed(UserCommands.ControlHorn)) Notify((new MSGEvent(GetUserName(), "HORN", 1)).ToString());
 
-			if (UserInput.IsReleased(UserCommands.ControlHorn)) Notify((new MSGEvent(GetUserName(), "HORN", EventID.HornOff)).ToString());
+            if (UserInput.IsReleased(UserCommands.ControlHorn)) Notify((new MSGEvent(GetUserName(), "HORN", 0)).ToString());
 			
 			if (UserInput.IsPressed(UserCommands.ControlPantograph2)) Notify((new MSGEvent(GetUserName(), "PANTO2", (++PantoSecondCount)%2)).ToString());
 

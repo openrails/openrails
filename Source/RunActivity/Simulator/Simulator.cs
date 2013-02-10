@@ -397,14 +397,14 @@ namespace ORTS
 
 			FinishCoupling(drivenTrain, train);
 
-			drivenTrain.FirstCar.SignalEvent(EventID.Couple);
+            drivenTrain.FirstCar.SignalEvent(Event.Couple);
 		}
 
 		private void FinishRearCoupling(Train drivenTrain, Train train)
 		{
 			drivenTrain.RepositionRearTraveller();
 			FinishCoupling(drivenTrain, train);
-			drivenTrain.LastCar.SignalEvent(EventID.Couple);
+            drivenTrain.LastCar.SignalEvent(Event.Couple);
 		}
 
 		private void FinishCoupling(Train drivenTrain, Train train)
@@ -431,14 +431,14 @@ namespace ORTS
 
             FinishCoupling(drivenTrain, train, true);
 
-            drivenTrain.FirstCar.SignalEvent(EventID.Couple);
+            drivenTrain.FirstCar.SignalEvent(Event.Couple);
         }
 
         private void FinishRearCoupling(Train drivenTrain, Train train)
         {
             drivenTrain.RepositionRearTraveller();
             FinishCoupling(drivenTrain, train, false);
-            drivenTrain.LastCar.SignalEvent(EventID.Couple);
+            drivenTrain.LastCar.SignalEvent(Event.Couple);
         }
 
         private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front)
@@ -1311,7 +1311,7 @@ namespace ORTS
 			train.Update(0);   // stop the wheels from moving etc
 			train2.Update(0);  // stop the wheels from moving etc
 
-			car.SignalEvent(EventID.Uncouple);
+            car.SignalEvent(Event.Uncouple);
 			// TODO which event should we fire
 			//car.CreateEvent(62);  these are listed as alternate events
 			//car.CreateEvent(63);

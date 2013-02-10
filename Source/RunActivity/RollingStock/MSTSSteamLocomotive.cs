@@ -911,20 +911,6 @@ namespace ORTS
 			Injector2Controller.CurrentValue = I2;
 			Injector2Controller.UpdateValue = 0.0f;
 		}
-
-        /// <summary>
-        /// Used when someone want to notify us of an event
-        /// </summary>
-        public override void SignalEvent( EventID eventID ) {
-            do  // Like 'switch' (i.e. using 'break' is more efficient than a sequence of 'if's) but doesn't need constant EventID.<values>
-            {
-                // for example
-                // case EventID.BellOn: Bell = true; break;
-                // case EventID.BellOff: Bell = false; break;
-            } while( false );  // Never repeats
-
-            base.SignalEvent( eventID );
-        }
     } // class SteamLocomotive
 
     ///////////////////////////////////////////////////

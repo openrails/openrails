@@ -527,7 +527,7 @@ namespace ORTS
             {
                 try
                 {
-                    Sound = new SoundSource(viewer, position.WorldLocation, viewer.Simulator.RoutePath + @"\\sound\\crossing.sms");
+                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, viewer.Simulator.RoutePath + @"\\sound\\crossing.sms");
                     viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch (Exception error)
@@ -562,7 +562,7 @@ namespace ORTS
             if (Opening == Crossing.HasTrain)
             {
                 Opening = !Crossing.HasTrain;
-                if (!CrossingObj.silent) Sound.HandleEvent(Opening ? 4 : 3);
+                if (!CrossingObj.silent) Sound.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
             }
 
             // Looping when animTiming < 0 (forwards then backwards then forwards again).

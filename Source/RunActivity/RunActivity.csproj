@@ -226,7 +226,7 @@
     <Compile Include="MultiPlayer\Server.cs" />
     <Compile Include="MultiPlayer\ServerComm.cs" />
     <Compile Include="Physics\Brakes.cs" />
-    <Compile Include="Physics\Events.cs" />
+    <Compile Include="Common\Events.cs" />
     <Compile Include="Popups\ActivityWindow.cs" />
     <Compile Include="Popups\CompassWindow.cs" />
     <Compile Include="Popups\PauseWindow.cs" />

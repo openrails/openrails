@@ -324,7 +324,7 @@ namespace ORTS {
         public DateTime CompletedAt { get; internal set; }
         public string DisplayMessage { get; internal set; }
         public Color DisplayColor { get; internal set; }
-        public int SoundNotify = -1;
+        public Event SoundNotify = Event.None;
 
         public virtual void NotifyEvent( ActivityEventType EventType ) {
         }
@@ -343,7 +343,7 @@ namespace ORTS {
             IsCompleted = rdval == -1 ? (bool?)null : rdval == 0 ? false : true;
             CompletedAt = new DateTime( inf.ReadInt64() );
             DisplayMessage = inf.ReadString();
-            SoundNotify = inf.ReadInt32();
+            SoundNotify = (Event)inf.ReadInt32();
         }
     }
 
@@ -602,7 +602,7 @@ namespace ORTS {
                     else if( !maydepart ) {
                         maydepart = true;
                         DisplayMessage = "Passenger boarding completed. You may depart now.";
-                        SoundNotify = 60;
+                        SoundNotify = Event.PermissionToDepart;
                     }
                 } else {
                     // Checking missed station

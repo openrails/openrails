@@ -17,7 +17,7 @@ namespace ORTS
         public Vector3 RotationLimit;
     }
 
-    public class TrainCar
+    public abstract class TrainCar
     {
         public readonly Simulator Simulator;
         public readonly string WagFilePath;
@@ -125,8 +125,11 @@ namespace ORTS
             }
         }
 
-        // Notifications from others of key outside events, ie coupling etc, pantograph up etc
-        public virtual void SignalEvent(EventID eventID) { }
+        /// <summary>
+        /// Signals an event from an external source (player, multi-player controller, etc.) for this car.
+        /// </summary>
+        /// <param name="evt"></param>
+        public virtual void SignalEvent(Event evt) { }
 
         public virtual string GetStatus() { return null; }
         public virtual string GetTrainBrakeStatus() { return null; }

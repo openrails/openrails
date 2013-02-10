@@ -48,7 +48,7 @@ namespace ORTS
                 // Keep it silent while loading.
                 ALSoundSource.MuteAll();
                 // TODO: This looks kinda evil; do something about it.
-                GameSounds = new SoundSource(viewer, viewer.Simulator.RoutePath + "\\Sound\\ingame.sms");
+                GameSounds = new SoundSource(viewer, Events.Source.MSTSInGame, viewer.Simulator.RoutePath + "\\Sound\\ingame.sms");
                 Sounds = new WorldSounds(viewer);
             }
         }

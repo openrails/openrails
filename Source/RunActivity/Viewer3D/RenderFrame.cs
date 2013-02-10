@@ -428,7 +428,7 @@ namespace ORTS
                 // Hide MessageWindow
                 RenderProcess.Viewer.MessagesWindow.Visible = false;
                 // Audible confirmation that screenshot taken
-                if (RenderProcess.Viewer.World.GameSounds != null) RenderProcess.Viewer.World.GameSounds.HandleEvent(10);
+                if (RenderProcess.Viewer.World.GameSounds != null) RenderProcess.Viewer.World.GameSounds.HandleEvent(Event.ControlError);
             }
 
             // Use IsDown() not IsPressed() so users can take multiple screenshots as fast as possible by holding down the key.
