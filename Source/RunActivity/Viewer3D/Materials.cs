@@ -1104,6 +1104,8 @@ namespace ORTS
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
             shader.ImageTexture = TreeTexture;
 
+            graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
+
             var rs = graphicsDevice.RenderState;
 			rs.AlphaFunction = CompareFunction.GreaterEqual;
             rs.AlphaTestEnable = true;
