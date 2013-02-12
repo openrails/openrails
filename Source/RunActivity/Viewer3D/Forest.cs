@@ -160,8 +160,7 @@ namespace ORTS
                 tempPosition[i] = Vector3.Transform(treePosition[i], XNAWorldLocation);
                 treePosition[i] = tempPosition[i] - XNAWorldLocation.Translation;
                 // Get the terrain height at each position and set Y.
-				// TODO: What is this -0.8 here for?
-				treePosition[i].Y = tiles.GetElevation(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, (tempPosition[i].X + 1024) / 8, (tempPosition[i].Z + 1024) / 8) - refElevation - 0.8f;
+				treePosition[i].Y = tiles.GetElevation(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, (tempPosition[i].X + 1024) / 8, (tempPosition[i].Z + 1024) / 8) - refElevation;
                 // WVP transformation of the complete object takes place in the vertex shader.
 
                 // Randomize the tree size
