@@ -1101,12 +1101,8 @@ namespace ORTS {
             return new List<TrainCar>( new[] { Viewer.PlayerLocomotive } );
         }
 
-        protected void SetCameraCar( TrainCar car, float rotationXRadians ) {
-            SetCameraCar( car );
-            RotationXRadians = rotationXRadians;
-        }
-
-        protected override void SetCameraCar( TrainCar car ) {
+        protected override void SetCameraCar(TrainCar car)
+        {
             base.SetCameraCar( car );
             if (car != null)
             {
@@ -1121,25 +1117,39 @@ namespace ORTS {
 
         /// <summary>
         /// Switches to another cab view (e.g. side view).
-        /// Applies the rotation of the previous external view to the new external view. 
+        /// Applies the inclination of the previous external view due to PanUp() to the new external view. 
         /// </summary>
-        void ShiftView( int index, float rotationXRadians ) {
+        void ShiftView( int index ) {
+            var loco = attachedCar as MSTSLocomotive;
+
+            // Get inclination offset due to PanUp() from previous view. 
+            // Inclination or up/down angle is a rotation about the X axis.
+            var viewpointList = (loco.UsingRearCab)
+            ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
+            : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
+            var rotationXRadiansOffset = RotationXRadians - MSTSMath.M.Radians(viewpointList[sideLocation].StartDirection.X);
+
             sideLocation += index;
 
-            var loco = attachedCar as MSTSLocomotive;
             var count = (loco.UsingRearCab)
                 ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList.Count
                 : loco.CabViewList[(int)CabViewType.Front].ViewPointList.Count;
-            
             // Wrap around
-            if( sideLocation < 0 )
+            if (sideLocation < 0)
                 sideLocation = count - 1;
             else if( sideLocation >= count )
                 sideLocation = 0;
 
-            SetCameraCar( attachedCar, rotationXRadians );
+            SetCameraCar(attachedCar);
+            // Apply inclination offset due to PanUp() from previous view.
+            RotationXRadians += rotationXRadiansOffset;
         }
 
+        /// <summary>
+        /// Where cabview image doesn't fit the display exactly, this method mimics the player looking up
+        /// and pans the image down to reveal details at the top of the cab.
+        /// The external view also moves down by a similar amount.
+        /// </summary>
         void PanUp( bool up, float speed ) {
             int max = 0;
             int min = Viewer.DisplaySize.Y - Viewer.CabHeightPixels; // -ve value
@@ -1161,14 +1171,9 @@ namespace ORTS {
                 Viewer.CabYOffsetPixels = min;
                 return;
             }
-            // Adjust view through window to match
+            // Adjust inclination (up/down angle) of external view to match.
             var viewSpeed = speed * 0.00105f; // factor found by trial and error.
             RotationXRadians -= (up) ? viewSpeed : -viewSpeed;
-            var movement = new Vector3( 0, 0, 0 );
-            var matrix = Matrix.CreateRotationX( RotationXRadians );
-            movement = Vector3.Transform( movement, matrix );
-            cameraLocation.Location += movement;
-            cameraLocation.Normalize();
         }
 
         /// <summary>
@@ -1191,14 +1196,14 @@ namespace ORTS {
             var speedFactor = 500;  // Gives a fairly smart response.
             var speed = speedFactor * elapsedTime.RealSeconds; // Independent of framerate
 
-            if( UserInput.IsPressed( UserCommands.CameraPanLeft ) )
-                ShiftView( +1, RotationXRadians );
-            if( UserInput.IsPressed( UserCommands.CameraPanRight ) )
-                ShiftView( -1, RotationXRadians );
-            if( UserInput.IsDown( UserCommands.CameraPanUp ) )
-                PanUp( true, speed );
-            if( UserInput.IsDown( UserCommands.CameraPanDown ) )
-                PanUp( false, speed );
+            if( UserInput.IsPressed(UserCommands.CameraPanLeft))
+                ShiftView(+1);
+            if( UserInput.IsPressed(UserCommands.CameraPanRight))
+                ShiftView(-1);
+            if( UserInput.IsDown(UserCommands.CameraPanUp))
+                PanUp(true, speed);
+            if( UserInput.IsDown(UserCommands.CameraPanDown))
+                PanUp(false, speed);
         }
     }
 
