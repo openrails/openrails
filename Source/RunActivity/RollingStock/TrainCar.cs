@@ -328,7 +328,8 @@ namespace ORTS
                 }
             }
             // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
-            if (WheelAxles.Count >= 2)
+            // CHECK MUST BE > 2 FOR ARTICULATED STOCK TO WORK PROPERLY !!!!!
+            if (WheelAxles.Count > 2)
             {
                 WheelAxlesLoaded = true;
             }

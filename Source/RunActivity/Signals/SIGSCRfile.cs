@@ -228,7 +228,7 @@ namespace ORTS
                         scrStream.Close();
                     }
                 }
-                catch (Exception error)
+                catch (Exception)
                 {
                     Trace.TraceWarning("File missing for signal scripts - {0}", fullName);
                 }

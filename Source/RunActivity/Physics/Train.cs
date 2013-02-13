@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // This code is provided to enable you to contribute improvements to the open rails program.  
 // Use of the code for any other purpose or distribution of the code to anyone else
 // is prohibited without specific written permission from admin@openrails.org.
@@ -216,7 +216,7 @@ namespace ORTS
             get
             {
                 return aiBrakePercent;
-        }
+            }
             set
             {
                 aiBrakePercent = value;
@@ -230,7 +230,7 @@ namespace ORTS
             get
             {
                 return MUThrottlePercent;
-        }
+            }
             set
             {
                 MUThrottlePercent = value;
@@ -241,7 +241,7 @@ namespace ORTS
             get
             {
                 return MUDirection == Direction.Forward;
-        }
+            }
             set
             {
                 MUDirection = value ? Direction.Forward : Direction.Reverse;
@@ -1535,6 +1535,8 @@ namespace ORTS
                                 }
 
                                 SignalObjectItems.Insert(0, newObjectItem);
+                                listChanged = true;
+
                                 int foundIndex = ValidRoute[0].GetRouteIndex(newObjectItem.ObjectDetails.TCNextTC, thisIndex);
 
                                 if (foundIndex > 0)
@@ -6520,6 +6522,8 @@ namespace ORTS
 
         public void SetPendingSpeedLimit(ActivateSpeedLimit speedInfo)
         {
+            float prevMaxSpeedMpS = AllowedMaxSpeedMpS;
+
             if (speedInfo.MaxSpeedMpSSignal > 0)
             {
                 allowedMaxSpeedSignalMpS = speedInfo.MaxSpeedMpSSignal;
@@ -6531,6 +6535,11 @@ namespace ORTS
                 AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
             }
 
+            if (TrainType == TRAINTYPE.PLAYER && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
+            {
+                String message = "Allowed speed raised to " + FormatStrings.FormatSpeed(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric);
+                Simulator.Confirmer.Message(ConfirmLevel.Information, message);
+            }
         }
 
         //================================================================================================//
@@ -6952,11 +6961,15 @@ namespace ORTS
                     if (TCRoute.TCAlternativePaths != null) TCRoute.TCAlternativePaths.Clear();
                 }
                 if (ValidRoute[0] != null && ValidRoute[0].Count > 0)
+                {
                     signalRef.BreakDownRouteList(ValidRoute[0], 0, routedForward);
+                    ValidRoute[0].Clear();
+                }
                 if (ValidRoute[1] != null && ValidRoute[1].Count > 0)
+                {
                     signalRef.BreakDownRouteList(ValidRoute[1], 0, routedBackward);
-                ValidRoute[0].Clear();
-                ValidRoute[1].Clear();
+                    ValidRoute[1].Clear();
+                }
                 requiredActions.Clear();
 
                 if (TrafficService != null)

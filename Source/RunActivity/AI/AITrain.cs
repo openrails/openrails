@@ -1228,11 +1228,13 @@ namespace ORTS
                     {
                         DateTime baseDTCT = new DateTime();
                         DateTime arrTimeCT = baseDTCT.AddSeconds(presentTime);
+                        DateTime depTimeCT = baseDTCT.AddSeconds(thisStation.ActualDepart);
 
                         File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
                              Number.ToString() + " arrives station " +
                              StationStops[0].PlatformItem.Name + " at " +
-                             arrTimeCT.ToString("HH:mm:ss") + "\n");
+                             arrTimeCT.ToString("HH:mm:ss") + " ; dep. at " +
+                             depTimeCT.ToString("HH:mm:ss") + "\n");
                     }
                 }
             }
@@ -1248,6 +1250,14 @@ namespace ORTS
                 {
                     HoldingSignals.Remove(thisStation.ExitSignal);
                     SignalObject nextSignal = signalRef.SignalObjects[thisStation.ExitSignal];
+
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                             Number.ToString() + " clearing hold signal " + nextSignal.thisRef.ToString() + " at station " +
+                             StationStops[0].PlatformItem.Name + "\n");
+                    }
+                    
                     if (nextSignal.enabledTrain != null && nextSignal.enabledTrain.Train == this)
                     {
                         nextSignal.requestClearSignal(ValidRoute[0], routedForward, 0, false, null);// for AI always use direction 0

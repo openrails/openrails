@@ -367,11 +367,11 @@ namespace ORTS
             foreach (string fileName in FileEntries)
             {
                 string[] fparts = fileName.Split('.');
+                if (fparts.Length < 2)
+                    continue;
                 string[] fparts2 = fparts[fparts.Length - 2].Split('\\');
 
                 // check if valid file
-
-                bool validFile = true;
 
                 try
                 {
@@ -381,10 +381,10 @@ namespace ORTS
                 }
                 catch (Exception)
                 {
-                    validFile = false;
+                    continue;
                 }
 
-                if (string.Compare(fparts[fparts.Length - 1], "w") == 0 && validFile)
+                if (string.Compare(fparts[fparts.Length - 1], "w") == 0)
                 {
 
                     // read w-file, get SignalObjects only
@@ -949,7 +949,14 @@ namespace ORTS
 
             signalObjects[foundSignals].WorldObject = null;
 
-            SignalHeadList.Add((uint)TDBRef, signalObjects[foundSignals]);
+            if (SignalHeadList.ContainsKey((uint)TDBRef))
+            {
+                Trace.TraceInformation("Duplicate SignalHead TBDRef " + TDBRef.ToString() + " in signal " + signalObjects[foundSignals].thisRef.ToString() + "\n");
+            }
+            else
+            {
+                SignalHeadList.Add((uint)TDBRef, signalObjects[foundSignals]);
+            }
 
             foundSignals++;
             return foundSignals - 1;
