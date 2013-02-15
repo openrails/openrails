@@ -146,32 +146,47 @@ namespace ORTS
                     Trace.WriteLine(error);
                     if (settings.ShowErrorDialogs)
                         MessageBox.Show(String.Format(
-                            "Fatal error: Essential file not found so Open Rails cannnot continue.\n\n" +
-                            "Missing file = {0}",
-                            error.FileName),
-                        Application.ProductName);
+                                "An essential file is missing and {0} cannot continue.\n\n" +
+                                "    {1}",
+                                Application.ProductName, error.FileName),
+                                Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch (DirectoryNotFoundException error)
                 {
                     Trace.WriteLine(error);
                     if (settings.ShowErrorDialogs)
+                    {
+                        // This is a hack to try and extract the actual file name from the exception message. It isn't available anywhere else.
+                        var re = new Regex("'([^']+)'").Match(error.Message);
+                        var fileName = re != null ? re.Groups[1].Value : error.Message;
                         MessageBox.Show(String.Format(
-                            "Fatal error: Essential folder not found so Open Rails cannnot continue.\n\n" +
-                            "Missing folder = {0}",
-                            error.Message),
-                        Application.ProductName);
+                                "An essential folder is missing and {0} cannot continue.\n\n" +
+                                "    {1}",
+                                Application.ProductName, fileName),
+                                Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
                     if (settings.ShowErrorDialogs)
-                        MessageBox.Show(String.Format(
-                            "Fatal error: " + error.Message + "Open Rails cannot continue.\n\n" +
-                            ">>> Please report this event using the OR Bug Tracker <<<\n\n" +
-                            "This error may be result of bad data or a bug.\n" +
-                            "You can help improve OR by reporting this at http://launchpad.net/or\n" +
-                            "(our bug tracker) and attaching the Desktop file OpenRailsLog.txt"),
-                        Application.ProductName);
+                    {
+                        var errorSummary = error.GetType().FullName + ": " + error.Message;
+                        var logFile = Path.Combine(settings.LoggingPath, settings.LoggingFilename);
+                        var openTracker = MessageBox.Show(String.Format(
+                                "A fatal error has occured and {0} cannot continue.\n\n" +
+                                "    {1}\n\n" +
+                                "This error may be due to bad data or a bug. You can help improve {0} by reporting this error in our bug tracker at http://launchpad.net/or and attaching the log file {2}.\n\n" +
+                                ">>> Please report this error to the {0} bug tracker <<<",
+                                Application.ProductName, errorSummary, logFile),
+                                Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                        if (openTracker == DialogResult.OK)
+                            Process.Start("http://launchpad.net/or");
+                        // James Ross would prefer to do this:
+                        //   Process.Start("http://bugs.launchpad.net/or/+filebug?field.title=" + Uri.EscapeDataString(errorSummary));
+                        // but unfortunately if you need to log in (as most people might), Launchpad munges the title
+                        // and leaves you with garbage. Plus, landing straight on a login page might confuse some people.
+                    }
                 }
             }
         }
