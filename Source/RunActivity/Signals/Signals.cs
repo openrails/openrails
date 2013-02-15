@@ -2847,6 +2847,7 @@ namespace ORTS
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
 
             int routeIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+			if (routeIndex < 0) return; //By JTang, attempt to fix.
             thisElement = routePart[routeIndex];
             sectionIndex = thisElement.TCSectionIndex;
             float maxDistance = Math.Max(thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
