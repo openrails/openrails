@@ -2556,25 +2556,25 @@ namespace ORTS.MultiPlayer
 							}
 					}
 				}
-				signalsStates = new byte[signals.Count+2];
+				signalsStates = new byte[signals.Count*2+2];
 			}
 			if (preState == null)
 			{
-				preState = new byte[signals.Count + 2];
+				preState = new byte[signals.Count*2 + 2];
 				for (i = 0; i < preState.Length; i++) preState[i] = 0;
 			}
 
 			i = 0;
 			foreach (var t in signals)
 			{
-				signalsStates[i] = (byte)(t.Value.state + 1);
-				//signalsStates[2 * i + 1] = (byte)(t.Value.draw_state + 1);
+				signalsStates[2*i] = (byte)(t.Value.state + 1);
+				signalsStates[2 * i + 1] = (byte)(t.Value.draw_state + 1);
 				i++;
 				//msgx += (char)(((int)t.Value.state + 1) * 100 + (t.Value.draw_state + 1));
 				//msgx += "" + (char)(t.Value.state + 1) + "" + (char)(t.Value.draw_state + 1);//avoid \0
 			}
 			OKtoSend = false;
-			for (i = 0; i < signals.Count; i++)
+			for (i = 0; i < signals.Count*2; i++)
 			{
 				if (signalsStates[i] != preState[i]) { OKtoSend = true; }//something is different, will send
 				preState[i] = signalsStates[i];
@@ -2606,7 +2606,7 @@ namespace ORTS.MultiPlayer
 								}
 						}
 					}
-					signalsStates = new byte[signals.Count+128];
+					signalsStates = new byte[signals.Count*2+128];
 				}
 				catch (Exception e) { signals = null; throw e; }//error, clean the list, so we can get another signal
 			}
@@ -2633,9 +2633,9 @@ namespace ORTS.MultiPlayer
 			int i = 0;
 			foreach (var t in signals)
 			{
-				t.Value.state = (SignalHead.SIGASP)(signalsStates[1 * i] - 1); //we added 1 when build the message, need to subtract it out
-				//t.Value.draw_state = (int)(signalsStates[2 * i + 1] - 1);
-				t.Value.draw_state = t.Value.def_draw_state(t.Value.state);
+				t.Value.state = (SignalHead.SIGASP)(signalsStates[2 * i] - 1); //we added 1 when build the message, need to subtract it out
+				t.Value.draw_state = (int)(signalsStates[2 * i + 1] - 1);
+				//t.Value.draw_state = t.Value.def_draw_state(t.Value.state);
 				//System.Console.Write(msgx[i]-48);
 				i++;
 			}

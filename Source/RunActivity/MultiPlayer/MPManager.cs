@@ -69,7 +69,7 @@ namespace ORTS.MultiPlayer
 		public bool NotServer = true;
 		public static DispatchViewer DispatcherWindow;
 		public bool CheckSpad = true;
-		public bool PreferGreen = true;
+		public static bool PreferGreen = true;
 		Simulator Simulator;
 		Viewer3D Viewer;
 		public string MD5Check = "";

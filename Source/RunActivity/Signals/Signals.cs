@@ -6583,6 +6583,7 @@ namespace ORTS
         {
             get
             {
+                if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.PreferGreen == true) return true;
                 return (enabledTrain != null);
             }
         }

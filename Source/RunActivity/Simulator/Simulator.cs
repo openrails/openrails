@@ -1229,6 +1229,7 @@ namespace ORTS
 			Train train2 = new Train(this);
 #else
             Train train2 = new Train(this, train);
+            if (MPManager.IsMultiPlayer()) train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
 #endif
 
 			for (int k = i; k < train.Cars.Count; ++k)
@@ -1295,6 +1296,7 @@ namespace ORTS
 #if NEW_SIGNALLING
             train.UpdateTrackActionsUncoupling(true);
             train2.UpdateTrackActionsUncoupling(false);
+            if (MPManager.IsMultiPlayer()) { train.ControlMode = train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER; }
 #endif
 
 			if (MPManager.IsMultiPlayer() && !MPManager.IsServer())

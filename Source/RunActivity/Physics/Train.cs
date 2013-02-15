@@ -3325,7 +3325,7 @@ namespace ORTS
             // obtain reversal section index
 
             int reversalSectionIndex = -1;
-            if (ControlMode == TRAIN_CONTROL.AUTO_NODE || ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
+            if (TCRoute != null && (ControlMode == TRAIN_CONTROL.AUTO_NODE || ControlMode == TRAIN_CONTROL.AUTO_SIGNAL))
             {
                 TCReversalInfo thisReversal = TCRoute.ReversalInfo[TCRoute.activeSubpath];
                 if (thisReversal.Valid)
@@ -6840,7 +6840,7 @@ namespace ORTS
 
             InitializeSignals(true);
 
-            if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE)
+            if (TCRoute != null && (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE))
             {
                 PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
                 PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);

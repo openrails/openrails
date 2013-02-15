@@ -247,7 +247,7 @@ namespace ORTS.MultiPlayer
 			}
 			p.Train = train;
 			
-			if (MPManager.IsServer() && MPManager.Instance().PreferGreen == false) //prefer red light always, thus need to have path included
+			if (MPManager.IsServer() && MPManager.PreferGreen == false) //prefer red light always, thus need to have path included
 			{
 #if !NEW_SIGNALLING
 				if (train.Path != null)

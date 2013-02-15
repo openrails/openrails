@@ -683,7 +683,7 @@ namespace ORTS.Debugging
 				 if (sw.Item.TrJunctionNode.SelectedRoute == sw.main) g.FillEllipse(Brushes.Black, GetRect(scaledItem, width));
 				 else g.FillEllipse(Brushes.Gray, GetRect(scaledItem, width));
 
-                 g.DrawString("" + sw.Item.TrJunctionNode.SelectedRoute, trainFont, trainBrush, scaledItem);
+                 //g.DrawString("" + sw.Item.TrJunctionNode.SelectedRoute, trainFont, trainBrush, scaledItem);
 
 				 sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
 #if false
@@ -2229,7 +2229,7 @@ namespace ORTS.Debugging
 
 	  private void chkPreferGreenHandle(object sender, EventArgs e)
 	  {
-		  MultiPlayer.MPManager.Instance().PreferGreen = chkBoxPenalty.Checked;
+		  MultiPlayer.MPManager.PreferGreen = chkBoxPenalty.Checked;
 
 	  }
 
