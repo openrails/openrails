@@ -150,6 +150,8 @@ namespace ORTS
     /// </summary>
     public class PoseableShape : StaticShape
     {
+        static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>();
+
         public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
 
         public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
@@ -176,16 +178,44 @@ namespace ORTS
         public void AnimateMatrix(int iMatrix, float key)
         {
             if (SharedShape.Animations == null)
+            {
+                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
+                    Trace.TraceInformation("Ignored missing animations data in shape {0}", SharedShape.FilePath);
+                SeenShapeAnimationError[SharedShape.FilePath] = true;
                 return;  // animation is missing
+            }
 
-            if (iMatrix >= SharedShape.Animations[0].anim_nodes.Count)
+            if (iMatrix < 0 || iMatrix >= SharedShape.Animations[0].anim_nodes.Count)
+            {
+                if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
+                    Trace.TraceInformation("Ignored out of bounds matrix {1} in shape {0}", SharedShape.FilePath, iMatrix);
+                SeenShapeAnimationError[SharedShape.FilePath] = true;
                 return;  // mismatched matricies
+            }
 
-            anim_node anim_node = SharedShape.Animations[0].anim_nodes[iMatrix];
+            var anim_node = SharedShape.Animations[0].anim_nodes[iMatrix];
             if (anim_node.controllers.Count == 0)
+            {
+                // TODO: Under exactly which circumstances does MSTS do this?
+                if (SharedShape.LodControls.Length > 0 && SharedShape.LodControls[0].DistanceLevels.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0)
+                {
+                    var hierarchy = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
+                    for (var i = 0; i < hierarchy.Length; i++)
+                        if (hierarchy[i] == iMatrix)
+                            AnimateMatrix(i, key);
+                    if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
+                        Trace.TraceInformation("Animating sub-nodes for matrix {1} in shape {0}", SharedShape.FilePath, iMatrix);
+                }
+                else
+                {
+                    if (!SeenShapeAnimationError.ContainsKey(SharedShape.FilePath))
+                        Trace.TraceInformation("Ignored missing animation controllers for matrix {1} in shape {0}", SharedShape.FilePath, iMatrix);
+                }
+                SeenShapeAnimationError[SharedShape.FilePath] = true;
                 return;  // missing controllers
+            }
 
-            Matrix xnaPose = SharedShape.Matrices[iMatrix]; // start with the intial pose in the shape file
+            var xnaPose = SharedShape.Matrices[iMatrix]; // start with the intial pose in the shape file
 
             foreach (controller controller in anim_node.controllers)
             {
