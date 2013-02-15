@@ -107,10 +107,8 @@ namespace ORTS
                         Resume(settings, data);
                         break;
                     case "test":
-                        // Any log file is deleted by Menu.exe
                         InitLogging(settings, args, true);
-                        // set Exit code to be returned to Menu.exe 
-                        Environment.ExitCode = Test(settings, data);
+                        Test(settings, data);
                         break;
                     case "testall":
                         InitLogging(settings, args);
@@ -477,7 +475,7 @@ namespace ORTS
         /// <summary>
         /// Tests that RunActivity.exe can launch a specific activity or explore.
         /// </summary>
-        public static int Test(UserSettings settings, string[] args)
+        public static void Test(UserSettings settings, string[] args)
         {
             var passed = false;
             var startTime = DateTime.Now;
@@ -493,12 +491,11 @@ namespace ORTS
                 loadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
                 passed = true;
             }
-            catch
+            finally
             {
-                throw;
+                ExportTestSummary(settings, args, passed, loadTime);
+                Environment.ExitCode = passed ? 0 : 1;
             }
-            ExportTestSummary(settings, args, passed, loadTime);
-            return passed ? 0 : 1;
         }
 
         static void ExportTestSummary(UserSettings settings, string[] args, bool passed, double loadTime)
