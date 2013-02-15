@@ -176,6 +176,10 @@ namespace ORTS
                     ClearedLogs = true;
                 }
 
+                var summaryFilePosition = 0L;
+                using (var reader = File.OpenText(SummaryFilePath))
+                    summaryFilePosition = reader.BaseStream.Length;
+
                 foreach (var item in items)
                 {
                     processStartInfo.Arguments = String.Format("{0} \"{1}\"", parameters, item.Activity.ActivityFilePath);
@@ -186,15 +190,21 @@ namespace ORTS
                     item.Activity.Passed = process.ExitCode == 0;
                     using (var reader = File.OpenText(SummaryFilePath))
                     {
-                        if (reader.BaseStream.Length > 256)
-                            reader.BaseStream.Seek(-256, SeekOrigin.End);
-                        string line = "";
-                        while (!reader.EndOfStream)
-                            line = reader.ReadLine();
-                        var csv = line.Split(',');
-                        item.Activity.Errors = String.Format("{0}/{1}/{2}", int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]));
-                        item.Activity.Load = String.Format("{0,6:F1}s", float.Parse(csv[6]));
-                        item.Activity.FPS = String.Format("{0,6:F1}", float.Parse(csv[7]));
+                        reader.BaseStream.Seek(summaryFilePosition, SeekOrigin.Begin);
+                        var line = reader.ReadLine();
+                        if (!String.IsNullOrEmpty(line) && reader.EndOfStream)
+                        {
+                            var csv = line.Split(',');
+                            item.Activity.Errors = String.Format("{0}/{1}/{2}", int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]));
+                            item.Activity.Load = String.Format("{0,6:F1}s", float.Parse(csv[6]));
+                            item.Activity.FPS = String.Format("{0,6:F1}", float.Parse(csv[7]));
+                        }
+                        else
+                        {
+                            reader.ReadToEnd();
+                            item.Activity.Passed = false;
+                        }
+                        summaryFilePosition = reader.BaseStream.Position;
                     }
                     if (runner.Cancelled)
                         break;
