@@ -1690,7 +1690,7 @@ namespace ORTS
             {
                 case Event.VigilanceAlarmOn: { AlerterSnd = true; Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.On); break; }
                 case Event.VigilanceAlarmOff: { AlerterSnd = false; Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.Off); break; }
-                case Event.BellOn: { Bell = true; Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
+                case Event.BellOn: { Bell = true; if (Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
                 case Event.BellOff: { Bell = false; Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
                 case Event.HornOn:
                     {
@@ -1720,9 +1720,9 @@ namespace ORTS
                         }
                         break;
                     }
-                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive()) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
+                case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
                 case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive()) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
-                case Event.WiperOn: { Wiper = true; if (this == Program.Simulator.PlayerLocomotive) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
+                case Event.WiperOn: { Wiper = true; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
                 case Event.WiperOff: { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
 
                 // <CJ Comment> The "H" key doesn't call these SignalEvents yet. </CJ Comment>
