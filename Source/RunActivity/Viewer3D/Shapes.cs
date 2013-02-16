@@ -60,8 +60,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    Trace.TraceInformation(path);
-                    Trace.WriteLine(error);
+                    Trace.WriteLine(new FileLoadException(path, error));
                     Shapes.Add(path, EmptyShape);
                 }
             }
@@ -555,14 +554,15 @@ namespace ORTS
             CrossingObj = crossingObj;
             if (!CrossingObj.silent)
             {
+                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\crossing.sms";
                 try
                 {
-                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, viewer.Simulator.RoutePath + @"\\sound\\crossing.sms");
+                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
                     viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
                 }
                 catch (Exception error)
                 {
-                    Trace.WriteLine(error);
+                    Trace.WriteLine(new FileLoadException(soundPath, error));
                 }
             }
             Crossing = viewer.Simulator.LevelCrossings.CreateLevelCrossing(

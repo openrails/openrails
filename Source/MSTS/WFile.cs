@@ -95,7 +95,7 @@ namespace MSTS
                     }
                     catch (Exception error)
                     {
-                        Trace.WriteLine(error);
+                        Trace.WriteLine(new FileLoadException(filename, error));
                     }
                 }
             }
@@ -128,7 +128,7 @@ namespace MSTS
                     }
                     catch (System.Exception error)
                     {
-                        Trace.WriteLine(error);
+                        Trace.WriteLine(new FileLoadException(filename, error));
                     }
                 }
             }

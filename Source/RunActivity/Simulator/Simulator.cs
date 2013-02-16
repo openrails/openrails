@@ -938,14 +938,8 @@ namespace ORTS
                 {
                     // First wagon is the player's loco and required, so issue a fatal error message
                     if (wagon == conFile.Train.TrainCfg.WagonList[0])
-                    {
-                        throw new Exception("Error loading the player locomotive.\n", error);
-                    }
-                    else
-                    {
-                        Trace.TraceInformation(wagonFilePath);
-                        Trace.WriteLine(error);
-                    }
+                        throw new FileLoadException(wagonFilePath, error);
+                    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                 }
 			}// for each rail car
 
@@ -1053,9 +1047,9 @@ namespace ORTS
                             train.Cars.Add(car);
                             car.Train = train;
                         }
-                        catch
+                        catch (Exception error)
                         {
-                            Trace.TraceWarning(String.Format("Error in loading {0} as car {1} for static consist. Rest of consist skipped.", wagonFilePath, iWagon));
+                            Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                         }
 					}// for each rail car
 					
@@ -1082,8 +1076,8 @@ namespace ORTS
 				}
 				catch (Exception error)
 				{
-					Trace.WriteLine(error);
-				}
+                    Trace.WriteLine(error);
+                }
 			}// for each train
 		}
 

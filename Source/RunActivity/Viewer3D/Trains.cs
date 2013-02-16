@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace ORTS
@@ -47,9 +48,9 @@ namespace ORTS
 						else
 							newCars.Add(car, LoadCar(car));
 					}
-					catch (Exception) 
+					catch (Exception error) 
                     {
-                        Trace.WriteLine(String.Format("Unable to load car {0}", car.CarID));
+                        Trace.WriteLine(new FileLoadException(car.WagFilePath, error));
                     }
                 }
                 Cars = newCars;

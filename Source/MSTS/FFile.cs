@@ -31,9 +31,8 @@ namespace MSTS
 				}
 				catch (Exception error)
 				{
-					Trace.TraceInformation(fileName);
-					Trace.WriteLine(error);
-				}
+                    Trace.WriteLine(new FileLoadException(fileName, error));
+                }
 			}
 		}
 

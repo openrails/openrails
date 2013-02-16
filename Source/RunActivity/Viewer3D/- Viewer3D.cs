@@ -473,7 +473,7 @@ namespace ORTS
         internal void ProcessReportError(Exception error)
         {
             // Log the error first in case we're burning.
-            Trace.WriteLine(error);
+            Trace.WriteLine(new FatalException(error));
             // Stop the world!
             RenderProcess.Exit();
             // Show the user that it's all gone horribly wrong.

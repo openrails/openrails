@@ -143,7 +143,7 @@ namespace ORTS
                 }
                 catch (FileNotFoundException error)
                 {
-                    Trace.WriteLine(error);
+                    Trace.WriteLine(new FatalException(error));
                     if (settings.ShowErrorDialogs)
                         MessageBox.Show(String.Format(
                                 "An essential file is missing and {0} cannot continue.\n\n" +
@@ -153,7 +153,7 @@ namespace ORTS
                 }
                 catch (DirectoryNotFoundException error)
                 {
-                    Trace.WriteLine(error);
+                    Trace.WriteLine(new FatalException(error));
                     if (settings.ShowErrorDialogs)
                     {
                         // This is a hack to try and extract the actual file name from the exception message. It isn't available anywhere else.
@@ -168,7 +168,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    Trace.WriteLine(error);
+                    Trace.WriteLine(new FatalException(error));
                     if (settings.ShowErrorDialogs)
                     {
                         var errorSummary = error.GetType().FullName + ": " + error.Message;

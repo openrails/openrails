@@ -35,7 +35,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    Trace.WriteLine(error);
+                    Trace.WriteLine(new FileLoadException(wagFile.OpenRails.DLL, error));
                     // on error, fall through and try loading without the custom dll
                 }
             }

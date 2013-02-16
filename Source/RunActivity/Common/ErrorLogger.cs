@@ -185,7 +185,10 @@ namespace ORTS
             if (o is Exception)
             {
                 Trace.CorrelationManager.StartLogicalOperation(LogicalOperationWriteException);
-                Trace.TraceError("", o);
+                if (o is FatalException)
+                    Trace.TraceError("", (o as FatalException).InnerException);
+                else
+                    Trace.TraceWarning("", o);
                 Trace.CorrelationManager.StopLogicalOperation();
             }
             else if (!OnlyErrors)
@@ -199,6 +202,15 @@ namespace ORTS
 
         class LogicalOperation
         {
+        }
+    }
+
+    public sealed class FatalException : Exception
+    {
+        public FatalException(Exception innerException)
+            : base("A fatal error has occurred", innerException)
+        {
+            Debug.Assert(innerException != null, "The inner exception of a FatalException must not be null.");
         }
     }
 }

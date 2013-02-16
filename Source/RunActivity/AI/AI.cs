@@ -247,8 +247,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    Trace.TraceInformation(wagonFilePath);
-                    Trace.WriteLine(error);
+                    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                 }
 
             }// for each rail car

@@ -3946,6 +3946,7 @@ namespace ORTS
             }
             catch (Exception error)
             {
+                // TODO: This spams the console hard because it's called every frame.
                 Trace.WriteLine(error);
             }
             finally

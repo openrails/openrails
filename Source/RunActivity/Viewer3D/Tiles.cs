@@ -172,7 +172,7 @@ namespace ORTS
                 }
                 catch (Exception error) // errors thrown by SBR
                 {
-                    Trace.TraceWarning(error.Message); // E.g. "File _y.raw not found" or "Unknown header"
+                    Trace.WriteLine(error);
                 }
             }
             else

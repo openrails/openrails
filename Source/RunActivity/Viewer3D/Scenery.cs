@@ -290,8 +290,7 @@ namespace ORTS
                 }
                 catch (Exception error)
                 {
-                    Trace.TraceWarning("{0} scenery object {1} failed to load", worldMatrix, worldObject.UID);
-                    Trace.WriteLine(error);
+                    Trace.WriteLine(new FileLoadException(String.Format("{0} scenery object {1} failed to load", worldMatrix, worldObject.UID), error));
                 }
             }
 

@@ -1151,7 +1151,7 @@ namespace ORTS
             }
             catch (Exception error)
             {
-                Trace.WriteLine(error);
+                Trace.WriteLine(new FileLoadException(smsFilePath, error));
             }
         }
 
