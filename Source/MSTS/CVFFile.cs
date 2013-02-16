@@ -567,19 +567,19 @@ namespace MSTS
                         FramesY = stf.ReadInt(STFReader.UNITS.None, null);
                         stf.SkipRestOfBlock();
                     }),
-                        // <CJ Comment> Would like to revise this, as it is difficult to follow and debug.
-                        // Can't do that until interaction of ScaleRange, NumFrames, NumPositions and NumValues is more fully specified.
-                        // What is needed is samples of data that must be accommodated.
-                        // Some decisions appear unwise but they might be a pragmatic solution to a real problem. </CJ Comment>
-                        //
-                        // Code accommodates:
-                        // - NumValues before NumPositions or the other way round.
-                        // - More NumValues than NumPositions and the other way round - perhaps unwise.
-                        // - The count of NumFrames, NumValues and NumPositions is ignored - perhaps unwise.
-                        // - Abbreviated definitions so that values at intermediate unspecified positions can be omitted.
-                        //   Strangely, these values are set to 0 and worked out later when drawing.
-                        // Max and min NumValues which don't match the ScaleRange are ignored - perhaps unwise.
-                        new STFReader.TokenProcessor("numpositions", ()=>{
+                    // <CJ Comment> Would like to revise this, as it is difficult to follow and debug.
+                    // Can't do that until interaction of ScaleRange, NumFrames, NumPositions and NumValues is more fully specified.
+                    // What is needed is samples of data that must be accommodated.
+                    // Some decisions appear unwise but they might be a pragmatic solution to a real problem. </CJ Comment>
+                    //
+                    // Code accommodates:
+                    // - NumValues before NumPositions or the other way round.
+                    // - More NumValues than NumPositions and the other way round - perhaps unwise.
+                    // - The count of NumFrames, NumValues and NumPositions is ignored - perhaps unwise.
+                    // - Abbreviated definitions so that values at intermediate unspecified positions can be omitted.
+                    //   Strangely, these values are set to 0 and worked out later when drawing.
+                    // Max and min NumValues which don't match the ScaleRange are ignored - perhaps unwise.
+                    new STFReader.TokenProcessor("numpositions", ()=>{
                         stf.MustMatch("(");
                         // If Positions are not filled before by Values
                         bool shouldFill = (Positions.Count == 0);
@@ -609,6 +609,14 @@ namespace MSTS
                         for (int iPos = 0; iPos <= Positions.Count - 1; iPos++)
                         {
                             Positions[iPos] -= minPosition;
+                        }
+
+                        // This is a hack for SLI locomotives which have the positions listed as "1056964608 0 0 0 ...".
+                        if (Positions.Any(p => p > 0xFFFF))
+                        {
+                            STFException.TraceInformation(stf, "Renumbering cab control positions from zero due to value > 0xFFFF");
+                            for (var i = 0; i < Positions.Count; i++)
+                                Positions[i] = i;
                         }
                     }),
                     new STFReader.TokenProcessor("numvalues", ()=>{
