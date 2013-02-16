@@ -235,7 +235,7 @@ namespace ORTS.MultiPlayer
             train.CalculatePositionOfCars(0);
             train.AITrainBrakePercent = 100;
 
-			if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
+			//if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
 			foreach (var car in train.Cars) {
 				if (car.CarID == p.LeadingLocomotiveID) train.LeadLocomotive = car;
 			}

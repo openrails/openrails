@@ -2262,7 +2262,6 @@ namespace ORTS.MultiPlayer
 					}
 				}
 
-				if (MPManager.IsServer()&& MPManager.Instance().AllowedManualSwitch) train2.InitializeSignals(false);
 				train.UncoupledFrom = train2;
 				train2.UncoupledFrom = train;
 
@@ -2290,6 +2289,7 @@ namespace ORTS.MultiPlayer
 					train2.Number = this.newTrainNumber; //client receives a message, will use the train number specified by the server
 					train.Number = this.oldTrainNumber;
 				}
+                if (MPManager.IsServer() && MPManager.Instance().AllowedManualSwitch) train2.InitializeSignals(false);
 			}
 		}
 	}

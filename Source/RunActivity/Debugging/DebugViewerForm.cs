@@ -553,7 +553,7 @@ namespace ORTS.Debugging
 			  if (!MultiPlayer.MPManager.IsServer())
 			  {
 				  this.chkAllowUserSwitch.Visible = false;
-				  this.chkAllowUserSwitch.Checked = true;
+				  this.chkAllowUserSwitch.Checked = false;
 				  this.rmvButton.Visible = false;
 				  this.btnAssist.Visible = false;
 				  this.btnNormal.Visible = false;

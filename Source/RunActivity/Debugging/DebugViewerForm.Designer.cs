@@ -143,7 +143,7 @@
 		  // chkAllowUserSwitch
 		  // 
 		  this.chkAllowUserSwitch.AutoSize = true;
-		  this.chkAllowUserSwitch.Checked = true;
+		  this.chkAllowUserSwitch.Checked = false;
 		  this.chkAllowUserSwitch.CheckState = System.Windows.Forms.CheckState.Checked;
 		  this.chkAllowUserSwitch.Location = new System.Drawing.Point(708, 49);
 		  this.chkAllowUserSwitch.Name = "chkAllowUserSwitch";
