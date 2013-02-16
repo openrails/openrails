@@ -578,8 +578,7 @@ namespace ORTS
 
         public void Dispose()
         {
-            if (!CrossingObj.silent)
-                Viewer.SoundProcess.RemoveSoundSource(Sound);
+            if (Sound != null) Viewer.SoundProcess.RemoveSoundSource(Sound);
         }
 
         #endregion
@@ -592,7 +591,7 @@ namespace ORTS
             if (Opening == Crossing.HasTrain)
             {
                 Opening = !Crossing.HasTrain;
-                if (!CrossingObj.silent) Sound.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
+                if (Sound != null) Sound.HandleEvent(Opening ? Event.CrossingOpening : Event.CrossingClosing);
             }
 
             // Looping when animTiming < 0 (forwards then backwards then forwards again).

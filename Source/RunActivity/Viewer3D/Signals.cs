@@ -132,18 +132,17 @@ namespace ORTS
             base.Mark();
         }
 
-        class SignalShapeHead
+        class SignalShapeHead : IDisposable
         {
             static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
 
-#if DEBUG_SIGNAL_SHAPES
 			readonly Viewer3D Viewer;
-#endif
             readonly SignalShape SignalShape;
             readonly int Index;
             readonly SignalHead SignalHead;
             readonly int MatrixIndex;
             readonly SignalTypeData SignalTypeData;
+            readonly SoundSource Sound;
             float CumulativeTime;
             float SemaphorePos;
             float SemaphoreTarget;
@@ -154,9 +153,7 @@ namespace ORTS
             public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead,
                         MSTS.SignalItem mstsSignalItem, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
             {
-#if DEBUG_SIGNAL_SHAPES
 				Viewer = viewer;
-#endif
                 SignalShape = signalShape;
                 Index = index;
                 SignalHead = signalHead;
@@ -183,10 +180,33 @@ namespace ORTS
                 else
                     SignalTypeData = SignalTypes[mstsSignalType.Name] = new SignalTypeData(viewer, mstsSignalType);
 
+                if (SignalTypeData.Semaphore)
+                {
+                    var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\signal.sms";
+                    try
+                    {
+                        Sound = new SoundSource(Viewer, SignalShape.Location.WorldLocation, Events.Source.MSTSSignal, soundPath);
+                        Viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                    }
+                }
+
 #if DEBUG_SIGNAL_SHAPES
 				Console.Write("  HEAD type={0,-8} lights={1,-2}", SignalTypeData.Type, SignalTypeData.Lights.Count);
 #endif
             }
+
+            #region IDisposable Members
+
+            public void Dispose()
+            {
+                if (Sound != null) Viewer.SoundProcess.RemoveSoundSource(Sound);
+            }
+
+            #endregion
 
             public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
             {
@@ -202,6 +222,7 @@ namespace ORTS
                     {
                         SemaphoreTarget = SignalTypeData.DrawAspects[DisplayState].SemaphorePos;
                         SemaphoreSpeed = SemaphoreTarget > SemaphorePos ? +1 : -1;
+                        if (Sound != null) Sound.HandleEvent(Event.SemaphoreArm);
                     }
                 }
 
@@ -237,7 +258,7 @@ namespace ORTS
                     Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
 #else
                     if (MatrixIndex >= 0)
-                       Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
+                        Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
 #endif
                     Matrix.Multiply(ref xnaMatrix, ref xnaTileTranslation, out xnaMatrix);
 
