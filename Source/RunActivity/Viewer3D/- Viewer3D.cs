@@ -107,9 +107,7 @@ namespace ORTS
             set {}
         }
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
-        // 2.1 sets the limit at just under a right angle as get unwanted swivel at the full right angle.
-        public CameraAngleClamper VerticalClamper = new CameraAngleClamper( -MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f );
-        int PlayerTrainLength = 0; // re-activate cameras when this changes
+
         public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
         private MouseState originalMouseState;      // Current mouse coordinates.
 
@@ -117,10 +115,15 @@ namespace ORTS
         public TrainCar PlayerLocomotive { get { return Simulator.PlayerLocomotive; } set { Simulator.PlayerLocomotive = value; } }
         public Train PlayerTrain { get { if (PlayerLocomotive == null) return null; else return PlayerLocomotive.Train; } }
 
-		private Train selectedTrain = null; // the train currently cameras focus on
-		public Train SelectedTrain { 
-			get { if (selectedTrain == null || selectedTrain.Cars == null || selectedTrain.Cars.Count == 0) { selectedTrain = PlayerTrain;} return selectedTrain;  } 
-			set { selectedTrain = value; } }
+        // This is the train we are viewing
+        public Train SelectedTrain { get; private set; }
+        void CameraActivate()
+        {
+            if (Camera == null || !Camera.IsAvailable) //passenger camera may jump to a train without passenger view
+                FrontCamera.Activate();
+            else
+                Camera.Activate();
+        }
 
         // Mouse visibility by timer - GeorgeS
         private bool isMouseShouldVisible = false;
@@ -224,6 +227,7 @@ namespace ORTS
         {
             outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
             outf.Write(PlayerTrain.Cars.IndexOf(PlayerLocomotive));
+            outf.Write(Simulator.Trains.IndexOf(SelectedTrain));
 
             WindowManager.Save(outf);
 
@@ -242,6 +246,7 @@ namespace ORTS
         {
             Train playerTrain = Simulator.Trains[inf.ReadInt32()];
             PlayerLocomotive = playerTrain.Cars[inf.ReadInt32()];
+            SelectedTrain = Simulator.Trains[inf.ReadInt32()];
 
             WindowManager.Restore(inf);
 
@@ -291,6 +296,7 @@ namespace ORTS
                 Settings.ShadowMapDistance = Settings.ViewingDistance / 2;
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
+            SelectedTrain = PlayerTrain;
 
             TextureManager = new SharedTextureManager(GraphicsDevice);
             MaterialManager = new SharedMaterialManager(this);
@@ -323,10 +329,7 @@ namespace ORTS
             if (inf != null)
                 Restore(inf);
 
-            if (Camera == null)
-                FrontCamera.Activate();
-            else
-                Camera.Activate();
+            CameraActivate();
 
             // Prepare the world to be loaded and then load it from the correct thread for debugging/tracing purposes.
             // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that
@@ -391,7 +394,7 @@ namespace ORTS
             ToggleSwitchAheadCommand.Receiver = this;
             ToggleSwitchBehindCommand.Receiver = this;
             ToggleAnySwitchCommand.Receiver = this;
-            UncoupleCommand.Receiver = Simulator;
+            UncoupleCommand.Receiver = this;
             SaveScreenshotCommand.Receiver = this;
             ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
             UseCameraCommand.Receiver = this;
@@ -669,7 +672,7 @@ namespace ORTS
             //hit 9 key, get back to player train
             if( UserInput.IsPressed( UserCommands.CameraJumpBackPlayer ) ) {
                 SelectedTrain = PlayerTrain;
-                Camera.Activate();
+                CameraActivate();
             }
             if( UserInput.IsPressed( UserCommands.CameraTrackside ) ) {
                 CheckReplaying();
@@ -853,15 +856,8 @@ namespace ORTS
 
 					if (SelectedTrain.Cars == null || SelectedTrain.Cars.Count == 0) SelectedTrain = PlayerTrain;
 
-					if (Camera is PassengerCamera) //passenger camera may jump to a train without passenger view
-					{
-						if (!Camera.IsAvailable)
-						{
-							SelectedTrain = old;
-						}
-					}
-					if (old != SelectedTrain) Camera.Activate();
-				}
+                    CameraActivate();
+                }
 			}
 
             if (!Simulator.Paused && UserInput.IsDown(UserCommands.GameSwitchWithMouse))
@@ -885,15 +881,6 @@ namespace ORTS
             else
             {
                 isMouseShouldVisible = false;
-            }
-
-            if (PlayerTrain != null && PlayerTrainLength != PlayerTrain.Cars.Count)
-            {
-                PlayerTrainLength = PlayerTrain.Cars.Count;
-                if (!Camera.IsAvailable)
-                    FrontCamera.Activate();
-                else
-                    Camera.Activate();
             }
 
             RenderProcess.IsMouseVisible = isMouseShouldVisible || isMouseTimerVisible;
@@ -948,10 +935,8 @@ namespace ORTS
         /// </summary>
         public void ResumeReplaying() {
             CameraReplaySuspended = false;
-            if( SuspendedCamera != null ) {
-                Camera = SuspendedCamera;
-                Camera.Activate();
-            }
+            if (SuspendedCamera != null)
+                SuspendedCamera.Activate();
         }
 
         public void ChangeCab() {
@@ -964,10 +949,7 @@ namespace ORTS
             loco.Train.RepositionRearTraveller();     // fix the rear traveller
 #endif
             PlayerLocomotiveViewer = World.Trains.GetViewer( loco );
-            PlayerTrainLength = 0;
-			FrontCamera.Reset();
-			BackCamera.Reset();
-            CabCamera.ReactivateCamera((MSTSLocomotive)loco);
+            Camera.Activate(); // If you need anything else here the cameras should check for it.
             SetCommandReceivers();
 			//temporarily removed the following as MP does not support replay
             //if( MPManager.IsMultiPlayer() ) MPManager.LocoChange( loco.Train, loco );
@@ -1050,14 +1032,7 @@ namespace ORTS
 			{
 				SelectedTrain = PlayerTrain;
 			}
-			if (Camera is PassengerCamera) //passenger camera may jump to a train without passenger view
-			{
-				if (!Camera.IsAvailable)
-				{
-					SelectedTrain = old;
-				}
-			}
-			if (old != SelectedTrain) Camera.Activate();
+            CameraActivate();
 		}
         bool isFullScreen = false;
 
@@ -1150,5 +1125,11 @@ namespace ORTS
             bestNode.SelectedRoute = 1 - bestNode.SelectedRoute;
         }
 #endif
+
+        internal void UncoupleBehind(int carPosition)
+        {
+            Simulator.UncoupleBehind(carPosition);
+            CameraActivate();
+        }
     }
 }

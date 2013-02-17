@@ -792,7 +792,7 @@ namespace ORTS {
 
     [Serializable()]
     public class UncoupleCommand : Command {
-        public static Simulator Receiver { get; set; }
+        public static Viewer3D Receiver { get; set; }
         int CarPosition;    // 0 for head of train
 
         public UncoupleCommand( CommandLog log, int carPosition ) 
