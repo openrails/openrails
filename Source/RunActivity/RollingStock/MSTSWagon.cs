@@ -654,23 +654,21 @@ namespace ORTS
         /// <summary>
         /// All the matrices associated with this part are added during initialization by the MSTSWagon constructor
         /// </summary>
-        public void MatrixIndexAdd( int i )
+        public void MatrixIndexAdd(int i)
         {
-            MatrixIndexes.Add( i );
-            if( FrameCount == 0 ) // only do this once for each AnimatedPart
+            MatrixIndexes.Add(i);
+
+            // determine the number of frames in this animation from the animation controller for first matrix component
+            var shape = PoseableShape.SharedShape;
+            if (shape.Animations != null)
             {
-                // determine the number of frames in this animation from the animation controller for first matrix component
-                SharedShape shape = PoseableShape.SharedShape;
-                if( shape.Animations != null )
+                // find the controller set for this part, ie anim_node WIPERBLADERIGHT1 ( controllers ( 2
+                var controllers = shape.Animations[0].anim_nodes[i].controllers;
+                if (controllers.Count > 0)
                 {
-                    // find the controller set for this part, ie anim_node WIPERBLADERIGHT1 ( controllers ( 2
-                    controllers controllers = shape.Animations[0].anim_nodes[i].controllers;
-                    if( controllers.Count > 0 )
-                    {
-                        controller controller = controllers[0];  // ie tcb_rot ( 3 is a controller with three keypositions
-                                                                // we want the frame number of the last key position
-                        FrameCount = controller[controller.Count-1].Frame;
-                    }
+                    var controller = controllers[0];  // ie tcb_rot ( 3 is a controller with three keypositions
+                    // we want the frame number of the last key position
+                    FrameCount = Math.Max(FrameCount, controller[controller.Count - 1].Frame);
                 }
             }
         }
