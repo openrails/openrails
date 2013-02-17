@@ -141,6 +141,12 @@ namespace ORTS
                 {
                     doAction();
                 }
+                catch (IncompatibleSaveException error)
+                {
+                    Trace.WriteLine(new FatalException(error));
+                    if (settings.ShowErrorDialogs)
+                        MessageBox.Show(error.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
                 catch (FileNotFoundException error)
                 {
                     Trace.WriteLine(new FatalException(error));
@@ -289,7 +295,7 @@ namespace ORTS
             string saveFile = GetSaveFile( args );
             using( BinaryReader inf = new BinaryReader(
                     new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) ) {
-                ValidateSave( inf );
+                ValidateSave(saveFile, inf);
                 savedValues values = GetSavedValues( inf );
                 InitSimulator( settings, values.args, "Resume" );
                 Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
@@ -393,7 +399,7 @@ namespace ORTS
                 // But we have no args, so have to get these from the Save
                 inf = new BinaryReader(
                         new FileStream( saveFile, FileMode.Open, FileAccess.Read ) );
-                ValidateSave( inf );
+                ValidateSave(saveFile, inf);
                 savedValues values = GetSavedValues( inf );
                 inf = null; // else Viewer.Initialize() will trigger Viewer.Restore()
                 InitSimulator( settings, values.args, "Replay" );
@@ -404,7 +410,7 @@ namespace ORTS
                 // and then replay
                 inf = new BinaryReader(
                         new FileStream( previousSaveFile, FileMode.Open, FileAccess.Read ) );
-                ValidateSave( inf );
+                ValidateSave(previousSaveFile, inf);
                 savedValues values = GetSavedValues( inf );
                 InitSimulator( settings, values.args, "Resume" );
                 Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
@@ -721,37 +727,28 @@ namespace ORTS
             Console.WriteLine(new String('-', 80));
         }
         
-        private static void ValidateSave( BinaryReader inf ) {
+        private static void ValidateSave(string fileName, BinaryReader inf) {
             // Read in validation data.
-            var revision = "<unknown>";
+            var version = "<unknown>";
             var build = "<unknown>";
             var versionOkay = false;
             try {
-                revision = inf.ReadString().Replace( "\0", "" );
+                version = inf.ReadString().Replace( "\0", "" );
                 build = inf.ReadString().Replace( "\0", "" );
-                versionOkay = (revision == Version) && (build == Build);
+                versionOkay = (version == Version) && (build == Build);
             } catch { }
 
             if( !versionOkay ) {
-                if( System.Diagnostics.Debugger.IsAttached ) {
+                if (Debugger.IsAttached)
+                {
                     // Only if debugging, then allow user to continue as
                     // resuming from saved activities is useful in debugging.
                     // (To resume from the latest save, set 
                     // RunActivity > Properties > Debug > Command line arguments = "-resume")
-                    Trace.Assert( versionOkay,
-                        "Resuming: Activity Save older than version executing.\n"
-                        + "Press 'Ignore' to continue at your own risk !" );
+                    Trace.WriteLine(new IncompatibleSaveException(fileName, version, build, Version, Build));
+                    LogSeparator();
                 } else {
-                    if( revision.Length > 0 && build.Length > 0 )
-                        throw new InvalidDataException( String.Format(
-                            "{0} save file is not compatible with \nV{1} ({2});"
-                            + " it was probably created by \nV{3} ({4})."
-                            + " Save files must be created by the same version of {0}.",
-                            Application.ProductName, Version, Build, revision, build ) );
-                    throw new InvalidDataException( String.Format(
-                        "{0} save file is not compatible with V{1} ({2})."
-                        + "Save files must be created by the same version of {0}.",
-                        Application.ProductName, Version, Build ) );
+                    throw new IncompatibleSaveException(fileName, version, build, Version, Build);
                 }
             }
         }
@@ -806,6 +803,16 @@ namespace ORTS
                 savedArgs[i] = inf.ReadString();
             values.args = savedArgs;
             return values;
+        }
+    }
+
+    public sealed class IncompatibleSaveException : Exception
+    {
+        public IncompatibleSaveException(string fileName, string version, string build, string gameVersion, string gameBuild)
+            : base(version.Length > 0 && build.Length > 0 ?
+                String.Format("Saved game file is not compatible with this version of {0}.\n\nFile: {1}\nSave: {4} ({5})\nGame: {2} ({3})", Application.ProductName, fileName, gameVersion, gameBuild, version, build) :
+            String.Format("Saved game file is not compatible with this version of {0}.\n\nFile: {1}\nGame: {2} ({3})", Application.ProductName, fileName, gameVersion, gameBuild))
+        {
         }
     }
 }
