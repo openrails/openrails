@@ -345,7 +345,6 @@ namespace ORTS
                 AITrainDictionary.Remove(train.UiD);
                 AITrains.Remove(train);
                 Simulator.Trains.Remove(train);
-
                 if (train.Cars.Count > 0 && train.Cars[0].Train == train)
                 {
                     foreach (TrainCar car in train.Cars)
@@ -354,6 +353,18 @@ namespace ORTS
                     }
                 }
             }
+
+			if (TrainsToRemove.Count > 0)
+			{
+				List<Train> removeList = new List<Train>();
+				foreach (AITrain train in TrainsToRemove)
+					if (train.Cars.Count > 0 && train.Cars[0].Train != train)
+						removeList.Add(train);
+				if (MultiPlayer.MPManager.IsServer())
+				{
+					MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGRemoveTrain(removeList)).ToString());
+				}
+			}
         }
     }
 

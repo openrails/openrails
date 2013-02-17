@@ -1082,10 +1082,18 @@ namespace ORTS.MultiPlayer
 
 			if (train.Cars.Count == 0) return;
 
-			train.CalculatePositionOfCars(0);
 			train.InitializeBrakes();
-			train.InitializeSignals(false);//client do it won't have impact
+			//train.InitializeSignals(false);//client do it won't have impact
 			train.CheckFreight();
+			bool canPlace = true;
+			Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
+
+			train.SetInitialTrainRoute(tempRoute);
+			train.CalculatePositionOfCars(0);
+			train.ResetInitialTrainRoute(tempRoute);
+
+			train.CalculatePositionOfCars(0);
+			train.AITrainBrakePercent = 100;
 
 			if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
 			if (MPManager.Instance().AddOrRemoveTrain(train, true) == false) return; //add train, but failed
@@ -1302,10 +1310,19 @@ namespace ORTS.MultiPlayer
 
 			if (train1.Cars.Count == 0) return;
 			train1.MUDirection = (Direction)mDirection;
-			train1.CalculatePositionOfCars(0);
+			//train1.CalculatePositionOfCars(0);
 			train1.InitializeBrakes();
-			train1.InitializeSignals(false);
+			//train1.InitializeSignals(false);
 			train1.CheckFreight();
+			bool canPlace = true;
+			Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
+
+			train1.SetInitialTrainRoute(tempRoute);
+			train1.CalculatePositionOfCars(0);
+			train1.ResetInitialTrainRoute(tempRoute);
+
+			train1.CalculatePositionOfCars(0);
+			train1.AITrainBrakePercent = 100;
 
 			if (train1.Cars[0] is MSTSLocomotive) train1.LeadLocomotive = train1.Cars[0];
 			MPManager.Instance().AddOrRemoveTrain(train1, true);
@@ -2289,7 +2306,7 @@ namespace ORTS.MultiPlayer
 					train2.Number = this.newTrainNumber; //client receives a message, will use the train number specified by the server
 					train.Number = this.oldTrainNumber;
 				}
-                if (MPManager.IsServer() && MPManager.Instance().AllowedManualSwitch) train2.InitializeSignals(false);
+                //if (MPManager.IsServer() && MPManager.Instance().AllowedManualSwitch) train2.InitializeSignals(false);
 			}
 		}
 	}
