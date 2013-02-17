@@ -141,57 +141,57 @@ namespace ORTS
                 {
                     doAction();
                 }
-                catch (IncompatibleSaveException error)
-                {
-                    Trace.WriteLine(new FatalException(error));
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(error.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                catch (FileNotFoundException error)
-                {
-                    Trace.WriteLine(new FatalException(error));
-                    if (settings.ShowErrorDialogs)
-                        MessageBox.Show(String.Format(
-                                "An essential file is missing and {0} cannot continue.\n\n" +
-                                "    {1}",
-                                Application.ProductName, error.FileName),
-                                Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                catch (DirectoryNotFoundException error)
-                {
-                    Trace.WriteLine(new FatalException(error));
-                    if (settings.ShowErrorDialogs)
-                    {
-                        // This is a hack to try and extract the actual file name from the exception message. It isn't available anywhere else.
-                        var re = new Regex("'([^']+)'").Match(error.Message);
-                        var fileName = re != null ? re.Groups[1].Value : error.Message;
-                        MessageBox.Show(String.Format(
-                                "An essential folder is missing and {0} cannot continue.\n\n" +
-                                "    {1}",
-                                Application.ProductName, fileName),
-                                Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
                 catch (Exception error)
                 {
                     Trace.WriteLine(new FatalException(error));
                     if (settings.ShowErrorDialogs)
                     {
-                        var errorSummary = error.GetType().FullName + ": " + error.Message;
-                        var logFile = Path.Combine(settings.LoggingPath, settings.LoggingFilename);
-                        var openTracker = MessageBox.Show(String.Format(
-                                "A fatal error has occured and {0} cannot continue.\n\n" +
-                                "    {1}\n\n" +
-                                "This error may be due to bad data or a bug. You can help improve {0} by reporting this error in our bug tracker at http://launchpad.net/or and attaching the log file {2}.\n\n" +
-                                ">>> Please report this error to the {0} bug tracker <<<",
-                                Application.ProductName, errorSummary, logFile),
-                                Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
-                        if (openTracker == DialogResult.OK)
-                            Process.Start("http://launchpad.net/or");
-                        // James Ross would prefer to do this:
-                        //   Process.Start("http://bugs.launchpad.net/or/+filebug?field.title=" + Uri.EscapeDataString(errorSummary));
-                        // but unfortunately if you need to log in (as most people might), Launchpad munges the title
-                        // and leaves you with garbage. Plus, landing straight on a login page might confuse some people.
+                        // If we had a load error but the inner error is one we handle here specially, unwrap it and discard the extra file information.
+                        var loadError = error as FileLoadException;
+                        if (loadError != null && (error.InnerException is FileNotFoundException || error.InnerException is DirectoryNotFoundException))
+                            error = error.InnerException;
+
+                        if (error is IncompatibleSaveException)
+                        {
+                            MessageBox.Show(error.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else if (error is FileNotFoundException)
+                        {
+                            MessageBox.Show(String.Format(
+                                    "An essential file is missing and {0} cannot continue.\n\n" +
+                                    "    {1}",
+                                    Application.ProductName, (error as FileNotFoundException).FileName),
+                                    Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else if (error is DirectoryNotFoundException)
+                        {
+                            // This is a hack to try and extract the actual file name from the exception message. It isn't available anywhere else.
+                            var re = new Regex("'([^']+)'").Match(error.Message);
+                            var fileName = re.Groups[1].Success ? re.Groups[1].Value : error.Message;
+                            MessageBox.Show(String.Format(
+                                    "An essential folder is missing and {0} cannot continue.\n\n" +
+                                    "    {1}",
+                                    Application.ProductName, fileName),
+                                    Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        else
+                        {
+                            var errorSummary = error.GetType().FullName + ": " + error.Message;
+                            var logFile = Path.Combine(settings.LoggingPath, settings.LoggingFilename);
+                            var openTracker = MessageBox.Show(String.Format(
+                                    "A fatal error has occured and {0} cannot continue.\n\n" +
+                                    "    {1}\n\n" +
+                                    "This error may be due to bad data or a bug. You can help improve {0} by reporting this error in our bug tracker at http://launchpad.net/or and attaching the log file {2}.\n\n" +
+                                    ">>> Please report this error to the {0} bug tracker <<<",
+                                    Application.ProductName, errorSummary, logFile),
+                                    Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                            if (openTracker == DialogResult.OK)
+                                Process.Start("http://launchpad.net/or");
+                            // James Ross would prefer to do this:
+                            //   Process.Start("http://bugs.launchpad.net/or/+filebug?field.title=" + Uri.EscapeDataString(errorSummary));
+                            // but unfortunately if you need to log in (as most people might), Launchpad munges the title
+                            // and leaves you with garbage. Plus, landing straight on a login page might confuse some people.
+                        }
                     }
                 }
             }
