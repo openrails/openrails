@@ -342,7 +342,7 @@ namespace ORTS.MultiPlayer
         public static bool NoAutoSwitch()
         {
             if (!MPManager.IsMultiPlayer()) return false;
-            if (MPManager.IsClient()) return true;
+            //if (MPManager.IsClient()) return true;
             if (MPManager.OnlineTrains.Players.Count > 0 && !MPManager.Instance().AllowedManualSwitch) return true;
             return false;
         }

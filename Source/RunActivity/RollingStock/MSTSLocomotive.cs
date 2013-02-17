@@ -1381,6 +1381,7 @@ namespace ORTS
 
         public void SetEmergency()
         {
+            if (this.Train != null && this.Train.TrainType == Train.TRAINTYPE.REMOTE) return; //not apply emergency for remote trains.
             if (TrainBrakeController.GetIsEmergency())
                 return;
             if(EmergencyCausesThrottleDown) ThrottleController.SetValue(0.0f);
