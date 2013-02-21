@@ -2927,6 +2927,7 @@ namespace ORTS
                 routeIndex = thisPosition.RouteListIndex;   // obstacle is in present section
             }
 
+            if (routeIndex < 0) return;//by JTang
             int lastRouteIndex = routeIndex;
             float offset = 0.0f;
             if (routeIndex == thisPosition.RouteListIndex)

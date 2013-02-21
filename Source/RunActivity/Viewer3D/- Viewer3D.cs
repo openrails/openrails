@@ -944,15 +944,10 @@ namespace ORTS
             if (!loco.Train.IsChangeCabAvailable()) return;
 
             loco.Train.ChangeToNextCab();
-#if !NEW_SIGNALLING
-            loco.Train.CalculatePositionOfCars( 0 );  // fix the front traveller
-            loco.Train.RepositionRearTraveller();     // fix the rear traveller
-#endif
             PlayerLocomotiveViewer = World.Trains.GetViewer( loco );
             Camera.Activate(); // If you need anything else here the cameras should check for it.
             SetCommandReceivers();
-			//temporarily removed the following as MP does not support replay
-            //if( MPManager.IsMultiPlayer() ) MPManager.LocoChange( loco.Train, loco );
+            if (MPManager.IsMultiPlayer()) MPManager.LocoChange(loco.Train, Simulator.PlayerLocomotive);
             Simulator.Confirmer.Confirm(CabControl.ChangeCab, CabSetting.On);
         }
 

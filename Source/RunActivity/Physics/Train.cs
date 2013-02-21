@@ -794,6 +794,7 @@ namespace ORTS
 
             for (int i = 0; i < Cars.Count; i++)
             {
+                if (SkipOtherUsersCar(i)) continue;
                 if (Cars[i].Flipped)
                 {
                     if (Cars[i].HasRearCab) cabList.Add(-(i+1));
@@ -812,7 +813,6 @@ namespace ORTS
             int nextCabIndex = cabList[lastIndex + 1];
 
             TrainCar oldLead = LeadLocomotive;
-
             LeadLocomotiveIndex = Math.Abs(nextCabIndex)-1;
             Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
             TrainCar newLead = LeadLocomotive;  // Changing LeadLocomotiveIndex also changed LeadLocomotive
