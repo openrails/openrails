@@ -2171,6 +2171,8 @@ namespace ORTS.MultiPlayer
 				TrainCar lead = null;
 				Train train = null;
 				List<TrainCar> trainCars = null;
+				bool canPlace = true;
+				Train.TCSubpathRoute tempRoute;
 				foreach (Train t in Program.Simulator.Trains)
 				{
 					var found = false;
@@ -2200,16 +2202,32 @@ namespace ORTS.MultiPlayer
 						Traveller.TravellerDirection d1 = Traveller.TravellerDirection.Forward;
 						if (trainDirection == 1) d1 = Traveller.TravellerDirection.Backward;
 						t.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX1, TileZ1, X1, Z1, d1);
-						t.CalculatePositionOfCars(0);  // fix the front traveller
 						t.travelled = Travelled1;
 						t.SpeedMpS = Speed1;
 						t.LeadLocomotive = lead;
 						t.MUDirection = (Direction)mDirection1;
+						train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
 						train.CheckFreight();
+						train.InitializeBrakes();
+						canPlace = true;
+						tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
+						if (tempRoute.Count == 0 || !canPlace)
+						{
+							throw new InvalidDataException("Remote train original position not clear");
+						}
+
+						train.SetInitialTrainRoute(tempRoute);
+						train.CalculatePositionOfCars(0);
+						train.ResetInitialTrainRoute(tempRoute);
+
+						train.CalculatePositionOfCars(0);
+						train.AITrainBrakePercent = 100;
 						//train may contain myself, and no other players, thus will make myself controlling this train
 						if (train.Cars.Contains(Program.Simulator.PlayerLocomotive))
 						{
 							Program.Simulator.PlayerLocomotive.Train = train;
+							//train.TrainType = Train.TRAINTYPE.PLAYER;
+							train.InitializeBrakes();
 						}
 						foreach (var c in train.Cars)
 						{
@@ -2259,10 +2277,27 @@ namespace ORTS.MultiPlayer
 				train2.travelled = Travelled2;
 				train2.SpeedMpS = Speed2;
 				train2.MUDirection = (Direction)mDirection2;
-				train2.CalculatePositionOfCars(0);  // fix the front traveller
-				if (train.Cars.Contains(Program.Simulator.PlayerLocomotive))
+				train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
+				train2.CheckFreight();
+				train2.InitializeBrakes();
+				canPlace = true;
+				tempRoute = train2.CalculateInitialTrainPosition(ref canPlace);
+				if (tempRoute.Count == 0 || !canPlace)
 				{
-					Program.Simulator.PlayerLocomotive.Train = train;
+					throw new InvalidDataException("Remote train original position not clear");
+				}
+
+				train2.SetInitialTrainRoute(tempRoute);
+				train2.CalculatePositionOfCars(0);
+				train2.ResetInitialTrainRoute(tempRoute);
+
+				train2.CalculatePositionOfCars(0);
+				train2.AITrainBrakePercent = 100;
+				if (train2.Cars.Contains(Program.Simulator.PlayerLocomotive))
+				{
+					Program.Simulator.PlayerLocomotive.Train = train2;
+					//train2.TrainType = Train.TRAINTYPE.PLAYER;
+					train2.InitializeBrakes();
 				}
 				foreach (TrainCar car in train2.Cars)
 				{

@@ -327,7 +327,7 @@ namespace ORTS
 #if NEW_SIGNALLING
                 if (String.Compare(PlayerLocomotive.Train.LeadLocomotive.CarID, PlayerLocomotive.CarID) != 0)
                 {
-                    PlayerLocomotive = PlayerLocomotive.Train.LeadLocomotive;
+                    if (!MPManager.IsMultiPlayer()) PlayerLocomotive = PlayerLocomotive.Train.LeadLocomotive; //in MP, will not change player locomotive, By JTang
                 }
 #endif		
 			}
@@ -1242,11 +1242,12 @@ namespace ORTS
 			train.LastCar.CouplerSlackM = 0;
 
 #if NEW_SIGNALLING
-            // ensure player train keeps no. 0
+            // ensure player train keeps the original number (in single mode, it is always no. 0)
             if (PlayerLocomotive != null && PlayerLocomotive.Train == train2)
             {
+				var temp = train.Number;
                 train.Number = train2.Number;    // train gets new number
-                train2.Number = 0;               // player train keeps number 0
+                train2.Number = temp;               // player train keeps the original number
             }
 #endif
 
