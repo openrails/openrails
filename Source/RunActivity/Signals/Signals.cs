@@ -2825,7 +2825,7 @@ namespace ORTS
             String report = "Request for clear node from train ";
             report = String.Concat(report, thisTrain.Train.Number.ToString());
             report = String.Concat(report, " at section ", thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex.ToString());
-            report = String.Concat(report, " starting from ", thisTrain.Train.LastReservedSection.ToString());
+            report = String.Concat(report, " starting from ", thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex].ToString());
             File.AppendAllText(@"C:\temp\printproc.txt", report + "\n");
 #endif
             if (thisTrain.Train.CheckTrain)
@@ -2846,10 +2846,10 @@ namespace ORTS
             float clearedDistanceM = 0.0f;
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
 
-            int routeIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
-			if (routeIndex < 0) return; //By JTang, attempt to fix.
-            thisElement = routePart[routeIndex];
-            sectionIndex = thisElement.TCSectionIndex;
+            int routeIndex = -1;
+//            int routeIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+//            thisElement = routePart[routeIndex];
+//            sectionIndex = thisElement.TCSectionIndex;
             float maxDistance = Math.Max(thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
 
             int lastReserved = thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex];
@@ -6566,7 +6566,7 @@ namespace ORTS
         public HOLDSTATE holdState = HOLDSTATE.NONE;
         //              public CONTROLSTATE controlState = CONTROLSTATE.AUTO;   // future extension
 
-        public int[] sigfound = new int[(int)SignalHead.SIGFN.UNKNOWN];  // active next signal
+        public int[] sigfound = new int[(int)SignalHead.SIGFN.UNKNOWN];  // active next signal - used for signals with NORMAL heads only
         private int[] defaultNextSignal = new int[(int)SignalHead.SIGFN.UNKNOWN];  // default next signal
         public Traveller tdbtraveller;          // TDB traveller to determine distance between objects
 
@@ -7288,11 +7288,13 @@ namespace ORTS
             TrackCircuitSection thisSection = null;
             bool sectionSet = false;
 
-            // for normal signals : can not be done using this function, is done while clearing route
+            // for normal signals
 
             if (fntype == SignalHead.SIGFN.NORMAL)
             {
-                return (-1);
+                if (isSignalNormal())        // if this signal is normal : cannot be done using this route (set through sigfound variable)
+                    return (-1);
+                signalFound = SONextSignalNormal(TCReference);   // other types of signals (sigfound not used)
             }
 
         // for other signals : move to next TC (signal would have been default if within same section)
@@ -7374,9 +7376,8 @@ namespace ORTS
         // Find next signal of specified type along set sections - NORMAL signals ONLY
         //
 
-        private int SONextSignalNormal()
+        private int SONextSignalNormal(int thisTC)
         {
-            int thisTC = TCNextTC;
             int direction = TCDirection;
             int signalFound = -1;
             TrackCircuitSection thisSection = null;
@@ -7840,7 +7841,11 @@ namespace ORTS
             TrackCircuitSection lastSection = signalRef.TrackCircuitList[signalRoute[signalRoute.Count - 1].TCSectionIndex];
             int lastDirection = signalRoute[signalRoute.Count - 1].Direction;
 
-            fullRoute = (lastSection.EndSignals[lastDirection] != null);
+            if (lastSection.EndSignals[lastDirection] != null)
+            {
+                fullRoute = true;
+                sigfound[(int)SignalHead.SIGFN.NORMAL] = lastSection.EndSignals[lastDirection].thisRef;
+            }
 
             // try and clear signal
 
@@ -8753,7 +8758,7 @@ namespace ORTS
 
             if (enabledTrain != null && sigfound[(int)SignalHead.SIGFN.NORMAL] < 0)
             {
-                sigfound[(int)SignalHead.SIGFN.NORMAL] = SONextSignalNormal();
+                sigfound[(int)SignalHead.SIGFN.NORMAL] = SONextSignalNormal(TCNextTC);
             }
 
 #if DEBUG_REPORTS

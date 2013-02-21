@@ -54,6 +54,7 @@ namespace ORTS
 
         public enum AI_MOVEMENT_STATE
         {
+            INIT,
             STOPPED,
             STATION_STOP,
             BRAKING,
@@ -63,7 +64,7 @@ namespace ORTS
             APPROACHING_END_OF_PATH
         }
 
-        public AI_MOVEMENT_STATE MovementState = AI_MOVEMENT_STATE.STOPPED;  // actual movement state
+        public AI_MOVEMENT_STATE MovementState = AI_MOVEMENT_STATE.INIT;  // actual movement state
 
         public enum AI_START_MOVEMENT
         {
@@ -207,7 +208,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 338)
+            if (Number == 24)
             {
                 CheckTrain = true;
             }
@@ -262,7 +263,7 @@ namespace ORTS
                 {
                     if (StationStops.Count > 0)
                         SetNextStationAction();               // set station details
-                    MovementState = AI_MOVEMENT_STATE.STOPPED;// start in STOPPED mode to collect info
+                    MovementState = AI_MOVEMENT_STATE.INIT;   // start in STOPPED mode to collect info
                 }
             }
 
@@ -381,7 +382,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 338)
+            if (Number == 24)
             {
                 CheckTrain = true;
             }
@@ -428,7 +429,7 @@ namespace ORTS
 
             // check if state still matches authority level
 
-            if (ControlMode == TRAIN_CONTROL.AUTO_NODE && EndAuthorityType[0] != END_AUTHORITY.MAX_DISTANCE) // restricted authority
+            if (MovementState != AI_MOVEMENT_STATE.INIT && ControlMode == TRAIN_CONTROL.AUTO_NODE && EndAuthorityType[0] != END_AUTHORITY.MAX_DISTANCE) // restricted authority
             {
                 CheckRequiredAction();
             }
@@ -464,6 +465,10 @@ namespace ORTS
             switch (MovementState)
             {
                 case AI_MOVEMENT_STATE.STOPPED:
+                    ProcessEndOfPath();
+                    UpdateStoppedState();
+                    break;
+                case AI_MOVEMENT_STATE.INIT:
                     UpdateStoppedState();
                     break;
                 case AI_MOVEMENT_STATE.STATION_STOP:
@@ -507,7 +512,7 @@ namespace ORTS
                 if (ControlMode == TRAIN_CONTROL.AUTO_NODE)
                 {
                     File.AppendAllText(@"C:\temp\checktrain.txt",
-                       "Auth   : " + EndAuthorityType.ToString() + "\n");
+                       "Auth   : " + EndAuthorityType[0].ToString() + "\n");
                     File.AppendAllText(@"C:\temp\checktrain.txt",
                        "AuthDis: " + FormatStrings.FormatDistance(DistanceToEndNodeAuthorityM[0], true) + "\n");
                 }
@@ -521,6 +526,11 @@ namespace ORTS
                        "NextSig: " + NextSignalObject[0].thisRef.ToString() + "\n");
                     File.AppendAllText(@"C:\temp\checktrain.txt",
                        "Section: " + NextSignalObject[0].TCReference.ToString() + "\n");
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                        "NextSig: null\n");
                 }
 
                 if (nextActionInfo != null)
@@ -539,6 +549,11 @@ namespace ORTS
                         File.AppendAllText(@"C:\temp\checktrain.txt",
                            "DistTr : " + FormatStrings.FormatDistance(nextActionInfo.ActiveItem.distance_to_train, true) + "\n");
                     }
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                        "Action : null\n");
                 }
 
                 File.AppendAllText(@"C:\temp\checktrain.txt",
@@ -986,18 +1001,7 @@ namespace ORTS
 
             // check if train ahead - if so, determine speed and distance
 
-            // Check if end of route reached
-
-            if ((PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1)) ||
-                (NextSignalObject[0] != null &&
-                 NextSignalObject[0].TCReference == ValidRoute[0][ValidRoute[0].Count - 1].TCSectionIndex) ||
-                (NextSignalObject[0] != null &&
-                 NextSignalObject[0].TCNextTC == ValidRoute[0][ValidRoute[0].Count - 1].TCSectionIndex))
-            {
-                ProcessEndOfPath();
-            }
-
-            else if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
+            if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
                 EndAuthorityType[0] == END_AUTHORITY.TRAIN_AHEAD)
             {
 
@@ -1058,16 +1062,7 @@ namespace ORTS
 
             }
 
-    // End of track or end of path : check next subpath
-
-            else if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
-                (EndAuthorityType[0] == END_AUTHORITY.END_OF_TRACK ||
-                 EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH))
-            {
-                ProcessEndOfPath();
-            }
-
-    // Other node mode : check distance ahead (path may have cleared)
+     // Other node mode : check distance ahead (path may have cleared)
 
             else if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
                         DistanceToEndNodeAuthorityM[0] > clearingDistanceM)
@@ -2957,9 +2952,11 @@ namespace ORTS
         public void ProcessEndOfPath()
         {
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
-            bool nextPart = UpdateRouteActions(0);
+            bool[] nextPart = UpdateRouteActions(0);
 
-            if (nextPart)
+            if (!nextPart[0]) return;   // not at end
+
+            if (nextPart[1])   // next route available
             {
 #if DEBUG_REPORTS
                 File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -3139,10 +3136,10 @@ namespace ORTS
                 ObjectItemInfo thisItem, AIActionItem.AI_ACTION_TYPE thisAction)
         {
 
-            // if signal, take off clearing distance
+            // if signal or speed limit take off clearing distance
 
             float activateDistanceTravelledM = PresentPosition[0].DistanceTravelledM + distanceToTrainM;
-            if (thisItem != null && thisItem.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+            if (thisItem != null)
             {
                 activateDistanceTravelledM -= clearingDistanceM;
             }
@@ -3157,13 +3154,16 @@ namespace ORTS
             float triggerDistanceM = PresentPosition[0].DistanceTravelledM; // worst case
 
             // braking distance based on max speed - use 0.25 * MaxDecelMpSS as average deceleration (due to braking delay)
+            // T = deltaV / A
             float fullPartTime = (AllowedMaxSpeedMpS - reqSpeedMpS) / (0.25f * MaxDecelMpSS);
-            float fullPartRangeM = 0.5f * 0.25f * MaxDecelMpSS * fullPartTime * fullPartTime;
+            // R = 0.5 * Vstart * T + 0.5 * A * T**2 
+            // 0.5 * Vstart is average speed over used time, 0.5 * Vstart * T is related distance covered , 0.5 A T**2 is distance covered to reduce speed
+            float fullPartRangeM = (0.5f * 0.25f * MaxDecelMpSS * fullPartTime * fullPartTime) + ((AllowedMaxSpeedMpS - reqSpeedMpS) * 0.5f * fullPartTime);
 
-            if (presentSpeedMpS > reqSpeedMpS)   // if present speed higher, brake distance is always required
+            if (presentSpeedMpS > reqSpeedMpS)   // if present speed higher, brake distance is always required (same equation)
             {
                 firstPartTime = (presentSpeedMpS - reqSpeedMpS) / (0.25f * MaxDecelMpSS);
-                firstPartRangeM = 0.5f * 0.25f * MaxDecelMpSS * firstPartTime * firstPartTime;
+                firstPartRangeM = (0.5f * 0.25f * MaxDecelMpSS * firstPartTime * firstPartTime) + ((presentSpeedMpS - reqSpeedMpS) * 0.5f * fullPartTime);
             }
 
             if (firstPartRangeM > remainingRangeM)
@@ -3386,6 +3386,10 @@ namespace ORTS
                 MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                 Alpha10 = 10;
             }
+
+            // reset pending actions to recalculate braking distance
+
+            ResetActions(true);
         }
 
         //================================================================================================//
@@ -3399,6 +3403,7 @@ namespace ORTS
             // normal actions
 
             bool actionValid = true;
+            bool actionCleared = false;
 
 #if DEBUG_REPORTS
             if (thisItem.ActiveItem != null && thisItem.ActiveItem.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
@@ -3492,6 +3497,7 @@ namespace ORTS
                 else if (thisItem.ActiveItem.signal_state >= SignalHead.SIGASP.APPROACH_1)
                 {
                     actionValid = false;
+                    actionCleared = true;
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -3516,6 +3522,7 @@ namespace ORTS
                     if ((thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM)
                     {
                         actionValid = false;
+                        actionCleared = true;
 
 #if DEBUG_REPORTS
                         File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -3742,6 +3749,22 @@ namespace ORTS
                         //                        }
                     }
 
+                    // if earlier : check if present action is station stop, new action is signal - if so, check is signal really in front of or behind station stop
+
+                    if (earlier && thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP &&
+                                 nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
+                    {
+                        float newposition = thisItem.ActivateDistanceM + 0.75f * clearingDistanceM; // correct with clearing distance - leave smaller gap
+                        float actposition = nextActionInfo.ActivateDistanceM;
+
+                        if (actposition < newposition) earlier = false;
+
+                        if (!earlier && CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "allowing minimum gap : " + newposition.ToString() + " and " + actposition.ToString() + "\n");
+                        }
+                    }
+
                     // reject if less severe (will be rescheduled if active item is cleared)
 
                     if (!earlier)
@@ -3837,13 +3860,27 @@ namespace ORTS
             else
             {
 #if DEBUG_REPORTS
-                File.AppendAllText(@"C:\temp\printproc.txt", "Rejected\n");
+                File.AppendAllText(@"C:\temp\printproc.txt", "Action Rejected\n");
 #endif
                 if (CheckTrain)
                 {
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "Rejected\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Action Rejected\n");
                 }
             }
+
+            if (actionCleared)
+            {
+#if DEBUG_REPORTS
+                File.AppendAllText(@"C:\temp\printproc.txt", "Action Cleared\n");
+#endif
+                if (CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Action Cleared\n");
+                }
+                // reset actions - ensure next action is validated
+
+                ResetActions(true);
+	    }
         }
 
         //================================================================================================//
@@ -3874,6 +3911,9 @@ namespace ORTS
             string movString = "";
             switch (MovementState)
             {
+                case AI_MOVEMENT_STATE.INIT:
+                    movString = "INI ";
+                    break;
                 case AI_MOVEMENT_STATE.STOPPED:
                     movString = "STP ";
                     break;

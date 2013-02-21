@@ -3288,18 +3288,19 @@ namespace ORTS
             int directionNow = PresentPosition[0].TCDirection;
             if (PresentPosition[0].RouteListIndex >= 0) directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
 
-            bool nextRoute = UpdateRouteActions(elapsedClockSeconds);
+            bool[] nextRoute = UpdateRouteActions(elapsedClockSeconds);
+            if (!nextRoute[0]) return;  // not at end of route
 
             // check if train reversed
 
-            if (nextRoute && directionNow != PresentPosition[0].TCDirection)
+            if (nextRoute[1] && directionNow != PresentPosition[0].TCDirection)
             {
                 ReverseFormation(true);
             }
 
             // check if next station was on previous subpath - if so, move to this subpath
 
-            if (nextRoute && StationStops.Count > 0)
+            if (nextRoute[1] && StationStops.Count > 0)
             {
                 StationStop thisStation = StationStops[0];
                 if (thisStation.SubrouteIndex < TCRoute.activeSubpath)
@@ -3314,13 +3315,16 @@ namespace ORTS
         /// <summary>
         /// Check for end of route actions
         /// Called every update, actions depend on route state
-        /// returns "false" if no further route available
+        /// returns :
+        /// bool[0] "false" end of route not reached
+        /// bool[1] "false" if no further route available
         /// </summary>
 
-        public bool UpdateRouteActions(float elapsedClockSeconds)
+        public bool[] UpdateRouteActions(float elapsedClockSeconds)
         {
 
             bool endOfRoute = false;
+            bool[] returnState = new bool[2] { false, false };
 
             // obtain reversal section index
 
@@ -3337,7 +3341,7 @@ namespace ORTS
             // can only be performed if train is stationary
 
             if (Math.Abs(SpeedMpS) > 0.01)
-                return (false);
+                return (returnState);
 
             // check position in relation to present end of path
 
@@ -3374,12 +3378,18 @@ namespace ORTS
             // other checks unrelated to state
             if (!endOfRoute)
             {
+                // if last entry in route is END_OF_TRACK, check against previous entry as this can never be the trains position nor a signal reference section
+                int lastValidRouteIndex = ValidRoute[0].Count - 1;
+                if (signalRef.TrackCircuitList[ValidRoute[0][lastValidRouteIndex].TCSectionIndex].CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                    lastValidRouteIndex--;
+                
                 // if on last section in route - end of route reached
                 // if waiting for next signal and section in front of or beyond signal is last in route - end of route reached
-                if ((PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1)) ||
+
+                if ((PresentPosition[0].RouteListIndex == lastValidRouteIndex) ||
                     (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
-                    (NextSignalObject[0].TCReference == ValidRoute[0][ValidRoute[0].Count - 1].TCSectionIndex ||
-                     NextSignalObject[0].TCNextTC == ValidRoute[0][ValidRoute[0].Count - 1].TCSectionIndex)))
+                    (NextSignalObject[0].TCReference == ValidRoute[0][lastValidRouteIndex].TCSectionIndex ||
+                     NextSignalObject[0].TCNextTC == ValidRoute[0][lastValidRouteIndex].TCSectionIndex)))
                 {
                     endOfRoute = true;
                 }
@@ -3434,7 +3444,7 @@ namespace ORTS
 
             if (!endOfRoute)
             {
-                return (false);
+                return (returnState);
             }
 
             // if end of route and waiting point, check or set waiting time (PLAYER only, AI uses station stop)
@@ -3687,14 +3697,10 @@ namespace ORTS
                 }
             }
 
-            if (endOfRoute && !nextRouteAvailable)
-            {
-                return (false);  // no further route
-            }
-            else
-            {
-                return (true);   // furhter route
-            }
+            returnState[0] = endOfRoute;
+            returnState[1] = nextRouteAvailable;
+
+            return (returnState);  // return state
         }
 
         //================================================================================================//
@@ -5098,9 +5104,6 @@ namespace ORTS
                     thisSection.alignSwitchPins(MisalignedSwitch[1]);
                     MisalignedSwitch[0] = -1;
                     MisalignedSwitch[1] = -1;
-
-                    // set to out of control
-                    SetTrainOutOfControl(OUTOFCONTROL.MISALIGNED_SWITCH);
 
                     // recalculate track position
                     UpdateTrainPosition();
@@ -8673,6 +8676,40 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // Preset switches for explorer mode
+        //
+
+        public void PresetExplorerPath(AIPath aiPath, Signals orgSignals)
+        {
+            int orgDirection = (RearTDBTraveller != null) ? (int)RearTDBTraveller.Direction : -2;
+            TCRoute = new TCRoutePath(aiPath, orgDirection, 0, orgSignals);
+
+            // loop through all sections in first subroute except first and last (neither can be junction)
+
+            for (int iElement = 1; iElement <= TCRoute.TCRouteSubpaths[0].Count - 2; iElement++)
+            {
+                TrackCircuitSection thisSection = orgSignals.TrackCircuitList[TCRoute.TCRouteSubpaths[0][iElement].TCSectionIndex];
+                int nextSectionIndex = TCRoute.TCRouteSubpaths[0][iElement + 1].TCSectionIndex;
+                int prevSectionIndex = TCRoute.TCRouteSubpaths[0][iElement - 1].TCSectionIndex;
+
+                // process Junction
+
+                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                {
+                    if (thisSection.Pins[0, 0].Link == nextSectionIndex)
+                    {
+                        thisSection.alignSwitchPins(prevSectionIndex);   // trailing switch
+                    }
+                    else
+                    {
+                        thisSection.alignSwitchPins(nextSectionIndex);   // facing switch
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
         // Extract alternative route
         //
 
@@ -10311,8 +10348,8 @@ namespace ORTS
                 if (TCSectionIndex != tempPosition.TCSectionIndex ||
                         (TCSectionIndex == tempPosition.TCSectionIndex && offsetDif > 5.0f))
                 {
-                    Trace.TraceWarning("Train restored at different present rear : was {1}-{2}, is {3}-{4}",
-                            TCSectionIndex, tempPosition.TCSectionIndex,
+                    Trace.TraceWarning("Train {0} restored at different present rear : was {1}-{2}, is {3}-{4}",
+                            train.Number, TCSectionIndex, tempPosition.TCSectionIndex,
                             TCOffset, tempPosition.TCOffset);
                 }
             }

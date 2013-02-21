@@ -961,6 +961,7 @@ namespace ORTS
             }
             else // explorer mode
             {
+                train.PresetExplorerPath(aiPath, Signals);
                 train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
             }
 

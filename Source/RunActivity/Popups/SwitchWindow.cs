@@ -152,8 +152,8 @@ namespace ORTS.Popups
 
 			Debug.Assert(SwitchPreviousNode != null);
 			Debug.Assert(SwitchNode.Inpins == 1);
-			Debug.Assert(SwitchNode.Outpins == 2);
-			Debug.Assert(SwitchNode.TrPins.Count() == 3);
+			Debug.Assert(SwitchNode.Outpins == 2 || SwitchNode.Outpins == 3);  // allow for 3-way switch
+			Debug.Assert(SwitchNode.TrPins.Count() == 3 || SwitchNode.TrPins.Count() == 4);  // allow for 3-way switch
 			Debug.Assert(SwitchNode.TrJunctionNode != null);
 			Debug.Assert(SwitchNode.TrJunctionNode.SelectedRoute == 0 || SwitchNode.TrJunctionNode.SelectedRoute == 1);
 
