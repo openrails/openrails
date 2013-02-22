@@ -1046,7 +1046,7 @@ namespace ORTS
 
         public virtual void physicsUpdate(float elapsedClockSeconds)
         {
-            if (this.TrainType == TRAINTYPE.REMOTE)
+            if (this.TrainType == TRAINTYPE.REMOTE || updateMSGReceived == true) //server tolds me this train (may include mine) needs to update position
             {
                 UpdateRemoteTrainPos(elapsedClockSeconds);
                 return;
@@ -11441,15 +11441,21 @@ namespace ORTS
                         //if something wrong with the switch
                         if (this.RearTDBTraveller.TrackNodeIndex != expectedTracIndex)
                         {
-                            Traveller t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
-
+                            Traveller t = null;
+                            if (expectedTracIndex <= 0)
+                            {
+                                t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes,  expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
+                            }
+                            else
+                            {
+                                t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
+                            }
                             //move = SpeedMpS > 0 ? 0.001f : -0.001f;
                             this.travelled = expectedTravelled;
                             this.RearTDBTraveller = t;
                             CalculatePositionOfCars(0);
 
                         }
-                        //}
                     }
                     else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
                     {

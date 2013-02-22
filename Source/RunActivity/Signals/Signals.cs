@@ -4807,6 +4807,7 @@ namespace ORTS
             // enable all signals along section in direction of train
             // do not enable those signals who are part of NORMAL signal
 
+            if (thisIndex < 0) return; //Added by JTang
             thisElement = thisRoute[thisIndex];
             int direction = thisElement.Direction;
 
