@@ -214,33 +214,29 @@ namespace ORTS
                 return;  // missing controllers
             }
 
-            var xnaPose = SharedShape.Matrices[iMatrix]; // start with the intial pose in the shape file
+            // Start with the intial pose in the shape file.
+            var xnaPose = SharedShape.Matrices[iMatrix];
 
             foreach (controller controller in anim_node.controllers)
             {
-                // determine the frame number and transition amount
-                int iKey1 = 0;
-                for (int i = 0; i < controller.Count; ++i)
-                    if (controller[i].Frame <= key + 0.0001)
-                        iKey1 = i;
-                    else
+                // Determine the frame index from the current frame ('key'). We will be interpolating between two key
+                // frames (the items in 'controller') so we need to find the last one LESS than the current frame
+                // and interpolate with the one after it.
+                var index = 0;
+                for (var i = 0; i < controller.Count; i++)
+                    if (controller[i].Frame <= key)
+                        index = i;
+                    else if (controller[i].Frame > key) // Optimisation, not required for algorithm.
                         break;
-                KeyPosition position1 = controller[iKey1];
-                float frame1 = position1.Frame;
 
-                int iKey2 = iKey1 + 1;
-                if (iKey2 >= controller.Count)
-                    iKey2 = 0;
-                KeyPosition position2 = controller[iKey2];
-                float frame2 = position2.Frame;
-                if (iKey2 == 0)
-                    frame2 = SharedShape.Animations[0].FrameCount; //changed at V148 by Doug, was controller.Count;
+                var position1 = controller[index];
+                var position2 = index + 1 < controller.Count ? controller[index + 1] : controller[index];
+                var frame1 = position1.Frame;
+                var frame2 = position2.Frame;
 
-                float amount;
-                if (Math.Abs(frame2 - frame1) > 0.0001)
-                    amount = (key - frame1) / Math.Abs(frame2 - frame1);
-                else
-                    amount = 0;
+                // Make sure to clamp the amount, as we can fall outside the frame range. Also ensure there's a
+                // difference between frame1 and frame2 or we'll crash.
+                var amount = frame1 < frame2 ? MathHelper.Clamp((key - frame1) / (frame2 - frame1), 0, 1) : 0;
 
                 if (position1.GetType() == typeof(slerp_rot))  // rotate the existing matrix
                 {
