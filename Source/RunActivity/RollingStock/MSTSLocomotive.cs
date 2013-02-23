@@ -2205,7 +2205,6 @@ namespace ORTS
         MSTSLocomotive Locomotive;
 
         protected Dictionary<string, List<ParticleEmitterDrawer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterDrawer>>();
-        List<int> WiperPartIndexes = new List<int>();
 
         float WiperAnimationKey = 0;
 
@@ -2231,31 +2230,6 @@ namespace ORTS
 
             //if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
             //    _CabRenderer = new CabRenderer(viewer, Locomotive);
-
-            // Find the animated parts
-            if (TrainCarShape.SharedShape.Animations != null)
-            {
-				for (int iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
-                {
-                    string matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
-                    switch (matrixName)
-                    {
-                        case "WIPERARMLEFT1":
-                        case "WIPERBLADELEFT1":
-                        case "WIPERARMRIGHT1":
-                        case "WIPERBLADERIGHT1":
-                            if (TrainCarShape.SharedShape.Animations[0].FrameCount > 1)  // ensure shape file is properly animated for wipers
-                                WiperPartIndexes.Add(iMatrix);
-                            break;
-                        case "MIRRORARMLEFT1":
-                        case "MIRRORLEFT1":
-                        case "MIRRORARMRIGHT1":
-                        case "MIRRORRIGHT1":
-                            // TODO
-                            break;
-                    }
-                }
-            }
 
             string wagonFolderSlash = Path.GetDirectoryName(Locomotive.WagFilePath) + "\\";
             if (Locomotive.CabSoundFileName != null) LoadCarSound(wagonFolderSlash, Locomotive.CabSoundFileName);

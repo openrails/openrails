@@ -646,31 +646,19 @@ namespace ORTS
         /// <summary>
         /// Construct with a link to the shape that contains the animated parts 
         /// </summary>
-        public AnimatedPart( PoseableShape poseableShape )
+        public AnimatedPart(PoseableShape poseableShape)
         {
             PoseableShape = poseableShape;
+            if (PoseableShape.SharedShape.Animations != null && PoseableShape.SharedShape.Animations.Count > 0)
+                FrameCount = PoseableShape.SharedShape.Animations[0].FrameCount;
         }
 
         /// <summary>
         /// All the matrices associated with this part are added during initialization by the MSTSWagon constructor
         /// </summary>
-        public void MatrixIndexAdd(int i)
+        public void MatrixIndexAdd(int matrix)
         {
-            MatrixIndexes.Add(i);
-
-            // determine the number of frames in this animation from the animation controller for first matrix component
-            var shape = PoseableShape.SharedShape;
-            if (shape.Animations != null)
-            {
-                // find the controller set for this part, ie anim_node WIPERBLADERIGHT1 ( controllers ( 2
-                var controllers = shape.Animations[0].anim_nodes[i].controllers;
-                if (controllers.Count > 0)
-                {
-                    var controller = controllers[0];  // ie tcb_rot ( 3 is a controller with three keypositions
-                    // we want the frame number of the last key position
-                    FrameCount = Math.Max(FrameCount, controller[controller.Count - 1].Frame);
-                }
-            }
+            MatrixIndexes.Add(matrix);
         }
 
         /// <summary>
@@ -779,6 +767,7 @@ namespace ORTS
 
         List<int> WheelPartIndexes = new List<int>();   // these index into a matrix in the shape file
 		List<int> RunningGearPartIndexes = new List<int>();
+        protected List<int> WiperPartIndexes = new List<int>();
 
 		AnimatedPart Pantograph1;  // matrixes for the fowards pantograph parts
 		AnimatedPart Pantograph2;  // matrixes for the backwards pantograph parts
@@ -789,12 +778,13 @@ namespace ORTS
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
         protected Viewer3D _Viewer3D;
 
-        public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car): base( viewer, car )
+        public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car)
+            : base(viewer, car)
         {
             _Viewer3D = viewer;
             var wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
             var shapePath = wagonFolderSlash + car.MainShapeFileName;
-			
+
             TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
 
             if (car.FreightShapeFileName != null)
@@ -804,10 +794,10 @@ namespace ORTS
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition);
 
             Pantograph1 = new AnimatedPart(TrainCarShape);  // matrixes for the fowards pantograph parts
-		    Pantograph2 = new AnimatedPart(TrainCarShape);  // matrixes for the backwards pantograph parts
-		    LeftDoor = new AnimatedPart(TrainCarShape); //left door
-		    RightDoor = new AnimatedPart(TrainCarShape);//right door
-		    Mirrors = new AnimatedPart(TrainCarShape); //mirror
+            Pantograph2 = new AnimatedPart(TrainCarShape);  // matrixes for the backwards pantograph parts
+            LeftDoor = new AnimatedPart(TrainCarShape); //left door
+            RightDoor = new AnimatedPart(TrainCarShape);//right door
+            Mirrors = new AnimatedPart(TrainCarShape); //mirror
 
             LoadCarSounds(wagonFolderSlash);
             LoadTrackSounds();
@@ -815,121 +805,10 @@ namespace ORTS
             // Adding all loaded SoundSource to the main sound update thread
             _Viewer3D.SoundProcess.AddSoundSource(this, SoundSources);
 
-            // Get indexes of all the animated parts
-            for (var iMatrix = 0; iMatrix < TrainCarShape.SharedShape.MatrixNames.Count; ++iMatrix)
-            {
-                var matrixName = TrainCarShape.SharedShape.MatrixNames[iMatrix].ToUpper();
-                if (matrixName.StartsWith("WHEELS"))
-                {
-                    if (matrixName.Length == 7)
-                    {
-                        if (TrainCarShape.SharedShape.Animations != null
-                                   && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
-                                   && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
-                            RunningGearPartIndexes.Add(iMatrix);
-                        var m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
-                        var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(iMatrix);
-                        car.AddWheelSet(m.M43, 0, pmatrix);
-                    }
-                    else if (matrixName.Length == 8)
-                    {
-                        WheelPartIndexes.Add(iMatrix);
-                        try
-                        {
-                            var id = Int32.Parse(matrixName.Substring(6, 1));
-                            var m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
-                            var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(iMatrix);
-                            car.AddWheelSet(m.M43, id, pmatrix);
-                        }
-                        catch
-                        {
-                        }
-                    }
-                }
-                else if (matrixName.StartsWith("BOGIE"))
-                {
-                    try
-                    {
-                        var id = Int32.Parse(matrixName.Substring(5));
-                        var m = TrainCarShape.SharedShape.GetMatrixProduct(iMatrix);
-                        car.AddBogie(m.M43, iMatrix, id);
-                    }
-                    catch
-                    {
-                    }
-                }
-				else if (matrixName.StartsWith("WIPER")) // wipers
-				{//will be captured later by MSTSLocomotive
-				}
-				else if (matrixName.StartsWith("DOOR") || matrixName.StartsWith("DEUR")) // doors (left / right)
-				{
-					if (TrainCarShape.SharedShape.Animations != null
-							   && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
-							   && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)
-					{
-						if (matrixName.StartsWith("DOOR_D") || matrixName.StartsWith("DOOR_E") || matrixName.StartsWith("DOOR_F")) LeftDoor.MatrixIndexAdd(iMatrix);
-						else if (matrixName.StartsWith("DOOR_A") || matrixName.StartsWith("DOOR_B") || matrixName.StartsWith("DOOR_C")) RightDoor.MatrixIndexAdd(iMatrix);
-						else LeftDoor.MatrixIndexAdd(iMatrix); //some train may not follow the above convention of left/right, put them as left by default
-					}
-				}
-				else if (matrixName.StartsWith("PANTOGRAPH")) //pantographs (1/2)
-				{
-					if (TrainCarShape.SharedShape.Animations == null) continue;
-					switch (matrixName)
-					{
-						case "PANTOGRAPHBOTTOM1":
-						case "PANTOGRAPHBOTTOM1A":
-						case "PANTOGRAPHBOTTOM1B":
-						case "PANTOGRAPHMIDDLE1":
-						case "PANTOGRAPHMIDDLE1A":
-						case "PANTOGRAPHMIDDLE1B":
-						case "PANTOGRAPHTOP1":
-						case "PANTOGRAPHTOP1A":
-						case "PANTOGRAPHTOP1B":
-							Pantograph1.MatrixIndexAdd(iMatrix);
-							break;
-						case "PANTOGRAPHBOTTOM2":
-						case "PANTOGRAPHBOTTOM2A":
-						case "PANTOGRAPHBOTTOM2B":
-						case "PANTOGRAPHMIDDLE2":
-						case "PANTOGRAPHMIDDLE2A":
-						case "PANTOGRAPHMIDDLE2B":
-						case "PANTOGRAPHTOP2":
-						case "PANTOGRAPHTOP2A":
-						case "PANTOGRAPHTOP2B":
-							Pantograph2.MatrixIndexAdd(iMatrix);
-							break;
-					}
-				}
-                else if (matrixName.StartsWith("MIRROR")) // mirrors
-                {
-                    if (TrainCarShape.SharedShape.Animations != null
-                               && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
-                               && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)
-                    {
-                        Mirrors.MatrixIndexAdd(iMatrix);
-                    }
-                }
-                else if (matrixName.StartsWith("PANTO"))  // TODO, not sure why this is needed, see above!
-                {
-                    if (TrainCarShape.SharedShape.Animations == null) continue;
-                    if (matrixName.Contains("1"))
-                    {
-                        Pantograph1.MatrixIndexAdd(iMatrix);
-                    }
-                    else if (matrixName.Contains("2"))
-                    {
-                        Pantograph2.MatrixIndexAdd(iMatrix);
-                    }
-                }
-                else
-                {
-                    if (TrainCarShape.SharedShape.Animations != null
-                        && TrainCarShape.SharedShape.Animations[0].FrameCount > 0
-                        && TrainCarShape.SharedShape.Animations[0].anim_nodes[iMatrix].controllers.Count > 0)  // ensure shape file is setup properly
-                        RunningGearPartIndexes.Add(iMatrix);
-                }
-            }
+            // Match up all the matrices with their parts.
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                if (TrainCarShape.Hierarchy[i] == -1)
+                    MatchMatrixToPart(car, i);
 
             car.SetUpWheels();
 
@@ -937,7 +816,7 @@ namespace ORTS
             if (!car.Flipped && Pantograph1.Exists() && Pantograph2.Exists())
                 AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
 
-			// If the car is flipped, the doors should be corrected to match the rest of the train.
+            // If the car is flipped, the doors should be corrected to match the rest of the train.
             if (car.Flipped)
                 AnimatedPart.Swap(ref RightDoor, ref LeftDoor);
 
@@ -946,8 +825,99 @@ namespace ORTS
             LeftDoor.SetPosition(MSTSWagon.DoorLeftOpen);
             RightDoor.SetPosition(MSTSWagon.DoorRightOpen);
             Mirrors.SetPosition(MSTSWagon.MirrorOpen);
+        }
 
+        void MatchMatrixToPart(MSTSWagon car, int matrix)
+        {
+            var matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].ToUpper();
+            // Gate all RunningGearPartIndexes on this!
+            var matrixAnimated = TrainCarShape.SharedShape.Animations != null && TrainCarShape.SharedShape.Animations.Count > 0 && TrainCarShape.SharedShape.Animations[0].anim_nodes.Count > matrix && TrainCarShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0;
+            if (matrixName.StartsWith("WHEELS"))
+            {
+                if (matrixName.Length == 8 || !matrixAnimated)
+                    WheelPartIndexes.Add(matrix);
+                else
+                    RunningGearPartIndexes.Add(matrix);
 
+                var id = 0;
+                if (matrixName.Length == 8)
+                    Int32.TryParse(matrixName.Substring(6, 1), out id);
+                var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
+                var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
+                car.AddWheelSet(m.M43, id, pmatrix);
+            }
+            else if (matrixName.StartsWith("BOGIE"))
+            {
+                var id = 1;
+                Int32.TryParse(matrixName.Substring(5), out id);
+                var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
+                car.AddBogie(m.M43, matrix, id);
+
+                // Bogies contain wheels!
+                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                    if (TrainCarShape.Hierarchy[i] == matrix)
+                        MatchMatrixToPart(car, i);
+            }
+            else if (matrixName.StartsWith("WIPER")) // wipers
+            {
+                WiperPartIndexes.Add(matrix);
+            }
+            else if (matrixName.StartsWith("DOOR")) // doors (left / right)
+            {
+                if (matrixName.StartsWith("DOOR_D") || matrixName.StartsWith("DOOR_E") || matrixName.StartsWith("DOOR_F"))
+                    LeftDoor.MatrixIndexAdd(matrix);
+                else if (matrixName.StartsWith("DOOR_A") || matrixName.StartsWith("DOOR_B") || matrixName.StartsWith("DOOR_C"))
+                    RightDoor.MatrixIndexAdd(matrix);
+            }
+            else if (matrixName.StartsWith("PANTOGRAPH")) //pantographs (1/2)
+            {
+                switch (matrixName)
+                {
+                    case "PANTOGRAPHBOTTOM1":
+                    case "PANTOGRAPHBOTTOM1A":
+                    case "PANTOGRAPHBOTTOM1B":
+                    case "PANTOGRAPHMIDDLE1":
+                    case "PANTOGRAPHMIDDLE1A":
+                    case "PANTOGRAPHMIDDLE1B":
+                    case "PANTOGRAPHTOP1":
+                    case "PANTOGRAPHTOP1A":
+                    case "PANTOGRAPHTOP1B":
+                        Pantograph1.MatrixIndexAdd(matrix);
+                        break;
+                    case "PANTOGRAPHBOTTOM2":
+                    case "PANTOGRAPHBOTTOM2A":
+                    case "PANTOGRAPHBOTTOM2B":
+                    case "PANTOGRAPHMIDDLE2":
+                    case "PANTOGRAPHMIDDLE2A":
+                    case "PANTOGRAPHMIDDLE2B":
+                    case "PANTOGRAPHTOP2":
+                    case "PANTOGRAPHTOP2A":
+                    case "PANTOGRAPHTOP2B":
+                        Pantograph2.MatrixIndexAdd(matrix);
+                        break;
+                }
+            }
+            else if (matrixName.StartsWith("MIRROR")) // mirrors
+            {
+                Mirrors.MatrixIndexAdd(matrix);
+            }
+            else if (matrixName.StartsWith("PANTO"))  // TODO, not sure why this is needed, see above!
+            {
+                Trace.TraceInformation("Pantrograph matrix with unusual name {1} in shape {0}", TrainCarShape.SharedShape.FilePath, matrixName);
+                if (matrixName.Contains("1"))
+                    Pantograph1.MatrixIndexAdd(matrix);
+                else if (matrixName.Contains("2"))
+                    Pantograph2.MatrixIndexAdd(matrix);
+            }
+            else
+            {
+                if (matrixAnimated)
+                    RunningGearPartIndexes.Add(matrix);
+
+                for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                    if (TrainCarShape.Hierarchy[i] == matrix)
+                        MatchMatrixToPart(car, i);
+            }
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
