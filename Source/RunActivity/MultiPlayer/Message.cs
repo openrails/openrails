@@ -3041,66 +3041,42 @@ namespace ORTS.MultiPlayer
 		}
 
 		//how to handle the message?
-		public override void HandleMsg() //only client will get message, thus will set states
-		{
-			if (Program.Server != null && !MPManager.Instance().aiderList.Contains(sender)) return; //client will ignore it, also if not an aider, will ignore it
+        public override void HandleMsg() //only client will get message, thus will set states
+        {
+            if (Program.Server != null && !MPManager.Instance().aiderList.Contains(sender)) return; //client will ignore it, also if not an aider, will ignore it
 
-			var signal = Program.Simulator.Signals.SignalObjects[index];
-			switch (pick)
-			{
-				case 0:
-#if !NEW_SIGNALLING
-					signal.canUpdate = true;
-					signal.forcedTime = 0;
-#endif
-					break;
-				case 1:
-#if !NEW_SIGNALLING
-					signal.enabled = false;
-					signal.canUpdate = false;
-					//signal.forcedTime = Program.Simulator.GameTime;
-					foreach (var head in signal.SignalHeads)
-					{
-						head.SetMostRestrictiveAspect();
-						head.Update();
-					}
-					signal.forcedTime = Program.Simulator.GameTime;
-#endif
-					break;
-				case 2:
-#if !NEW_SIGNALLING
-					signal.canUpdate = false;
-					//signal.
-					foreach (var head in signal.SignalHeads)
-					{
-						//first try to set as approach, if not defined, set as the least
-						var drawstate1 = head.def_draw_state(SignalHead.SIGASP.APPROACH_1);
-						var drawstate2 = head.def_draw_state(SignalHead.SIGASP.APPROACH_2);
-						var drawstate3 = head.def_draw_state(SignalHead.SIGASP.APPROACH_3);
-						if (drawstate1 > 0) { head.state = SignalHead.SIGASP.APPROACH_1; }
-						else if (drawstate2 > 0) { head.state = SignalHead.SIGASP.APPROACH_2; }
-						else { head.state = SignalHead.SIGASP.APPROACH_3; }
-						head.draw_state = head.def_draw_state(head.state);
-					}
-					signal.forcedTime = Program.Simulator.GameTime;
-#endif
-					break;
-				case 3:
-#if !NEW_SIGNALLING
-					signal.canUpdate = false;
-					signal.enabled = true; //force it to be green,
-					//signal.
-					foreach (var head in signal.SignalHeads)
-					{
-						head.SetLeastRestrictiveAspect();
-						head.draw_state = head.def_draw_state(head.state);
-					}
-					signal.forcedTime = Program.Simulator.GameTime;
-#endif
-					break;
-			}
-
-		}
+            var signal = Program.Simulator.Signals.SignalObjects[index];
+            switch (pick)
+            {
+                case 0:
+                    signal.holdState = SignalObject.HOLDSTATE.NONE;
+                    break;
+                case 1:
+                    signal.holdState = SignalObject.HOLDSTATE.MANUAL_LOCK;
+                    break;
+                case 2:
+                    signal.holdState = SignalObject.HOLDSTATE.MANUAL_APPROACH;
+                    foreach (var sigHead in signal.SignalHeads)
+                    {
+                        var drawstate1 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_1);
+                        var drawstate2 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_2);
+                        var drawstate3 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_3);
+                        if (drawstate1 > 0) { sigHead.state = SignalHead.SIGASP.APPROACH_1; }
+                        else if (drawstate2 > 0) { sigHead.state = SignalHead.SIGASP.APPROACH_2; }
+                        else { sigHead.state = SignalHead.SIGASP.APPROACH_3; }
+                        sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
+                    }
+                    break;
+                case 3:
+                    signal.holdState = SignalObject.HOLDSTATE.MANUAL_PASS;
+                    foreach (var sigHead in signal.SignalHeads)
+                    {
+                        sigHead.SetLeastRestrictiveAspect();
+                        sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
+                    }
+                    break;
+            }
+        }
 
 		public override string ToString()
 		{
