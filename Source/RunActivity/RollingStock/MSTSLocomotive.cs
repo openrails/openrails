@@ -31,14 +31,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using MSTS;
-using System.Xml;
-using Microsoft.Xna.Framework.Content;
-using System.Text;
-using ORTS.Popups;
 
 
 
@@ -2500,8 +2496,6 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            float elapsedClockSeconds = elapsedTime.ClockSeconds;
-
             foreach (List<ParticleEmitterDrawer> drawers in ParticleDrawers.Values)
             {
                 foreach (ParticleEmitterDrawer drawer in drawers)
@@ -2512,34 +2506,7 @@ namespace ORTS
             }
 
             // Wiper animation
-            if (WiperPartIndexes.Count > 0)  // skip this if there are no wipers
-            {
-                if (Locomotive.Wiper) // on
-                {
-                    // Wiper Animation
-                    // Compute the animation key based on framerate etc
-                    // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                    // <CJ Comment> Divisor set to 18f to match MSTS rate, but don't like magic numbers. Where does this one come from?
-                    // See also pantograph animation. </CJ Comment>
-                    WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 18f) * elapsedClockSeconds;
-                    while (WiperAnimationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) WiperAnimationKey -= TrainCarShape.SharedShape.Animations[0].FrameCount;
-                    while (WiperAnimationKey < -0.00001) WiperAnimationKey += TrainCarShape.SharedShape.Animations[0].FrameCount;
-                    foreach (int iMatrix in WiperPartIndexes)
-                        TrainCarShape.AnimateMatrix(iMatrix, WiperAnimationKey);
-                }
-                else // off
-                {
-                    if (WiperAnimationKey > 0.001)  // park the blades
-                    {
-                        // <CJ Comment> Divisor set to 18f to match MSTS rate, but don't like magic numbers. Where does this one come from?
-                        // See also pantograph animation. </CJ Comment>
-                        WiperAnimationKey += ((float)TrainCarShape.SharedShape.Animations[0].FrameRate / 18f) * elapsedClockSeconds;
-                        if (WiperAnimationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) WiperAnimationKey = 0;
-                        foreach (int iMatrix in WiperPartIndexes)
-                            TrainCarShape.AnimateMatrix(iMatrix, WiperAnimationKey);
-                    }
-                }
-            }
+            Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&

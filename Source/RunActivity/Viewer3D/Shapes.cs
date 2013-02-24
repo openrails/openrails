@@ -300,15 +300,13 @@ namespace ORTS
             // if the shape has animations
             if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].FrameCount > 1)
             {
-                // Compute the animation key based on framerate etc
-                // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                AnimationKey += (float)SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-                while (AnimationKey >= SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
-                while (AnimationKey < -0.00001) AnimationKey += SharedShape.Animations[0].FrameCount;
+                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+                while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
+                while (AnimationKey < 0) AnimationKey += SharedShape.Animations[0].FrameCount;
 
                 // Update the pose for each matrix
-                for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                    AnimateMatrix(iMatrix, AnimationKey);
+                for (var matrix = 0; matrix < SharedShape.Matrices.Length; ++matrix)
+                    AnimateMatrix(matrix, AnimationKey);
             }
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }

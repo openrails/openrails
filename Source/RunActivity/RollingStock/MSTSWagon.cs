@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using MSTS;
 
@@ -638,99 +639,115 @@ namespace ORTS
         }
     }
 
-    // This supports animation of Pantographs, Mirrors and Doors - any up/down on/off 2 state types
-    // It is initialized with a list of indexes for the matrices related to this part
-    // On Update( position ) it slowly moves the parts towards the specified position
+    /// <summary>
+    /// Support for animating any sub-part of a wagon or locomotive. Supports both on/off toggled animations and continuous-running ones.
+    /// </summary>
     public class AnimatedPart
     {
+        // Shape that we're animating.
+        readonly PoseableShape PoseableShape;
+
+        // Number of animation key-frames that are used by this part. This is calculated from the matrices provided.
+        int FrameCount = 0;
+
+        // Current frame of the animation.
+        float AnimationKey = 0;
+
+        // List of the matrices we're animating for this part.
+        List<int> MatrixIndexes = new List<int>();
+
         /// <summary>
         /// Construct with a link to the shape that contains the animated parts 
         /// </summary>
         public AnimatedPart(PoseableShape poseableShape)
         {
             PoseableShape = poseableShape;
-            if (PoseableShape.SharedShape.Animations != null && PoseableShape.SharedShape.Animations.Count > 0)
-                FrameCount = PoseableShape.SharedShape.Animations[0].FrameCount;
         }
 
         /// <summary>
         /// All the matrices associated with this part are added during initialization by the MSTSWagon constructor
         /// </summary>
-        public void MatrixIndexAdd(int matrix)
+        public void AddMatrix(int matrix)
         {
             MatrixIndexes.Add(matrix);
+            UpdateFrameCount(matrix);
+        }
+
+        void UpdateFrameCount(int matrix)
+        {
+            if (PoseableShape.SharedShape.Animations != null
+                && PoseableShape.SharedShape.Animations.Count > 0
+                && PoseableShape.SharedShape.Animations[0].anim_nodes.Count > matrix
+                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0
+                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].Count > 0)
+            {
+                FrameCount = Math.Max(FrameCount, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].ToArray().Cast<KeyPosition>().Last().Frame);
+            }
+            for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
+                if (PoseableShape.Hierarchy[i] == matrix)
+                    UpdateFrameCount(i);
         }
 
         /// <summary>
         /// Ensure the shape file contained parts of this type 
         /// and those parts have an animation section.
         /// </summary>
-        public bool Exists()
+        public bool Empty()
         {
-            return MatrixIndexes.Count != 0 && FrameCount != 0;
-        }
-
-        /// <summary>
-        /// Disable animation for this part by clearing the matrix and animation data.
-        /// </summary>
-        public void MakeEmpty()
-        {
-            MatrixIndexes.Clear();
-            FrameCount = 0;
-            AnimationKey = 0;
+            return MatrixIndexes.Count == 0;
         }
 
         /// <summary>
         /// Bypass the normal slow transition and jump the part immediately to this new state
         /// </summary>
-        public void SetPosition(bool newState)
+        public void SetState(bool state)
         {
-            AnimationKey = newState ? FrameCount : 0;
-			foreach (int iMatrix in MatrixIndexes)
-				PoseableShape.AnimateMatrix(iMatrix, AnimationKey);
+            AnimationKey = state ? FrameCount : 0;
+            foreach (var matrix in MatrixIndexes)
+                PoseableShape.AnimateMatrix(matrix, AnimationKey);
         }
-
 
         /// <summary>
-        /// Transition the part toward the specified state. 
+        /// Updates an animated part that toggles between two states (e.g. pantograph, doors, mirrors).
         /// </summary>
-        public void Update( bool state, ElapsedTime elapsedTime)
+        public void UpdateState(bool state, ElapsedTime elapsedTime)
         {
-            if (MatrixIndexes.Count == 0) return;
-
-            if (state)  // panto up/door open, etc.
-            {
-                if (AnimationKey < FrameCount)  // skip this if we are already up
-                {                               // otherwise transition up
-                    // Animation speed is hard coded at 1 frame per second, to match the rate of MSTS.
-                    // <CJ Comment> Only tested pantographs because don't have the models for doors and mirrors. </CJ Comment>
-                    AnimationKey += 1f * elapsedTime.ClockSeconds;
-                    if (AnimationKey > FrameCount) AnimationKey = FrameCount;
-                    foreach (int iMatrix in MatrixIndexes)
-                        PoseableShape.AnimateMatrix(iMatrix, AnimationKey);
-                }
-            }
-            else  // down, closed etc
-            {
-                if (AnimationKey > 0)   // if we are already down, don't do anything
-                {                       // otherwise transition down
-                    AnimationKey -= 1f * elapsedTime.ClockSeconds;
-                    if (AnimationKey < 0) AnimationKey = 0;
-                    foreach (int iMatrix in MatrixIndexes)
-                        PoseableShape.AnimateMatrix(iMatrix, AnimationKey);
-                }
-            }
+            AnimationKey += (state ? 1 : -1) * elapsedTime.ClockSeconds;
+            if (AnimationKey > FrameCount) AnimationKey = FrameCount;
+            if (AnimationKey < 0) AnimationKey = 0;
+            foreach (var matrix in MatrixIndexes)
+                PoseableShape.AnimateMatrix(matrix, AnimationKey);
         }
 
-        private float AnimationKey = 0;  // This is where we are in the timeline. 
-                                         // The timeline is measured in frames 
-                                         // It runs from 0 to the number of frames provided in the animation sequence
-        
-        private List<int>MatrixIndexes = new List<int>();   // the matrices are associated with this animated part
+        /// <summary>
+        /// Updates an animated part that loops (e.g. running gear), changing by the given amount.
+        /// </summary>
+        public void UpdateLoop(float change)
+        {
+            // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
+            var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 8 / 30f;
+            AnimationKey += change * frameRate;
+            while (AnimationKey > FrameCount) AnimationKey -= FrameCount;
+            while (AnimationKey < 0) AnimationKey += FrameCount;
+            foreach (var matrix in MatrixIndexes)
+                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+        }
 
-        private PoseableShape PoseableShape;    // the animated part is contained in this shape file
-
-        private int FrameCount = 0;             // the shape file contains this many frames of animation for this part
+        /// <summary>
+        /// Updates an animated part that loops only when enabled (e.g. wipers).
+        /// </summary>
+        public void UpdateLoop(bool running, ElapsedTime elapsedTime)
+        {
+            // The speed of cycling is set at 1.5 frames of animation per second at 30 FPS.
+            var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 1.5f / 30f;
+            if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds < FrameCount))
+                AnimationKey += elapsedTime.ClockSeconds * frameRate;
+            else
+                AnimationKey = 0;
+            while (AnimationKey > FrameCount) AnimationKey -= FrameCount;
+            foreach (var matrix in MatrixIndexes)
+                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+        }
 
         /// <summary>
         /// Swap the pointers around.
@@ -756,24 +773,23 @@ namespace ORTS
 
     public class MSTSWagonViewer: TrainCarViewer
     {
-        protected float WheelRotationR = 0f;  // radians track rolling of wheels
-        float DriverRotationKey;  // advances animation with the driver rotation
-
-
-        protected PoseableShape TrainCarShape = null;
-        protected AnimatedShape FreightShape = null;
-        protected AnimatedShape InteriorShape = null;
+        protected PoseableShape TrainCarShape;
+        protected AnimatedShape FreightShape;
+        protected AnimatedShape InteriorShape;
         protected List<SoundSourceBase> SoundSources = new List<SoundSourceBase>();
 
-        List<int> WheelPartIndexes = new List<int>();   // these index into a matrix in the shape file
-		List<int> RunningGearPartIndexes = new List<int>();
-        protected List<int> WiperPartIndexes = new List<int>();
+        // Wheels are rotated by hand instead of in the shape file.
+        float WheelRotationR;
+        List<int> WheelPartIndexes = new List<int>();
 
-		AnimatedPart Pantograph1;  // matrixes for the fowards pantograph parts
-		AnimatedPart Pantograph2;  // matrixes for the backwards pantograph parts
-		AnimatedPart LeftDoor; //left door
-		AnimatedPart RightDoor;//right door
-		AnimatedPart Mirrors; //mirror
+        // Everything else is animated through the shape file.
+        AnimatedPart RunningGear;
+		AnimatedPart Pantograph1;
+		AnimatedPart Pantograph2;
+		AnimatedPart LeftDoor;
+		AnimatedPart RightDoor;
+		AnimatedPart Mirrors;
+        protected AnimatedPart Wipers;
 
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
         protected Viewer3D _Viewer3D;
@@ -793,11 +809,13 @@ namespace ORTS
             if (car.InteriorShapeFileName != null)
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition);
 
-            Pantograph1 = new AnimatedPart(TrainCarShape);  // matrixes for the fowards pantograph parts
-            Pantograph2 = new AnimatedPart(TrainCarShape);  // matrixes for the backwards pantograph parts
-            LeftDoor = new AnimatedPart(TrainCarShape); //left door
-            RightDoor = new AnimatedPart(TrainCarShape);//right door
-            Mirrors = new AnimatedPart(TrainCarShape); //mirror
+            RunningGear = new AnimatedPart(TrainCarShape);
+            Pantograph1 = new AnimatedPart(TrainCarShape);
+            Pantograph2 = new AnimatedPart(TrainCarShape);
+            LeftDoor = new AnimatedPart(TrainCarShape);
+            RightDoor = new AnimatedPart(TrainCarShape);
+            Mirrors = new AnimatedPart(TrainCarShape);
+            Wipers = new AnimatedPart(TrainCarShape);
 
             LoadCarSounds(wagonFolderSlash);
             LoadTrackSounds();
@@ -813,18 +831,18 @@ namespace ORTS
             car.SetUpWheels();
 
             // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
-            if (!car.Flipped && Pantograph1.Exists() && Pantograph2.Exists())
+            if (!car.Flipped && !Pantograph1.Empty() && !Pantograph2.Empty())
                 AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
 
             // If the car is flipped, the doors should be corrected to match the rest of the train.
             if (car.Flipped)
                 AnimatedPart.Swap(ref RightDoor, ref LeftDoor);
 
-            Pantograph1.SetPosition(MSTSWagon.Pan1Up);
-            Pantograph2.SetPosition(MSTSWagon.Pan2Up);
-            LeftDoor.SetPosition(MSTSWagon.DoorLeftOpen);
-            RightDoor.SetPosition(MSTSWagon.DoorRightOpen);
-            Mirrors.SetPosition(MSTSWagon.MirrorOpen);
+            Pantograph1.SetState(MSTSWagon.Pan1Up);
+            Pantograph2.SetState(MSTSWagon.Pan2Up);
+            LeftDoor.SetState(MSTSWagon.DoorLeftOpen);
+            RightDoor.SetState(MSTSWagon.DoorRightOpen);
+            Mirrors.SetState(MSTSWagon.MirrorOpen);
         }
 
         void MatchMatrixToPart(MSTSWagon car, int matrix)
@@ -837,7 +855,7 @@ namespace ORTS
                 if (matrixName.Length == 8 || !matrixAnimated)
                     WheelPartIndexes.Add(matrix);
                 else
-                    RunningGearPartIndexes.Add(matrix);
+                    RunningGear.AddMatrix(matrix);
 
                 var id = 0;
                 if (matrixName.Length == 8)
@@ -860,14 +878,14 @@ namespace ORTS
             }
             else if (matrixName.StartsWith("WIPER")) // wipers
             {
-                WiperPartIndexes.Add(matrix);
+                Wipers.AddMatrix(matrix);
             }
             else if (matrixName.StartsWith("DOOR")) // doors (left / right)
             {
                 if (matrixName.StartsWith("DOOR_D") || matrixName.StartsWith("DOOR_E") || matrixName.StartsWith("DOOR_F"))
-                    LeftDoor.MatrixIndexAdd(matrix);
+                    LeftDoor.AddMatrix(matrix);
                 else if (matrixName.StartsWith("DOOR_A") || matrixName.StartsWith("DOOR_B") || matrixName.StartsWith("DOOR_C"))
-                    RightDoor.MatrixIndexAdd(matrix);
+                    RightDoor.AddMatrix(matrix);
             }
             else if (matrixName.StartsWith("PANTOGRAPH")) //pantographs (1/2)
             {
@@ -882,7 +900,7 @@ namespace ORTS
                     case "PANTOGRAPHTOP1":
                     case "PANTOGRAPHTOP1A":
                     case "PANTOGRAPHTOP1B":
-                        Pantograph1.MatrixIndexAdd(matrix);
+                        Pantograph1.AddMatrix(matrix);
                         break;
                     case "PANTOGRAPHBOTTOM2":
                     case "PANTOGRAPHBOTTOM2A":
@@ -893,26 +911,26 @@ namespace ORTS
                     case "PANTOGRAPHTOP2":
                     case "PANTOGRAPHTOP2A":
                     case "PANTOGRAPHTOP2B":
-                        Pantograph2.MatrixIndexAdd(matrix);
+                        Pantograph2.AddMatrix(matrix);
                         break;
                 }
             }
             else if (matrixName.StartsWith("MIRROR")) // mirrors
             {
-                Mirrors.MatrixIndexAdd(matrix);
+                Mirrors.AddMatrix(matrix);
             }
             else if (matrixName.StartsWith("PANTO"))  // TODO, not sure why this is needed, see above!
             {
                 Trace.TraceInformation("Pantrograph matrix with unusual name {1} in shape {0}", TrainCarShape.SharedShape.FilePath, matrixName);
                 if (matrixName.Contains("1"))
-                    Pantograph1.MatrixIndexAdd(matrix);
+                    Pantograph1.AddMatrix(matrix);
                 else if (matrixName.Contains("2"))
-                    Pantograph2.MatrixIndexAdd(matrix);
+                    Pantograph2.AddMatrix(matrix);
             }
             else
             {
                 if (matrixAnimated)
-                    RunningGearPartIndexes.Add(matrix);
+                    RunningGear.AddMatrix(matrix);
 
                 for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
                     if (TrainCarShape.Hierarchy[i] == matrix)
@@ -978,50 +996,35 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            Pantograph1.Update( MSTSWagon.Pan1Up, elapsedTime);
-            Pantograph2.Update( MSTSWagon.Pan2Up, elapsedTime);
-            LeftDoor.Update( MSTSWagon.DoorLeftOpen, elapsedTime);
-            RightDoor.Update( MSTSWagon.DoorRightOpen, elapsedTime);
-            Mirrors.Update( MSTSWagon.MirrorOpen, elapsedTime);
-			UpdateAnimation(frame, elapsedTime);
+            Pantograph1.UpdateState(MSTSWagon.Pan1Up, elapsedTime);
+            Pantograph2.UpdateState(MSTSWagon.Pan2Up, elapsedTime);
+            LeftDoor.UpdateState(MSTSWagon.DoorLeftOpen, elapsedTime);
+            RightDoor.UpdateState(MSTSWagon.DoorRightOpen, elapsedTime);
+            Mirrors.UpdateState(MSTSWagon.MirrorOpen, elapsedTime);
+            UpdateAnimation(frame, elapsedTime);
         }
 
 
         private void UpdateAnimation( RenderFrame frame, ElapsedTime elapsedTime )
         {
-            float distanceTravelledM = 0;
-            if ((MSTSWagon.IsDriveable)&&(MSTSWagon.Simulator.UseAdvancedAdhesion))
-            {
+            float distanceTravelledM;
+            if (MSTSWagon.IsDriveable && MSTSWagon.Simulator.UseAdvancedAdhesion)
                 distanceTravelledM = MSTSWagon.WheelSpeedMpS * elapsedTime.ClockSeconds;
-            }
             else
-            {
                 distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
-            }
 
             // Running gear animation
-            if (RunningGearPartIndexes.Count > 0 && MSTSWagon.DriverWheelRadiusM > 0.001 )  // skip this if there is no running gear and only engines can have running gear
-            {
-                float driverWheelCircumferenceM = 3.14159f * 2.0f * MSTSWagon.DriverWheelRadiusM;
-                //float framesAdvanced = (float)TrainCarShape.SharedShape.Animations[0].FrameCount * distanceTravelledM / driverWheelCircumferenceM;
-                float framesAdvanced = (float)TrainCarShape.SharedShape.Animations[0].FrameRate * 8/30f * distanceTravelledM / driverWheelCircumferenceM;
-                DriverRotationKey += framesAdvanced;  // ie, with 8 frames of animation, the key will advance from 0 to 8 at the specified speed.
-                while (DriverRotationKey >= TrainCarShape.SharedShape.Animations[0].FrameCount) DriverRotationKey -= TrainCarShape.SharedShape.Animations[0].FrameCount;
-                while (DriverRotationKey < -0.00001) DriverRotationKey += TrainCarShape.SharedShape.Animations[0].FrameCount;
-                foreach (int iMatrix in RunningGearPartIndexes)
-                    TrainCarShape.AnimateMatrix(iMatrix, DriverRotationKey);
-            }
+            if (!RunningGear.Empty() && MSTSWagon.DriverWheelRadiusM > 0.001)
+                RunningGear.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / MSTSWagon.DriverWheelRadiusM);
 
             // Wheel animation
             if (WheelPartIndexes.Count > 0)
             {
-                float wheelCircumferenceM = 3.14159f * 2.0f * MSTSWagon.WheelRadiusM;
-                float rotationalDistanceR = 3.14159f * 2.0f * distanceTravelledM / wheelCircumferenceM;  // in radians
-                WheelRotationR -= rotationalDistanceR;
-                while (WheelRotationR > Math.PI) WheelRotationR -= (float)Math.PI * 2;   // normalize for -180 to +180 degrees
-                while (WheelRotationR < -Math.PI) WheelRotationR += (float)Math.PI * 2;
-                Matrix wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
-                foreach (int iMatrix in WheelPartIndexes)
+                var wheelCircumferenceM = MathHelper.TwoPi * MSTSWagon.WheelRadiusM;
+                var rotationalDistanceR = MathHelper.TwoPi * distanceTravelledM / wheelCircumferenceM;  // in radians
+                WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
+                var wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
+                foreach (var iMatrix in WheelPartIndexes)
                     TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
             }
 
