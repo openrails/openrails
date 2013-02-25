@@ -662,6 +662,8 @@ namespace ORTS
                 tn = TrackNodes[pin.Link];
                 tvs = tn.TrVectorNode.TrVectorSections[pin.Direction > 0 ? 0 : tn.TrVectorNode.TrVectorSections.Length - 1];
                 ts = TSectionDat.TrackSections.Get(tvs.SectionIndex);
+                if (ts == null)
+                    return; // This is really bad and we'll have unknown data in the Traveller when the code reads the location and direction!
                 to = pin.Direction > 0 ? -trackOffset : GetLength(ts) + trackOffset;
             }
 
@@ -724,6 +726,8 @@ namespace ORTS
             for (var i = 0; i < tvs.Length; i++)
             {
                 var ts = TSectionDat.TrackSections.Get(tvs[i].SectionIndex);
+                if (ts == null)
+                    continue; // This is bad and we'll have potentially bogus data in the Traveller when the code reads the length!
                 var length = GetLength(ts);
                 trackNodeLength += length;
                 if (i < TrackVectorSectionIndex)
