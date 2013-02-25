@@ -724,6 +724,9 @@ namespace ORTS
         /// </summary>
         public void UpdateLoop(float change)
         {
+            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0)
+                return;
+
             // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
             var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 8 / 30f;
             AnimationKey += change * frameRate;
@@ -738,6 +741,9 @@ namespace ORTS
         /// </summary>
         public void UpdateLoop(bool running, ElapsedTime elapsedTime)
         {
+            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0)
+                return;
+
             // The speed of cycling is set at 1.5 frames of animation per second at 30 FPS.
             var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 1.5f / 30f;
             if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds < FrameCount))
