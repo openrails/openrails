@@ -516,18 +516,41 @@ namespace ORTS
 
 			shader.LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
 
+            // Set up for alpha blending and alpha test 
+
             if ((Options & SceneryMaterialOptions.AlphaTest) != 0)
             {
+                // Transparency testing is enabled
+                rs.AlphaTestEnable = true;
+                rs.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
+                rs.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+            }
+            else
+            {
+                rs.AlphaTestEnable = false;
+            }
+
+            if ( GetBlending() )
+            {
+                // Skip blend for near transparent alpha's (eliminates sorting issues for many simple alpha'd textures )
                 rs.AlphaTestEnable = true;
                 rs.AlphaFunction = CompareFunction.GreaterEqual;
-                rs.ReferenceAlpha = 200;
-            }
-            else if ((Options & SceneryMaterialOptions.AlphaBlendingMask) != 0)
-            {
+                rs.ReferenceAlpha = 10;  // ie default lightcone's are 9 in full transparent areas
+
+                // Set up for blending
                 rs.AlphaBlendEnable = true;
-                rs.DestinationBlend = (Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend ? Blend.InverseSourceAlpha : Blend.One;
                 rs.SourceBlend = Blend.SourceAlpha;
+                rs.DestinationBlend = (Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend ? Blend.InverseSourceAlpha : Blend.One;
+
+                rs.SeparateAlphaBlendEnabled = true;
+                rs.AlphaSourceBlend = Blend.Zero;
+                rs.AlphaDestinationBlend = Blend.One;
             }
+            else
+            {
+                rs.AlphaBlendEnable = false;
+            }
+
 
 			switch (Options & SceneryMaterialOptions.ShaderMask)
 			{
@@ -628,9 +651,14 @@ namespace ORTS
             rs.SourceBlend = Blend.One;
 		}
 
+        /// <summary>
+        /// Return true if this material uses alpha blending
+        /// </summary>
+        /// <returns></returns>
 		public override bool GetBlending()
 		{
-            return (Options & SceneryMaterialOptions.AlphaTest) == 0 && (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;
+            return (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0   // the material is using a blend capable shader
+                    &&  ((MSTS.AceInfo)Texture.Tag).HasAlphaBlending ;         // and the original ace has an alpha channel more than 1 bit wide
 		}
 
 		public override Texture2D GetShadowTexture()
