@@ -482,7 +482,10 @@ namespace ORTS
             DoorLeftOpen = !DoorLeftOpen;
             if( Simulator.PlayerLocomotive == this ) {//inform everyone else in the train
                 foreach( TrainCar car in Train.Cars ) {
-                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).DoorLeftOpen = DoorLeftOpen;
+                    if (car != this && car is MSTSWagon)
+                    {
+                        ((MSTSWagon)car).DoorLeftOpen = DoorLeftOpen;
+                    }
                 }
                 /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
                 else Car.SignalEvent(EventID.DoorClose);*/
@@ -968,9 +971,11 @@ namespace ORTS
 			if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
 			{
 				MSTSWagon.DoorLeftOpen = !MSTSWagon.DoorLeftOpen;
-				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
-					foreach (TrainCar car in Car.Train.Cars)
-						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).DoorLeftOpen = MSTSWagon.DoorLeftOpen;
+                if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
+                    foreach (TrainCar car in Car.Train.Cars)
+                    {
+                        if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).DoorLeftOpen = MSTSWagon.DoorLeftOpen;
+                    }
                 /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(Event.DoorOpen);
                 else Car.SignalEvent(Event.DoorClose);*/
                 //comment out, but can be added back to animate sound

@@ -1470,7 +1470,7 @@ namespace ORTS
             var train = attachedCar.Train;
 
             // TODO: What is this code trying to do?
-            if (train != Viewer.PlayerTrain && train.LeadLocomotive == null) train.ChangeToNextCab();
+            //if (train != Viewer.PlayerTrain && train.LeadLocomotive == null) train.ChangeToNextCab();
             if (train.LeadLocomotive == null)
             {
                 return;

@@ -940,14 +940,14 @@ namespace ORTS
         }
 
         public void ChangeCab() {
-            var loco = Simulator.PlayerLocomotive;
-            if (!loco.Train.IsChangeCabAvailable()) return;
+            if (!Simulator.PlayerLocomotive.Train.IsChangeCabAvailable()) return;
 
-            loco.Train.ChangeToNextCab();
-            PlayerLocomotiveViewer = World.Trains.GetViewer( loco );
+            Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.GetNextCab();
+            PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
             Camera.Activate(); // If you need anything else here the cameras should check for it.
             SetCommandReceivers();
-            if (MPManager.IsMultiPlayer()) MPManager.LocoChange(loco.Train, Simulator.PlayerLocomotive);
+            if (MPManager.IsMultiPlayer()) 
+                MPManager.LocoChange(Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive);
             Simulator.Confirmer.Confirm(CabControl.ChangeCab, CabSetting.On);
         }
 

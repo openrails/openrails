@@ -782,7 +782,7 @@ namespace ORTS
         /// then pressing Ctrl+E cycles the cabs in the sequence
         ///     A -> b -> C -> d -> e -> F
         /// </summary>
-        public void ChangeToNextCab()
+        public TrainCar GetNextCab()
         {
             // negative numbers used if rear cab selected
             // because '0' has no negative, all indices are shifted by 1!!!!
@@ -827,10 +827,11 @@ namespace ORTS
                 // seems there is nothing to attach camera to car
             }
 
-            if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == this)
+            if (Simulator.PlayerLocomotive != null && Simulator.PlayerLocomotive.Train == this)
             {
                 Simulator.PlayerLocomotive = newLead;
             }
+            return Simulator.PlayerLocomotive;
         }
 
         //this function is needed for Multiplayer games as they do not need to have cabs, but need to know lead locomotives
