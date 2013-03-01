@@ -652,13 +652,23 @@ namespace ORTS
 		}
 
         /// <summary>
-        /// Return true if this material uses alpha blending
+        /// Return true if this material requires alpha blending
         /// </summary>
         /// <returns></returns>
 		public override bool GetBlending()
 		{
-            return (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0   // the material is using a blend capable shader
-                    &&  ((MSTS.AceInfo)Texture.Tag).HasAlphaBlending ;         // and the original ace has an alpha channel more than 1 bit wide
+            bool alphaTestRequested = (Options & SceneryMaterialOptions.AlphaTest) != 0;            // the artist requested alpha testing for this material
+            bool alphaBlendRequested = (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;   // the artist specified a blend capable shader
+            byte alphaBits = ((MSTS.AceInfo)Texture.Tag).AlphaBits;                                 // the number of bits in the ace file's alpha channel 
+
+            return alphaBlendRequested                                   // the material is using a blend capable shader   
+                    &&  (  alphaBits > 1                                    // and the original ace has more than 1 bit of alpha
+                          || ( alphaBits ==1 && !alphaTestRequested ) );    //  or its just 1 bit, but with no alphatesting, we must blend it anyway
+
+            // To summarize, assuming we are using a blend capable shader ..
+            //     0 bits of alpha - never blend
+            //     1 bit of alpha - only blend if the alpha test wasn't requested
+            //     >1 bit of alpha - always blend
 		}
 
 		public override Texture2D GetShadowTexture()
