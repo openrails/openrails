@@ -481,7 +481,8 @@ namespace ORTS
 		readonly float MipMapBias = 0;
 		readonly Texture2D Texture;
 		readonly Texture2D NightTexture;
-		IEnumerator<EffectPass> ShaderPassesDarkShade;
+        byte AceAlphaBits = 0;   // the number of bits in the ace file's alpha channel 
+        IEnumerator<EffectPass> ShaderPassesDarkShade;
 		IEnumerator<EffectPass> ShaderPassesFullBright;
 		IEnumerator<EffectPass> ShaderPassesHalfBright;
 		IEnumerator<EffectPass> ShaderPassesImage;
@@ -499,6 +500,13 @@ namespace ORTS
                 if (!String.IsNullOrEmpty(nightTexturePath))
                     NightTexture = Viewer.RenderProcess.Viewer.TextureManager.Get(nightTexturePath.ToLower());
             }
+
+            // Record the number of bits in the alpha channel of the original ace file
+            if (Texture != null && Texture.Tag != null && Texture.Tag.GetType() == typeof(MSTS.AceInfo))
+                AceAlphaBits = ((MSTS.AceInfo)Texture.Tag).AlphaBits;                                
+            else
+                AceAlphaBits = 0;
+
         }
 
 		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -659,11 +667,10 @@ namespace ORTS
 		{
             bool alphaTestRequested = (Options & SceneryMaterialOptions.AlphaTest) != 0;            // the artist requested alpha testing for this material
             bool alphaBlendRequested = (Options & SceneryMaterialOptions.AlphaBlendingMask) != 0;   // the artist specified a blend capable shader
-            byte alphaBits = ((MSTS.AceInfo)Texture.Tag).AlphaBits;                                 // the number of bits in the ace file's alpha channel 
 
             return alphaBlendRequested                                   // the material is using a blend capable shader   
-                    &&  (  alphaBits > 1                                    // and the original ace has more than 1 bit of alpha
-                          || ( alphaBits ==1 && !alphaTestRequested ) );    //  or its just 1 bit, but with no alphatesting, we must blend it anyway
+                    &&  (  AceAlphaBits > 1                                    // and the original ace has more than 1 bit of alpha
+                          || ( AceAlphaBits ==1 && !alphaTestRequested ) );    //  or its just 1 bit, but with no alphatesting, we must blend it anyway
 
             // To summarize, assuming we are using a blend capable shader ..
             //     0 bits of alpha - never blend
