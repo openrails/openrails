@@ -2112,6 +2112,12 @@ namespace ORTS
                         }
                         break;
                     }
+                // Steam instruments
+                case CABViewControlTypes.STEAM_PR:
+                    {
+                        data = ConvertFromPSI(cvc, ((MSTSSteamLocomotive)this).BoilerPressurePSI);
+                        break;
+                    }
                 default:
                     {
                         data = 0;

@@ -52,7 +52,10 @@ namespace ORTS
         float BlowerSteamUsageLBpS; // steam used by blower
         float BoilerHeatBTU;        // total heat in water and steam in boiler
         float BoilerMassLB;         // total mass of water and steam in boiler
-        float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
+        //CJ
+        //float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
+        public float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
+        
         float WaterFraction;        // fraction of boiler volume occupied by water
         float EvaporationLBpS;          // steam generation rate
         float FireMassKG;
