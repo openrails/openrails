@@ -703,7 +703,7 @@ namespace ORTS.MultiPlayer
 
 		public override void HandleMsg()
 		{
-			if (MPManager.IsServer() && MPManager.Instance().AllowedManualSwitch)
+			if (MPManager.IsServer())
 			{
 				try
 				{

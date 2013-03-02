@@ -3745,6 +3745,11 @@ namespace ORTS
             if (signalObjectIndex >= 0)
             {
                 SignalObject signalObject = signalRef.SignalObjects[signalObjectIndex];
+
+                //the following is added by JTang, passing a hold signal, will take back control by the system
+                if (signalObject.holdState == SignalObject.HOLDSTATE.MANUAL_PASS ||
+                    signalObject.holdState == SignalObject.HOLDSTATE.MANUAL_APPROACH) signalObject.holdState = SignalObject.HOLDSTATE.NONE;
+
                 signalObject.resetSignalEnabled();
             }
         }
@@ -5685,7 +5690,7 @@ namespace ORTS
             // if no signal at danger is found - report warning
             if (!signalFound)
             {
-                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                if (Simulator.Confirmer != null && this.TrainType != TRAINTYPE.REMOTE) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Information, "No signal in train's path");
                 return;
             }
@@ -6298,6 +6303,11 @@ namespace ORTS
 
         public void RequestSignalPermission(Direction direction)
         {
+            if (MPManager.IsClient())
+            {
+                MPManager.Notify((new MSGResetSignal(MPManager.GetUserName())).ToString());
+                return;
+            }
             if (ControlMode == TRAIN_CONTROL.MANUAL)
             {
                 if (direction == Direction.Forward)

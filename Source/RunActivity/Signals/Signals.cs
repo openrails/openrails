@@ -2805,12 +2805,15 @@ namespace ORTS
         // Set physical switch
         //
 
+        bool ManualLock = false;
         public void setSwitch(int nodeIndex, int switchPos, TrackCircuitSection thisSection)
         {
-            if (MultiPlayer.MPManager.NoAutoSwitch() ) return;
+            //if (MultiPlayer.MPManager.NoAutoSwitch() ) return;
             TrackNode thisNode = trackDB.TrackNodes[nodeIndex];
+            if (ManualLock == true) return; //manually set by the dispatcher, thus will not set automatically
             thisNode.TrJunctionNode.SelectedRoute = switchPos;
             thisSection.JunctionLastRoute = switchPos;
+            if (MultiPlayer.MPManager.NoAutoSwitch()) ManualLock = true;
         }
 
         //================================================================================================//
@@ -4194,13 +4197,31 @@ namespace ORTS
             if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return false;
             // set physical state
 
-            if (true)/*!switchSection.CircuitState.HasTrainsOccupying())*/
+            if (true)//!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
             {
                 switchSection.JunctionSetManual = desiredState;
+                this.ManualLock = true;
                 trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
                 switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
-                switchSet = true;
+                switchSet = true;      
             }
+            Train[] trains = Program.Simulator.Trains.ToArray();
+            ManualLock = false;
+            foreach (Train t in trains)
+            {
+                try
+                {
+                    t.ProcessRequestExplorerSetSwitch(switchSection.Index);
+                }
+                catch {}
+            }
+            /*else if (thisTrain != null)
+            {
+                trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.ManualLock = false;
+                switchSection.JunctionSetManual = desiredState;
+                switchSet = thisTrain.ProcessRequestExplorerSetSwitch(switchSection.Index);
+                trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.ManualLock = true;
+            }*/
 
             return (switchSet);
         }
@@ -7617,9 +7638,6 @@ namespace ORTS
             isPropagated = false;
             propagated = false;
 
-            //the following is added by JTang
-            if (holdState == HOLDSTATE.MANUAL_PASS || holdState == HOLDSTATE.MANUAL_APPROACH) holdState = HOLDSTATE.NONE;
-
             // reset block state to most restrictive
 
             internalBlockState = INTERNAL_BLOCKSTATE.BLOCKED;
@@ -7654,7 +7672,13 @@ namespace ORTS
         {
             // update all normal heads first
 
-            if (MultiPlayer.MPManager.IsClient()) return; //client won't handle signal update
+            if (MultiPlayer.MPManager.IsMultiPlayer())
+            {
+                if (MultiPlayer.MPManager.IsClient()) return; //client won't handle signal update
+
+                //if there were hold manually, will not update
+                if (holdState == HOLDSTATE.MANUAL_APPROACH || holdState == HOLDSTATE.MANUAL_LOCK || holdState == HOLDSTATE.MANUAL_PASS) return;
+            }
 
             foreach (SignalHead sigHead in SignalHeads)
             {
