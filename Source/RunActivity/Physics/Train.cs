@@ -4158,6 +4158,10 @@ namespace ORTS
             {
                 SignalObject thisSignal = signalRef.SignalObjects[signalObjectIndex];
                 thisSignal.hasPermission = SignalObject.PERMISSION.DENIED;
+                //the following is added by JTang, passing a hold signal, will take back control by the system
+                if (thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_PASS ||
+                    thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_APPROACH) thisSignal.holdState = SignalObject.HOLDSTATE.NONE;
+
                 thisSignal.resetSignalEnabled();
             }
 
@@ -5185,6 +5189,10 @@ namespace ORTS
             {
                 SignalObject thisSignal = signalRef.SignalObjects[signalObjectIndex];
                 thisSignal.hasPermission = SignalObject.PERMISSION.DENIED;
+                //the following is added by JTang, passing a hold signal, will take back control by the system
+                if (thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_PASS ||
+                    thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_APPROACH) thisSignal.holdState = SignalObject.HOLDSTATE.NONE;
+
                 thisSignal.resetSignalEnabled();
             }
 

@@ -4763,7 +4763,8 @@ namespace ORTS
 
             if (!CircuitState.ThisTrainOccupying(thisTrain.Train))
             {
-                CircuitState.TrainReserved = thisTrain;
+                //if (!MultiPlayer.MPManager.IsMultiPlayer())
+                    CircuitState.TrainReserved = thisTrain;
             }
 
             // remove from claim or deadlock claim
@@ -6158,7 +6159,8 @@ namespace ORTS
                 if (reservedTrain != null)
                 {
                     int reservedDirection = TrainReserved.TrainRouteDirectionIndex;
-                    TrainReserved = reservedDirection == 0 ? reservedTrain.routedForward : reservedTrain.routedBackward;
+                    //if (!MultiPlayer.MPManager.IsMultiPlayer())
+                        TrainReserved = reservedDirection == 0 ? reservedTrain.routedForward : reservedTrain.routedBackward;
                 }
                 else
                 {

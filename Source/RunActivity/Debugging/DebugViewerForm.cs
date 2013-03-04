@@ -721,7 +721,7 @@ namespace ORTS.Debugging
 						 pen = redPen;
 					 }
 					 g.FillEllipse(color, GetRect(scaledItem, width));
-					 //g.DrawString(""+s.Signal.canUpdate, trainFont, Brushes.Black, scaledItem);
+					 //if (s.Signal.enabledTrain != null) g.DrawString(""+s.Signal.enabledTrain.Train.Number, trainFont, Brushes.Black, scaledItem);
 					 signalItemsDrawn.Add(s);
 					 if (s.hasDir)
 					 {
