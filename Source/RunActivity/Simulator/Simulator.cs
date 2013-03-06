@@ -952,7 +952,7 @@ namespace ORTS
 			train.CheckFreight();
 
 #if NEW_SIGNALLING
-            if (Activity != null) // activity is defined
+            if (Activity != null && !MPManager.IsMultiPlayer()) // activity is defined
             {
                 train.SetRoutePath(aiPath, Signals);
                 train.BuildWaitingPointList(0.0f);

@@ -834,7 +834,10 @@ namespace ORTS
 							var s = Program.DebugViewer.signalPickedItem.Item;
 							wos = new WorldLocation(s.TileX, s.TileZ, s.X, s.Y + 8, s.Z);
 						}
-						FreeRoamCamera = new FreeRoamCamera(this, Camera);
+                        if (FreeRoamCameraList.Count == 0)
+                        {
+                            new UseFreeRoamCameraCommand(Log);
+                        }
 						FreeRoamCamera.SetLocation(wos);
 						//FreeRoamCamera
 						FreeRoamCamera.Activate();

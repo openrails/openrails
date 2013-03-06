@@ -648,7 +648,7 @@ namespace ORTS.MultiPlayer
 			if (MPManager.IsServer()) //server got this message from Client
 			{
 				//if a normal user, and the dispatcher does not want hand throw, just ignore it
-				if (HandThrown == true && !MPManager.Instance().AllowedManualSwitch && !MPManager.Instance().aiderList.Contains(user))
+				if (HandThrown == true && !MPManager.AllowedManualSwitch && !MPManager.Instance().aiderList.Contains(user))
 				{
 					MPManager.BroadCast((new MSGMessage(user, "SwitchWarning", "Server does not allow hand thrown of switch")).ToString());
 					return;

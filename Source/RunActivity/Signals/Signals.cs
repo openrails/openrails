@@ -2805,15 +2805,12 @@ namespace ORTS
         // Set physical switch
         //
 
-        bool ManualLock = false;
         public void setSwitch(int nodeIndex, int switchPos, TrackCircuitSection thisSection)
         {
-            //if (MultiPlayer.MPManager.NoAutoSwitch() ) return;
+            if (MultiPlayer.MPManager.NoAutoSwitch() ) return;
             TrackNode thisNode = trackDB.TrackNodes[nodeIndex];
-            if (ManualLock == true) return; //manually set by the dispatcher, thus will not set automatically
             thisNode.TrJunctionNode.SelectedRoute = switchPos;
             thisSection.JunctionLastRoute = switchPos;
-            if (MultiPlayer.MPManager.NoAutoSwitch()) ManualLock = true;
         }
 
         //================================================================================================//
@@ -4200,13 +4197,11 @@ namespace ORTS
             if (true)//!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
             {
                 switchSection.JunctionSetManual = desiredState;
-                this.ManualLock = true;
                 trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
                 switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
                 switchSet = true;      
             }
             Train[] trains = Program.Simulator.Trains.ToArray();
-            ManualLock = false;
             foreach (Train t in trains)
             {
                 try
@@ -5423,6 +5418,22 @@ namespace ORTS
                 }
                 else
                 {
+                    /*if (MultiPlayer.MPManager.IsMultiPlayer())
+                    {
+                        var reservedTrainStillThere = false;
+                        foreach (var s in this.EndSignals)
+                        {
+                            if (s != null && s.enabledTrain != null && s.enabledTrain.Train == reservedTrain.Train) reservedTrainStillThere = true;
+                        }
+                        if (reservedTrainStillThere == true)
+                            localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED_OTHER;
+                        else
+                        {
+                            thisState.TrainReserved = thisTrain;
+                            localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED;
+                        }
+                    }
+                    else*/
                     localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED_OTHER;
 
                     // if end is trailing junction, set to check junction
@@ -8180,6 +8191,11 @@ namespace ORTS
             else if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && signalState == SignalHead.SIGASP.STOP &&
                 internalBlockState <= INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR && hasPermission == PERMISSION.REQUESTED)
             {
+                hasPermission = PERMISSION.GRANTED;
+            }
+            else if (MultiPlayer.MPManager.IsMultiPlayer() && enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.EXPLORER 
+                && signalState == SignalHead.SIGASP.STOP && internalBlockState <= INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR && hasPermission == PERMISSION.REQUESTED)
+            {//added by JTang
                 hasPermission = PERMISSION.GRANTED;
             }
 

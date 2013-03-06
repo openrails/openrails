@@ -58,7 +58,7 @@ namespace ORTS.MultiPlayer
 
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
-		public bool AllowedManualSwitch = false;
+		static public bool AllowedManualSwitch = true;
 		public bool TrySwitch = true;
 		public bool AllowNewPlayer = true;
 		public bool ComposingText = false;
@@ -343,8 +343,7 @@ namespace ORTS.MultiPlayer
         {
             if (!MPManager.IsMultiPlayer()) return false;
             //if (MPManager.IsClient()) return true;
-            if (MPManager.OnlineTrains.Players.Count > 0 && !MPManager.Instance().AllowedManualSwitch) return true;
-            return false;
+            return !MPManager.AllowedManualSwitch; //aloow manual switch or not
         }
         //user name
 		static public string GetUserName()

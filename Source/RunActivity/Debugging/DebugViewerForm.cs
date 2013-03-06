@@ -162,7 +162,7 @@ namespace ORTS.Debugging
 		 boxSetSignal.Items.Add("Proceed");
 		 chkAllowUserSwitch.Checked = false;
 		 selectedTrainList = new List<Train>();
-		 if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.Instance().AllowedManualSwitch = false; }
+		 if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
       
 
 		  InitData();
@@ -1792,9 +1792,9 @@ namespace ORTS.Debugging
 
 	  private void chkAllowUserSwitch_CheckedChanged(object sender, EventArgs e)
 	  {
-		  MultiPlayer.MPManager.Instance().AllowedManualSwitch = chkAllowUserSwitch.Checked;
-		  if (chkAllowUserSwitch.Checked == true) { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "SwitchOK", "OK to switch")).ToString()); }
-		  else { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "SwitchWarning", "Cannot switch")).ToString()); }
+		  MultiPlayer.MPManager.AllowedManualSwitch = chkAllowUserSwitch.Checked;
+          if (chkAllowUserSwitch.Checked == true) { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "SwitchOK", "OK to switch")).ToString()); }
+          else { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "SwitchWarning", "Cannot switch")).ToString()); }
 	  }
 
 	  private void chkShowAvatars_CheckedChanged(object sender, EventArgs e)

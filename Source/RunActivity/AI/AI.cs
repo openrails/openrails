@@ -297,6 +297,10 @@ namespace ORTS
                 thisTrain.TrainType = Train.TRAINTYPE.AI;
                 AITrains.Add(thisTrain);
                 Simulator.Trains.Add(thisTrain);
+                if (MPManager.IsServer())
+                {
+                    MPManager.BroadCast((new MSGTrain(thisTrain, thisTrain.Number)).ToString());
+                }
             }
             else
             {
