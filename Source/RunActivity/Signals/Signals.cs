@@ -4199,7 +4199,13 @@ namespace ORTS
                 switchSection.JunctionSetManual = desiredState;
                 trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
                 switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
-                switchSet = true;      
+                switchSet = true;
+                foreach (var thisSignalIndex in switchSection.SignalsPassingRoutes)
+                {
+                    var signal = switchSection.signalRef.SignalObjects[thisSignalIndex];
+                    if (signal != null) signal.ResetRoute(switchSection.Index);
+
+                }
             }
             Train[] trains = Program.Simulator.Trains.ToArray();
             foreach (Train t in trains)
@@ -4210,14 +4216,6 @@ namespace ORTS
                 }
                 catch {}
             }
-            /*else if (thisTrain != null)
-            {
-                trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.ManualLock = false;
-                switchSection.JunctionSetManual = desiredState;
-                switchSet = thisTrain.ProcessRequestExplorerSetSwitch(switchSection.Index);
-                trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.ManualLock = true;
-            }*/
-
             return (switchSet);
         }
 
@@ -5418,22 +5416,24 @@ namespace ORTS
                 }
                 else
                 {
-                    /*if (MultiPlayer.MPManager.IsMultiPlayer())
+                    if (MultiPlayer.MPManager.IsMultiPlayer())
                     {
                         var reservedTrainStillThere = false;
                         foreach (var s in this.EndSignals)
                         {
                             if (s != null && s.enabledTrain != null && s.enabledTrain.Train == reservedTrain.Train) reservedTrainStillThere = true;
                         }
-                        if (reservedTrainStillThere == true)
+
+                        if (reservedTrainStillThere == true && reservedTrain.Train.GetDistanceToTrain(this.Index, 0.0f) > 0)
                             localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED_OTHER;
                         else
                         {
+                            //if (reservedTrain.Train.RearTDBTraveller.DistanceTo(this.
                             thisState.TrainReserved = thisTrain;
                             localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED;
                         }
                     }
-                    else*/
+                    else
                     localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED_OTHER;
 
                     // if end is trailing junction, set to check junction
@@ -7257,7 +7257,7 @@ namespace ORTS
 
             // if signal is enabled for a train, check if required section is in train route path
 
-            if (enabledTrain != null)
+            if (enabledTrain != null && !MultiPlayer.MPManager.IsMultiPlayer())
             {
                 Train.TCSubpathRoute RoutePart = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex];
 
@@ -8460,6 +8460,11 @@ namespace ORTS
                 lastElement = thisElement;
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                 int direction = thisElement.Direction;
+                if (MultiPlayer.MPManager.IsMultiPlayer())
+                {
+                    if (thisTrain != null && thisTrain.Train.GetDistanceToTrain(thisSection.Index, 0) < 0) 
+                        continue;
+                }
                 blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute);
                 if (blockstate > INTERNAL_BLOCKSTATE.RESERVABLE)
                     break;           // break on first non-reservable section //
