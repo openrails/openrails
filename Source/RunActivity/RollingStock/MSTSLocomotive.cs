@@ -1025,6 +1025,12 @@ namespace ORTS
             max1 = (Sander ? 1.5f : 1.0f) * max0; //Increase adhesion when sander is on
             WheelSlip = false;
 
+            // always set AntiSlip for AI trains
+            if (Train.TrainType == Train.TRAINTYPE.AI)
+            {
+                AntiSlip = true;
+            }
+
             if (MotiveForceN > max1)
             {
                 WheelSlip = true;
@@ -1040,6 +1046,12 @@ namespace ORTS
                     MotiveForceN = -max1;
                 else
                     MotiveForceN = -Adhesion1 * max0;       //Lowers the adhesion limit to 20% of its full
+            }
+
+            // overrule wheelslip for AI trains
+            if (Train.TrainType != Train.TRAINTYPE.AI)
+            {
+                WheelSlip = false;
             }
         }
 

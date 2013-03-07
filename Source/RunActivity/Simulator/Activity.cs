@@ -61,16 +61,6 @@ namespace ORTS {
                     PlatformItem Platform = null;
                     ActivityTask task = null;
 
-#if !NEW_SIGNALLING
-                    foreach( var i in sd.Player_Traffic_Definition.Player_Traffic_List ) {
-                        Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem;
-                        if( Platform != null ) {
-                            Tasks.Add( task = new ActivityTaskPassengerStopAt( task,
-                                i.ArrivalTime,
-                                i.DepartTime,
-                                Platform, Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem ) );
-                        }
-#else
                     foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List)
                     {
                         Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem ?
@@ -88,8 +78,6 @@ namespace ORTS {
                                 i.DepartTime,
                                 Platform, Platform2));
                         }
-#endif
-
                     }
                     Current = Tasks[0];
                 }
@@ -474,28 +462,13 @@ namespace ORTS {
         }
 
         public bool IsMissedStation() {
-#if !NEW_SIGNALLING
-            // Calc all distances
-            TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.dFrontTDBTraveller );
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
+            // Check if station is in present train path
 
-            distanceend1 = helper.CalculateToPoint( PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z );
-            distanceend2 = helper.CalculateToPoint( PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z );
+            if (Program.Simulator.PlayerLocomotive.Train.TCRoute.activeSubpath != Program.Simulator.PlayerLocomotive.Train.StationStops[0].SubrouteIndex)
+            {
+                return (false);
+            }
 
-            helper =
-                new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.dRearTDBTraveller );
-
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
-            distanceend3 = helper.CalculateToPoint( PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z );
-            distanceend4 = helper.CalculateToPoint( PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z );
-#else
             // Calc all distances
             TDBTravellerDistanceCalculatorHelper helper =
                 new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
@@ -516,8 +489,6 @@ namespace ORTS {
                     PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
             distanceend4 = helper.CalculateToPoint(PlatformEnd2.TileX,
                     PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-#endif
 
             // If all behind then missed
             return (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
@@ -540,12 +511,6 @@ namespace ORTS {
                     }
 
                     arrived = true;
-
-                    // Check if this is the last task in activity, then it is complete
-                    if( NextTask == null ) {
-                        IsCompleted = true;
-                        return;
-                    }
 
                     // Figure out the boarding time
                     double plannedBoardingS = (SchDepart - SchArrive).TotalSeconds;
@@ -574,9 +539,7 @@ namespace ORTS {
                     CompletedAt = ActDepart.Value;
                     // Completeness is depend on the elapsed waiting time
                     IsCompleted = maydepart;
-#if NEW_SIGNALLING
                     Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
-#endif
 		}
             } else if( EventType == ActivityEventType.Timer ) {
                 // Waiting at a station
@@ -586,12 +549,10 @@ namespace ORTS {
                     else if (remaining < 11) DisplayColor = new Color(255, 255, 128);
                     else DisplayColor = Color.White;
 
-#if NEW_SIGNALLING
                     if (remaining < 120)
                     {
                          Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
                     }
-#endif
 
                     // Still have to wait
                     if( remaining > 0 ) {
@@ -603,15 +564,20 @@ namespace ORTS {
                         maydepart = true;
                         DisplayMessage = "Passenger boarding completed. You may depart now.";
                         SoundNotify = Event.PermissionToDepart;
+
+                        // if last task, show closure window
+
+                        if (NextTask == null)
+                        {
+                            Program.Simulator.Confirmer.Viewer.QuitWindow.Visible = Program.Simulator.Paused = true;
+                        }
                     }
                 } else {
                     // Checking missed station
                     int tmp = (int)(Program.Simulator.ClockTime % 10);
                     if( tmp != TimerChk ) {
                         if( IsMissedStation() ) {
-#if NEW_SIGNALLING
                             Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
-#endif
                             IsCompleted = false;
                         }
                     }

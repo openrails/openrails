@@ -3182,7 +3182,7 @@ namespace ORTS
                     TCPosition overlapPosition = new TCPosition();
                     PresentPosition[1].CopyTo(ref overlapPosition);
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[overlapPosition.TCSectionIndex];
-                    overlapPosition.TCOffset = thisSection.Length - PresentPosition[1].TCOffset + rearPositionOverlap;
+                    overlapPosition.TCOffset = thisSection.Length - (PresentPosition[1].TCOffset + rearPositionOverlap);  // reverse offset because of reversed direction
                     overlapPosition.TCDirection = overlapPosition.TCDirection == 0 ? 1 : 0; // looking backwards, so reverse direction
 
                     TrackCircuitSection rearSection = signalRef.TrackCircuitList[RearSignalObject.TCNextTC];
@@ -3287,6 +3287,8 @@ namespace ORTS
         public void CheckRouteActions(float elapsedClockSeconds)
         {
             int directionNow = PresentPosition[0].TCDirection;
+            int positionNow = PresentPosition[0].TCSectionIndex;
+
             if (PresentPosition[0].RouteListIndex >= 0) directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
 
             bool[] nextRoute = UpdateRouteActions(elapsedClockSeconds);
@@ -3294,9 +3296,16 @@ namespace ORTS
 
             // check if train reversed
 
-            if (nextRoute[1] && directionNow != PresentPosition[0].TCDirection)
+            if (nextRoute[1])
             {
-                ReverseFormation(true);
+                if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
+                {
+                    ReverseFormation(true);
+                }
+                else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
+                {
+                    ReverseFormation(true);
+                }
             }
 
             // check if next station was on previous subpath - if so, move to this subpath
@@ -4101,11 +4110,11 @@ namespace ORTS
 
                 thisSection.Reserve(routedForward, TrainRoute);  // reserve first to reset switch alignments
                 thisSection.SetOccupied(routedForward);
+            }
 
-                foreach (TrackCircuitSection exSection in clearedSections)
-                {
-                    exSection.ClearOccupied(this, false); // sections really cleared
-                }
+            foreach (TrackCircuitSection exSection in clearedSections)
+            {
+                exSection.ClearOccupied(this, true); // sections really cleared
             }
         }
 
@@ -5133,11 +5142,11 @@ namespace ORTS
 
                 thisSection.Reserve(routedForward, TrainRoute);  // reserve first to reset switch alignments
                 thisSection.SetOccupied(routedForward);
+            }
 
-                foreach (TrackCircuitSection exSection in clearedSections)
-                {
-                    exSection.ClearOccupied(this, false); // sections really cleared
-                }
+            foreach (TrackCircuitSection exSection in clearedSections)
+            {
+                exSection.ClearOccupied(this, true); // sections really cleared
             }
         }
 
@@ -7873,6 +7882,8 @@ namespace ORTS
                 {
                     foundStation = iStation;
                 }
+
+                if (thisStation.SubrouteIndex > TCRoute.activeSubpath) break; // stop looking if station is in next subpath
             }
 
             if (foundStation >= 0)

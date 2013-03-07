@@ -217,9 +217,10 @@ namespace ORTS
             AITrain train = new AITrain(Simulator, sd.UiD, this, aiPath, sd.Time, srvFile.Efficiency, sd.Name, trfDef);
 
             // also set Route max speed for speedpost-processing in train.cs
+            train.TrainMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
             if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
-                train.TrainMaxSpeedMpS = conFile.Train.TrainCfg.MaxVelocity.A;
-
+                train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, conFile.Train.TrainCfg.MaxVelocity.A);
+            
             // insert in start list
 
             StartList.InsertTrain(train);

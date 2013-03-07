@@ -288,7 +288,12 @@ namespace ORTS.Popups
                 MonitorTexture.SetData(new[] { Color.White });
             }
 
-            if (validInfo == null) return;
+            // no info available
+            if (validInfo == null)
+            {
+                drawTrack(spriteBatch, offset, 0f, 1f);
+                return;
+            }
 
             // track lines
             drawTrack(spriteBatch, offset, validInfo.speedMpS, validInfo.allowedSpeedMpS);

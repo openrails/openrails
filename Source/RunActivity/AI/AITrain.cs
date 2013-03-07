@@ -270,7 +270,7 @@ namespace ORTS
             if (CheckTrain)
             {
                 File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
-                File.AppendAllText(@"C:\temp\checktrain.txt", "Train : " + Number.ToString()+"\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Train : " + Number.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Name  : " + Name + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Frght : " + IsFreight.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Length: " + Length.ToString() + "\n");
@@ -279,7 +279,7 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\checktrain.txt", "State : " + MovementState.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Sttion: " + atStation.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "ValPos: " + validPosition.ToString() + "\n");
-                }
+            }
 
             return (validPosition);
         }
@@ -435,8 +435,8 @@ namespace ORTS
             }
 
             // check if reversal point reached and not yet activated - but station stop has preference over reversal point
-            if ( (nextActionInfo == null || 
-                 (nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.STATION_STOP && nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.REVERSAL)) && 
+            if ((nextActionInfo == null ||
+                 (nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.STATION_STOP && nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.REVERSAL)) &&
                  TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
             {
                 int reqSection = TCRoute.ReversalInfo[TCRoute.activeSubpath].SignalUsed ?
@@ -445,9 +445,9 @@ namespace ORTS
 
                 if (reqSection >= 0 && PresentPosition[1].RouteListIndex >= reqSection)
                 {
-                    float reqDistance = SpeedMpS * SpeedMpS * MaxDecelMpSS; 
-                    reqDistance = nextActionInfo != null ? Math.Min(nextActionInfo.RequiredDistance,reqDistance) : reqDistance;
-                    nextActionInfo = new AIActionItem( reqDistance, 0.0f, 0.0f, PresentPosition[0].DistanceTravelledM, null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
+                    float reqDistance = SpeedMpS * SpeedMpS * MaxDecelMpSS;
+                    reqDistance = nextActionInfo != null ? Math.Min(nextActionInfo.RequiredDistance, reqDistance) : reqDistance;
+                    nextActionInfo = new AIActionItem(reqDistance, 0.0f, 0.0f, PresentPosition[0].DistanceTravelledM, null, AIActionItem.AI_ACTION_TYPE.REVERSAL);
                     MovementState = AI_MOVEMENT_STATE.BRAKING;
                 }
             }
@@ -1007,7 +1007,7 @@ namespace ORTS
 
                 // check if train ahead is in same section
                 int sectionIndex = PresentPosition[0].TCSectionIndex;
-                int startIndex = ValidRoute[0].GetRouteIndex(sectionIndex,0);
+                int startIndex = ValidRoute[0].GetRouteIndex(sectionIndex, 0);
                 int endIndex = ValidRoute[0].GetRouteIndex(LastReservedSection[0], 0);
 
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
@@ -1027,7 +1027,7 @@ namespace ORTS
                 {
                     if (endIndex < ValidRoute[0].Count - 1)
                     {
-                        thisSection = signalRef.TrackCircuitList[ValidRoute[0][endIndex+1].TCSectionIndex];
+                        thisSection = signalRef.TrackCircuitList[ValidRoute[0][endIndex + 1].TCSectionIndex];
 
                         trainInfo = thisSection.TestTrainAhead(this, 0.0f, ValidRoute[0][endIndex + 1].Direction);
                     }
@@ -1168,7 +1168,7 @@ namespace ORTS
                 }
                 else if (nextActionInfo == null || nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
                 {
-                    MovementState = AI_MOVEMENT_STATE.BRAKING;
+                    MovementState = AI_MOVEMENT_STATE.RUNNING;
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -1252,7 +1252,7 @@ namespace ORTS
                              Number.ToString() + " clearing hold signal " + nextSignal.thisRef.ToString() + " at station " +
                              StationStops[0].PlatformItem.Name + "\n");
                     }
-                    
+
                     if (nextSignal.enabledTrain != null && nextSignal.enabledTrain.Train == this)
                     {
                         nextSignal.requestClearSignal(ValidRoute[0], routedForward, 0, false, null);// for AI always use direction 0
@@ -2169,7 +2169,7 @@ namespace ORTS
                         trainInfo = thisSection.TestTrainAhead(this,
                              PresentPosition[0].TCOffset, PresentPosition[0].TCDirection);
                         if (trainInfo.Count <= 0)
-                        accDistance -= PresentPosition[0].TCOffset;  // compensate for offset
+                            accDistance -= PresentPosition[0].TCOffset;  // compensate for offset
                     }
                     else
                     {
@@ -2197,7 +2197,7 @@ namespace ORTS
                     if (sectionIndex == LastReservedSection[0])
                     {
                         int routeIndex = ValidRoute[0].GetRouteIndex(sectionIndex, PresentPosition[0].RouteListIndex);
-                        if (routeIndex <= ValidRoute[0].Count - 1)
+                        if (routeIndex >= 0 && routeIndex <= (ValidRoute[0].Count - 1))
                         {
                             sectionIndex = ValidRoute[0][routeIndex + 1].TCSectionIndex;
                             TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
@@ -2385,7 +2385,7 @@ namespace ORTS
                                             // if waited behind other train, move remaining track sections to next subroute if required
 
                                             // scan sections in backward order
-                                            TCSubpathRoute nextRoute = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath+1];
+                                            TCSubpathRoute nextRoute = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath + 1];
 
                                             for (int iIndex = ValidRoute[0].Count - 1; iIndex > PresentPosition[0].RouteListIndex; iIndex--)
                                             {
@@ -2952,6 +2952,8 @@ namespace ORTS
         public void ProcessEndOfPath()
         {
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
+            int positionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
+
             bool[] nextPart = UpdateRouteActions(0);
 
             if (!nextPart[0]) return;   // not at end
@@ -2968,19 +2970,29 @@ namespace ORTS
                          Number.ToString() + " continued, part : " + TCRoute.activeSubpath.ToString() + "\n");
                 }
 
-                if (directionNow != PresentPosition[0].TCDirection)
+                if (positionNow == PresentPosition[0].TCDirection && directionNow != PresentPosition[0].TCDirection)
                 {
-                    ReverseFormation(false);
+                    ReverseFormation(true);
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                          Number.ToString() + " reversed\n");
 #endif
-                    if (CheckTrain)
-                    {
-                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
-                             Number.ToString() + " reversed\n");
-                    }
+                }
+                else if (positionNow == PresentPosition[1].TCDirection && directionNow != PresentPosition[1].TCDirection)
+                {
+                    ReverseFormation(true);
+
+#if DEBUG_REPORTS
+                    File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
+                         Number.ToString() + " reversed\n");
+#endif
+                }
+
+                if (CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                         Number.ToString() + " reversed\n");
                 }
 
                 // check if next station was on previous subpath - if so, move to this subpath
@@ -3177,11 +3189,11 @@ namespace ORTS
                 triggerDistanceM = activateDistanceTravelledM - fullPartRangeM;
             }
 
-                // if distance from max speed is too long and from present speed too short and train not at max speed,
-                // remaining distance calculation :
-                // max. time to reach allowed max speed : Tacc = (Vmax - Vnow) / MaxAccel
-                // max. time to reduce speed from max back to present speed : Tdec = (Vmax - Vnow) / 0.25 * MaxDecel
-                // convered distance : R = Vnow*(Tacc + Tdec) + 0.5 * MaxAccel * Tacc**2 + 0.5 * 0*25 * MaxDecel * Tdec**2
+            // if distance from max speed is too long and from present speed too short and train not at max speed,
+            // remaining distance calculation :
+            // max. time to reach allowed max speed : Tacc = (Vmax - Vnow) / MaxAccel
+            // max. time to reduce speed from max back to present speed : Tdec = (Vmax - Vnow) / 0.25 * MaxDecel
+            // convered distance : R = Vnow*(Tacc + Tdec) + 0.5 * MaxAccel * Tacc**2 + 0.5 * 0*25 * MaxDecel * Tdec**2
             else
             {
                 secndPartRangeM = 0;
@@ -3840,7 +3852,7 @@ namespace ORTS
 
 #endif
 
-                if (MovementState != AI_MOVEMENT_STATE.STATION_STOP)
+                if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && MovementState != AI_MOVEMENT_STATE.STOPPED)
                 {
                     MovementState = AI_MOVEMENT_STATE.BRAKING;
                     Alpha10 = 10;
@@ -3880,7 +3892,7 @@ namespace ORTS
                 // reset actions - ensure next action is validated
 
                 ResetActions(true);
-	    }
+            }
         }
 
         //================================================================================================//

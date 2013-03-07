@@ -259,6 +259,7 @@ namespace ORTS
             {
                 Trace.TraceError("Mismatch between saved : {0} and existing : {1} TrackCircuits",
                         tcListCount.ToString(), TrackCircuitList.Count.ToString());
+                throw new InvalidDataException("Cannot resume route due to altered data");
             }
             else
             {
@@ -951,14 +952,15 @@ namespace ORTS
 
             if (SignalHeadList.ContainsKey((uint)TDBRef))
             {
-                Trace.TraceInformation("Duplicate SignalHead TBDRef " + TDBRef.ToString() + " in signal " + signalObjects[foundSignals].thisRef.ToString() + "\n");
+                Trace.TraceInformation("Invalid double TBDRef " + TDBRef.ToString() + " in node " + trackNode.ToString() + "\n");
+                signalObjects[foundSignals] = null;  // reset signal, do not increase signal count
             }
             else
             {
                 SignalHeadList.Add((uint)TDBRef, signalObjects[foundSignals]);
+                foundSignals++;
             }
 
-            foundSignals++;
             return foundSignals - 1;
         } // AddSignal
 
@@ -4405,12 +4407,25 @@ namespace ORTS
 
             // for Junction nodes, obtain default route
             // set switch to default route
+            // copy overlap (if set)
 
             if (CircuitType == CIRCUITTYPE.JUNCTION)
             {
                 uint trackShapeIndex = thisNode.TrJunctionNode.ShapeIndex;
-                TrackShape trackShape = tsectiondat.TrackShapes[trackShapeIndex];
-                JunctionDefaultRoute = (int)trackShape.MainRoute;
+                try
+                {
+                    TrackShape trackShape = tsectiondat.TrackShapes[trackShapeIndex];
+                    JunctionDefaultRoute = (int)trackShape.MainRoute;
+
+                    Overlap = trackShape.ClearanceDistance;
+                }
+                catch (Exception)
+                {
+                    Trace.TraceWarning("Missing TrackShape in tsection.dat : " + trackShapeIndex);
+                    JunctionDefaultRoute = 0;
+                    Overlap = 0;
+                }
+
                 JunctionLastRoute = JunctionDefaultRoute;
                 signalRef.setSwitch(OriginalIndex, JunctionLastRoute, this);
             }
@@ -4942,7 +4957,14 @@ namespace ORTS
             if (CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
                 CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
             {
-                distanceToClear = thisTrain.Train.DistanceTravelledM + Length + thisTrain.Train.junctionOverlapM;
+                if (Overlap > 0)
+                {
+                    distanceToClear = thisTrain.Train.DistanceTravelledM + Length + Convert.ToSingle(Overlap) + thisTrain.Train.standardOverlapM;
+                }
+                else
+                {
+                    distanceToClear = thisTrain.Train.DistanceTravelledM + Length + thisTrain.Train.junctionOverlapM;
+                }
             }
 
             Train.TCPosition presentFront = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
@@ -5392,7 +5414,7 @@ namespace ORTS
                         {
                             int nextSectionIndex = Pins[reqPinIndex, iSwitch].Link;
                             int routeListIndex = thisRoute == null ? -1 : thisRoute.GetRouteIndex(nextSectionIndex, 0);
-                            if (routeListIndex > 0)
+                            if (routeListIndex >= 0)
                                 switchEnd = iSwitch;  // required exit
                         }
                         if (switchEnd < 0 || ActivePins[reqPinIndex, switchEnd].Link < 0) // no free exit available or switch misaligned
@@ -7251,7 +7273,7 @@ namespace ORTS
         // route_set : check if required route is set
         //
 
-        public bool route_set(int req_mainnode)
+        public bool route_set(int req_mainnode, uint req_jnnode)
         {
             bool routeset = false;
 
@@ -7273,13 +7295,14 @@ namespace ORTS
                 }
             }
 
-            // not enabled, follow set route
-            else
+            // not enabled, follow set route but only if not normal signal (normal signal will not clear if not enabled)
+            else if (!isSignalNormal())
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
                 int curDirection = TCDirection;
                 int newDirection = 0;
                 int sectionIndex = -1;
+                bool passedTrackJn = false;
 
                 routeset = (req_mainnode == thisSection.OriginalIndex);
                 while (!routeset && thisSection != null)
@@ -7295,6 +7318,36 @@ namespace ORTS
                         sectionIndex = thisSection.ActivePins[curDirection, 1].Link;
                     }
 
+                    // if Junction, if active pins not set use selected route
+                    if (sectionIndex < 0 && thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                    {
+                        // check if this is required junction
+                        if (Convert.ToUInt32(thisSection.Index) == req_jnnode)
+                        {
+                            passedTrackJn = true;
+                        }
+                        // break if passed required junction
+                        else if (passedTrackJn)
+                        {
+                            break;
+                        }
+
+                        if (thisSection.ActivePins[1, 0].Link == -1 && thisSection.ActivePins[1, 1].Link == -1)
+                        {
+                            int selectedDirection = signalRef.trackDB.TrackNodes[thisSection.OriginalIndex].TrJunctionNode.SelectedRoute;
+                            newDirection = thisSection.Pins[1, selectedDirection].Direction;
+                            sectionIndex = thisSection.Pins[1, selectedDirection].Link;
+                        }
+                    }
+
+                    // if NORMAL, if active pins not set use default pins
+                    if (sectionIndex < 0 && thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                    {
+                        newDirection = thisSection.Pins[curDirection, 0].Direction;
+                        sectionIndex = thisSection.Pins[curDirection, 0].Link;
+                    }
+
+                    // next section
                     if (sectionIndex >= 0)
                     {
                         thisSection = signalRef.TrackCircuitList[sectionIndex];
@@ -8319,9 +8372,17 @@ namespace ORTS
                 RoutePart = signalRoute; // else use signal route
             }
 
+            bool propagateState = true;  // normal propagate state
+
+            // if section is clear but signal remains at stop - dual signal situation - do not treat as propagate
+            if (internalBlockState == INTERNAL_BLOCKSTATE.RESERVED && this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.STOP && isSignalNormal())
+            {
+                propagateState = false;
+            }
+
             if (ReqNumClearAhead > 0 && nextSignal != null && internalBlockState == INTERNAL_BLOCKSTATE.RESERVED)
             {
-                nextSignal.requestClearSignal(RoutePart, enabledTrain, ReqNumClearAhead, true, this);
+                nextSignal.requestClearSignal(RoutePart, enabledTrain, ReqNumClearAhead, propagateState, this);
                 propagated = true;
             }
 
@@ -9154,7 +9215,7 @@ namespace ORTS
 
             if (TrackJunctionNode > 0)
             {
-                juncfound = mainSignal.route_set(JunctionMainNode);
+                juncfound = mainSignal.route_set(JunctionMainNode, TrackJunctionNode);
             }
 
             if (juncfound)
