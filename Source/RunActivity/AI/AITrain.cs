@@ -2970,7 +2970,7 @@ namespace ORTS
                          Number.ToString() + " continued, part : " + TCRoute.activeSubpath.ToString() + "\n");
                 }
 
-                if (positionNow == PresentPosition[0].TCDirection && directionNow != PresentPosition[0].TCDirection)
+                if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
                 {
                     ReverseFormation(true);
 
@@ -2979,7 +2979,7 @@ namespace ORTS
                          Number.ToString() + " reversed\n");
 #endif
                 }
-                else if (positionNow == PresentPosition[1].TCDirection && directionNow != PresentPosition[1].TCDirection)
+                else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
                     ReverseFormation(true);
 
