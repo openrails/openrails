@@ -4196,27 +4196,31 @@ namespace ORTS
             if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return false;
             // set physical state
 
-            if (true)//!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
+            if (!switchSection.CircuitState.HasTrainsOccupying())
             {
                 switchSection.JunctionSetManual = desiredState;
                 trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
                 switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
                 switchSet = true;
-                foreach (var thisSignalIndex in switchSection.SignalsPassingRoutes)
+                /*if (switchSection.SignalsPassingRoutes != null)
                 {
-                    var signal = switchSection.signalRef.SignalObjects[thisSignalIndex];
-                    if (signal != null) signal.ResetRoute(switchSection.Index);
+                    foreach (var thisSignalIndex in switchSection.SignalsPassingRoutes)
+                    {
+                        var signal = switchSection.signalRef.SignalObjects[thisSignalIndex];
+                        if (signal != null) signal.ResetRoute(switchSection.Index);
+                    }
+                    switchSection.SignalsPassingRoutes.Clear();
+                }*/
+                var temptrains = Program.Simulator.Trains.ToArray();
 
-                }
-            }
-            Train[] trains = Program.Simulator.Trains.ToArray();
-            foreach (Train t in trains)
-            {
-                try
+                foreach (var t in temptrains)
                 {
-                    t.ProcessRequestExplorerSetSwitch(switchSection.Index);
+                    try
+                    {
+                        t.ProcessRequestExplorerSetSwitch(switchSection.Index);
+                    }
+                    catch {}
                 }
-                catch {}
             }
             return (switchSet);
         }
@@ -5266,7 +5270,7 @@ namespace ORTS
 
         public void alignSwitchPins(int linkedSectionIndex)
         {
-
+            if (MultiPlayer.MPManager.NoAutoSwitch()) return;
             int alignDirection = -1;  // pin direction for leading section
             int alignLink = -1;       // link index for leading section
 
@@ -7296,7 +7300,7 @@ namespace ORTS
             }
 
             // not enabled, follow set route but only if not normal signal (normal signal will not clear if not enabled)
-            else if (!isSignalNormal())
+            else if (!isSignalNormal() || MultiPlayer.MPManager.IsMultiPlayer())
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
                 int curDirection = TCDirection;
@@ -8521,11 +8525,6 @@ namespace ORTS
                 lastElement = thisElement;
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                 int direction = thisElement.Direction;
-                if (MultiPlayer.MPManager.IsMultiPlayer())
-                {
-                    if (thisTrain != null && thisTrain.Train.GetDistanceToTrain(thisSection.Index, 0) < 0) 
-                        continue;
-                }
                 blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute);
                 if (blockstate > INTERNAL_BLOCKSTATE.RESERVABLE)
                     break;           // break on first non-reservable section //
@@ -9217,7 +9216,24 @@ namespace ORTS
             {
                 juncfound = mainSignal.route_set(JunctionMainNode, TrackJunctionNode);
             }
-
+                //added by JTang
+            else if (MultiPlayer.MPManager.IsMultiPlayer())
+            {
+                var node = mainSignal.signalRef.trackDB.TrackNodes[mainSignal.trackNode];
+                if (node.TrJunctionNode == null && node.TrPins != null && mainSignal.TCDirection < node.TrPins.Length)
+                {
+                    node = mainSignal.signalRef.trackDB.TrackNodes[node.TrPins[mainSignal.TCDirection].Link];
+                    if (node.TrJunctionNode == null) return 0;
+                    for (var pin = node.Inpins; pin < node.Inpins + node.Outpins; pin++)
+                    {
+                        if (node.TrPins[pin].Link == mainSignal.trackNode && pin - node.Inpins != node.TrJunctionNode.SelectedRoute)
+                        {
+                            juncfound = false;
+                            break;
+                        }
+                    }
+                }
+            }
             if (juncfound)
             {
                 return 1;
