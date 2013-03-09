@@ -339,6 +339,9 @@ namespace ORTS.Debugging
 			  }
 		  }
 
+          var maxsize = maxX - minX > maxX - minX ? maxX - minX : maxX - minX;
+          maxsize = (int)maxsize / 100 * 100;
+          windowSizeUpDown.Maximum = (decimal)maxsize; 
 		  Inited = true;
 	  }
 	  bool Inited = false;
@@ -699,6 +702,7 @@ namespace ORTS.Debugging
 
 			 foreach (var s in signals)
 			 {
+                 if (float.IsNaN(s.Location.X) || float.IsNaN(s.Location.Y)) continue;
 				 x = (s.Location.X - subX) * xScale; y = pictureBox1.Height - (s.Location.Y - subY) * yScale;
 				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 				 scaledItem.X = x; scaledItem.Y = y;
@@ -1484,17 +1488,29 @@ namespace ORTS.Debugging
 			  Zooming = false;
 		  }
 
-		  if (LeftClick == false)
-		  {
-			  if (LastCursorPosition.X == e.X && LastCursorPosition.Y == e.Y)
-			  {
-				  var range = 5 * (int)xScale; if (range > 10) range = 10;
-				  var temp = findItemFromMouse(e.X, e.Y, range);
-				  if (temp != null)
-				  {
-					  //GenerateView();
-					  if (temp is SwitchWidget) { switchPickedItem = (SwitchWidget)temp; signalPickedItem = null; HandlePickedSwitch(); }
-					  if (temp is SignalWidget) { signalPickedItem = (SignalWidget)temp; switchPickedItem = null; HandlePickedSignal(); }
+          if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+          {
+              PictureMoveAndZoomInOut(e.X, e.Y, 1200);
+          }
+          else if ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
+          {
+              PictureMoveAndZoomInOut(e.X, e.Y, 30000);
+          }
+          else if ((Control.ModifierKeys & Keys.Control) == Keys.Control)
+          {
+              PictureMoveAndZoomInOut(e.X, e.Y, windowSizeUpDown.Maximum);
+          }
+          else if (LeftClick == false)
+          {
+              if (LastCursorPosition.X == e.X && LastCursorPosition.Y == e.Y)
+              {
+                  var range = 5 * (int)xScale; if (range > 10) range = 10;
+                  var temp = findItemFromMouse(e.X, e.Y, range);
+                  if (temp != null)
+                  {
+                      //GenerateView();
+                      if (temp is SwitchWidget) { switchPickedItem = (SwitchWidget)temp; signalPickedItem = null; HandlePickedSwitch(); }
+                      if (temp is SignalWidget) { signalPickedItem = (SignalWidget)temp; switchPickedItem = null; HandlePickedSignal(); }
 #if false
 					  pictureBox1.ContextMenu.Show(pictureBox1, e.Location);
 					  pictureBox1.ContextMenu.MenuItems[0].Checked = pictureBox1.ContextMenu.MenuItems[1].Checked = false;
@@ -1504,11 +1520,11 @@ namespace ORTS.Debugging
 						  else pictureBox1.ContextMenu.MenuItems[1].Checked = true;
 					  }
 #endif
-				  }
-				  else { switchPickedItem = null; signalPickedItem = null; UnHandleItemPick(); PickedTrain = null; }
-			  }
+                  }
+                  else { switchPickedItem = null; signalPickedItem = null; UnHandleItemPick(); PickedTrain = null; }
+              }
 
-		  }
+          }
 
 	  }
 #if false
@@ -1589,7 +1605,7 @@ namespace ORTS.Debugging
 	   private ItemWidget findItemFromMouse(int x, int y, int range)
 	  {
 		  if (range < 5) range = 5;
-		  double closest = 100f;
+		  double closest = float.NaN;
 		  ItemWidget closestItem = null;
 		  if (chkPickSwitches.Checked == true)
 		  {
@@ -2240,6 +2256,14 @@ namespace ORTS.Debugging
 		  else ClickedTrain = false;
 	  }
 
+      private void PictureMoveAndZoomInOut(int x, int y, decimal scale)
+      {
+          int diffX = x -pictureBox1.Width/2;
+          int diffY = y -pictureBox1.Height/2;
+          ViewWindow.Offset(diffX / xScale, -diffY/yScale);
+          windowSizeUpDown.Value = scale;
+          GenerateView();
+      }
    }
 
    #region SignalWidget
@@ -2294,8 +2318,11 @@ namespace ORTS.Debugging
 		   Item = item;
 		   Signal = signal;
 		   hasDir = false;
-		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+		   Location.X = item.TileX * 2048 + item.X; Location.Y = item.TileZ * 2048 + item.Z;
+           if (float.IsNaN(Location.X)) {
+               int x = 0;
+               x++;
+           }
 		   try
 		   {
 			   var node = Program.Simulator.TDB.TrackDB.TrackNodes[signal.trackNode];
@@ -2303,8 +2330,10 @@ namespace ORTS.Debugging
 			   if (node.TrVectorNode != null) { var ts = node.TrVectorNode.TrVectorSections[0]; v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z); }
 			   else if (node.TrJunctionNode != null) { var ts = node.UiD; v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z); }
 			   else throw new Exception();
-			   var v1 = new Vector2(Location.X, Location.Y); var v3 = v1 - v2; v3.Normalize(); v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 10f : -10f);
+			   var v1 = new Vector2(Location.X, Location.Y); var v3 = v1 - v2; v3.Normalize(); v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 12f : -12f);
 			   Dir.X = v2.X; Dir.Y = v2.Y;
+               v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 1.5f : -1.5f);//shift signal along the dir for 2m, so signals will not be overlapped
+               Location.X = v2.X; Location.Y = v2.Y;
 			   hasDir = true;
 #if !NEW_SIGNALLING
 			   var pos = signal.WorldObject.Position;
@@ -2362,8 +2391,7 @@ namespace ORTS.Debugging
 		   }
 		   catch { mainEnd = null; }
 #endif
-		   Location = new PointF(Item.UiD.TileX * 2048 + Item.UiD.X, Item.UiD.TileZ * 2048 + Item.UiD.Z);
-		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+		   Location.X = Item.UiD.TileX * 2048 + Item.UiD.X; Location.Y = Item.UiD.TileZ * 2048 + Item.UiD.Z;
 	   }
    }
 
@@ -2383,8 +2411,7 @@ namespace ORTS.Debugging
 	   {
 		   Item = item;
 
-		   Location = new PointF(Item.UiD.TileX * 2048 + Item.UiD.X, Item.UiD.TileZ * 2048 + Item.UiD.Z);
-		   Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
+		   Location.X = Item.UiD.TileX * 2048 + Item.UiD.X; Location.Y = Item.UiD.TileZ * 2048 + Item.UiD.Z;
 	   }
    }
    #endregion
