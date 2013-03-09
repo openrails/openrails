@@ -1328,12 +1328,12 @@ namespace ORTS
                 speed /= slowFactor;
             Viewer.CabYOffsetPixels += (up) ? (int)speed : -(int)speed;
             // Enforce limits to travel
-            if (Viewer.CabYOffsetPixels > max)
+            if (Viewer.CabYOffsetPixels >= max)
             {
                 Viewer.CabYOffsetPixels = max;
                 return;
             }
-            if (Viewer.CabYOffsetPixels < min)
+            if (Viewer.CabYOffsetPixels <= min)
             {
                 Viewer.CabYOffsetPixels = min;
                 return;

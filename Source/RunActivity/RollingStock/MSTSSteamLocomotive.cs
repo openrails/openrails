@@ -35,7 +35,7 @@ namespace ORTS
     public class MSTSSteamLocomotive: MSTSLocomotive
     {
         //Configure a default cutoff controller
-        //IF none is specified, this will be used, otherwise those values will be overwritten
+        //If none is specified, this will be used, otherwise those values will be overwritten
         public MSTSNotchController CutoffController = new MSTSNotchController(-0.9f, 0.9f, 0.1f);
         public MSTSNotchController Injector1Controller = new MSTSNotchController( 0, 1, 0.1f );
         public MSTSNotchController Injector2Controller = new MSTSNotchController( 0, 1, 0.1f );
@@ -52,8 +52,6 @@ namespace ORTS
         float BlowerSteamUsageLBpS; // steam used by blower
         float BoilerHeatBTU;        // total heat in water and steam in boiler
         float BoilerMassLB;         // total mass of water and steam in boiler
-        //CJ
-        //float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
         public float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
         
         float WaterFraction;        // fraction of boiler volume occupied by water
