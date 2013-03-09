@@ -1868,7 +1868,7 @@ namespace ORTS
 
         public virtual void InitializeBrakes()
         {
-            if (SpeedMpS != 0)
+            if (Math.Abs(SpeedMpS) > 0.1)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Warning(CabControl.InitializeBrakes, CabSetting.Warn1);
@@ -2059,7 +2059,7 @@ namespace ORTS
                 var car = Cars[i];
                 if (car.WheelAxlesLoaded)
                 {
-                    car.ComputePosition(traveller, false);
+                    car.ComputePosition(traveller, false, SpeedMpS);
                 }
                 else
                 {
@@ -2168,7 +2168,7 @@ namespace ORTS
                 }
                 if (car.WheelAxlesLoaded)
                 {
-                    car.ComputePosition(traveller, true);
+                    car.ComputePosition(traveller, true, SpeedMpS);
                 }
                 else
                 {

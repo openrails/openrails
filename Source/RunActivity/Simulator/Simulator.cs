@@ -85,6 +85,7 @@ namespace ORTS
         public CarSpawnerFile CarSpawnerFile;
         public bool UseAdvancedAdhesion;
         public bool BreakCouplers;
+        public bool CarVibrating;
         // Used in save and restore form
         public string PathName = "<unknown>";
         public float InitialTileX;
@@ -108,6 +109,7 @@ namespace ORTS
             Settings = settings;
             UseAdvancedAdhesion = Settings.UseAdvancedAdhesion;
             BreakCouplers = Settings.BreakCouplers;
+            CarVibrating = settings.CarVibrating;
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             RoutePathName = Path.GetFileName(RoutePath);
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));

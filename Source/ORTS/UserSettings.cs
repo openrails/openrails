@@ -162,6 +162,8 @@ namespace ORTS
         public bool UseAdvancedAdhesion { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
+        [Default(false)]
+        public bool CarVibrating { get; set; }
 
         // Window position settings.
         [Default(new[] { 50, 50 })]

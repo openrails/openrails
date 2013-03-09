@@ -669,6 +669,9 @@ namespace ORTS
                 new UseBackCameraCommand( Log );
             }
             if( UserInput.IsPressed( UserCommands.CameraJumpingTrains ) ) RandomSelectTrain(); //hit Alt-9 key, random selected train to have 2 and 3 camera attached to
+
+            if (UserInput.IsPressed(UserCommands.CameraVibrate)) Program.Simulator.CarVibrating = !Program.Simulator.CarVibrating;
+
             //hit 9 key, get back to player train
             if( UserInput.IsPressed( UserCommands.CameraJumpBackPlayer ) ) {
                 SelectedTrain = PlayerTrain;

@@ -2319,10 +2319,6 @@ namespace ORTS.Debugging
 		   Signal = signal;
 		   hasDir = false;
 		   Location.X = item.TileX * 2048 + item.X; Location.Y = item.TileZ * 2048 + item.Z;
-           if (float.IsNaN(Location.X)) {
-               int x = 0;
-               x++;
-           }
 		   try
 		   {
 			   var node = Program.Simulator.TDB.TrackDB.TrackNodes[signal.trackNode];
