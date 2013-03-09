@@ -10581,6 +10581,7 @@ namespace ORTS
 
                     Valid = LastDivergeIndex >= 0; // it is a reversal
                     validDivPoint = LastDivergeIndex > 0 && FirstDivergeIndex < (firstRoute.Count-1); // valid reversal point
+                    if (lastRoute.Count == 1 && FirstDivergeIndex < (firstRoute.Count - 1)) validDivPoint = true; // valid reversal point in first and only section
                 }
 
                 // determine offset

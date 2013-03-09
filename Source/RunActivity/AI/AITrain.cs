@@ -2972,7 +2972,7 @@ namespace ORTS
 
                 if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
                 {
-                    ReverseFormation(true);
+                    ReverseFormation(false);
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
@@ -2981,7 +2981,7 @@ namespace ORTS
                 }
                 else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
-                    ReverseFormation(true);
+                    ReverseFormation(false);
 
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
