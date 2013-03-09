@@ -836,7 +836,15 @@ namespace ORTS
 
                             lastSignal = AddSignal(index, i, sigItem, lastSignal,
                                                     TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
-                            sigItem.sigObj = lastSignal;
+
+                            if (signalObjects[foundSignals] == null) // signal tdb reference was invalid
+                            {
+                                sigItem.sigObj = -1;
+                            }
+                            else
+                            {
+                                sigItem.sigObj = lastSignal;
+                            }
                         }
 
         // Track Item is speedpost - check if really limit
@@ -8150,14 +8158,14 @@ namespace ORTS
 
             if (SignalNumClearAhead_MSTS > -2)
             {
-                ReqNumClearAhead = isPropagated ?
+                ReqNumClearAhead = clearNextSignals > 0 ?
                     clearNextSignals - SignalNumNormalHeads : SignalNumClearAhead_MSTS - SignalNumNormalHeads;
             }
             else
             {
                 if (SignalNumClearAhead_ORTS == -1)
                 {
-                    ReqNumClearAhead = isPropagated ? clearNextSignals : 1;
+                    ReqNumClearAhead = clearNextSignals > 0 ? clearNextSignals : 1;
                 }
                 else if (SignalNumClearAhead_ORTS == 0)
                 {
@@ -8165,7 +8173,7 @@ namespace ORTS
                 }
                 else
                 {
-                    ReqNumClearAhead = isPropagated ? clearNextSignals - 1 : SignalNumClearAhead_ORTS - 1;
+                    ReqNumClearAhead = clearNextSignals > 0 ? clearNextSignals - 1 : SignalNumClearAhead_ORTS - 1;
                 }
             }
 
