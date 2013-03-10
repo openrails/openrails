@@ -298,8 +298,9 @@ namespace ORTS.Popups
             // track lines
             drawTrack(spriteBatch, offset, validInfo.speedMpS, validInfo.allowedSpeedMpS);
 
+            if (MultiPlayer.MPManager.IsMultiPlayer()) drawMPInfo(spriteBatch, offset);
             // info in AUTO node
-            if (validInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || validInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
+            else if (validInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || validInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
             {
                 drawAutoInfo(spriteBatch, offset);
             }
@@ -390,6 +391,62 @@ namespace ORTS.Popups
             // draw forward items
             drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeropointtop, zeropointlow, maxDistance, distanceFactor, firstLabelPosition, 
                 validInfo.ObjectInfoForward, true);
+        }
+
+        // draw Multiplayer info
+        // all details accessed through class variables
+
+        private void drawMPInfo(SpriteBatch spriteBatch, Point offset)
+        {
+            // set area details
+            int offsetPosition = TrackMonitorWindow.LabelsHeight;
+            int endOffset = TrackMonitorWindow.TrackMonitorHeight;
+            int endPosition = offsetPosition + endOffset;
+            int startObjectArea = offsetPosition + addInfoOffset + textSpacing;
+            int endObjectArea = endPosition - addInfoOffset;
+
+            float maxDistance = parentWindow.MAXDISTANCE;
+            int zeropointmid = endObjectArea - textSpacing;
+            if (validInfo.direction == 1) zeropointmid = startObjectArea - textSpacing;
+            int zeropointtop = zeropointmid - mainOffset[0]; // leave space for train symbol
+            int zeropointlow = zeropointmid + mainOffset[1]; // leave space for train symbol
+            float distanceFactor = (float)(zeropointtop - startObjectArea) / parentWindow.MAXDISTANCE;
+            if (validInfo.direction == 1) distanceFactor = (float)(endObjectArea - zeropointtop) / parentWindow.MAXDISTANCE;
+
+            // draw line for object out of reach
+            spriteBatch.Draw(MonitorTexture, new Vector2(offset.X + 4, offset.Y + offsetPosition + addInfoOffset), null, Color.White, 0, Vector2.Zero,
+                new Vector2(142, 1), SpriteEffects.None, 0);
+
+            // draw own train marker
+            drawOwnTrain(spriteBatch, offset, trainPositionAuto, zeropointtop + TrainPosition[1]);
+
+            // draw eye
+            drawEye(spriteBatch, offset, offsetPosition, endPosition);
+
+            // draw direction arrow
+            if (validInfo.direction == 0)
+            {
+                drawArrow(spriteBatch, offset, forwardArrow, zeropointlow + arrowPosition[1]);
+                // draw fixed distance indications
+                float firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, maxDistance, distanceFactor, zeropointtop, 4, true);
+                int firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
+
+                // draw forward items
+                drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeropointtop, zeropointlow, maxDistance, distanceFactor, firstLabelPosition,
+                    validInfo.ObjectInfoForward, true);
+            }
+            else if (validInfo.direction == 1)
+            {
+                drawArrow(spriteBatch, offset, backwardArrow, zeropointtop + arrowPosition[2]);
+                // draw fixed distance indications
+                float firstMarkerDistance = drawDistanceMarkers(spriteBatch, offset, maxDistance, distanceFactor, zeropointlow, 4, false);
+                int firstLabelPosition = Convert.ToInt32(firstMarkerDistance * distanceFactor) - textSpacing;
+                // draw backward items
+                drawItems(spriteBatch, offset, startObjectArea, endObjectArea, zeropointlow, zeropointtop, maxDistance, distanceFactor, firstLabelPosition,
+                    validInfo.ObjectInfoBackward, false);
+            }
+
+
         }
 
         // draw manual info

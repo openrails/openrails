@@ -11529,14 +11529,6 @@ namespace ORTS
             }
             LastSpeedMpS = SpeedMpS;
             //Orient();
-            if (MPManager.IsServer())
-            {
- //             if (this.NextSignalObject != null && this.NextSignalObject.canUpdate)
- //             {
- //                 Program.Simulator.AI.Dispatcher.RequestAuth(this, true, 0);*/
- //                 UpdateSignalState();
- //             }
-            }
             return;
 
         }
