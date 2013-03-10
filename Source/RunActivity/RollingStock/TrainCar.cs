@@ -44,6 +44,7 @@ namespace ORTS
 
         // status of the traincar - set by the train physics after it calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
+        public Matrix RealXNAMatrix = Matrix.Identity;
         public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
         public float _SpeedMpS = 0.0f; // meters per second; updated by train physics, relative to direction of car  50mph = 22MpS
         public float _PrevSpeedMpS = 0.0f;
@@ -69,6 +70,11 @@ namespace ORTS
         public float AccelerationMpSS
         { 
             get{ return _AccelerationMpSS; }
+        }
+        public Matrix GetXNAMatrix() //in case of train car vibrating, the camera needs to stay stable
+        {
+            if (RealXNAMatrix == Matrix.Identity) return WorldPosition.XNAMatrix;
+            return RealXNAMatrix;
         }
 
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
@@ -432,7 +438,7 @@ namespace ORTS
                     float x = traveler.X + 2048 * (traveler.TileX - tileX);
                     float y = traveler.Y;
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, speed);
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0);
                 }
                 o = Length / 2 - o;
                 traveler.Move(o);
@@ -448,7 +454,7 @@ namespace ORTS
                     float x = traveler.X + 2048 * (traveler.TileX - tileX);
                     float y = traveler.Y;
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, speed);
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0);
                 }
                 o = Length / 2 + o;
                 traveler.Move(o);
@@ -487,6 +493,15 @@ namespace ORTS
             WorldPosition.XNAMatrix = m;
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
+            RealXNAMatrix = WorldPosition.XNAMatrix;
+            if (Program.Simulator.CarVibrating > 0 && speed > 3)
+            {
+                if (speed > 30) speed = 30;
+                speed *= Program.Simulator.CarVibrating;
+                WorldPosition.XNAMatrix = Matrix.CreateRotationY((0.5f - (float)Program.Random.NextDouble()) * speed / 8000f) *
+                    Matrix.CreateRotationX((0.5f - (float)Program.Random.NextDouble()) * speed / 50000f)
+                    * Matrix.CreateRotationZ((0.5f - (float)Program.Random.NextDouble()) * speed / 5000f) *WorldPosition.XNAMatrix;
+            }
             // calculate truck angles
             for (int i = 1; i < Parts.Count; i++)
             {
@@ -498,7 +513,7 @@ namespace ORTS
                     float d = p.OffsetM - p.SumOffset / p.SumWgt;
                     if (-.2 < d && d < .2)
                         continue;
-                    p.AddWheelSetLocation(1, p.OffsetM, p0.A[0] + p.OffsetM * p0.B[0], p0.A[1] + p.OffsetM * p0.B[1], p0.A[2] + p.OffsetM * p0.B[2], 0, speed);
+                    p.AddWheelSetLocation(1, p.OffsetM, p0.A[0] + p.OffsetM * p0.B[0], p0.A[1] + p.OffsetM * p0.B[1], p0.A[2] + p.OffsetM * p0.B[2], 0);
                     p.FindCenterLine();
                 }
                 Vector3 fwd1 = new Vector3(p.B[0], p.B[1], -p.B[2]);
@@ -562,18 +577,8 @@ namespace ORTS
             for (int i = 0; i < 4; i++)
                 SumX[i] = SumXOffset[i] = 0;
         }
-        public void AddWheelSetLocation(float w, float o, float x, float y, float z, float t, float speed)
+        public void AddWheelSetLocation(float w, float o, float x, float y, float z, float t)
         {
-            if (Program.Simulator.CarVibrating == true && speed > 3)//adding random vibration to axles
-            {
-                var damping = 0.01f;
-                if (speed > 30) speed = 30;
-                damping = (float)Math.Pow(speed + 10, 2) / 50000f;
-                var amount = (float)(0.5d - Program.Random.NextDouble()) * damping;
-                y += amount;
-                x += amount / 2;
-                y += amount / 2;
-            }
             SumWgt += w;
             SumOffset += w * o;
             SumOffsetSq += w * o * o;

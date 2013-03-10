@@ -680,7 +680,7 @@ namespace ORTS
     {
         protected TrainCar attachedCar;
         public override TrainCar AttachedCar { get { return attachedCar; } }
-
+        public bool UsingRealPosition = true;
         protected Vector3 attachedLocation;
 
         protected AttachedCamera(Viewer3D viewer)
@@ -793,7 +793,8 @@ namespace ORTS
                     cameraLocation.Location.Z = attachedLocation.Z;
                 }
                 cameraLocation.Location.Z *= -1;
-                cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
+                if (UsingRealPosition) cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.GetXNAMatrix());
+                else cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
                 cameraLocation.Location.Z *= -1;
             }
         }
@@ -828,7 +829,8 @@ namespace ORTS
                 lookAtPosition.Z += attachedLocation.Z;
             }
             lookAtPosition.Z *= -1;
-            lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
+            if (UsingRealPosition) lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.GetXNAMatrix());
+            else lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.WorldPosition.XNAMatrix);
             return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
         }
 
@@ -851,7 +853,8 @@ namespace ORTS
                     cameraLocation.Location.Z = attachedLocation.Z;
                 }
                 cameraLocation.Location.Z *= -1;
-                cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
+                if (UsingRealPosition) cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.GetXNAMatrix());
+                else cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
                 cameraLocation.Location.Z *= -1;
             }
             UpdateRotation(elapsedTime);
@@ -1130,6 +1133,7 @@ namespace ORTS
         public BrakemanCamera(Viewer3D viewer)
             : base(viewer)
         {
+            UsingRealPosition = false;
         }
 
         protected override List<TrainCar> GetCameraCars()
@@ -1191,6 +1195,7 @@ namespace ORTS
         public HeadOutCamera(Viewer3D viewer, HeadDirection headDirection)
             : base(viewer)
         {
+            UsingRealPosition = false;
             Forwards = headDirection == HeadDirection.Forward;
             RotationYRadians = Forwards ? 0 : -MathHelper.Pi;
         }
@@ -1236,6 +1241,7 @@ namespace ORTS
         public CabCamera(Viewer3D viewer)
             : base(viewer)
         {
+            UsingRealPosition = false;
         }
 
         protected internal override void Save(BinaryWriter outf)
