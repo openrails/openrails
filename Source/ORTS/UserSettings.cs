@@ -163,7 +163,7 @@ namespace ORTS
         [Default(false)]
         public bool BreakCouplers { get; set; }
         [Default(false)]
-        public bool CarVibrating { get; set; }
+        public bool AvoidTreeOnTrack { get; set; }
 
         // Window position settings.
         [Default(new[] { 50, 50 })]

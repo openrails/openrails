@@ -62,10 +62,10 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.checkBoxAvoidTreeonTrack = new System.Windows.Forms.CheckBox();
             this.checkBoxBreakCouplers = new System.Windows.Forms.CheckBox();
             this.checkBoxAdvancedAdhesion = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxVibrating = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -90,7 +90,7 @@
             // numericWorldObjectDensity
             // 
             this.numericWorldObjectDensity.Location = new System.Drawing.Point(8, 7);
-            this.numericWorldObjectDensity.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numericWorldObjectDensity.Margin = new System.Windows.Forms.Padding(4);
             this.numericWorldObjectDensity.Maximum = new decimal(new int[] {
             10,
             0,
@@ -104,7 +104,7 @@
             // 
             this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonOK.Location = new System.Drawing.Point(411, 550);
-            this.buttonOK.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonOK.Margin = new System.Windows.Forms.Padding(4);
             this.buttonOK.Name = "buttonOK";
             this.buttonOK.Size = new System.Drawing.Size(100, 28);
             this.buttonOK.TabIndex = 1;
@@ -125,7 +125,7 @@
             // numericSoundDetailLevel
             // 
             this.numericSoundDetailLevel.Location = new System.Drawing.Point(8, 39);
-            this.numericSoundDetailLevel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numericSoundDetailLevel.Margin = new System.Windows.Forms.Padding(4);
             this.numericSoundDetailLevel.Maximum = new decimal(new int[] {
             5,
             0,
@@ -139,7 +139,7 @@
             // 
             this.comboBoxWindowSize.FormattingEnabled = true;
             this.comboBoxWindowSize.Location = new System.Drawing.Point(8, 71);
-            this.comboBoxWindowSize.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.comboBoxWindowSize.Margin = new System.Windows.Forms.Padding(4);
             this.comboBoxWindowSize.Name = "comboBoxWindowSize";
             this.comboBoxWindowSize.Size = new System.Drawing.Size(160, 24);
             this.comboBoxWindowSize.TabIndex = 4;
@@ -159,7 +159,7 @@
             // 
             this.checkBoxTrainLights.AutoSize = true;
             this.checkBoxTrainLights.Location = new System.Drawing.Point(8, 132);
-            this.checkBoxTrainLights.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxTrainLights.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxTrainLights.Name = "checkBoxTrainLights";
             this.checkBoxTrainLights.Size = new System.Drawing.Size(105, 21);
             this.checkBoxTrainLights.TabIndex = 7;
@@ -169,7 +169,7 @@
             // numericBrakePipeChargingRatePSIpS
             // 
             this.numericBrakePipeChargingRatePSIpS.Location = new System.Drawing.Point(8, 246);
-            this.numericBrakePipeChargingRatePSIpS.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numericBrakePipeChargingRatePSIpS.Margin = new System.Windows.Forms.Padding(4);
             this.numericBrakePipeChargingRatePSIpS.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -203,7 +203,7 @@
             // 
             this.checkBoxPrecipitation.AutoSize = true;
             this.checkBoxPrecipitation.Location = new System.Drawing.Point(8, 161);
-            this.checkBoxPrecipitation.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxPrecipitation.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxPrecipitation.Name = "checkBoxPrecipitation";
             this.checkBoxPrecipitation.Size = new System.Drawing.Size(108, 21);
             this.checkBoxPrecipitation.TabIndex = 8;
@@ -214,7 +214,7 @@
             // 
             this.checkBoxGraduatedRelease.AutoSize = true;
             this.checkBoxGraduatedRelease.Location = new System.Drawing.Point(8, 218);
-            this.checkBoxGraduatedRelease.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxGraduatedRelease.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxGraduatedRelease.Name = "checkBoxGraduatedRelease";
             this.checkBoxGraduatedRelease.Size = new System.Drawing.Size(223, 21);
             this.checkBoxGraduatedRelease.TabIndex = 10;
@@ -225,7 +225,7 @@
             // 
             this.checkBoxWire.AutoSize = true;
             this.checkBoxWire.Location = new System.Drawing.Point(8, 190);
-            this.checkBoxWire.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxWire.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxWire.Name = "checkBoxWire";
             this.checkBoxWire.Size = new System.Drawing.Size(126, 21);
             this.checkBoxWire.TabIndex = 9;
@@ -236,7 +236,7 @@
             // 
             this.checkBoxShadows.AutoSize = true;
             this.checkBoxShadows.Location = new System.Drawing.Point(8, 278);
-            this.checkBoxShadows.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxShadows.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxShadows.Name = "checkBoxShadows";
             this.checkBoxShadows.Size = new System.Drawing.Size(145, 21);
             this.checkBoxShadows.TabIndex = 13;
@@ -248,7 +248,7 @@
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.buttonCancel.Location = new System.Drawing.Point(519, 550);
-            this.buttonCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonCancel.Margin = new System.Windows.Forms.Padding(4);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(100, 28);
             this.buttonCancel.TabIndex = 2;
@@ -259,7 +259,7 @@
             // 
             this.checkBoxWindowGlass.AutoSize = true;
             this.checkBoxWindowGlass.Location = new System.Drawing.Point(8, 306);
-            this.checkBoxWindowGlass.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxWindowGlass.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxWindowGlass.Name = "checkBoxWindowGlass";
             this.checkBoxWindowGlass.Size = new System.Drawing.Size(223, 21);
             this.checkBoxWindowGlass.TabIndex = 14;
@@ -270,7 +270,7 @@
             // 
             this.checkBoxBINSound.AutoSize = true;
             this.checkBoxBINSound.Location = new System.Drawing.Point(8, 335);
-            this.checkBoxBINSound.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxBINSound.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxBINSound.Name = "checkBoxBINSound";
             this.checkBoxBINSound.Size = new System.Drawing.Size(238, 21);
             this.checkBoxBINSound.TabIndex = 15;
@@ -281,7 +281,7 @@
             // 
             this.checkBoxAlerter.AutoSize = true;
             this.checkBoxAlerter.Location = new System.Drawing.Point(8, 105);
-            this.checkBoxAlerter.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxAlerter.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxAlerter.Name = "checkBoxAlerter";
             this.checkBoxAlerter.Size = new System.Drawing.Size(72, 21);
             this.checkBoxAlerter.TabIndex = 6;
@@ -292,7 +292,7 @@
             // 
             this.checkBoxSuppressConfirmations.AutoSize = true;
             this.checkBoxSuppressConfirmations.Location = new System.Drawing.Point(8, 363);
-            this.checkBoxSuppressConfirmations.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxSuppressConfirmations.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxSuppressConfirmations.Name = "checkBoxSuppressConfirmations";
             this.checkBoxSuppressConfirmations.Size = new System.Drawing.Size(225, 21);
             this.checkBoxSuppressConfirmations.TabIndex = 16;
@@ -303,7 +303,7 @@
             // 
             this.checkDispatcher.AutoSize = true;
             this.checkDispatcher.Location = new System.Drawing.Point(8, 391);
-            this.checkDispatcher.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkDispatcher.Margin = new System.Windows.Forms.Padding(4);
             this.checkDispatcher.Name = "checkDispatcher";
             this.checkDispatcher.Size = new System.Drawing.Size(184, 21);
             this.checkDispatcher.TabIndex = 17;
@@ -319,7 +319,7 @@
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Location = new System.Drawing.Point(16, 15);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(603, 528);
@@ -350,9 +350,9 @@
             this.tabPage1.Controls.Add(this.checkBoxWire);
             this.tabPage1.Controls.Add(this.checkBoxPrecipitation);
             this.tabPage1.Location = new System.Drawing.Point(4, 25);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(4);
             this.tabPage1.Size = new System.Drawing.Size(595, 499);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "General";
@@ -366,7 +366,7 @@
             0,
             0});
             this.soundVolume.Location = new System.Drawing.Point(8, 457);
-            this.soundVolume.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.soundVolume.Margin = new System.Windows.Forms.Padding(4);
             this.soundVolume.Minimum = new decimal(new int[] {
             10,
             0,
@@ -400,7 +400,7 @@
             0,
             0});
             this.numericCab2DStretch.Location = new System.Drawing.Point(8, 420);
-            this.numericCab2DStretch.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.numericCab2DStretch.Margin = new System.Windows.Forms.Padding(4);
             this.numericCab2DStretch.Name = "numericCab2DStretch";
             this.numericCab2DStretch.Size = new System.Drawing.Size(69, 22);
             this.numericCab2DStretch.TabIndex = 25;
@@ -426,9 +426,9 @@
             this.tabPage2.Controls.Add(this.buttonCheckKeys);
             this.tabPage2.Controls.Add(this.panelKeys);
             this.tabPage2.Location = new System.Drawing.Point(4, 25);
-            this.tabPage2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(4);
             this.tabPage2.Size = new System.Drawing.Size(595, 499);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Keyboard";
@@ -438,7 +438,7 @@
             // 
             this.buttonExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonExport.Location = new System.Drawing.Point(484, 460);
-            this.buttonExport.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonExport.Margin = new System.Windows.Forms.Padding(4);
             this.buttonExport.Name = "buttonExport";
             this.buttonExport.Size = new System.Drawing.Size(100, 28);
             this.buttonExport.TabIndex = 4;
@@ -452,7 +452,7 @@
             // 
             this.buttonDefaultKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonDefaultKeys.Location = new System.Drawing.Point(116, 460);
-            this.buttonDefaultKeys.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonDefaultKeys.Margin = new System.Windows.Forms.Padding(4);
             this.buttonDefaultKeys.Name = "buttonDefaultKeys";
             this.buttonDefaultKeys.Size = new System.Drawing.Size(100, 28);
             this.buttonDefaultKeys.TabIndex = 2;
@@ -465,7 +465,7 @@
             // 
             this.buttonDebug.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonDebug.Location = new System.Drawing.Point(224, 460);
-            this.buttonDebug.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonDebug.Margin = new System.Windows.Forms.Padding(4);
             this.buttonDebug.Name = "buttonDebug";
             this.buttonDebug.Size = new System.Drawing.Size(100, 28);
             this.buttonDebug.TabIndex = 3;
@@ -478,7 +478,7 @@
             // 
             this.buttonCheckKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonCheckKeys.Location = new System.Drawing.Point(8, 460);
-            this.buttonCheckKeys.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.buttonCheckKeys.Margin = new System.Windows.Forms.Padding(4);
             this.buttonCheckKeys.Name = "buttonCheckKeys";
             this.buttonCheckKeys.Size = new System.Drawing.Size(100, 28);
             this.buttonCheckKeys.TabIndex = 1;
@@ -494,30 +494,41 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.panelKeys.AutoScroll = true;
             this.panelKeys.Location = new System.Drawing.Point(8, 7);
-            this.panelKeys.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panelKeys.Margin = new System.Windows.Forms.Padding(4);
             this.panelKeys.Name = "panelKeys";
             this.panelKeys.Size = new System.Drawing.Size(576, 446);
             this.panelKeys.TabIndex = 0;
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.checkBoxVibrating);
+            this.tabPage3.Controls.Add(this.checkBoxAvoidTreeonTrack);
             this.tabPage3.Controls.Add(this.checkBoxBreakCouplers);
             this.tabPage3.Controls.Add(this.checkBoxAdvancedAdhesion);
             this.tabPage3.Location = new System.Drawing.Point(4, 25);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(4);
             this.tabPage3.Size = new System.Drawing.Size(595, 499);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Simulation";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // checkBoxAvoidTreeonTrack
+            // 
+            this.checkBoxAvoidTreeonTrack.AutoSize = true;
+            this.checkBoxAvoidTreeonTrack.Location = new System.Drawing.Point(8, 65);
+            this.checkBoxAvoidTreeonTrack.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxAvoidTreeonTrack.Name = "checkBoxAvoidTreeonTrack";
+            this.checkBoxAvoidTreeonTrack.Size = new System.Drawing.Size(159, 21);
+            this.checkBoxAvoidTreeonTrack.TabIndex = 2;
+            this.checkBoxAvoidTreeonTrack.Text = "Avoid Tree on Track";
+            this.checkBoxAvoidTreeonTrack.UseVisualStyleBackColor = true;
+            // 
             // checkBoxBreakCouplers
             // 
             this.checkBoxBreakCouplers.AutoSize = true;
             this.checkBoxBreakCouplers.Location = new System.Drawing.Point(8, 36);
-            this.checkBoxBreakCouplers.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxBreakCouplers.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxBreakCouplers.Name = "checkBoxBreakCouplers";
             this.checkBoxBreakCouplers.Size = new System.Drawing.Size(127, 21);
             this.checkBoxBreakCouplers.TabIndex = 1;
@@ -528,23 +539,12 @@
             // 
             this.checkBoxAdvancedAdhesion.AutoSize = true;
             this.checkBoxAdvancedAdhesion.Location = new System.Drawing.Point(8, 7);
-            this.checkBoxAdvancedAdhesion.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxAdvancedAdhesion.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxAdvancedAdhesion.Name = "checkBoxAdvancedAdhesion";
             this.checkBoxAdvancedAdhesion.Size = new System.Drawing.Size(227, 21);
             this.checkBoxAdvancedAdhesion.TabIndex = 0;
             this.checkBoxAdvancedAdhesion.Text = "Use Advanced Adhesion Model";
             this.checkBoxAdvancedAdhesion.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxVibrating
-            // 
-            this.checkBoxVibrating.AutoSize = true;
-            this.checkBoxVibrating.Location = new System.Drawing.Point(8, 65);
-            this.checkBoxVibrating.Margin = new System.Windows.Forms.Padding(4);
-            this.checkBoxVibrating.Name = "checkBoxVibrating";
-            this.checkBoxVibrating.Size = new System.Drawing.Size(112, 21);
-            this.checkBoxVibrating.TabIndex = 2;
-            this.checkBoxVibrating.Text = "Car Vibrating";
-            this.checkBoxVibrating.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -557,7 +557,7 @@
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOK);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "OptionsForm";
@@ -616,6 +616,6 @@
         private System.Windows.Forms.CheckBox checkBoxBreakCouplers;
 		private System.Windows.Forms.NumericUpDown soundVolume;
 		private System.Windows.Forms.Label soundVolumeLabel;
-        private System.Windows.Forms.CheckBox checkBoxVibrating;
+        private System.Windows.Forms.CheckBox checkBoxAvoidTreeonTrack;
     }
 }

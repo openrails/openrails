@@ -24,6 +24,7 @@ namespace ORTS
         // Classes reqiring instantiation
         public ForestMesh forestMesh;
 
+        public bool TestTreeOnTrack = false;
         #region Class variables
         public readonly WorldPosition worldPosition;
         #endregion
@@ -39,6 +40,7 @@ namespace ORTS
 
             forestMaterial = viewer.MaterialManager.Load("Forest", Helpers.GetForestTextureFile(viewer.Simulator, forest.TreeTexture), 0, 0);
 
+            if (Viewer.Settings.AvoidTreeOnTrack) TestTreeOnTrack = true;
             // Instantiate classes
             forestMesh = new ForestMesh(Viewer.RenderProcess, Viewer.Tiles, this, forest);
         }
@@ -149,6 +151,7 @@ namespace ORTS
             YtileZ = (XNAWorldLocation.M43 + 1024) / 8;
             refElevation = tiles.GetElevation(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, (int)YtileX, (int)YtileZ);
             float scale;
+            
             for (int i = 0; i < population; i++)
             {
                 // Set the XZ position of each tree at random.
@@ -160,6 +163,16 @@ namespace ORTS
                 tempPosition[i] = Vector3.Transform(treePosition[i], XNAWorldLocation);
                 treePosition[i] = tempPosition[i] - XNAWorldLocation.Translation;
                 // Get the terrain height at each position and set Y.
+                if (Drawer.TestTreeOnTrack)
+                {
+                    try
+                    {
+                        var traveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes,
+                            Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, tempPosition[i].X, -tempPosition[i].Z);
+                        continue;
+                    }
+                    catch { }
+                }
 				treePosition[i].Y = tiles.GetElevation(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, (tempPosition[i].X + 1024) / 8, (tempPosition[i].Z + 1024) / 8) - refElevation;
                 // WVP transformation of the complete object takes place in the vertex shader.
 

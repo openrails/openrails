@@ -109,7 +109,7 @@ namespace ORTS
             Settings = settings;
             UseAdvancedAdhesion = Settings.UseAdvancedAdhesion;
             BreakCouplers = Settings.BreakCouplers;
-            CarVibrating = settings.CarVibrating ? 1 : 0; //0 no vib, 1 mid vib, 2 max vib
+            CarVibrating = 0; //0 no vib, 1 mid vib, 2 max vib
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             RoutePathName = Path.GetFileName(RoutePath);
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
