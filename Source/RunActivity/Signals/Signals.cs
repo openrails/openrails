@@ -834,16 +834,17 @@ namespace ORTS
                                 SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
                             }
 
+                            bool validSignal = true;
                             lastSignal = AddSignal(index, i, sigItem, lastSignal,
-                                                    TrItems, trackNodes, TDBRef, tsectiondat, tdbfile);
+                                                    TrItems, trackNodes, TDBRef, tsectiondat, tdbfile, ref validSignal);
 
-                            if (signalObjects[foundSignals] == null) // signal tdb reference was invalid
+                            if (validSignal)
                             {
-                                sigItem.sigObj = -1;
+                                sigItem.sigObj = lastSignal;
                             }
                             else
                             {
-                                sigItem.sigObj = lastSignal;
+                                sigItem.sigObj = -1;
                             }
                         }
 
@@ -940,8 +941,10 @@ namespace ORTS
         ///
 
         private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int prevSignal,
-                        TrItem[] TrItems, TrackNode[] trackNodes, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
+                        TrItem[] TrItems, TrackNode[] trackNodes, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile, ref bool validSignal)
         {
+            validSignal = true;
+
             signalObjects[foundSignals] = new SignalObject();
             signalObjects[foundSignals].isSignal = true;
             signalObjects[foundSignals].direction = (int)sigItem.Direction;
@@ -951,16 +954,29 @@ namespace ORTS
             signalObjects[foundSignals].thisRef = foundSignals;
             signalObjects[foundSignals].signalRef = this;
 
-            signalObjects[foundSignals].tdbtraveller =
-            new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
-                    sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z,
-            (Traveller.TravellerDirection)(1 - sigItem.Direction));
+            if (tdbfile.TrackDB.TrackNodes[trackNode] == null || tdbfile.TrackDB.TrackNodes[trackNode].TrVectorNode == null)
+            {
+                validSignal = false;
+                Trace.TraceInformation("Reference to invalid track node " + trackNode.ToString() + " for Signal " + TDBRef.ToString() + "\n");
+            }
+            else
+            {
+                signalObjects[foundSignals].tdbtraveller =
+                new Traveller(tsectiondat, tdbfile.TrackDB.TrackNodes, tdbfile.TrackDB.TrackNodes[trackNode],
+                        sigItem.TileX, sigItem.TileZ, sigItem.X, sigItem.Z,
+                (Traveller.TravellerDirection)(1 - sigItem.Direction));
+            }
 
             signalObjects[foundSignals].WorldObject = null;
 
             if (SignalHeadList.ContainsKey((uint)TDBRef))
             {
+                validSignal = false;
                 Trace.TraceInformation("Invalid double TBDRef " + TDBRef.ToString() + " in node " + trackNode.ToString() + "\n");
+            }
+
+            if (!validSignal)
+            {
                 signalObjects[foundSignals] = null;  // reset signal, do not increase signal count
             }
             else
