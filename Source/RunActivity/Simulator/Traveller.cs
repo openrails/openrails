@@ -713,6 +713,51 @@ namespace ORTS
                 location.NormalizeTo(trackVectorSection.TileX, trackVectorSection.TileZ);
         }
 
+        public float SuperElevationValue(float speed, bool computed) //will test 1 second ahead, computed will return desired elev. only
+        {
+            var tn = trackNode;
+            var tvs = trackVectorSection;
+            var ts = trackSection;
+            var to = trackOffset;
+            var desiredZ = 0f;
+            if (tvs == null)
+            {
+                desiredZ = 0f;
+            }
+
+            if (ts!=null&&ts.SectionCurve != null)
+            {
+                float tLen = (float)(ts.SectionCurve.Radius * Math.Abs(ts.SectionCurve.Angle) * 2 * 3.14 / 360);
+                float rAngle = (float)Math.Abs(ts.SectionCurve.Angle) * 3.14f / 180;
+                float max = 0.2f;
+                // "Handedness" Convention: A right-hand curve (TS.SectionCurve.Angle > 0) curves 
+                // to the right when moving forward.
+                if (tLen < Program.Simulator.SuperElevationMinLen) max = 0.08f;//not want for too short curve;
+
+                //find the desired rotation along z-axis, based on how far it is from the start or to the end
+                var sign = -Math.Sign(ts.SectionCurve.Angle);
+                if ((this.direction == TravellerDirection.Forward ? 1 : -1) * sign > 0) desiredZ = 1f;
+                else desiredZ = -1f;
+                if (to < rAngle / 2) desiredZ *= to / rAngle * max;
+                else desiredZ *= (rAngle - to) / rAngle * max;
+
+            }
+            else
+            {
+                desiredZ = 0f;
+            }
+
+            if (computed == true) return desiredZ;//
+
+            //try to avoid abrupt change
+            Traveller t = new Traveller(this);
+            t.Move(Math.Abs(speed/3));//test forward and determine if I need to change;
+            var preZ = t.SuperElevationValue(speed, true);
+            desiredZ = desiredZ + (preZ - desiredZ) / 2;
+            return desiredZ;
+
+        }
+
         void SetLength()
         {
             if (lengthSet)

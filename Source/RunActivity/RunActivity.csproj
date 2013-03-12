@@ -382,6 +382,7 @@
     </Compile>
     <Compile Include="Viewer3D\CommandLog.cs" />
     <Compile Include="Viewer3D\Commands.cs" />
+    <Compile Include="Viewer3D\SuperElevation.cs" />
     <Compile Include="Viewer3D\Transfers.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -52,7 +52,8 @@ namespace ORTS
         public float CouplerSlack2M = 0f;// slack calculated using draft gear force
         public bool WheelSlip = false;// true if locomotive wheels slipping
         public float _AccelerationMpSS = 0.0f;
-
+        private float Stiffness = 3.0f; //used by vibrating cars
+        private float MaxVibSpeed = 15.0f;//the speed when max shaking happens
         private IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
 
         public float SpeedMpS
@@ -77,6 +78,7 @@ namespace ORTS
             return RealXNAMatrix;
         }
 
+        private Matrix SuperElevationMatrix = Matrix.Identity;
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
         public float DynamicBrakePercent { get { return Train.MUDynamicBrakePercent; } set { Train.MUDynamicBrakePercent = value; } }
@@ -152,6 +154,8 @@ namespace ORTS
 			Simulator = simulator;
             WagFilePath = wagFile;
 			RealWagFilePath = wagFile;
+            Stiffness = (float)Program.Random.NextDouble() * 2f + 3f;//stiffness range from 4-8 (i.e. vibrating frequency)
+            MaxVibSpeed = 15f + Stiffness * 2;//about 50km/h
         }
 
         // Game save
@@ -438,7 +442,7 @@ namespace ORTS
                     float x = traveler.X + 2048 * (traveler.TileX - tileX);
                     float y = traveler.Y;
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0);
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, traveler);
                 }
                 o = Length / 2 - o;
                 traveler.Move(o);
@@ -454,7 +458,7 @@ namespace ORTS
                     float x = traveler.X + 2048 * (traveler.TileX - tileX);
                     float y = traveler.Y;
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0);
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, traveler);
                 }
                 o = Length / 2 + o;
                 traveler.Move(o);
@@ -494,13 +498,10 @@ namespace ORTS
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
             RealXNAMatrix = WorldPosition.XNAMatrix;
-            if (Program.Simulator.CarVibrating > 0 && speed > 3)
+            var speedAbs = Math.Abs(speed);
+            if (Program.Simulator.UseSuperElevation > 0)
             {
-                if (speed > 30) speed = 30;
-                speed *= Program.Simulator.CarVibrating;
-                WorldPosition.XNAMatrix = Matrix.CreateRotationY((0.5f - (float)Program.Random.NextDouble()) * speed / 8000f) *
-                    Matrix.CreateRotationX((0.5f - (float)Program.Random.NextDouble()) * speed / 50000f)
-                    * Matrix.CreateRotationZ((0.5f - (float)Program.Random.NextDouble()) * speed / 5000f) *WorldPosition.XNAMatrix;
+                SuperElevation(speedAbs, traveler);
             }
             // calculate truck angles
             for (int i = 1; i < Parts.Count; i++)
@@ -513,7 +514,7 @@ namespace ORTS
                     float d = p.OffsetM - p.SumOffset / p.SumWgt;
                     if (-.2 < d && d < .2)
                         continue;
-                    p.AddWheelSetLocation(1, p.OffsetM, p0.A[0] + p.OffsetM * p0.B[0], p0.A[1] + p.OffsetM * p0.B[1], p0.A[2] + p.OffsetM * p0.B[2], 0);
+                    p.AddWheelSetLocation(1, p.OffsetM, p0.A[0] + p.OffsetM * p0.B[0], p0.A[1] + p.OffsetM * p0.B[1], p0.A[2] + p.OffsetM * p0.B[2], 0, null);
                     p.FindCenterLine();
                 }
                 Vector3 fwd1 = new Vector3(p.B[0], p.B[1], -p.B[2]);
@@ -528,6 +529,49 @@ namespace ORTS
                         p.Sin = -p.Sin;
                 }
             }
+        }
+
+        public float sx=0.0f, sy=0.0f, sz=0.0f;//time series from 0-3.14
+        public float currentStiffness = 1.0f;
+        public double lastTime = -1.0;
+
+        private void SuperElevation(float speed, Traveller traveler)
+        {
+            if (speed > 40) speed = 40; //vib will not increase after 120km
+            if (lastTime <= 0.0)
+            {
+                sx = (float)Program.Random.NextDouble()*3.13f;
+                sy = (float)Program.Random.NextDouble()*3.13f;
+                sz = (float)Program.Random.NextDouble()*3.13f;
+                currentStiffness = Stiffness;
+            }
+            else
+            {
+                //sin wave of frequency 3-5 per second
+                sx += (float)(Program.Simulator.GameTime - lastTime) * currentStiffness;
+                if (sx > 6.28) { sx = sx - 6.28f; currentStiffness = Stiffness + (float)(0.5 - Program.Random.NextDouble()) * speed / 20; }
+                sy += (float)(Program.Simulator.GameTime - lastTime) * currentStiffness;
+                if (sy > 6.28) { sy = sy - 6.28f; }
+                sz += (float)(Program.Simulator.GameTime - lastTime) * currentStiffness;
+                if (sz > 6.28) { sz = sz - 6.28f; }
+            }
+            lastTime = Program.Simulator.GameTime;
+            //System.Console.WriteLine("" + x + " " + y + " " + z);
+            
+            //get superelevation
+            float z = traveler.SuperElevationValue(speed, false);
+            if (this.Flipped) z *= -1f;
+
+            //compute max shaking (rotation value), will pick at MaxVibSpeed, then decrease with half the value
+            var max = 1f;
+            if (speed <= MaxVibSpeed) max = speed / MaxVibSpeed;
+            else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
+            max *= Program.Simulator.CarVibrating;//user may want more vibration (by Ctrl-V)
+
+            var sx1 = (float)Math.Sin(sx) * max; var sy1 = (float)Math.Sin(sy) * max; var sz1 = (float)Math.Sin(sz) * max;
+            SuperElevationMatrix = Matrix.CreateRotationX(sx1 / 500) * Matrix.CreateRotationY(sy1 / 500) * Matrix.CreateRotationZ(sz1 / 100 + z);
+            SuperElevationMatrix.Translation += new Vector3(sx1/100, sy1/200, sz1 / 100);
+            WorldPosition.XNAMatrix = SuperElevationMatrix * WorldPosition.XNAMatrix;
         }
     }
 
@@ -577,7 +621,7 @@ namespace ORTS
             for (int i = 0; i < 4; i++)
                 SumX[i] = SumXOffset[i] = 0;
         }
-        public void AddWheelSetLocation(float w, float o, float x, float y, float z, float t)
+        public void AddWheelSetLocation(float w, float o, float x, float y, float z, float t, Traveller traveler)
         {
             SumWgt += w;
             SumOffset += w * o;

@@ -670,7 +670,11 @@ namespace ORTS
             }
             if( UserInput.IsPressed( UserCommands.CameraJumpingTrains ) ) RandomSelectTrain(); //hit Alt-9 key, random selected train to have 2 and 3 camera attached to
 
-            if (UserInput.IsPressed(UserCommands.CameraVibrate)) Program.Simulator.CarVibrating = (Program.Simulator.CarVibrating + 1) % 3;
+            if (UserInput.IsPressed(UserCommands.CameraVibrate))
+            {
+                Program.Simulator.CarVibrating = (Program.Simulator.CarVibrating + 1) % 4;
+                Simulator.Confirmer.Message(ConfirmLevel.Information, "Vibrating at level " + Program.Simulator.CarVibrating);
+            }
 
             //hit 9 key, get back to player train
             if( UserInput.IsPressed( UserCommands.CameraJumpBackPlayer ) ) {

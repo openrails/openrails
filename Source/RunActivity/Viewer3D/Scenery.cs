@@ -227,7 +227,16 @@ namespace ORTS
                         if (trJunctionNode != null)
                             sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
                         else
-                            sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                        {
+                            System.Console.WriteLine(shapeFilePath);
+                            //if want to use super elevation, we will generate tracks using dynamic tracks
+                            if (viewer.Simulator.UseSuperElevation > 0 && !shapeFilePath.Contains("un")//avoid tunnel
+                                && SuperElevation.UseSuperElevation(viewer, dTrackList, trackObj, worldMatrix))
+                                SuperElevation.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix);
+                            //otherwise, use shapes
+                            else sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+
+                        }
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
                         {
                             int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
@@ -240,7 +249,9 @@ namespace ORTS
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
                             Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
-                        Dynatrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        if (viewer.Simulator.UseSuperElevation > 0 && SuperElevation.UseSuperElevationDyn(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix))
+                            SuperElevation.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        else Dynatrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
                     } // end else if DyntrackObj
                     else if (worldObject.GetType() == typeof(MSTS.ForestObj))

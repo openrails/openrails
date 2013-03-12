@@ -127,6 +127,8 @@ namespace ORTS
         public bool Wire { get; set; }
         [Default(10)]
         public int WorldObjectDensity { get; set; }
+        [Default(0)]
+        public int UseSuperElevation{ get; set; }
         [Default(false)]
         public bool ViewDispatcher { get; set; }
 

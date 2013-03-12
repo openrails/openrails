@@ -853,7 +853,9 @@ namespace ORTS
                     cameraLocation.Location.Z = attachedLocation.Z;
                 }
                 cameraLocation.Location.Z *= -1;
+                //for 2,3,cab
                 if (UsingRealPosition) cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.GetXNAMatrix());
+                //for others
                 else cameraLocation.Location = Vector3.Transform(cameraLocation.Location, attachedCar.WorldPosition.XNAMatrix);
                 cameraLocation.Location.Z *= -1;
             }

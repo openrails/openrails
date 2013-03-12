@@ -307,6 +307,7 @@ namespace ORTS
             Settings.BreakCouplers = checkBoxBreakCouplers.Checked;
             Settings.AvoidTreeOnTrack = checkBoxAvoidTreeonTrack.Checked;
 			Settings.SoundVolumePercent = (int)soundVolume.Value;
+            Settings.UseSuperElevation = (int)ElevationAmount.Value;
             Settings.Save();
 
             DialogResult = DialogResult.OK;
