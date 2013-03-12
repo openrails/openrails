@@ -64,11 +64,12 @@
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.checkBoxBreakCouplers = new System.Windows.Forms.CheckBox();
             this.checkBoxAdvancedAdhesion = new System.Windows.Forms.CheckBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.ElevationAmount = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkBoxAvoidTreeonTrack = new System.Windows.Forms.CheckBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.ExWarning = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -542,6 +543,7 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.ExWarning);
             this.tabPage4.Controls.Add(this.ElevationAmount);
             this.tabPage4.Controls.Add(this.ElevationText);
             this.tabPage4.Controls.Add(this.checkBoxAvoidTreeonTrack);
@@ -555,7 +557,7 @@
             // 
             // ElevationAmount
             // 
-            this.ElevationAmount.Location = new System.Drawing.Point(22, 48);
+            this.ElevationAmount.Location = new System.Drawing.Point(22, 90);
             this.ElevationAmount.Margin = new System.Windows.Forms.Padding(4);
             this.ElevationAmount.Maximum = new decimal(new int[] {
             3,
@@ -570,7 +572,7 @@
             // ElevationText
             // 
             this.ElevationText.AutoSize = true;
-            this.ElevationText.Location = new System.Drawing.Point(99, 50);
+            this.ElevationText.Location = new System.Drawing.Point(99, 92);
             this.ElevationText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(160, 17);
@@ -580,13 +582,23 @@
             // checkBoxAvoidTreeonTrack
             // 
             this.checkBoxAvoidTreeonTrack.AutoSize = true;
-            this.checkBoxAvoidTreeonTrack.Location = new System.Drawing.Point(24, 16);
+            this.checkBoxAvoidTreeonTrack.Location = new System.Drawing.Point(24, 58);
             this.checkBoxAvoidTreeonTrack.Margin = new System.Windows.Forms.Padding(4);
             this.checkBoxAvoidTreeonTrack.Name = "checkBoxAvoidTreeonTrack";
             this.checkBoxAvoidTreeonTrack.Size = new System.Drawing.Size(159, 21);
             this.checkBoxAvoidTreeonTrack.TabIndex = 30;
             this.checkBoxAvoidTreeonTrack.Text = "Avoid Tree on Track";
             this.checkBoxAvoidTreeonTrack.UseVisualStyleBackColor = true;
+            // 
+            // ExWarning
+            // 
+            this.ExWarning.AutoSize = true;
+            this.ExWarning.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.ExWarning.Location = new System.Drawing.Point(24, 22);
+            this.ExWarning.Name = "ExWarning";
+            this.ExWarning.Size = new System.Drawing.Size(472, 17);
+            this.ExWarning.TabIndex = 33;
+            this.ExWarning.Text = "Experimental features that may slow down the game, use at your own risk.";
             // 
             // OptionsForm
             // 
@@ -665,5 +677,6 @@
         private System.Windows.Forms.NumericUpDown ElevationAmount;
         private System.Windows.Forms.Label ElevationText;
         private System.Windows.Forms.CheckBox checkBoxAvoidTreeonTrack;
+        private System.Windows.Forms.Label ExWarning;
     }
 }
