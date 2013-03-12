@@ -99,6 +99,7 @@ namespace ORTS
             checkBoxBreakCouplers.Checked = Settings.BreakCouplers;
             checkBoxAvoidTreeonTrack.Checked = Settings.AvoidTreeOnTrack;
 			soundVolume.Value = Settings.SoundVolumePercent;
+            ElevationAmount.Value = Settings.UseSuperElevation;
 
         }
 

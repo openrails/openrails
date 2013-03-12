@@ -228,7 +228,6 @@ namespace ORTS
                             sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
                         else
                         {
-                            System.Console.WriteLine(shapeFilePath);
                             //if want to use super elevation, we will generate tracks using dynamic tracks
                             if (viewer.Simulator.UseSuperElevation > 0 && !shapeFilePath.Contains("un")//avoid tunnel
                                 && SuperElevation.UseSuperElevation(viewer, dTrackList, trackObj, worldMatrix))

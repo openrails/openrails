@@ -499,9 +499,9 @@ namespace ORTS
             WorldPosition.TileZ = tileZ;
             RealXNAMatrix = WorldPosition.XNAMatrix;
             var speedAbs = Math.Abs(speed);
-            if (Program.Simulator.UseSuperElevation > 0)
+            if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0)
             {
-                SuperElevation(speedAbs, traveler);
+                SuperElevation(speedAbs, Program.Simulator.UseSuperElevation, traveler);
             }
             // calculate truck angles
             for (int i = 1; i < Parts.Count; i++)
@@ -535,7 +535,7 @@ namespace ORTS
         public float currentStiffness = 1.0f;
         public double lastTime = -1.0;
 
-        private void SuperElevation(float speed, Traveller traveler)
+        private void SuperElevation(float speed, int superEV, Traveller traveler)
         {
             if (speed > 40) speed = 40; //vib will not increase after 120km
             if (lastTime <= 0.0)
@@ -559,7 +559,8 @@ namespace ORTS
             //System.Console.WriteLine("" + x + " " + y + " " + z);
             
             //get superelevation
-            float z = traveler.SuperElevationValue(speed, false);
+            float z = 0.0f;
+            if (superEV > 0) z = traveler.SuperElevationValue(speed, false);
             if (this.Flipped) z *= -1f;
 
             //compute max shaking (rotation value), will pick at MaxVibSpeed, then decrease with half the value

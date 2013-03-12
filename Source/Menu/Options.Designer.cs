@@ -62,12 +62,13 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.checkBoxAvoidTreeonTrack = new System.Windows.Forms.CheckBox();
             this.checkBoxBreakCouplers = new System.Windows.Forms.CheckBox();
             this.checkBoxAdvancedAdhesion = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.tabPage4 = new System.Windows.Forms.TabPage();
             this.ElevationAmount = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
+            this.checkBoxAvoidTreeonTrack = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -77,6 +78,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericCab2DStretch)).BeginInit();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).BeginInit();
             this.SuspendLayout();
             // 
@@ -321,6 +323,7 @@
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Location = new System.Drawing.Point(16, 15);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
@@ -504,9 +507,6 @@
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.ElevationAmount);
-            this.tabPage3.Controls.Add(this.ElevationText);
-            this.tabPage3.Controls.Add(this.checkBoxAvoidTreeonTrack);
             this.tabPage3.Controls.Add(this.checkBoxBreakCouplers);
             this.tabPage3.Controls.Add(this.checkBoxAdvancedAdhesion);
             this.tabPage3.Location = new System.Drawing.Point(4, 25);
@@ -517,17 +517,6 @@
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Simulation";
             this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxAvoidTreeonTrack
-            // 
-            this.checkBoxAvoidTreeonTrack.AutoSize = true;
-            this.checkBoxAvoidTreeonTrack.Location = new System.Drawing.Point(8, 65);
-            this.checkBoxAvoidTreeonTrack.Margin = new System.Windows.Forms.Padding(4);
-            this.checkBoxAvoidTreeonTrack.Name = "checkBoxAvoidTreeonTrack";
-            this.checkBoxAvoidTreeonTrack.Size = new System.Drawing.Size(159, 21);
-            this.checkBoxAvoidTreeonTrack.TabIndex = 2;
-            this.checkBoxAvoidTreeonTrack.Text = "Avoid Tree on Track";
-            this.checkBoxAvoidTreeonTrack.UseVisualStyleBackColor = true;
             // 
             // checkBoxBreakCouplers
             // 
@@ -551,9 +540,22 @@
             this.checkBoxAdvancedAdhesion.Text = "Use Advanced Adhesion Model";
             this.checkBoxAdvancedAdhesion.UseVisualStyleBackColor = true;
             // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.ElevationAmount);
+            this.tabPage4.Controls.Add(this.ElevationText);
+            this.tabPage4.Controls.Add(this.checkBoxAvoidTreeonTrack);
+            this.tabPage4.Location = new System.Drawing.Point(4, 25);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage4.Size = new System.Drawing.Size(595, 499);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "Experiments";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
             // ElevationAmount
             // 
-            this.ElevationAmount.Location = new System.Drawing.Point(6, 97);
+            this.ElevationAmount.Location = new System.Drawing.Point(22, 48);
             this.ElevationAmount.Margin = new System.Windows.Forms.Padding(4);
             this.ElevationAmount.Maximum = new decimal(new int[] {
             3,
@@ -562,18 +564,29 @@
             0});
             this.ElevationAmount.Name = "ElevationAmount";
             this.ElevationAmount.Size = new System.Drawing.Size(69, 22);
-            this.ElevationAmount.TabIndex = 29;
+            this.ElevationAmount.TabIndex = 32;
             this.toolTip1.SetToolTip(this.ElevationAmount, "Elevation 0-3");
             // 
             // ElevationText
             // 
             this.ElevationText.AutoSize = true;
-            this.ElevationText.Location = new System.Drawing.Point(83, 99);
+            this.ElevationText.Location = new System.Drawing.Point(99, 50);
             this.ElevationText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(160, 17);
-            this.ElevationText.TabIndex = 28;
+            this.ElevationText.TabIndex = 31;
             this.ElevationText.Text = "Super Elevation Amount";
+            // 
+            // checkBoxAvoidTreeonTrack
+            // 
+            this.checkBoxAvoidTreeonTrack.AutoSize = true;
+            this.checkBoxAvoidTreeonTrack.Location = new System.Drawing.Point(24, 16);
+            this.checkBoxAvoidTreeonTrack.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBoxAvoidTreeonTrack.Name = "checkBoxAvoidTreeonTrack";
+            this.checkBoxAvoidTreeonTrack.Size = new System.Drawing.Size(159, 21);
+            this.checkBoxAvoidTreeonTrack.TabIndex = 30;
+            this.checkBoxAvoidTreeonTrack.Text = "Avoid Tree on Track";
+            this.checkBoxAvoidTreeonTrack.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -603,6 +616,8 @@
             this.tabPage2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).EndInit();
             this.ResumeLayout(false);
 
@@ -645,9 +660,10 @@
         private System.Windows.Forms.CheckBox checkBoxAdvancedAdhesion;
         private System.Windows.Forms.CheckBox checkBoxBreakCouplers;
 		private System.Windows.Forms.NumericUpDown soundVolume;
-		private System.Windows.Forms.Label soundVolumeLabel;
-        private System.Windows.Forms.CheckBox checkBoxAvoidTreeonTrack;
+        private System.Windows.Forms.Label soundVolumeLabel;
+        private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.NumericUpDown ElevationAmount;
         private System.Windows.Forms.Label ElevationText;
+        private System.Windows.Forms.CheckBox checkBoxAvoidTreeonTrack;
     }
 }
