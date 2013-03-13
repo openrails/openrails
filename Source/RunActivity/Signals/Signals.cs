@@ -8121,7 +8121,7 @@ namespace ORTS
                     enabledTrain = null;
 
                     // if signal on holding list, set hold state
-                    if (thisTrain.Train.HoldingSignals.Contains(thisRef)) holdState = HOLDSTATE.STATION_STOP;
+                    if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HOLDSTATE.NONE) holdState = HOLDSTATE.STATION_STOP;
                     return;
                 }
             }
@@ -8912,6 +8912,84 @@ namespace ORTS
             }
         }
 
+        //================================================================================================//
+        //
+        // Set HOLD state for dispatcher control
+        //
+        // Parameter : bool, if set signal must be reset if set (and train position allows)
+        //
+        // Returned : bool[], dimension 2,
+        //            field [0] : if true, hold state is set
+        //            field [1] : if true, signal is reset (always returns false if reset not requested)
+        //
+
+        public bool[] requestHoldSignalDispatcher(bool requestResetSignal)
+        {
+            bool[] returnValue = new bool[2] { false, false };
+            SignalHead.SIGASP thisAspect = this_sig_lr(SignalHead.SIGFN.NORMAL);
+
+            // signal not enabled - set lock, reset if cleared (auto signal can clear without enabling)
+
+            if (enabledTrain == null || enabledTrain.Train == null)
+            {
+                holdState = HOLDSTATE.MANUAL_LOCK;
+                if (thisAspect > SignalHead.SIGASP.STOP) ResetSignal(true);
+                returnValue[0] = true;
+            }
+
+            // if enabled, cleared and reset not requested : no action
+
+            else if (!requestResetSignal && thisAspect > SignalHead.SIGASP.STOP)
+            {
+            }
+
+            // if enabled and not cleared : set hold, no reset required
+
+            else if (thisAspect == SignalHead.SIGASP.STOP)
+            {
+                holdState = HOLDSTATE.MANUAL_LOCK;
+                returnValue[0] = true;
+            }
+
+            // enabled, cleared , reset required : check train speed
+            // if train is moving : no action
+
+            else if (Math.Abs(enabledTrain.Train.SpeedMpS) > 0.1f)
+            {
+            }
+
+            // if train is stopped : reset signal, breakdown train route, set holdstate
+
+            else
+            {
+                int signalRouteIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, 0);
+                if (signalRouteIndex >= 0)
+                {
+                    signalRef.BreakDownRoute(signalRouteIndex, enabledTrain);
+                    ResetSignal(true);
+                    holdState = HOLDSTATE.MANUAL_LOCK;
+                    returnValue[0] = true;
+                    returnValue[1] = true;
+                }
+            }
+
+            return (returnValue);
+        }
+
+        //================================================================================================//
+        //
+        // Reset HOLD state for dispatcher control
+        //
+        // Parameter : none
+        //
+        // Returned : void
+        //
+
+        public void clearHoldSignalDispatcher()
+        {
+            holdState = HOLDSTATE.NONE;
+        }
+        
         //================================================================================================//
 
     }  // SignalObject
