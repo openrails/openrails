@@ -783,9 +783,7 @@ namespace ORTS {
 
         public override void Redo()
         {
-#if !NEW_SIGNALLING
-            Receiver.ToggleAnySwitch( Index );
-#endif
+            Receiver.ToggleAnySwitch(Index);
             // Report();
         }
     }

@@ -4710,7 +4710,6 @@ namespace ORTS
         /// Process request to set switch in manual mode
         /// Request may contain direction or actual node
         /// </summary>
-
         public bool ProcessRequestManualSetSwitch(Direction direction)
         {
             // find first switch in required direction

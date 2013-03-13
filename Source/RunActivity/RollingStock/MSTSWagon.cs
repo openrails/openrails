@@ -952,53 +952,25 @@ namespace ORTS
 			// Pantograph
 			if (UserInput.IsPressed(UserCommands.ControlPantograph1))
 			{
-				MSTSWagon.Pan1Up = !MSTSWagon.Pan1Up;
-				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
-					foreach (TrainCar car in Car.Train.Cars)
-						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).Pan1Up = MSTSWagon.Pan1Up;
-                if (MSTSWagon.Pan1Up) Car.SignalEvent(Event.Pantograph1Up);
-                else Car.SignalEvent(Event.Pantograph1Down);
+                new PantographCommand(Viewer.Log, 1, !MSTSWagon.Pan1Up);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlPantograph2))
 			{
-				MSTSWagon.Pan2Up = !MSTSWagon.Pan2Up;
-				if (Viewer.Simulator.PlayerLocomotive == this.Car) //inform everyone else in the train
-					foreach (TrainCar car in Car.Train.Cars)
-						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).Pan2Up = MSTSWagon.Pan2Up;
-                if (MSTSWagon.Pan2Up) Car.SignalEvent(Event.Pantograph2Up);
-                else Car.SignalEvent(Event.Pantograph2Down);
+                new PantographCommand(Viewer.Log, 2, !MSTSWagon.Pan1Up);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) //control door (or only left)
 			{
-				MSTSWagon.DoorLeftOpen = !MSTSWagon.DoorLeftOpen;
-                if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
-                    foreach (TrainCar car in Car.Train.Cars)
-                    {
-                        if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).DoorLeftOpen = MSTSWagon.DoorLeftOpen;
-                    }
-                /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(Event.DoorOpen);
-                else Car.SignalEvent(Event.DoorClose);*/
-                //comment out, but can be added back to animate sound
-                Viewer.Simulator.Confirmer.Confirm( CabControl.DoorsLeft, MSTSWagon.DoorLeftOpen ? CabSetting.On : CabSetting.Off );
+                new ToggleDoorsLeftCommand(Viewer.Log);
 			}
 			if (UserInput.IsPressed(UserCommands.ControlDoorRight)) //control right door
 			{
-				MSTSWagon.DoorRightOpen = !MSTSWagon.DoorRightOpen;
-				if (Viewer.Simulator.PlayerLocomotive == this.Car)//inform everyone else in the train
-					foreach (TrainCar car in Car.Train.Cars)
-						if (car != this.Car && car is MSTSWagon) ((MSTSWagon)car).DoorRightOpen = MSTSWagon.DoorRightOpen;
-                /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(Event.DoorOpen);
-                else Car.SignalEvent(Event.DoorClose);*/
-                //comment out, but can be added back to animate sound
-                Viewer.Simulator.Confirmer.Confirm( CabControl.DoorsRight, MSTSWagon.DoorRightOpen ? CabSetting.On : CabSetting.Off );
+                new ToggleDoorsRightCommand(Viewer.Log);
             }
-			if (UserInput.IsPressed(UserCommands.ControlMirror))    // Are these the mirrors on trams which swing out at platforms?
+			if (UserInput.IsPressed(UserCommands.ControlMirror))    // The mirrors on trams which swing out at platforms
 			{
-				MSTSWagon.MirrorOpen = !MSTSWagon.MirrorOpen;
-                Viewer.Simulator.Confirmer.Confirm( CabControl.Mirror, MSTSWagon.MirrorOpen ? CabSetting.On : CabSetting.Off );
+                new ToggleMirrorsCommand(Viewer.Log);
             }
 		}
-
 
         /// <summary>
         /// Called at the full frame rate

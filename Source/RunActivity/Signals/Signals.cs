@@ -4178,10 +4178,15 @@ namespace ORTS
             }
             return (false);
         }
-
+        
         public bool RequestSetSwitch(TrackNode switchNode)
         {
-            TrackCircuitSection switchSection = TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            return RequestSetSwitch(switchNode.TCCrossReference[0].CrossRefIndex);
+        }
+
+        public bool RequestSetSwitch(int trackCircuitIndex)
+        {
+            TrackCircuitSection switchSection = TrackCircuitList[trackCircuitIndex];
             Train thisTrain = switchSection.CircuitState.TrainReserved == null ? null : switchSection.CircuitState.TrainReserved.Train;
             bool switchSet = false;
 

@@ -725,12 +725,16 @@ namespace ORTS
                 if( Simulator.SwitchTrackBehind( PlayerTrain ) )
                     new ToggleSwitchBehindCommand( Log );
 #else
-            if (UserInput.IsPressed(UserCommands.GameSwitchAhead)) 
-		    if (Simulator.Signals.RequestSetSwitch(PlayerTrain,Direction.Forward) )
-                    new ToggleSwitchAheadCommand( Log );
-            if (UserInput.IsPressed(UserCommands.GameSwitchBehind)) 
-		    if (Simulator.Signals.RequestSetSwitch(PlayerTrain,Direction.Reverse) )
-                    new ToggleSwitchBehindCommand( Log );
+            if (UserInput.IsPressed(UserCommands.GameSwitchAhead))
+            {
+                if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+                    new ToggleSwitchAheadCommand(Log);
+            }
+            if (UserInput.IsPressed(UserCommands.GameSwitchBehind))
+            {
+                if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+                    new ToggleSwitchBehindCommand(Log);
+            }
 #endif
 
 #if !NEW_SIGNALLING
@@ -961,18 +965,6 @@ namespace ORTS
             Simulator.Confirmer.Confirm(CabControl.ChangeCab, CabSetting.On);
         }
 
-        public void ToggleSwitchAhead() {
-#if !NEW_SIGNALLING
-            Simulator.ToggleSwitchTrackAhead( PlayerTrain );
-#endif
-        }
-
-        public void ToggleSwitchBehind() {
-#if !NEW_SIGNALLING
-            Simulator.ToggleSwitchTrackBehind( PlayerTrain );
-#endif
-        }
-
         [CallOnThread("Loader")]
         public void Mark()
         {
@@ -1077,6 +1069,7 @@ namespace ORTS
         /// <summary>
         /// The user has left-clicked with Alt key pressed.   
         /// If the mouse was over a switch, then toggle the switch.
+        /// No action if toggling blocks the player loco's path.
         /// </summary>
         void TryThrowSwitchAt()
         {
@@ -1097,7 +1090,19 @@ namespace ORTS
                     Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z));
                     float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, UserInput.NearPoint, UserInput.FarPoint);
 
-#if !NEW_SIGNALLING
+#if NEW_SIGNALLING
+                    if (bestD > d)
+                    {
+                        bestTn = tn;
+                        bestD = d;
+                    }
+        	    }
+            }
+            if (bestTn != null)
+            {
+                new ToggleAnySwitchCommand(Log, bestTn.TCCrossReference[0].CrossRefIndex);
+            }
+#else
                     if (bestD > d && !Simulator.SwitchIsOccupied(j))
                     {
                         bestNode = tn.TrJunctionNode;
@@ -1106,31 +1111,58 @@ namespace ORTS
                     }
                 }
             }
-            if( bestNode != null )
+            if (bestNode != null)
             {
                 new ToggleAnySwitchCommand(Log, index);
             }
-#else
-                    if (bestD > d)
-                    {
-                        bestTn = tn;
-                        bestD = d;
-                    }
-        	}
-            }
-	    if (bestTn != null) Simulator.Signals.RequestSetSwitch(bestTn);
 #endif
         }
 
-#if !NEW_SIGNALLING
-        public void ToggleAnySwitch( int index )
+#if NEW_SIGNALLING
+        public void ToggleAnySwitch(int index)
+        {
+            Simulator.Signals.RequestSetSwitch(index);
+        }
+#else
+        public void ToggleAnySwitch(int index)
         {
             TrackNode tn = Simulator.TDB.TrackDB.TrackNodes[index];
             TrJunctionNode bestNode = tn.TrJunctionNode;
             bestNode.SelectedRoute = 1 - bestNode.SelectedRoute;
         }
 #endif
+        public void ToggleSwitchAhead()
+        {
+#if NEW_SIGNALLING
+            if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+            {
+                PlayerTrain.ProcessRequestManualSetSwitch(Direction.Forward);
+            }
+            else if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+            {
+                PlayerTrain.ProcessRequestExplorerSetSwitch(Direction.Forward);
+            }
+#else
+            Simulator.ToggleSwitchTrackAhead(PlayerTrain);
+#endif
+        }
 
+        public void ToggleSwitchBehind()
+        {
+#if NEW_SIGNALLING
+            if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+            {
+                PlayerTrain.ProcessRequestManualSetSwitch(Direction.Reverse);
+            }
+            else if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+            {
+                PlayerTrain.ProcessRequestExplorerSetSwitch(Direction.Reverse);
+            }
+#else
+            Simulator.ToggleSwitchTrackBehind(PlayerTrain);
+#endif
+        }
+        
         internal void UncoupleBehind(int carPosition)
         {
             Simulator.UncoupleBehind(carPosition);
