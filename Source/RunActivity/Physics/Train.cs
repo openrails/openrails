@@ -9347,6 +9347,19 @@ namespace ORTS
                     {
                         thisWP[0] = newIndices[thisWP[0]];
                     }
+
+                    // if remove, update indices of alternative paths
+                    foreach (KeyValuePair<int, int[]> thisAltPath in AlternativeRoutes)
+                    {
+                        TCSubpathRoute thisAltpath = new TCSubpathRoute();
+
+                        int startSection = thisAltPath.Key;
+                        int[] pathDetails = thisAltPath.Value;
+                        int sublistRef = pathDetails[0];
+
+                        int newSublistRef = newIndices[sublistRef];
+                        pathDetails[0] = newSublistRef;
+                    }
                 }
 
                 // find if last stretch is dummy track
