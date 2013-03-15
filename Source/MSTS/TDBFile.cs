@@ -345,8 +345,8 @@ namespace MSTS
         {
             SectionIndex = stf.ReadUInt(STFReader.UNITS.None, null);
             ShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);
-            stf.ReadString(); // worldfilenamex
-            stf.ReadString(); // worldfilenamez
+            WFNameX = stf.ReadInt(STFReader.UNITS.None, null);// worldfilenamex
+            WFNameZ = stf.ReadInt(STFReader.UNITS.None, null);// worldfilenamez
             WorldFileUiD = stf.ReadUInt(STFReader.UNITS.None, null); // UID in worldfile
             flag1 = stf.ReadInt(STFReader.UNITS.None, null); // 0
             flag2 = stf.ReadInt(STFReader.UNITS.None, null); // 1
@@ -370,10 +370,11 @@ namespace MSTS
         public float X, Y, Z;
         public float AX, AY, AZ;
         public uint WorldFileUiD;
-
+        public int WFNameX, WFNameZ;
+        public float StartElev = 0f, EndElev = 0f, MaxElev = 0f;
         public override string ToString()
         {
-            return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4} UiD:{5} Section:{6} Shape:{7}}}", TileX, TileZ, X, Y, Z, WorldFileUiD, SectionIndex, ShapeIndex);
+            return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4} UiD:{5} Section:{6} Shape:{7}}}", WFNameX, WFNameZ, X, Y, Z, WorldFileUiD, SectionIndex, ShapeIndex);
         }
     }
 

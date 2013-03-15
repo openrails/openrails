@@ -78,7 +78,7 @@ namespace ORTS
             return RealXNAMatrix;
         }
 
-        private Matrix SuperElevationMatrix = Matrix.Identity;
+        public Matrix SuperElevationMatrix = Matrix.Identity;
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
         public float DynamicBrakePercent { get { return Train.MUDynamicBrakePercent; } set { Train.MUDynamicBrakePercent = value; } }
@@ -263,6 +263,7 @@ namespace ORTS
                 Parts.Add(new TrainCarPart(0, 0));
             Parts[id].OffsetM = offset;
             Parts[id].iMatrix = matrix;
+            Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
         }
 
         public void SetUpWheels()
@@ -499,7 +500,7 @@ namespace ORTS
             WorldPosition.TileZ = tileZ;
             RealXNAMatrix = WorldPosition.XNAMatrix;
             var speedAbs = Math.Abs(speed);
-            if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0)
+            if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0 || this.Train.tilted)
             {
                 SuperElevation(speedAbs, Program.Simulator.UseSuperElevation, traveler);
             }
@@ -531,13 +532,14 @@ namespace ORTS
             }
         }
 
-        public float sx=0.0f, sy=0.0f, sz=0.0f;//time series from 0-3.14
+        public float sx=0.0f, sy=0.0f, sz=0.0f, prevElev, prevTilted;//time series from 0-3.14
         public float currentStiffness = 1.0f;
         public double lastTime = -1.0;
 
         private void SuperElevation(float speed, int superEV, Traveller traveler)
         {
             if (speed > 40) speed = 40; //vib will not increase after 120km
+            float timeInterval = 0f;
             if (lastTime <= 0.0)
             {
                 sx = (float)Program.Random.NextDouble()*3.13f;
@@ -547,32 +549,57 @@ namespace ORTS
             }
             else
             {
+                timeInterval = (float)(Program.Simulator.GameTime - lastTime);
                 //sin wave of frequency 3-5 per second
-                sx += (float)(Program.Simulator.GameTime - lastTime) * currentStiffness;
+                sx += timeInterval * currentStiffness;
                 if (sx > 6.28) { sx = sx - 6.28f; currentStiffness = Stiffness + (float)(0.5 - Program.Random.NextDouble()) * speed / 20; }
-                sy += (float)(Program.Simulator.GameTime - lastTime) * currentStiffness;
+                sy += timeInterval * currentStiffness;
                 if (sy > 6.28) { sy = sy - 6.28f; }
-                sz += (float)(Program.Simulator.GameTime - lastTime) * currentStiffness;
+                sz += timeInterval * currentStiffness;
                 if (sz > 6.28) { sz = sz - 6.28f; }
             }
             lastTime = Program.Simulator.GameTime;
             //System.Console.WriteLine("" + x + " " + y + " " + z);
-            
+
             //get superelevation
             float z = 0.0f;
-            if (superEV > 0) z = traveler.SuperElevationValue(speed, false);
+            if (superEV > 0)
+            {
+                z = traveler.SuperElevationValue(speed, timeInterval, true);
+                z = prevElev + (z - prevElev) * timeInterval;//smooth rotation
+                prevElev = z;
+            }
             if (this.Flipped) z *= -1f;
 
             //compute max shaking (rotation value), will pick at MaxVibSpeed, then decrease with half the value
             var max = 1f;
             if (speed <= MaxVibSpeed) max = speed / MaxVibSpeed;
             else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
-            max *= Program.Simulator.CarVibrating;//user may want more vibration (by Ctrl-V)
+            max *= Program.Simulator.CarVibrating/500f;//user may want more vibration (by Ctrl-V)
 
+            //small vibration (rotation to add on x,y,z axis)
             var sx1 = (float)Math.Sin(sx) * max; var sy1 = (float)Math.Sin(sy) * max; var sz1 = (float)Math.Sin(sz) * max;
-            SuperElevationMatrix = Matrix.CreateRotationX(sx1 / 500) * Matrix.CreateRotationY(sy1 / 500) * Matrix.CreateRotationZ(sz1 / 100 + z);
-            SuperElevationMatrix.Translation += new Vector3(sx1/100, sy1/200, sz1 / 100);
-            WorldPosition.XNAMatrix = SuperElevationMatrix * WorldPosition.XNAMatrix;
+
+            //check for tilted train, add more to the body
+            if (this.Train != null && this.Train.tilted == true)
+            {
+                if (Program.Simulator.CarVibrating == 0) Program.Simulator.CarVibrating = 1;
+                var tz = traveler.FindTiltedZ(speed);
+                tz = prevTilted + (tz - prevTilted)*timeInterval;//smooth rotation
+                prevTilted = tz;
+                if (this.Flipped) tz *= -1f;
+                sz1 += tz;
+            }
+
+            //this matrix is for the body, boggie will do an inverse to keep on track
+            SuperElevationMatrix = Matrix.CreateRotationX(sx1) * Matrix.CreateRotationY(sy1) * Matrix.CreateRotationZ(sz1);
+            //SuperElevationMatrix.Translation += new Vector3(sx1, sy1, sz1);
+            WorldPosition.XNAMatrix = Matrix.CreateRotationZ(z) * SuperElevationMatrix * WorldPosition.XNAMatrix;
+            try
+            {
+                SuperElevationMatrix = Matrix.Invert(SuperElevationMatrix);
+            }
+            catch { SuperElevationMatrix = Matrix.Identity; }
         }
     }
 
@@ -611,6 +638,7 @@ namespace ORTS
         public float[] SumXOffset= new float[4];
         public float[] A= new float[4];
         public float[] B= new float[4];
+        public bool bogie = false;
         public TrainCarPart(float offset, int i)
         {
             OffsetM = offset;

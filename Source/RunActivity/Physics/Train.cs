@@ -180,6 +180,7 @@ namespace ORTS
 
         public float ClearanceAtRearM = -1;              // save distance behind train (when moving backward)
         public SignalObject RearSignalObject = null;     // direct reference to signal at rear (when moving backward)
+        public bool tilted = false;
 
         public enum END_AUTHORITY
         {

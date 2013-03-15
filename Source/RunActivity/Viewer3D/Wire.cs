@@ -471,7 +471,6 @@ namespace ORTS
                 DTrackData.param2 = radius;
             }
             DTrackData.deltaY = 0;
-            XNAEnd = endPosition.XNAMatrix.Translation;
 
             if (WireProfile == null)
             {

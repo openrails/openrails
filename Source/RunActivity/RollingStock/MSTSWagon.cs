@@ -1022,7 +1022,10 @@ namespace ORTS
                 m.M13 = p.Sin;
                 m.M31 = -p.Sin;
                 m.M33 = p.Cos;
-                TrainCarShape.XNAMatrices[p.iMatrix] = m;
+
+                //if car vibrate, the bogie will stay on track, thus reverse it back (Car.SuperElevationMatrix holds the inverse)
+                if (Program.Simulator.CarVibrating > 0 && p.bogie) TrainCarShape.XNAMatrices[p.iMatrix] = Car.SuperElevationMatrix * m;
+                else TrainCarShape.XNAMatrices[p.iMatrix] = m;
             }
 
             if (FreightShape != null)

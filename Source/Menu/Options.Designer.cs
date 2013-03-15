@@ -65,11 +65,11 @@
             this.checkBoxBreakCouplers = new System.Windows.Forms.CheckBox();
             this.checkBoxAdvancedAdhesion = new System.Windows.Forms.CheckBox();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.ExWarning = new System.Windows.Forms.Label();
             this.ElevationAmount = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkBoxAvoidTreeonTrack = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.ExWarning = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
@@ -555,12 +555,22 @@
             this.tabPage4.Text = "Experiments";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
+            // ExWarning
+            // 
+            this.ExWarning.AutoSize = true;
+            this.ExWarning.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.ExWarning.Location = new System.Drawing.Point(24, 22);
+            this.ExWarning.Name = "ExWarning";
+            this.ExWarning.Size = new System.Drawing.Size(472, 17);
+            this.ExWarning.TabIndex = 33;
+            this.ExWarning.Text = "Experimental features that may slow down the game, use at your own risk.";
+            // 
             // ElevationAmount
             // 
             this.ElevationAmount.Location = new System.Drawing.Point(22, 90);
             this.ElevationAmount.Margin = new System.Windows.Forms.Padding(4);
             this.ElevationAmount.Maximum = new decimal(new int[] {
-            3,
+            10,
             0,
             0,
             0});
@@ -589,16 +599,6 @@
             this.checkBoxAvoidTreeonTrack.TabIndex = 30;
             this.checkBoxAvoidTreeonTrack.Text = "Avoid Tree on Track";
             this.checkBoxAvoidTreeonTrack.UseVisualStyleBackColor = true;
-            // 
-            // ExWarning
-            // 
-            this.ExWarning.AutoSize = true;
-            this.ExWarning.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.ExWarning.Location = new System.Drawing.Point(24, 22);
-            this.ExWarning.Name = "ExWarning";
-            this.ExWarning.Size = new System.Drawing.Size(472, 17);
-            this.ExWarning.TabIndex = 33;
-            this.ExWarning.Text = "Experimental features that may slow down the game, use at your own risk.";
             // 
             // OptionsForm
             // 

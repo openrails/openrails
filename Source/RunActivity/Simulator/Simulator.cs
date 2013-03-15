@@ -537,6 +537,7 @@ namespace ORTS
             }
 
             Train train = new Train(this);
+            if (conFileName.Contains("tilted")) train.tilted = true;
             train.TrainType = Train.TRAINTYPE.PLAYER;
 
             PATFile patFile = new PATFile(patFileName);

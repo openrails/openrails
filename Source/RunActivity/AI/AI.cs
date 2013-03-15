@@ -215,6 +215,7 @@ namespace ORTS
             AIPath aiPath = new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName);
 
             AITrain train = new AITrain(Simulator, sd.UiD, this, aiPath, sd.Time, srvFile.Efficiency, sd.Name, trfDef);
+            if (consistFileName.Contains("tilted")) train.tilted = true;
 
             // also set Route max speed for speedpost-processing in train.cs
             train.TrainMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;

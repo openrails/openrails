@@ -568,6 +568,13 @@ namespace ORTS
             return -1;
         }
 
+        public TrVectorSection GetCurrentSection()
+        {
+            if (TrackNodes[TrackNodeIndex].TrVectorNode != null)
+                return TrackNodes[TrackNodeIndex].TrVectorNode.TrVectorSections[TrackVectorSectionIndex];
+            else return null;
+        }
+
         /// <summary>
         /// Moves the traveller on to the next section of track, whether that is another section within the current track node or a new track node.
         /// </summary>
@@ -713,9 +720,10 @@ namespace ORTS
                 location.NormalizeTo(trackVectorSection.TileX, trackVectorSection.TileZ);
         }
 
-        public float SuperElevationValue(float speed, bool computed) //will test 1 second ahead, computed will return desired elev. only
+        public float SuperElevationValue(float speed, float timeInterval, bool computed) //will test 1 second ahead, computed will return desired elev. only
         {
             var tn = trackNode;
+            if (tn.TrVectorNode == null) return 0f;
             var tvs = trackVectorSection;
             var ts = trackSection;
             var to = trackOffset;
@@ -724,40 +732,83 @@ namespace ORTS
             {
                 desiredZ = 0f;
             }
-
-            if (ts!=null&&ts.SectionCurve != null)
+            else if (ts.SectionCurve != null)
             {
-                float tLen = (float)(ts.SectionCurve.Radius * Math.Abs(ts.SectionCurve.Angle) * 2 * 3.14 / 360);
-                float rAngle = (float)Math.Abs(ts.SectionCurve.Angle) * 3.14f / 180;
-                float max = 0.2f;
-                // "Handedness" Convention: A right-hand curve (TS.SectionCurve.Angle > 0) curves 
-                // to the right when moving forward.
-                if (tLen < Program.Simulator.SuperElevationMinLen) max = 0.08f;//not want for too short curve;
+                float startv = tvs.StartElev, endv = tvs.EndElev, maxv = tvs.MaxElev;
+                //Trace.TraceWarning("" + tvs.SectionIndex + " " + startv + " " + endv + " " + maxv);
+                int whichCase = 0; //0: no elevation (maxv=0), 1: start (startE = 0, Max!=end), 
+                //2: end (end=0, max!=start), 3: middle (start>0, end>0), 4: start and finish in one
+                if (startv.AlmostEqual(0f, 0.001f) && maxv.AlmostEqual(0f, 0.001f) && endv.AlmostEqual(0f, 0.001f)) whichCase = 0;//no elev
+                else if (startv.AlmostEqual(0f, 0.001f) && endv.AlmostEqual(0f, 0.001f)) whichCase = 4;//finish/start in one
+                else if (startv.AlmostEqual(0f, 0.001f)) whichCase = 1;//start
+                else if (endv.AlmostEqual(0f, 0.001f)) whichCase = 2;//finish
+                else whichCase = 3;//in middle
 
-                //find the desired rotation along z-axis, based on how far it is from the start or to the end
                 var sign = -Math.Sign(ts.SectionCurve.Angle);
                 if ((this.direction == TravellerDirection.Forward ? 1 : -1) * sign > 0) desiredZ = 1f;
                 else desiredZ = -1f;
-                if (to < rAngle / 2) desiredZ *= to / rAngle * max;
-                else desiredZ *= (rAngle - to) / rAngle * max;
+                float rAngle = (float)Math.Abs(ts.SectionCurve.Angle) * 0.0174f; // 0.0174=3.14/180
 
+                switch (whichCase)
+                {
+                    case 0: desiredZ = 0f; break;
+                    case 3: desiredZ *= maxv; break;
+                    case 1:
+                        if (to < rAngle / 2) desiredZ *= (to / rAngle * maxv);//increase to max in the first half
+                        else desiredZ *= maxv;
+                        break;
+                    case 2:
+                        if (to > rAngle / 2) desiredZ *= ((rAngle - to) / rAngle * maxv);//decrease to 0 in the second half
+                        else desiredZ *= maxv;
+                        break;
+                    case 4:
+                        if (to < rAngle / 2) desiredZ *= (to / rAngle * maxv);
+                        else desiredZ *= ((rAngle - to) / rAngle * maxv);
+                        break;
+                }
             }
-            else
-            {
-                desiredZ = 0f;
-            }
+            else desiredZ = 0f;
 
             if (computed == true) return desiredZ;//
 
             //try to avoid abrupt change
             Traveller t = new Traveller(this);
-            t.Move(Math.Abs(speed/3));//test forward and determine if I need to change;
-            var preZ = t.SuperElevationValue(speed, true);
+            if (speed < 5) timeInterval = 1;
+            t.Move(speed/3);//test forward 10m and determine if I need to change;
+            var preZ = t.SuperElevationValue(speed, timeInterval, true);
             desiredZ = desiredZ + (preZ - desiredZ) / 2;
             return desiredZ;
 
         }
 
+
+        public float FindTiltedZ(float speed) //will test 1 second ahead, computed will return desired elev. only
+        {
+            var tn = trackNode;
+            if (tn.TrVectorNode == null) return 0f;
+            var tvs = trackVectorSection;
+            var ts = trackSection;
+            var to = trackOffset;
+            var desiredZ = 0f;
+            if (tvs == null)
+            {
+                desiredZ = 0f;
+            }
+            else if (ts.SectionCurve != null)
+            {
+                float startv = tvs.StartElev, endv = tvs.EndElev, maxv = tvs.MaxElev;
+                maxv = 0.14f * speed / 40f;//max 8 degree
+                //maxv *= speed / 40f;
+                //if (maxv.AlmostEqual(0f, 0.001f)) maxv = 0.02f; //short curve, add some effect anyway
+                var sign = -Math.Sign(ts.SectionCurve.Angle);
+                if ((this.direction == TravellerDirection.Forward ? 1 : -1) * sign > 0) desiredZ = 1f;
+                else desiredZ = -1f;
+                desiredZ *= maxv;//max elevation
+            }
+            else desiredZ = 0f;
+            return desiredZ;
+        }
+        
         void SetLength()
         {
             if (lengthSet)
