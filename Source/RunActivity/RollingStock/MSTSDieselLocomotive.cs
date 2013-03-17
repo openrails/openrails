@@ -20,11 +20,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using MSTS;
-using System.Diagnostics; // needed for Debug
+// needed for Debug
 
 namespace ORTS
 {
@@ -627,6 +625,7 @@ namespace ORTS
     class MSTSDieselLocomotiveViewer : MSTSLocomotiveViewer
     {
         MSTSDieselLocomotive DieselLocomotive { get { return (MSTSDieselLocomotive)Car; } }
+        List<ParticleEmitterDrawer> Exhaust = new List<ParticleEmitterDrawer>();
 
         public MSTSDieselLocomotiveViewer(Viewer3D viewer, MSTSDieselLocomotive car)
             : base(viewer, car)
@@ -635,16 +634,16 @@ namespace ORTS
             // on what emitters we know about.
             string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
-            foreach (KeyValuePair<string, List<ParticleEmitterDrawer>> pair in ParticleDrawers)
+            foreach (var drawers in from drawer in ParticleDrawers
+                                    where drawer.Key.ToLowerInvariant().StartsWith("exhaust")
+                                    select drawer.Value)
             {
-				if (pair.Key.StartsWith("Exhaust"))
-                {
-                    foreach (ParticleEmitterDrawer drawer in pair.Value)
-                    {
-                        drawer.SetTexture(viewer.TextureManager.Get(dieselTexture));
-                        drawer.SetEmissionRate(car.ExhaustParticles);
-                    }
-                }
+                Exhaust.AddRange(drawers);
+            }
+            foreach (var drawer in Exhaust)
+            {
+                drawer.SetTexture(viewer.TextureManager.Get(dieselTexture));
+                drawer.SetEmissionRate(car.ExhaustParticles);
             }
         }
 
@@ -691,18 +690,11 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            foreach (KeyValuePair<string, List<ParticleEmitterDrawer>> pair in ParticleDrawers)
+            foreach (var drawer in Exhaust)
             {
-                if (pair.Key.StartsWith("Exhaust"))
-                {
-                    foreach (ParticleEmitterDrawer drawer in pair.Value)
-                    {
-                        drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
-                        drawer.SetEmissionColor(((MSTSDieselLocomotive)this.Car).ExhaustColor);
-                    }
-                }
+                drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
+                drawer.SetEmissionColor(((MSTSDieselLocomotive)this.Car).ExhaustColor);
             }
-
             base.PrepareFrame(frame, elapsedTime);
         }
 

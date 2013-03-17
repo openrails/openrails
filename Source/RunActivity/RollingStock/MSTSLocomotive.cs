@@ -303,12 +303,9 @@ namespace ORTS
 
             while ((s = stf.ReadItem()) != ")")
             {
-                ParticleEmitterData data = new ParticleEmitterData(stf);
+                var data = new ParticleEmitterData(stf);
                 if (!EffectData.ContainsKey(s))
-                {
                     EffectData.Add(s, new List<ParticleEmitterData>());
-                }
-
                 EffectData[s].Add(data);
             }
         }
@@ -2220,8 +2217,6 @@ namespace ORTS
 
         protected Dictionary<string, List<ParticleEmitterDrawer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterDrawer>>();
 
-        float WiperAnimationKey = 0;
-
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
         private bool _hasCabRenderer = false;
@@ -2231,16 +2226,9 @@ namespace ORTS
             : base(viewer, car)
         {
             Locomotive = car;
-
-            foreach (KeyValuePair<string, List<ParticleEmitterData>> pair in Locomotive.EffectData)
-            {
-                ParticleDrawers.Add(pair.Key, new List<ParticleEmitterDrawer>());
-
-                foreach (ParticleEmitterData data in pair.Value)
-                {
-                    ParticleDrawers[pair.Key].Add(new ParticleEmitterDrawer(viewer, data));
-                }                
-            }
+            ParticleDrawers = (from effect in Locomotive.EffectData
+                               select new KeyValuePair<string, List<ParticleEmitterDrawer>>(effect.Key, new List<ParticleEmitterDrawer>(from data in effect.Value
+                                                                                                                                        select new ParticleEmitterDrawer(viewer, data)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             //if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
             //    _CabRenderer = new CabRenderer(viewer, Locomotive);

@@ -8,12 +8,10 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using MSTS;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
+using MSTS;
 
 namespace ORTS
 {
@@ -48,6 +46,7 @@ namespace ORTS
     {
         Viewer3D Viewer;
         ParticleEmitterMaterial ParticleMaterial;
+        float ParticleEmissionHoleM3 = 1;
 
         // Classes reqiring instantiation
         public ParticleEmitter emitter;
@@ -61,6 +60,7 @@ namespace ORTS
         {
             Viewer = viewer;
             ParticleMaterial = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
+            ParticleEmissionHoleM3 = MathHelper.Pi * data.NozzleWidth * data.NozzleWidth;
             emitter = new ParticleEmitter(Viewer.RenderProcess, data);
         }
 
@@ -82,9 +82,9 @@ namespace ORTS
             ParticleMaterial.Texture = texture;
         }
 
-        public void SetEmissionRate(float particlesPerSecond)
+        public void SetEmissionRate(float particleVolumeM3)
         {
-            emitter.ParticlesPerSecond = particlesPerSecond;
+            emitter.ParticlesPerSecond = particleVolumeM3 / ParticleEmissionHoleM3;
         }
 
         public void SetEmissionColor(Color particleColor)

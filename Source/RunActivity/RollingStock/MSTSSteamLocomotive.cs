@@ -16,12 +16,12 @@
 /// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
 using MSTS;
-using System.Collections.Generic;
 
 namespace ORTS
 {
@@ -44,22 +44,23 @@ namespace ORTS
         public MSTSNotchController FiringRateController = new MSTSNotchController( 0, 1, 0.1f );
         bool Injector1On = false;
         bool Injector2On = false;
-        bool CylinderCocksOpen = false;
+        public bool CylinderCocksOpen = false;
         bool ManualFiring = false;
 
         // state variables
-        float SteamUsageLBpS;       // steam used in cylinders
-        float BlowerSteamUsageLBpS; // steam used by blower
+        public float SteamUsageLBpS;       // steam used in cylinders
+        public float BlowerSteamUsageLBpS; // steam used by blower
         float BoilerHeatBTU;        // total heat in water and steam in boiler
         float BoilerMassLB;         // total mass of water and steam in boiler
         public float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
         
         float WaterFraction;        // fraction of boiler volume occupied by water
-        float EvaporationLBpS;          // steam generation rate
-        float FireMassKG;
+        public float EvaporationLBpS;          // steam generation rate
+        public float FireMassKG;
         float FireRatio;
         float FlueTempK = 1000;
-        bool SafetyOn = false;
+        public bool SafetyOn = false;
+        public readonly SmoothedData Smoke = new SmoothedData(15);
 
         // eng file configuration parameters
         float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
@@ -69,16 +70,17 @@ namespace ORTS
         float CylinderDiameterM;    // diameter of piston
         float MaxBoilerOutputLBpH;  // maximum boiler steam generation rate
         float ExhaustLimitLBpH;     // steam usage rate that causing increased back pressure
-        float BasicSteamUsageLBpS;  // steam used for auxiliary stuff
-        float IdealFireMassKG;        // target fire mass
+        public float BasicSteamUsageLBpS;  // steam used for auxiliary stuff
+        public float IdealFireMassKG;        // target fire mass
         float MaxFiringRateKGpS;
-        float SafetyValveUsageLBpS;
+        public float SafetyValveUsageLBpS;
         float SafetyValveDropPSI;
         float EvaporationAreaSqM;
         float FuelCalorificKJpKG = 33400;
         float BlowerMultiplier = 10;//25;
         float ShovelMassKG = 6;
         float BurnRateMultiplier = 1;
+        SmoothedData FuelRate = new SmoothedData(300); // Automatic fireman takes 5 minutes to fully react to changing needs.
 
         // precomputed values
         float SteamUsageFactor;     // precomputed multiplier for calculating steam used in cylinders
@@ -96,7 +98,7 @@ namespace ORTS
         Interpolator Heat2Pressure; // pressure given total heat in water (inverse of WaterHeat)
         Interpolator BurnRate;      // fuel burn rate given steam usage
         Interpolator Pressure2Temperature;
-        Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
+        public Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
 
         float? reverserTarget;
         float? injector1Target;
@@ -583,6 +585,7 @@ namespace ORTS
             // mass assumed constant for automatic firing and injectors
 
             float burnRate = BurnRate[SteamUsageLBpS + BlowerMultiplier * BlowerSteamUsageLBpS];
+            float fuelRate = burnRate;
             if (IdealFireMassKG > 0)
             {
                 FireRatio = FireMassKG / IdealFireMassKG;
@@ -593,13 +596,23 @@ namespace ORTS
                 //burnRate *= 1 - .5f * DamperController.CurrentValue;
                 if (ManualFiring)
                 {
+                    fuelRate = MaxFiringRateKGpS * FiringRateController.CurrentValue;
                     FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FiringRateController.CurrentValue - burnRate);
-                    if (FireMassKG < 0)
-                        FireMassKG = 0;
-                    else if (FireMassKG > 2 * IdealFireMassKG)
-                        FireMassKG = 2 * IdealFireMassKG;
                 }
+                else if (elapsedClockSeconds > 0.001 && MaxFiringRateKGpS > 0.001)
+                {
+                    // Automatic fireman, ish.
+                    var desiredChange = ((IdealFireMassKG - FireMassKG) / elapsedClockSeconds + burnRate) / MaxFiringRateKGpS;
+                    FuelRate.Update(elapsedClockSeconds, desiredChange < 0 ? 0 : desiredChange > 1 ? 1 : desiredChange);
+                    fuelRate = MaxFiringRateKGpS * FuelRate.SmoothedValue;
+                    FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRate.SmoothedValue - burnRate);
+                }
+                if (FireMassKG < 0)
+                    FireMassKG = 0;
+                else if (FireMassKG > 2 * IdealFireMassKG)
+                    FireMassKG = 2 * IdealFireMassKG;
             }
+            Smoke.Update(elapsedClockSeconds, fuelRate / burnRate);
             float waterTemp = Pressure2Temperature[BoilerPressurePSI] / 1.8f + 255.37f;
             float boilerKW = (FlueTempK - waterTemp) * .045f * EvaporationAreaSqM;
             if (FireMassKG < 1)
@@ -633,9 +646,7 @@ namespace ORTS
             if (SafetyOn)
                 usage += SafetyValveUsageLBpS * 3600;
 			var result = new StringBuilder();
-            result.AppendFormat("Boiler pressure = {0:F1} PSI\nSteam generation = {1:F0} lb/h\nSteam usage = {2:F0} lb/h", BoilerPressurePSI, evap, usage);
-            //BoilerHeatBTU,BoilerMassLB,WaterFraction.ToString("F2"));
-            //result.AppendFormat("\nFlue temp = {0:F0} F", 1.8f * (FlueTempK-255.37f));
+            result.AppendFormat("Boiler pressure = {0:F1} PSI\nSteam = +{1:F0} lb/h -{2:F0} lb/h ({3:F0} %)", BoilerPressurePSI, evap, usage, Smoke.SmoothedValue * 100);
             if (ManualFiring)
             {
                 result.AppendFormat("\nWater level = {0:F0} %", WaterFraction * 100);
@@ -923,7 +934,15 @@ namespace ORTS
     /// </summary>
     class MSTSSteamLocomotiveViewer : MSTSLocomotiveViewer
     {
+        const float LBToKG = 0.45359237f;
+        const float SteamVaporDensityAt100DegC1BarM3pKG = 1.694f;
+
         MSTSSteamLocomotive SteamLocomotive { get{ return (MSTSSteamLocomotive)Car;}}
+        List<ParticleEmitterDrawer> Cylinders = new List<ParticleEmitterDrawer>();
+        List<ParticleEmitterDrawer> Drainpipe = new List<ParticleEmitterDrawer>();
+        List<ParticleEmitterDrawer> SafetyValue = new List<ParticleEmitterDrawer>();
+        List<ParticleEmitterDrawer> Stack = new List<ParticleEmitterDrawer>();
+        List<ParticleEmitterDrawer> Whistle = new List<ParticleEmitterDrawer>();
 
         public MSTSSteamLocomotiveViewer(Viewer3D viewer, MSTSSteamLocomotive car)
             : base(viewer, car)
@@ -932,16 +951,20 @@ namespace ORTS
             // on what emitters we know about.
             string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
 
-            foreach (KeyValuePair<string, List<ParticleEmitterDrawer>> pair in ParticleDrawers)
+            foreach (var emitter in ParticleDrawers)
             {
-                if (pair.Key == "StackFX")
-                {
-                    foreach (ParticleEmitterDrawer drawer in pair.Value)
-                    {
-                        drawer.SetTexture(viewer.TextureManager.Get(steamTexture));
-                        drawer.SetEmissionRate(20);
-                    }
-                }
+                if (emitter.Key.ToLowerInvariant() == "cylindersfx")
+                    Cylinders.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "drainpipefx")
+                    Drainpipe.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "safetyvaluefx")
+                    SafetyValue.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "stackfx")
+                    Stack.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "whistlefx")
+                    Whistle.AddRange(emitter.Value);
+                foreach (var drawer in emitter.Value)
+                    drawer.SetTexture(viewer.TextureManager.Get(steamTexture));
             }
         }
 
@@ -1057,6 +1080,31 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var car = Car as MSTSSteamLocomotive;
+            var steamGenerationLBpS = car.EvaporationLBpS;
+            var steamUsageLBpS = car.SteamUsageLBpS + car.BlowerSteamUsageLBpS + car.BasicSteamUsageLBpS + (car.SafetyOn ? car.SafetyValveUsageLBpS : 0);
+            var steamVolumeM3pS = steamUsageLBpS * LBToKG * SteamVaporDensityAt100DegC1BarM3pKG * 10; // The 10 is a fiddle factor that makes things look a lot better in tested locomotives.
+            var fireMassPCT = (car.IdealFireMassKG > 0 ? car.FireMassKG / car.IdealFireMassKG - 1 : 0) * 10;
+
+            foreach (var drawer in Cylinders)
+                drawer.SetEmissionRate(car.CylinderCocksOpen ? steamVolumeM3pS / 10 : 0);
+
+            foreach (var drawer in Drainpipe)
+                drawer.SetEmissionRate(0);
+
+            foreach (var drawer in SafetyValue)
+                drawer.SetEmissionRate(car.SafetyOn ? 1 : 0);
+
+            foreach (var drawer in Stack)
+            {
+                drawer.SetEmissionRate(steamVolumeM3pS);
+                // TODO: The alpha value here is ingored by the particle emitter.
+                drawer.SetEmissionColor(new Color(car.Smoke.SmoothedValue / 2, car.Smoke.SmoothedValue / 2, car.Smoke.SmoothedValue / 2));
+            }
+
+            foreach (var drawer in Whistle)
+                drawer.SetEmissionRate(car.Horn ? 1 : 0);
+
             base.PrepareFrame(frame, elapsedTime);
         }
 
