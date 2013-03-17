@@ -48,12 +48,17 @@ namespace ORTS
                     Textures.Add(path, texture);
                     return texture;
                 }
-                catch
+                catch (InvalidDataException error)
+                {
+                    Trace.TraceWarning("Skipped texture with error: {1} in {0}", path, error.Message);
+                    return SharedMaterialManager.MissingTexture;
+                }
+                catch (Exception error)
                 {
                     if (File.Exists(path))
-                        Trace.TraceWarning("Texture file missing - {0}", path);
+                        Trace.WriteLine(new FileLoadException(path, error));
                     else
-                        Trace.TraceWarning("Texture file problem - {0}", path);
+                        Trace.TraceWarning("Ignored missing texture file {0}", path);
                     return SharedMaterialManager.MissingTexture;
                 }
             }
@@ -117,8 +122,22 @@ namespace ORTS
             PopupWindowShader = new PopupWindowShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
             PrecipShader = new PrecipShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
             SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
-            if (File.Exists(viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace"))
-                SceneryShader.OverlayTexture = MSTS.ACEFile.Texture2DFromFile(viewer.RenderProcess.GraphicsDevice, viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace");
+            var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace";
+            if (File.Exists(microtexPath))
+            {
+                try
+                {
+                    SceneryShader.OverlayTexture = MSTS.ACEFile.Texture2DFromFile(viewer.GraphicsDevice, microtexPath);
+                }
+                catch (InvalidDataException error)
+                {
+                    Trace.TraceWarning("Skipped texture with error: {1} in {0}", microtexPath, error.Message);
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(new FileLoadException(microtexPath, error));
+                }
+            }
             ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
             SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
 

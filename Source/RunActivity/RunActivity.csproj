@@ -362,6 +362,15 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\MSTS\ACEFile.cs">
+      <Link>MSTS\ACEFile.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\Common\BufferedInMemoryStream.cs">
+      <Link>ORTS\Common\BufferedInMemoryStream.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\Common\ByteEncoding.cs">
+      <Link>ORTS\Common\ByteEncoding.cs</Link>
+    </Compile>
     <Compile Include="..\ORTS\InputSettings.cs">
       <Link>ORTS\InputSettings.cs</Link>
     </Compile>
