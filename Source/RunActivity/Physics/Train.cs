@@ -2220,6 +2220,11 @@ namespace ORTS
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
 
+                    if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0 || this.tilted)
+                    {
+                        car.SuperElevation(SpeedMpS, Program.Simulator.UseSuperElevation, traveller);
+                    }
+
                     traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the front of the car 
                 }
                 length += car.Length;

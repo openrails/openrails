@@ -784,6 +784,7 @@ namespace ORTS
 
         public float FindTiltedZ(float speed) //will test 1 second ahead, computed will return desired elev. only
         {
+            if (speed < 12) return 0;//no tilt if speed too low (<50km/h)
             var tn = trackNode;
             if (tn.TrVectorNode == null) return 0f;
             var tvs = trackVectorSection;

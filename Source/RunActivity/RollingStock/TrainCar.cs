@@ -499,10 +499,9 @@ namespace ORTS
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
             RealXNAMatrix = WorldPosition.XNAMatrix;
-            var speedAbs = Math.Abs(speed);
             if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0 || this.Train.tilted)
             {
-                SuperElevation(speedAbs, Program.Simulator.UseSuperElevation, traveler);
+                SuperElevation(speed, Program.Simulator.UseSuperElevation, traveler);
             }
             // calculate truck angles
             for (int i = 1; i < Parts.Count; i++)
@@ -536,8 +535,9 @@ namespace ORTS
         public float currentStiffness = 1.0f;
         public double lastTime = -1.0;
 
-        private void SuperElevation(float speed, int superEV, Traveller traveler)
+        public void SuperElevation(float speed, int superEV, Traveller traveler)
         {
+            speed = (float) Math.Abs(speed);//will make computation easier later, as we only deal with abs value
             if (speed > 40) speed = 40; //vib will not increase after 120km
             float timeInterval = 0f;
             if (lastTime <= 0.0)
@@ -583,7 +583,6 @@ namespace ORTS
             //check for tilted train, add more to the body
             if (this.Train != null && this.Train.tilted == true)
             {
-                if (Program.Simulator.CarVibrating == 0) Program.Simulator.CarVibrating = 1;
                 var tz = traveler.FindTiltedZ(speed);
                 tz = prevTilted + (tz - prevTilted)*timeInterval;//smooth rotation
                 prevTilted = tz;

@@ -155,27 +155,24 @@ namespace ORTS
             refElevation = tiles.GetElevation(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, (int)YtileX, (int)YtileZ);
             float scale;
 
+            //we will use an inner boundary of 2 meters to plant trees, so will make sure the area is big enough
+            if (areaDim1 < 5) areaDim1 = 5;
+            if (areaDim2 < 5) areaDim2 = 5;
+
             List<TrVectorSection> sections = null;
             if (Drawer.TestTreeOnTrack) sections = FindTracksClose(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ);
 
             for (int i = 0; i < population; i++)
             {
                 // Set the XZ position of each tree at random.
-                treePosition[i].X = random.Next(-(int)areaDim1 / 2, (int)areaDim1 / 2);
+                treePosition[i].X = (0.5f - (float)random.NextDouble()) * (areaDim1 - 2);//inner boundary of 2m
                 treePosition[i].Y = 0;
-                treePosition[i].Z = random.Next(-(int)areaDim2 / 2, (int)areaDim2 / 2);
+                treePosition[i].Z = (0.5f - (float)random.NextDouble()) * (areaDim2 - 2);
                 // Orient each treePosition to its final position on the tile so we can get its Y value.
                 // Do this by transforming a copy of the object to its final orientation on the terrain.
                 tempPosition[i] = Vector3.Transform(treePosition[i], XNAWorldLocation);
                 treePosition[i] = tempPosition[i] - XNAWorldLocation.Translation;
                 // Get the terrain height at each position and set Y.
-                if (Drawer.TestTreeOnTrack && sections != null)
-                {
-                    foreach (var section in sections)
-                    {
-                        if (InitTrackSection(section)) continue;
-                    }
-                }
 				treePosition[i].Y = tiles.GetElevation(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ, (tempPosition[i].X + 1024) / 8, (tempPosition[i].Z + 1024) / 8) - refElevation;
                 // WVP transformation of the complete object takes place in the vertex shader.
 
