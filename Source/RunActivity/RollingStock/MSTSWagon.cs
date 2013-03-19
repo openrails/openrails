@@ -859,7 +859,7 @@ namespace ORTS
             var matrixName = TrainCarShape.SharedShape.MatrixNames[matrix].ToUpper();
             // Gate all RunningGearPartIndexes on this!
             var matrixAnimated = TrainCarShape.SharedShape.Animations != null && TrainCarShape.SharedShape.Animations.Count > 0 && TrainCarShape.SharedShape.Animations[0].anim_nodes.Count > matrix && TrainCarShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0;
-            if (matrixName.StartsWith("WHEELS"))
+            if (matrixName.StartsWith("WHEELS") && matrixName.Length == 7 | matrixName.Length == 8)
             {
                 if (matrixName.Length == 8 || !matrixAnimated)
                     WheelPartIndexes.Add(matrix);
