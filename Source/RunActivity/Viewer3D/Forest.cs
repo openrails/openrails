@@ -26,7 +26,6 @@ namespace ORTS
         // Classes reqiring instantiation
         public ForestMesh forestMesh;
 
-        public bool TestTreeOnTrack = false;
         #region Class variables
         public readonly WorldPosition worldPosition;
         #endregion
@@ -42,7 +41,6 @@ namespace ORTS
 
             forestMaterial = viewer.MaterialManager.Load("Forest", Helpers.GetForestTextureFile(viewer.Simulator, forest.TreeTexture), 0, 0);
 
-            if (Viewer.Settings.AvoidTreeOnTrack) TestTreeOnTrack = true;
             // Instantiate classes
             forestMesh = new ForestMesh(Viewer.RenderProcess, Viewer.Tiles, this, forest);
         }
@@ -158,9 +156,6 @@ namespace ORTS
             //we will use an inner boundary of 2 meters to plant trees, so will make sure the area is big enough
             if (areaDim1 < 5) areaDim1 = 5;
             if (areaDim2 < 5) areaDim2 = 5;
-
-            List<TrVectorSection> sections = null;
-            if (Drawer.TestTreeOnTrack) sections = FindTracksClose(Drawer.worldPosition.TileX, Drawer.worldPosition.TileZ);
 
             for (int i = 0; i < population; i++)
             {

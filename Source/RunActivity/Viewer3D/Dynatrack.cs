@@ -509,32 +509,35 @@ namespace ORTS
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
             lodItem.LoadMaterial(RenderProcess, lodItem);
+            var gauge = renderProcess.Viewer.Simulator.SuperElevationGauge;
+            var inner = gauge / 2f;
+            var outer = inner + 0.15f * gauge / 1.435f;
 
             pl = new Polyline(this, "left_outer", 2);
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
-            pl.Vertices.Add(new Vertex(-.8675f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
-            pl.Vertices.Add(new Vertex(-.8675f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
+            pl.Vertices.Add(new Vertex(-outer, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
+            pl.Vertices.Add(new Vertex(-outer, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
             pl = new Polyline(this, "left_inner", 2);
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
-            pl.Vertices.Add(new Vertex(-.7175f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
-            pl.Vertices.Add(new Vertex(-.7175f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
+            pl.Vertices.Add(new Vertex(-inner, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
+            pl.Vertices.Add(new Vertex(-inner, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
             pl = new Polyline(this, "right_inner", 2);
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
-            pl.Vertices.Add(new Vertex(.7175f, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
-            pl.Vertices.Add(new Vertex(.7175f, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
+            pl.Vertices.Add(new Vertex(inner, .200f, 0.0f, -1f, 0f, 0f, -.139362f, .101563f));
+            pl.Vertices.Add(new Vertex(inner, .325f, 0.0f, -1f, 0f, 0f, -.139363f, .003906f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
             pl = new Polyline(this, "right_outer", 2);
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
-            pl.Vertices.Add(new Vertex(.8675f, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
-            pl.Vertices.Add(new Vertex(.8675f, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
+            pl.Vertices.Add(new Vertex(outer, .325f, 0.0f, 1f, 0f, 0f, -.139363f, .003906f));
+            pl.Vertices.Add(new Vertex(outer, .200f, 0.0f, 1f, 0f, 0f, -.139362f, .101563f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
@@ -556,15 +559,15 @@ namespace ORTS
 
             pl = new Polyline(this, "right", 2);
             pl.DeltaTexCoord = new Vector2(.0744726f, 0f);
-            pl.Vertices.Add(new Vertex(-.8675f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f));
-            pl.Vertices.Add(new Vertex(-.7175f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f));
+            pl.Vertices.Add(new Vertex(-outer, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f));
+            pl.Vertices.Add(new Vertex(-inner, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
             pl = new Polyline(this, "left", 2);
             pl.DeltaTexCoord = new Vector2(.0744726f, 0f);
-            pl.Vertices.Add(new Vertex(.7175f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f));
-            pl.Vertices.Add(new Vertex(.8675f, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f));
+            pl.Vertices.Add(new Vertex(inner, .325f, 0.0f, 0f, 1f, 0f, .232067f, .126953f));
+            pl.Vertices.Add(new Vertex(outer, .325f, 0.0f, 0f, 1f, 0f, .232067f, .224609f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
@@ -586,8 +589,8 @@ namespace ORTS
 
             pl = new Polyline(this, "ballast", 2);
             pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
-            pl.Vertices.Add(new Vertex(-2.5f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
-            pl.Vertices.Add(new Vertex(2.5f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
+            pl.Vertices.Add(new Vertex(-2.5f*gauge/1.435f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
+            pl.Vertices.Add(new Vertex(2.5f*gauge/1.435f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 

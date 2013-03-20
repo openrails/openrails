@@ -88,6 +88,7 @@ namespace ORTS
         public int CarVibrating;
         public int UseSuperElevation; //amount of superelevation
         public float SuperElevationMinLen = 50f;
+        public float SuperElevationGauge = 1.435f;//1.435 guage
         // Used in save and restore form
         public string PathName = "<unknown>";
         public float InitialTileX;
@@ -113,6 +114,8 @@ namespace ORTS
             BreakCouplers = Settings.BreakCouplers;
             CarVibrating = 0; //0 no vib, 1-2 mid vib, 3 max vib
             UseSuperElevation = Settings.UseSuperElevation;
+            SuperElevationMinLen = (float) Settings.SuperElevationMinLen;
+            SuperElevationGauge = (float)Settings.SuperElevationGauge/1000f;//gauge transfer from mm to m
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             RoutePathName = Path.GetFileName(RoutePath);
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));

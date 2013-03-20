@@ -131,6 +131,10 @@ namespace ORTS
         public int UseSuperElevation{ get; set; }
         [Default(false)]
         public bool ViewDispatcher { get; set; }
+        [Default(50)]
+        public int SuperElevationMinLen { get; set; }
+        [Default(1435)]
+        public int SuperElevationGauge { get; set; }
 
         [Default(new string[0])]
         public string[] Menu_Selection { get; set; }
@@ -164,8 +168,6 @@ namespace ORTS
         public bool UseAdvancedAdhesion { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
-        [Default(false)]
-        public bool AvoidTreeOnTrack { get; set; }
 
         // Window position settings.
         [Default(new[] { 50, 50 })]

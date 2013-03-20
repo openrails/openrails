@@ -97,10 +97,10 @@ namespace ORTS
             numericCab2DStretch.Value = Settings.Cab2DStretch;
             checkBoxAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             checkBoxBreakCouplers.Checked = Settings.BreakCouplers;
-            checkBoxAvoidTreeonTrack.Checked = Settings.AvoidTreeOnTrack;
 			soundVolume.Value = Settings.SoundVolumePercent;
             ElevationAmount.Value = Settings.UseSuperElevation;
-
+            MinLengthChoice.Value = Settings.SuperElevationMinLen;
+            SuperElevationGauge.Value = Settings.SuperElevationGauge;
         }
 
         string ParseCategoryFrom(string name)
@@ -306,9 +306,10 @@ namespace ORTS
             Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
             Settings.UseAdvancedAdhesion = checkBoxAdvancedAdhesion.Checked;
             Settings.BreakCouplers = checkBoxBreakCouplers.Checked;
-            Settings.AvoidTreeOnTrack = checkBoxAvoidTreeonTrack.Checked;
 			Settings.SoundVolumePercent = (int)soundVolume.Value;
             Settings.UseSuperElevation = (int)ElevationAmount.Value;
+            Settings.SuperElevationMinLen = (int)MinLengthChoice.Value;
+            Settings.SuperElevationGauge = (int)SuperElevationGauge.Value;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

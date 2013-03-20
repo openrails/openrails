@@ -229,9 +229,12 @@ namespace ORTS
                         else
                         {
                             //if want to use super elevation, we will generate tracks using dynamic tracks
-                            if (viewer.Simulator.UseSuperElevation > 0 && !shapeFilePath.Contains("un")//avoid tunnel
-                                && SuperElevation.UseSuperElevation(viewer, dTrackList, trackObj, worldMatrix))
-                                SuperElevation.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ);
+                            if (viewer.Simulator.UseSuperElevation > 0 
+                                && SuperElevation.UseSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ))
+                            {
+                                //var success = SuperElevation.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
+                                //if (success == 0) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                            }
                             //otherwise, use shapes
                             else sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
 
@@ -304,6 +307,7 @@ namespace ORTS
                 }
             }
 
+            if (viewer.Simulator.UseSuperElevation > 0) SuperElevation.DecomposeStaticSuperElevation(Viewer, dTrackList, TileX, TileZ);
             if (Viewer.World.Sounds != null) Viewer.World.Sounds.AddByTile(TileX, TileZ);
         }
 
