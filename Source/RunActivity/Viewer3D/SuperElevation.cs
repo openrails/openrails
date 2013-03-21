@@ -220,7 +220,6 @@ namespace ORTS
 
             foreach (var ts in sections)
             {
-                if (!allSections.Contains(ts)) continue;
                 var tss = viewer.Simulator.TSectionDat.TrackSections.Get(ts.SectionIndex);
                 if (tss == null || tss.SectionCurve == null || ts.WFNameX != TileX || ts.WFNameZ != TileZ)
                     continue;
@@ -263,32 +262,15 @@ namespace ORTS
         //a function to find the elevation of a section ,by searching the TDB database
         public static TrVectorSection FindSectionValue(TrackShape shape, WorldPosition loc, WorldPosition loc2, Simulator simulator, TrackSection section, int TileX, int TileZ, uint UID)
         {
-            sv = ev = mv = 0f; dir = -1f;
+            sv = ev = mv = 0f; dir = 1f;
             foreach (var s in allSections)
             {
                 if (s.WFNameX == TileX && s.WFNameZ == TileZ && s.WorldFileUiD == UID)
                 {
-                    //found the section with exact the same name
-                    if (s.SectionIndex == section.SectionIndex)
-                    {
-                        sv = s.StartElev; ev = s.EndElev; mv = s.MaxElev; dir = 1;
-                        return s;
-                    }
+                    return s;
                 }
             }
-            //did not find matching, will find miss matching
-            foreach (var s in allSections)
-            {
-                if (s.WFNameX == TileX && s.WFNameZ == TileZ && s.WorldFileUiD == UID)
-                {
-                    //found the section with name different
-                    if (s.SectionIndex <= section.SectionIndex + 1 || s.SectionIndex >= section.SectionIndex - 1)
-                    {
-                        ev = s.StartElev; sv = s.EndElev; mv = s.MaxElev; dir = 1;
-                        return s;
-                    }
-                }
-            }
+            
             return null;
         }
 
@@ -307,8 +289,11 @@ namespace ORTS
                 var StartCurve = false; var CurveDir = 0; var Len = 0.0f;
                 SectionList.Clear();
                 SectionCurve theCurve = null;
+                int i = 0; int count = node.TrVectorNode.TrVectorSections.Length - 1;
                 foreach (var section in node.TrVectorNode.TrVectorSections)//loop all curves
                 {
+                    if (i == 0 || i == count) { i++; continue; } //do not want the first and last piece of the track to be in the curve (they connected to switches)
+                    i++;
 					var sec = simulator.TSectionDat.TrackSections.Get(section.SectionIndex);
 					if (sec == null) continue;
 					theCurve = sec.SectionCurve; 

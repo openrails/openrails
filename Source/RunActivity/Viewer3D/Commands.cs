@@ -187,7 +187,8 @@ namespace ORTS {
             Redo();
         }
 
-        public override void Redo() { 
+        public override void Redo() {
+            if (Receiver == null) return;
             Receiver.ReverserChangeTo( ToState, Target );
             // Report();
         }
@@ -206,6 +207,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;//no receiver of this panto
             Receiver.SetPantographs( item, ToState );
             if( item == 1 ) ((MSTSWagon)Receiver).ToggleFirstPantograph();
             if( item == 2 ) ((MSTSWagon)Receiver).ToggleSecondPantograph();
@@ -598,6 +600,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;
             switch( Injector ) {
                 case 1: { Receiver.Injector1ChangeTo( ToState, Target ); break; }
                 case 2: { Receiver.Injector2ChangeTo( ToState, Target ); break; }
@@ -623,6 +626,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;
             switch( injector ) {
                 case 1: { Receiver.ToggleInjector1(); break; }
                 case 2: { Receiver.ToggleInjector2(); break; }
@@ -645,6 +649,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;
             Receiver.BlowerChangeTo( ToState, Target );
             // Report();
         }
@@ -660,6 +665,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;
             Receiver.DamperChangeTo( ToState, Target );
             // Report();
         }
@@ -675,6 +681,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;
             Receiver.FiringRateChangeTo( ToState, Target );
             // Report();
         }
@@ -690,6 +697,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;
             Receiver.ToggleManualFiring();
             // Report();
         }
@@ -705,6 +713,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;
             Receiver.FireShovelfull();
             // Report();
         }
@@ -720,6 +729,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (Receiver == null) return;
             Receiver.ToggleCylinderCocks();
             // Report();
         }
