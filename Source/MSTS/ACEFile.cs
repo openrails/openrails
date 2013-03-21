@@ -37,8 +37,8 @@ namespace MSTS
 
                     // The stream is technically ZLIB, but we assume the selected ZLIB compression is DEFLATE (though we verify that here just in case). The ZLIB
                     // header for DEFLATE is 0x78 0x9C.
-                    signature = new String(reader.ReadChars(2));
-                    if (signature != "\x78\x9C") throw new InvalidDataException(String.Format("Incorrect signature; expected '78 9C', got '{0}'", StringToHex(signature)));
+                    var zlib = reader.ReadUInt16();
+                    if ((zlib & 0x20FF) != 0x0078) throw new InvalidDataException(String.Format("Incorrect signature; expected 'xx78', got '{0:X4}'", zlib));
 
                     // The BufferedInMemoryStream is needed because DeflateStream only supports reading forwards - no seeking.
                     return Texture2DFromReader(graphicsDevice, new BinaryReader(new BufferedInMemoryStream(new DeflateStream(stream, CompressionMode.Decompress))));
