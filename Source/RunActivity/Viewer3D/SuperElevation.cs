@@ -289,10 +289,9 @@ namespace ORTS
                 var StartCurve = false; var CurveDir = 0; var Len = 0.0f;
                 SectionList.Clear();
                 SectionCurve theCurve = null;
-                int i = 0; int count = node.TrVectorNode.TrVectorSections.Length - 1;
+                int i = 0; int count = node.TrVectorNode.TrVectorSections.Length;
                 foreach (var section in node.TrVectorNode.TrVectorSections)//loop all curves
                 {
-                    if (i == 0 || i == count) { i++; continue; } //do not want the first and last piece of the track to be in the curve (they connected to switches)
                     i++;
 					var sec = simulator.TSectionDat.TrackSections.Get(section.SectionIndex);
 					if (sec == null) continue;
@@ -300,15 +299,19 @@ namespace ORTS
                     
                     if (theCurve != null && !theCurve.Angle.AlmostEqual(0f, 0.01f)) //a good curve
                     {
+                        if (i == 1 || i == count)
+                        {
+                            if (theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174) < 10f) continue; 
+                        } //do not want the first and last piece of short curved track to be in the curve (they connected to switches)
                         if (StartCurve == false) //we are beginning a curve
                         {
-                            StartCurve = true; CurveDir = Math.Sign( sec.SectionCurve.Angle);
+                            StartCurve = true; CurveDir = Math.Sign(sec.SectionCurve.Angle);
                         }
                         else if (CurveDir != Math.Sign(sec.SectionCurve.Angle)) //we are in curve, but bending different dir
                         {
                             MarkSections(simulator, SectionList, Len); //treat the sections encountered so far, then restart with other dir
-                            CurveDir = Math.Sign(sec.SectionCurve.Angle); 
-                            SectionList.Clear(); 
+                            CurveDir = Math.Sign(sec.SectionCurve.Angle);
+                            SectionList.Clear();
                             Len = 0f; //StartCurve remains true as we are still in a curve
                         }
                         Len += theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174);//0.0174=3.14/180
@@ -419,14 +422,16 @@ namespace ORTS
 
             SectionIdx[] SectionIdxs = shape.SectionIdxs;
 
-            int drawn = 0;
-            List<DynatrackDrawer> tmpTrackList = new List<DynatrackDrawer>();
+            int drawn = 0;//count how many sections will be drawn
+            int count = 0;//count how many sections is in the shape
+            List<TrVectorSection> tobeRemoved = new List<TrVectorSection>();
             foreach (SectionIdx id in SectionIdxs)
             {
                 uint[] sections = id.TrackSections;
 
                 for (int i = 0; i < sections.Length; i++)
                 {
+                    count++;
                     uint sid = id.TrackSections[i];
                     TrackSection section = viewer.Simulator.TSectionDat.TrackSections.Get(sid);
                     if (Math.Abs(section.SectionSize.Width - viewer.Simulator.SuperElevationGauge) > 0.2) return false;//the main route has a gauge different than mine
@@ -442,11 +447,17 @@ namespace ORTS
                         continue;
                     if (isTunnel)
                     {
+
                         List<TrVectorSection> curve = null;
                         foreach (var c in allCurves) { if (c.Contains(tmp)) curve = c; break; }//find which curve has the section
-                        if (curve != null) allCurves.Remove(curve);
-                        allSections.Remove(tmp);
+                        if (curve != null)
+                        {
+                            foreach (var c1 in curve) allSections.Remove(c1);//remove all sections in the curve from future consideration
+                            allCurves.Remove(curve);
+                        }
                     }
+
+                    tobeRemoved.Add(tmp);//it may need to be removed in the future
                     drawn++;
                 }
             }
