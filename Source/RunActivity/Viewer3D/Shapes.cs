@@ -548,15 +548,18 @@ namespace ORTS
             CrossingObj = crossingObj;
             if (!CrossingObj.silent)
             {
-                var soundPath = viewer.Simulator.RoutePath + @"\\sound\\crossing.sms";
-                try
+                if (viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS != null)
                 {
-                    Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
-                    viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
-                }
-                catch (Exception error)
-                {
-                    Trace.WriteLine(new FileLoadException(soundPath, error));
+                    var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS;
+                    try
+                    {
+                        Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
+                        viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                    }
                 }
             }
             Crossing = viewer.Simulator.LevelCrossings.CreateLevelCrossing(

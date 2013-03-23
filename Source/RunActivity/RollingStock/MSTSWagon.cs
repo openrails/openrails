@@ -700,14 +700,50 @@ namespace ORTS
             return MatrixIndexes.Count == 0;
         }
 
+        void SetFrame(float frame)
+        {
+            AnimationKey = frame;
+            foreach (var matrix in MatrixIndexes)
+                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+        }
+
+        /// <summary>
+        /// Sets the animation to a particular frame whilst clamping it to the frame count range.
+        /// </summary>
+        public void SetFrameClamp(float frame)
+        {
+            if (frame > FrameCount) frame = FrameCount;
+            if (frame < 0) frame = 0;
+            SetFrame(frame);
+        }
+
+        /// <summary>
+        /// Sets the animation to a particular frame whilst cycling back to the start as input goes beyond the last frame.
+        /// </summary>
+        public void SetFrameCycle(float frame)
+        {
+            // Animates from 0-FrameCount then FrameCount-0 for values of 0>=frame<=2*FrameCount.
+            SetFrameClamp(FrameCount - Math.Abs(frame - FrameCount));
+        }
+
+        /// <summary>
+        /// Sets the animation to a particular frame whilst wrapping it around the frame count range.
+        /// </summary>
+        public void SetFrameWrap(float frame)
+        {
+            // Wrap the frame around 0-FrameCount without hanging when FrameCount=0.
+            while (FrameCount > 0 && frame < 0) frame += FrameCount;
+            if (frame < 0) frame = 0;
+            frame %= FrameCount;
+            SetFrame(frame);
+        }
+
         /// <summary>
         /// Bypass the normal slow transition and jump the part immediately to this new state
         /// </summary>
         public void SetState(bool state)
         {
-            AnimationKey = state ? FrameCount : 0;
-            foreach (var matrix in MatrixIndexes)
-                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+            SetFrame(state ? FrameCount : 0);
         }
 
         /// <summary>
@@ -715,11 +751,7 @@ namespace ORTS
         /// </summary>
         public void UpdateState(bool state, ElapsedTime elapsedTime)
         {
-            AnimationKey += (state ? 1 : -1) * elapsedTime.ClockSeconds;
-            if (AnimationKey > FrameCount) AnimationKey = FrameCount;
-            if (AnimationKey < 0) AnimationKey = 0;
-            foreach (var matrix in MatrixIndexes)
-                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds);
         }
 
         /// <summary>
@@ -732,11 +764,7 @@ namespace ORTS
 
             // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
             var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 8 / 30f;
-            AnimationKey += change * frameRate;
-            while (AnimationKey > FrameCount) AnimationKey -= FrameCount;
-            while (AnimationKey < 0) AnimationKey += FrameCount;
-            foreach (var matrix in MatrixIndexes)
-                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+            SetFrameWrap(AnimationKey + change * frameRate);
         }
 
         /// <summary>
@@ -750,12 +778,9 @@ namespace ORTS
             // The speed of cycling is set at 1.5 frames of animation per second at 30 FPS.
             var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 1.5f / 30f;
             if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds < FrameCount))
-                AnimationKey += elapsedTime.ClockSeconds * frameRate;
+                SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds * frameRate);
             else
-                AnimationKey = 0;
-            while (AnimationKey > FrameCount) AnimationKey -= FrameCount;
-            foreach (var matrix in MatrixIndexes)
-                PoseableShape.AnimateMatrix(matrix, AnimationKey);
+                SetFrame(0);
         }
 
         /// <summary>

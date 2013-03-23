@@ -70,6 +70,11 @@ namespace MSTS
 				new STFReader.TokenProcessor("electrified", ()=>{ Electrified = stf.ReadBoolBlock(false); }),
                 new STFReader.TokenProcessor("overheadwireheight", ()=>{ OverheadWireHeight = stf.ReadDoubleBlock(STFReader.UNITS.None, 6.0);}),
  				new STFReader.TokenProcessor("speedlimit", ()=>{ SpeedLimit = stf.ReadDoubleBlock(STFReader.UNITS.None, 500.0); }),
+                new STFReader.TokenProcessor("defaultcrossingsms", ()=>{ DefaultCrossingSMS = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("defaultcoaltowersms", ()=>{ DefaultCoalTowerSMS = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("defaultdieseltowersms", ()=>{ DefaultDieselTowerSMS = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("defaultwatertowersms", ()=>{ DefaultWaterTowerSMS = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("defaultsignalsms", ()=>{ DefaultSignalSMS = stf.ReadStringBlock(null); }),
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -89,7 +94,12 @@ namespace MSTS
 		public bool Electrified = true;
 		public double OverheadWireHeight = 6.0;
 		public double SpeedLimit = 500.0f; //global speed limit m/s.
-	}
+        public string DefaultCrossingSMS;
+        public string DefaultCoalTowerSMS;
+        public string DefaultDieselTowerSMS;
+        public string DefaultWaterTowerSMS;
+        public string DefaultSignalSMS;
+    }
 
 
     public class RouteStart

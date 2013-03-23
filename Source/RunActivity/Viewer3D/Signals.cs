@@ -32,7 +32,7 @@ namespace ORTS
             : base(viewer, path, position, flags)
         {
 #if DEBUG_SIGNAL_SHAPES
-			Console.WriteLine("{0} signal {1}:", Location.ToString(), mstsSignal.UID);
+            Console.WriteLine("{0} signal {1}:", Location.ToString(), mstsSignal.UID);
 #endif
             UID = mstsSignal.UID;
             var signalShape = Path.GetFileName(path).ToUpper();
@@ -77,7 +77,7 @@ namespace ORTS
             for (var i = 0; i < mstsSignal.SignalUnits.Units.Length; i++)
             {
 #if DEBUG_SIGNAL_SHAPES
-				Console.Write("  UNIT {0}: TrItem={1,-5} SubObj={2,-2}", i, mstsSignal.SignalUnits.Units[i].TrItem, mstsSignal.SignalUnits.Units[i].SubObj);
+                Console.Write("  UNIT {0}: TrItem={1,-5} SubObj={2,-2}", i, mstsSignal.SignalUnits.Units[i].TrItem, mstsSignal.SignalUnits.Units[i].SubObj);
 #endif
                 // Find the simulation SignalObject for this shape.
                 var signalAndHead = viewer.Simulator.Signals.FindByTrItem(mstsSignal.SignalUnits.Units[i].TrItem);
@@ -105,7 +105,7 @@ namespace ORTS
                     Trace.TraceWarning(error.Message);
                 }
 #if DEBUG_SIGNAL_SHAPES
-				Console.WriteLine();
+                Console.WriteLine();
 #endif
             }
         }
@@ -136,7 +136,7 @@ namespace ORTS
         {
             static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
 
-			readonly Viewer3D Viewer;
+            readonly Viewer3D Viewer;
             readonly SignalShape SignalShape;
             readonly int Index;
             readonly SignalHead SignalHead;
@@ -148,12 +148,13 @@ namespace ORTS
             float SemaphoreTarget;
             float SemaphoreSpeed;
             float SemaphoreInfo;
+            AnimatedPart SemaphorePart;
             int DisplayState = -1;
 
             public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead,
                         MSTS.SignalItem mstsSignalItem, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
             {
-				Viewer = viewer;
+                Viewer = viewer;
                 SignalShape = signalShape;
                 Index = index;
                 SignalHead = signalHead;
@@ -168,12 +169,13 @@ namespace ORTS
 #if !NEW_SIGNALLING
                     throw new InvalidDataException(String.Format("Skipped {0} signal {1} unit {2} with SigSubSType {3} which is not defined in SignalTypes", signalShape.Location, signalShape.UID, index, mstsSignalSubObj.SignalSubSignalType));
 #else
-		return;
+                    return;
 #endif
 
                 var mstsSignalType = viewer.SIGCFG.SignalTypes[mstsSignalSubObj.SignalSubSignalType];
 
                 SemaphoreInfo = mstsSignalType.SemaphoreInfo;
+                SemaphorePart = new AnimatedPart(signalShape);
 
                 if (SignalTypes.ContainsKey(mstsSignalType.Name))
                     SignalTypeData = SignalTypes[mstsSignalType.Name];
@@ -182,20 +184,25 @@ namespace ORTS
 
                 if (SignalTypeData.Semaphore)
                 {
-                    var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\signal.sms";
-                    try
+                    SemaphorePart.AddMatrix(MatrixIndex);
+
+                    if (Viewer.Simulator.TRK.Tr_RouteFile.DefaultSignalSMS != null)
                     {
-                        Sound = new SoundSource(Viewer, SignalShape.Location.WorldLocation, Events.Source.MSTSSignal, soundPath);
-                        Viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(soundPath, error));
+                        var soundPath = Viewer.Simulator.RoutePath + @"\\sound\\" + Viewer.Simulator.TRK.Tr_RouteFile.DefaultSignalSMS;
+                        try
+                        {
+                            Sound = new SoundSource(Viewer, SignalShape.Location.WorldLocation, Events.Source.MSTSSignal, soundPath);
+                            Viewer.SoundProcess.AddSoundSource(this, new List<SoundSourceBase>() { Sound });
+                        }
+                        catch (Exception error)
+                        {
+                            Trace.WriteLine(new FileLoadException(soundPath, error));
+                        }
                     }
                 }
 
 #if DEBUG_SIGNAL_SHAPES
-				Console.Write("  HEAD type={0,-8} lights={1,-2}", SignalTypeData.Type, SignalTypeData.Lights.Count);
+                Console.Write("  HEAD type={0,-8} lights={1,-2} sem={2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Semaphore);
 #endif
             }
 
@@ -210,10 +217,11 @@ namespace ORTS
 
             public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, Matrix xnaTileTranslation)
             {
+                var initialise = DisplayState == -1;
                 if (DisplayState != SignalHead.draw_state)
                 {
 #if DEBUG_SIGNAL_SHAPES
-					Console.WriteLine("{5} {0} signal {1} unit {2} state: {3} --> {4}",
+                    Console.WriteLine("{5} {0} signal {1} unit {2} state: {3} --> {4}",
                         SignalShape.Location, SignalShape.UID, Index, DisplayState,
                         SignalHead.draw_state, InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
 #endif
@@ -233,15 +241,11 @@ namespace ORTS
                 if (DisplayState < 0 || !SignalTypeData.DrawAspects.ContainsKey(DisplayState))
                     return;
 
-#if !NEW_SIGNALLING
                 if (SignalTypeData.Semaphore)
-#else
-                if (SignalTypeData.Semaphore && MatrixIndex >= 0)
-#endif
                 {
                     // We reset the animation matrix before preparing the lights, because they need to be positioned
                     // based on the original matrix only.
-                    SignalShape.AnimateMatrix(MatrixIndex, 0);
+                    SemaphorePart.SetFrameWrap(0);
                 }
 
                 for (var i = 0; i < SignalTypeData.Lights.Count; i++)
@@ -254,33 +258,25 @@ namespace ORTS
                         continue;
 
                     var xnaMatrix = Matrix.Identity;
-#if !NEW_SIGNALLING
-                    Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
-#else
                     if (MatrixIndex >= 0)
                         Matrix.Multiply(ref xnaMatrix, ref SignalShape.XNAMatrices[MatrixIndex], out xnaMatrix);
-#endif
                     Matrix.Multiply(ref xnaMatrix, ref xnaTileTranslation, out xnaMatrix);
 
                     frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
                 }
 
-#if !NEW_SIGNALLING
                 if (SignalTypeData.Semaphore)
-#else
-                if (SignalTypeData.Semaphore && MatrixIndex >= 0)
-#endif
                 {
                     // Now we update and re-animate the semaphore arm.
-                    // Set arm to final position immediately if semaphoreinfo = 0
-
-                    if (SemaphoreInfo == 0)
+                    if (SemaphoreInfo == 0 || initialise)
                     {
+                        // No timing (so instant switch) or we're initialising.
                         SemaphorePos = SemaphoreTarget;
                         SemaphoreSpeed = 0;
                     }
                     else
                     {
+                        // Animate slowly to target position.
                         SemaphorePos += SemaphoreSpeed * elapsedTime.ClockSeconds;
                         if (SemaphorePos * Math.Sign(SemaphoreSpeed) > SemaphoreTarget * Math.Sign(SemaphoreSpeed))
                         {
@@ -288,7 +284,7 @@ namespace ORTS
                             SemaphoreSpeed = 0;
                         }
                     }
-                    SignalShape.AnimateMatrix(MatrixIndex, SemaphorePos);
+                    SemaphorePart.SetFrameCycle(SemaphorePos);
                 }
             }
 
