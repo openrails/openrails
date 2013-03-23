@@ -15,6 +15,10 @@ using ORTS.Common;
 
 namespace MSTS
 {
+    public class AceInfo
+    {
+        public byte AlphaBits;
+    }
     public class ACEFile
     {
         public static Texture2D Texture2DFromFile(GraphicsDevice graphicsDevice, string fileName)

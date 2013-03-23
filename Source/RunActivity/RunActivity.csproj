@@ -79,10 +79,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\PIEHidDotNet.dll</HintPath>
     </Reference>
-    <Reference Include="Reader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\Reader.dll</HintPath>
-    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -364,6 +360,15 @@
   <ItemGroup>
     <Compile Include="..\MSTS\ACEFile.cs">
       <Link>MSTS\ACEFile.cs</Link>
+    </Compile>
+    <Compile Include="..\MSTS\SFile.cs">
+      <Link>MSTS\SFile.cs</Link>
+    </Compile>
+    <Compile Include="..\MSTS\_sbr.cs">
+      <Link>MSTS\_sbr.cs</Link>
+    </Compile>
+    <Compile Include="..\MSTS\_tokenid.cs">
+      <Link>MSTS\_tokenid.cs</Link>
     </Compile>
     <Compile Include="..\ORTS\Common\BufferedInMemoryStream.cs">
       <Link>ORTS\Common\BufferedInMemoryStream.cs</Link>

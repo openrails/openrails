@@ -1172,7 +1172,7 @@ namespace MSTS
             }
             return c;
         }
-        private int PeekPastWhitespace()
+        public int PeekPastWhitespace()
         {
             int c = streamSTF.Peek();
             while (IsEof(c) || IsWhiteSpace(c)) // skip over eof and white space
@@ -1190,6 +1190,15 @@ namespace MSTS
             if (c == '\n') ++LineNumber;
             return c;
         }
+        
+        public void VerifyStartOfBlock()
+        {
+            MustMatch("(");
+        }
+
+        public bool EOF() { return PeekChar() == -1; }
+
+
         /// <summary>This is really a local variable in the function ReadItem(...) but it is a class member to stop unnecessary memory re-allocations.
         /// </summary>
         private StringBuilder itemBuilder = new StringBuilder(256);
