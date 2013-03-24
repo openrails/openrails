@@ -161,6 +161,8 @@ namespace ORTS
                         File.AppendAllText(@"C:\temp\SignalObjects.txt", "Type                : " + thisHead.signalType.FnType.ToString() + "\n");
                         File.AppendAllText(@"C:\temp\SignalObjects.txt", "item Index          : " + thisHead.trItemIndex.ToString() + "\n");
                         File.AppendAllText(@"C:\temp\SignalObjects.txt", "TDB  Index          : " + thisHead.TDBIndex.ToString() + "\n");
+                        File.AppendAllText(@"C:\temp\SignalObjects.txt", "Junction Main Node  : " + thisHead.JunctionMainNode.ToString() + "\n");
+                        File.AppendAllText(@"C:\temp\SignalObjects.txt", "Junction Path       : " + thisHead.JunctionPath.ToString() + "\n");
                     }
 
                     File.AppendAllText(@"C:\temp\SignalObjects.txt", "TC Reference   : " + singleSignal.TCReference.ToString() + "\n");
@@ -2869,13 +2871,12 @@ namespace ORTS
             Train.TCRouteElement thisElement = null;
             TrackCircuitSection thisSection = null;
 
+            List <int> sectionsInRoute = new List<int>();
+
             float clearedDistanceM = 0.0f;
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
 
             int routeIndex = -1;
-//            int routeIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
-//            thisElement = routePart[routeIndex];
-//            sectionIndex = thisElement.TCSectionIndex;
             float maxDistance = Math.Max(thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
 
             int lastReserved = thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex];
@@ -2885,6 +2886,16 @@ namespace ORTS
 
             Train.TCSubpathRoute thisRoute = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex];
             Train.TCPosition thisPosition = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex];
+
+            // for loop detection, set occupied sections in sectionsInRoute list - but remove present position
+
+            foreach (TrackCircuitSection occSection in thisTrain.Train.OccupiedTrack)
+            {
+                sectionsInRoute.Add(occSection.Index);
+            }
+            sectionsInRoute.Remove(thisPosition.TCSectionIndex);
+
+            // check if last reserved on present route
 
             if (lastReserved > 0)
             {
@@ -2947,6 +2958,13 @@ namespace ORTS
                     }
 
                 }
+                else
+                {
+                    for (int iIndex = thisPosition.RouteListIndex + 1; iIndex < routeIndex; iIndex++)
+                    {
+                        sectionsInRoute.Add(thisRoute[iIndex].TCSectionIndex);
+                    }
+                }
             }
             else
             {
@@ -2954,11 +2972,43 @@ namespace ORTS
             }
 
             if (routeIndex < 0) return;//by JTang
+            
             int lastRouteIndex = routeIndex;
             float offset = 0.0f;
             if (routeIndex == thisPosition.RouteListIndex)
             {
                 offset = thisPosition.TCOffset;
+            }
+
+            // if authority type is loop and loop section is still occupied by train, no need for any checks
+
+            if (thisTrain.Train.LoopSection >= 0)
+            {
+                thisSection = TrackCircuitList[thisTrain.Train.LoopSection];
+                if (thisSection.CircuitState.ThisTrainOccupying(thisTrain.Train) || 
+                    (thisSection.CircuitState.TrainReserved != null && thisSection.CircuitState.TrainReserved.Train == thisTrain.Train))
+                {
+                    furthestRouteCleared = true;
+                    endAuthority = Train.END_AUTHORITY.LOOP;
+                }
+                else
+                {
+                    // update trains ValidRoute to avoid continuation at wrong entry
+                    int rearIndex = thisTrain.Train.PresentPosition[1].RouteListIndex;
+                    int nextIndex = routePart.GetRouteIndex(thisTrain.Train.LoopSection, rearIndex);
+                    int firstIndex = routePart.GetRouteIndex(thisTrain.Train.LoopSection, 0);
+
+                    if (firstIndex != nextIndex)
+                    {
+                        for (int iIndex = 0; iIndex <= firstIndex; iIndex++)
+                        {
+                            thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][iIndex].TCSectionIndex = -1; // invalidate route upto loop point
+                        }
+                        routePart = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex];
+                    }
+                 
+                    thisTrain.Train.LoopSection = -1;
+                }
             }
 
             // try to clear further ahead if required
@@ -3017,10 +3067,28 @@ namespace ORTS
                     sectionIndex = thisElement.TCSectionIndex;
                     thisSection = TrackCircuitList[sectionIndex];
 
-                    if (thisSection.IsAvailable(thisTrain))
+                    // check if section is in loop
+
+                    if (sectionsInRoute.Contains(thisSection.Index))
+                    {
+                        endAuthority = Train.END_AUTHORITY.LOOP;
+                        thisTrain.Train.LoopSection = thisSection.Index;
+                        routeAvailable = false;
+
+                        if (thisTrain.Train.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt",
+                                    "Section looped \n");
+                        }
+                    }
+
+                    // check if section is available
+
+                    else if (thisSection.IsAvailable(thisTrain))
                     {
                         lastReserved = thisSection.Index;
                         lastRouteIndex = routeIndex;
+                        sectionsInRoute.Add(thisSection.Index);
                         clearedDistanceM += thisSection.Length - offset;
                         if (thisTrain.Train.CheckTrain)
                         {
@@ -3071,9 +3139,9 @@ namespace ORTS
                 }
             }
 
-            // if not cleared to max distance, determine reason
+            // if not cleared to max distance or looped, determine reason
 
-            if (!furthestRouteCleared && lastRouteIndex > 0)
+            if (!furthestRouteCleared && lastRouteIndex > 0 && endAuthority != Train.END_AUTHORITY.LOOP)
             {
 
                 thisElement = routePart[lastRouteIndex];
@@ -3141,9 +3209,9 @@ namespace ORTS
 
             // check if next section is occupied by stationary train or train moving in similar direction
             // if so calculate distance to end of train
-            // only allowed for NORMAL sections
+            // only allowed for NORMAL sections and if not looped
 
-            if (!furthestRouteCleared && lastRouteIndex < (routePart.Count - 1))
+            if (!furthestRouteCleared && lastRouteIndex < (routePart.Count - 1) && endAuthority != Train.END_AUTHORITY.LOOP)
             {
                 Train.TCRouteElement nextElement = routePart[lastRouteIndex + 1];
                 int reqDirection = nextElement.Direction;
@@ -3191,6 +3259,11 @@ namespace ORTS
                     endAuthority = Train.END_AUTHORITY.END_OF_AUTHORITY;
                     furthestRouteCleared = true;
                 }
+            }
+
+            if (routeIndex >= routePart.Count)
+            {
+                endAuthority = Train.END_AUTHORITY.END_OF_AUTHORITY;
             }
 
             // update train details
@@ -8132,20 +8205,32 @@ namespace ORTS
             }
 
             // copy sections upto next normal signal
+            // check for loop
+
 
             if (procstate == 0)
             {
+                List<int> sectionsInRoute = new List<int>();
+
                 for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
                 {
                     Train.TCRouteElement thisElement = RoutePart[iNode];
-                    signalRoute.Add(thisElement);
-
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-
-                    if (thisSection.EndSignals[thisElement.Direction] != null)
+                    if (sectionsInRoute.Contains(thisElement.TCSectionIndex))
                     {
-                        foundLastSection = iNode;
-                        nextSignal = thisSection.EndSignals[thisElement.Direction];
+                        foundLastSection = iNode;  // loop
+                    }
+                    else
+                    {
+                        signalRoute.Add(thisElement);
+                        sectionsInRoute.Add(thisElement.TCSectionIndex);
+
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+
+                        if (thisSection.EndSignals[thisElement.Direction] != null)
+                        {
+                            foundLastSection = iNode;
+                            nextSignal = thisSection.EndSignals[thisElement.Direction];
+                        }
                     }
                 }
             }
@@ -9211,9 +9296,13 @@ namespace ORTS
         //  
         //
 
-        public SIGASP dist_multi_sig_mr(SIGFN sigFN1, SIGFN sigFN2)
+        public SIGASP dist_multi_sig_mr(SIGFN sigFN1, SIGFN sigFN2, string dumpfile)
         {
             SIGASP foundState = SIGASP.CLEAR_2;
+            bool foundValid = false;
+
+            if (dumpfile.Length > 1)
+                File.AppendAllText(dumpfile, "DIST_MULTI_SIG_MR for " + sigFN1.ToString() + " + upto " + sigFN2.ToString() + "\n");
 
             int sig2Index = mainSignal.sigfound[(int)sigFN2];
             if (sig2Index < 0)           // try renewed search with full route
@@ -9222,26 +9311,34 @@ namespace ORTS
                 mainSignal.sigfound[(int)sigFN2] = sig2Index;
             }
 
-            if (sig2Index < 0)
+            if (dumpfile.Length > 1)
             {
-                return (SIGASP.STOP);    // no signal of type 2 available
+                if (sig2Index < 0)
+                    File.AppendAllText(dumpfile, "  no signal type 2 found\n");
             }
 
+            if (dumpfile.Length > 1)
+                File.AppendAllText(dumpfile, "  signal type 2 : " + mainSignal.sigfound[(int)sigFN2].ToString() + "\n");
             SignalObject thisSignal = mainSignal;
 
             while (thisSignal.sigfound[(int)sigFN1] >= 0)
             {
+                foundValid = true;
                 thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[(int)sigFN1]];
-                if (thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
-                {
-                    return (foundState);
-                }
 
                 SIGASP thisState = thisSignal.this_sig_mr(sigFN1);
                 foundState = foundState < thisState ? foundState : thisState;
+
+                if (dumpfile.Length > 1)
+                    File.AppendAllText(dumpfile, "  signal type 1 : " + thisSignal.thisRef.ToString() + " = " + thisState.ToString() + "\n");
+
+                if (sig2Index >= 0 && thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
+                {
+                    return (foundState);
+                }
             }
 
-            return (SIGASP.STOP);   // running out of signals before finding type 2
+            return (foundValid ? foundState : SIGASP.STOP);   // no type 2 or running out of signals before finding type 2
         }
 
         //================================================================================================//

@@ -191,7 +191,7 @@ namespace ORTS
 
 
 #if DEBUG_PRINT_PROCESS
-            TDB_debug_ref = new int[8] { 3253,3254,3255,3256,3257,3258,3259,3260 };   /* signal tdb ref.no selected for print-out */
+            TDB_debug_ref = new int[3] { 993, 986, 3674 };   /* signal tdb ref.no selected for print-out */
 #endif
 
 #if DEBUG_PRINT_IN
@@ -3342,9 +3342,26 @@ namespace ORTS
 
                 case (SCRExternalFunctions.DIST_MULTI_SIG_MR):
 
+                    String dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc,"printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc,"printproc.txt");
+                    }
+#endif
+
                     return_value = (int)thisHead.dist_multi_sig_mr(
                             (SignalHead.SIGFN)parameter1_value,
-                            (SignalHead.SIGFN)parameter2_value);
+                            (SignalHead.SIGFN)parameter2_value,
+                            dumpfile);
 
                     break;
 

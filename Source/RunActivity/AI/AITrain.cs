@@ -675,7 +675,7 @@ namespace ORTS
                     MovementState = AI_MOVEMENT_STATE.FOLLOWING;  // start following
                 }
             }
-            else if (EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH)
+            else if (EndAuthorityType[0] == END_AUTHORITY.RESERVED_SWITCH || EndAuthorityType[0] == END_AUTHORITY.LOOP)
             {
                 ResetActions(true);
                 NextStopDistanceM = DistanceToEndNodeAuthorityM[0] - 2.0f * junctionOverlapM;

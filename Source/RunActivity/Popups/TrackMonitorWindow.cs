@@ -57,6 +57,7 @@ namespace ORTS.Popups
 			{ Train.END_AUTHORITY.END_OF_TRACK, "End Trck" },
 			{ Train.END_AUTHORITY.END_OF_PATH, "End Path" },
 			{ Train.END_AUTHORITY.RESERVED_SWITCH, "Switch" },
+            { Train.END_AUTHORITY.LOOP, "Loop" },
 			{ Train.END_AUTHORITY.TRAIN_AHEAD, "TrainAhd" },
 			{ Train.END_AUTHORITY.MAX_DISTANCE, "Max Dist" },
 			{ Train.END_AUTHORITY.NO_PATH_RESERVED, "No Path" },
@@ -630,7 +631,8 @@ namespace ORTS.Popups
             if (thisItem.AuthorityType == Train.END_AUTHORITY.END_OF_AUTHORITY ||
                 thisItem.AuthorityType == Train.END_AUTHORITY.END_OF_PATH ||
                 thisItem.AuthorityType == Train.END_AUTHORITY.END_OF_TRACK ||
-                thisItem.AuthorityType == Train.END_AUTHORITY.RESERVED_SWITCH)
+                thisItem.AuthorityType == Train.END_AUTHORITY.RESERVED_SWITCH ||
+                thisItem.AuthorityType == Train.END_AUTHORITY.LOOP)
             {
                 displayItem = endAuthorityMarker;
                 displayRequired = true;

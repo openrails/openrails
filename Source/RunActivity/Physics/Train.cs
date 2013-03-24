@@ -189,6 +189,7 @@ namespace ORTS
             RESERVED_SWITCH,
             TRAIN_AHEAD,
             MAX_DISTANCE,
+            LOOP,
             SIGNAL,                                       // in Manual mode only
             END_OF_AUTHORITY,                             // when moving backward in Auto mode
             NO_PATH_RESERVED
@@ -198,6 +199,7 @@ namespace ORTS
 
         public int[] LastReservedSection = new int[2] { -1, -1 };         // index of furthest cleared section (for NODE control)
         public float[] DistanceToEndNodeAuthorityM = new float[2];      // distance to end of authority
+        public int LoopSection = -1;                                    // section where route loops back onto itself
 
         // Deadlock Info : 
         // list of sections where deadlock begins
@@ -458,6 +460,7 @@ namespace ORTS
             EndAuthorityType[1] = (END_AUTHORITY)inf.ReadInt32();
             LastReservedSection[0] = inf.ReadInt32();
             LastReservedSection[1] = inf.ReadInt32();
+            LoopSection = inf.ReadInt32();
             DistanceToEndNodeAuthorityM[0] = inf.ReadSingle();
             DistanceToEndNodeAuthorityM[1] = inf.ReadSingle();
 
@@ -711,6 +714,7 @@ namespace ORTS
             outf.Write((int)EndAuthorityType[1]);
             outf.Write(LastReservedSection[0]);
             outf.Write(LastReservedSection[1]);
+            outf.Write(LoopSection);
             outf.Write(DistanceToEndNodeAuthorityM[0]);
             outf.Write(DistanceToEndNodeAuthorityM[1]);
 
@@ -1455,8 +1459,21 @@ namespace ORTS
 
                 while (firstObject.distance_to_train < 0.0f && SignalObjectItems.Count > 0)
                 {
+#if DEBUG_REPORTS
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Passed Signal : " + firstObject.ObjectDetails.thisRef.ToString() +
+                            " with speed : " + firstObject.actual_speed.ToString() + "\n");
+#endif
                     if (firstObject.actual_speed > 0)
                     {
+#if DEBUG_REPORTS
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Passed speedpost : " + firstObject.ObjectDetails.thisRef.ToString() +
+                            " = " + firstObject.actual_speed.ToString()+"\n");
+
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Present Limits : " +
+                            "Limit : "+allowedMaxSpeedLimitMpS.ToString() + " ; " +
+                            "Signal : "+allowedMaxSpeedSignalMpS.ToString() + " ; " +
+                            "Overall : "+AllowedMaxSpeedMpS.ToString() + "\n");
+#endif
                         if (firstObject.actual_speed <= AllowedMaxSpeedMpS)
                         {
                             AllowedMaxSpeedMpS = firstObject.actual_speed;
@@ -1822,7 +1839,18 @@ namespace ORTS
                         validSpeedSignalMpS = actualSpeedMpS;
                         if (validSpeedSignalMpS > validSpeedLimitMpS)
                         {
-                            actualSpeedMpS = -1;
+                            if (validSpeedMpS < validSpeedLimitMpS)
+                            {
+                                actualSpeedMpS = validSpeedLimitMpS;
+                            }
+                            else
+                            {
+                                actualSpeedMpS = -1;
+                            }
+#if DEBUG_REPORTS
+                            File.AppendAllText(@"C:\temp\printproc.txt", "Speed reset : Signal : " + thisObject.ObjectDetails.thisRef.ToString() +
+                                " : " + validSpeedSignalMpS.ToString() + " ; Limit : " + validSpeedLimitMpS.ToString() + "\n");
+#endif
                         }
                     }
                     else
@@ -6571,6 +6599,13 @@ namespace ORTS
                 AllowedMaxSpeedMpS = speedInfo.MaxSpeedMpSLimit;
             }
 
+#if DEBUG_REPORTS
+                         File.AppendAllText(@"C:\temp\printproc.txt", "Validated speedlimit : " +
+                            "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
+                            "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
+                            "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
+
+#endif
             if (TrainType == TRAINTYPE.PLAYER && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
             {
                 String message = "Allowed speed raised to " + FormatStrings.FormatSpeed(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric);
@@ -8018,6 +8053,9 @@ namespace ORTS
                     case END_AUTHORITY.RESERVED_SWITCH:
                         statusString[iColumn] = "RSW";
                         break;
+                    case END_AUTHORITY.LOOP:
+                        statusString[iColumn] = "LP ";
+                        break;
                     case END_AUTHORITY.TRAIN_AHEAD:
                         statusString[iColumn] = "TAH";
                         break;
@@ -9176,7 +9214,7 @@ namespace ORTS
                         {
                             TCRouteElement thisElement =
                                 new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                            thisSubpath.Add(thisElement);
+                            if (thisSubpath[thisSubpath.Count-1].TCSectionIndex != thisElement.TCSectionIndex) thisSubpath.Add(thisElement); // only add if not yet set
                         }
                     }
                 }
@@ -9188,7 +9226,7 @@ namespace ORTS
                         {
                             TCRouteElement thisElement =
                             new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                            thisSubpath.Add(thisElement);
+                            if (thisSubpath[thisSubpath.Count - 1].TCSectionIndex != thisElement.TCSectionIndex) thisSubpath.Add(thisElement); // only add if not yet set
                         }
                     }
                 }
