@@ -261,7 +261,7 @@ namespace ORTS
         public static float ViewingDistance = 3000;  // TODO, this is awkward, viewer must set this to control fog
 
         internal Vector3 sunDirection;
-        int lastLightState = 0;
+        bool lastLightState;
 		double fadeStartTimer = 0;
 		float fadeDuration = -1;
 		internal void UpdateShaders()
@@ -275,28 +275,26 @@ namespace ORTS
                 && Viewer.PlayerLocomotiveViewer.lightDrawer.HasLightCone)
             {
                 var lightDrawer = Viewer.PlayerLocomotiveViewer.lightDrawer;
-                var currentLightState = Viewer.PlayerLocomotive.Headlight;
-                if (currentLightState != lastLightState)
+                var lightState = lightDrawer.IsLightConeActive;
+                if (lightState != lastLightState)
                 {
-                    if (currentLightState > lastLightState)
+                    if (lightDrawer.LightConeFadeIn > 0)
                     {
-                        if (lightDrawer.LightConeFadeIn > 0)
-                        {
-                            fadeStartTimer = Viewer.Simulator.GameTime;
-                            fadeDuration = lightDrawer.LightConeFadeIn;
-                        }
+                        fadeStartTimer = Viewer.Simulator.GameTime;
+                        fadeDuration = lightDrawer.LightConeFadeIn;
                     }
-                    else
+                    else if (lightDrawer.LightConeFadeOut > 0)
                     {
-                        if (lightDrawer.LightConeFadeOut > 0)
-                        {
-                            fadeStartTimer = Viewer.Simulator.GameTime;
-                            fadeDuration = -lightDrawer.LightConeFadeOut;
-                        }
+                        fadeStartTimer = Viewer.Simulator.GameTime;
+                        fadeDuration = -lightDrawer.LightConeFadeOut;
                     }
-                    lastLightState = currentLightState;
+                    lastLightState = lightState;
                 }
-                if (currentLightState == 0 && lightDrawer.LightConeFadeOut == 0)
+                else if (!lastLightState && fadeDuration < 0 && Viewer.Simulator.GameTime > fadeStartTimer - fadeDuration)
+                {
+                    fadeDuration = 0;
+                }
+                if (!lightState && fadeDuration == 0)
                     // This occurs when switching locos and needs to be handled or we get lingering light.
                     SceneryShader.SetHeadlightOff();
                 else

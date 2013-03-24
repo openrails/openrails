@@ -225,6 +225,7 @@ namespace ORTS
         public bool CarInService;
         public bool IsDay;
         public WeatherType Weather;
+        public bool IsLightConeActive { get { return ActiveLightCone != null; } }
         List<LightMesh> LightMeshes = new List<LightMesh>();
 
         LightConeMesh ActiveLightCone;
