@@ -1055,7 +1055,8 @@ namespace ORTS
 
             if (FreightShape != null)
             {
-                FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimHeight;
+                if (FreightShape.XNAMatrices.Length > 0)
+                    FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimHeight;
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
 
