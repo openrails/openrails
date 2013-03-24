@@ -181,7 +181,7 @@ namespace ORTS
                 VoltageV = VoltageFilter.Filter(0.0f, elapsedClockSeconds);
 
             base.Update(elapsedClockSeconds);
-            Variable2 = Variable1;
+            Variable2 = Variable1 * 100F ;
         }
 
         /// <summary>

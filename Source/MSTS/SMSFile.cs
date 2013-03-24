@@ -201,18 +201,12 @@ namespace MSTS
                     for (int i = 0; i < count; ++i)
                     {
                         CurvePoints[i].X = stf.ReadFloat(STFReader.UNITS.None, null);
+                        if (Control == Controls.DistanceControlled) CurvePoints[i].X *= CurvePoints[i].X;
                         CurvePoints[i].Y = stf.ReadFloat(STFReader.UNITS.None, null);
                     }
                     stf.SkipRestOfBlock();
                 }),
             });
-            if (Control == Controls.Variable2Controlled && CurvePoints[CurvePoints.Length - 1].X <= 1)
-            {
-                for (int i = 0; i < CurvePoints.Length; i++)
-                {
-                    CurvePoints[i].X *= 100f;
-                }
-            }
         }
     }
 
@@ -324,12 +318,24 @@ namespace MSTS
 
             string eventString = f.ReadString();
 
+            Threshold = f.ReadFloat(STFReader.UNITS.None, null);
+
             switch (eventString.ToLower())
             {
                 case "speed_inc_past": Event = Events.Speed_Inc_Past; break;
                 case "speed_dec_past": Event = Events.Speed_Dec_Past; break;
-                case "distance_inc_past": Event = Events.Distance_Inc_Past; break;
-                case "distance_dec_past": Event = Events.Distance_Dec_Past; break;
+                case "distance_inc_past":
+                    {
+                        Event = Events.Distance_Inc_Past;
+                        Threshold = Threshold * Threshold;
+                        break;
+                    }
+                case "distance_dec_past":
+                    {
+                        Event = Events.Distance_Dec_Past;
+                        Threshold = Threshold * Threshold;
+                        break;
+                    }
                 case "variable1_inc_past": Event = Events.Variable1_Inc_Past; break;
                 case "variable1_dec_past": Event = Events.Variable1_Dec_Past; break;
                 case "variable2_inc_past": Event = Events.Variable2_Inc_Past; break;
@@ -338,7 +344,7 @@ namespace MSTS
                 case "variable3_dec_past": Event = Events.Variable3_Dec_Past; break;
             }
 
-            Threshold = f.ReadFloat(STFReader.UNITS.None, null);
+           
 
             while (!f.EndOfBlock())
                 ParsePlayCommand(f, f.ReadString().ToLower());

@@ -878,10 +878,10 @@ namespace ORTS
         {
             switch (control)
             {
-                case MSTS.VolumeCurve.Controls.DistanceControlled: return car.DistanceM;
+                case MSTS.VolumeCurve.Controls.DistanceControlled: return WorldLocation.GetDistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation);
                 case MSTS.VolumeCurve.Controls.SpeedControlled: return Math.Abs(car.SpeedMpS);
                 case MSTS.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
-                case MSTS.VolumeCurve.Controls.Variable2Controlled: return car.Variable2 * 100F;
+                case MSTS.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
                 case MSTS.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
                 default: return 0;
             }
@@ -1167,7 +1167,6 @@ namespace ORTS
             float newValue = ReadValue();
             bool triggered = false;
             Signaled = false;
-
             switch (SMS.Event)
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
@@ -1195,13 +1194,13 @@ namespace ORTS
             }
         } // TryTrigger
 
-        private float ReadValue()
+        private float ReadValue()		
         {
             switch (SMS.Event)
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    return WorldLocation.GetDistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
+                    return WorldLocation.GetDistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.CameraWorldLocation);
                 default:
                     return 100000;
             }
@@ -1315,7 +1314,7 @@ namespace ORTS
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    return car.DistanceM;
+                    return  WorldLocation.GetDistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.CameraWorldLocation);
                 case MSTS.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Speed_Inc_Past:
                     return Math.Abs(car.SpeedMpS);
