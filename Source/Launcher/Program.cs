@@ -77,7 +77,6 @@ namespace ORTS
 				"ICSharpCode.SharpZipLib.dll",
 				"wrap_oal.dll",
 				"PIEHidDotNet.dll",
-				"Reader.dll",
 				// Programs:
 				"Menu.exe",
 				"RunActivity.exe",
