@@ -94,6 +94,7 @@ namespace ORTS
             checkBoxBINSound.Checked = Settings.MSTSBINSound;
             checkBoxSuppressConfirmations.Checked = Settings.SuppressConfirmations;
             checkDispatcher.Checked = Settings.ViewDispatcher;
+            numericUpDownFOV.Value = Settings.ViewingFOV;
             numericCab2DStretch.Value = Settings.Cab2DStretch;
             checkBoxAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             checkBoxBreakCouplers.Checked = Settings.BreakCouplers;
@@ -303,6 +304,7 @@ namespace ORTS
             Settings.MSTSBINSound = checkBoxBINSound.Checked;
             Settings.SuppressConfirmations = checkBoxSuppressConfirmations.Checked;
             Settings.ViewDispatcher = checkDispatcher.Checked;
+            Settings.ViewingFOV = (int)numericUpDownFOV.Value;
             Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
             Settings.UseAdvancedAdhesion = checkBoxAdvancedAdhesion.Checked;
             Settings.BreakCouplers = checkBoxBreakCouplers.Checked;
@@ -359,6 +361,11 @@ namespace ORTS
             double aspectRatio = width / height;
             bool wideScreen = aspectRatio > (4.0 / 3.0); 
             numericCab2DStretch.Enabled = wideScreen;
+        }
+
+        private void numericUpDownFOV_ValueChanged(object sender, EventArgs e)
+        {
+            labelFOVHelp.Text = String.Format("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericUpDownFOV.Value, numericUpDownFOV.Value * 4 / 3, numericUpDownFOV.Value * 16 / 9);
         }
     }
 }
