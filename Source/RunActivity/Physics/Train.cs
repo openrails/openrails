@@ -4107,9 +4107,7 @@ namespace ORTS
                 clearedSections.Add(OccupiedTrack[iindex]);
             }
 
-            OccupiedTrack.Clear();
-
-            // set all sections occupied
+            // first, check for misaligned switch
 
             foreach (TCRouteElement thisElement in TrainRoute)
             {
@@ -4135,6 +4133,15 @@ namespace ORTS
                     // exit, as routine has called itself
                     return;
                 }
+            }
+
+            // if all is well, set track occupied
+
+            OccupiedTrack.Clear();
+
+            foreach (TCRouteElement thisElement in TrainRoute)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
 
                 if (clearedSections.Contains(thisSection))
                 {
@@ -5141,9 +5148,7 @@ namespace ORTS
                 clearedSections.Add(OccupiedTrack[iindex]);
             }
 
-            OccupiedTrack.Clear();
-
-            // set all sections occupied
+            // first check for misaligned switch
 
             foreach (TCRouteElement thisElement in TrainRoute)
             {
@@ -5166,6 +5171,15 @@ namespace ORTS
                     // exit, as routine has called itself
                     return;
                 }
+            }
+
+            // if all is well, set tracks to occupied
+
+            OccupiedTrack.Clear();
+
+            foreach (TCRouteElement thisElement in TrainRoute)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
 
                 if (clearedSections.Contains(thisSection))
                 {
