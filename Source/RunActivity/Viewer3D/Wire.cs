@@ -402,8 +402,9 @@ namespace ORTS
             pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
             pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -1f, 0f, 0f, u1, v1));
             lodItem.Polylines.Add(pl); 
-            lodItem.Accum(pl.Vertices.Count); 
+            lodItem.Accum(pl.Vertices.Count);
 
+            /* REMOVED CATENARY TO BETTER MATCH MSTS APPEARANCE 
             pl = new Polyline(this, "TopWire1", 5);
             pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
             topHeight += 1.0f;
@@ -427,6 +428,8 @@ namespace ORTS
             lodItem.VerticalPolylines = new ArrayList(); 
             lodItem.VerticalPolylines.Add(vertical); 
             lodItem.VerticalAccum(vertical.Vertices.Count); 
+            */
+
 
             lod.LODItems.Add(lodItem); // Append to LODItems array 
             base.LODs.Add(lod); // Append this lod to LODs array

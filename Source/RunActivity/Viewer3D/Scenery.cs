@@ -239,7 +239,10 @@ namespace ORTS
                             else sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
 
                         }
-                        if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
+                        if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true
+                            && worldObject.StaticDetailLevel != 2   // Make it compatible with routes that use 'HideWire', a workaround for MSTS that 
+                            && worldObject.StaticDetailLevel != 3   // allowed a mix of electrified and non electrified track see http://msts.steam4me.net/tutorials/hidewire.html
+                            )
                         {
                             int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
                             //if cannot draw wire, try to see if it is converted. modified for DynaTrax
