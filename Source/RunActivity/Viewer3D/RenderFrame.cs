@@ -304,18 +304,27 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            var blended = material.GetBlending();
-            var sortingMaterial = blended ? DummyBlendedMaterial : material;
-            var sequence = RenderItems[(int)GetRenderSequence(group, blended)];
-
             List<RenderItem> items;
-            if (!sequence.TryGetValue(sortingMaterial, out items))
-            {
-                items = new List<RenderItem>();
-                sequence.Add(sortingMaterial, items);
-            }
-            items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            bool[] blending;
 
+            bool getBlending = material.GetBlending();
+            if (getBlending && material is SceneryMaterial)
+                blending = new bool[] { true, false }; // Search for opaque pixels in alpha blended primitives, thus maintaining correct DepthBuffer
+            else
+                blending = new bool[] {getBlending};
+
+            foreach (bool blended in blending)
+            {
+                var sortingMaterial = blended ? DummyBlendedMaterial : material;
+                var sequence = RenderItems[(int)GetRenderSequence(group, blended)];
+
+                if (!sequence.TryGetValue(sortingMaterial, out items))
+                {
+                    items = new List<RenderItem>();
+                    sequence.Add(sortingMaterial, items);
+                }
+                items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            }
             if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
                 primitive.ZBias = 1;
         }

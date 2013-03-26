@@ -543,37 +543,58 @@ namespace ORTS
 
             // Set up for alpha blending and alpha test 
 
-            if ((Options & SceneryMaterialOptions.AlphaTest) != 0)
-            {
-                // Transparency testing is enabled
-                rs.AlphaTestEnable = true;
-                rs.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha > reference, then skip processing this pixel
-                rs.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
-            }
-            else
-            {
-                rs.AlphaTestEnable = false;
-            }
-
             if ( GetBlending() )
             {
                 // Skip blend for near transparent alpha's (eliminates sorting issues for many simple alpha'd textures )
                 rs.AlphaTestEnable = true;
                 rs.AlphaFunction = CompareFunction.GreaterEqual;
-                rs.ReferenceAlpha = 10;  // ie default lightcone's are 9 in full transparent areas
+                if (previousMaterial == null  // Search for opaque pixels in alpha blended polygons
+                    && (Options & SceneryMaterialOptions.AlphaBlendingMask) != SceneryMaterialOptions.AlphaBlendingAdd)
+                {
+                    rs.AlphaBlendEnable = false;
+                    rs.ReferenceAlpha = 250;
+                    rs.DepthBufferWriteEnable = true;
+                    rs.DepthBufferFunction = CompareFunction.LessEqual;
+                }
+                else // Alpha blended pixels only
+                {
+                    rs.ReferenceAlpha = 10;  // ie default lightcone's are 9 in full transparent areas
 
-                // Set up for blending
-                rs.AlphaBlendEnable = true;
-                rs.SourceBlend = Blend.SourceAlpha;
-                rs.DestinationBlend = (Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend ? Blend.InverseSourceAlpha : Blend.One;
+                    // Set up for blending
+                    rs.AlphaBlendEnable = true;
+                    rs.DepthBufferWriteEnable = false;
+                    rs.SourceBlend = Blend.SourceAlpha;
+                    if ((Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend)
+                    {
+                        rs.DestinationBlend = Blend.InverseSourceAlpha; // AlphaBlend
+                        rs.DepthBufferFunction = CompareFunction.Less; // To avoid processing already drawn opaque pixels
+                    }
+                    else
+                    {
+                        rs.DestinationBlend = Blend.One; // Additive
+                        rs.DepthBufferFunction = CompareFunction.LessEqual;
+                    }
+                    rs.DestinationBlend = (Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend ? Blend.InverseSourceAlpha : Blend.One;
 
-                rs.SeparateAlphaBlendEnabled = true;
-                rs.AlphaSourceBlend = Blend.Zero;
-                rs.AlphaDestinationBlend = Blend.One;
+                    rs.SeparateAlphaBlendEnabled = true;
+                    rs.AlphaSourceBlend = Blend.Zero;
+                    rs.AlphaDestinationBlend = Blend.One;
+                }
             }
             else
             {
                 rs.AlphaBlendEnable = false;
+                if ((Options & SceneryMaterialOptions.AlphaTest) != 0)
+                {
+                    // Transparency testing is enabled
+                    rs.AlphaTestEnable = true;
+                    rs.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha < reference, then skip processing this pixel
+                    rs.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+                }
+                else
+                {
+                    rs.AlphaTestEnable = false;
+                }
             }
 
 
@@ -674,6 +695,7 @@ namespace ORTS
             rs.DestinationBlend = Blend.Zero;
             rs.ReferenceAlpha = 0;
             rs.SourceBlend = Blend.One;
+            rs.DepthBufferWriteEnable = true;
 		}
 
         /// <summary>
