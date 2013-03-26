@@ -644,7 +644,7 @@ namespace MSTS
          */
         public int iImage;
         public int FilterMode;
-        public int MipMapLODBias;
+        public float MipMapLODBias;
         public UInt32 BorderColor = 0;
 
         public texture(SBR block)
@@ -652,7 +652,7 @@ namespace MSTS
             block.VerifyID(TokenID.texture);
             iImage = block.ReadInt();
             FilterMode = block.ReadInt();
-            MipMapLODBias = block.ReadInt();
+            MipMapLODBias = block.ReadFloat();
             if( !block.EndOfBlock() )
                 BorderColor = block.ReadFlags(); 
             block.VerifyEndOfBlock();

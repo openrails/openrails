@@ -170,7 +170,7 @@ namespace MSTS
         /// <para>false - if Tree is not used which signicantly reduces GC</para></param>
         public STFReader(Stream inputStream, string fileName, Encoding encoding, bool useTree)
         {
-            Debug.Assert(inputStream.CanSeek);
+            // TODO RESTORE Debug.Assert(inputStream.CanSeek);
             FileName = fileName;
             streamSTF = new StreamReader(inputStream , encoding);
             LineNumber = 1;
@@ -1162,15 +1162,7 @@ namespace MSTS
         private static bool IsEof(int c) { return c == -1; }
         private int PeekChar()
         {
-            int c = streamSTF.Peek();
-            if (IsEof(c))
-            {
-                // I've seen a problem with compressed input streams with a false -1 on peek
-                c = streamSTF.Read();
-                if (c != -1)
-                    throw new InvalidDataException("Problem peeking eof in compressed file.");
-            }
-            return c;
+            return streamSTF.Peek();
         }
         public int PeekPastWhitespace()
         {
