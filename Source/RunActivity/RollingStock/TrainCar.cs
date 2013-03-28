@@ -534,6 +534,8 @@ namespace ORTS
         public float sx=0.0f, sy=0.0f, sz=0.0f, prevElev, prevTilted;//time series from 0-3.14
         public float currentStiffness = 1.0f;
         public double lastTime = -1.0;
+        public Matrix prevMatrix = Matrix.Identity;
+        public float prevMax = -1f;
 
         public void SuperElevation(float speed, int superEV, Traveller traveler)
         {
@@ -577,6 +579,8 @@ namespace ORTS
             else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
             max *= Program.Simulator.CarVibrating/500f;//user may want more vibration (by Ctrl-V)
 
+            max = ComputeMaxTilting(timeInterval, max);//add a damping, also based on accelaration
+            prevMax = max;
             //small vibration (rotation to add on x,y,z axis)
             var sx1 = (float)Math.Sin(sx) * max; var sy1 = (float)Math.Sin(sy) * max; var sz1 = (float)Math.Sin(sz) * max;
 
@@ -599,6 +603,28 @@ namespace ORTS
                 SuperElevationMatrix = Matrix.Invert(SuperElevationMatrix);
             }
             catch { SuperElevationMatrix = Matrix.Identity; }
+        }
+
+        public Matrix prev2Matrix = Matrix.Identity;
+        public float accumedAcceTime = 4f;
+        public float ComputeMaxTilting(float interval, float max)
+        {
+            float maxV = 0f;
+            var oldLoco1 = prevMatrix.Translation; var oldLoco2 = prev2Matrix.Translation; var newLoco = WorldPosition.XNAMatrix.Translation;
+            var acce = (newLoco - 2 * oldLoco1 + oldLoco2) / (interval * interval);
+            maxV = acce.Length()/50f;
+            prev2Matrix = prevMatrix;
+            prevMatrix = WorldPosition.XNAMatrix;
+            interval = 0.1f;
+            if (maxV > 1) accumedAcceTime = 0f;
+
+            if (maxV > 1 || accumedAcceTime < 2f)//
+            {
+                accumedAcceTime += interval;
+                return max;
+            }
+            if (prevMax < 0.0001) return 0f;
+            return prevMax * (1-interval);
         }
     }
 

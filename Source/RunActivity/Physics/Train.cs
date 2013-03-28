@@ -2248,8 +2248,10 @@ namespace ORTS
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
 
+
                     if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0 || this.tilted)
                     {
+                        car.RealXNAMatrix = car.WorldPosition.XNAMatrix;
                         car.SuperElevation(SpeedMpS, Program.Simulator.UseSuperElevation, traveller);
                     }
 

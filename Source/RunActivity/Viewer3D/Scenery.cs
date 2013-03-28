@@ -229,8 +229,8 @@ namespace ORTS
                         else
                         {
                             //if want to use super elevation, we will generate tracks using dynamic tracks
-                            if (viewer.Simulator.UseSuperElevation > 0 
-                                && SuperElevation.UseSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ))
+                            if (viewer.Simulator.UseSuperElevation > 0
+                                && SuperElevation.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath))
                             {
                                 //var success = SuperElevation.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
                                 //if (success == 0) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));

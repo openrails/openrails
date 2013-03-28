@@ -36,7 +36,7 @@ namespace ORTS
         /// <param name="dTrackList">DynatrackDrawer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static int DecomposeStaticSuperElevation(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
+        public static bool DecomposeStaticSuperElevation(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
             WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
         {
             if (SuperElevation.HasCheckedElevation == false)
@@ -63,11 +63,11 @@ namespace ORTS
             {
                 shape = viewer.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx);
             
-                if (shape.RoadShape == true) return 1;
+                if (shape.RoadShape == true) return false;
             }
             catch (Exception)
             {
-                return 0;
+                return false;
             }
             SectionIdx[] SectionIdxs = shape.SectionIdxs;
 
@@ -77,6 +77,8 @@ namespace ORTS
 
             int count = -1;
             int drawn = 0;
+            bool isTunnel = shape.TunnelShape;
+
             List<DynatrackDrawer> tmpTrackList = new List<DynatrackDrawer>();
             foreach (SectionIdx id in SectionIdxs)
             {
@@ -100,13 +102,13 @@ namespace ORTS
                     float length, radius;
                     uint sid = id.TrackSections[i];
                     TrackSection section = viewer.Simulator.TSectionDat.TrackSections.Get(sid);
-                    if (Math.Abs(section.SectionSize.Width - viewer.Simulator.SuperElevationGauge) > 0.2) return 0;//the main route has a gauge different than mine
+                    if (Math.Abs(section.SectionSize.Width - viewer.Simulator.SuperElevationGauge) > 0.2) return false;//the main route has a gauge different than mine
                     WorldPosition root = new WorldPosition(nextRoot);
                     nextRoot.XNAMatrix.Translation = Vector3.Zero;
 
                     if (section.SectionCurve == null)
                     {
-                        return 0;//with strait track, will not bother with this shape anymore
+                        return false;//with strait track, will not bother with this shape anymore
                     }
                     else
                     {
@@ -134,20 +136,33 @@ namespace ORTS
                     if (section.SectionCurve != null) tmp = FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
 
                     if (tmp == null) //cannot find the track for super elevation, will return 0;
+                    {
+                        tmpTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));//draw it the regular way
                         continue;
-                    sv = ev = mv = 0f; dir = 1f;
-                    sv = tmp.StartElev; ev = tmp.EndElev; mv = tmp.MaxElev;
+                    }
+                    if (isTunnel)
+                    {
+
+                        List<TrVectorSection> curve = null;
+                        foreach (var c in allCurves) { if (c.Contains(tmp)) curve = c; break; }//find which curve has the section
+                        if (curve != null)
+                        {
+                            foreach (var c1 in curve) allSections.Remove(c1);//remove all sections in the curve from future consideration
+                            allCurves.Remove(curve);
+                        }
+                    }
+
                     drawn++;
                     //DecomposeStaticSuperElevationOneSection(viewer, tmpTrackList, TileX, TileZ, tmp);
-                    //tmpTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
+                    
                     localV = localProjectedV; // Next subsection
                 }
             }
 
-            if (drawn == 0) return 0;
+            if (drawn == 0 || isTunnel) return false;
             //now everything is OK, add the list to the dTrackList
-            //dTrackList.AddRange(tmpTrackList);
-            return 1;
+            dTrackList.AddRange(tmpTrackList);
+            return true;
         } // end DecomposeStaticSuperElevation
 
         #region DrawAllSectionsUsingDynamicOneSection
@@ -301,7 +316,7 @@ namespace ORTS
                     {
                         if (i == 1 || i == count)
                         {
-                            if (theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174) < 10f) continue; 
+                            //if (theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174) < 40f) continue; 
                         } //do not want the first and last piece of short curved track to be in the curve (they connected to switches)
                         if (StartCurve == false) //we are beginning a curve
                         {
