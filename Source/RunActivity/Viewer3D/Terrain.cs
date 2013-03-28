@@ -30,6 +30,7 @@ namespace ORTS
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
         //   assignment of a new instance (possibly cloned and then modified).
         List<TerrainTile> Tiles = new List<TerrainTile>();
+        List<TerrainTile> LOTiles = new List<TerrainTile>();
         int TileX;
         int TileZ;
         int VisibleTileX;
@@ -64,6 +65,29 @@ namespace ORTS
                     }
                 }
                 Tiles = newTiles;
+                if (!Viewer.Settings.DistantMountains) return;
+                tiles = LOTiles;
+                newTiles = new List<TerrainTile>();
+                needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance * 10 / 2048f);//LO_TILES has five viewing distance (20KM)
+                for (var x = -needed; x <= needed; x++)
+                {
+                    for (var z = -needed; z <= needed; z++)
+                    {
+                        var tile = tiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
+                        try
+                        {
+                            if (tile == null)
+                            {
+                                var visible = (x == 0 && z == 0);
+                                tile = LoadTile(TileX + x, TileZ + z, visible, Viewer.LOTiles);
+                            }
+                            newTiles.Add(tile);
+                        }
+                        catch  {  }
+                    }
+                }
+                LOTiles.Clear();
+                LOTiles.AddRange(newTiles);
             }
         }
 
@@ -81,6 +105,15 @@ namespace ORTS
             foreach (var tile in tiles)
                 if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
                     tile.PrepareFrame(frame, elapsedTime);
+            if (!Viewer.Settings.DistantMountains) return;
+            tiles = LOTiles;
+            foreach (var tile in tiles)
+            {
+                //if (Viewer.Camera.TileX - tile.TileX >= 0 && Viewer.Camera.TileX - tile.TileX <= 8 && Viewer.Camera.TileZ - TileZ > 0 &&
+                //   Viewer.Camera.TileZ - TileZ < 8) continue;
+                //if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
+                tile.PrepareFrame(frame, elapsedTime);
+            }
         }
 
         TerrainTile LoadTile(int tileX, int tileZ, bool visible)
@@ -89,10 +122,18 @@ namespace ORTS
             return new TerrainTile(Viewer, tileX, tileZ, visible);
         }
 
+        TerrainTile LoadTile(int tileX, int tileZ, bool visible, TileManager tiles)
+        {
+            return new TerrainTile(Viewer, tileX, tileZ, visible, tiles);
+        }
+
         [CallOnThread("Loader")]
         internal void Mark()
         {
             var tiles = Tiles;
+            foreach (var tile in tiles)
+                tile.Mark();
+            tiles = LOTiles;
             foreach (var tile in tiles)
                 tile.Mark();
         }
@@ -108,11 +149,12 @@ namespace ORTS
     {
         public readonly int TileX, TileZ;
 
-        TerrainPatch[,] TerrainPatches = new TerrainPatch[16, 16];
+        TerrainPatch[,] TerrainPatches = null; 
         WaterTile WaterTile;
 
         public TerrainTile(Viewer3D viewer, int tileX, int tileZ, bool visible)
         {
+            TerrainPatches = new TerrainPatch[16, 16];
             TileX = tileX;
             TileZ = tileZ;
             // Terrain needs all surrounding tiles to correctly join up the meshes.
@@ -131,16 +173,50 @@ namespace ORTS
                 for (var x = 0; x < 16; ++x)
                     for (var z = 0; z < 16; ++z)
                         if (tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
-                            TerrainPatches[x, z] = new TerrainPatch(viewer, tile, x, z, tileX, tileZ);
+                            TerrainPatches[x, z] = new TerrainPatch(viewer, tile, x, z, tileX, tileZ, 16);
             }
+        }
+
+        int xdim = 16;
+        //for LO_TILES
+        public TerrainTile(Viewer3D viewer, int tileX, int tileZ, bool visible, TileManager tiles)
+        {
+            TileX = tileX;
+            TileZ = tileZ;
+            xdim = 4;
+            TerrainPatches = new TerrainPatch[xdim, xdim];
+
+            // Terrain needs all surrounding tiles to correctly join up the meshes.
+            for (var x = -8; x <= 8; x++)
+                for (var z = -8; z <= 8; z++)
+                {
+                    visible = visible & (x == 0 && z == 0);
+                    tiles.Load(tileX + x, tileZ + z, visible, true);//lo tiles
+                }
+            var tile = tiles.GetTile(tileX, tileZ);
+            if (tile != null && !tile.IsEmpty)
+            {
+                //if (tile.TFile.ContainsWater)
+                //    WaterTile = new WaterTile(viewer, TileX, TileZ);
+
+                for (var x = 0; x < xdim; ++x)
+                    for (var z = 0; z < xdim; ++z)
+                        if (tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
+                        {
+                            TerrainPatches[x, z] = new TerrainPatch(viewer, tile, x, z, tileX, tileZ, xdim);
+                            TerrainPatches[x, z].ViewingDistance = viewer.Settings.ViewingDistance * 10;
+                        }
+                Trace.Write("L");
+            }
+            else throw new Exception();
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (WaterTile != null)
                 WaterTile.PrepareFrame(frame);
-            for (int x = 0; x < 16; ++x)
-                for (int z = 0; z < 16; ++z)
+            for (int x = 0; x < xdim; ++x)
+                for (int z = 0; z < xdim; ++z)
                     if (TerrainPatches[x, z] != null)
                         TerrainPatches[x, z].PrepareFrame(frame);
         }
@@ -150,8 +226,8 @@ namespace ORTS
         {
             if (WaterTile != null)
                 WaterTile.Mark();
-            for (int x = 0; x < 16; ++x)
-                for (int z = 0; z < 16; ++z)
+            for (int x = 0; x < xdim; ++x)
+                for (int z = 0; z < xdim; ++z)
                     if (TerrainPatches[x, z] != null)
                         TerrainPatches[x, z].Mark();
         }
@@ -174,22 +250,23 @@ namespace ORTS
         public static VertexDeclaration SharedPatchVertexDeclaration;
         public static IndexBuffer SharedPatchIndexBuffer;
         public static int SharedPatchVertexStride;  // in bytes
-
+        public int ViewingDistance;
         // these are only used while the contructor runs and are discarded after
         int PatchX, PatchZ;
         Tile Tile;
-
+        int parentDim = 16;
         float X, Y, W, B, C, H;  // A 2 x 3 matrix for texture translation
 
-        public TerrainPatch(Viewer3D viewer, Tile tile, int x, int z, int tileX, int tileZ)
+        public TerrainPatch(Viewer3D viewer, Tile tile, int x, int z, int tileX, int tileZ, int xd)
         {
             Viewer = viewer;
             TileX = tileX;
             TileZ = tileZ;
             PatchX = x;
             PatchZ = z;
+            parentDim = xd;
             Tile = tile;
-
+            ViewingDistance = viewer.Settings.ViewingDistance;
             var patch = Tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z);
 
             float cx = -1024 + (int)patch.CenterX;
@@ -216,6 +293,11 @@ namespace ORTS
             else
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
 
+            //will worry this later about texture
+            if (parentDim != 16)
+            {
+                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "terrain.ace"));
+            }
             Tile = null;
         }
 
@@ -225,8 +307,20 @@ namespace ORTS
             var dTileZ = TileZ - Viewer.Camera.TileZ;
             var mstsLocation = new Vector3(XNAPatchLocation.X + dTileX * 2048, XNAPatchLocation.Y, -XNAPatchLocation.Z + dTileZ * 2048);
             var xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
+            var radius = 90f;
             mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-            frame.AddAutoPrimitive(mstsLocation, 90f, Viewer.Settings.ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
+            if (parentDim != 16)
+            {
+                var temp = Viewer.Camera.CameraWorldLocation.Location;
+                temp = mstsLocation - temp;
+                var msts2DLoc = new Vector2(temp.X, temp.Z);
+                //if (msts2DLoc.Length() < 600) return; //distant mountain too close, not draw it
+                radius = 6000f;
+                mstsLocation.Y -= AverageElevation; 
+                frame.AddAutoPrimitive(mstsLocation, radius, 20000, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.AutoZBias);
+
+            }
+            else frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
         }
 
         /// <summary>
@@ -234,6 +328,11 @@ namespace ORTS
         /// </summary>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (parentDim == 16)
+            {
+                int i = 0;
+                i++;
+            }
             graphicsDevice.Vertices[0].SetSource(PatchVertexBuffer, 0, SharedPatchVertexStride);
             if (PatchIndexBuffer != null)
                 graphicsDevice.Indices = PatchIndexBuffer;
@@ -251,11 +350,13 @@ namespace ORTS
         /// <returns></returns>
         private float Elevation(int x, int z)
         {
+            var tiles = Viewer.Tiles;
+            if (parentDim != 16) tiles = Viewer.LOTiles;
             int hx = PatchX * 16 + x;
             int hz = PatchZ * 16 + z;
-            if (hx > 255 || hx < 0 || hz > 255 || hz < 0)
+            if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
                 // its outside this tile, so we will have to look it up
-                return Viewer.Tiles.GetElevation(TileX, TileZ, hx, hz);
+                return tiles.GetElevation(TileX, TileZ, hx, hz);
 
             uint e = Tile.YFile.GetElevationIndex(hx, hz);
             return (float)e * Tile.TFile.Resolution + Tile.TFile.Floor;
@@ -263,12 +364,15 @@ namespace ORTS
 
         bool IsVertexHidden(int x, int z)
         {
+            var tiles = Viewer.Tiles;
+            if (parentDim != 16) tiles = Viewer.LOTiles;
             int hx = PatchX * 16 + x;
             int hz = PatchZ * 16 + z;
-            if (hx > 255 || hx < 0 || hz > 255 || hz < 0)
+            if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
                 // its outside this tile, so we will have to look it up
-                return Viewer.Tiles.IsVertexHidden(TileX, TileZ, hx, hz);
+                return tiles.IsVertexHidden(TileX, TileZ, hx, hz);
 
+            if (Tile.FFile == null) return false;
             return Tile.FFile.IsVertexHidden(hx, hz);
         }
 
@@ -325,12 +429,16 @@ namespace ORTS
             // TODO, decode this from the _N.RAW TILE
             // until I figure out this file, I'll compute normals from the terrain
 
-            const float t = 8;
+            float t = 8;
 
             float vx = x;
             float vz = z;
-
             Vector3 center = new Vector3(vx, Elevation(x, z), vz);
+            if (parentDim != 16)
+            {
+                t = 256;// 2048 / 8; // 2048/64
+                //vx = x * t; vz = z * t;
+            }
 
             Vector3 n = new Vector3(vx, Elevation(x, z - 1), vz - t); Vector3 toN = Vector3.Normalize(n - center);
             Vector3 e = new Vector3(vx + t, Elevation(x + 1, z), vz); Vector3 toE = Vector3.Normalize(e - center);
@@ -404,7 +512,7 @@ namespace ORTS
                     }
                 }
 
-            SharedPatchIndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * indexData.Count, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+            SharedPatchIndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * indexData.Count, BufferUsage.None, IndexElementSize.SixteenBits);
             SharedPatchIndexBuffer.SetData(indexData.ToArray());
         }
 
@@ -460,7 +568,7 @@ namespace ORTS
             if (indexData.Count == 16 * 16 * 6)
                 return null;
 
-            var indexBuffer = new IndexBuffer(Viewer.GraphicsDevice, sizeof(short) * indexData.Count, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+            var indexBuffer = new IndexBuffer(Viewer.GraphicsDevice, sizeof(short) * indexData.Count, BufferUsage.None, IndexElementSize.SixteenBits);
             indexBuffer.SetData(indexData.ToArray());
             return indexBuffer;
         }
@@ -476,6 +584,11 @@ namespace ORTS
                     float w = -64 + x * 8;
                     float n = -64 + z * 8;
 
+                    if (parentDim != 16) //is lotile
+                    {
+                        w = -2048 + x * 256;
+                        n = -2048 + z * 256;
+                    }
                     float u = (float)x;
                     float v = (float)z;
 
@@ -484,6 +597,11 @@ namespace ORTS
                     float U = u * W + v * B + X;
                     float V = u * C + v * H + Y;
 
+                    if (parentDim != 16)
+                    {
+                        if (U > 1f) U = 1f;
+                        if (V > 1f) V = 1f;
+                    }
                     // V represents the north/south shift
 
                     float y = Elevation(x, z) - Tile.TFile.Floor;
@@ -493,7 +611,7 @@ namespace ORTS
                 }
 
             averageElevation = totalElevation / vertexData.Count;
-            var patchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Count, BufferUsage.WriteOnly);
+            var patchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Count, BufferUsage.None);
             patchVertexBuffer.SetData(vertexData.ToArray());
             return patchVertexBuffer;
         }
@@ -503,5 +621,52 @@ namespace ORTS
         {
             PatchMaterial.Mark();
         }
+
+#if false
+        public struct VertexPositionNormalColored
+        {
+            public Vector3 Position;
+            public Color Color;
+            public Vector3 Normal;
+
+            public static int SizeInBytes = 7 * 4;
+            public static VertexElement[] VertexElements = new VertexElement[]
+              {
+                  new VertexElement( 0, 0, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 0 ),
+                  new VertexElement( 0, sizeof(float) * 3, VertexElementFormat.Color, VertexElementMethod.Default, VertexElementUsage.Color, 0 ),
+                  new VertexElement( 0, sizeof(float) * 4, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Normal, 0 ),
+              };
+        }
+ 
+
+        private void GenerateNormals(VertexBuffer vb, IndexBuffer ib)
+        {
+            return;
+            int WIDTH = 17, HEIGHT = 17;
+            VertexPositionNormalColored[] vertices = new VertexPositionNormalColored[WIDTH * HEIGHT];
+            vb.GetData(vertices);
+            short[] indices = new short[(WIDTH - 1) * (HEIGHT - 1) * 6];
+            ib.GetData(indices);
+
+            for (int i = 0; i < vertices.Length; i++)
+                vertices[i].Normal = new Vector3(0, 0, 0);
+
+            for (int i = 0; i < indices.Length / 3; i++)
+            {
+                Vector3 firstvec = vertices[indices[i * 3 + 1]].Position - vertices[indices[i * 3]].Position;
+                Vector3 secondvec = vertices[indices[i * 3]].Position - vertices[indices[i * 3 + 2]].Position;
+                Vector3 normal = Vector3.Cross(firstvec, secondvec);
+                normal.Normalize();
+                vertices[indices[i * 3]].Normal += normal;
+                vertices[indices[i * 3 + 1]].Normal += normal;
+                vertices[indices[i * 3 + 2]].Normal += normal;
+            }
+
+            for (int i = 0; i < vertices.Length; i++)
+                vertices[i].Normal.Normalize();
+
+            vb.SetData(vertices);
+        }
+#endif
     }
 }

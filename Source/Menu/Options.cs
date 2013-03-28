@@ -102,6 +102,7 @@ namespace ORTS
             ElevationAmount.Value = Settings.UseSuperElevation;
             MinLengthChoice.Value = Settings.SuperElevationMinLen;
             SuperElevationGauge.Value = Settings.SuperElevationGauge;
+            distanceMountain.Checked = settings.DistantMountains;
         }
 
         string ParseCategoryFrom(string name)
@@ -312,6 +313,7 @@ namespace ORTS
             Settings.UseSuperElevation = (int)ElevationAmount.Value;
             Settings.SuperElevationMinLen = (int)MinLengthChoice.Value;
             Settings.SuperElevationGauge = (int)SuperElevationGauge.Value;
+            Settings.DistantMountains = distanceMountain.Checked;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

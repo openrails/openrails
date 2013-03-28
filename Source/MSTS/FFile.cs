@@ -12,7 +12,8 @@ namespace MSTS
 	public class FFile
 	{
 		readonly string FileName;
-		readonly byte[,] Data = new byte[256, 256];
+        int xdim = 256, zdim = 256;
+		readonly byte[,] Data;
 
 		public FFile(string fileName)
 		{
@@ -24,7 +25,8 @@ namespace MSTS
 				{
 					using (BinaryReader f = new BinaryReader(new FileStream(FileName, FileMode.Open, FileAccess.Read)))
 					{
-						for (int z = 0; z < 256; ++z)
+                        Data = new byte[256, 256];
+                        for (int z = 0; z < 256; ++z)
 							for (int x = 0; x < 256; ++x)
 								Data[z, x] = f.ReadByte();
 					}
@@ -36,7 +38,31 @@ namespace MSTS
 			}
 		}
 
-		byte GetFloorData(int x, int z)
+        public FFile(string fileName, int dim)
+        {
+            xdim = zdim = dim;
+            FileName = fileName;
+
+            if (File.Exists(FileName))
+            {
+                try
+                {
+                    using (BinaryReader f = new BinaryReader(new FileStream(FileName, FileMode.Open, FileAccess.Read)))
+                    {
+                        Data = new byte[xdim, zdim];
+                        for (int z = 0; z < zdim; ++z)
+                            for (int x = 0; x < xdim; ++x)
+                                Data[z, x] = f.ReadByte();
+                    }
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(new FileLoadException(fileName, error));
+                }
+            }
+        }
+        
+        byte GetFloorData(int x, int z)
 		{
 			// Gets floor properties at the tile coordinates x, z
 			// 0,0 is the north west corner of the tile
@@ -46,7 +72,8 @@ namespace MSTS
 
 		public bool IsVertexHidden(int x, int z)
 		{
-			return (GetFloorData(x, z) & 0x04) == 0x04;
+            if (Data == null) return false;
+            return (GetFloorData(x, z) & 0x04) == 0x04;
 		}
 	}
 }

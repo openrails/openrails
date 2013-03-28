@@ -163,6 +163,9 @@ namespace ORTS
 		[Default(false)]
 		public bool ShowAvatar { get; set; }
 
+		[Default(false)]
+        public bool DistantMountains { get; set; }
+        
         // Physics options
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }

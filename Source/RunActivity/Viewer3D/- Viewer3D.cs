@@ -84,6 +84,7 @@ namespace ORTS
 		public ComposeMessage ComposeMessageWindow; // Control-Alt-F11 window
 		// Route Information
         public TileManager Tiles;
+        public TileManager LOTiles;
         public ENVFile ENVFile;
         public SIGCFGFile SIGCFG;
         public TTypeDatFile TTypeDatFile;
@@ -220,6 +221,7 @@ namespace ORTS
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
 
             Tiles = new TileManager(Simulator.RoutePath + @"\TILES\");
+            LOTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\");
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
         }
 
@@ -293,7 +295,7 @@ namespace ORTS
             else if (Settings.ShaderModel > 3)
                 Settings.ShaderModel = 3;
             if (Settings.ShadowMapDistance == 0)
-                Settings.ShadowMapDistance = Settings.ViewingDistance / 2;
+                Settings.ShadowMapDistance = Settings.ViewingDistance;
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;

@@ -238,10 +238,10 @@ namespace MSTS
 		public int terrain_patchset_distance;
 		public int terrain_patchset_npatches;
 		public terrain_patchset_patch[] terrain_patchset_patches;
-
+        public int xdim = 16;
         public terrain_patchset_patch GetPatch(int x, int z)
         {
-            terrain_patchset_patch patch = terrain_patchset_patches[z * 16 + x];
+            terrain_patchset_patch patch = terrain_patchset_patches[z * xdim + x];
             return patch;
         }
 
@@ -268,6 +268,7 @@ namespace MSTS
                     }
                 }
 			}
+            xdim = (int)Math.Sqrt(terrain_patchset_patches.Length);
 
 		}
 

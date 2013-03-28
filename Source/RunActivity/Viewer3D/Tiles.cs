@@ -21,6 +21,7 @@ namespace ORTS
     {
         const int MaximumCachedTiles = 8 * 8;
 
+        public int maxDim = 256;
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
         //   assignment of a new instance (possibly cloned and then modified).
@@ -55,6 +56,29 @@ namespace ORTS
             }
         }
 
+        [CallOnThread("Loader")]
+        public void Load(int tileX, int tileZ, bool visible, bool isLoTile)
+        {
+            maxDim = 64;
+            if (Thread.CurrentThread.Name != "Loader Process")
+                Trace.TraceError("Tiles.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+
+            var tiles = Tiles;
+            if (!tiles.ByXZ.ContainsKey(tileX + "," + tileZ))
+            {
+                // Take the current list of tiles, evict any necessary so the new tile fits, load and add the new
+                // tile to the list, and store it all atomically in Tiles.
+                var tileList = new List<Tile>(tiles.List);
+                while (tileList.Count >= MaximumCachedTiles)
+                    tileList.RemoveAt(0);
+                Tile newTile = new Tile(FilePath, tileX, tileZ, visible, true);//want lo tiles
+                // Ignore if newTile is not complete
+                if (newTile.TFile != null && newTile.YFile != null)
+                    tileList.Add(newTile);
+                Tiles = new TileList(tileList);
+            }
+        }
+
         public Tile GetTile(int tileX, int tileZ)
         {
             var tiles = Tiles;
@@ -70,11 +94,13 @@ namespace ORTS
 
         public float GetElevation(int tileX, int tileZ, int x, int z)
         {
+            var step = 1;
+            if (maxDim == 64) step = 8;
             // normalize x,y coordinates
-            while (x > 255) { x -= 256; ++tileX; }
-            while (x < 0) { x += 256; --tileX; }
-            while (z > 255) { z -= 256; --tileZ; }
-            while (z < 0) { z += 256; ++tileZ; }
+            while (x > maxDim -1) { x -= maxDim; tileX+=step; }
+            while (x < 0) { x += maxDim; tileX-=step; }
+            while (z > maxDim - 1) { z -= maxDim; tileZ-=step; }
+            while (z < 0) { z += maxDim; tileZ+=step; }
 
             var tile = GetTile(tileX, tileZ);
             if (tile != null)
@@ -112,11 +138,13 @@ namespace ORTS
 
         public bool IsVertexHidden(int tileX, int tileZ, int x, int z)
         {
+            var step = 1;
+            if (maxDim == 64) step = 8;
             // normalize x,y coordinates
-            while (x > 255) { x -= 256; ++tileX; }
-            while (x < 0) { x += 256; --tileX; }
-            while (z > 255) { z -= 256; --tileZ; }
-            while (z < 0) { z += 256; ++tileZ; }
+            while (x > maxDim - 1) { x -= maxDim; tileX+=step; }
+            while (x < 0) { x += maxDim; tileX-=step; }
+            while (z > maxDim - 1) { z -= maxDim; tileZ-=step; }
+            while (z < 0) { z += maxDim; tileZ+=step; }
 
             var tile = GetTile(tileX, tileZ);
             if (tile != null)
@@ -169,6 +197,45 @@ namespace ORTS
                     YFile = new YFile(name);
                     name = fileName + "_f.raw";
                     FFile = new FFile(name);
+                }
+                catch (Exception error) // errors thrown by SBR
+                {
+                    Trace.WriteLine(error);
+                }
+            }
+            else
+            {
+                // Many tiles adjacent to the visible tile may not be modelled, so a warning is not helpful,
+                // so ignore a missing .t file unless it is the currently visible tile.
+                if (visible)
+                    Trace.TraceWarning("Tile file missing - {0}", name);
+            }
+        }
+
+        /// <param name="visible">Tiles adjacent to the current visible tile may not be modelled.
+        /// This flag decides whether a missing file leads to a warning message.</param>
+        public Tile(string filePath, int tileX, int tileZ, bool visible, bool isLoTiles)
+        {
+            TileX = tileX;
+            TileZ = tileZ;
+            var name = TileNameConversion.GetTileNameFromTileXZ(tileX, tileZ);
+
+            var fileName = name.Substring(0, name.Length - 2).Replace('-', '_');
+
+            if (name.Replace('-', '_') != fileName + "00") return;
+            fileName = filePath + fileName;
+            name = fileName + ".t";
+            if (File.Exists(name))
+            {
+                try
+                {
+                    TFile = new TFile(name);
+                    name = fileName + "_y.raw";
+                    YFile = new YFile(name, 64);
+                    name = fileName + "_f.raw";
+                    if (File.Exists(name))
+                        FFile = new FFile(name, 64);
+                    else FFile = null;
                 }
                 catch (Exception error) // errors thrown by SBR
                 {
