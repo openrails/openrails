@@ -1924,6 +1924,15 @@ namespace ORTS
                         procstring = procstring.Substring(1).Trim();
                     }
 
+                    // process separate NOT
+
+                    if (procstring.Length > 0 && String.Compare(procstring.Substring(0, 4), "NOT ") == 0)
+                    {
+                        SCRNegate negated = SCRNegate.NEGATE;
+                        SCRConditionList.Add(negated);
+                        procstring = procstring.Substring(1).Trim();
+                    }
+
                     // previous separated substring - process as new full IF condition
 
                     if (procstring.StartsWith("["))
@@ -1975,6 +1984,13 @@ namespace ORTS
                     SCRNegate negated = SCRNegate.NEGATE;
                     SCRConditionList.Add(negated);
                     procstring = procstring.Substring(1).Trim();
+                }
+
+                if (procstring.Length > 4 && String.Compare(procstring.Substring(0, 4), "NOT ") == 0)
+                {
+                    SCRNegate negated = SCRNegate.NEGATE;
+                    SCRConditionList.Add(negated);
+                    procstring = procstring.Substring(4).Trim();
                 }
 
                 // previous separated substring - process as new full IF condition
@@ -2418,6 +2434,11 @@ namespace ORTS
                     {
                         negate = true;
                         StatementString = StatementString.Substring(1).Trim();
+                    }
+                    else if (StatementString.Length >= 5 && String.Compare(StatementString.Substring(0, 4), "NOT ") == 0)
+                    {
+                        negate = true;
+                        StatementString = StatementString.Substring(4).Trim();
                     }
                     else
                     {
