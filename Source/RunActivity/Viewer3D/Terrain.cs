@@ -68,7 +68,7 @@ namespace ORTS
                 if (!Viewer.Settings.DistantMountains) return;
                 tiles = LOTiles;
                 newTiles = new List<TerrainTile>();
-                needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance * 10 / 2048f);//LO_TILES has five viewing distance (20KM)
+                needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance * 20 / 2048f);//LO_TILES has five viewing distance (40KM)
                 for (var x = -needed; x <= needed; x++)
                 {
                     for (var z = -needed; z <= needed; z++)
@@ -106,8 +106,8 @@ namespace ORTS
                 if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
                     tile.PrepareFrame(frame, elapsedTime);
             if (!Viewer.Settings.DistantMountains) return;
-            tiles = LOTiles;
-            foreach (var tile in tiles)
+            var tilesArray = LOTiles.ToArray();
+            foreach (var tile in tilesArray)
             {
                 //if (Viewer.Camera.TileX - tile.TileX >=0 && Viewer.Camera.TileX - tile.TileX < 8 && Viewer.Camera.TileZ - TileZ >= 0 &&
                 //   Viewer.Camera.TileZ - TileZ < 8) continue;

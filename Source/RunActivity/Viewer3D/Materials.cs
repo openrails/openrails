@@ -311,7 +311,7 @@ namespace ORTS
 
             if (Viewer.Settings.DistantMountains)
             {
-                SceneryShader.SetFog(ViewingDistance * 1f * FogCoeff, ref SharedMaterialManager.FogColor);
+                SceneryShader.SetFog(ViewingDistance * 2f * FogCoeff, ref SharedMaterialManager.FogColor);
             }
             else SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
 		}
