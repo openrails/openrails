@@ -309,8 +309,11 @@ namespace ORTS
             SceneryShader.Overcast = Viewer.World.Sky.overcast;
 			SceneryShader.ViewerPos = Viewer.Camera.XNALocation(Viewer.Camera.CameraWorldLocation);
 
-            if (Viewer.Settings.DistantMountains) SceneryShader.SetFog(ViewingDistance * 2f * FogCoeff, ref SharedMaterialManager.FogColor);
-			else SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
+            if (Viewer.Settings.DistantMountains)
+            {
+                SceneryShader.SetFog(ViewingDistance * 1f * FogCoeff, ref SharedMaterialManager.FogColor);
+            }
+            else SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
 		}
     }
 
@@ -858,6 +861,7 @@ namespace ORTS
                 Viewer.World.Sky.solarDirection.Y,
                 Viewer.World.Sky.overcast);
             SharedMaterialManager.FogCoeff = Viewer.World.Sky.fogCoeff;
+            if (Viewer.Settings.DistantMountains) SharedMaterialManager.FogCoeff *= 2f;
 
             SkyShader.SkyTexture = SkyTexture;
             SkyShader.StarTexture = SkyTexture;

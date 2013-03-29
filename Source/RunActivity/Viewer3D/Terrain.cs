@@ -196,8 +196,8 @@ namespace ORTS
             var tile = tiles.GetTile(tileX, tileZ);
             if (tile != null && !tile.IsEmpty)
             {
-                //if (tile.TFile.ContainsWater)
-                //    WaterTile = new WaterTile(viewer, TileX, TileZ);
+                if (tile.TFile.ContainsWater)
+                    WaterTile = new WaterTile(viewer, TileX, TileZ);
 
                 for (var x = 0; x < xdim; ++x)
                     for (var z = 0; z < xdim; ++z)
@@ -296,7 +296,7 @@ namespace ORTS
             //will worry this later about texture
             if (parentDim != 16)
             {
-                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "terrain.ace"));
+                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
             }
             Tile = null;
         }
@@ -311,14 +311,8 @@ namespace ORTS
             mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
             if (parentDim != 16)
             {
-                var temp = Viewer.Camera.CameraWorldLocation.Location;
-                temp = mstsLocation - temp;
-                var msts2DLoc = new Vector2(temp.X, temp.Z);
-                //if (msts2DLoc.Length() < 600) return; //distant mountain too close, not draw it
                 radius = 6000f;
-                mstsLocation.Y -= AverageElevation; 
                 frame.AddAutoPrimitive(mstsLocation, radius, 20000, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.AutoZBias);
-
             }
             else frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
         }
@@ -328,11 +322,6 @@ namespace ORTS
         /// </summary>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            if (parentDim == 16)
-            {
-                int i = 0;
-                i++;
-            }
             graphicsDevice.Vertices[0].SetSource(PatchVertexBuffer, 0, SharedPatchVertexStride);
             if (PatchIndexBuffer != null)
                 graphicsDevice.Indices = PatchIndexBuffer;
@@ -512,7 +501,7 @@ namespace ORTS
                     }
                 }
 
-            SharedPatchIndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * indexData.Count, BufferUsage.None, IndexElementSize.SixteenBits);
+            SharedPatchIndexBuffer = new IndexBuffer(graphicsDevice, sizeof(short) * indexData.Count, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
             SharedPatchIndexBuffer.SetData(indexData.ToArray());
         }
 
@@ -568,7 +557,7 @@ namespace ORTS
             if (indexData.Count == 16 * 16 * 6)
                 return null;
 
-            var indexBuffer = new IndexBuffer(Viewer.GraphicsDevice, sizeof(short) * indexData.Count, BufferUsage.None, IndexElementSize.SixteenBits);
+            var indexBuffer = new IndexBuffer(Viewer.GraphicsDevice, sizeof(short) * indexData.Count, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
             indexBuffer.SetData(indexData.ToArray());
             return indexBuffer;
         }
@@ -597,27 +586,20 @@ namespace ORTS
                     float U = u * W + v * B + X;
                     float V = u * C + v * H + Y;
 
-                    if (parentDim != 16)
-                    {
-                        if (U > 1f) U = 1f;
-                        if (V > 1f) V = 1f;
-                    }
                     // V represents the north/south shift
 
                     float y = Elevation(x, z) - Tile.TFile.Floor;
-                    /*
+                    totalElevation += y;
                     if (parentDim != 16)
                     {
-                        var currentTileY = Viewer.Tiles.GetElevation(TileX+PatchX/2, TileZ+PatchZ/2, w/8, n/8);
-                        if (currentTileY > 0) y = currentTileY;
-                    }*/
-                    totalElevation += y;
+                        y -= 25f;//LO_TILEs will make it a bit lower, so they do not mix with the normal tiles
+                    }
 
                     vertexData.Add(new VertexPositionNormalTexture(new Vector3(w, y, n), TerrainNormal(x, z), new Vector2(U, V)));
                 }
 
             averageElevation = totalElevation / vertexData.Count;
-            var patchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Count, BufferUsage.None);
+            var patchVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexData.Count, BufferUsage.WriteOnly);
             patchVertexBuffer.SetData(vertexData.ToArray());
             return patchVertexBuffer;
         }
@@ -627,52 +609,5 @@ namespace ORTS
         {
             PatchMaterial.Mark();
         }
-
-#if false
-        public struct VertexPositionNormalColored
-        {
-            public Vector3 Position;
-            public Color Color;
-            public Vector3 Normal;
-
-            public static int SizeInBytes = 7 * 4;
-            public static VertexElement[] VertexElements = new VertexElement[]
-              {
-                  new VertexElement( 0, 0, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 0 ),
-                  new VertexElement( 0, sizeof(float) * 3, VertexElementFormat.Color, VertexElementMethod.Default, VertexElementUsage.Color, 0 ),
-                  new VertexElement( 0, sizeof(float) * 4, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Normal, 0 ),
-              };
-        }
- 
-
-        private void GenerateNormals(VertexBuffer vb, IndexBuffer ib)
-        {
-            return;
-            int WIDTH = 17, HEIGHT = 17;
-            VertexPositionNormalColored[] vertices = new VertexPositionNormalColored[WIDTH * HEIGHT];
-            vb.GetData(vertices);
-            short[] indices = new short[(WIDTH - 1) * (HEIGHT - 1) * 6];
-            ib.GetData(indices);
-
-            for (int i = 0; i < vertices.Length; i++)
-                vertices[i].Normal = new Vector3(0, 0, 0);
-
-            for (int i = 0; i < indices.Length / 3; i++)
-            {
-                Vector3 firstvec = vertices[indices[i * 3 + 1]].Position - vertices[indices[i * 3]].Position;
-                Vector3 secondvec = vertices[indices[i * 3]].Position - vertices[indices[i * 3 + 2]].Position;
-                Vector3 normal = Vector3.Cross(firstvec, secondvec);
-                normal.Normalize();
-                vertices[indices[i * 3]].Normal += normal;
-                vertices[indices[i * 3 + 1]].Normal += normal;
-                vertices[indices[i * 3 + 2]].Normal += normal;
-            }
-
-            for (int i = 0; i < vertices.Length; i++)
-                vertices[i].Normal.Normalize();
-
-            vb.SetData(vertices);
-        }
-#endif
     }
 }
