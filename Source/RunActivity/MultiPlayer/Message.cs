@@ -476,7 +476,7 @@ namespace ORTS.MultiPlayer
 				}
 				else //client needs to handle environment
 				{
-					if (MPManager.GetUserName() == this.user) //a reply from the server, update my train number
+					if (MPManager.GetUserName() == this.user && !Program.Client.Connected) //a reply from the server, update my train number
 					{
 						Program.Client.Connected = true;
 						Train t = null;
@@ -484,11 +484,11 @@ namespace ORTS.MultiPlayer
 						else t = Program.Simulator.PlayerLocomotive.Train;
 						t.Number = this.num;
 						if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
-							new WorldLocation(t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, 0, t.RearTDBTraveller.Z)) > 1000)
+							new WorldLocation(t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, 0, t.RearTDBTraveller.Z)) > 10000)
 						{
 							t.updateMSGReceived = true;
 							t.expectedTileX = this.TileX; t.expectedTileZ = this.TileZ; t.expectedX = this.X; t.expectedZ = this.Z;
-							t.expectedDIr = this.dir;
+							t.expectedDIr = this.dir; 
 						}
 					}
 					Program.Simulator.Weather = (WeatherType)this.weather;
@@ -545,6 +545,8 @@ namespace ORTS.MultiPlayer
 					p.Train = p1.Train; p.url = this.url;
 					p.LeadingLocomotiveID = this.leadingID;
 					p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + this.con;
+                    if (p.con.Contains("tilted")) p.Train.tilted = true;
+
 					p.path = Program.Simulator.RoutePath + "\\PATHS\\" + this.path;
 					p.Username = this.user;
 					MPManager.OnlineTrains.Players.Add(user, p);

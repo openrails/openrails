@@ -143,6 +143,7 @@ namespace ORTS.MultiPlayer
 			{
 				train.Number = player.num;
 			}
+            if (player.con.Contains("tilted")) train.tilted = true;
 			int direction = player.dir;
 			train.travelled = player.Travelled;
 
