@@ -109,9 +109,9 @@ namespace ORTS
             tiles = LOTiles;
             foreach (var tile in tiles)
             {
-                //if (Viewer.Camera.TileX - tile.TileX >= 0 && Viewer.Camera.TileX - tile.TileX <= 8 && Viewer.Camera.TileZ - TileZ > 0 &&
+                //if (Viewer.Camera.TileX - tile.TileX >=0 && Viewer.Camera.TileX - tile.TileX < 8 && Viewer.Camera.TileZ - TileZ >= 0 &&
                 //   Viewer.Camera.TileZ - TileZ < 8) continue;
-                //if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
+                //if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448)) continue;
                 tile.PrepareFrame(frame, elapsedTime);
             }
         }
@@ -605,6 +605,12 @@ namespace ORTS
                     // V represents the north/south shift
 
                     float y = Elevation(x, z) - Tile.TFile.Floor;
+                    /*
+                    if (parentDim != 16)
+                    {
+                        var currentTileY = Viewer.Tiles.GetElevation(TileX+PatchX/2, TileZ+PatchZ/2, w/8, n/8);
+                        if (currentTileY > 0) y = currentTileY;
+                    }*/
                     totalElevation += y;
 
                     vertexData.Add(new VertexPositionNormalTexture(new Vector3(w, y, n), TerrainNormal(x, z), new Vector2(U, V)));

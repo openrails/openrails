@@ -309,7 +309,8 @@ namespace ORTS
             SceneryShader.Overcast = Viewer.World.Sky.overcast;
 			SceneryShader.ViewerPos = Viewer.Camera.XNALocation(Viewer.Camera.CameraWorldLocation);
 
-			SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
+            if (Viewer.Settings.DistantMountains) SceneryShader.SetFog(ViewingDistance * 2f * FogCoeff, ref SharedMaterialManager.FogColor);
+			else SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
 		}
     }
 
