@@ -2069,14 +2069,14 @@ namespace ORTS.Debugging
 		  switch (type)
 		  {
 			  case 0:
-                  signal.holdState = SignalObject.HOLDSTATE.NONE;
+                  signal.clearHoldSignalDispatcher();
 #if !NEW_SIGNALLING
 				  signal.canUpdate = true;
 				  signal.forcedTime = 0;
 #endif
 				  break;
 			  case 1:
-                  signal.holdState = SignalObject.HOLDSTATE.MANUAL_LOCK;
+                  signal.requestHoldSignalDispatcher(true);
 #if !NEW_SIGNALLING
 				  signal.enabled = false;
 				  signal.canUpdate = false;

@@ -295,7 +295,7 @@ namespace ORTS
             else if (Settings.ShaderModel > 3)
                 Settings.ShaderModel = 3;
             if (Settings.ShadowMapDistance == 0)
-                Settings.ShadowMapDistance = Settings.ViewingDistance;
+                Settings.ShadowMapDistance = Settings.ViewingDistance / 2;
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
