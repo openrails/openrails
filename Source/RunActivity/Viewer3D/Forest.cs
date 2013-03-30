@@ -154,15 +154,18 @@ namespace ORTS
             float scale;
 
             //we will use an inner boundary of 2 meters to plant trees, so will make sure the area is big enough
-            if (areaDim1 < 5) areaDim1 = 5;
-            if (areaDim2 < 5) areaDim2 = 5;
-
+            //if (areaDim1 < treeSize1 * 1.5f + 1) areaDim1 = treeSize1 * 1.5f + 1;
+            //if (areaDim2 < treeSize1 * 1.5f + 1) areaDim2 = treeSize1 * 1.5f + 1;
+            var dim1 = areaDim1 - treeSize1 * 3 / 2 - 1;
+            var dim2 = areaDim2 - treeSize1 * 3 / 2 - 1;
+            if (dim1 < 0.5) dim1 = 0.5f;
+            if (dim2 < 0.5) dim2 = 0.5f;
             for (int i = 0; i < population; i++)
             {
                 // Set the XZ position of each tree at random.
-                treePosition[i].X = (0.5f - (float)random.NextDouble()) * (areaDim1 - 2);//inner boundary of 2m
+                treePosition[i].X = (0.5f - (float)random.NextDouble()) * dim1;
                 treePosition[i].Y = 0;
-                treePosition[i].Z = (0.5f - (float)random.NextDouble()) * (areaDim2 - 2);
+                treePosition[i].Z = (0.5f - (float)random.NextDouble()) * dim2;
                 // Orient each treePosition to its final position on the tile so we can get its Y value.
                 // Do this by transforming a copy of the object to its final orientation on the terrain.
                 tempPosition[i] = Vector3.Transform(treePosition[i], XNAWorldLocation);
