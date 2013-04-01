@@ -672,6 +672,7 @@ namespace ORTS
         /// </summary>
         public void AddMatrix(int matrix)
         {
+            if (matrix < 0) return;
             MatrixIndexes.Add(matrix);
             UpdateFrameCount(matrix);
         }
