@@ -1857,17 +1857,17 @@ namespace ORTS
                             if (ThrottlePercent > 0)
                             {
                                 if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                                    data = this.FilteredMotiveForceN / MaxForceN * (float)(cvc.MaxValue - cvc.MinValue);
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)cvc.MaxValue;
+                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)(cvc.MaxValue - cvc.MinValue);
                                 data = Math.Abs(data);
                             }
                             if (DynamicBrakePercent > 0)
                             {
                                 if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * (float)cvc.MaxValue;
+                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * (float)(cvc.MaxValue - cvc.MinValue);
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * (float)cvc.MaxValue;
+                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * (float)(cvc.MaxValue - cvc.MinValue);
                                 data = -Math.Abs(data);
                             }
                             break;
@@ -1875,19 +1875,6 @@ namespace ORTS
                         data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
                         break;
                     }
-                //case CABViewControlTypes.LOAD_METER:
-                //    {
-                //        if (LocomotiveAxle != null)
-                //        {
-                //            if (FilteredMotiveForceN != 0)
-                //                data = this.FilteredMotiveForceN / MaxForceN * (float)cvc.MaxValue;
-                //            else
-                //                data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)cvc.MaxValue;
-                //            break;
-                //        }
-                //        data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
-                //        break;
-                //    }
                 case CABViewControlTypes.MAIN_RES:
                     {
                         data = ConvertFromPSI(cvc, MainResPressurePSI);
@@ -3087,10 +3074,10 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Gets the requested Locomotive data and translates it into percents by Min and Max values
+        /// Gets the requested Locomotive data and returns it as a fraction (from 0 to 1) of the range between Min and Max values.
         /// </summary>
-        /// <returns>Percent of real data by Min and Max values</returns>
-        public float TranslateToPercent()
+        /// <returns>Data value as fraction (from 0 to 1) of the range between Min and Max values</returns>
+        public float GetRangeFraction()
         {
             float data = _Locomotive.GetDataOf(_CabViewControl);
             if (data < _CabViewControl.MinValue)
@@ -3104,7 +3091,7 @@ namespace ORTS
             return (float)((data - _CabViewControl.MinValue) / (_CabViewControl.MaxValue - _CabViewControl.MinValue));
         }
 
-        public float TranslateToPercentLoadMeter()
+        public float GetRangeFractionLoadMeter()
         {
             int minValuePos = 0;
             float data = _Locomotive.GetDataOf(_CabViewControl);
@@ -3152,7 +3139,7 @@ namespace ORTS
     /// </summary>
     public class CabViewDialRenderer : CabViewControlRenderer
     {
-        private float _Rotation = 0f;
+        private float _Rotation = 0f;   // 0' is 12 o'clock, 90' is 3 0'clock
         private float _ScaleToScreen = 1f;
         private Vector2 _Origin;
         private CVCDial _Dial;
@@ -3185,35 +3172,24 @@ namespace ORTS
             _Position.Y = (float)_Viewer.CabHeightPixels / 480 * ((float)_CabViewControl.PositionY + _Origin.Y) + _Viewer.CabYOffsetPixels;
             _ScaleToScreen = (float)_Viewer.DisplaySize.X / 640 * _Scale;
 
-
-            //if (_CabViewControl.ControlType == CABViewControlTypes.ACCELEROMETER)
-            //{
-            //    Console.WriteLine("Debug Point");
-            //}
-
-
-            float percent = TranslateToPercent();
-            float range;
-
-            if ((_Dial.FromDegree > _Dial.ToDegree && _Dial.Direction == 0) ||
-                (_Dial.ToDegree > _Dial.FromDegree && _Dial.Direction != 0))
+            float rangeDegrees;
+            float rangeFraction = GetRangeFraction();
+            if (_Dial.Direction == 0) // clockwise
             {
-                range = 360 - _Dial.FromDegree + _Dial.ToDegree;
+                rangeDegrees = _Dial.ToDegree - _Dial.FromDegree;
+                // Keep range between 0 and 360
+                while (rangeDegrees < 0)
+                    rangeDegrees += 360;
+                _Rotation = MathHelper.ToRadians(_Dial.FromDegree + rangeDegrees * rangeFraction);
             }
             else
             {
-                range = _Dial.ToDegree - _Dial.FromDegree;
+                rangeDegrees = _Dial.FromDegree - _Dial.ToDegree;
+                // Keep range between 0 and 360
+                while (rangeDegrees < 0)
+                    rangeDegrees += 360;
+                _Rotation = MathHelper.ToRadians(_Dial.FromDegree - rangeDegrees * rangeFraction);
             }
-
-            float degree = range * percent;
-
-            if (_Dial.Direction == 0)
-                degree = _Dial.FromDegree + degree;
-            else
-                // degree = _Dial.ToDegree - degree;
-                 degree = _Dial.FromDegree - degree;
-
-            _Rotation = MathHelper.ToRadians(degree);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -3282,7 +3258,7 @@ namespace ORTS
                 //percent = -1.0f;
                 //percent =  1.0f;
 
-                percent = TranslateToPercentLoadMeter();
+                percent = GetRangeFractionLoadMeter();
                 if (percent >= 0)
                 {
                     LoadMeterPositive = true;
@@ -3296,7 +3272,7 @@ namespace ORTS
                 }
             }
             else
-                percent = TranslateToPercent();
+                percent = GetRangeFraction();
 
             float xpos = 0;
             float ypos = 0;
