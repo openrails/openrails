@@ -1,4 +1,4 @@
-// COPYRIGHT 2010 by the Open Rails project.
+// COPYRIGHT 2010, 2012, 2013 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -7,171 +7,131 @@
 //
 // This file is the responsibility of the 3D & Environment Team. 
 
-// Values transferred from the game
-float4x4 mModelToProjection; 
-float4x4 mView;
-float3 LightVector;                             // Direction vector to sun
-float time;										// Used for moving textures across the sky
-int random;										// Causes mapping to one of the moon phases
-float overcast;
-float windSpeed;
-float windDirection;
-float moonScale;
+////////////////////////////////////////////////////////////////////////////////
+//                     S H A D O W   M A P   S H A D E R                      //
+////////////////////////////////////////////////////////////////////////////////
 
-// "Up" vector for moon billboarding
-#define worldUp cross(float3(-1,0,0),float3(0,0,-1))
+////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-// Textures
-texture skyMap_Tex;
-texture starMap_Tex;
-texture moonMap_Tex;
-texture moonMask_Tex;
-texture cloudMap_Tex;
+float4x4 WorldViewProjection;  // model -> world -> view -> projection
+float3   LightVector;  // Direction vector to sun
+float    Time;  // Used for moving textures across the sky
+float3   Overcast;  // x = alpha, y = contrast, z = brightness
+float2   WindDisplacement;
+float3   SkyColor;
+float2   MoonColor;
+float2   MoonTexCoord;
+float    CloudColor;
+float3   RightVector;
+float3   UpVector;
+texture  SkyMapTexture;
+texture  StarMapTexture;
+texture  MoonMapTexture;
+texture  MoonMaskTexture;
+texture  CloudMapTexture;
 
-// Texture settings
-sampler skyMap = sampler_state
+sampler SkyMapSampler = sampler_state
 {
-   Texture = <skyMap_Tex>;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   MIPFILTER = LINEAR;
-   MIPMAPLODBIAS = 0.000000;
-   AddressU = Wrap;
-   AddressV = Wrap;
+	Texture = (SkyMapTexture);
+	MAGFILTER = LINEAR;
+	MINFILTER = LINEAR;
+	MIPFILTER = LINEAR;
+	MIPMAPLODBIAS = 0.000000;
+	AddressU = Wrap;
+	AddressV = Wrap;
 };
 
-sampler starMap = sampler_state
+sampler StarMapSampler = sampler_state
 {
-   Texture = <starMap_Tex>;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   MIPFILTER = LINEAR;
-   MIPMAPLODBIAS = 0.000000;
-   AddressU = wrap;
-   AddressV = wrap;
+	Texture = (StarMapTexture);
+	MAGFILTER = LINEAR;
+	MINFILTER = LINEAR;
+	MIPFILTER = LINEAR;
+	MIPMAPLODBIAS = 0.000000;
+	AddressU = wrap;
+	AddressV = wrap;
 };
 
-sampler moonMap = sampler_state
+sampler MoonMapSampler = sampler_state
 {
-   Texture = <moonMap_Tex>;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   MIPFILTER = LINEAR;
-   MIPMAPLODBIAS = 0.000000;
-   AddressU = wrap;
-   AddressV = wrap;
+	Texture = (MoonMapTexture);
+	MAGFILTER = LINEAR;
+	MINFILTER = LINEAR;
+	MIPFILTER = LINEAR;
+	MIPMAPLODBIAS = 0.000000;
+	AddressU = wrap;
+	AddressV = wrap;
 };
 
-sampler moonMask = sampler_state
+sampler MoonMaskSampler = sampler_state
 {
-   Texture = <moonMask_Tex>;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   MIPFILTER = LINEAR;
-   MIPMAPLODBIAS = 0.000000;
-   AddressU = wrap;
-   AddressV = wrap;
+	Texture = (MoonMaskTexture);
+	MAGFILTER = LINEAR;
+	MINFILTER = LINEAR;
+	MIPFILTER = LINEAR;
+	MIPMAPLODBIAS = 0.000000;
+	AddressU = wrap;
+	AddressV = wrap;
 };
 
-sampler cloudMap = sampler_state
+sampler CloudMapSampler = sampler_state
 {
-   Texture = <cloudMap_Tex>;
-   MAGFILTER = LINEAR;
-   MINFILTER = LINEAR;
-   MIPFILTER = LINEAR;
-   MIPMAPLODBIAS = 0.000000;
-   AddressU = wrap;
-   AddressV = wrap;
+	Texture = (CloudMapTexture);
+	MAGFILTER = LINEAR;
+	MINFILTER = LINEAR;
+	MIPFILTER = LINEAR;
+	MIPMAPLODBIAS = 0.000000;
+	AddressU = wrap;
+	AddressV = wrap;
 };
 
-// Shader Input and Output Structures
-//
-// Vertex Shader Input
-struct VS_IN
+////////////////////    V E R T E X   I N P U T S    ///////////////////////////
+
+struct VERTEX_INPUT
 {
-	float4 Pos			: POSITION;
-	float3 Normal       : NORMAL;
-	float2 vSky		    : TEXCOORD0;
+	float4 Pos      : POSITION;
+	float3 Normal   : NORMAL;
+	float2 TexCoord : TEXCOORD0;
 };
 
-// Vertex Shader Output
-struct VS_OUT
-{
-	float4 Pos			: POSITION;
-	float2 vSky		    : TEXCOORD0;
-	float3 Normal       : TEXCOORD1;
-};
+////////////////////    V E R T E X   O U T P U T S    /////////////////////////
 
-// Pixel Shader Input
-struct PS_IN
+struct VERTEX_OUTPUT
 {
-	float2 pSky		    : TEXCOORD0;
-	float3 Normal       : TEXCOORD1;
-};
-
-// Pixel Shader Output
-struct PS_OUT
-{
-	float4 Color		: COLOR;
+	float4 Pos      : POSITION;
+	float3 Normal   : TEXCOORD0;
+	float2 TexCoord : TEXCOORD1;
 };
 
 /////////////////////    V E R T E X     S H A D E R S    /////////////////////////////
 
-VS_OUT VSsky( VS_IN In )
+VERTEX_OUTPUT VSSky(VERTEX_INPUT In)
 {
-	VS_OUT Out = ( VS_OUT ) 0;
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
-	Out.Pos      = mul( mModelToProjection, In.Pos );
+	Out.Pos      = mul(WorldViewProjection, In.Pos);
 	Out.Normal   = In.Normal;
-	Out.vSky     = In.vSky;	
+	Out.TexCoord = In.TexCoord;	
 		
 	return Out;
 }
 
-VS_OUT VSmoon( VS_IN In )
+VERTEX_OUTPUT VSMoon(VERTEX_INPUT In)
 {
-	VS_OUT Out = ( VS_OUT ) 0;
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	
+	float3 position = In.Pos.xyz; 
+	position += (In.TexCoord.x) * RightVector;
+	position += (In.TexCoord.y) * UpVector;
 
-    float3 position = In.Pos; 
-    float3 viewDir = mView._m02_m12_m22;
-
-    float3 rightVector = normalize(cross(viewDir, worldUp));    
-    float3 upVector = normalize(cross(rightVector, viewDir));        
-    
-    int scale;
-    if (random == 6) // moon dog
-		moonScale *= 2;
-    position += (In.vSky.x) * rightVector * moonScale;
-    position += (In.vSky.y) * upVector * moonScale;
-   
-    Out.Pos = mul( mModelToProjection, float4(position, 1));
+	Out.Pos      = mul(WorldViewProjection, float4(position, 1));
 	Out.Normal   = In.Normal;
-	Out.vSky     = In.vSky;	
-		
+	Out.TexCoord = In.TexCoord;
+
 	return Out;
 }
 
 /////////////////////    P I X E L     S H A D E R S    ///////////////////////////////
-
-// This function dims the lighting at night, with a transition period as the sun rises or sets
-float Day2Night(float startNightTrans, float finishNightTrans, float minDarknessCoeff)
-{
-	// Internal variables
-	// The following two are used to interpoate between day and night lighting (y = mx + b)
-	float slope = (1.0-minDarknessCoeff)/(startNightTrans-finishNightTrans); // "m"
-	float incpt = 1.0 - slope*startNightTrans; // "b"
-	// This is the return value used to darken scenery
-	float adjustment;
-	
-    if (LightVector.y < finishNightTrans)
-      adjustment = minDarknessCoeff;
-    else if (LightVector.y > startNightTrans)
-      adjustment = 1.0; // Scenery is fully lit during the day
-    else
-      adjustment = slope*LightVector.y + incpt;
-
-	return adjustment;
-}
 
 // This function adjusts brightness, saturation and contrast
 // By Romain Dura aka Romz
@@ -193,130 +153,102 @@ float3 ContrastSaturationBrightness(float3 color, float brt, float sat, float co
 	return conColor;
 }
 
-PS_OUT PSsky( PS_IN In )
+float4 PSSky(VERTEX_OUTPUT In) : COLOR
 {
-	PS_OUT Out = ( PS_OUT ) 0;
-
 	// Get the color information for the current pixel
-	float4 skyColor = tex2D( skyMap, In.pSky );
-	float2 TexCoord = float2((1.0-In.pSky.x)+time, In.pSky.y );
-	float4 starColor = tex2D( starMap, TexCoord );
+	float4 skyColor = tex2D(SkyMapSampler, In.TexCoord);
+	float2 TexCoord = float2((1.0 - In.TexCoord.x) + Time, In.TexCoord.y);
+	float4 starColor = tex2D(StarMapSampler, TexCoord);
 	
-    // Adjust sky color brightness for time of day
-    float adjustLight = Day2Night(0.25, -0.25, -0.5);
-    skyColor *= adjustLight;
-
+	// Adjust sky color brightness for time of day
+	skyColor *= SkyColor.x;
+	
 	// Stars
-	skyColor = lerp(starColor, skyColor, clamp(adjustLight+0.55, 0, 1));
-    
-    // Calculate angular difference between LightVector and vertex normal, radians
-    float dotproduct = dot( LightVector, In.Normal);
-    float angle = acos(dotproduct/(length(LightVector)*length(In.Normal)));
-	        
-    // Sun glow
+	skyColor = lerp(starColor, skyColor, SkyColor.y);
+	
+	// Calculate angular difference between LightVector and vertex normal, radians
+	float dotproduct = dot(LightVector, In.Normal);
+	float angleRcp = 1 / acos(dotproduct / (length(LightVector) * length(In.Normal)));
+	
+	// Sun glow
 	// Coefficients selected by the author to achieve the desired appearance
-    skyColor += 0.015/angle;
-    // increase orange at sunset
-    if (LightVector.x < 0)
-    {
-		skyColor.r += 0.001/angle/(0.8*abs(LightVector.y-0.1));
-		skyColor.g += 0.05*skyColor.r;
+	skyColor += 0.015 * angleRcp;
+	// increase orange at sunset
+	if (LightVector.x < 0)
+	{
+		skyColor.r += SkyColor.z * angleRcp;
+		skyColor.g += 0.05 * skyColor.r;
 	}
 	
-    // Keep alpha opague
-    skyColor.a = 1.0;
-	Out.Color = skyColor;
-	
-	return Out;
+	// Keep alpha opague
+	skyColor.a = 1.0;
+	return skyColor;
 }
 
-PS_OUT PSmoon( PS_IN In )
+float4 PSMoon(VERTEX_OUTPUT In) : COLOR
 {
-	PS_OUT Out = ( PS_OUT ) 0;
-
 	// Get the color information for the current pixel
-	float rand = random;
-	float2 TexCoord = float2(ceil(frac(rand/2))/2+In.pSky.x*0.5, floor(rand/2)/4+In.pSky.y*0.25 );
-	float4 moonColor = tex2D( moonMap, TexCoord );
-	float4 moonMask = tex2D( moonMask, In.pSky );
+	float2 TexCoord = float2(MoonTexCoord.x + In.TexCoord.x * 0.5, MoonTexCoord.y + In.TexCoord.y * 0.25);
+	float4 moonColor = tex2D(MoonMapSampler, TexCoord);
+	float4 moonMask = tex2D(MoonMaskSampler, In.TexCoord);
 	
 	// Fade moon during daylight
-	if (LightVector.y > 0.1)
-		moonColor.a *= (1-LightVector.y)/1.5;
+	moonColor.a *= MoonColor.x;
 	// Mask stars behind dark side (mask fades in)
-	if (random != 6 && LightVector.y < 0.13)
-		moonColor.a += moonMask.r*(-6.25*LightVector.y+0.8125);
+	moonColor.a += moonMask.r * MoonColor.y;
 		
-	Out.Color = moonColor;
-	
-	return Out;
+	return moonColor;
 }
 
-PS_OUT PSclouds( PS_IN In )
+float4 PSClouds(VERTEX_OUTPUT In) : COLOR
 {
-	PS_OUT Out = ( PS_OUT ) 0;
-
 	// Get the color information for the current pixel
 	// Cloud map is tiled. Tiling factor: 4
 	// Move cloud map to suit wind conditions
-	windSpeed *= 200; // This greatly exaggerates the wind speed, but it looks better!
-	float2 TexCoord = float2(In.pSky.x*4-time*sin(windDirection)*windSpeed, In.pSky.y*4+time*cos(windDirection)*windSpeed );
-	float4 cloudColor = tex2D( cloudMap, TexCoord );
-    float alpha = cloudColor.a;
+	float2 TexCoord = float2(In.TexCoord.x * 4 + WindDisplacement.x, In.TexCoord.y * 4 + WindDisplacement.y);
+	float4 cloudColor = tex2D(CloudMapSampler, TexCoord);
+	float alpha = cloudColor.a;
 	
-	// Adjust amount of overcast by adjusting alpha
-	if (overcast < 0.2)
-		cloudColor.a *= 4*overcast+0.2;
-	else
-	{
-		// Adjust alpha
-		alpha += saturate(2*overcast - 0.4);
-		// Reduce contrast and brightness
-		// Coefficients selected by author to achieve the desired appearance
-		float contrast = 1.25-1.125*overcast;
-		float brightness = 1.15-0.75*overcast;
-		float3 color = ContrastSaturationBrightness(cloudColor.xyz, 1.0, brightness, contrast);
-		cloudColor = float4(color,alpha);
-	
-	}
+    // Adjust amount of overcast by adjusting alpha
+    if (!Overcast.y && !Overcast.z)
+    {
+        alpha *= Overcast.x;
+    }
+    else
+    {
+        alpha += Overcast.x;
+        // Reduce contrast and brightness
+        float3 color = ContrastSaturationBrightness(cloudColor.xyz, 1.0, Overcast.z, Overcast.y); // Brightness and saturation are really need to be exchanged?
+        cloudColor = float4(color, alpha);
+    }
 
-    // Adjust cloud color brightness for time of day
-    alpha = cloudColor.a;
-    cloudColor *= Day2Night(0.2, -0.2, 0.15);
-    cloudColor.a = alpha;
-	
-	Out.Color = cloudColor;
-	
-	return Out;
+	// Adjust cloud color brightness for time of day
+	cloudColor *= CloudColor;
+	cloudColor.a = alpha;
+	return cloudColor;
 }
 
 ///////////////////////////    T E C H N I Q U E S    ///////////////////////////////
 
 // These techniques are all the same, but we'll keep them separate for now.
 
-technique SkyTechnique
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSsky ( );
-      PixelShader = compile ps_2_0 PSsky ( );
+technique Sky {
+   pass Pass_0 {
+	  VertexShader = compile vs_2_0 VSSky();
+	  PixelShader = compile ps_2_0 PSSky();
    }
 }
 
-technique MoonTechnique
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSmoon ( );
-      PixelShader = compile ps_2_0 PSmoon ( );
+technique Moon {
+   pass Pass_0 {
+	  VertexShader = compile vs_2_0 VSMoon();
+	  PixelShader = compile ps_2_0 PSMoon();
    }
 }
 
-technique CloudTechnique
-{
-   pass Pass_0
-   {
-      VertexShader = compile vs_2_0 VSsky ( );
-      PixelShader = compile ps_2_0 PSclouds ( );
+technique Clouds {
+   pass Pass_0 {
+	  VertexShader = compile vs_2_0 VSSky();
+	  PixelShader = compile ps_2_0 PSClouds();
    }
 }

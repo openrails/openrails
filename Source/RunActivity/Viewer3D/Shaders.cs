@@ -18,264 +18,340 @@ using Microsoft.Xna.Framework.Storage;
 
 namespace ORTS
 {
-	[CallOnThread("Render")]
-	public class SceneryShader : Effect
+    [CallOnThread("Render")]
+    public class SceneryShader : Effect
     {
-		EffectParameter World;
-		EffectParameter View;
-		EffectParameter WorldViewProjection;
-        public void SetViewMatrix(ref Matrix view)
+        readonly EffectParameter world;
+        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter[] lightViewProjectionShadowProjection;
+        readonly EffectParameter[] shadowMapTextures;
+        readonly EffectParameter shadowMapLimit;
+        readonly EffectParameter zBias_Lighting;
+        readonly EffectParameter fog;
+        readonly EffectParameter lightVector;
+        readonly EffectParameter headlightPosition;
+        readonly EffectParameter headlightDirection;
+        readonly EffectParameter headlightRcpDistance;
+        readonly EffectParameter headlightColor;
+        readonly EffectParameter overcast;
+        readonly EffectParameter viewerPos;
+        readonly EffectParameter imageTextureIsNight;
+        readonly EffectParameter nightColorModifier;
+        readonly EffectParameter halfNightColorModifier;
+        readonly EffectParameter vegetationAmbientModifier;
+        readonly EffectParameter eyeVector;
+        readonly EffectParameter sideVector;
+        readonly EffectParameter imageTexture;
+        readonly EffectParameter overlayTexture;
+
+        Vector4 _eyeVector;
+        Vector4 _zBias_Lighting;
+        Vector3 _sunDirection;
+        bool _imageTextureIsNight;
+
+        public void SetViewMatrix(ref Matrix v)
         {
-            View.SetValue(view);
+            _eyeVector = new Vector4(v.Forward, Vector3.Dot(v.Forward, _sunDirection) * 0.5f + 0.5f);
+
+            eyeVector.SetValue(_eyeVector);
+            sideVector.SetValue(v.Right);
         }
-        public void SetMatrix(ref Matrix world, ref Matrix viewProj)
+
+        public void SetMatrix(ref Matrix w, ref Matrix vp)
         {
-            World.SetValue(world);
-            WorldViewProjection.SetValue(world * viewProj);
+            world.SetValue(w);
+            worldViewProjection.SetValue(w * vp);
+
+            const float FullBrightness = 1.0f;
+            //const float HalfShadowBrightness = 0.75;
+            const float HalfNightBrightness = 0.6f;
+            const float ShadowBrightness = 0.5f;
+            const float NightBrightness = 0.2f;
+
+            if (_imageTextureIsNight)
+            {
+                nightColorModifier.SetValue(FullBrightness);
+                halfNightColorModifier.SetValue(FullBrightness);
+                vegetationAmbientModifier.SetValue(FullBrightness);
+            }
+            else
+            {
+                // The following constants define the beginning and the end conditions of
+                // the day-night transition. Values refer to the Y postion of LightVector.
+                const float startNightTrans = 0.1f;
+                const float finishNightTrans = -0.1f;
+
+                var nightEffect = MathHelper.Clamp((_sunDirection.Y - finishNightTrans) / (startNightTrans - finishNightTrans), 0, 1);
+
+                nightColorModifier.SetValue(MathHelper.Lerp(NightBrightness, FullBrightness, nightEffect));
+                halfNightColorModifier.SetValue(MathHelper.Lerp(HalfNightBrightness, FullBrightness, nightEffect));
+                vegetationAmbientModifier.SetValue(MathHelper.Lerp(ShadowBrightness, FullBrightness, _zBias_Lighting.Y));
+            }
         }
 
-        EffectParameter[] LightViewProjectionShadowProjection;
-		EffectParameter[] ShadowMapTextures;
-		EffectParameter ShadowMapLimit;
-		public void SetShadowMap(Matrix[] lightViewProjectionShadowProjection, Texture2D[] shadowMapTextures, float[] limits)
-		{
-			for (var i = 0; i < RenderProcess.ShadowMapCount; i++)
-			{
-				LightViewProjectionShadowProjection[i].SetValue(lightViewProjectionShadowProjection[i]);
-				ShadowMapTextures[i].SetValue(shadowMapTextures[i]);
-			}
-            ShadowMapLimit.SetValue(new Vector4(limits[0], limits.Length > 1 ? limits[1] : 0, limits.Length > 2 ? limits[2] : 0, limits.Length > 3 ? limits[3] : 0));
-		}
+        public void SetShadowMap(Matrix[] shadowProjections, Texture2D[] textures, float[] limits)
+        {
+            for (var i = 0; i < RenderProcess.ShadowMapCount; i++)
+            {
+                lightViewProjectionShadowProjection[i].SetValue(shadowProjections[i]);
+                shadowMapTextures[i].SetValue(textures[i]);
+            }
+            shadowMapLimit.SetValue(new Vector4(limits[0], limits.Length > 1 ? limits[1] : 0, limits.Length > 2 ? limits[2] : 0, limits.Length > 3 ? limits[3] : 0));
+        }
 
-		EffectParameter zbias_lighting;
-        Vector3 zbias_lightingVector;
-        public float ZBias { get { return zbias_lightingVector.X; } set { zbias_lightingVector.X = value; zbias_lighting.SetValue(zbias_lightingVector); } }
-        public float LightingDiffuse { get { return zbias_lightingVector.Y; } set { zbias_lightingVector.Y = value; zbias_lighting.SetValue(zbias_lightingVector); } }
-        public float LightingSpecular { get { return zbias_lightingVector.Z; } set { zbias_lightingVector.Z = value; zbias_lighting.SetValue(zbias_lightingVector); } }
+        public float ZBias { get { return _zBias_Lighting.X; } set { _zBias_Lighting.X = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
+        public float LightingDiffuse { get { return _zBias_Lighting.Y; } set { _zBias_Lighting.Y = value; zBias_Lighting.SetValue(_zBias_Lighting); } }
+        public float LightingSpecular { get { return _zBias_Lighting.Z; } set { _zBias_Lighting.Z = value; _zBias_Lighting.W = value >= 1 ? 1 : 0; zBias_Lighting.SetValue(_zBias_Lighting); } }
 
-		EffectParameter Fog;
-		public void SetFog(float depth, ref Color color)
-		{
-			Fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, depth));
-		}
+        public void SetFog(float depth, ref Color color)
+        {
+            fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1f / depth));
+        }
 
-        EffectParameter lightVector;
-        public Vector3 LightVector { set { lightVector.SetValue(value); } }
+        public Vector3 LightVector { set { _sunDirection = value; lightVector.SetValue(value); } }
 
-		EffectParameter HeadlightPosition;
-        EffectParameter HeadlightDirection;
-        EffectParameter HeadlightColor;
         public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration, ref Vector4 color)
-		{
-			var lighting = fadeTime / fadeDuration;
-			if (lighting < 0) lighting = 1 + lighting;
-			HeadlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, 1)));
-            HeadlightDirection.SetValue(new Vector4(direction * distance, minDotProduct));
-            HeadlightColor.SetValue(color);
-		}
+        {
+            var lighting = fadeTime / fadeDuration;
+            if (lighting < 0) lighting = 1 + lighting;
+            headlightPosition.SetValue(new Vector4(position, MathHelper.Clamp(lighting, 0, 1)));
+            headlightDirection.SetValue(new Vector4(direction, 0.5f * (1 - minDotProduct))); // We want 50% brightness at the given dot product.
+            headlightRcpDistance.SetValue(1f / distance); // Needed to be separated (direction * distance) because no pre-shaders are supported in XNA 4
+            headlightColor.SetValue(color);
+        }
 
         public void SetHeadlightOff()
         {
-            HeadlightPosition.SetValue(Vector4.Zero);
+            headlightPosition.SetValue(Vector4.Zero);
         }
 
-        EffectParameter overcast;
-        public float Overcast { set { overcast.SetValue(value); } }
+        public float Overcast { set { overcast.SetValue(new Vector2(value, value / 2)); } }
 
-        EffectParameter viewerPos;
         public Vector3 ViewerPos { set { viewerPos.SetValue(value); } }
 
-        EffectParameter imageTextureIsNight;
-        public bool ImageTextureIsNight { set { imageTextureIsNight.SetValue(value); } }
+        public bool ImageTextureIsNight { set { _imageTextureIsNight = value; imageTextureIsNight.SetValue(value); } }
 
-        EffectParameter imageTexture;
         public Texture2D ImageTexture { set { imageTexture.SetValue(value); } }
 
-        EffectParameter overlayTexture;
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
         {
-			World = Parameters["World"];
-			View = Parameters["View"];
-			WorldViewProjection = Parameters["WorldViewProjection"];
-
-			LightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
-			ShadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
-			for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)
-			{
-				LightViewProjectionShadowProjection[i] = Parameters["LightViewProjectionShadowProjection" + i];
-				ShadowMapTextures[i] = Parameters["ShadowMapTexture" + i];
-			}
-			ShadowMapLimit = Parameters["ShadowMapLimit"];
-
-			Fog = Parameters["Fog"];
-
-			zbias_lighting = Parameters["ZBias_Lighting"];
-
+            world = Parameters["World"];
+            worldViewProjection = Parameters["WorldViewProjection"];
+            lightViewProjectionShadowProjection = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
+            shadowMapTextures = new EffectParameter[RenderProcess.ShadowMapCountMaximum];
+            for (var i = 0; i < RenderProcess.ShadowMapCountMaximum; i++)
+            {
+                lightViewProjectionShadowProjection[i] = Parameters["LightViewProjectionShadowProjection" + i];
+                shadowMapTextures[i] = Parameters["ShadowMapTexture" + i];
+            }
+            shadowMapLimit = Parameters["ShadowMapLimit"];
+            zBias_Lighting = Parameters["ZBias_Lighting"];
+            fog = Parameters["Fog"];
             lightVector = Parameters["LightVector"];
-
-			HeadlightPosition = Parameters["HeadlightPosition"];
-            HeadlightDirection = Parameters["HeadlightDirection"];
-            HeadlightColor = Parameters["HeadlightColor"];
-
-            overcast = Parameters["overcast"];
-            viewerPos = Parameters["viewerPos"];
+            headlightPosition = Parameters["HeadlightPosition"];
+            headlightDirection = Parameters["HeadlightDirection"];
+            headlightRcpDistance = Parameters["HeadlightRcpDistance"];
+            headlightColor = Parameters["HeadlightColor"];
+            overcast = Parameters["Overcast"];
+            viewerPos = Parameters["ViewerPos"];
             imageTextureIsNight = Parameters["ImageTextureIsNight"];
+            nightColorModifier = Parameters["NightColorModifier"];
+            halfNightColorModifier = Parameters["HalfNightColorModifier"];
+            vegetationAmbientModifier = Parameters["VegetationAmbientModifier"];
+            eyeVector = Parameters["EyeVector"];
+            sideVector = Parameters["SideVector"];
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
         }
     }
 
-	[CallOnThread("Render")]
-	public class ShadowMapShader : Effect
-	{
-		EffectParameter View = null;
-		EffectParameter WorldViewProjection = null;
-		EffectParameter ImageTexture = null;
-		EffectParameter ImageBlurStep = null;
+    [CallOnThread("Render")]
+    public class ShadowMapShader : Effect
+    {
+        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter sideVector;
+        readonly EffectParameter imageBlurStep;
+        readonly EffectParameter imageTexture;
 
-        public void SetData(ref Matrix view)
+        public void SetData(ref Matrix v)
         {
-            View.SetValue(view);
+            sideVector.SetValue(v.Right);
         }
 
-        public void SetData(ref Matrix wvp, Texture2D imageTexture)
+        public void SetData(ref Matrix wvp, Texture2D texture)
         {
-            WorldViewProjection.SetValue(wvp);
-            ImageTexture.SetValue(imageTexture);
+            worldViewProjection.SetValue(wvp);
+            imageTexture.SetValue(texture);
         }
 
-        public void SetBlurData(ref Matrix view, ref Matrix wvp)
+        public void SetBlurData(ref Matrix wvp)
         {
-            View.SetValue(view);
-            WorldViewProjection.SetValue(wvp);
+            worldViewProjection.SetValue(wvp);
         }
 
-        public void SetBlurData(Texture2D imageTexture)
+        public void SetBlurData(Texture2D texture)
         {
-            ImageTexture.SetValue(imageTexture);
-            ImageBlurStep.SetValue(imageTexture != null ? imageTexture.Width : 0);
+            imageTexture.SetValue(texture);
+            imageBlurStep.SetValue(texture != null ? 1f / texture.Width : 0);
         }
 
         public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
-			: base(graphicsDevice, content.Load<Effect>("ShadowMap"))
-		{
-			View = Parameters["View"];
-			WorldViewProjection = Parameters["WorldViewProjection"];
-			ImageTexture = Parameters["ImageTexture"];
-			ImageBlurStep = Parameters["ImageBlurStep"];
-		}
-	}
+            : base(graphicsDevice, content.Load<Effect>("ShadowMap"))
+        {
+            worldViewProjection = Parameters["WorldViewProjection"];
+            sideVector = Parameters["SideVector"];
+            imageBlurStep = Parameters["ImageBlurStep"];
+            imageTexture = Parameters["ImageTexture"];
+        }
+    }
 
-	[CallOnThread("Render")]
-	public class SkyShader : Effect
+    [CallOnThread("Render")]
+    public class SkyShader : Effect
     {
-        EffectParameter mModelToProjection = null;
-        EffectParameter View = null;
-        EffectParameter sunDirection = null;
-        EffectParameter skyMap_Tex = null;
-        EffectParameter starMap_Tex = null;
-        EffectParameter moonMap_Tex = null;
-        EffectParameter moonMask_Tex = null;
-        EffectParameter cloudMap_Tex = null;
-        EffectParameter sunpeakColor = null;
-        EffectParameter sunriseColor = null;
-        EffectParameter sunsetColor = null;
-        EffectParameter time = null;
-        EffectParameter random = null;
-        EffectParameter overcast = null;
-        EffectParameter windSpeed = null;
-        EffectParameter windDirection = null;
-        EffectParameter moonScale = null;
+        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter lightVector;
+        readonly EffectParameter time;
+        readonly EffectParameter overcast;
+        readonly EffectParameter windDisplacement;
+        readonly EffectParameter skyColor;
+        readonly EffectParameter moonColor;
+        readonly EffectParameter moonTexCoord;
+        readonly EffectParameter cloudColor;
+        readonly EffectParameter rightVector;
+        readonly EffectParameter upVector;
+        readonly EffectParameter skyMapTexture;
+        readonly EffectParameter starMapTexture;
+        readonly EffectParameter moonMapTexture;
+        readonly EffectParameter moonMaskTexture;
+        readonly EffectParameter cloudMapTexture;
 
-        public Vector3 SunDirection
+        public Vector3 LightVector
         {
-            set { sunDirection.SetValue(value); }
+            set
+            {
+                lightVector.SetValue(value);
+
+                cloudColor.SetValue(Day2Night(0.2f, -0.2f, 0.15f, value.Y));
+                var skyColor1 = Day2Night(0.25f, -0.25f, -0.5f, value.Y);
+                var skyColor2 = MathHelper.Clamp(skyColor1 + 0.55f, 0, 1);
+                var skyColor3 = 0.001f / (0.8f * Math.Abs(value.Y - 0.1f));
+                skyColor.SetValue(new Vector3(skyColor1, skyColor2, skyColor3));
+
+                // Fade moon during daylight
+                var moonColor1 = value.Y > 0.1f ? (1 - value.Y) / 1.5f : 1;
+                // Mask stars behind dark side (mask fades in)
+                var moonColor2 = _moonPhase != 6 && value.Y < 0.13 ? -6.25f * value.Y + 0.8125f : 0;
+                moonColor.SetValue(new Vector2(moonColor1, moonColor2));
+            }
         }
 
-        public Texture2D SkyTexture
-        {
-            set { skyMap_Tex.SetValue(value); }
-        }
- 
-        public Texture2D StarTexture
-        {
-            set { starMap_Tex.SetValue(value); }
-        }
-
-        public Texture2D MoonTexture
-        {
-            set { moonMap_Tex.SetValue(value); }
-        }
-
-        public Texture2D MoonMaskTexture
-        {
-            set { moonMask_Tex.SetValue(value); }
-        }
-
-        public Texture2D CloudTexture
-        {
-            set { cloudMap_Tex.SetValue(value); }
-        }
-
+        float _time;
         public float Time
         {
-            set { time.SetValue(value); }
+            set
+            {
+                _time = value;
+                time.SetValue(value);
+            }
         }
 
+        int _moonPhase;
         public float Random
         {
-            set { random.SetValue(value); }
+            set 
+            { 
+                _moonPhase = (int)value; 
+                moonTexCoord.SetValue(new Vector2((value % 2) / 2, (int)(value / 2) / 4));
+            }
         }
 
         public float Overcast
         {
-            set { overcast.SetValue(value); }
+            set
+            {
+                if (value < 0.2f)
+                    overcast.SetValue(new Vector3(4 * value + 0.2f, 0.0f, 0.0f));
+                else
+                    // Coefficients selected by author to achieve the desired appearance
+                    overcast.SetValue(new Vector3(MathHelper.Clamp(2 * value - 0.4f, 0, 1), 1.25f - 1.125f * value, 1.15f - 0.75f * value));
+            }
         }
 
-        public float WindSpeed
-        {
-            set { windSpeed.SetValue(value); }
-        }
+        public float WindSpeed { get; set; }
 
         public float WindDirection
         {
-            set { windDirection.SetValue(value); }
+            set 
+            { 
+                var totalWindDisplacement = 200 * WindSpeed * _time; // This greatly exaggerates the wind speed, but it looks better!
+                windDisplacement.SetValue(new Vector2(-(float)Math.Sin(value) * totalWindDisplacement, (float)Math.Cos(value) * totalWindDisplacement));
+            }
         }
 
-        public float MoonScale
+        public float MoonScale { get; set; }
+
+        public Texture2D SkyMapTexture { set { skyMapTexture.SetValue(value); } }
+        public Texture2D StarMapTexture { set { starMapTexture.SetValue(value); } }
+        public Texture2D MoonMapTexture { set { moonMapTexture.SetValue(value); } }
+        public Texture2D MoonMaskTexture { set { moonMaskTexture.SetValue(value); } }
+        public Texture2D CloudMapTexture { set { cloudMapTexture.SetValue(value); } }
+
+        public void SetViewMatrix(ref Matrix view)
         {
-            set { moonScale.SetValue(value); }
+            var moonScale = MoonScale;
+            if (_moonPhase == 6)
+                moonScale *= 2;
+
+            rightVector.SetValue(view.Right * moonScale);
+            upVector.SetValue(Vector3.Down * moonScale);
+        }
+
+        public void SetMatrix(ref Matrix wvp)
+        {
+            worldViewProjection.SetValueTranspose(wvp);
         }
 
         public SkyShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("SkyShader"))
         {
-            mModelToProjection = Parameters["mModelToProjection"];
-            View = Parameters["mView"];
-            skyMap_Tex = Parameters["skyMap_Tex"];
-            sunDirection = Parameters["LightVector"];
-            starMap_Tex = Parameters["starMap_Tex"];
-            sunpeakColor = Parameters["sunpeakColor"];
-            sunriseColor = Parameters["sunriseColor"];
-            sunsetColor = Parameters["sunsetColor"];
-            moonMap_Tex = Parameters["moonMap_Tex"];
-            moonMask_Tex = Parameters["moonMask_Tex"];
-            cloudMap_Tex = Parameters["cloudMap_Tex"];
-            time = Parameters["time"];
-            random = Parameters["random"];
-            overcast = Parameters["overcast"];
-            windSpeed = Parameters["windSpeed"];
-            windDirection = Parameters["windDirection"];
-            moonScale = Parameters["moonScale"];
+            worldViewProjection = Parameters["WorldViewProjection"];
+            lightVector = Parameters["LightVector"];
+            time = Parameters["Time"];
+            overcast = Parameters["Overcast"];
+            windDisplacement = Parameters["WindDisplacement"];
+            skyColor = Parameters["SkyColor"];
+            moonColor = Parameters["MoonColor"];
+            moonTexCoord = Parameters["MoonTexCoord"];
+            cloudColor = Parameters["CloudColor"];
+            rightVector = Parameters["RightVector"];
+            upVector = Parameters["UpVector"];
+            skyMapTexture = Parameters["SkyMapTexture"];
+            starMapTexture = Parameters["StarMapTexture"];
+            moonMapTexture = Parameters["MoonMapTexture"];
+            moonMaskTexture = Parameters["MoonMaskTexture"];
+            cloudMapTexture = Parameters["CloudMapTexture"];
         }
-
-        public void SetMatrix(ref Matrix worldViewProj, ref Matrix view)
+        
+        // This function dims the lighting at night, with a transition period as the sun rises or sets
+        float Day2Night(float startNightTrans, float finishNightTrans, float minDarknessCoeff, float sunDirectionY)
         {
-            mModelToProjection.SetValueTranspose(worldViewProj);
-            View.SetValue(view);
+            // The following two are used to interpoate between day and night lighting (y = mx + b)
+            var slope = (1.0f - minDarknessCoeff) / (startNightTrans - finishNightTrans); // "m"
+            var incpt = 1.0f - slope * startNightTrans; // "b"
+            // This is the return value used to darken scenery
+            float adjustment;
+            
+            if (sunDirectionY < finishNightTrans)
+                adjustment = minDarknessCoeff;
+            else if (sunDirectionY > startNightTrans)
+                adjustment = 1.0f; // Scenery is fully lit during the day
+            else
+                adjustment = slope * sunDirectionY + incpt;
+
+            return adjustment;
         }
     }
 
@@ -334,8 +410,8 @@ namespace ORTS
         }
     }
 
-	[CallOnThread("Render")]
-	public class PrecipShader : Effect
+    [CallOnThread("Render")]
+    public class PrecipShader : Effect
     {
         EffectParameter mProjection = null;
         EffectParameter mView = null;
@@ -392,25 +468,14 @@ namespace ORTS
         }
     }
 
-	[CallOnThread("Render")]
-	public class LightGlowShader : Effect
+    [CallOnThread("Render")]
+    public class LightGlowShader : Effect
     {
-        EffectParameter worldViewProjection = null;
-        EffectParameter lightGlowTexture = null;
-        EffectParameter fade = null;
+        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter fade;
+        readonly EffectParameter lightGlowTexture;
 
-        public Texture2D LightGlowTexture
-        {
-            set { lightGlowTexture.SetValue(value); }
-        }
-
-        public LightGlowShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("LightGlowShader"))
-        {
-            worldViewProjection = Parameters["WorldViewProjection"];
-            lightGlowTexture = Parameters["LightGlowTexture"];
-            fade = Parameters["Fade"];
-        }
+        public Texture2D LightGlowTexture { set { lightGlowTexture.SetValue(value); } }
 
         public void SetMatrix(ref Matrix wvp)
         {
@@ -420,6 +485,14 @@ namespace ORTS
         public void SetFade(Vector2 fadeValues)
         {
             fade.SetValue(fadeValues);
+        }
+
+        public LightGlowShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("LightGlowShader"))
+        {
+            worldViewProjection = Parameters["WorldViewProjection"];
+            fade = Parameters["Fade"];
+            lightGlowTexture = Parameters["LightGlowTexture"];
         }
     }
 
@@ -447,117 +520,95 @@ namespace ORTS
         }
     }
 
-	[CallOnThread("Render")]
-	public class PopupWindowShader : Effect
-	{
-		EffectParameter World;
-		EffectParameter WorldViewProjection;
-		EffectParameter glassColor;
-		EffectParameter ScreenSize;
-		EffectParameter Screen_Tex;
-
-		public Texture2D Screen
-		{
-			set
-			{
-				Screen_Tex.SetValue(value);
-				if (value == null)
-					ScreenSize.SetValue(new[] { 0, 0 });
-				else
-					ScreenSize.SetValue(new[] { value.Width, value.Height });
-			}
-		}
-
-		public Color GlassColor
-		{
-			set
-			{
-				glassColor.SetValue(new float[] { value.R / 255, value.G / 255, value.B / 255 });
-			}
-		}
-
-		public void SetMatrix(Matrix world, ref Matrix wvp)
-		{
-			World.SetValue(world);
-            WorldViewProjection.SetValue(wvp);
-		}
-
-		public PopupWindowShader(GraphicsDevice graphicsDevice, ContentManager content)
-			: base(graphicsDevice, content.Load<Effect>("PopupWindow"))
-		{
-			World = Parameters["World"];
-			WorldViewProjection = Parameters["WorldViewProjection"];
-			glassColor = Parameters["GlassColor"];
-			ScreenSize = Parameters["ScreenSize"];
-			Screen_Tex = Parameters["Screen_Tex"];
-			Parameters["Window_Tex"].SetValue(content.Load<Texture2D>("Window"));
-		}
-	}
-
-	[CallOnThread("Render")]
-	public class CabShader : Effect
+    [CallOnThread("Render")]
+    public class PopupWindowShader : Effect
     {
-        EffectParameter _LightVector = null;
-        EffectParameter _isNightTex = null;
-        EffectParameter _Texture = null;
-        EffectParameter _DashLight1Pos = null;
-        EffectParameter _DashLight2Pos = null;
-        EffectParameter _DashLight1Col = null;
-        EffectParameter _DashLight2Col = null;
-        EffectParameter _isDashLight = null;
-        EffectParameter _TexPos = null;
-        EffectParameter _TexSize = null;
-        EffectParameter _Overcast = null;
+        readonly EffectParameter world;
+        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter glassColor;
+        readonly EffectParameter screenSize;
+        readonly EffectParameter screenTexture;
 
-        Vector2 _Position = new Vector2();
-        Vector2 _Size = new Vector2();
-
-        public void SetTexData(float X, float Y, float Width, float Height)
+        public Texture2D Screen
         {
-            _Position.X = X;
-            _Position.Y = Y;
-            _Size.X = Width;
-            _Size.Y = Height;
-            _TexPos.SetValue(_Position);
-            _TexSize.SetValue(_Size);
+            set
+            {
+                screenTexture.SetValue(value);
+                if (value == null)
+                    screenSize.SetValue(new[] { 0, 0 });
+                else
+                    screenSize.SetValue(new[] { value.Width, value.Height });
+            }
         }
 
-        public void SetLightPositions(Vector4 DashLight1Pos, Vector4 DashLight2Pos)
+        public Color GlassColor { set { glassColor.SetValue(new float[] { value.R / 255, value.G / 255, value.B / 255 }); } }
+
+        public void SetMatrix(Matrix w, ref Matrix wvp)
         {
-            _DashLight1Pos.SetValue(DashLight1Pos);
-            _DashLight2Pos.SetValue(DashLight2Pos);
+            world.SetValue(w);
+            worldViewProjection.SetValue(wvp);
         }
 
-        public void SetData(Vector3 LightVector, 
-            bool isNightTexture, bool isDashLight, float Overcast)
+        public PopupWindowShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("PopupWindow"))
         {
-            _LightVector.SetValue(LightVector);
-            _isDashLight.SetValue(isDashLight);
-            _isNightTex.SetValue(isNightTexture);
-            _Overcast.SetValue(Overcast);
+            world = Parameters["World"];
+            worldViewProjection = Parameters["WorldViewProjection"];
+            glassColor = Parameters["GlassColor"];
+            screenSize = Parameters["ScreenSize"];
+            screenTexture = Parameters["ScreenTexture"];
+            Parameters["WindowTexture"].SetValue(content.Load<Texture2D>("Window"));
+        }
+    }
+
+    [CallOnThread("Render")]
+    public class CabShader : Effect
+    {
+        readonly EffectParameter nightColorModifier;
+        readonly EffectParameter lightOn;
+        readonly EffectParameter light1Pos;
+        readonly EffectParameter light2Pos;
+        readonly EffectParameter light1Col;
+        readonly EffectParameter light2Col;
+        readonly EffectParameter texPos;
+        readonly EffectParameter texSize;
+        readonly EffectParameter imageTexture;
+
+        public void SetTextureData(float x, float y, float width, float height)
+        {
+            texPos.SetValue(new Vector2(x, y));
+            texSize.SetValue(new Vector2(width, height));
         }
 
-        public CabShader(GraphicsDevice graphicsDevice, ContentManager content, Vector4 DashLight1Pos, Vector4 DashLight2Pos,
-            Vector3 DashLight1Col, Vector3 DashLight2Col)
+        public void SetLightPositions(Vector4 light1Position, Vector4 light2Position)
+        {
+            light1Pos.SetValue(light1Position);
+            light2Pos.SetValue(light2Position);
+        }
+
+        public void SetData(Vector3 sunDirection, bool isNightTexture, bool isDashLight, float overcast)
+        {
+            nightColorModifier.SetValue(MathHelper.Lerp(0.2f + (isDashLight ? 0.15f : 0), 1, isNightTexture ? 1 : MathHelper.Clamp((sunDirection.Y + 0.1f) / 0.2f, 0, 1) * MathHelper.Clamp(1.5f - overcast, 0, 1)));
+            lightOn.SetValue(isDashLight);
+        }
+
+        public CabShader(GraphicsDevice graphicsDevice, ContentManager content, Vector4 light1Position, Vector4 light2Position, Vector3 light1Color, Vector3 light2Color)
             : base(graphicsDevice, content.Load<Effect>("CabShader"))
         {
-            _LightVector = Parameters["LightVector"];
-            _isNightTex = Parameters["isNightTex"];
-            _Texture = Parameters["ImageTexture"];
-            _DashLight1Pos = Parameters["Light1Pos"];
-            _DashLight2Pos = Parameters["Light2Pos"];
-            _DashLight1Col = Parameters["Light1Col"];
-            _DashLight2Col = Parameters["Light2Col"];
-            _isDashLight = Parameters["isLight"];
+            nightColorModifier = Parameters["NightColorModifier"];
+            lightOn = Parameters["LightOn"];
+            light1Pos = Parameters["Light1Pos"];
+            light2Pos = Parameters["Light2Pos"];
+            light1Col = Parameters["Light1Col"];
+            light2Col = Parameters["Light2Col"];
+            texPos = Parameters["TexPos"];
+            texSize = Parameters["TexSize"];
+            imageTexture = Parameters["ImageTexture"];
 
-            _TexPos = Parameters["TexPos"];
-            _TexSize = Parameters["TexSize"];
-            _Overcast = Parameters["overcast"];
-
-            _DashLight1Pos.SetValue(DashLight1Pos);
-            _DashLight2Pos.SetValue(DashLight2Pos);
-            _DashLight1Col.SetValue(DashLight1Col);
-            _DashLight2Col.SetValue(DashLight2Col);
+            light1Pos.SetValue(light1Position);
+            light2Pos.SetValue(light2Position);
+            light1Col.SetValue(light1Color);
+            light2Col.SetValue(light2Color);
         }
     }
 }

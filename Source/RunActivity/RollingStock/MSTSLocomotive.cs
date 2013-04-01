@@ -3015,7 +3015,7 @@ namespace ORTS
                 _Shader.SetData(_Viewer.MaterialManager.sunDirection,
                     _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.Sky.overcast);
 
-                _Shader.SetTexData( stretchedCab.Left, stretchedCab.Top, stretchedCab.Width, stretchedCab.Height );
+                _Shader.SetTextureData( stretchedCab.Left, stretchedCab.Top, stretchedCab.Width, stretchedCab.Height );
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
@@ -3196,7 +3196,7 @@ namespace ORTS
         {
             if (_Shader != null)
             {
-                _Shader.SetTexData(_Position.X, _Position.Y, _Texture.Width * _ScaleToScreen, _Texture.Height * _ScaleToScreen);
+                _Shader.SetTextureData(_Position.X, _Position.Y, _Texture.Width * _ScaleToScreen, _Texture.Height * _ScaleToScreen);
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
@@ -3357,7 +3357,7 @@ namespace ORTS
         {
             if (_Shader != null)
             {
-                _Shader.SetTexData(_DestRectangle.Left, _DestRectangle.Top, _DestRectangle.Width, _DestRectangle.Height);
+                _Shader.SetTextureData(_DestRectangle.Left, _DestRectangle.Top, _DestRectangle.Width, _DestRectangle.Height);
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
@@ -3433,7 +3433,7 @@ namespace ORTS
             //graphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Linear;
             if (_Shader != null)
             {
-                _Shader.SetTexData(_DestRectangle.Left, _DestRectangle.Top, _DestRectangle.Width, _DestRectangle.Height);
+                _Shader.SetTextureData(_DestRectangle.Left, _DestRectangle.Top, _DestRectangle.Width, _DestRectangle.Height);
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }

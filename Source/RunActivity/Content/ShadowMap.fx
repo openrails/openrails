@@ -1,4 +1,4 @@
-// COPYRIGHT 2010, 2011 by the Open Rails project.
+// COPYRIGHT 2010, 2011, 2013 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -13,16 +13,12 @@
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-// General values
-//float4x4 World;               // model -> world (currently unused)
-float4x4 View;                // world -> view (currently unused)
-//float4x4 Projection;          // view -> projection (currently unused)
-float4x4 WorldViewProjection; // model -> world -> view -> projection
+float4x4 WorldViewProjection;  // model -> world -> view -> projection
+float3   SideVector;
+float    ImageBlurStep;  // = 1 / shadow map texture width and height
+texture  ImageTexture;
 
-float ImageBlurStep; // = 1 / shadow map texture width and height
-
-texture ImageTexture;
-sampler Image = sampler_state
+sampler ImageSampler = sampler_state
 {
 	Texture = (ImageTexture);
 	MagFilter = Linear;
@@ -31,7 +27,7 @@ sampler Image = sampler_state
 	MaxAnisotropy = 16;
 };
 
-sampler ShadowMap = sampler_state
+sampler ShadowMapSampler = sampler_state
 {
 	Texture = (ImageTexture);
 	MagFilter = Linear;
@@ -58,10 +54,10 @@ struct VERTEX_OUTPUT
 
 struct VERTEX_OUTPUT_BLUR
 {
-	float4 Position       : POSITION;
+	float4 Position     : POSITION;
 	float2 SampleCentre : TEXCOORD0;
-	float2 Sample_01 : TEXCOORD1;
-	float2 Sample_23 : TEXCOORD2;
+	float2 Sample_01    : TEXCOORD1;
+	float2 Sample_23    : TEXCOORD2;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -82,13 +78,11 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT In)
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
 	// Start with the three vectors of the view.
-	float3 eyeVector = normalize(View._m02_m12_m22);
 	float3 upVector = float3(0, -1, 0);
-	float3 sideVector = normalize(cross(eyeVector, upVector));
 
 	// Move the vertex left/right/up/down based on the normal values (tree size).
 	float3 newPosition = In.Position;
-	newPosition += (In.TexCoord.x - 0.5f) * sideVector * In.Normal.x;
+	newPosition += (In.TexCoord.x - 0.5f) * SideVector * In.Normal.x;
 	newPosition += (In.TexCoord.y - 1.0f) * upVector * In.Normal.y;
 	In.Position = float4(newPosition, 1);
 
@@ -107,9 +101,9 @@ VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT In)
 	const float2 halfPixelOffset = float2(0.5, 0.5);
 
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.SampleCentre = (In.TexCoord + halfPixelOffset) / ImageBlurStep;
-	Out.Sample_01 = (In.TexCoord + halfPixelOffset - float2(1.5, 0)) / ImageBlurStep;
-	Out.Sample_23 = (In.TexCoord + halfPixelOffset + float2(1.5, 0)) / ImageBlurStep;
+	Out.SampleCentre = (In.TexCoord + halfPixelOffset) * ImageBlurStep;
+	Out.Sample_01 = (In.TexCoord + halfPixelOffset - float2(1.5, 0)) * ImageBlurStep;
+	Out.Sample_23 = (In.TexCoord + halfPixelOffset + float2(1.5, 0)) * ImageBlurStep;
 
 	return Out;
 }
@@ -122,9 +116,9 @@ VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT In)
 	float2 offsetTexCoord = In.TexCoord + halfPixelOffset;
 
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.SampleCentre = offsetTexCoord / ImageBlurStep;
-	Out.Sample_01 = (offsetTexCoord - float2(0, 1.5)) / ImageBlurStep;
-	Out.Sample_23 = (offsetTexCoord + float2(0, 1.5)) / ImageBlurStep;
+	Out.SampleCentre = offsetTexCoord * ImageBlurStep;
+	Out.Sample_01 = (offsetTexCoord - float2(0, 1.5)) * ImageBlurStep;
+	Out.Sample_23 = (offsetTexCoord + float2(0, 1.5)) * ImageBlurStep;
 
 	return Out;
 }
@@ -133,7 +127,7 @@ VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT In)
 
 float4 PSShadowMap(in VERTEX_OUTPUT In) : COLOR0
 {
-	float alpha = tex2D(Image, In.TexCoord_Depth.xy).a;
+	float alpha = tex2D(ImageSampler, In.TexCoord_Depth.xy).a;
 	
 	if(alpha < 0.25)
 		discard;
@@ -148,9 +142,9 @@ float4 PSShadowMapBlocker() : COLOR0
 
 float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : COLOR0
 {
-	float2 centreTap =	tex2D(ShadowMap, In.SampleCentre).rg	* 0.4414401;	
-	float2 tap01 =		tex2D(ShadowMap, In.Sample_01).rg * 0.2774689;
-	float2 tap23 =		tex2D(ShadowMap, In.Sample_23).rg * 0.2774689;
+	float2 centreTap =	tex2D(ShadowMapSampler, In.SampleCentre).rg	* 0.4414401;	
+	float2 tap01 =		tex2D(ShadowMapSampler, In.Sample_01).rg * 0.2774689;
+	float2 tap23 =		tex2D(ShadowMapSampler, In.Sample_23).rg * 0.2774689;
 		
 	return float4(tap01 + centreTap + tap23, 0, 0);
 }

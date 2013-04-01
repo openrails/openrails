@@ -1,4 +1,4 @@
-// COPYRIGHT 2010, 2011 by the Open Rails project.
+// COPYRIGHT 2010, 2011, 2013 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -13,13 +13,11 @@
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-// General values
 float4x4 WorldViewProjection;  // model -> world -> view -> projection
+float2   Fade;          // overall fade (0 = off, 1 = on); transition fade (0 = original, 1 = transition)
+texture  LightGlowTexture;
 
-float2 Fade; // overall fade (0 = off, 1 = on); transition fade (0 = original, 1 = transition)
-
-texture LightGlowTexture;
-sampler LightGlow = sampler_state
+sampler LightGlowSampler = sampler_state
 {
 	Texture = (LightGlowTexture);
 	MagFilter = Linear;
@@ -56,21 +54,21 @@ struct VERTEX_OUTPUT
 VERTEX_OUTPUT VSLightGlow(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-    
-    float radius = lerp(In.TexCoords_Radius.z, In.TexCoords_Radius.w, Fade.y);
-    float3 position = lerp(In.PositionO, In.PositionT, Fade.y);
-    float3 normal = lerp(In.NormalO, In.NormalT, Fade.y);
- 	float3 upVector = float3(0, 1, 0);
-    float3 sideVector = normalize(cross(upVector, normal));
-    upVector = normalize(cross(sideVector, normal));
-    position += (In.TexCoords_Radius.x - 0.5f) * sideVector * radius;
-    position += (In.TexCoords_Radius.y - 0.5f) * upVector * radius;
-    Out.Position = mul(WorldViewProjection, float4(position, 1));
 	
-    Out.Color = lerp(In.ColorO, In.ColorT, Fade.y);
-    Out.Color.a *= Fade.x;
-    
-    Out.TexCoords = In.TexCoords_Radius.xy;
+	float radius = lerp(In.TexCoords_Radius.z, In.TexCoords_Radius.w, Fade.y);
+	float3 position = lerp(In.PositionO, In.PositionT, Fade.y);
+	float3 normal = lerp(In.NormalO, In.NormalT, Fade.y);
+	float3 upVector = float3(0, 1, 0);
+	float3 sideVector = normalize(cross(upVector, normal));
+	upVector = normalize(cross(sideVector, normal));
+	position += (In.TexCoords_Radius.x - 0.5f) * sideVector * radius;
+	position += (In.TexCoords_Radius.y - 0.5f) * upVector * radius;
+	Out.Position = mul(WorldViewProjection, float4(position, 1));
+	
+	Out.Color = lerp(In.ColorO, In.ColorT, Fade.y);
+	Out.Color.a *= Fade.x;
+	
+	Out.TexCoords = In.TexCoords_Radius.xy;
 
 	return Out;
 }
@@ -79,7 +77,7 @@ VERTEX_OUTPUT VSLightGlow(in VERTEX_INPUT In)
 
 float4 PSLightGlow(in VERTEX_OUTPUT In) : COLOR0
 {
-	return In.Color * tex2D(LightGlow, In.TexCoords.xy);
+	return In.Color * tex2D(LightGlowSampler, In.TexCoords.xy);
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////

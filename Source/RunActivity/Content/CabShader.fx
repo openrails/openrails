@@ -1,4 +1,4 @@
-// COPYRIGHT 2010 by the Open Rails project.
+// COPYRIGHT 2010, 2013 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -7,28 +7,30 @@
 //
 // This file is the responsibility of the 3D & Environment Team. 
 
-float4x4 World;
-float4x4 View;
-float4x4 Projection;
+////////////////////////////////////////////////////////////////////////////////
+//                            C A B   S H A D E R                             //
+////////////////////////////////////////////////////////////////////////////////
 
-float3 LightVector;  // Direction vector to sun
-bool   isNightTex;   // Using night texture
-float4 Light1Pos;     // Dashboard Light 1 cone position
-float4 Light2Pos;     // Dashboard Light 2 cone position
-float3 Light1Col;     // Light 1 color
-float3 Light2Col;     // Light 2 color
-bool   isLight;      // Dashboard light is on
-float overcast;
+////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-float2 TexPos;         // Texture bounding rectangle
-float2 TexSize;        // Texture bounding rectangle
+float    NightColorModifier;  // Modifier for nighttime lighting.
+bool     LightOn;       // Dashboard light is on
+float4   Light1Pos;     // Dashboard Light 1 cone position
+float4   Light2Pos;     // Dashboard Light 2 cone position
+float3   Light1Col;     // Light 1 color
+float3   Light2Col;     // Light 2 color
+float2   TexPos;        // Texture bounding rectangle
+float2   TexSize;       // Texture bounding rectangle
+texture  ImageTexture;
 
-uniform extern texture ImageTexture;
-
-sampler ScreenS = sampler_state
+sampler ImageSampler = sampler_state
 {
-    Texture = (ImageTexture);
+	Texture = (ImageTexture);
 };
+
+////////////////////    V E R T E X   I N P U T S    ///////////////////////////
+
+////////////////////    V E R T E X   O U T P U T S    /////////////////////////
 
 struct PIXEL_INPUT
 {
@@ -38,58 +40,44 @@ struct PIXEL_INPUT
 	float3 Normal    : NORMAL;
 };
 
+////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-// Gets the night-time effect.
-float _PSGetNightEffect()
+////////////////////    P I X E L   S H A D E R S    ///////////////////////////
+
+float4 PSCabShader(PIXEL_INPUT In) : COLOR0
 {
-	// The following constants define the beginning and the end conditions of
-	// the day-night transition. Values refer to the Y postion of LightVector.
-	const float startNightTrans = 0.1;
-	const float finishNightTrans = -0.1;
-	return saturate((LightVector.y - finishNightTrans) / (startNightTrans - finishNightTrans)) * saturate(1.5 - overcast);
-}
+	float4 origColor = tex2D(ImageSampler, In.TexCoords) * In.Color;
+	float3 shadColor = origColor.rgb * NightColorModifier;
 
-float3 _LightEffect(float2 orig)
-{
-	const float lightStrength = 1.0;
-
-	float light1Range = Light1Pos.z;
-	float2 diffvect = Light1Pos.xy - orig;
-	diffvect.x /= Light1Pos.w;
-	float dist1 = length(diffvect);
-	float lum1 = saturate ((light1Range - dist1) / 200) * lightStrength;
-
-	float light2Range = Light2Pos.z;
-	diffvect = Light2Pos.xy - orig;
-	diffvect.x /= Light2Pos.w;
-	float dist2 = length(diffvect);
-	float lum2 = saturate ((light2Range - dist2) / 200) * lightStrength;
-
-	return saturate (lum1 * Light1Col + lum2 * Light2Col);
-}
-
-float4 PixelShaderFunction(PIXEL_INPUT In) : COLOR0
-{
-	const float FullBrightness = 1.0;
-	const float NightBrightness = 0.2 + isLight * 0.15;
-	const float3 litcolor = { 1, 0.85, 0.7 };
-
-	float4 origColor = tex2D(ScreenS, In.TexCoords) * In.Color;
-	float3 shadColor = origColor.rgb;
-	shadColor *= lerp(NightBrightness, FullBrightness, saturate(_PSGetNightEffect() + isNightTex));
-	if (isLight)
+	if (LightOn)
 	{
-		float2 Pos = In.TexCoords * TexSize;
-		Pos += TexPos;
-		shadColor += origColor * _LightEffect(Pos);
+		float2 orig = In.TexCoords * TexSize + TexPos;
+
+		float2 diffvect = Light1Pos.xy - orig;
+		diffvect.x /= Light1Pos.w;
+		float lum1 = saturate ((Light1Pos.z - length(diffvect)) / 200);
+
+		diffvect = Light2Pos.xy - orig;
+		diffvect.x /= Light2Pos.w;
+		float lum2 = saturate ((Light2Pos.z - length(diffvect)) / 200);
+
+		float3 lightEffect = saturate (lum1 * Light1Col + lum2 * Light2Col);
+		shadColor += origColor.rgb * lightEffect;
 	}
-    return float4(min(shadColor, origColor * 1.2), origColor.a);
+
+	return float4(min(shadColor, origColor.rgb * 1.2), origColor.a);
 }
 
-technique CabShading
-{
-    pass Pass1
-    {
-        PixelShader = compile ps_2_0 PixelShaderFunction();
-    }
+////////////////////    T E C H N I Q U E S    /////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// IMPORTANT: ATI graphics cards/drivers do NOT like mixing shader model      //
+//            versions within a technique/pass. Always use the same vertex    //
+//            and pixel shader versions within each technique/pass.           //
+////////////////////////////////////////////////////////////////////////////////
+
+technique CabShader {
+	pass Pass_0 {
+		PixelShader = compile ps_2_0 PSCabShader();
+	}
 }

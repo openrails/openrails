@@ -1,4 +1,4 @@
-// COPYRIGHT 2010 by the Open Rails project.
+// COPYRIGHT 2010, 2013 by the Open Rails project.
 // This code is provided to help you understand what Open Rails does and does
 // not do. Suggestions and contributions to improve Open Rails are always
 // welcome. Use of the code for any other purpose or distribution of the code
@@ -18,7 +18,7 @@ float4x4 mWorld;
 float4x4 mView;
 float3 LightVector; // Direction vector to sun, used for day-night darkening
 int viewportHeight;
-double currentTime;
+float currentTime;
 int weatherType;
 
 // Textures
