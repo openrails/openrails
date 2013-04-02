@@ -255,7 +255,7 @@ namespace ORTS
         int PatchX, PatchZ;
         Tile Tile;
         int parentDim = 16;
-        float X, Y, W, B, C, H;  // A 2 x 3 matrix for texture translation
+        float X, Y, W, B, C, H, K;  // A 2 x 3 matrix for texture translation
 
         public TerrainPatch(Viewer3D viewer, Tile tile, int x, int z, int tileX, int tileZ, int xd)
         {
@@ -278,7 +278,7 @@ namespace ORTS
             B = patch.B;
             C = patch.C;
             H = patch.H;
-
+            K = patch.K;
             // index buffer SOMETIMES and vertex type declaration ALWAYS shared by all terrain patches
             if (SharedPatchVertexDeclaration == null)
                 SetupSharedData(Viewer.GraphicsDevice);
@@ -290,14 +290,13 @@ namespace ORTS
             var ts = ((terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader]).terrain_texslots;
             if (ts.Length > 1)
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
-            else
-                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
-
-            //will worry this later about texture
-            if (parentDim != 16)
+            else if (parentDim != 16)
             {
+                //will worry this later about texture
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
             }
+            else PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
+
             Tile = null;
         }
 
@@ -312,7 +311,7 @@ namespace ORTS
             if (parentDim != 16)
             {
                 radius = 6000f;
-                frame.AddAutoPrimitive(mstsLocation, radius, 20000, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.AutoZBias);
+                frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.AutoZBias);
             }
             else frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
         }
@@ -418,16 +417,11 @@ namespace ORTS
             // TODO, decode this from the _N.RAW TILE
             // until I figure out this file, I'll compute normals from the terrain
 
-            float t = 8;
+            float t = K / 8;
 
             float vx = x;
             float vz = z;
             Vector3 center = new Vector3(vx, Elevation(x, z), vz);
-            if (parentDim != 16)
-            {
-                t = 256;// 2048 / 8; // 2048/64
-                //vx = x * t; vz = z * t;
-            }
 
             Vector3 n = new Vector3(vx, Elevation(x, z - 1), vz - t); Vector3 toN = Vector3.Normalize(n - center);
             Vector3 e = new Vector3(vx + t, Elevation(x + 1, z), vz); Vector3 toE = Vector3.Normalize(e - center);
@@ -566,18 +560,13 @@ namespace ORTS
         {
             var totalElevation = 0f;
             var vertexData = new List<VertexPositionNormalTexture>(17 * 17);
-
+            float step = K / 8;
             for (int z = 0; z < 17; ++z)
                 for (int x = 0; x < 17; ++x)
                 {
-                    float w = -64 + x * 8;
-                    float n = -64 + z * 8;
+                    float w = -K + x * step;
+                    float n = -K + z * step;
 
-                    if (parentDim != 16) //is lotile
-                    {
-                        w = -2048 + x * 256;
-                        n = -2048 + z * 256;
-                    }
                     float u = (float)x;
                     float v = (float)z;
 

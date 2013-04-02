@@ -137,7 +137,7 @@ namespace ORTS
 
                     if (tmp == null) //cannot find the track for super elevation, will return 0;
                     {
-                        tmpTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));//draw it the regular way
+                        //tmpTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));//draw it the regular way
                         continue;
                     }
                     if (isTunnel)
@@ -159,9 +159,9 @@ namespace ORTS
                 }
             }
 
-            if (drawn == 0 || isTunnel) return false;
+            if (drawn <= count || isTunnel) return false;
             //now everything is OK, add the list to the dTrackList
-            dTrackList.AddRange(tmpTrackList);
+            //dTrackList.AddRange(tmpTrackList);
             return true;
         } // end DecomposeStaticSuperElevation
 
@@ -280,7 +280,7 @@ namespace ORTS
             sv = ev = mv = 0f; dir = 1f;
             foreach (var s in allSections)
             {
-                if (s.WFNameX == TileX && s.WFNameZ == TileZ && s.WorldFileUiD == UID)
+                if (s.WFNameX == TileX && s.WFNameZ == TileZ && s.WorldFileUiD == UID && section.SectionIndex == s.SectionIndex)
                 {
                     return s;
                 }
@@ -316,11 +316,12 @@ namespace ORTS
                     {
                         if (i == 1 || i == count)
                         {
-                            if (theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174) < 10f) continue; 
+                            if (theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174) < 15f) continue; 
                         } //do not want the first and last piece of short curved track to be in the curve (they connected to switches)
                         if (StartCurve == false) //we are beginning a curve
                         {
                             StartCurve = true; CurveDir = Math.Sign(sec.SectionCurve.Angle);
+                            Len = 0f;
                         }
                         else if (CurveDir != Math.Sign(sec.SectionCurve.Angle)) //we are in curve, but bending different dir
                         {
@@ -345,8 +346,8 @@ namespace ORTS
                 }
                 if (StartCurve == true) // we are in a curve after looking at every section
                 {
-                    Len = 0f; StartCurve = false;
                     MarkSections(simulator, SectionList, Len);
+                    Len = 0f; StartCurve = false;
                 }
                 SectionList.Clear();
             }

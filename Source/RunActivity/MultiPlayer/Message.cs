@@ -484,12 +484,12 @@ namespace ORTS.MultiPlayer
 						else t = Program.Simulator.PlayerLocomotive.Train;
 						t.Number = this.num;
 						if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
-							new WorldLocation(t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, 0, t.RearTDBTraveller.Z)) > 10000)
+							new WorldLocation(t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, 0, t.RearTDBTraveller.Z)) > 1000000)
 						{
-							t.updateMSGReceived = true;
 							t.expectedTileX = this.TileX; t.expectedTileZ = this.TileZ; t.expectedX = this.X; t.expectedZ = this.Z;
-							t.expectedDIr = this.dir; 
-						}
+                            t.expectedTDir = this.dir; t.expectedDIr = (int)t.MUDirection;
+                            t.updateMSGReceived = true; t.expectedTravelled = t.travelled;
+                        }
 					}
 					Program.Simulator.Weather = (WeatherType)this.weather;
 					Program.Simulator.ClockTime = this.seconds;

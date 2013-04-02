@@ -11538,6 +11538,7 @@ namespace ORTS
         {
             if (updateMSGReceived)
             {
+                updateMSGReceived = false;
                 float move = 0.0f;
                 var requestedSpeed = SpeedMpS;
                 try
@@ -11579,7 +11580,6 @@ namespace ORTS
                 }
                 /*if (Math.Abs(requestedSpeed) < 0.00001 && Math.Abs(SpeedMpS) > 0.01) updateMSGReceived = true; //if requested is stop, but the current speed is still moving
                 else*/
-                updateMSGReceived = false;
 
             }
             else//no message received, will move at the previous speed
