@@ -3613,6 +3613,13 @@ namespace ORTS
                             ValidRoute[0].RemoveRange(nextRouteIndex, ValidRoute[0].Count - nextRouteIndex);
                         }
                     }
+
+                    if (PresentPosition[0].RouteListIndex >= 0 && PresentPosition[0].RouteListIndex < ValidRoute[0].Count - 1) // not at end of route
+                    {
+                        int nextRouteIndex = PresentPosition[0].RouteListIndex + 1;
+                        signalRef.BreakDownRouteList(ValidRoute[0], nextRouteIndex, routedForward);
+                        ValidRoute[0].RemoveRange(nextRouteIndex, ValidRoute[0].Count - nextRouteIndex);
+                    }
                 }
 
 #if DEBUG_REPORTS
@@ -9833,7 +9840,7 @@ namespace ORTS
                 for (int iWaitingPoint = 0; iWaitingPoint < otherPath.WaitingPoints.Count; iWaitingPoint++)
                 {
                     int[] oldWaitingPoint = otherPath.WaitingPoints[iWaitingPoint];
-                    int[] newWaitingPoint = new int[3];
+                    int[] newWaitingPoint = new int[oldWaitingPoint.Length];
                     oldWaitingPoint.CopyTo(newWaitingPoint, 0);
                     WaitingPoints.Add(newWaitingPoint);
                 }
