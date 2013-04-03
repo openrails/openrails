@@ -68,7 +68,7 @@ namespace ORTS
                 if (!Viewer.Settings.DistantMountains) return;
                 tiles = LOTiles;
                 newTiles = new List<TerrainTile>();
-                needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance * 20 / 2048f);//LO_TILES has five viewing distance (40KM)
+                needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance * Viewer.Settings.DistantMountainsViewingTiles / 2048f);//LO_TILES has five viewing distance (40KM)
                 for (var x = -needed; x <= needed; x++)
                 {
                     for (var z = -needed; z <= needed; z++)
@@ -81,7 +81,7 @@ namespace ORTS
                                 var visible = (x == 0 && z == 0);
                                 tile = LoadTile(TileX + x, TileZ + z, visible, Viewer.LOTiles);
                             }
-                            newTiles.Add(tile);
+                            if (tile != null) newTiles.Add(tile);
                         }
                         catch  {  }
                     }
@@ -109,9 +109,9 @@ namespace ORTS
             var tilesArray = LOTiles.ToArray();
             foreach (var tile in tilesArray)
             {
-                //if (Viewer.Camera.TileX - tile.TileX >=0 && Viewer.Camera.TileX - tile.TileX < 8 && Viewer.Camera.TileZ - TileZ >= 0 &&
-                //   Viewer.Camera.TileZ - TileZ < 8) continue;
-                //if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448)) continue;
+                //    if (Viewer.Camera.InRange(new Vector3((tile.TileX + 4 - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ + 4 - Viewer.Camera.TileZ) * 2048), 
+                //        14480, 40000))
+                //if (Viewer.Camera.InFOV(new Vector3((tile.TileX + 4 - Viewer.Camera.TileX) * 2048, Viewer.Camera.Location.Y, (tile.TileZ + 4 - Viewer.Camera.TileZ) * 2048), 16000))
                 tile.PrepareFrame(frame, elapsedTime);
             }
         }
@@ -124,7 +124,17 @@ namespace ORTS
 
         TerrainTile LoadTile(int tileX, int tileZ, bool visible, TileManager tiles)
         {
-            return new TerrainTile(Viewer, tileX, tileZ, visible, tiles);
+            var vis = visible;
+            /*for (var x = -8; x <= 8; x++)
+                for (var z = -8; z <= 8; z++)
+                {
+                    visible = visible & (x == 0 && z == 0);
+                    tiles.Load(tileX + x, tileZ + z, visible, true);//lo tiles
+                }*/
+            tiles.Load(tileX, tileZ, visible, true);//lo tiles
+            var tile = tiles.GetTile(tileX, tileZ);
+            if (tile == null || tile.IsEmpty) return null;
+            return new TerrainTile(Viewer, tileX, tileZ, vis, tiles);
         }
 
         [CallOnThread("Loader")]
@@ -187,12 +197,6 @@ namespace ORTS
             TerrainPatches = new TerrainPatch[xdim, xdim];
 
             // Terrain needs all surrounding tiles to correctly join up the meshes.
-            for (var x = -8; x <= 8; x++)
-                for (var z = -8; z <= 8; z++)
-                {
-                    visible = visible & (x == 0 && z == 0);
-                    tiles.Load(tileX + x, tileZ + z, visible, true);//lo tiles
-                }
             var tile = tiles.GetTile(tileX, tileZ);
             if (tile != null && !tile.IsEmpty)
             {

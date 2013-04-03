@@ -137,7 +137,8 @@ namespace ORTS
 
                     if (tmp == null) //cannot find the track for super elevation, will return 0;
                     {
-                        //tmpTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));//draw it the regular way
+                        tmpTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));//draw it the regular way
+                        drawn++;
                         continue;
                     }
                     if (isTunnel)
@@ -159,9 +160,9 @@ namespace ORTS
                 }
             }
 
-            if (drawn <= count || isTunnel) return false;
+            if (drawn == 0 || isTunnel) return false;
             //now everything is OK, add the list to the dTrackList
-            //dTrackList.AddRange(tmpTrackList);
+            if (tmpTrackList.Count > 0) dTrackList.AddRange(tmpTrackList);
             return true;
         } // end DecomposeStaticSuperElevation
 
@@ -277,6 +278,7 @@ namespace ORTS
         //a function to find the elevation of a section ,by searching the TDB database
         public static TrVectorSection FindSectionValue(TrackShape shape, WorldPosition loc, WorldPosition loc2, Simulator simulator, TrackSection section, int TileX, int TileZ, uint UID)
         {
+            if (section.SectionCurve == null) return null;
             sv = ev = mv = 0f; dir = 1f;
             foreach (var s in allSections)
             {
@@ -285,7 +287,17 @@ namespace ORTS
                     return s;
                 }
             }
-            
+
+            //not found, will do again to find reversed
+            foreach (var s in allSections)
+            {
+                var sec = simulator.TSectionDat.TrackSections.Get(s.SectionIndex);
+                if (s.WFNameX == TileX && s.WFNameZ == TileZ && s.WorldFileUiD == UID && section.SectionCurve.Radius == sec.SectionCurve.Radius
+                    && section.SectionCurve.Angle == -sec.SectionCurve.Angle)
+                {
+                    return s;
+                }
+            }
             return null;
         }
 

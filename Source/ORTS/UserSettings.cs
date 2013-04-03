@@ -165,7 +165,9 @@ namespace ORTS
 
 		[Default(false)]
         public bool DistantMountains { get; set; }
-        
+
+        [Default(20)]
+        public int DistantMountainsViewingTiles { get; set; }
         // Physics options
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }

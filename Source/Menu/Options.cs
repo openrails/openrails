@@ -103,6 +103,7 @@ namespace ORTS
             MinLengthChoice.Value = Settings.SuperElevationMinLen;
             SuperElevationGauge.Value = Settings.SuperElevationGauge;
             distanceMountain.Checked = settings.DistantMountains;
+            DMDistance.Value = settings.DistantMountainsViewingTiles * 2;
         }
 
         string ParseCategoryFrom(string name)
@@ -314,6 +315,7 @@ namespace ORTS
             Settings.SuperElevationMinLen = (int)MinLengthChoice.Value;
             Settings.SuperElevationGauge = (int)SuperElevationGauge.Value;
             Settings.DistantMountains = distanceMountain.Checked;
+            Settings.DistantMountainsViewingTiles = (int) DMDistance.Value / 2;
             Settings.Save();
 
             DialogResult = DialogResult.OK;
