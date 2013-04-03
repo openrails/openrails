@@ -197,24 +197,6 @@ namespace ORTS
                 ++CurrentNotch;
                 IntermediateValue = CurrentValue = Notches[CurrentNotch].Value;
             }
-			//the following are added to cope with the combined notch/smooth control like this:
-			//      EngineControllers (
-            //			Throttle ( 0 1 0.01 0 
-            //			NumNotches ( 5 Notch ( 0    0 Dummy ) Notch ( 0.1  0 Dummy ) Notch ( 0.1  1 Dummy ) Notch ( 0.2  0 Dummy )Notch ( 0.3  1 Dummy ))
-			//		)
-			
-			else if ((Notches.Count > 0) && (CurrentNotch < Notches.Count - 1) && (Notches[CurrentNotch].Smooth))
-			{
-                IntermediateValue += StepSize * GetNotchBoost();
-				if (IntermediateValue >= Notches[CurrentNotch + 1].Value) { ++CurrentNotch; IntermediateValue = CurrentValue = Notches[CurrentNotch].Value; }
-				else CurrentValue = IntermediateValue;
-			}
-			else if ((Notches.Count > 0) && (CurrentNotch == Notches.Count - 1) && (Notches[CurrentNotch].Smooth))
-			{
-				IntermediateValue += StepSize * GetNotchBoost(); 
-				if (IntermediateValue >= MaximumValue) IntermediateValue = MaximumValue;
-				CurrentValue = IntermediateValue;
-			}
 		}
 
         public void StopIncrease()
@@ -232,28 +214,13 @@ namespace ORTS
             UpdateValue = -1;
 
             //If we have notches and the previous Notch does not require smooth, we go directly to the previous notch
-            if ((Notches.Count > 0) && (CurrentNotch > 0))
+            if ((Notches.Count > 0) && (CurrentNotch > 0) && SmoothMin() == null)
             {
-                if ((CurrentValue > Notches[CurrentNotch].Value) || ((CurrentValue == Notches[CurrentNotch].Value) && (Notches[CurrentNotch - 1].Smooth)))
-                //So we have Smooth notch
-                {
-                    if (CurrentValue == Notches[CurrentNotch].Value) { --CurrentNotch; }
-                    //Without rounding the following equation is unprecise, for some reason...
-                    IntermediateValue = (float)Math.Round(CurrentValue - StepSize * GetNotchBoost(), 2);
-                    if (IntermediateValue <= Notches[CurrentNotch].Value)
-                    {
-                        IntermediateValue = CurrentValue = Notches[CurrentNotch].Value;
-                    }
-                    else CurrentValue = IntermediateValue;
-                }
-                else
-                {
-                    //Keep intermediate value with the "previous" notch, so it will take a while to change notches
-                    //again if the user keep holding the key
-                    IntermediateValue = Notches[CurrentNotch].Value;
-                    CurrentNotch--;
-                    CurrentValue = Notches[CurrentNotch].Value;
-                }
+                //Keep intermediate value with the "previous" notch, so it will take a while to change notches
+                //again if the user keep holding the key
+                IntermediateValue = Notches[CurrentNotch].Value;
+                CurrentNotch--;
+                CurrentValue = Notches[CurrentNotch].Value;
             }
         }
 
@@ -264,13 +231,12 @@ namespace ORTS
 
         public float Update(float elapsedSeconds)
         {
-            if( UpdateValue > 0 ) {
+            if (UpdateValue == 1 || UpdateValue == -1)
+            {
                 CheckControllerTargetAchieved();
-                return this.UpdateValues( elapsedSeconds, 1 );
-            } else if( UpdateValue < 0 ) {
-                CheckControllerTargetAchieved();
-                return this.UpdateValues( elapsedSeconds, -1 );
-            } else return this.CurrentValue;
+                UpdateValues(elapsedSeconds, UpdateValue);
+            }
+            return CurrentValue;
         }
 
         /// <summary>
@@ -310,7 +276,12 @@ namespace ORTS
                 //decreasing, again check if the current notch has changed
                 else if((direction < 0) && (CurrentNotch > 0) && (IntermediateValue < Notches[CurrentNotch].Value))
                 {
-                    CurrentNotch--;
+                    if (Notches[CurrentNotch].Smooth && !Notches[CurrentNotch - 1].Smooth)
+                        IntermediateValue = Notches[CurrentNotch].Value;
+                    else
+                    {
+                        CurrentNotch--;
+                    }
                 }
 
                 //If the notch is smooth, we use intermediate value that is being update smooth thought the frames
@@ -341,6 +312,31 @@ namespace ORTS
             if (notch.Type == MSTSNotchType.Release)
                 x = 1 - x;
             return x;
+        }
+
+        public float? SmoothMin()
+        {
+            float? target = null;
+            if (Notches.Count > 0)
+            {
+                if (CurrentNotch > 0 && Notches[CurrentNotch - 1].Smooth)
+                    target = Notches[CurrentNotch - 1].Value;
+                else if (Notches[CurrentNotch].Smooth && CurrentValue > Notches[CurrentNotch].Value)
+                    target = Notches[CurrentNotch].Value;
+            }
+            else
+                target = MinimumValue;
+            return target;
+        }
+
+        public float? SmoothMax()
+        {
+            float? target = null;
+            if (Notches.Count > 0 && CurrentNotch < Notches.Count - 1 && Notches[CurrentNotch].Smooth)
+                target = Notches[CurrentNotch + 1].Value;
+            else if (Notches.Count == 0)
+                target = MaximumValue;
+            return target;
         }
 
         public virtual string GetStatus()

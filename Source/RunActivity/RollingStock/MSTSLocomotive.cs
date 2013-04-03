@@ -65,6 +65,7 @@ namespace ORTS
         public bool Sander = false;  
         public bool Wiper = false;
         public bool BailOff = false;
+        public bool DynamicBrake = false;
         public float MaxPowerW;
         public float MaxForceN;
         public float MaxSpeedMpS = 1e3f;
@@ -98,6 +99,7 @@ namespace ORTS
         public float DynamicBrakeSpeed3 = 23;
         public float DynamicBrakeSpeed4 = 35;
         public float MaxDynamicBrakeForceN = 0;
+        public float DynamicBrakeDelayS = 0;
         public bool DynamicBrakeAutoBailOff = false;
         public bool UsingRearCab = false;
 
@@ -359,6 +361,7 @@ namespace ORTS
                 case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4 = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
+                case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(numwheels": NumWheels = stf.ReadFloatBlock(STFReader.UNITS.Any, null); if (NumWheels < 1) STFException.TraceWarning(stf, "NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
@@ -397,6 +400,7 @@ namespace ORTS
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
+            DynamicBrakeDelayS = locoCopy.DynamicBrakeDelayS;
             NumWheels = locoCopy.NumWheels;
             AntiSlip = locoCopy.AntiSlip;
             EffectData = locoCopy.EffectData;
@@ -565,11 +569,34 @@ namespace ORTS
                 }
             }
 
-            if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0)) {
-                if (this.IsLeadLocomotive())
+            if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
+            {
+                if (!DynamicBrake)
+                {
+                    if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                    {
+                        DynamicBrake = true; // Engage
+                        if (IsLeadLocomotive())
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                    }
+                    else if (IsLeadLocomotive())
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+                }
+                else if (this.IsLeadLocomotive())
                     DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
                 else
                     DynamicBrakeController.Update(elapsedClockSeconds);
+            }
+            else if ((DynamicBrakeController != null) && (DynamicBrakePercent < 0) && (DynamicBrake))
+            {
+                if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                {
+                    DynamicBrake = false; // Disengage
+                    if (IsLeadLocomotive())
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
+                }
+                else if (IsLeadLocomotive())
+                    Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
             }
 
             //Currently the ThrottlePercent is global to the entire train
@@ -802,7 +829,7 @@ namespace ORTS
                             ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
                             ThrottleController.CurrentValue * 100);
                     }
-                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0)
+                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0 && DynamicBrake)
                     {
                         Simulator.Confirmer.UpdateWithPerCent(
                             CabControl.DynamicBrake,
@@ -1128,43 +1155,26 @@ namespace ORTS
             
             CommandStartTime = Simulator.ClockTime;
 
-            if (!HasCombCtrl && DynamicBrakePercent >= 0)
+            if (!HasCombCtrl && DynamicBrakePercent >= 0
+                || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake))
                 // signal sound
                 return notchedThrottleCommandNeeded;
 
-            if (HasCombCtrl && !HasCombThrottleTrainBreak)
+            float? smoothMax = ThrottleController.SmoothMax();
+
+            if (HasCombCtrl && !HasCombThrottleTrainBreak && DynamicBrake)
             {
-                if (DynamicBrakePercent >= 0 && ThrottlePercent == 0)
-                {
-                    if (DynamicBrakePercent == 0)
-                    {
-                        //Deactivate. Have to do it here, not in StartDynamicBrakeDecrease(null),
-                        //because that way it doesn't stop at the deactivation.
-                        DynamicBrakePercent = -1;
-                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
-                        return notchedThrottleCommandNeeded;
-                    }
-                    else
-                    StartDynamicBrakeDecrease( null );
-                    
-                    if (!HasSmoothStruc)
-                        StopDynamicBrakeDecrease();
-                }
-                if (DynamicBrakePercent == -1)
-                {
-                    if (HasStepCtrl)
-                    notchedThrottleCommandNeeded = true;
-                    else
-                        StartThrottleIncrease(null);
-                }
+                StartDynamicBrakeDecrease( null );
+                if (!HasSmoothStruc)
+                    StopDynamicBrakeDecrease();
             }
-            else if (!HasCombCtrl && HasStepCtrl)
+            else if (smoothMax == null)
             {
                 notchedThrottleCommandNeeded = true;
             }
             else
             {
-                StartThrottleIncrease( null );
+                StartThrottleIncrease(smoothMax);
             }
             SignalEvent(Event.ThrottleChange);
             return notchedThrottleCommandNeeded;
@@ -1180,17 +1190,15 @@ namespace ORTS
                 return continuousThrottleCommandNeeded;
             ThrottleController.StopIncrease();
             
-            if( !HasStepCtrl ) {
+            if (ThrottleController.SmoothMax() != null)
+            {
                 continuousThrottleCommandNeeded = true;
             }
             
             if (HasCombCtrl  && !HasCombThrottleTrainBreak)
             {
-                if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
-                {
-
-                    StopDynamicBrakeIncrease();
-                }
+                if (ThrottlePercent == 0)
+                    StopDynamicBrakeDecrease();
             }
             return continuousThrottleCommandNeeded;
         }
@@ -1199,7 +1207,8 @@ namespace ORTS
             AlerterReset();
             CommandStartTime = Simulator.ClockTime;
             ThrottleController.StartDecrease( target );
-            Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
+            //Not needed, Update() handles it:
+            //Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
             SignalEvent(Event.ThrottleChange);
         }
 
@@ -1210,35 +1219,27 @@ namespace ORTS
             
             CommandStartTime = Simulator.ClockTime;
 
-            if (!HasCombCtrl && DynamicBrakePercent >= 0)
+            if (!HasCombCtrl && DynamicBrakePercent >= 0
+                || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake))
                 // signal sound
                 return notchedThrottleCommandNeeded;
 
-            if (HasCombCtrl && !HasCombThrottleTrainBreak)
-            {
-                if (ThrottlePercent == 0)
-                {
-                    StartDynamicBrakeIncrease( null );
+            float? smoothMin = ThrottleController.SmoothMin();
 
-                    if (!HasSmoothStruc)
-                        StopDynamicBrakeIncrease();
-                }
-                if (DynamicBrakePercent == -1)
-                {
-                    if (HasStepCtrl)
-                    notchedThrottleCommandNeeded = true;
-                    else
-                        StartThrottleDecrease(null);
-                }
+            if (HasCombCtrl && !HasCombThrottleTrainBreak && ThrottlePercent <= 0)
+            {
+                StartDynamicBrakeIncrease( null );
+                if (!HasSmoothStruc)
+                    StopDynamicBrakeIncrease();
             }
-            else if (!HasCombCtrl && HasStepCtrl)
+            else if (smoothMin == null)
             {
                 notchedThrottleCommandNeeded = true;
                 //SignalEvent( EventID.Reverse );
             }
             else
             {
-                StartThrottleDecrease( null );
+                StartThrottleDecrease(smoothMin);
             }
             SignalEvent(Event.ThrottleChange);
             return notchedThrottleCommandNeeded;
@@ -1255,17 +1256,15 @@ namespace ORTS
 
             ThrottleController.StopDecrease();
             
-            if( !HasStepCtrl ) {
+            if (ThrottleController.SmoothMin() != null)
+            {
                 continuousThrottleCommandNeeded = true;
             }
 
             if (HasCombCtrl  && !HasCombThrottleTrainBreak)
             {
-                if ((DynamicBrakePercent == -1 || DynamicBrakePercent >= 0) && ThrottlePercent == 0)
-                {
-
+                if (ThrottlePercent == 0)
                     StopDynamicBrakeIncrease();
-                }
             }
             return continuousThrottleCommandNeeded;
         }
@@ -1488,24 +1487,22 @@ namespace ORTS
             AlerterReset();
             if (!CanUseDynamicBrake())
                 return;
-            
 
-            if (DynamicBrakePercent < 0)
+            if (DynamicBrakePercent < 0 && !DynamicBrake) // Activate
             {
-                //activate it
                 DynamicBrakePercent = 0;
-                Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On);
-                return;
+                DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
+                StopDynamicBrakeIncrease();
             }
-            else
+            else if (DynamicBrakePercent >= 0 && DynamicBrake)
             {
                 DynamicBrakeController.StartIncrease( target );
                 if (!HasSmoothStruc)
                 {
                     StopDynamicBrakeIncrease();
                     Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                }
             }
-        }
         }
 
         public bool StopDynamicBrakeIncrease()
@@ -1526,18 +1523,21 @@ namespace ORTS
             if (!CanUseDynamicBrake())
                 return;
 
-            if (!HasCombCtrl && DynamicBrakePercent <= 0)
-                DynamicBrakePercent = -1;
-            else
+            if (DynamicBrakePercent <= 0 && DynamicBrake) // Deactivate
             {
-                DynamicBrakeController.StartDecrease( target );
-
+                DynamicBrakePercent = -1;
+                DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
+                StopDynamicBrakeDecrease();
+            }
+            else if (DynamicBrakePercent >= 0 && DynamicBrake)
+            {
+                DynamicBrakeController.StartDecrease(target);
                 if (!HasSmoothStruc)
                 {
                     StopDynamicBrakeDecrease();
                     Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                }
             }
-        }
         }
 
         public bool StopDynamicBrakeDecrease()
@@ -3471,7 +3471,7 @@ namespace ORTS
                 case CABViewControlTypes.THROTTLE:
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                     {
-                        if (_Locomotive.HasStepCtrl)
+                        if (_Locomotive.ThrottleController.SmoothMax() == null)
                             indx = _Locomotive.ThrottleController.CurrentNotch;
                         else
                             indx = FromPercent(data);

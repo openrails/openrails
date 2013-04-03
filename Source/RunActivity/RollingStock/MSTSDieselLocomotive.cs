@@ -198,10 +198,32 @@ namespace ORTS
 
             if ((DynamicBrakeController != null) && (DynamicBrakePercent >= 0))
             {
-                if (this.IsLeadLocomotive())
+                if (!DynamicBrake)
+                {
+                    if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                    {
+                        DynamicBrake = true; // Engage
+                        if (IsLeadLocomotive())
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                    }
+                    else if (IsLeadLocomotive())
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+                }
+                else if (this.IsLeadLocomotive())
                     DynamicBrakePercent = DynamicBrakeController.Update(elapsedClockSeconds) * 100.0f;
                 else
                     DynamicBrakeController.Update(elapsedClockSeconds);
+            }
+            else if ((DynamicBrakeController != null) && (DynamicBrakePercent < 0) && (DynamicBrake))
+            {
+                if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                {
+                    DynamicBrake = false; // Disengage
+                    if (IsLeadLocomotive())
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
+                }
+                else if (IsLeadLocomotive())
+                    Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
             }
 
             //Currently the ThrottlePercent is global to the entire train
@@ -463,22 +485,13 @@ namespace ORTS
                             ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
                             ThrottleController.CurrentValue * 100);
                     }
-
-                     if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0)
-                   {
-                       Simulator.Confirmer.UpdateWithPerCent(
+                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0)
+                    {
+                        Simulator.Confirmer.UpdateWithPerCent(
                             CabControl.DynamicBrake,
                             DynamicBrakeController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
-                           DynamicBrakeController.CurrentValue * 100);
-                   }
-                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0)
-                   {
-                       Simulator.Confirmer.UpdateWithPerCent(
-                            CabControl.DynamicBrake,
-                           DynamicBrakeController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
                             DynamicBrakeController.CurrentValue * 100);
-                   }
- 
+                    }
 
                     //Force is filtered due to inductance
                     FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
