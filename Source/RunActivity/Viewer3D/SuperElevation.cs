@@ -79,6 +79,7 @@ namespace ORTS
             int drawn = 0;
             bool isTunnel = shape.TunnelShape;
 
+            List<TrVectorSection> sectionsinShape = new List<TrVectorSection>();
             List<DynatrackDrawer> tmpTrackList = new List<DynatrackDrawer>();
             foreach (SectionIdx id in SectionIdxs)
             {
@@ -102,13 +103,14 @@ namespace ORTS
                     float length, radius;
                     uint sid = id.TrackSections[i];
                     TrackSection section = viewer.Simulator.TSectionDat.TrackSections.Get(sid);
-                    if (Math.Abs(section.SectionSize.Width - viewer.Simulator.SuperElevationGauge) > 0.2) return false;//the main route has a gauge different than mine
+                    if (Math.Abs(section.SectionSize.Width - viewer.Simulator.SuperElevationGauge) > 0.2) continue;//the main route has a gauge different than mine
                     WorldPosition root = new WorldPosition(nextRoot);
                     nextRoot.XNAMatrix.Translation = Vector3.Zero;
 
                     if (section.SectionCurve == null)
                     {
-                        return false;//with strait track, will not bother with this shape anymore
+                        continue;
+                        //return false;//with strait track, will not bother with this shape anymore
                     }
                     else
                     {
@@ -137,21 +139,11 @@ namespace ORTS
 
                     if (tmp == null) //cannot find the track for super elevation, will return 0;
                     {
-                        tmpTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));//draw it the regular way
-                        drawn++;
+                        //tmpTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));//draw it the regular way
+                        //drawn++;
                         continue;
                     }
-                    if (isTunnel)
-                    {
-
-                        List<TrVectorSection> curve = null;
-                        foreach (var c in allCurves) { if (c.Contains(tmp)) curve = c; break; }//find which curve has the section
-                        if (curve != null)
-                        {
-                            foreach (var c1 in curve) allSections.Remove(c1);//remove all sections in the curve from future consideration
-                            allCurves.Remove(curve);
-                        }
-                    }
+                    sectionsinShape.Add(tmp);
 
                     drawn++;
                     //DecomposeStaticSuperElevationOneSection(viewer, tmpTrackList, TileX, TileZ, tmp);
@@ -160,12 +152,33 @@ namespace ORTS
                 }
             }
 
-            if (drawn == 0 || isTunnel) return false;
+            if (drawn <=  count || isTunnel)
+            {
+                if (sectionsinShape.Count > 0) RemoveTracks(sectionsinShape);
+                return false;
+            }
             //now everything is OK, add the list to the dTrackList
             if (tmpTrackList.Count > 0) dTrackList.AddRange(tmpTrackList);
             return true;
         } // end DecomposeStaticSuperElevation
 
+        static void RemoveTracks(List<TrVectorSection> sectionsinShape)
+        {
+            foreach (var tmpSec in sectionsinShape)
+            {
+                List<TrVectorSection> curve = null;
+                var pos = -1;
+                foreach (var c in allCurves) {  if (c.Contains(tmpSec)) { curve = c; break; } }//find which curve has the section
+                if (curve != null)
+                {
+                    pos = curve.IndexOf(tmpSec);
+                    if (pos >= 1) curve[pos - 1].EndElev = 0; if (pos < curve.Count - 1) curve[pos + 1].StartElev = 0;
+                    allSections.Remove(tmpSec);//remove all sections in the curve from future consideration
+                    curve.Remove(tmpSec);
+                }
+            }
+
+        }
         #region DrawAllSectionsUsingDynamicOneSection
         //no use anymore
         public static int DecomposeStaticSuperElevationOneSection(Viewer3D viewer, List<DynatrackDrawer> dTrackList, int TileX, int TileZ, TrVectorSection ts)
@@ -322,7 +335,8 @@ namespace ORTS
                     i++;
 					var sec = simulator.TSectionDat.TrackSections.Get(section.SectionIndex);
 					if (sec == null) continue;
-					theCurve = sec.SectionCurve; 
+					theCurve = sec.SectionCurve;
+                    if (sec.SectionSize != null && Math.Abs(sec.SectionSize.Width - simulator.SuperElevationGauge) > 0.2) continue;//the main route has a gauge different than mine
                     
                     if (theCurve != null && !theCurve.Angle.AlmostEqual(0f, 0.01f)) //a good curve
                     {
@@ -382,7 +396,7 @@ namespace ORTS
             Max = (float)Math.Atan(Max/1.44f); //now change to rotation in radius by quick estimation as the angle is small
 
             allSections.AddRange(SectionList); //add this to sections that will be checked for elevation
-            allCurves.Add(SectionList); //add the curve
+            allCurves.Add(new List<TrVectorSection>( SectionList)); //add the curve
             if (SectionList.Count == 1)
             {
                 SectionList[0].StartElev = SectionList[0].EndElev = 0f; SectionList[0].MaxElev = Max;

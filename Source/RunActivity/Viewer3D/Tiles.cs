@@ -22,6 +22,7 @@ namespace ORTS
         const int MaximumCachedTiles = 8 * 8;
 
         public int maxDim = 256;
+        public int tilesCovered = 1;
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
         //   assignment of a new instance (possibly cloned and then modified).
@@ -59,13 +60,19 @@ namespace ORTS
         [CallOnThread("Loader")]
         public void Load(int tileX, int tileZ, bool visible, bool isLoTile)
         {
-            maxDim = 64;
+            tilesCovered = 8;
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("Tiles.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
             var tiles = Tiles;
             if (!tiles.ByXZ.ContainsKey(tileX + "," + tileZ))
             {
+                var name = TileNameConversion.GetTileNameFromTileXZ(tileX, tileZ);
+
+                var fileName = name.Substring(0, name.Length - 2).Replace('-', '_');
+
+                if (name.Replace('-', '_') != fileName + "00") return;
+
                 // Take the current list of tiles, evict any necessary so the new tile fits, load and add the new
                 // tile to the list, and store it all atomically in Tiles.
                 var tileList = new List<Tile>(tiles.List);
@@ -74,7 +81,10 @@ namespace ORTS
                 Tile newTile = new Tile(FilePath, tileX, tileZ, visible, true);//want lo tiles
                 // Ignore if newTile is not complete
                 if (newTile.TFile != null && newTile.YFile != null)
+                {
+                    maxDim = newTile.TFile.terrain.terrain_patchsets[0].xdim * 16;
                     tileList.Add(newTile);
+                }
                 Tiles = new TileList(tileList);
             }
         }
@@ -94,8 +104,8 @@ namespace ORTS
 
         public float GetElevation(int tileX, int tileZ, int x, int z)
         {
-            var step = 1;
-            if (maxDim == 64) step = 8;
+            var step = tilesCovered;
+            //if (maxDim == 64) step = 8;
             // normalize x,y coordinates
             while (x > maxDim -1) { x -= maxDim; tileX+=step; }
             while (x < 0) { x += maxDim; tileX-=step; }
@@ -138,8 +148,7 @@ namespace ORTS
 
         public bool IsVertexHidden(int tileX, int tileZ, int x, int z)
         {
-            var step = 1;
-            if (maxDim == 64) step = 8;
+            var step = tilesCovered;
             // normalize x,y coordinates
             while (x > maxDim - 1) { x -= maxDim; tileX+=step; }
             while (x < 0) { x += maxDim; tileX-=step; }
@@ -223,18 +232,22 @@ namespace ORTS
             var fileName = name.Substring(0, name.Length - 2).Replace('-', '_');
 
             if (name.Replace('-', '_') != fileName + "00") return;
-            fileName = filePath + fileName;
-            name = fileName + ".t";
+            name = filePath + fileName + ".t";
+            if (name.Contains("_11f63e"))
+            {
+                int iii = 0;
+                iii++;
+            }
             if (File.Exists(name))
             {
                 try
                 {
                     TFile = new TFile(name);
-                    name = fileName + "_y.raw";
-                    YFile = new YFile(name, 64);
-                    name = fileName + "_f.raw";
+                    name = filePath + fileName + "_y.raw";
+                    YFile = new YFile(name, TFile.terrain.terrain_patchsets[0].xdim * 16);
+                    name = filePath + fileName + "_f.raw";
                     if (File.Exists(name))
-                        FFile = new FFile(name, 64);
+                        FFile = new FFile(name, TFile.terrain.terrain_patchsets[0].xdim * 16);
                     else FFile = null;
                 }
                 catch (Exception error) // errors thrown by SBR
@@ -244,10 +257,25 @@ namespace ORTS
             }
             else
             {
-                // Many tiles adjacent to the visible tile may not be modelled, so a warning is not helpful,
-                // so ignore a missing .t file unless it is the currently visible tile.
-                if (visible)
-                    Trace.TraceWarning("Tile file missing - {0}", name);
+                fileName = fileName.Replace('_', '-');
+                name = filePath + fileName + ".t";
+                if (File.Exists(name))
+                {
+                    try
+                    {
+                        TFile = new TFile(name);
+                        name = filePath + fileName + "_y.raw";
+                        YFile = new YFile(name, TFile.terrain.terrain_patchsets[0].xdim * 16);
+                        name = filePath + fileName + "_f.raw";
+                        if (File.Exists(name))
+                            FFile = new FFile(name, TFile.terrain.terrain_patchsets[0].xdim * 16);
+                        else FFile = null;
+                    }
+                    catch (Exception error) // errors thrown by SBR
+                    {
+                        Trace.WriteLine(error);
+                    }
+                }
             }
         }
 

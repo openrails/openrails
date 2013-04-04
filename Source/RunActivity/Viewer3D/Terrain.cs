@@ -73,6 +73,12 @@ namespace ORTS
                 {
                     for (var z = -needed; z <= needed; z++)
                     {
+                        var name = TileNameConversion.GetTileNameFromTileXZ(TileX + x, TileZ + z);
+
+                        var fileName = name.Substring(0, name.Length - 2).Replace('-', '_');
+
+                        if (name.Replace('-', '_') != fileName + "00") continue;
+
                         var tile = tiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         try
                         {
@@ -125,16 +131,16 @@ namespace ORTS
         TerrainTile LoadTile(int tileX, int tileZ, bool visible, TileManager tiles)
         {
             var vis = visible;
-            /*for (var x = -8; x <= 8; x++)
-                for (var z = -8; z <= 8; z++)
+            for (var x = -16; x <= 16; x+=8)
+                for (var z = -16; z <= 16; z+=8)
                 {
                     visible = visible & (x == 0 && z == 0);
                     tiles.Load(tileX + x, tileZ + z, visible, true);//lo tiles
-                }*/
-            tiles.Load(tileX, tileZ, visible, true);//lo tiles
+                }
             var tile = tiles.GetTile(tileX, tileZ);
             if (tile == null || tile.IsEmpty) return null;
-            return new TerrainTile(Viewer, tileX, tileZ, vis, tiles);
+
+            return new TerrainTile(Viewer, tileX, tileZ, vis, tiles, tile.TFile.terrain.terrain_patchsets[0].xdim);
         }
 
         [CallOnThread("Loader")]
@@ -189,11 +195,11 @@ namespace ORTS
 
         int xdim = 16;
         //for LO_TILES
-        public TerrainTile(Viewer3D viewer, int tileX, int tileZ, bool visible, TileManager tiles)
+        public TerrainTile(Viewer3D viewer, int tileX, int tileZ, bool visible, TileManager tiles, int xd)
         {
             TileX = tileX;
             TileZ = tileZ;
-            xdim = 4;
+            xdim = xd;
             TerrainPatches = new TerrainPatch[xdim, xdim];
 
             // Terrain needs all surrounding tiles to correctly join up the meshes.
@@ -294,7 +300,7 @@ namespace ORTS
             var ts = ((terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader]).terrain_texslots;
             if (ts.Length > 1)
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
-            else if (parentDim != 16)
+            else if (K != 64) //not normal tile
             {
                 //will worry this later about texture
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
@@ -312,9 +318,10 @@ namespace ORTS
             var xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             var radius = 90f;
             mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-            if (parentDim != 16)
+            if (K != 64) //not normal tile
             {
                 radius = 6000f;
+                //if (Viewer.Camera.InRange(mstsLocation, 2896, 1000)) return;
                 frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.AutoZBias);
             }
             else frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
@@ -343,7 +350,7 @@ namespace ORTS
         private float Elevation(int x, int z)
         {
             var tiles = Viewer.Tiles;
-            if (parentDim != 16) tiles = Viewer.LOTiles;
+            if (K != 64) tiles = Viewer.LOTiles;
             int hx = PatchX * 16 + x;
             int hz = PatchZ * 16 + z;
             if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
@@ -357,7 +364,7 @@ namespace ORTS
         bool IsVertexHidden(int x, int z)
         {
             var tiles = Viewer.Tiles;
-            if (parentDim != 16) tiles = Viewer.LOTiles;
+            if (K != 64) tiles = Viewer.LOTiles;
             int hx = PatchX * 16 + x;
             int hz = PatchZ * 16 + z;
             if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
@@ -583,7 +590,7 @@ namespace ORTS
 
                     float y = Elevation(x, z) - Tile.TFile.Floor;
                     totalElevation += y;
-                    if (parentDim != 16)
+                    if (K != 64)
                     {
                         y -= 50f;//LO_TILEs will make it a bit lower, so they do not mix with the normal tiles
                     }

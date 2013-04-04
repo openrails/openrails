@@ -225,7 +225,10 @@ namespace ORTS
                         var trJunctionNode = trackObj.JNodePosn != null ? viewer.Simulator.TDB.GetTrJunctionNode(TileX, TileZ, (int)trackObj.UID) : null;
                         // We might not have found the junction node; if so, fall back to the static track shape.
                         if (trJunctionNode != null)
+                        {
+                            if (viewer.Simulator.UseSuperElevation > 0) SuperElevation.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
                             sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
+                        }
                         else
                         {
                             //if want to use super elevation, we will generate tracks using dynamic tracks

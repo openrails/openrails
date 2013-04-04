@@ -72,6 +72,7 @@ namespace MSTS
                                 for (int i = 0; i < count; ++i) 
                                     using( SBR terrain_shadersBlock = subBlock.ReadSubBlock() )
                                         terrain_shaders.Add(new terrain_shader(terrain_shadersBlock));
+                                if (!subBlock.EndOfBlock()) subBlock.Skip();
                                 break;
                             }
                         case TokenID.terrain_patches:
@@ -83,6 +84,7 @@ namespace MSTS
                                     for (int i = 0; i < patch_sets_count; ++i) 
                                         using( SBR terrain_patchsetBlock = patch_sets_Block.ReadSubBlock() )
                                             terrain_patchsets[i] = new terrain_patchset(terrain_patchsetBlock);
+                                    if (!subBlock.EndOfBlock()) subBlock.Skip();
                                 }
                                 break;
                             }
