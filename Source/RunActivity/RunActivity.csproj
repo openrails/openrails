@@ -399,10 +399,6 @@
     <Compile Include="Viewer3D\SuperElevation.cs" />
     <Compile Include="Viewer3D\Transfers.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Viewer3D\Commands.cd" />
-    <None Include="Viewer3D\Cameras.cd" />
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
