@@ -665,6 +665,11 @@ namespace ORTS.Debugging
 				   g.DrawCurve(p, points);
 			   }
                else g.DrawLine(p, scaledA, scaledB);
+
+               /*if (line.MySection != null)
+               {
+                   g.DrawString(""+line.MySection.StartElev+" "+line.MySection.EndElev, sidingFont, sidingBrush, scaledB);
+               }*/
             }
 			
 			switchItemsDrawn.Clear();
@@ -2462,7 +2467,7 @@ namespace ORTS.Debugging
 
 	   public float angle1, angle2;
 	   //public SectionCurve curve = null;
-
+       //public TrVectorSection MySection;
 	   public LineSegment(dVector A, dVector B, bool Occupied, TrVectorSection Section)
 	   {
 		   this.A = A;
@@ -2470,7 +2475,7 @@ namespace ORTS.Debugging
 
 		   isCurved = false; 
 		   if (Section == null) return;
-
+           //MySection = Section;
 		   
 		   uint k = Section.SectionIndex;
 		   TrackSection ts = Program.Simulator.TSectionDat.TrackSections.Get(k);

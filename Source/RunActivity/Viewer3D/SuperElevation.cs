@@ -80,7 +80,7 @@ namespace ORTS
             bool isTunnel = shape.TunnelShape;
 
             List<TrVectorSection> sectionsinShape = new List<TrVectorSection>();
-            List<DynatrackDrawer> tmpTrackList = new List<DynatrackDrawer>();
+            //List<DynatrackDrawer> tmpTrackList = new List<DynatrackDrawer>();
             foreach (SectionIdx id in SectionIdxs)
             {
                 nextRoot = new WorldPosition(wcopy); // Will become initial root
@@ -158,7 +158,7 @@ namespace ORTS
                 return false;
             }
             //now everything is OK, add the list to the dTrackList
-            if (tmpTrackList.Count > 0) dTrackList.AddRange(tmpTrackList);
+            //if (tmpTrackList.Count > 0) dTrackList.AddRange(tmpTrackList);
             return true;
         } // end DecomposeStaticSuperElevation
 
@@ -342,7 +342,7 @@ namespace ORTS
                     {
                         if (i == 1 || i == count)
                         {
-                            if (theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174) < 15f) continue; 
+                            //if (theCurve.Radius * (float)Math.Abs(theCurve.Angle * 0.0174) < 15f) continue; 
                         } //do not want the first and last piece of short curved track to be in the curve (they connected to switches)
                         if (StartCurve == false) //we are beginning a curve
                         {
@@ -373,8 +373,8 @@ namespace ORTS
                 if (StartCurve == true) // we are in a curve after looking at every section
                 {
                     MarkSections(simulator, SectionList, Len);
-                    Len = 0f; StartCurve = false;
                 }
+                Len = 0f; StartCurve = false;
                 SectionList.Clear();
             }
         }
@@ -1069,7 +1069,7 @@ namespace ORTS
             var sign = -Math.Sign(Angle);
             float desiredZ = 1f;
             float rAngle = (float)Math.Abs(Angle); // 0.0174=3.14/180
-            float to = (offSet + 1f) / NumSections * rAngle;
+            float to = (offSet + 1f) / NumSections;
 
             float maxv = MaxElev;
             switch (whichCase)
@@ -1077,16 +1077,16 @@ namespace ORTS
                 case 0: desiredZ = 0f; break;
                 case 3: desiredZ *= maxv; break;
                 case 1:
-                    if (offSet < NumSections / 2) desiredZ *= (2*to / rAngle * maxv);//increase to max in the first half
+                    if (offSet < NumSections / 2) desiredZ *= (2*to  * maxv);//increase to max in the first half
                     else desiredZ *= maxv;
                     break;
                 case 2:
-                    if (offSet > NumSections / 2) desiredZ *= (2*(rAngle - to) / rAngle * maxv);//decrease to 0 in the second half
+                    if (offSet >= NumSections / 2) desiredZ *= (2*(1 - to)  * maxv);//decrease to 0 in the second half
                     else desiredZ *= maxv;
                     break;
                 case 4:
-                    if (offSet < NumSections / 2) desiredZ *= (2*to / rAngle * maxv);
-                    else desiredZ *= (2*(rAngle - to) / rAngle * maxv);
+                    if (offSet < NumSections / 2) desiredZ *= (2*to  * maxv);
+                    else desiredZ *= (2*(1 - to)  * maxv);
                     break;
             }
 
