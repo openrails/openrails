@@ -4261,11 +4261,17 @@ namespace ORTS
         {
             TrackCircuitSection switchSection = TrackCircuitList[trackCircuitIndex];
             Train thisTrain = switchSection.CircuitState.TrainReserved == null ? null : switchSection.CircuitState.TrainReserved.Train;
+            bool switchReserved = (switchSection.CircuitState.SignalReserved >= 0 || switchSection.CircuitState.TrainClaimed.Count > 0);
             bool switchSet = false;
 
             // set physical state
 
-            if (!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
+            if (switchReserved)
+            {
+                switchSet = false;
+            }
+
+            else if (!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
             {
                 switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
                 setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
@@ -4293,10 +4299,13 @@ namespace ORTS
         {
             TrackCircuitSection switchSection = TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
             Train thisTrain = switchSection.CircuitState.TrainReserved == null ? null : switchSection.CircuitState.TrainReserved.Train;
+            bool switchReserved = (switchSection.CircuitState.SignalReserved >= 0 || switchSection.CircuitState.TrainClaimed.Count > 0);
             bool switchSet = false;
 
-            if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return false;
+            if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return (false);
             // set physical state
+
+            if (switchReserved) return (false);
 
             if (!switchSection.CircuitState.HasTrainsOccupying())
             {
@@ -4799,6 +4808,13 @@ namespace ORTS
                 return (false);
             }
 
+            // check signal reservation
+
+            if (CircuitState.SignalReserved >= 0)
+            {
+                return (false);
+            }
+
             // check claim
 
             if (CircuitState.TrainClaimed.Count > 0)
@@ -5045,6 +5061,7 @@ namespace ORTS
 
             // clear all reservations
             CircuitState.TrainReserved = null;
+            CircuitState.SignalReserved = -1;
 
             if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
             {
@@ -5568,6 +5585,14 @@ namespace ORTS
 
                     checkTrailingJunction = EndIsTrailingJunction[direction];
                 }
+            }
+
+            // signal reserved
+
+            if (thisState.SignalReserved >= 0)
+            {
+                localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED_OTHER;
+                stateSet = true;
             }
 
             // track claimed
@@ -6184,9 +6209,9 @@ namespace ORTS
     {
         public TrainOccupyState TrainOccupy;                       // trains occupying section      //
         public Train.TrainRouted TrainReserved;                    // train reserving section       //
+        public int SignalReserved;                                 // signal reserving section      //
         public TrainQueue TrainPreReserved;                        // trains with pre-reservation   //
         public TrainQueue TrainClaimed;                            // trains with normal claims     //
-
 
         //================================================================================================//
         //
@@ -6197,6 +6222,7 @@ namespace ORTS
         {
             TrainOccupy = new TrainOccupyState();
             TrainReserved = null;
+            SignalReserved = -1;
             TrainPreReserved = new TrainQueue();
             TrainClaimed = new TrainQueue();
         }
@@ -6229,6 +6255,8 @@ namespace ORTS
                 Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndexR);
                 TrainReserved = thisRouted;
             }
+
+            SignalReserved = inf.ReadInt32();
 
             int noPreReserve = inf.ReadInt32();
             for (int trainNo = 0; trainNo < noPreReserve; trainNo++)
@@ -6374,6 +6402,8 @@ namespace ORTS
                 outf.Write(TrainReserved.Train.Number);
                 outf.Write(TrainReserved.TrainRouteDirectionIndex);
             }
+
+            outf.Write(SignalReserved);
 
             outf.Write(TrainPreReserved.Count);
             foreach (Train.TrainRouted thisTrain in TrainPreReserved)

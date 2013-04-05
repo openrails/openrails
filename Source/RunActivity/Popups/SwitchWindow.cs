@@ -167,7 +167,7 @@ namespace ORTS.Popups
 
 #if NEW_SIGNALLING
             TrackCircuitSection switchSection = Owner.Viewer.Simulator.Signals.TrackCircuitList[SwitchNode.TCCrossReference[0].CrossRefIndex];
-            if (switchSection.CircuitState.HasTrainsOccupying() || 
+            if (switchSection.CircuitState.HasTrainsOccupying() || switchSection.CircuitState.SignalReserved >= 0 || 
                 (switchSection.CircuitState.TrainReserved != null && switchSection.CircuitState.TrainReserved.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL))
                 image.Source.Y += 2 * SwitchImageSize;
 #endif

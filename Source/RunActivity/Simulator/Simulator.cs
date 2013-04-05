@@ -553,7 +553,18 @@ namespace ORTS
 
             // figure out if the next waypoint is forward or back
             patTraveller.NextWaypoint();
-            if (train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z) < 0)
+
+            // get distance forward
+            float fwdist = train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z);
+
+            // reverse train, get distance backward
+            train.RearTDBTraveller.ReverseDirection();
+            float bwdist = train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z);
+
+            // check which way exists or is shorter (in case of loop)
+            // remember : train is now facing backward !
+
+            if (bwdist < 0 || (fwdist > 0 && bwdist > fwdist)) // no path backward or backward path is longer
                 train.RearTDBTraveller.ReverseDirection();
 
             CONFile conFile = new CONFile(conFileName);

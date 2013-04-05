@@ -4825,7 +4825,7 @@ namespace ORTS
             if (reqSwitch != null)
             {
                 // check if switch is clear
-                if (!reqSwitch.CircuitState.HasTrainsOccupying() && reqSwitch.CircuitState.TrainReserved == null)
+                if (!reqSwitch.CircuitState.HasTrainsOccupying() && reqSwitch.CircuitState.TrainReserved == null && reqSwitch.CircuitState.SignalReserved < 0)
                 {
                     reqSwitch.JunctionSetManual = reqSwitch.JunctionLastRoute == 0 ? 1 : 0;
                     signalRef.setSwitch(reqSwitch.OriginalIndex, reqSwitch.JunctionSetManual, reqSwitch);
@@ -5860,7 +5860,7 @@ namespace ORTS
             if (reqSwitch != null)
             {
                 // check if switch is clear
-                if (!reqSwitch.CircuitState.HasTrainsOccupying() && reqSwitch.CircuitState.TrainReserved == null)
+                if (!reqSwitch.CircuitState.HasTrainsOccupying() && reqSwitch.CircuitState.TrainReserved == null && reqSwitch.CircuitState.SignalReserved < 0)
                 {
                     reqSwitch.JunctionSetManual = reqSwitch.JunctionLastRoute == 0 ? 1 : 0;
                     signalRef.setSwitch(reqSwitch.OriginalIndex, reqSwitch.JunctionSetManual, reqSwitch);
@@ -8391,6 +8391,11 @@ namespace ORTS
             {
                 int trainno = thisSection.CircuitState.TrainReserved.Train.Number;
                 returnString = String.Concat(returnString, "(", trainno.ToString(), ")");
+            }
+
+            if (thisSection.CircuitState.SignalReserved >= 0)
+            {
+                returnString = String.Concat(returnString, "(S", thisSection.CircuitState.SignalReserved.ToString(), ")");
             }
 
             if (thisSection.CircuitState.TrainClaimed.Count > 0)
