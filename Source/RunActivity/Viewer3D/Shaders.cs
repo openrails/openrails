@@ -44,17 +44,17 @@ namespace ORTS
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
 
-        Vector4 _eyeVector;
+        Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
         Vector3 _sunDirection;
         bool _imageTextureIsNight;
 
         public void SetViewMatrix(ref Matrix v)
         {
-            _eyeVector = new Vector4(v.Forward, Vector3.Dot(v.Forward, _sunDirection) * 0.5f + 0.5f);
+            _eyeVector = Vector3.Normalize(new Vector3(v.M13, v.M23, v.M33));
 
-            eyeVector.SetValue(_eyeVector);
-            sideVector.SetValue(v.Right);
+            eyeVector.SetValue(new Vector4(_eyeVector, Vector3.Dot(_eyeVector, _sunDirection) * 0.5f + 0.5f));
+            sideVector.SetValue(Vector3.Normalize(Vector3.Cross(_eyeVector, Vector3.Down)));
         }
 
         public void SetMatrix(ref Matrix w, ref Matrix vp)
