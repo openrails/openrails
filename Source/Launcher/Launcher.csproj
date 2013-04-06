@@ -50,6 +50,8 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>echo $Revision: 000 $&gt;revision.txt</PreBuildEvent>
+    <PreBuildEvent>echo $Revision: 000 $&gt;revision.txt
+date /t&gt;&gt;revision.txt
+time /t&gt;&gt;revision.txt</PreBuildEvent>
   </PropertyGroup>
 </Project>

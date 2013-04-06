@@ -696,12 +696,16 @@ namespace ORTS
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
+            rs.AlphaDestinationBlend = Blend.Zero;
             rs.AlphaFunction = CompareFunction.Always;
+            rs.AlphaSourceBlend = Blend.One;
             rs.AlphaTestEnable = false;
+            rs.DepthBufferFunction = CompareFunction.LessEqual;
+            rs.DepthBufferWriteEnable = true;
             rs.DestinationBlend = Blend.Zero;
             rs.ReferenceAlpha = 0;
+            rs.SeparateAlphaBlendEnabled = false;
             rs.SourceBlend = Blend.One;
-            rs.DepthBufferWriteEnable = true;
         }
 
         /// <summary>

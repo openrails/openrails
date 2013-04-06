@@ -300,7 +300,7 @@
     <Compile Include="Viewer3D\Water.cs" />
     <Compile Include="Viewer3D\Weather.cs" />
     <Compile Include="Viewer3D\World.cs" />
-    <Compile Include="_Main.cs" />
+    <Compile Include="Viewer3D\_Main.cs" />
     <Compile Include="Viewer3D\UserInput.cs" />
     <Compile Include="Viewer3D\Materials.cs" />
     <Compile Include="Viewer3D\RenderFrame.cs" />
@@ -412,6 +412,8 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>echo $Revision: 000 $&gt;revision.txt</PreBuildEvent>
+    <PreBuildEvent>echo $Revision: 000 $&gt;revision.txt
+date /t&gt;&gt;revision.txt
+time /t&gt;&gt;revision.txt</PreBuildEvent>
   </PropertyGroup>
 </Project>
