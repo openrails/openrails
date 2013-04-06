@@ -304,7 +304,7 @@ namespace MSTS
         protected virtual color ParseControlColor( STFReader stf )
         {
             stf.MustMatch("(");
-            color colour = new color { A = 255, R = stf.ReadInt(STFReader.UNITS.None, 0), G = stf.ReadInt(STFReader.UNITS.None, 0), B = stf.ReadInt(STFReader.UNITS.None, 0) };
+            color colour = new color { A = 1, R = stf.ReadInt(STFReader.UNITS.None, 0) / 255f, G = stf.ReadInt(STFReader.UNITS.None, 0) / 255f, B = stf.ReadInt(STFReader.UNITS.None, 0) / 255f };
             stf.SkipRestOfBlock();
             return colour;
         }

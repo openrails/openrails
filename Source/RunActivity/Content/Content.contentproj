@@ -131,13 +131,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Arial.spritefont">
-      <Name>Arial</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="LightGlow.png">
       <Name>LightGlow</Name>
       <Importer>TextureImporter</Importer>
