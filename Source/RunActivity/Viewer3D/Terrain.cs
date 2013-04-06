@@ -114,7 +114,7 @@ namespace ORTS
         {
             var tiles = Tiles;
             foreach (var tile in tiles)
-                if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
+                if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448*tile.tileCovered))
                     tile.PrepareFrame(frame, elapsedTime);
             if (!Viewer.Settings.DistantMountains) return;
             var tilesArray = LOTiles.ToArray();
@@ -366,9 +366,29 @@ namespace ORTS
             int hx = PatchX * 16 + x;
             int hz = PatchZ * 16 + z;
             if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
+            {
+                if (Tile.tilesCovered == 2) //hardcoded
+                {
+                    var TX = TileX; var TZ = TileZ;
+                    if (hx < 0) { hx = 255; TX -= 1; }
+                    if (hz < 0) { hz = 255; TZ += 1; }
+                    if (hx > 255)
+                    {
+                        //move to right, check next tile, if normal, decide which portion z should be (top/bottom)
+                        hx = 0; TX += 2; var tmpTile = tiles.GetTile(TX, TZ);
+                        if (tmpTile == null || tmpTile.tilesCovered == 1) if (hz > 128) { hz -= 128; hz *= 2; TZ -= 1; } else { hz *= 2; }
+                    }
+                    if (hz > 255)
+                    {
+                        //move down, check next tile, if normal, decide which portion x should be (left/right)
+                        hz = 0; TZ -= 2; var tmpTile = tiles.GetTile(TX, TZ);
+                        if (tmpTile == null || tmpTile.tilesCovered == 1) if (hx > 128) { hx -= 128; hx *= 2; TX += 1; } else { hx *= 2; }
+                    }
+                    return tiles.GetElevation(TX, TZ, hx, hz);
+                }
                 // its outside this tile, so we will have to look it up
                 return tiles.GetElevation(TileX, TileZ, hx, hz);
-
+            }
             uint e = Tile.YFile.GetElevationIndex(hx, hz);
             return (float)e * Tile.TFile.Resolution + Tile.TFile.Floor;
         }
