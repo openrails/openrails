@@ -49,8 +49,13 @@ namespace ORTS
                 TileX = VisibleTileX;
                 TileZ = VisibleTileZ;
                 var tiles = Tiles;
+                var maxTileCovered = 1;
+                foreach (var tile in tiles)
+                {
+                    if (tile.tileCovered > maxTileCovered) maxTileCovered = tile.tileCovered;
+                }
                 var newTiles = new List<TerrainTile>();
-                var needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance / 2048f);
+                var needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance * maxTileCovered / 2048f);
                 for (var x = -needed; x <= needed; x++)
                 {
                     for (var z = -needed; z <= needed; z++)
@@ -167,6 +172,7 @@ namespace ORTS
 
         TerrainPatch[,] TerrainPatches = null; 
         WaterTile WaterTile;
+        public  int tileCovered = 1;
 
         public TerrainTile(Viewer3D viewer, int tileX, int tileZ, bool visible)
         {
@@ -183,13 +189,17 @@ namespace ORTS
             var tile = viewer.Tiles.GetTile(tileX, tileZ);
             if (tile != null && !tile.IsEmpty)
             {
+                this.tileCovered = tile.tilesCovered;
                 if (tile.TFile.ContainsWater)
                     WaterTile = new WaterTile(viewer, TileX, TileZ);
 
                 for (var x = 0; x < 16; ++x)
                     for (var z = 0; z < 16; ++z)
                         if (tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
+                        {
                             TerrainPatches[x, z] = new TerrainPatch(viewer, tile, x, z, tileX, tileZ, 16);
+                            if (tile.tilesCovered != 1) TerrainPatches[x, z].ViewingDistance = TerrainPatches[x, z].ViewingDistance * tile.tilesCovered;
+                        }
             }
         }
 
@@ -300,7 +310,7 @@ namespace ORTS
             var ts = ((terrain_shader)Tile.TFile.terrain.terrain_shaders[patch.iShader]).terrain_texslots;
             if (ts.Length > 1)
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
-            else if (K != 64) //not normal tile
+            else if (K > 128) //not normal tile
             {
                 //will worry this later about texture
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
@@ -318,7 +328,9 @@ namespace ORTS
             var xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             var radius = 90f;
             mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-            if (K != 64) //not normal tile
+            if (K == 128) radius = 180f;
+
+            if (K > 128) //not normal tile
             {
                 radius = 6000f;
                 //if (Viewer.Camera.InRange(mstsLocation, 2896, 1000)) return;
@@ -350,7 +362,7 @@ namespace ORTS
         private float Elevation(int x, int z)
         {
             var tiles = Viewer.Tiles;
-            if (K != 64) tiles = Viewer.LOTiles;
+            if (K > 128) tiles = Viewer.LOTiles;
             int hx = PatchX * 16 + x;
             int hz = PatchZ * 16 + z;
             if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
@@ -361,10 +373,25 @@ namespace ORTS
             return (float)e * Tile.TFile.Resolution + Tile.TFile.Floor;
         }
 
+        void findRealTile(int tileX, int tileZ, TileManager tiles, out int newX, out int newZ)
+        {
+            newX = tileX; newZ = tileZ; 
+            var step = tiles.tilesCovered+1;
+            if (tiles.GetTile(tileX, tileZ) != null) return;
+            var tileName = TileNameConversion.GetTileNameFromTileXZ(newX, newZ).Substring(0, 8) + "0";
+            for(var i = -step; i <= step; i++)
+                for (var j = -step; j <= step; j++)
+                {
+                    newX = tileX + i; newZ = tileZ + j;
+                    var tmpName = TileNameConversion.GetTileNameFromTileXZ(newX, newZ);
+                    if (tmpName == tileName ) return;
+                }
+        }
+
         bool IsVertexHidden(int x, int z)
         {
             var tiles = Viewer.Tiles;
-            if (K != 64) tiles = Viewer.LOTiles;
+            if (K > 128) tiles = Viewer.LOTiles;
             int hx = PatchX * 16 + x;
             int hz = PatchZ * 16 + z;
             if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
@@ -590,7 +617,7 @@ namespace ORTS
 
                     float y = Elevation(x, z) - Tile.TFile.Floor;
                     totalElevation += y;
-                    if (K != 64)
+                    if (K > 128)
                     {
                         y -= 102f;//LO_TILEs will make it a bit lower, so they do not mix with the normal tiles
                     }

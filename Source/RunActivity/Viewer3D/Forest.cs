@@ -156,8 +156,8 @@ namespace ORTS
             //we will use an inner boundary of 2 meters to plant trees, so will make sure the area is big enough
             //if (areaDim1 < treeSize1 * 1.5f + 1) areaDim1 = treeSize1 * 1.5f + 1;
             //if (areaDim2 < treeSize1 * 1.5f + 1) areaDim2 = treeSize1 * 1.5f + 1;
-            var dim1 = areaDim1 - treeSize1 * 3 / 2 - 1;
-            var dim2 = areaDim2 - treeSize1 * 3 / 2 - 1;
+            var dim1 = areaDim1 - treeSize1 * 2 - 1;
+            var dim2 = areaDim2 - treeSize1 * 2 - 1;
             if (dim1 < 0.5) dim1 = 0.5f;
             if (dim2 < 0.5) dim2 = 0.5f;
             for (int i = 0; i < population; i++)

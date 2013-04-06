@@ -189,13 +189,15 @@ namespace ORTS
 
         public bool IsEmpty { get { return TFile == null; } }
 
+        public int tilesCovered = 1;
         /// <param name="visible">Tiles adjacent to the current visible tile may not be modelled.
         /// This flag decides whether a missing file leads to a warning message.</param>
         public Tile(string filePath, int tileX, int tileZ, bool visible)
         {
             TileX = tileX;
             TileZ = tileZ;
-            var fileName = filePath + TileNameConversion.GetTileNameFromTileXZ(tileX, tileZ);
+            var tileName = TileNameConversion.GetTileNameFromTileXZ(tileX, tileZ);
+            var fileName = filePath + tileName;
             var name = fileName + ".t";
             if (File.Exists(name))
             {
@@ -214,9 +216,30 @@ namespace ORTS
             }
             else
             {
+                var tmpfileName = tileName.Substring(0, tileName.Length - 1);
+                if (tileName != tmpfileName + "0") return;
+                fileName = filePath + tmpfileName.Replace('-', '_');
+                name = fileName + ".t";
+                if (File.Exists(name))
+                {
+                    try
+                    {
+                        TFile = new TFile(name);
+                        tilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
+                        name = fileName + "_y.raw";
+                        YFile = new YFile(name);
+                        name = fileName + "_f.raw";
+                        FFile = new FFile(name);
+                    }
+                    catch (Exception error) // errors thrown by SBR
+                    {
+                        Trace.WriteLine(error);
+                    }
+                }
+
                 // Many tiles adjacent to the visible tile may not be modelled, so a warning is not helpful,
                 // so ignore a missing .t file unless it is the currently visible tile.
-                if (visible)
+                else if (visible)
                     Trace.TraceWarning("Tile file missing - {0}", name);
             }
         }
@@ -233,16 +256,12 @@ namespace ORTS
 
             if (name.Replace('-', '_') != fileName + "00") return;
             name = filePath + fileName + ".t";
-            if (name.Contains("_11f63e"))
-            {
-                int iii = 0;
-                iii++;
-            }
             if (File.Exists(name))
             {
                 try
                 {
                     TFile = new TFile(name);
+                    tilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
                     name = filePath + fileName + "_y.raw";
                     YFile = new YFile(name, TFile.terrain.terrain_patchsets[0].xdim * 16);
                     name = filePath + fileName + "_f.raw";
@@ -264,6 +283,7 @@ namespace ORTS
                     try
                     {
                         TFile = new TFile(name);
+                        tilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
                         name = filePath + fileName + "_y.raw";
                         YFile = new YFile(name, TFile.terrain.terrain_patchsets[0].xdim * 16);
                         name = filePath + fileName + "_f.raw";
