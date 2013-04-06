@@ -15,8 +15,6 @@ namespace ORTS
     {
         public const string RunActivityProgram = "runactivity.exe";
 
-        public static string Version;         // ie "0.6.1"
-        public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
         public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
         public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static string DeletedSaveFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Deleted Saves"
@@ -27,7 +25,6 @@ namespace ORTS
         {
             Application.EnableVisualStyles();
 
-            SetBuildRevision();
             RegistryKey = @"SOFTWARE\OpenRails\ORTS";
             UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
             DeletedSaveFolder = Path.Combine(UserDataFolder, "Deleted Saves");
@@ -100,40 +97,6 @@ namespace ORTS
             catch (Exception error)
             {
                 MessageBox.Show(error.ToString());
-            }
-        }
-
-        /// <summary>
-        /// Set up the global Build and Revision variables
-        /// from assembly data and the revision.txt file.
-        /// </summary>
-        static void SetBuildRevision()
-        {
-            try
-            {
-                using (StreamReader f = new StreamReader("Version.txt"))
-                {
-                    Version = f.ReadLine();
-                }
-
-                using (StreamReader f = new StreamReader("Revision.txt"))
-                {
-                    var line = f.ReadLine();
-                    var revision = line.Substring(11, line.IndexOf('$', 11) - 11).Trim();
-                    if (revision != "000")
-                        Version += "." + revision;
-                    else
-                        Version = "";
-
-                    Build = Application.ProductVersion; // from assembly
-                    Build = Build + " " + f.ReadLine(); // date
-                    Build = Build + " " + f.ReadLine(); // time
-                }
-            }
-            catch
-            {
-                Version = "";
-                Build = Application.ProductVersion;
             }
         }
     }

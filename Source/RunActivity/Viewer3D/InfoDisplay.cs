@@ -16,6 +16,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
 using ORTS.Popups;
 
 namespace ORTS
@@ -132,7 +133,7 @@ namespace ORTS
             //Here's where the logger stores the data from each frame
             if (Viewer.Settings.DataLogger)
             {
-                Logger.Data(Program.Version);
+                Logger.Data(VersionInfo.Version);
                 Logger.Data(FrameNumber.ToString("F0"));
                 Logger.Data(GetWorkingSetSize().ToString("F0"));
                 Logger.Data(GC.GetTotalMemory(false).ToString("F0"));

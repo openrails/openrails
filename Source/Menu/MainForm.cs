@@ -9,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using ORTS.Common;
 using ORTS.Menu;
 using Path = System.IO.Path;
 
@@ -51,9 +52,9 @@ namespace ORTS
             Font = SystemFonts.MessageBoxFont;
 
             // Set title to show revision or build info.
-            Text = String.Format(Program.Version.Length > 0 ? "{0} {1}" : "{0} BUILD {2}", Application.ProductName, Program.Version, Program.Build);
+            Text = String.Format(VersionInfo.Version.Length > 0 ? "{0} {1}" : "{0} build {2}", Application.ProductName, VersionInfo.Version, VersionInfo.Build);
 #if DEBUG
-            Text = Text + "   --- DEBUG BUILD ---";
+            Text = Text + " (debug)";
 #endif
 
             CleanupPre021();

@@ -48,9 +48,10 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using MSTS;
+using ORTS.Common;
 using ORTS.Menu;
 using Path = System.IO.Path;
-using MSTS;
 
 namespace ORTS
 {
@@ -157,7 +158,7 @@ namespace ORTS
             {
                 var saves = new List<Save>();
                 var directory = Program.UserDataFolder;
-                var build = Program.Build.Contains(" ") ? Program.Build.Substring(Program.Build.IndexOf(" ") + 1) : null;
+                var build = VersionInfo.Build.Contains(" ") ? VersionInfo.Build.Substring(VersionInfo.Build.IndexOf(" ") + 1) : null;
                 var prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
                 if (Directory.Exists(directory))
                 {

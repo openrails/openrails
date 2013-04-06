@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using ORTS.Common;
 using ORTS.Debugging;
 using ORTS.MultiPlayer;
 
@@ -33,8 +34,6 @@ namespace ORTS
     static class Program
     {
         public static string[] Arguments;
-        public static string Version;         // ie "0.6.1"
-        public static string Build;           // ie "0.0.3661.19322 Sat 01/09/2010  10:44 AM"
         public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
         public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static Random Random = new Random();  // primary random number generator used throughout the program
@@ -65,8 +64,6 @@ namespace ORTS
         /// </summary>
         static void Main(string[] args)
         {
-            InitBuildRevision();
-
             UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
 
@@ -248,8 +245,8 @@ namespace ORTS
             using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
             {
                 // Save some version identifiers so we can validate on load.
-                outf.Write(Version);
-                outf.Write(Build);
+                outf.Write(VersionInfo.Version);
+                outf.Write(VersionInfo.Build);
 
                 // Save heading data used in Menu.exe
                 outf.Write(Simulator.RouteName);
@@ -543,36 +540,6 @@ namespace ORTS
             catch { } // Ignore any errors
         }
 
-        static void InitBuildRevision()
-        {
-            try
-            {
-                using (StreamReader f = new StreamReader("Version.txt"))
-                {
-                    Version = f.ReadLine();
-                }
-
-                using (StreamReader f = new StreamReader("Revision.txt"))
-                {
-                    var line = f.ReadLine();
-                    var revision = line.Substring(11, line.IndexOf('$', 11) - 11).Trim();
-                    if (revision != "000")
-                        Version += "." + revision;
-                    else
-                        Version = "";
-
-                    Build = Application.ProductVersion; // from assembly
-                    Build = Build + " " + f.ReadLine(); // date
-                    Build = Build + " " + f.ReadLine(); // time
-                }
-            }
-            catch
-            {
-                Version = "";
-                Build = Application.ProductVersion;
-            }
-        }
-
         static UserSettings GetSettings(IEnumerable<string> options)
         {
             return new UserSettings(RegistryKey, options);
@@ -591,7 +558,7 @@ namespace ORTS
                     var fileName = settings.LoggingFilename;
                     try
                     {
-                        fileName = String.Format(fileName, Application.ProductName, Version.Length > 0 ? Version : Build, Version, Build, DateTime.Now);
+                        fileName = String.Format(fileName, Application.ProductName, VersionInfo.Version.Length > 0 ? VersionInfo.Version : VersionInfo.Build, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
                     }
                     catch { }
                     foreach (var ch in Path.GetInvalidFileNameChars())
@@ -616,10 +583,10 @@ namespace ORTS
 
             Console.WriteLine( "{0} is starting...", Application.ProductName ); { int i = 0; foreach( var a in args ) { Console.WriteLine( String.Format( "Argument {0} = {1}", i++, a ) ); } }
 
-            Console.WriteLine( "Version    = {0}", Version.Length > 0 ? Version : "<none>" );
-            Console.WriteLine( "Build      = {0}", Build );
-            if( logFileName.Length > 0 )
-                Console.WriteLine( "Logfile    = {0}", logFileName );
+            Console.WriteLine("Version    = {0}", VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>");
+            Console.WriteLine("Build      = {0}", VersionInfo.Build);
+            if (logFileName.Length > 0)
+                Console.WriteLine("Logfile    = {0}", logFileName);
             LogSeparator();
             settings.Log();
             LogSeparator();
@@ -735,7 +702,7 @@ namespace ORTS
             try {
                 version = inf.ReadString().Replace( "\0", "" );
                 build = inf.ReadString().Replace( "\0", "" );
-                versionOkay = (version == Version) && (build == Build);
+                versionOkay = (version == VersionInfo.Version) && (build == VersionInfo.Build);
             } catch { }
 
             if( !versionOkay ) {
@@ -745,10 +712,10 @@ namespace ORTS
                     // resuming from saved activities is useful in debugging.
                     // (To resume from the latest save, set 
                     // RunActivity > Properties > Debug > Command line arguments = "-resume")
-                    Trace.WriteLine(new IncompatibleSaveException(fileName, version, build, Version, Build));
+                    Trace.WriteLine(new IncompatibleSaveException(fileName, version, build, VersionInfo.Version, VersionInfo.Build));
                     LogSeparator();
                 } else {
-                    throw new IncompatibleSaveException(fileName, version, build, Version, Build);
+                    throw new IncompatibleSaveException(fileName, version, build, VersionInfo.Version, VersionInfo.Build);
                 }
             }
         }
