@@ -365,27 +365,43 @@ namespace ORTS
             if (K > 128) tiles = Viewer.LOTiles;
             int hx = PatchX * 16 + x;
             int hz = PatchZ * 16 + z;
-            if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
+            var points = parentDim * 16;//normal tiles cover 256 points, lotiles cover 64 points
+            if (hx > points - 1 || hx < 0 || hz > points - 1 || hz < 0)
             {
-                if (Tile.tilesCovered == 2) //hardcoded for quad tiles
+                if (Tile.tilesCovered == 2 || Tile.tilesCovered == 16) //for quad tiles and 32x32KM lotiles
                 {
+                    var normalStep = Tile.tilesCovered / 2; 
+                    var halfPoints = 128; if (Tile.tilesCovered == 16) halfPoints = 32; 
                     var TX = TileX; var TZ = TileZ;
-                    if (hx < 0) { hx = 255; TX -= 1; }
-                    if (hz < 0) { hz = 255; TZ += 1; }
-                    if (hx > 255)
+                    if (hx < 0) { hx = points - 1; TX -= normalStep; }
+                    if (hz < 0) { hz = points - 1; TZ += normalStep; }
+                    if (hx > points - 1)//too big for this tile, check next
                     {
                         //move to right, check next tile, if normal, decide which portion z should be (top/bottom)
-                        hx = 0; TX += 2; var tmpTile = tiles.GetTile(TX, TZ);
-                        if (tmpTile == null || tmpTile.tilesCovered == 1) if (hz > 128) { hz -= 128; hz *= 2; TZ -= 1; } else { hz *= 2; }
+                        hx = 0; TX += Tile.tilesCovered; var tmpTile = tiles.GetTile(TX, TZ);
+                        if (tmpTile == null || tmpTile.tilesCovered == normalStep) 
+                            if (hz >= halfPoints)
+                            {
+                                hz -= halfPoints; hz *= 2; TZ -= normalStep;
+                                if (hz == points) { hz = 0; TZ -= normalStep; }
+                            }
+                            else { hz *= 2; }
                     }
-                    if (hz > 255)
+                    if (hz > points - 1)//too big for this tile, check next
                     {
                         //move down, check next tile, if normal, decide which portion x should be (left/right)
-                        hz = 0; TZ -= 2; var tmpTile = tiles.GetTile(TX, TZ);
-                        if (tmpTile == null || tmpTile.tilesCovered == 1) if (hx > 128) { hx -= 128; hx *= 2; TX += 1; } else { hx *= 2; }
+                        hz = 0; TZ -= Tile.tilesCovered; var tmpTile = tiles.GetTile(TX, TZ);
+                        if (tmpTile == null || tmpTile.tilesCovered == normalStep)
+                            if (hx >= halfPoints)
+                            {
+                                hx -= halfPoints; hx *= 2; TX += normalStep;
+                                if (hx == points) { hx = 0; TX += normalStep; }
+                            }
+                            else { hx *= 2; }
                     }
                     return tiles.GetElevation(TX, TZ, hx, hz);
                 }
+
                 // its outside this tile, so we will have to look it up
                 return tiles.GetElevation(TileX, TileZ, hx, hz);
             }
