@@ -70,7 +70,6 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
-            this.distanceMountain = new System.Windows.Forms.CheckBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.SuperElevationGauge = new System.Windows.Forms.NumericUpDown();
@@ -81,9 +80,17 @@
             this.ElevationAmount = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.label12 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.DMDistance = new System.Windows.Forms.NumericUpDown();
-            this.label12 = new System.Windows.Forms.Label();
+            this.distanceMountain = new System.Windows.Forms.CheckBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label14 = new System.Windows.Forms.Label();
+            this.NormalViewingDistance = new System.Windows.Forms.NumericUpDown();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.DMLowerValue = new System.Windows.Forms.NumericUpDown();
+            this.label17 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -101,6 +108,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NormalViewingDistance)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DMLowerValue)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -325,6 +334,16 @@
             // 
             // tabPageVideo
             // 
+            this.tabPageVideo.Controls.Add(this.label15);
+            this.tabPageVideo.Controls.Add(this.label16);
+            this.tabPageVideo.Controls.Add(this.DMLowerValue);
+            this.tabPageVideo.Controls.Add(this.label13);
+            this.tabPageVideo.Controls.Add(this.label14);
+            this.tabPageVideo.Controls.Add(this.NormalViewingDistance);
+            this.tabPageVideo.Controls.Add(this.label12);
+            this.tabPageVideo.Controls.Add(this.label11);
+            this.tabPageVideo.Controls.Add(this.DMDistance);
+            this.tabPageVideo.Controls.Add(this.distanceMountain);
             this.tabPageVideo.Controls.Add(this.labelFOVHelp);
             this.tabPageVideo.Controls.Add(this.numericUpDownFOV);
             this.tabPageVideo.Controls.Add(this.label10);
@@ -633,10 +652,7 @@
             // 
             // tabPageExperimental
             // 
-            this.tabPageExperimental.Controls.Add(this.label12);
-            this.tabPageExperimental.Controls.Add(this.label11);
-            this.tabPageExperimental.Controls.Add(this.DMDistance);
-            this.tabPageExperimental.Controls.Add(this.distanceMountain);
+            this.tabPageExperimental.Controls.Add(this.label17);
             this.tabPageExperimental.Controls.Add(this.label9);
             this.tabPageExperimental.Controls.Add(this.label8);
             this.tabPageExperimental.Controls.Add(this.SuperElevationGauge);
@@ -654,17 +670,6 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
-            // 
-            // distanceMountain
-            // 
-            this.distanceMountain.AutoSize = true;
-            this.distanceMountain.Location = new System.Drawing.Point(11, 103);
-            this.distanceMountain.Margin = new System.Windows.Forms.Padding(4);
-            this.distanceMountain.Name = "distanceMountain";
-            this.distanceMountain.Size = new System.Drawing.Size(181, 21);
-            this.distanceMountain.TabIndex = 40;
-            this.distanceMountain.Text = "Show Distant Mountains";
-            this.distanceMountain.UseVisualStyleBackColor = true;
             // 
             // label9
             // 
@@ -795,14 +800,23 @@
             this.ElevationText.TabIndex = 31;
             this.ElevationText.Text = "Super Elevation Options";
             // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(319, 279);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(28, 17);
+            this.label12.TabIndex = 47;
+            this.label12.Text = "KM";
+            // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(225, 104);
+            this.label11.Location = new System.Drawing.Point(203, 279);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(106, 17);
-            this.label11.TabIndex = 42;
-            this.label11.Text = "View Mountains";
+            this.label11.Size = new System.Drawing.Size(62, 17);
+            this.label11.TabIndex = 46;
+            this.label11.Text = "View DM";
             // 
             // DMDistance
             // 
@@ -811,7 +825,7 @@
             0,
             0,
             0});
-            this.DMDistance.Location = new System.Drawing.Point(338, 102);
+            this.DMDistance.Location = new System.Drawing.Point(270, 277);
             this.DMDistance.Margin = new System.Windows.Forms.Padding(4);
             this.DMDistance.Minimum = new decimal(new int[] {
             10,
@@ -820,7 +834,7 @@
             0});
             this.DMDistance.Name = "DMDistance";
             this.DMDistance.Size = new System.Drawing.Size(43, 22);
-            this.DMDistance.TabIndex = 41;
+            this.DMDistance.TabIndex = 45;
             this.toolTip1.SetToolTip(this.DMDistance, "Elevation 0-3");
             this.DMDistance.Value = new decimal(new int[] {
             40,
@@ -828,14 +842,111 @@
             0,
             0});
             // 
-            // label12
+            // distanceMountain
             // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(387, 104);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(35, 17);
-            this.label12.TabIndex = 43;
-            this.label12.Text = "KMs";
+            this.distanceMountain.AutoSize = true;
+            this.distanceMountain.Location = new System.Drawing.Point(8, 278);
+            this.distanceMountain.Margin = new System.Windows.Forms.Padding(4);
+            this.distanceMountain.Name = "distanceMountain";
+            this.distanceMountain.Size = new System.Drawing.Size(181, 21);
+            this.distanceMountain.TabIndex = 44;
+            this.distanceMountain.Text = "Show Distant Mountains";
+            this.distanceMountain.UseVisualStyleBackColor = true;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(220, 309);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(28, 17);
+            this.label13.TabIndex = 50;
+            this.label13.Text = "KM";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(8, 309);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(153, 17);
+            this.label14.TabIndex = 49;
+            this.label14.Text = "View Distance (normal)";
+            // 
+            // NormalViewingDistance
+            // 
+            this.NormalViewingDistance.Location = new System.Drawing.Point(171, 307);
+            this.NormalViewingDistance.Margin = new System.Windows.Forms.Padding(4);
+            this.NormalViewingDistance.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.NormalViewingDistance.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.NormalViewingDistance.Name = "NormalViewingDistance";
+            this.NormalViewingDistance.Size = new System.Drawing.Size(43, 22);
+            this.NormalViewingDistance.TabIndex = 48;
+            this.toolTip1.SetToolTip(this.NormalViewingDistance, "Elevation 0-3");
+            this.NormalViewingDistance.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(501, 279);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(19, 17);
+            this.label15.TabIndex = 53;
+            this.label15.Text = "m";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(378, 279);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(71, 17);
+            this.label16.TabIndex = 52;
+            this.label16.Text = "Lower DM";
+            // 
+            // DMLowerValue
+            // 
+            this.DMLowerValue.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.DMLowerValue.Location = new System.Drawing.Point(455, 277);
+            this.DMLowerValue.Margin = new System.Windows.Forms.Padding(4);
+            this.DMLowerValue.Maximum = new decimal(new int[] {
+            120,
+            0,
+            0,
+            0});
+            this.DMLowerValue.Name = "DMLowerValue";
+            this.DMLowerValue.Size = new System.Drawing.Size(43, 22);
+            this.DMLowerValue.TabIndex = 51;
+            this.toolTip1.SetToolTip(this.DMLowerValue, "Elevation 0-3");
+            this.DMLowerValue.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label17.Location = new System.Drawing.Point(8, 130);
+            this.label17.Margin = new System.Windows.Forms.Padding(4);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(422, 17);
+            this.label17.TabIndex = 40;
+            this.label17.Text = "Choices of Distant Mountains have been moved to the \"Video\" tab";
             // 
             // OptionsForm
             // 
@@ -876,6 +987,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.NormalViewingDistance)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DMLowerValue)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -933,9 +1046,16 @@
         private System.Windows.Forms.Label labelFOVHelp;
         private System.Windows.Forms.NumericUpDown numericUpDownFOV;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.CheckBox distanceMountain;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.NumericUpDown NormalViewingDistance;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.NumericUpDown DMDistance;
+        private System.Windows.Forms.CheckBox distanceMountain;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.NumericUpDown DMLowerValue;
+        private System.Windows.Forms.Label label17;
     }
 }

@@ -367,7 +367,7 @@ namespace ORTS
             int hz = PatchZ * 16 + z;
             if (hx > parentDim * 16 - 1 || hx < 0 || hz > parentDim * 16 - 1 || hz < 0)
             {
-                if (Tile.tilesCovered == 2) //hardcoded
+                if (Tile.tilesCovered == 2) //hardcoded for quad tiles
                 {
                     var TX = TileX; var TZ = TileZ;
                     if (hx < 0) { hx = 255; TX -= 1; }
@@ -391,21 +391,6 @@ namespace ORTS
             }
             uint e = Tile.YFile.GetElevationIndex(hx, hz);
             return (float)e * Tile.TFile.Resolution + Tile.TFile.Floor;
-        }
-
-        void findRealTile(int tileX, int tileZ, TileManager tiles, out int newX, out int newZ)
-        {
-            newX = tileX; newZ = tileZ; 
-            var step = tiles.tilesCovered+1;
-            if (tiles.GetTile(tileX, tileZ) != null) return;
-            var tileName = TileNameConversion.GetTileNameFromTileXZ(newX, newZ).Substring(0, 8) + "0";
-            for(var i = -step; i <= step; i++)
-                for (var j = -step; j <= step; j++)
-                {
-                    newX = tileX + i; newZ = tileZ + j;
-                    var tmpName = TileNameConversion.GetTileNameFromTileXZ(newX, newZ);
-                    if (tmpName == tileName ) return;
-                }
         }
 
         bool IsVertexHidden(int x, int z)
@@ -639,7 +624,7 @@ namespace ORTS
                     totalElevation += y;
                     if (K > 128)
                     {
-                        y -= 102f;//LO_TILEs will make it a bit lower, so they do not mix with the normal tiles
+                        y -= Viewer.Settings.DistantMountainsLowerValue;//LO_TILEs will make it a bit lower, so they do not mix with the normal tiles
                     }
 
                     vertexData.Add(new VertexPositionNormalTexture(new Vector3(w, y, n), TerrainNormal(x, z), new Vector2(U, V)));

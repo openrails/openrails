@@ -195,15 +195,19 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="EditKey.resx">
       <DependentUpon>EditKey.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ImportExportSaveForm.resx">
       <DependentUpon>ImportExportSaveForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="KeyPressControl.resx">
       <DependentUpon>KeyPressControl.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ResumeForm.resx">
       <DependentUpon>ResumeForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ExploreForm.resx">
       <DependentUpon>ExploreForm.cs</DependentUpon>
@@ -219,6 +223,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MultiplayerForm.resx">
       <DependentUpon>MultiplayerForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Options.resx">
       <DependentUpon>Options.cs</DependentUpon>
@@ -230,6 +235,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="TestingForm.resx">
       <DependentUpon>TestingForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <Compile Include="RouteDetails.cs">
       <SubType>Form</SubType>
