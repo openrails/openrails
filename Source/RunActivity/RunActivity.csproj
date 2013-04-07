@@ -254,7 +254,6 @@
     <Compile Include="RollingStock\MSTSElectricLocomotive.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="RollingStock\MSTSEngineController.cs" />
     <Compile Include="RollingStock\MSTSLocomotive.cs">
       <SubType>Code</SubType>
     </Compile>

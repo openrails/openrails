@@ -8,6 +8,102 @@ using System.Diagnostics;   // needed for Debug
 
 namespace ORTS
 {
+    public enum MSTSNotchType { Dummy, Release, Running, SelfLap, Lap, Apply, EPApply, GSelfLap, GSelfLapH, Suppression, ContServ, FullServ, Emergency };
+
+    public class MSTSNotch {
+        public float Value;
+        public bool Smooth;
+        public MSTSNotchType Type;
+        public MSTSNotch(float v, int s, string type, STFReader stf)
+        {
+            Value = v;
+            Smooth = s == 0 ? false : true;
+            Type = MSTSNotchType.Dummy;
+            string lower = type.ToLower();
+            if (lower.StartsWith("trainbrakescontroller"))
+                lower = lower.Substring(21);
+            if (lower.StartsWith("enginebrakescontroller"))
+                lower = lower.Substring(22);
+            switch (lower)
+            {
+                case "dummy": break;
+                case ")": break;
+                case "releasestart": Type = MSTSNotchType.Release; break;
+                case "fullquickreleasestart": Type = MSTSNotchType.Release; break;
+                case "runningstart": Type = MSTSNotchType.Running; break;
+                case "selflapstart": Type = MSTSNotchType.SelfLap; break;
+                case "holdstart": Type = MSTSNotchType.Lap; break;
+                case "holdlappedstart": Type = MSTSNotchType.Lap; break;
+                case "graduatedselflaplimitedstart": Type = MSTSNotchType.GSelfLap; break;
+                case "graduatedselflaplimitedholdingstart": Type = MSTSNotchType.GSelfLapH; break;
+                case "applystart": Type = MSTSNotchType.Apply; break;
+                case "continuousservicestart": Type = MSTSNotchType.ContServ; break;
+                case "suppressionstart": Type = MSTSNotchType.Suppression; break;
+                case "fullservicestart": Type = MSTSNotchType.FullServ; break;
+                case "emergencystart": Type = MSTSNotchType.Emergency; break;
+                case "epapplystart": Type = MSTSNotchType.EPApply; break;
+                case "epholdstart": Type = MSTSNotchType.Lap; break;
+                case "minimalreductionstart": Type = MSTSNotchType.Lap; break;
+                default:
+                    STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
+                    break;
+            }
+        }
+        public MSTSNotch(float v, bool s, int t)
+        {
+            Value = v;
+            Smooth = s;
+            Type = (MSTSNotchType)t;
+        }
+
+        public MSTSNotch(MSTSNotch other)
+        {
+            Value = other.Value;
+            Smooth = other.Smooth;
+            Type = other.Type;
+        }
+
+        public MSTSNotch(BinaryReader inf)
+        {
+            Value = inf.ReadSingle();
+            Smooth = inf.ReadBoolean();
+            Type = (MSTSNotchType)inf.ReadInt32();
+        }
+
+        public MSTSNotch Clone()
+        {
+            return new MSTSNotch(this);
+        }
+
+        public string GetName()
+        {
+            switch (Type)
+            {
+                case MSTSNotchType.Dummy: return "";
+                case MSTSNotchType.Release: return "Release";
+                case MSTSNotchType.Running: return "Running";
+                case MSTSNotchType.Apply: return "Apply";
+                case MSTSNotchType.EPApply: return "EPApply";
+                case MSTSNotchType.Emergency: return "Emergency";
+                case MSTSNotchType.SelfLap: return "Lap";
+                case MSTSNotchType.GSelfLap: return "Service";
+                case MSTSNotchType.GSelfLapH: return "Service";
+                case MSTSNotchType.Lap: return "Lap";
+                case MSTSNotchType.Suppression: return "Suppresion";
+                case MSTSNotchType.ContServ: return "Cont. Service";
+                case MSTSNotchType.FullServ: return "Full Service";
+                default: return "";
+            }
+        }
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(Value);
+            outf.Write(Smooth);
+            outf.Write((int)Type);
+        }
+    }
+
     /**
      * This is the most used controller. The main use is for diesel locomotives' Throttle control.
      * 

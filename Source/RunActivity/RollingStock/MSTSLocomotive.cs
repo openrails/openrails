@@ -105,8 +105,7 @@ namespace ORTS
         public bool UsingRearCab = false;
 
         public bool HasCombCtrl = false;
-        public bool HasStepCtrl = false;
-        public bool HasCombThrottleTrainBreak = false;
+        public bool HasCombThrottleTrainBrake = false;
         public bool HasDefectiveComboDynamicBreak = false;
         public bool HasSmoothStruc = false;
         public int  ComboCtrlCrossOver = 5;
@@ -180,10 +179,6 @@ namespace ORTS
                 ThrottleController = new MSTSNotchController();
                 ThrottleController.StepSize = 0.1f;
             }
-
-            // Some engine files want continuous, but specify a notch
-            if (ThrottleController.NotchCount() > 1)
-                HasStepCtrl = true;
 
             // Is Alerter option checked in menu
             if (Program.Simulator.Settings.Alerter)
@@ -490,7 +485,7 @@ namespace ORTS
                     ComboCtrlCrossOver = (int)(value * 10);
                 }
                 if (comboBrakeType == s)
-                    HasCombThrottleTrainBreak = true;
+                    HasCombThrottleTrainBrake = true;
                 i++;
             }
 
@@ -1163,7 +1158,7 @@ namespace ORTS
 
             float? smoothMax = ThrottleController.SmoothMax();
 
-            if (HasCombCtrl && !HasCombThrottleTrainBreak && DynamicBrake)
+            if (HasCombCtrl && !HasCombThrottleTrainBrake && DynamicBrake)
             {
                 StartDynamicBrakeDecrease( null );
                 if (!HasSmoothStruc)
@@ -1196,7 +1191,7 @@ namespace ORTS
                 continuousThrottleCommandNeeded = true;
             }
             
-            if (HasCombCtrl  && !HasCombThrottleTrainBreak)
+            if (HasCombCtrl  && !HasCombThrottleTrainBrake)
             {
                 if (ThrottlePercent == 0)
                     StopDynamicBrakeDecrease();
@@ -1227,7 +1222,7 @@ namespace ORTS
 
             float? smoothMin = ThrottleController.SmoothMin();
 
-            if (HasCombCtrl && !HasCombThrottleTrainBreak && ThrottlePercent <= 0)
+            if (HasCombCtrl && !HasCombThrottleTrainBrake && ThrottlePercent <= 0)
             {
                 StartDynamicBrakeIncrease( null );
                 if (!HasSmoothStruc)
@@ -1262,7 +1257,7 @@ namespace ORTS
                 continuousThrottleCommandNeeded = true;
             }
 
-            if (HasCombCtrl  && !HasCombThrottleTrainBreak)
+            if (HasCombCtrl  && !HasCombThrottleTrainBrake)
             {
                 if (ThrottlePercent == 0)
                     StopDynamicBrakeIncrease();
@@ -2228,7 +2223,7 @@ namespace ORTS
 
         bool SwapControl()
         {
-            if (Locomotive.HasCombThrottleTrainBreak)
+            if (Locomotive.HasCombThrottleTrainBrake)
                 return true;
             else
                 return false;
