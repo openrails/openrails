@@ -3449,7 +3449,7 @@ namespace ORTS
                 case CABViewControlTypes.CP_HANDLE:
                     var currentThrottleNotch = Locomotive.ThrottleController.CurrentNotch;
                     var throttleNotchCount = Locomotive.ThrottleController.NotchCount();
-                    if (dynamicBrakePercent == -1)
+                    if (dynamicBrakePercent < 0)
                     {
                         if (currentThrottleNotch == 0)
                             index = throttleNotchCount - 1;
@@ -3469,39 +3469,7 @@ namespace ORTS
                             // MSTS displayed them, so a dummy emulation is supplied here.
                             index = DummyDynamicToIndex(dynamicBrakePercent) + 9;
                         }
-
-                        if (UserInput.RDState != null)
-                        {
-                            if (UserInput.RDState.DynamicBrakePercent >= -100f)
-                            {
-                                if (currentThrottleNotch == 0)
-                                    index = throttleNotchCount - 1;
-                                else
-                                    index = (throttleNotchCount - 1) - currentThrottleNotch;
-                            }
-
-                            if (UserInput.RDState.DynamicBrakePercent >= 0)
-                                index = (dynamicNotchCount - 1) + currentDynamicNotch;
-                        }
                     } // End Dynamic != null
-
-                    if (UserInput.RDState != null)
-                    {
-                        var currentTrainBrakeNotch = Locomotive.TrainBrakeController.CurrentNotch;
-                        var trainBrakeNotchCount = Locomotive.TrainBrakeController.NotchCount();
-                        var trainBrakePercent = Locomotive.TrainBrakeController.CurrentValue * 100.0f;
-                        var bias = Locomotive.ComboCtrlCrossOver + 1;  //  needs to picked off eng file (center point)
-
-                        if (trainBrakePercent <= 1)
-                        {
-                            if (currentThrottleNotch == 0)
-                                index = throttleNotchCount - 1;
-                            else
-                                index = (throttleNotchCount - 1) - currentThrottleNotch;
-                        }
-                        else
-                            index = bias + currentTrainBrakeNotch;
-                    }
                     break;
                 case CABViewControlTypes.ALERTER_DISPLAY:
                 case CABViewControlTypes.RESET:
