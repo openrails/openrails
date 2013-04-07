@@ -232,20 +232,10 @@ namespace MSTS
     [DebuggerDisplay("\\{MSTS.TrJunctionNode\\} SelectedRoute={SelectedRoute}, ShapeIndex={ShapeIndex}")]
     public class TrJunctionNode
     {
-        public int SelectedRoute
-        {
-            get
-            {
-                return _selectedRoute;
-            }
-            set
-            {
-                _selectedRoute = value;
-            }
-        }
+        public int SelectedRoute = 0;
+        
 		public TrackNode TN;
 
-        private int _selectedRoute = 0;
         public int Idx { get; private set; }
 
         public TrJunctionNode(STFReader stf, int idx)

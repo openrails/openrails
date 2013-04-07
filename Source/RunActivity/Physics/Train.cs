@@ -1052,6 +1052,20 @@ namespace ORTS
 
         public virtual void physicsUpdate(float elapsedClockSeconds)
         {
+            //if out of track, will set it to stop
+            if ((FrontTDBTraveller != null && FrontTDBTraveller.IsEnd) || (RearTDBTraveller != null && RearTDBTraveller.IsEnd))
+            {
+                if (FrontTDBTraveller.IsEnd && RearTDBTraveller.IsEnd)
+                {//if both travellers are out, very rare occation, but have to treat it
+                    RearTDBTraveller.ReverseDirection();
+                    RearTDBTraveller.NextTrackNode();
+                } 
+                else if (FrontTDBTraveller.IsEnd) RearTDBTraveller.Move(-1);//if front is out, move back
+                else if (RearTDBTraveller.IsEnd) RearTDBTraveller.Move(1);//if rear is out, move forward
+                foreach (var car in Cars) { car.SpeedMpS = 0; } //can set crash here by setting XNA matrix
+                SignalEvent(Event._ResetWheelSlip);//reset everything to 0 power
+            }
+
             if (this.TrainType == TRAINTYPE.REMOTE || updateMSGReceived == true) //server tolds me this train (may include mine) needs to update position
             {
                 UpdateRemoteTrainPos(elapsedClockSeconds);
