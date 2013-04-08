@@ -73,15 +73,14 @@ namespace ORTS
                 if (!Viewer.Settings.DistantMountains) return;
                 tiles = LOTiles;
                 newTiles = new List<TerrainTile>();
-                needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance * Viewer.Settings.DistantMountainsViewingTiles / 2048f);//LO_TILES has five viewing distance (40KM)
+                needed = Viewer.Settings.DistantMountainsViewingTiles;//LO_TILES has longer viewing distance (40KM)
                 for (var x = -needed; x <= needed; x++)
                 {
                     for (var z = -needed; z <= needed; z++)
                     {
+                        //check if the LO tile exists?
                         var name = TileNameConversion.GetTileNameFromTileXZ(TileX + x, TileZ + z);
-
                         var fileName = name.Substring(0, name.Length - 2).Replace('-', '_');
-
                         if (name.Replace('-', '_') != fileName + "00") continue;
 
                         var tile = tiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
@@ -97,8 +96,7 @@ namespace ORTS
                         catch  {  }
                     }
                 }
-                LOTiles.Clear();
-                LOTiles.AddRange(newTiles);
+                LOTiles = newTiles;
             }
         }
 
@@ -117,13 +115,11 @@ namespace ORTS
                 if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448*tile.tileCovered))
                     tile.PrepareFrame(frame, elapsedTime);
             if (!Viewer.Settings.DistantMountains) return;
-            var tilesArray = LOTiles.ToArray();
-            foreach (var tile in tilesArray)
+            tiles = LOTiles;
+            foreach (var tile in tiles)
             {
-                //    if (Viewer.Camera.InRange(new Vector3((tile.TileX + 4 - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ + 4 - Viewer.Camera.TileZ) * 2048), 
-                //        14480, 40000))
-                //if (Viewer.Camera.InFOV(new Vector3((tile.TileX + 4 - Viewer.Camera.TileX) * 2048, Viewer.Camera.Location.Y, (tile.TileZ + 4 - Viewer.Camera.TileZ) * 2048), 16000))
-                tile.PrepareFrame(frame, elapsedTime);
+                if (Viewer.Camera.InFOV(new Vector3((tile.TileX + tile.tileCovered / 2 - Viewer.Camera.TileX) * 2048, Viewer.Camera.Location.Y, (tile.TileZ + tile.tileCovered / 2 - Viewer.Camera.TileZ) * 2048), 1448 * tile.tileCovered))
+                    tile.PrepareFrame(frame, elapsedTime);
             }
         }
 
@@ -214,6 +210,7 @@ namespace ORTS
 
             // Terrain needs all surrounding tiles to correctly join up the meshes.
             var tile = tiles.GetTile(tileX, tileZ);
+            this.tileCovered = tile.tilesCovered;
             if (tile != null && !tile.IsEmpty)
             {
                 if (tile.TFile.ContainsWater)

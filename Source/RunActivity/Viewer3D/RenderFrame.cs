@@ -283,7 +283,8 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            if (objectRadius > 5000)
+            if (objectRadius > 5000)//this is for LOTiles, as they are large. 
+                                    //It has been checked by FOV in Tiles prepare frame function, and also they will not cast shadows
                 AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
 
             else if (RenderProcess.Viewer.Camera.InRange(mstsLocation, objectRadius, objectViewingDistance))
