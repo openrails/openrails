@@ -1265,8 +1265,7 @@ namespace ORTS
         protected override void OnActivate(bool sameCamera)
         {
             // Cab camera is only possible on the player locomotive.
-            if (attachedCar == null || attachedCar != Viewer.PlayerLocomotive)
-                SetCameraCar(GetCameraCars().First());
+            SetCameraCar(GetCameraCars().First());
             base.OnActivate(sameCamera);
         }
 
