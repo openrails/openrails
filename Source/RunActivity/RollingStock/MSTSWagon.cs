@@ -237,6 +237,7 @@ namespace ORTS
             MainShapeFileName = copy.MainShapeFileName;
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimHeight = copy.FreightAnimHeight;
+            IsFreight = copy.IsFreight;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             MainSoundFileName = copy.MainSoundFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;

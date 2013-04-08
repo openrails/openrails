@@ -1926,7 +1926,7 @@ namespace ORTS
 
                     // process separate NOT
 
-                    if (procstring.Length > 0 && String.Compare(procstring.Substring(0, 4), "NOT ") == 0)
+                    if (procstring.Length > 4 && String.Compare(procstring.Substring(0, 4), "NOT ") == 0)
                     {
                         SCRNegate negated = SCRNegate.NEGATE;
                         SCRConditionList.Add(negated);
@@ -1948,13 +1948,12 @@ namespace ORTS
 
                     else
                     {
-
-                        // replace any enclosing ()
-
-                        if (procstring.StartsWith("("))
+                        // remove any superflouos brackets ()
+                        while (procstring.StartsWith("(") && procstring.EndsWith(")"))
                         {
                             procstring = procstring.Substring(1, procstring.Length - 2);
                         }
+
                         ThisCondition = new SCRConditions(procstring, LocalFloats, GICInfo.Linenumber);
                         SCRConditionList.Add(ThisCondition);
                     }
