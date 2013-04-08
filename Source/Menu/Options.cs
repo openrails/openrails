@@ -104,7 +104,7 @@ namespace ORTS
             SuperElevationGauge.Value = Settings.SuperElevationGauge;
             distanceMountain.Checked = settings.DistantMountains;
             DMDistance.Value = settings.DistantMountainsViewingTiles * 2;
-            NormalViewingDistance.Value = settings.ViewingDistance / 1000;
+            NormalViewingDistance.Value = settings.ViewingDistance;
             DMLowerValue.Value = settings.DistantMountainsLowerValue;
         }
 
@@ -318,7 +318,7 @@ namespace ORTS
             Settings.SuperElevationGauge = (int)SuperElevationGauge.Value;
             Settings.DistantMountains = distanceMountain.Checked;
             Settings.DistantMountainsViewingTiles = (int) DMDistance.Value / 2;
-            Settings.ViewingDistance = (int)NormalViewingDistance.Value * 1000;
+            Settings.ViewingDistance = (int)NormalViewingDistance.Value;
             Settings.DistantMountainsLowerValue = (int)DMLowerValue.Value;
             Settings.Save();
 

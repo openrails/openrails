@@ -73,6 +73,13 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.DMLowerValue = new System.Windows.Forms.NumericUpDown();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.DMDistance = new System.Windows.Forms.NumericUpDown();
+            this.distanceMountain = new System.Windows.Forms.CheckBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.SuperElevationGauge = new System.Windows.Forms.NumericUpDown();
@@ -83,13 +90,6 @@
             this.ElevationAmount = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.label15 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.DMLowerValue = new System.Windows.Forms.NumericUpDown();
-            this.label12 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.DMDistance = new System.Windows.Forms.NumericUpDown();
-            this.distanceMountain = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -104,11 +104,11 @@
             this.tabPageSimulation.SuspendLayout();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DMLowerValue)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.DMLowerValue)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -362,11 +362,11 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(220, 279);
+            this.label13.Location = new System.Drawing.Point(231, 279);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(28, 17);
+            this.label13.Size = new System.Drawing.Size(19, 17);
             this.label13.TabIndex = 50;
-            this.label13.Text = "KM";
+            this.label13.Text = "m";
             // 
             // label14
             // 
@@ -379,24 +379,28 @@
             // 
             // NormalViewingDistance
             // 
+            this.NormalViewingDistance.Increment = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
             this.NormalViewingDistance.Location = new System.Drawing.Point(171, 277);
             this.NormalViewingDistance.Margin = new System.Windows.Forms.Padding(4);
             this.NormalViewingDistance.Maximum = new decimal(new int[] {
-            10,
+            10000,
             0,
             0,
             0});
             this.NormalViewingDistance.Minimum = new decimal(new int[] {
-            2,
+            500,
             0,
             0,
             0});
             this.NormalViewingDistance.Name = "NormalViewingDistance";
-            this.NormalViewingDistance.Size = new System.Drawing.Size(43, 22);
+            this.NormalViewingDistance.Size = new System.Drawing.Size(55, 22);
             this.NormalViewingDistance.TabIndex = 48;
-            this.toolTip1.SetToolTip(this.NormalViewingDistance, "Elevation 0-3");
             this.NormalViewingDistance.Value = new decimal(new int[] {
-            2,
+            2000,
             0,
             0,
             0});
@@ -711,135 +715,6 @@
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
             // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(544, 63);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(30, 17);
-            this.label9.TabIndex = 39;
-            this.label9.Text = "mm";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(413, 63);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(51, 17);
-            this.label8.TabIndex = 38;
-            this.label8.Text = "Gauge";
-            // 
-            // SuperElevationGauge
-            // 
-            this.SuperElevationGauge.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.SuperElevationGauge.Location = new System.Drawing.Point(469, 60);
-            this.SuperElevationGauge.Margin = new System.Windows.Forms.Padding(4);
-            this.SuperElevationGauge.Maximum = new decimal(new int[] {
-            1600,
-            0,
-            0,
-            0});
-            this.SuperElevationGauge.Minimum = new decimal(new int[] {
-            600,
-            0,
-            0,
-            0});
-            this.SuperElevationGauge.Name = "SuperElevationGauge";
-            this.SuperElevationGauge.Size = new System.Drawing.Size(69, 22);
-            this.SuperElevationGauge.TabIndex = 37;
-            this.toolTip1.SetToolTip(this.SuperElevationGauge, "Elevation 0-3");
-            this.SuperElevationGauge.Value = new decimal(new int[] {
-            600,
-            0,
-            0,
-            0});
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(213, 64);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(78, 17);
-            this.label7.TabIndex = 36;
-            this.label7.Text = "Min Length";
-            // 
-            // MinLengthChoice
-            // 
-            this.MinLengthChoice.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.MinLengthChoice.Location = new System.Drawing.Point(299, 62);
-            this.MinLengthChoice.Margin = new System.Windows.Forms.Padding(4);
-            this.MinLengthChoice.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.MinLengthChoice.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.MinLengthChoice.Name = "MinLengthChoice";
-            this.MinLengthChoice.Size = new System.Drawing.Size(69, 22);
-            this.MinLengthChoice.TabIndex = 35;
-            this.toolTip1.SetToolTip(this.MinLengthChoice, "Elevation 0-3");
-            this.MinLengthChoice.Value = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(36, 62);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(56, 17);
-            this.label6.TabIndex = 34;
-            this.label6.Text = "Amount";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.label5.Location = new System.Drawing.Point(8, 7);
-            this.label5.Margin = new System.Windows.Forms.Padding(4);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(472, 17);
-            this.label5.TabIndex = 33;
-            this.label5.Text = "Experimental features that may slow down the game, use at your own risk.";
-            // 
-            // ElevationAmount
-            // 
-            this.ElevationAmount.Location = new System.Drawing.Point(99, 60);
-            this.ElevationAmount.Margin = new System.Windows.Forms.Padding(4);
-            this.ElevationAmount.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.ElevationAmount.Name = "ElevationAmount";
-            this.ElevationAmount.Size = new System.Drawing.Size(69, 22);
-            this.ElevationAmount.TabIndex = 32;
-            this.toolTip1.SetToolTip(this.ElevationAmount, "Elevation 0-3");
-            // 
-            // ElevationText
-            // 
-            this.ElevationText.AutoSize = true;
-            this.ElevationText.Location = new System.Drawing.Point(8, 39);
-            this.ElevationText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.ElevationText.Name = "ElevationText";
-            this.ElevationText.Size = new System.Drawing.Size(161, 17);
-            this.ElevationText.TabIndex = 31;
-            this.ElevationText.Text = "Super Elevation Options";
-            // 
             // label15
             // 
             this.label15.AutoSize = true;
@@ -875,7 +750,7 @@
             this.DMLowerValue.Name = "DMLowerValue";
             this.DMLowerValue.Size = new System.Drawing.Size(43, 22);
             this.DMLowerValue.TabIndex = 58;
-            this.toolTip1.SetToolTip(this.DMLowerValue, "Elevation 0-3");
+            this.toolTip1.SetToolTip(this.DMLowerValue, "lowering DMs to avoid conflict");
             this.DMLowerValue.Value = new decimal(new int[] {
             100,
             0,
@@ -917,7 +792,7 @@
             this.DMDistance.Name = "DMDistance";
             this.DMDistance.Size = new System.Drawing.Size(43, 22);
             this.DMDistance.TabIndex = 55;
-            this.toolTip1.SetToolTip(this.DMDistance, "Elevation 0-3");
+            this.toolTip1.SetToolTip(this.DMDistance, "Distance to see mountains");
             this.DMDistance.Value = new decimal(new int[] {
             40,
             0,
@@ -934,6 +809,134 @@
             this.distanceMountain.TabIndex = 54;
             this.distanceMountain.Text = "Show Distant Mountains";
             this.distanceMountain.UseVisualStyleBackColor = true;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(544, 63);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(30, 17);
+            this.label9.TabIndex = 39;
+            this.label9.Text = "mm";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(413, 63);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(51, 17);
+            this.label8.TabIndex = 38;
+            this.label8.Text = "Gauge";
+            // 
+            // SuperElevationGauge
+            // 
+            this.SuperElevationGauge.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.SuperElevationGauge.Location = new System.Drawing.Point(469, 60);
+            this.SuperElevationGauge.Margin = new System.Windows.Forms.Padding(4);
+            this.SuperElevationGauge.Maximum = new decimal(new int[] {
+            1600,
+            0,
+            0,
+            0});
+            this.SuperElevationGauge.Minimum = new decimal(new int[] {
+            600,
+            0,
+            0,
+            0});
+            this.SuperElevationGauge.Name = "SuperElevationGauge";
+            this.SuperElevationGauge.Size = new System.Drawing.Size(69, 22);
+            this.SuperElevationGauge.TabIndex = 37;
+            this.SuperElevationGauge.Value = new decimal(new int[] {
+            600,
+            0,
+            0,
+            0});
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(213, 64);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(78, 17);
+            this.label7.TabIndex = 36;
+            this.label7.Text = "Min Length";
+            // 
+            // MinLengthChoice
+            // 
+            this.MinLengthChoice.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.MinLengthChoice.Location = new System.Drawing.Point(299, 62);
+            this.MinLengthChoice.Margin = new System.Windows.Forms.Padding(4);
+            this.MinLengthChoice.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.MinLengthChoice.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.MinLengthChoice.Name = "MinLengthChoice";
+            this.MinLengthChoice.Size = new System.Drawing.Size(69, 22);
+            this.MinLengthChoice.TabIndex = 35;
+            this.toolTip1.SetToolTip(this.MinLengthChoice, "Shortest curve to have elevation");
+            this.MinLengthChoice.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(36, 62);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(56, 17);
+            this.label6.TabIndex = 34;
+            this.label6.Text = "Amount";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.label5.Location = new System.Drawing.Point(8, 7);
+            this.label5.Margin = new System.Windows.Forms.Padding(4);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(472, 17);
+            this.label5.TabIndex = 33;
+            this.label5.Text = "Experimental features that may slow down the game, use at your own risk.";
+            // 
+            // ElevationAmount
+            // 
+            this.ElevationAmount.Location = new System.Drawing.Point(99, 60);
+            this.ElevationAmount.Margin = new System.Windows.Forms.Padding(4);
+            this.ElevationAmount.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.ElevationAmount.Name = "ElevationAmount";
+            this.ElevationAmount.Size = new System.Drawing.Size(69, 22);
+            this.ElevationAmount.TabIndex = 32;
+            this.toolTip1.SetToolTip(this.ElevationAmount, "0: no elevation, 1: 9cm max; 10: 18cm max");
+            // 
+            // ElevationText
+            // 
+            this.ElevationText.AutoSize = true;
+            this.ElevationText.Location = new System.Drawing.Point(8, 39);
+            this.ElevationText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.ElevationText.Name = "ElevationText";
+            this.ElevationText.Size = new System.Drawing.Size(161, 17);
+            this.ElevationText.TabIndex = 31;
+            this.ElevationText.Text = "Super Elevation Options";
             // 
             // OptionsForm
             // 
@@ -971,11 +974,11 @@
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DMLowerValue)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.DMLowerValue)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).EndInit();
             this.ResumeLayout(false);
 
         }
