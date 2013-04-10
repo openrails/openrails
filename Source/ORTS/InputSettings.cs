@@ -114,6 +114,7 @@ namespace ORTS
         DebugClockBackwards,
         DebugLogger,
         DebugWeatherChange,
+        DebugFogChange,
         DebugLockShadows,
         DebugDumpKeymap,
         DebugLogRenderFrame,
@@ -439,6 +440,7 @@ namespace ORTS
             Commands[(int)UserCommands.DebugClockBackwards] = new UserCommandKeyInput(0x0C);
             Commands[(int)UserCommands.DebugLogger] = new UserCommandKeyInput(0x58);
             Commands[(int)UserCommands.DebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugFogChange] = new UserCommandKeyInput(0x0D, KeyModifiers.Shift);
             Commands[(int)UserCommands.DebugLockShadows] = new UserCommandKeyInput(0x1F, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugDumpKeymap] = new UserCommandKeyInput(0x3B, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugLogRenderFrame] = new UserCommandKeyInput(0x58, KeyModifiers.Alt);

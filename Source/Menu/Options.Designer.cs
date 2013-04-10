@@ -75,7 +75,7 @@
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
             this.label15 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
-            this.DMLowerValue = new System.Windows.Forms.NumericUpDown();
+            this.DMFogValue = new System.Windows.Forms.NumericUpDown();
             this.label12 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.DMDistance = new System.Windows.Forms.NumericUpDown();
@@ -104,7 +104,7 @@
             this.tabPageSimulation.SuspendLayout();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.DMLowerValue)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DMFogValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).BeginInit();
@@ -692,7 +692,7 @@
             // 
             this.tabPageExperimental.Controls.Add(this.label15);
             this.tabPageExperimental.Controls.Add(this.label16);
-            this.tabPageExperimental.Controls.Add(this.DMLowerValue);
+            this.tabPageExperimental.Controls.Add(this.DMFogValue);
             this.tabPageExperimental.Controls.Add(this.label12);
             this.tabPageExperimental.Controls.Add(this.label11);
             this.tabPageExperimental.Controls.Add(this.DMDistance);
@@ -727,32 +727,32 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(383, 99);
+            this.label16.Location = new System.Drawing.Point(366, 99);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(71, 17);
+            this.label16.Size = new System.Drawing.Size(90, 17);
             this.label16.TabIndex = 59;
-            this.label16.Text = "Lower DM";
+            this.label16.Text = "Fog Strength";
             // 
-            // DMLowerValue
+            // DMFogValue
             // 
-            this.DMLowerValue.Increment = new decimal(new int[] {
+            this.DMFogValue.Location = new System.Drawing.Point(469, 97);
+            this.DMFogValue.Margin = new System.Windows.Forms.Padding(4);
+            this.DMFogValue.Maximum = new decimal(new int[] {
             5,
             0,
             0,
             0});
-            this.DMLowerValue.Location = new System.Drawing.Point(460, 97);
-            this.DMLowerValue.Margin = new System.Windows.Forms.Padding(4);
-            this.DMLowerValue.Maximum = new decimal(new int[] {
-            120,
+            this.DMFogValue.Minimum = new decimal(new int[] {
+            1,
             0,
             0,
             0});
-            this.DMLowerValue.Name = "DMLowerValue";
-            this.DMLowerValue.Size = new System.Drawing.Size(43, 22);
-            this.DMLowerValue.TabIndex = 58;
-            this.toolTip1.SetToolTip(this.DMLowerValue, "lowering DMs to avoid conflict");
-            this.DMLowerValue.Value = new decimal(new int[] {
-            100,
+            this.DMFogValue.Name = "DMFogValue";
+            this.DMFogValue.Size = new System.Drawing.Size(34, 22);
+            this.DMFogValue.TabIndex = 58;
+            this.toolTip1.SetToolTip(this.DMFogValue, "Fog Strengths");
+            this.DMFogValue.Value = new decimal(new int[] {
+            1,
             0,
             0,
             0});
@@ -974,7 +974,7 @@
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.DMLowerValue)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DMFogValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).EndInit();
@@ -1041,7 +1041,7 @@
         private System.Windows.Forms.NumericUpDown NormalViewingDistance;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.NumericUpDown DMLowerValue;
+        private System.Windows.Forms.NumericUpDown DMFogValue;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.NumericUpDown DMDistance;

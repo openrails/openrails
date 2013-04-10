@@ -635,11 +635,6 @@ namespace ORTS
 
                     float y = Elevation(x, z) - Tile.TFile.Floor;
                     totalElevation += y;
-                    if (K > 128)
-                    {
-                        y -= Viewer.Settings.DistantMountainsLowerValue;//LO_TILEs will make it a bit lower, so they do not mix with the normal tiles
-                    }
-
                     vertexData.Add(new VertexPositionNormalTexture(new Vector3(w, y, n), TerrainNormal(x, z), new Vector2(U, V)));
                 }
 

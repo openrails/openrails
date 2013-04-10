@@ -109,7 +109,7 @@ namespace ORTS
                 precipMesh.Initialize(Viewer.Simulator);
 				if (MultiPlayer.MPManager.IsServer())
 				{
-					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather((int)Viewer.Simulator.Weather, -1)).ToString());//server notify others the weather has changed
+					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather((int)Viewer.Simulator.Weather, -1, -1)).ToString());//server notify others the weather has changed
 				}
             }
 

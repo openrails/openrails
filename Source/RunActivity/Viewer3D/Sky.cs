@@ -160,7 +160,17 @@ namespace ORTS
 					}
 					catch { }
 				}
-			}
+                //received message about weather change
+                if (MultiPlayer.MPManager.Instance().weatherChanged && MultiPlayer.MPManager.Instance().newFog > 0)
+                {
+                    Viewer.Settings.DistantMountainsFogValue = MultiPlayer.MPManager.Instance().newFog;
+                    try
+                    {
+                        MultiPlayer.MPManager.Instance().weatherChanged = false;
+                    }
+                    catch { }
+                }
+            }
 
 ////////////////////// T E M P O R A R Y ///////////////////////////
 
@@ -173,15 +183,25 @@ namespace ORTS
 				overcast = MathHelper.Clamp(overcast + 0.005f, 0, 1);
 				if (MultiPlayer.MPManager.IsServer())
 				{
-					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast)).ToString());//server notify others the weather has changed
+					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast, -1)).ToString());//server notify others the weather has changed
 				}
 			}
-			if (UserInput.IsDown(UserCommands.DebugOvercastDecrease) && !MultiPlayer.MPManager.IsClient())
+            if (UserInput.IsPressed(UserCommands.DebugFogChange) && !MultiPlayer.MPManager.IsClient())
+            {
+                Viewer.Settings.DistantMountainsFogValue %= 5;
+                Viewer.Settings.DistantMountainsFogValue += 1;
+                System.Console.Write(Viewer.Settings.DistantMountainsFogValue);
+                if (MultiPlayer.MPManager.IsServer())
+                {
+                    MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, -1, Viewer.Settings.DistantMountainsFogValue)).ToString());//server notify others the weather has changed
+                }
+            }
+            if (UserInput.IsDown(UserCommands.DebugOvercastDecrease) && !MultiPlayer.MPManager.IsClient())
 			{
 				overcast = MathHelper.Clamp(overcast - 0.005f, 0, 1);
 				if (MultiPlayer.MPManager.IsServer())
 				{
-					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast)).ToString());//server notify others the weather has changed
+					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast, -1)).ToString());//server notify others the weather has changed
 				}
 			}
 			if (UserInput.IsDown(UserCommands.DebugClockForwards) && !MultiPlayer.MPManager.IsMultiPlayer()) //dosen't make sense in MP mode

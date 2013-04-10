@@ -54,7 +54,8 @@ namespace ORTS.MultiPlayer
 		public bool weatherChanged = false;
 		public bool weatherChangHandled = false;
 		public int newWeather;
-		public float overCast;
+        public int newFog;
+        public float overCast;
 
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;

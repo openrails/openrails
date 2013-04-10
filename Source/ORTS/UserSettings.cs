@@ -168,8 +168,8 @@ namespace ORTS
 
         [Default(20)]
         public int DistantMountainsViewingTiles { get; set; }
-        [Default(105)]
-        public int DistantMountainsLowerValue { get; set; }
+        [Default(1)]
+        public int DistantMountainsFogValue { get; set; }
         // Physics options
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }

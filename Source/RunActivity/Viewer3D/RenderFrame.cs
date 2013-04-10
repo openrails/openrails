@@ -579,9 +579,6 @@ namespace ORTS
             if (RenderProcess.Viewer.Settings.DistantMountains)
             {
                 graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
-                graphicsDevice.RenderState.DepthBufferWriteEnable = false;
-                DrawSequencesSky(graphicsDevice);
-                graphicsDevice.RenderState.DepthBufferWriteEnable = true;
                 DrawSequencesDM(graphicsDevice);
                 graphicsDevice.Clear(ClearOptions.DepthBuffer, SharedMaterialManager.FogColor, 1, 0);
                 DrawSequences(graphicsDevice, logging);
@@ -687,44 +684,16 @@ namespace ORTS
                     }
                     else
                     {
-                        if (sequenceMaterial.Key is TerrainMaterial || sequenceMaterial.Key is TerrainSharedMaterial)
+                        if (sequenceMaterial.Key is TerrainMaterial || sequenceMaterial.Key is TerrainSharedMaterial || sequenceMaterial.Key is SkyMaterial)
                         {
                             var tm = sequenceMaterial.Key as TerrainMaterial;
-                            if (tm.DM)
+                            if (tm == null || tm.DM)
                             {
                                 // Opaque: single material, render in one go.
                                 sequenceMaterial.Key.SetState(graphicsDevice, null);
                                 sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref Camera.XNADMProjection);
                                 sequenceMaterial.Key.ResetState(graphicsDevice);
                             }
-                        }
-                    }
-                }
-            }
-        }
-
-        void DrawSequencesSky(GraphicsDevice graphicsDevice)
-        {
-            for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
-            {
-                var sequence = RenderItems[i];
-                foreach (var sequenceMaterial in sequence)
-                {
-                    if (sequenceMaterial.Value.Count == 0)
-                        continue;
-                    if (sequenceMaterial.Key == DummyBlendedMaterial)
-                    {
-                    }
-                    else
-                    {
-                        if (sequenceMaterial.Key is SkyMaterial)
-                        {
-
-                            // Opaque: single material, render in one go.
-                            sequenceMaterial.Key.SetState(graphicsDevice, null);
-                            sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref Camera.XNADMProjection);
-                            sequenceMaterial.Key.ResetState(graphicsDevice);
-
                         }
                     }
                 }
