@@ -118,7 +118,7 @@ namespace ORTS
             tiles = LOTiles;
             foreach (var tile in tiles)
             {
-                if (Viewer.Camera.InFOV(new Vector3((tile.TileX + tile.tileCovered / 2 - Viewer.Camera.TileX) * 2048, Viewer.Camera.Location.Y, (tile.TileZ + tile.tileCovered / 2 - Viewer.Camera.TileZ) * 2048), 1448 * tile.tileCovered))
+                if (Viewer.Camera.InFOV(new Vector3((tile.TileX + tile.tileCovered / 2 - Viewer.Camera.TileX) * 2048, Viewer.Camera.Location.Y, (tile.TileZ + tile.tileCovered / 2 - Viewer.Camera.TileZ) * 2048), 2000 * tile.tileCovered))
                     tile.PrepareFrame(frame, elapsedTime);
             }
         }
@@ -310,7 +310,7 @@ namespace ORTS
             else if (K > 128) //not normal tile
             {
                 //will worry this later about texture
-                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
+                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace") + "\0t");
             }
             else PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename));
 
@@ -331,7 +331,7 @@ namespace ORTS
             {
                 radius = 6000f;
                 //if (Viewer.Camera.InRange(mstsLocation, 2896, 1000)) return;
-                frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.AutoZBias);
+                frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
             }
             else frame.AddAutoPrimitive(mstsLocation, radius, ViewingDistance, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, ShapeFlags.ShadowCaster);
         }

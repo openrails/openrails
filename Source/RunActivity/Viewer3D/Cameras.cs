@@ -38,7 +38,7 @@ namespace ORTS
 
         Matrix xnaProjection;
         public Matrix XNAProjection { get { return xnaProjection; } }
-
+        public static Matrix XNADMProjection;
         Vector3 frustumRightProjected;
         Vector3 frustumLeft;
         Vector3 frustumRight;
@@ -135,9 +135,9 @@ namespace ORTS
             var fovWidthRadians = MathHelper.ToRadians(Viewer.Settings.ViewingFOV);
             if (Viewer.Settings.DistantMountains)
             {
-                xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, 2048 * Viewer.Settings.DistantMountainsViewingTiles);//can see 40KM
+                XNADMProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 500, 2048 * Viewer.Settings.DistantMountainsViewingTiles);//can see 40KM
             }
-            else xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, Viewer.Settings.ViewingDistance);
+            xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, Viewer.Settings.ViewingDistance+100);
             XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, farPlaneDistance);    // TODO remove? 
             frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // Precompute the right edge of the view frustrum.
             frustumRightProjected.Z = (float)Math.Sin(fovWidthRadians / 2 * aspectRatio);

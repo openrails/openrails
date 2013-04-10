@@ -576,8 +576,21 @@ namespace ORTS
         void DrawSimple(GraphicsDevice graphicsDevice, bool logging)
         {
             if (logging) Console.WriteLine("  DrawSimple {");
-            graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
-            DrawSequences(graphicsDevice, logging);
+            if (RenderProcess.Viewer.Settings.DistantMountains)
+            {
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
+                graphicsDevice.RenderState.DepthBufferWriteEnable = false;
+                DrawSequencesSky(graphicsDevice);
+                graphicsDevice.RenderState.DepthBufferWriteEnable = true;
+                DrawSequencesDM(graphicsDevice);
+                graphicsDevice.Clear(ClearOptions.DepthBuffer, SharedMaterialManager.FogColor, 1, 0);
+                DrawSequences(graphicsDevice, logging);
+            }
+            else
+            {
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
+                DrawSequences(graphicsDevice, logging);
+            }
             if (logging) Console.WriteLine("  }");
         }
 
@@ -637,6 +650,15 @@ namespace ORTS
                     }
                     else
                     {
+                        if (RenderProcess.Viewer.Settings.DistantMountains)
+                        {
+                            if (sequenceMaterial.Key is TerrainMaterial || sequenceMaterial.Key is TerrainSharedMaterial)
+                            {
+                                var tm = sequenceMaterial.Key as TerrainMaterial;
+                                if (tm.DM) continue;
+                            }
+                            else if (sequenceMaterial.Key is SkyMaterial) continue;
+                        }
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
                         if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
@@ -648,6 +670,64 @@ namespace ORTS
                     }
                 }
                 if (logging) Console.WriteLine("    }");
+            }
+        }
+
+        void DrawSequencesDM(GraphicsDevice graphicsDevice)
+        {
+            for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
+            {
+                var sequence = RenderItems[i];
+                foreach (var sequenceMaterial in sequence)
+                {
+                    if (sequenceMaterial.Value.Count == 0)
+                        continue;
+                    if (sequenceMaterial.Key == DummyBlendedMaterial)
+                    {
+                    }
+                    else
+                    {
+                        if (sequenceMaterial.Key is TerrainMaterial || sequenceMaterial.Key is TerrainSharedMaterial)
+                        {
+                            var tm = sequenceMaterial.Key as TerrainMaterial;
+                            if (tm.DM)
+                            {
+                                // Opaque: single material, render in one go.
+                                sequenceMaterial.Key.SetState(graphicsDevice, null);
+                                sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref Camera.XNADMProjection);
+                                sequenceMaterial.Key.ResetState(graphicsDevice);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void DrawSequencesSky(GraphicsDevice graphicsDevice)
+        {
+            for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
+            {
+                var sequence = RenderItems[i];
+                foreach (var sequenceMaterial in sequence)
+                {
+                    if (sequenceMaterial.Value.Count == 0)
+                        continue;
+                    if (sequenceMaterial.Key == DummyBlendedMaterial)
+                    {
+                    }
+                    else
+                    {
+                        if (sequenceMaterial.Key is SkyMaterial)
+                        {
+
+                            // Opaque: single material, render in one go.
+                            sequenceMaterial.Key.SetState(graphicsDevice, null);
+                            sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref Camera.XNADMProjection);
+                            sequenceMaterial.Key.ResetState(graphicsDevice);
+
+                        }
+                    }
+                }
             }
         }
 

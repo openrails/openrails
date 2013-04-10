@@ -765,6 +765,7 @@ namespace ORTS
         readonly Texture2D PatchTexture;
         readonly Texture2D PatchTextureOverlay;
         IEnumerator<EffectPass> ShaderPasses;
+        public bool DM = false;
 
         public TerrainMaterial(Viewer3D viewer, string terrainTexture)
             : base(viewer, terrainTexture)
@@ -772,6 +773,7 @@ namespace ORTS
             var textures = terrainTexture.Split('\0');
             PatchTexture = Viewer.TextureManager.Get(textures[0]);
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
+            if (textures.Length == 3) DM = true;
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
