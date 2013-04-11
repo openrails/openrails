@@ -4305,7 +4305,8 @@ namespace ORTS
             if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return (false);
             // set physical state
 
-            if (switchReserved) return (false);
+            if (!MultiPlayer.MPManager.IsServer()) if (switchReserved) return (false);
+            //this should not be enforced in MP, as a train may need to be allowed to go out of the station from the side line
 
             if (!switchSection.CircuitState.HasTrainsOccupying())
             {
@@ -9073,14 +9074,14 @@ namespace ORTS
 
             // enabled, cleared , reset required : check train speed
             // if train is moving : no action
-
-            else if (Math.Abs(enabledTrain.Train.SpeedMpS) > 0.1f)
+                //temporarily removed by JTang, before the full revision is ready
+            else /*if (Math.Abs(enabledTrain.Train.SpeedMpS) > 0.1f)
             {
             }
 
             // if train is stopped : reset signal, breakdown train route, set holdstate
 
-            else
+            else*/
             {
                 int signalRouteIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, 0);
                 if (signalRouteIndex >= 0)
