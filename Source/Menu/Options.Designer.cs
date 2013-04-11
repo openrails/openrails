@@ -73,9 +73,6 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
-            this.label15 = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.DMFogValue = new System.Windows.Forms.NumericUpDown();
             this.label12 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
             this.DMDistance = new System.Windows.Forms.NumericUpDown();
@@ -104,7 +101,6 @@
             this.tabPageSimulation.SuspendLayout();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.DMFogValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).BeginInit();
@@ -690,9 +686,6 @@
             // 
             // tabPageExperimental
             // 
-            this.tabPageExperimental.Controls.Add(this.label15);
-            this.tabPageExperimental.Controls.Add(this.label16);
-            this.tabPageExperimental.Controls.Add(this.DMFogValue);
             this.tabPageExperimental.Controls.Add(this.label12);
             this.tabPageExperimental.Controls.Add(this.label11);
             this.tabPageExperimental.Controls.Add(this.DMDistance);
@@ -714,48 +707,6 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(506, 99);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(19, 17);
-            this.label15.TabIndex = 60;
-            this.label15.Text = "m";
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(366, 99);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(90, 17);
-            this.label16.TabIndex = 59;
-            this.label16.Text = "Fog Strength";
-            // 
-            // DMFogValue
-            // 
-            this.DMFogValue.Location = new System.Drawing.Point(469, 97);
-            this.DMFogValue.Margin = new System.Windows.Forms.Padding(4);
-            this.DMFogValue.Maximum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.DMFogValue.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.DMFogValue.Name = "DMFogValue";
-            this.DMFogValue.Size = new System.Drawing.Size(34, 22);
-            this.DMFogValue.TabIndex = 58;
-            this.toolTip1.SetToolTip(this.DMFogValue, "Fog Strengths");
-            this.DMFogValue.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             // 
             // label12
             // 
@@ -974,7 +925,6 @@
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.DMFogValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).EndInit();
@@ -1039,9 +989,6 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.NumericUpDown NormalViewingDistance;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.NumericUpDown DMFogValue;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.NumericUpDown DMDistance;

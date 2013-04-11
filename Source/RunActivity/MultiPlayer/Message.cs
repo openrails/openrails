@@ -582,6 +582,7 @@ namespace ORTS.MultiPlayer
 			}
 			if (MPManager.Instance().CheckSpad == false) { p.Send((new MultiPlayer.MSGMessage("All", "OverSpeedOK", "OK to go overspeed and pass stop light")).ToString()); }
 			else { p.Send((new MultiPlayer.MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light")).ToString()); }
+            p.Send(MPManager.Instance().GetEnvInfo());//update weather
 
 			//send the new player information to everyone else
 			host = new MSGPlayer(p.Username, "1234", p.con, p.path, p.Train, p.Train.Number, p.url);
@@ -2934,21 +2935,22 @@ namespace ORTS.MultiPlayer
 	{
 		public  int weather;
 		public float overcast;
-        public int fog;
+        public float fog;
 		public MSGWeather(string m)
 		{
+            weather = -1; overcast = fog = -1f;
 			var tmp = m.Split(' ');
 			weather = int.Parse(tmp[0]);
 			overcast = float.Parse(tmp[1]);
-            fog = int.Parse(tmp[2]);
+            fog = float.Parse(tmp[2]);
 		}
 
-		public MSGWeather(int w, float o, int f)
+		public MSGWeather(int w, float o, float f)
 		{
             weather = -1; overcast = -1f; fog = -1;
 			if (w >= 0) weather = w;
 			if (o > 0) overcast = o;
-            if (f > 0 && f <= 5) fog = f;
+            if (f > 0) fog = f;
 		}
 
 		public override string ToString()
@@ -2964,19 +2966,13 @@ namespace ORTS.MultiPlayer
 			if (weather >= 0)
 			{
 				MPManager.Instance().newWeather = weather;
-                MPManager.Instance().overCast = -1;
-                MPManager.Instance().newFog = -1;
             }
-			if (overcast >= 0)
+			if (overcast >= 0 && overcast <= 1)
 			{
-				MPManager.Instance().newWeather = -1;
 				MPManager.Instance().overCast = overcast;
-                MPManager.Instance().newFog = -1;
             }
-            if (fog >= 0)
+            if (fog > 0)
             {
-                MPManager.Instance().newWeather = -1;
-                MPManager.Instance().overCast = -1;
                 MPManager.Instance().newFog = fog;
             }
             MPManager.Instance().weatherChanged = true;

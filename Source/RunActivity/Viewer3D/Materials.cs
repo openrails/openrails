@@ -309,7 +309,12 @@ namespace ORTS
             SceneryShader.Overcast = Viewer.World.Sky.overcast;
             SceneryShader.ViewerPos = Viewer.Camera.XNALocation(Viewer.Camera.CameraWorldLocation);
 
-            SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
+            if (Viewer.Settings.DistantMountains)
+            {
+                SceneryShader.SetFog(ViewingDistance * 4 * FogCoeff, ref SharedMaterialManager.FogColor);
+            }
+            else
+                SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
         }
     }
 
@@ -876,7 +881,7 @@ namespace ORTS
                 Viewer.World.Sky.overcast);
             SharedMaterialManager.FogCoeff = Viewer.World.Sky.fogCoeff;
 
-            if (Viewer.Settings.DistantMountains) SharedMaterialManager.FogCoeff *= (3 * (5 - Viewer.Settings.DistantMountainsFogValue) + 0.5f);
+            //if (Viewer.Settings.DistantMountains) SharedMaterialManager.FogCoeff *= (3 * (5 - Viewer.Settings.DistantMountainsFogValue) + 0.5f);
 
             if (Viewer.World.Sky.latitude > 0) // TODO: Use a dirty flag to determine if it is necessary to set the texture again
                 SkyShader.StarMapTexture = StarTextureN;
