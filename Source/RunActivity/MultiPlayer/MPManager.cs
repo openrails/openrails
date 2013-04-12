@@ -53,9 +53,9 @@ namespace ORTS.MultiPlayer
 
 		public bool weatherChanged = false;
 		public bool weatherChangHandled = false;
-		public int newWeather;
-        public float newFog;
-        public float overCast;
+		public int newWeather = -1;
+        public float newFog = -1f;
+        public float overCast = -1f;
 
 		public double lastPlayerAddedTime = 0.0f;
 		public int MPUpdateInterval = 10;
@@ -465,18 +465,26 @@ namespace ORTS.MultiPlayer
 				}
 				if (CheckSpad == false) { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "OverSpeedOK", "OK to go overspeed and pass stop light")).ToString()); }
 				else { MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light")).ToString()); }
-                MPManager.BroadCast((new MSGWeather((int) Viewer.Simulator.Weather, Viewer.World.Sky.overcast, Viewer.World.Sky.overcast)).ToString());//update weather
-
+                MPManager.BroadCast(GetEnvInfo());
 			}
 		}
 
         //create weather message
         public string GetEnvInfo()
         {
-            return (new MSGWeather((int)Viewer.Simulator.Weather, Viewer.World.Sky.overcast, Viewer.World.Sky.overcast)).ToString();//update weather
+            return (new MSGWeather(-1, overCast, newFog)).ToString();//update weather
 
         }
-		//this will be used in the server, in Simulator.cs
+
+        //set weather message
+        public void SetEnvInfo(float o, float f)
+        {
+            newFog = f;
+            overCast = o;
+
+        }
+
+        //this will be used in the server, in Simulator.cs
 		public bool TrainOK2Couple(Train t1, Train t2)
 		{
 			//if (Math.Abs(t1.SpeedMpS) > 10 || Math.Abs(t2.SpeedMpS) > 10) return false; //we do not like high speed punch in MP, will mess up a lot.

@@ -413,7 +413,7 @@ namespace ORTS.MultiPlayer
 			}
 			if (MPManager.IsServer())
 			{
-				if ((MD5 != "" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() == Program.Simulator.RoutePathName.ToLower())
+				if ((MD5 != "" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != Program.Simulator.RoutePathName.ToLower())
 				{
 					MPManager.BroadCast((new MSGMessage(this.user, "Error", "Wrong route dir or TDB file, the dispatcher uses a different route")).ToString());//server will broadcast this error
 					throw new Exception("Player has wrong version of route");//ignore this player message

@@ -75,10 +75,11 @@ namespace ORTS
             // The following keyboard commands are used for viewing sky and weather effects in "demo" mode
             // Use Alt+P to toggle precipitation through Clear, Rain and Snow states
 
-			if (MultiPlayer.MPManager.IsMultiPlayer())
+			if (MultiPlayer.MPManager.IsClient())
 			{
 				//received message about weather change
-				if (MultiPlayer.MPManager.Instance().weatherChanged && MultiPlayer.MPManager.Instance().newWeather>=0)
+				if (MultiPlayer.MPManager.Instance().weatherChanged && MultiPlayer.MPManager.Instance().newWeather>=0 &&
+                    MultiPlayer.MPManager.Instance().newWeather != (int)Viewer.Simulator.Weather)
 				{
 					Viewer.Simulator.Weather = (WeatherType)MultiPlayer.MPManager.Instance().newWeather;
 					try
@@ -109,7 +110,8 @@ namespace ORTS
                 precipMesh.Initialize(Viewer.Simulator);
 				if (MultiPlayer.MPManager.IsServer())
 				{
-					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather((int)Viewer.Simulator.Weather, -1, -1)).ToString());//server notify others the weather has changed
+					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather((int)Viewer.Simulator.Weather, 
+                        -1, -1)).ToString());//server notify others the weather has changed
 				}
             }
 
