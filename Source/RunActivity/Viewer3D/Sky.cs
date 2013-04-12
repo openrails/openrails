@@ -177,17 +177,17 @@ namespace ORTS
 			if (UserInput.IsDown(UserCommands.DebugOvercastIncrease) && !MultiPlayer.MPManager.IsClient())
 			{
                 fogCoeff /= 1.02f;
-                if (fogCoeff < 0.01f) fogCoeff = 0.01f;
+                if (fogCoeff < 0.002f) fogCoeff = 0.002f;
                 overcast = MathHelper.Clamp(overcast + 0.005f, 0, 1);
 			}
             if (UserInput.IsDown(UserCommands.DebugFogIncrease) && !MultiPlayer.MPManager.IsClient())
             {
-                fogCoeff /= 1.02f;
-                if (fogCoeff < 0.01f) fogCoeff = 0.01f;
+                fogCoeff /= 1.05f;
+                if (fogCoeff < 0.002f) fogCoeff = 0.002f;
             }
             if (UserInput.IsDown(UserCommands.DebugFogDecrease) && !MultiPlayer.MPManager.IsClient())
             {
-                fogCoeff *= 1.02f;
+                fogCoeff *= 1.05f;
             }
             if (UserInput.IsDown(UserCommands.DebugOvercastDecrease) && !MultiPlayer.MPManager.IsClient())
 			{

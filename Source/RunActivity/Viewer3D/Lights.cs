@@ -224,7 +224,24 @@ namespace ORTS
         public bool CarIsPlayer;
         public bool CarInService;
         public bool IsDay;
+        public bool TrainIsSpad
+        {
+            get
+            {
+                var result = false;
+                if (Car.Train != null && Car.Train.LeadLocomotive!=null) {
+                    try
+                    {
+                        var loc = Car.Train.LeadLocomotive as MSTSLocomotive;
+                        result = loc.TrainBrakeController.GetIsEmergency();
+                    }
+                    catch { }
+                }
+                return result;
+            }
+        }
         public WeatherType Weather;
+        public bool Penalty;
         public bool IsLightConeActive { get { return ActiveLightCone != null; } }
         List<LightMesh> LightMeshes = new List<LightMesh>();
 
@@ -394,7 +411,7 @@ namespace ORTS
             // Control
             var newCarIsPlayer = Car == Viewer.PlayerLocomotive;
 			if (Car.Train != null && Car.Train.TrainType == Train.TRAINTYPE.REMOTE) newCarIsPlayer = true;//for remote trains
-			// TODO: Check for relevant Penalty changes.
+            var newPenalty = this.TrainIsSpad;			// TODO: Check for relevant Penalty changes.
             // Service
             var newCarInService = Car.Train != null;
             // Time
@@ -412,6 +429,7 @@ namespace ORTS
                 (CarIsPlayer != newCarIsPlayer) ||
                 (CarInService != newCarInService) ||
                 (IsDay != newIsDay) ||
+                (Penalty != newPenalty) ||
                 (Weather != newWeather))
             {
                 TrainHeadlight = newTrainHeadlight;
@@ -424,6 +442,7 @@ namespace ORTS
                 CarInService = newCarInService;
                 IsDay = newIsDay;
                 Weather = newWeather;
+                Penalty = newPenalty;
 
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
@@ -500,6 +519,10 @@ namespace ORTS
         {
             var oldEnabled = Enabled;
             Enabled = true;
+            if (this.Light.Penalty != LightPenaltyCondition.Ignore)
+            {
+                Enabled &= lightDrawer.Penalty;
+            }
             if (Light.Headlight != LightHeadlightCondition.Ignore)
             {
                 if (Light.Headlight == LightHeadlightCondition.Off)

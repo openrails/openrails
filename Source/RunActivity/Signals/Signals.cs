@@ -9062,6 +9062,8 @@ namespace ORTS
 
             else if (!requestResetSignal && thisAspect > SignalHead.SIGASP.STOP)
             {
+                holdState = HOLDSTATE.MANUAL_LOCK; //just in case this one later will be set to green by the system
+                returnValue[0] = true;
             }
 
             // if enabled and not cleared : set hold, no reset required
@@ -9091,6 +9093,11 @@ namespace ORTS
                     holdState = HOLDSTATE.MANUAL_LOCK;
                     returnValue[0] = true;
                     returnValue[1] = true;
+                }
+                else //hopefully this does not happen
+                {
+                    holdState = HOLDSTATE.MANUAL_LOCK;
+                    returnValue[0] = true;
                 }
             }
 

@@ -737,41 +737,32 @@ namespace ORTS
                 }
                 else
                 {
-                    int carCount = 0;
-                    int controlEngine = -1;
-
                     // When not LeadLocomotive; check if lead is in Neutral
                     // if so this loco will have no motive force
 
-                    var LeadLocomotive = Program.Simulator.PlayerLocomotive.Train;
+                    var LeadLocomotive = Program.Simulator.PlayerLocomotive;
 
-                    foreach (TrainCar car in LeadLocomotive.Cars)
+                    if (LeadLocomotive == null) { }
+                    else if (LeadLocomotive.Direction == Direction.N)
+                        MotiveForceN *= 0;
+                    else
                     {
-                        if (car.IsDriveable)
-                            if (controlEngine == -1)
-                            {
-                                controlEngine = carCount;
-                                if (car.Direction == Direction.N)
-                                    MotiveForceN *= 0;
-                                else
-                                {
-                                    switch (Direction)
-                                    {
-                                        case Direction.Forward:
-                                            MotiveForceN *= 1;     //Not necessary
-                                            break;
-                                        case Direction.Reverse:
-                                            MotiveForceN *= -1;
-                                            break;
-                                        case Direction.N:
-                                        default:
-                                            MotiveForceN *= 0;
-                                            break;
-                                    }
-                                }
-                            }
-                        break;
-                    } // foreach
+                        switch (Direction)
+                        {
+                            case Direction.Forward:
+                                MotiveForceN *= 1;     //Not necessary
+                                break;
+                            case Direction.Reverse:
+                                MotiveForceN *= -1;
+                                break;
+                            case Direction.N:
+                            default:
+                                MotiveForceN *= 0;
+                                break;
+                        }
+                    }
+
+
                 } // end when not lead loco
             }// end Player locomotive
 
