@@ -24,21 +24,50 @@ namespace ORTS
             XNAOffset.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             XNAOffset.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             XNADirection.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 1.0f);  // May as well go up by default.
+            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);  // May as well go up by default.
             XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             stf.SkipRestOfBlock();
 
-            MaxParticlesPerSecond = 60; // May come from the STF in the future.
-            ParticleDuration = 5.0f;    // May come from the STF in the future.
+            MaxParticlesPerSecond = 60f;
+            ParticlesPerSecond = 60f;
+            ParticleDuration = 60f;    // May come from the STF in the future.
             texturePath = string.Empty; // May come from the STF in the future.
+            ParticleDurationRandomness = 1;
+            ParticleVelocitySensitivity = 0;
+            MinHorizontalVelocity = 0;
+            MaxHorizontalVelocity = 50;
+            MinVerticalVelocity = -10;
+            MaxVerticalVelocity = 50;
+            EndVelocity = 0;
+            MinRotateSpeed = -2;
+            MaxRotateSpeed = 2;
+            MinStartSize = 10;
+            MaxStartSize = 10;
+            MinStartSize = 100;
+            MinEndSize = 100;
+            MaxEndSize = 200;
         }
 
         public Vector3 XNAOffset;
         public Vector3 XNADirection;
         public float NozzleWidth;
         public float MaxParticlesPerSecond;
+        public float ParticlesPerSecond;
         public float ParticleDuration;
+        public float ParticleDurationRandomness;
+        public float ParticleVelocitySensitivity;
+        public float MinHorizontalVelocity;
+        public float MaxHorizontalVelocity;
+        public float MinVerticalVelocity;
+        public float MaxVerticalVelocity;
+        public float EndVelocity;
+        public float MinRotateSpeed;
+        public float MaxRotateSpeed;
+        public float MinStartSize;
+        public float MaxStartSize;
+        public float MinEndSize;
+        public float MaxEndSize;
         public string texturePath;
     }
 
@@ -50,17 +79,17 @@ namespace ORTS
 
         // Classes reqiring instantiation
         public ParticleEmitter emitter;
+                
 
         public WorldPosition WorldPosition
         {
             set { emitter.WorldPosition = value; }
         }
-
         public ParticleEmitterDrawer(Viewer3D viewer, ParticleEmitterData data)
         {
             Viewer = viewer;
             ParticleMaterial = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
-            ParticleEmissionHoleM3 = MathHelper.Pi * data.NozzleWidth * data.NozzleWidth;
+            ParticleEmissionHoleM3 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
             emitter = new ParticleEmitter(Viewer.RenderProcess, data);
         }
 
@@ -68,25 +97,25 @@ namespace ORTS
         {
             emitter.CameraTileXZ.X = Viewer.Camera.TileX;
             emitter.CameraTileXZ.Y = Viewer.Camera.TileZ;
-
             emitter.Update(Viewer.Simulator.GameTime, elapsedTime);
-            
             var XNAPrecipWorldLocation = Matrix.Identity;
 
             if(emitter.HasParticlesToRender())
                 frame.AddPrimitive(ParticleMaterial, emitter, RenderPrimitiveGroup.Particles, ref XNAPrecipWorldLocation);
         }
-
         public void SetTexture(Texture2D texture)
         {
             ParticleMaterial.Texture = texture;
         }
-
         public void SetEmissionRate(float particleVolumeM3)
         {
-            emitter.ParticlesPerSecond = particleVolumeM3 / ParticleEmissionHoleM3;
+            emitter.EmitterData.ParticlesPerSecond = (particleVolumeM3 / ParticleEmissionHoleM3) * .10f;
+            emitter.ParticlesPerSecond = emitter.EmitterData.ParticlesPerSecond;
         }
-
+        public void SetParticleDuration(float particleDuration)
+        {
+            emitter.EmitterData.ParticleDuration = particleDuration;
+        }
         public void SetEmissionColor(Color particleColor)
         {
             emitter.ParticleColor = particleColor;
@@ -162,9 +191,7 @@ namespace ORTS
             ParticleColor = Color.White;
             EmitterData = data;
             this.renderProcess = renderProcess;
-
-            maxParticles = (int)(data.MaxParticlesPerSecond * data.ParticleDuration);
-
+            maxParticles = (int)(EmitterData.MaxParticlesPerSecond * data.ParticleDuration);
             vd = new VertexDeclaration(renderProcess.GraphicsDevice, ParticleVertex.VertexElements);
             InitVB(renderProcess.GraphicsDevice);
             InitIB(renderProcess.GraphicsDevice);
@@ -261,7 +288,7 @@ namespace ORTS
             var numCanBeEmitted = GetNumParticlesAvailableForEmission();
             var numToEmit = Math.Min(numToBeEmitted, numCanBeEmitted);
 
-            var intervalPerParticle = (time - timeParticlesLastEmitted) / numToEmit;
+            var intervalPerParticle = (time - timeParticlesLastEmitted) / numToEmit; //Change to randomize time of emission.
 
             for (var i = 0; i < numToEmit; i++)
             {
@@ -269,9 +296,9 @@ namespace ORTS
                 var newParticleVertexIndex = nextFreeParticle * VERTICES_PER_PARTICLE;
                 var particleOffset = Vector3.Transform(EmitterData.XNAOffset, rotation);
                 var particlePosition = WorldPosition.Location + particleOffset;
-                var timeOfEmission = timeParticlesLastEmitted + (i * intervalPerParticle);
+                var timeOfEmission = timeParticlesLastEmitted + intervalPerParticle;
                 var positionTime = new Vector4(WorldPosition.XNAMatrix.Translation + particleOffset, timeOfEmission);
-                var randomTextureOffset = (float)rng.Next(16);
+                var randomTextureOffset = (float)rng.Next(16); //Randomizes emissions.
                 var color_random = new Color(ParticleColor, (float)rng.NextDouble());
 
                 for (var j = 0; j < VERTICES_PER_PARTICLE; j++)

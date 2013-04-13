@@ -39,9 +39,11 @@ namespace ORTS
         float MaxRPM = 0;
         float MaxRPMChangeRate = 0;
         float PercentChangePerSec = .2f;
-        float IdleExhaust = 10.0f;
+        public float IdleExhaust = 0.0f;
+        public float InitialExhaust = 0.0f;
+        float ExhaustMagnitude = 4.0f;
         float MaxExhaust = 50.0f;
-        float ExhaustDynamics = 1.5f;
+        public float ExhaustDynamics = 4.0f;
         float EngineRPMderivation = 0.0f;
         float EngineRPMold = 0.0f;
 
@@ -58,6 +60,7 @@ namespace ORTS
         public Color ExhaustColor = Color.Gray;
         Color ExhaustSteadyColor = Color.Gray;
         Color ExhaustTransientColor = Color.Black;
+        Color ExhaustDecelColor = Color.TransparentWhite;
 
         public MSTSDieselLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
@@ -78,9 +81,10 @@ namespace ORTS
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
 
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
-                case "engine(or_diesel(idleexhaust": IdleExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(or_diesel(maxexhaust": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(or_diesel(exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselsmokeeffectinitialsmokerate": IdleExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselsmokeeffectinitialmagnitude": InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselsmokeeffectmaxmagnitude": ExhaustMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(or_diesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;
                 case "engine(or_diesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;
                 case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
@@ -258,24 +262,39 @@ namespace ORTS
 #endif
 			
 			// TODO  this is a wild simplification for diesel electric
+            float e = (EngineRPM - IdleRPM) / (MaxRPM - IdleRPM); //
             float t = ThrottlePercent / 100f;
             float currentSpeedMpS = Math.Abs(SpeedMpS);
             float currentWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
 
-            ExhaustParticles = ((MaxExhaust - IdleExhaust) * t + IdleExhaust);
-            if (ExhaustParticles < 5.0f)
-                ExhaustParticles = 5.0f;
+            //Initial smoke, when locomotive is started:
 
-            if (EngineRPMderivation > 0.0f)
+            ExhaustColor = ExhaustSteadyColor;
+            
+            if (EngineRPM == IdleRPM)
             {
-                ExhaustParticles *= ExhaustDynamics * MaxExhaust;
-                ExhaustColor = ExhaustTransientColor;
-            }
-            else
-            {
+                ExhaustParticles = IdleExhaust;
+                ExhaustDynamics = InitialExhaust;
                 ExhaustColor = ExhaustSteadyColor;
-                if (EngineRPMderivation < 0.0f)
-                    ExhaustParticles = 3.0f;
+            }
+            else if (EngineRPMderivation > 0.0f)
+            {
+                ExhaustParticles = IdleExhaust + (e * MaxExhaust);
+                ExhaustDynamics = InitialExhaust + (e * ExhaustMagnitude);
+                ExhaustColor = ExhaustTransientColor;               
+            }
+            else if (EngineRPMderivation < 0.0f)
+            {
+                    ExhaustParticles = IdleExhaust + (e * MaxExhaust);
+                    ExhaustDynamics = InitialExhaust + (e * ExhaustMagnitude);
+                if (t == 0f)
+                {
+                    ExhaustColor = ExhaustDecelColor;
+                }
+                else
+                {
+                    ExhaustColor = ExhaustSteadyColor;
+                }
             }
             if (PowerOn)
             {
@@ -646,6 +665,7 @@ namespace ORTS
             {
                 drawer.SetTexture(viewer.TextureManager.Get(dieselTexture));
                 drawer.SetEmissionRate(car.ExhaustParticles);
+                drawer.SetParticleDuration(car.ExhaustDynamics);
             }
         }
 
@@ -696,6 +716,7 @@ namespace ORTS
             {
                 drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
                 drawer.SetEmissionColor(((MSTSDieselLocomotive)this.Car).ExhaustColor);
+                drawer.SetParticleDuration(((MSTSDieselLocomotive)this.Car).ExhaustDynamics);
             }
             base.PrepareFrame(frame, elapsedTime);
         }
