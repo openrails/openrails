@@ -845,13 +845,10 @@ namespace ORTS
         {
             MSTS.CurvePoint[] curvePoints = Curve.CurvePoints;
 
-            if (Curve.Granularity == 0)
-            {
-                if (x < curvePoints[0].X)
-                    return curvePoints[0].Y;
-                if (x > curvePoints[curvePoints.Length - 1].X)
-                    return curvePoints[curvePoints.Length - 1].Y;
-            }
+            if (x < curvePoints[0].X)
+                return curvePoints[0].Y;
+            if (x > curvePoints[curvePoints.Length - 1].X)
+                return curvePoints[curvePoints.Length - 1].Y;
 
             int i = 1;
             while (i < curvePoints.Length - 1
