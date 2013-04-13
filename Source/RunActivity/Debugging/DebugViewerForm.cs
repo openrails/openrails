@@ -539,6 +539,35 @@ namespace ORTS.Debugging
 	  public bool firstShow = true;
 	  public bool followTrain = false;
 	  float subX, subY;
+      float oldWidth = 0;
+      float oldHeight = 0;
+       //determine locations of buttons and boxes
+      void DetermineLocations()
+      {
+          if (this.Height < 600 || this.Width < 800) return;
+          if (oldHeight != this.Height || oldWidth != label1.Left)//use the label "Res" as anchor point to determine the picture size
+          {
+              oldWidth = label1.Left; oldHeight = this.Height;
+              IM_Width = label1.Left - 20;
+              IM_Height = this.Height - pictureBox1.Top;
+              pictureBox1.Width = IM_Width;
+              pictureBox1.Height = IM_Height;
+              if (pictureBox1.Image != null)
+              {
+                  pictureBox1.Image.Dispose();
+              }
+
+              pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+
+              if (btnAssist.Left - 10 < composeMSG.Right)
+              {
+                  var size = composeMSG.Width;
+                  composeMSG.Left = msgAll.Left = msgSelected.Left = reply2Selected.Left = btnAssist.Left - 10 - size;
+                  MSG.Width = messages.Width = composeMSG.Left - 20;
+              }
+              firstShow = true;
+          }
+      }
       /// <summary>
       /// Regenerates the 2D view. At the moment, examines the track network
       /// each time the view is drawn. Later, the traversal and drawing can be separated.
@@ -550,6 +579,7 @@ namespace ORTS.Debugging
 		  if (!Inited) return;
 
 		  if (pictureBox1.Image == null) InitImage();
+          DetermineLocations();
 
 		  if (firstShow)
 		  {

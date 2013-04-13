@@ -683,6 +683,8 @@ namespace MSTS
                 switch (suffix)
                 {
                     case "lb/h": return 1;
+                    case "kg/h": return 2.20462;
+                    case "g/h": return 0.00220462;
                 }
             if ((validUnits & UNITS.Force) > 0)
                 switch (suffix)
@@ -690,6 +692,7 @@ namespace MSTS
                     case "n": return 1;
                     case "kn": return 1e3;
                     case "lbf": return 4.44822162;
+                    case "lb": return 4.44822162;
                 }
             if ((validUnits & UNITS.Power) > 0)
                 switch (suffix)
@@ -706,6 +709,7 @@ namespace MSTS
             if ((validUnits & UNITS.Resistance) > 0)
                 switch (suffix)
                 {
+                    case "n": return 1;
                     case "n/m/s": return 1;
                     case "/m/s": return 1;
                 }
@@ -713,22 +717,27 @@ namespace MSTS
                 switch (suffix)
                 {
                     case "psi": return 1;
+                    case "bar": return 14.5037738;
                 }
             if ((validUnits & UNITS.Volume) > 0)
                 switch (suffix)
                 {
                     case "*(ft^3)": return 1;
+                    case "*(m^3)": return 35.3146667;
+                    case "*(in^3)": return 0.000578703704;
                 }
             if ((validUnits & UNITS.Diesel) > 0)
                 switch (suffix)
                 {
                     case "gal": return 3.785f;
+                    case "gals": return 3.785f;
                     case "l": return 1;
                 }
             if ((validUnits & UNITS.Area) > 0)
                 switch (suffix)
                 {
                     case "*(ft^2)": return .09290304f;
+                    case "*(m^2)": return 1;
                 }
             if ((validUnits & UNITS.EnergyDensity) > 0)
                 switch (suffix)

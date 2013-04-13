@@ -31,7 +31,7 @@
           this.pictureBox1 = new System.Windows.Forms.PictureBox();
           this.refreshButton = new System.Windows.Forms.Button();
           this.windowSizeUpDown = new System.Windows.Forms.NumericUpDown();
-          this.label2 = new System.Windows.Forms.Label();
+          this.resLabel = new System.Windows.Forms.Label();
           this.AvatarView = new System.Windows.Forms.ListView();
           this.rmvButton = new System.Windows.Forms.Button();
           this.chkAllowUserSwitch = new System.Windows.Forms.CheckBox();
@@ -73,7 +73,8 @@
           // 
           // refreshButton
           // 
-          this.refreshButton.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+          this.refreshButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+          this.refreshButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
           this.refreshButton.Location = new System.Drawing.Point(1091, 129);
           this.refreshButton.Margin = new System.Windows.Forms.Padding(4);
           this.refreshButton.Name = "refreshButton";
@@ -85,6 +86,7 @@
           // 
           // windowSizeUpDown
           // 
+          this.windowSizeUpDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.windowSizeUpDown.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
           this.windowSizeUpDown.Increment = new decimal(new int[] {
             50,
@@ -94,7 +96,7 @@
           this.windowSizeUpDown.Location = new System.Drawing.Point(1076, 6);
           this.windowSizeUpDown.Margin = new System.Windows.Forms.Padding(4);
           this.windowSizeUpDown.Maximum = new decimal(new int[] {
-            100000,
+            200000,
             0,
             0,
             0});
@@ -113,19 +115,21 @@
             0});
           this.windowSizeUpDown.ValueChanged += new System.EventHandler(this.windowSizeUpDown_ValueChanged);
           // 
-          // label2
+          // resLabel
           // 
-          this.label2.AutoSize = true;
-          this.label2.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-          this.label2.Location = new System.Drawing.Point(1189, 11);
-          this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-          this.label2.Name = "label2";
-          this.label2.Size = new System.Drawing.Size(26, 21);
-          this.label2.TabIndex = 8;
-          this.label2.Text = "m";
+          this.resLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+          this.resLabel.AutoSize = true;
+          this.resLabel.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+          this.resLabel.Location = new System.Drawing.Point(1189, 11);
+          this.resLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+          this.resLabel.Name = "resLabel";
+          this.resLabel.Size = new System.Drawing.Size(26, 21);
+          this.resLabel.TabIndex = 8;
+          this.resLabel.Text = "m";
           // 
           // AvatarView
           // 
+          this.AvatarView.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.AvatarView.Location = new System.Drawing.Point(1039, 197);
           this.AvatarView.Margin = new System.Windows.Forms.Padding(4);
           this.AvatarView.Name = "AvatarView";
@@ -136,6 +140,7 @@
           // 
           // rmvButton
           // 
+          this.rmvButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.rmvButton.Location = new System.Drawing.Point(1021, 162);
           this.rmvButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
           this.rmvButton.Name = "rmvButton";
@@ -147,6 +152,7 @@
           // 
           // chkAllowUserSwitch
           // 
+          this.chkAllowUserSwitch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.chkAllowUserSwitch.AutoSize = true;
           this.chkAllowUserSwitch.Checked = true;
           this.chkAllowUserSwitch.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -161,6 +167,7 @@
           // 
           // chkShowAvatars
           // 
+          this.chkShowAvatars.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.chkShowAvatars.AutoSize = true;
           this.chkShowAvatars.Checked = true;
           this.chkShowAvatars.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -224,6 +231,7 @@
           // 
           // label1
           // 
+          this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.label1.AutoSize = true;
           this.label1.Location = new System.Drawing.Point(1033, 11);
           this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -246,6 +254,7 @@
           // 
           // chkDrawPath
           // 
+          this.chkDrawPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.chkDrawPath.AutoSize = true;
           this.chkDrawPath.Checked = true;
           this.chkDrawPath.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -295,6 +304,7 @@
           // 
           // chkPickSignals
           // 
+          this.chkPickSignals.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.chkPickSignals.AutoSize = true;
           this.chkPickSignals.Checked = true;
           this.chkPickSignals.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -308,6 +318,7 @@
           // 
           // chkPickSwitches
           // 
+          this.chkPickSwitches.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.chkPickSwitches.AutoSize = true;
           this.chkPickSwitches.Checked = true;
           this.chkPickSwitches.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -321,6 +332,7 @@
           // 
           // chkAllowNew
           // 
+          this.chkAllowNew.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.chkAllowNew.AutoSize = true;
           this.chkAllowNew.Checked = true;
           this.chkAllowNew.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -347,6 +359,7 @@
           // 
           // btnAssist
           // 
+          this.btnAssist.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.btnAssist.Location = new System.Drawing.Point(929, 128);
           this.btnAssist.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
           this.btnAssist.Name = "btnAssist";
@@ -358,6 +371,7 @@
           // 
           // btnNormal
           // 
+          this.btnNormal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.btnNormal.Location = new System.Drawing.Point(1007, 128);
           this.btnNormal.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
           this.btnNormal.Name = "btnNormal";
@@ -369,7 +383,8 @@
           // 
           // btnFollow
           // 
-          this.btnFollow.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+          this.btnFollow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+          this.btnFollow.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
           this.btnFollow.Location = new System.Drawing.Point(1127, 164);
           this.btnFollow.Margin = new System.Windows.Forms.Padding(4);
           this.btnFollow.Name = "btnFollow";
@@ -381,6 +396,7 @@
           // 
           // chkBoxPenalty
           // 
+          this.chkBoxPenalty.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.chkBoxPenalty.AutoSize = true;
           this.chkBoxPenalty.Checked = true;
           this.chkBoxPenalty.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -395,6 +411,7 @@
           // 
           // chkPreferGreen
           // 
+          this.chkPreferGreen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
           this.chkPreferGreen.AutoSize = true;
           this.chkPreferGreen.Checked = true;
           this.chkPreferGreen.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -410,8 +427,9 @@
           // 
           // btnSeeInGame
           // 
-          this.btnSeeInGame.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-          this.btnSeeInGame.Location = new System.Drawing.Point(1091, 98);
+          this.btnSeeInGame.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+          this.btnSeeInGame.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+          this.btnSeeInGame.Location = new System.Drawing.Point(1091, 100);
           this.btnSeeInGame.Margin = new System.Windows.Forms.Padding(4);
           this.btnSeeInGame.Name = "btnSeeInGame";
           this.btnSeeInGame.Size = new System.Drawing.Size(124, 28);
@@ -448,13 +466,12 @@
           this.Controls.Add(this.chkAllowUserSwitch);
           this.Controls.Add(this.rmvButton);
           this.Controls.Add(this.AvatarView);
-          this.Controls.Add(this.label2);
+          this.Controls.Add(this.resLabel);
           this.Controls.Add(this.label1);
           this.Controls.Add(this.windowSizeUpDown);
           this.Controls.Add(this.refreshButton);
           this.Controls.Add(this.pictureBox1);
           this.Margin = new System.Windows.Forms.Padding(4);
-          this.MaximizeBox = false;
           this.Name = "DispatchViewer";
           this.Text = "DispatchViewer";
           this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
@@ -471,7 +488,7 @@
       private System.Windows.Forms.PictureBox pictureBox1;
 	  private System.Windows.Forms.Button refreshButton;
 	  private System.Windows.Forms.NumericUpDown windowSizeUpDown;
-	  private System.Windows.Forms.Label label2;
+	  private System.Windows.Forms.Label resLabel;
 	  private System.Windows.Forms.ListView AvatarView;
 	  private System.Windows.Forms.Button rmvButton;
 	  private System.Windows.Forms.CheckBox chkAllowUserSwitch;

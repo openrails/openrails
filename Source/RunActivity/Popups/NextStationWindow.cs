@@ -35,7 +35,7 @@ namespace ORTS.Popups
 		Label Message;
 
 		public NextStationWindow(WindowManager owner)
-			: base(owner, 400, 135, "Next Station")
+			: base(owner, 500, 135, "Next Station")
 		{
         }
 
