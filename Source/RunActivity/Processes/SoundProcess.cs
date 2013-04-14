@@ -100,7 +100,7 @@ namespace ORTS
             while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
             {
                 DoSound();
-                Thread.Sleep(200);
+                Thread.Sleep(50);
             }
         }
 
