@@ -647,6 +647,7 @@ namespace ORTS
                                             && (SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayMode == PlayMode.Release
                                             || SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayMode == PlayMode.ReleaseWithJump))
                                         {
+                                            SoundQueue[QueueTail % QUEUELENGHT].PlayMode = SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayMode;
                                             SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayState = PlayState.NOP;
                                         }
                                         if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.OneShot
