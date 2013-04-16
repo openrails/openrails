@@ -536,7 +536,7 @@ namespace ORTS
         public double lastTime = -1.0;
         public Matrix prevMatrix = Matrix.Identity;
         public float prevMax = -1f;
-
+        public float totalRotationZ = 0.0f;
         public void SuperElevation(float speed, int superEV, Traveller traveler)
         {
             speed = (float) Math.Abs(speed);//will make computation easier later, as we only deal with abs value
@@ -594,6 +594,7 @@ namespace ORTS
                 sz1 += tz;
             }
 
+            totalRotationZ = -(sz1 + z)/2;
             //this matrix is for the body, boggie will do an inverse to keep on track
             SuperElevationMatrix = Matrix.CreateRotationX(sx1) * Matrix.CreateRotationY(sy1) * Matrix.CreateRotationZ(sz1);
             //SuperElevationMatrix.Translation += new Vector3(sx1, sy1, sz1);
@@ -754,5 +755,4 @@ namespace ORTS
         [CallOnThread("Loader")]
         internal abstract void Mark();
     }
-
 }

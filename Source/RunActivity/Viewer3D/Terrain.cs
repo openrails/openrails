@@ -634,6 +634,7 @@ namespace ORTS
                     // V represents the north/south shift
 
                     float y = Elevation(x, z) - Tile.TFile.Floor;
+                    if (K > 128) y -= Viewer.Settings.DistantMountainsLoweringValue;//DM be lowered 10m to avoid interfering with the normal terrain
                     totalElevation += y;
                     vertexData.Add(new VertexPositionNormalTexture(new Vector3(w, y, n), TerrainNormal(x, z), new Vector2(U, V)));
                 }

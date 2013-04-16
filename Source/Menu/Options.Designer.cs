@@ -87,6 +87,9 @@
             this.ElevationAmount = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.DMLoweringValue = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -105,6 +108,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DMLoweringValue)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -686,6 +690,9 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.label15);
+            this.tabPageExperimental.Controls.Add(this.label16);
+            this.tabPageExperimental.Controls.Add(this.DMLoweringValue);
             this.tabPageExperimental.Controls.Add(this.label12);
             this.tabPageExperimental.Controls.Add(this.label11);
             this.tabPageExperimental.Controls.Add(this.DMDistance);
@@ -889,6 +896,38 @@
             this.ElevationText.TabIndex = 31;
             this.ElevationText.Text = "Super Elevation Options";
             // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(514, 99);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(19, 17);
+            this.label15.TabIndex = 60;
+            this.label15.Text = "m";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(388, 99);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(71, 17);
+            this.label16.TabIndex = 59;
+            this.label16.Text = "Lower DM";
+            // 
+            // DMLoweringValue
+            // 
+            this.DMLoweringValue.Location = new System.Drawing.Point(465, 97);
+            this.DMLoweringValue.Margin = new System.Windows.Forms.Padding(4);
+            this.DMLoweringValue.Name = "DMLoweringValue";
+            this.DMLoweringValue.Size = new System.Drawing.Size(43, 22);
+            this.DMLoweringValue.TabIndex = 58;
+            this.toolTip1.SetToolTip(this.DMLoweringValue, "Lower DMs to avoid track dissappearing");
+            this.DMLoweringValue.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -929,6 +968,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.DMLoweringValue)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -993,5 +1033,8 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.NumericUpDown DMDistance;
         private System.Windows.Forms.CheckBox distanceMountain;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.NumericUpDown DMLoweringValue;
     }
 }
