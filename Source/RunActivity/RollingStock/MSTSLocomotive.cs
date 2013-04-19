@@ -783,7 +783,7 @@ namespace ORTS
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
             Variable1 = ThrottlePercent / 100f;   // throttle setting
             //Variable2 = Math.Abs(WheelSpeedMpS);
-            Variable3 = DynamicBrakePercent / 100f;
+            //Variable3 = DynamicBrakePercent / 100f;
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
@@ -1158,12 +1158,12 @@ namespace ORTS
             else if (smoothMax == null)
             {
                 notchedThrottleCommandNeeded = true;
+                SignalEvent(Event.ThrottleChange);
             }
             else
             {
                 StartThrottleIncrease(smoothMax);
             }
-            SignalEvent(Event.ThrottleChange);
             return notchedThrottleCommandNeeded;
         }
 
@@ -1222,13 +1222,12 @@ namespace ORTS
             else if (smoothMin == null)
             {
                 notchedThrottleCommandNeeded = true;
-                //SignalEvent( EventID.Reverse );
+                SignalEvent(Event.ThrottleChange);
             }
             else
             {
                 StartThrottleDecrease(smoothMin);
             }
-            SignalEvent(Event.ThrottleChange);
             return notchedThrottleCommandNeeded;
         }
 
@@ -1483,6 +1482,7 @@ namespace ORTS
             }
             else if (DynamicBrakePercent >= 0 && DynamicBrake)
             {
+                SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartIncrease( target );
                 if (!HasSmoothStruc)
                 {
@@ -1512,12 +1512,14 @@ namespace ORTS
 
             if (DynamicBrakePercent <= 0 && DynamicBrake) // Deactivate
             {
+                SignalEvent(Event.DynamicBrakeOff);
                 DynamicBrakePercent = -1;
                 DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
                 StopDynamicBrakeDecrease();
             }
             else if (DynamicBrakePercent >= 0 && DynamicBrake)
             {
+                SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartDecrease(target);
                 if (!HasSmoothStruc)
                 {

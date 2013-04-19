@@ -457,6 +457,7 @@ namespace ORTS
 
             // Variable1 is wheel rotation in m/sec for steam locomotives
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
+
             if (PowerOn)
                 Variable1 = ThrottlePercent / 100f;   // throttle setting
             else
@@ -473,7 +474,9 @@ namespace ORTS
                 if (f > 0)
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
             }
-
+            Variable3 = 0;
+            if ( DynamicBrakePercent > 0)
+                Variable3 -= MotiveForceN / MaxDynamicBrakeForceN;
             switch (this.Train.TrainType)
             {
                 case Train.TRAINTYPE.AI:

@@ -118,6 +118,8 @@ namespace ORTS
             PantographFirstUp = inf.ReadBoolean();
             PantographSecondUp = inf.ReadBoolean();
             PowerOn = inf.ReadBoolean();
+            if (PowerOn)
+                SignalEvent(Event.EnginePowerOn);
             Pan = inf.ReadBoolean();
             Pan1Up = inf.ReadBoolean();
             Pan2Up = inf.ReadBoolean();
@@ -145,6 +147,8 @@ namespace ORTS
 
             if (!(PantographFirstUp || PantographSecondUp))
             {
+                if (PowerOn)
+                    SignalEvent(Event.EnginePowerOff);
                 PowerOn = false;
                 CompressorOn = false;
                 if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f) PantographFirstDelay = 0.0f;
@@ -156,6 +160,8 @@ namespace ORTS
                 {
                     if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f)
                     {
+                        if (!PowerOn)
+                            SignalEvent(Event.EnginePowerOn);
                         PowerOn = true;
                         PantographFirstDelay = 0.0f;
                     }
@@ -167,6 +173,8 @@ namespace ORTS
                 {
                     if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f)
                     {
+                        if (!PowerOn)
+                            SignalEvent(Event.EnginePowerOn);
                         PowerOn = true;
                         PantographSecondDelay = 0.0f;
                     }
@@ -181,7 +189,14 @@ namespace ORTS
                 VoltageV = VoltageFilter.Filter(0.0f, elapsedClockSeconds);
 
             base.Update(elapsedClockSeconds);
-            Variable2 = Variable1 * 100F ;
+            //Variable2 = Variable1 * 100F ;
+            //Variable2 = Math.Abs(MotiveForceN) / MaxForceN * 100F ;
+            Variable2 = 0;
+            if ( ThrottlePercent > 0)
+                Variable2 = Math.Abs(MotiveForceN) / MaxForceN * 100F;
+            Variable3 = 0;
+            if ( DynamicBrakePercent > 0)
+                Variable3 = Math.Abs(MotiveForceN) / MaxDynamicBrakeForceN;
         }
 
         /// <summary>
