@@ -385,7 +385,7 @@ namespace ORTS
             if (refCount == 0)
             {
                 int[] attribs = new int[0];
-                IntPtr device = OpenAL.alcOpenDevice(null); // default device
+                IntPtr device = OpenAL.alcOpenDevice("Generic Software");
                 IntPtr context = OpenAL.alcCreateContext(device, attribs);
                 OpenAL.alcMakeContextCurrent(context);
 
