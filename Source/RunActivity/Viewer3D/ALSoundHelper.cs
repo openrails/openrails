@@ -378,6 +378,8 @@ namespace ORTS
         private int QueueHeader = 0;
         private int QueueTail = 0;
 
+        public bool NeedsFrequentUpdate = false;
+
         private static void Initialize()
         {
             if (refCount == 0)
@@ -587,13 +589,28 @@ namespace ORTS
                         _nxtUpdate = false;
                     }
                     else
+                    {
+                        NeedsFrequentUpdate = false;
                         return;
+                    }
                 }
 
                 SkipProcessed();
 
                 if (QueueHeader == QueueTail)
+                {
+                    NeedsFrequentUpdate = false;
                     return;
+                }
+
+                // Find the number of processed buffers and unqueue them
+                int p;
+                OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFERS_PROCESSED, out p);
+                while (p > 0)
+                {
+                    int rb = OpenAL.alSourceUnqueueBuffer(SoundSourceID);
+                    p--;
+                }
 
                 switch (SoundQueue[QueueTail % QUEUELENGHT].PlayState)
                 {
@@ -613,33 +630,21 @@ namespace ORTS
                                             SoundQueue[QueueTail % QUEUELENGHT].PlayMode = SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayMode;
                                         }
 
-                                        if (!SoundQueue[QueueTail % QUEUELENGHT].Update(SoundSourceID, _PlaybackSpeed))
+                                        if (SoundQueue[QueueTail % QUEUELENGHT].Update(SoundSourceID, _PlaybackSpeed))
                                         {
-                                            LeaveLoop();
-
-                                            //if (_Queue[(_QueueTail + 1) % QUEUELENGHT].PlayMode == PlayMode.ReleaseWithJump)
-                                            //    Stop(); // In case we would want a hard jump without considering cue points
-                                            SoundQueue[QueueTail % QUEUELENGHT].LeaveItemPlay(SoundSourceID);
                                             Start(); // Restart if buffers had been exhausted because of large update time
+                                            NeedsFrequentUpdate = true; // We still queueing fast
                                         }
                                         else
                                         {
+                                            LeaveLoop();
+                                            SoundQueue[QueueTail % QUEUELENGHT].LeaveItemPlay(SoundSourceID);
                                             Start(); // Restart if buffers had been exhausted because of large update time
-                                            // Find the number of processed buffers
-                                            // if processed, unqueue that
-                                            int p;
-                                            OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFERS_PROCESSED, out p);
-                                            while (p > 0)
-                                            {
-                                                int rb = OpenAL.alSourceUnqueueBuffer(SoundSourceID);
-                                                p--;
-                                                //EnterLoop(); // When the Thread.Sleep() is too long, this makes this a bit less obvious (really just a bit)
-                                            }
+                                            NeedsFrequentUpdate = false; // Queued the last chunk, get rest
                                         }
 
                                         break;
                                     }
-                                // Ignore repeated or unnecessary commands
                                 case PlayMode.Loop:
                                 case PlayMode.OneShot:
                                     {
@@ -649,11 +654,34 @@ namespace ORTS
                                         {
                                             SoundQueue[QueueTail % QUEUELENGHT].PlayMode = SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayMode;
                                             SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayState = PlayState.NOP;
+                                            LeaveLoop();
                                         }
-                                        if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.OneShot
-                                            && SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isLast(SoundSourceID))
-                                            SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
-
+                                        else if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.Loop)
+                                        {
+                                            // The reason of the following is that at Loop type of playing we mustn't EnterLoop() immediately after
+                                            // InitItemPlay(), because an other buffer might be playing at that time, and we don't want to loop
+                                            // that one. We have to be sure the current loop's buffer is being played already, and all the previous
+                                            // ones had been unqueued. This often happens at e.g. Variable2 frequency curves with multiple Loops and
+                                            // Releases following each other when increasing throttle.
+                                            int bufferID;
+                                            OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFER, out bufferID);
+                                            if (SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isMine(bufferID))
+                                            {
+                                                EnterLoop();
+                                                NeedsFrequentUpdate = false; // Start unattended looping by OpenAL
+                                            }
+                                            else
+                                            {
+                                                LeaveLoop(); // Just in case. Wait one more cycle for our buffer,
+                                                NeedsFrequentUpdate = true; // and watch carefully
+                                            }
+                                        }
+                                        else if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.OneShot)
+                                        {
+                                            NeedsFrequentUpdate = false;
+                                            if (SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isLast(SoundSourceID))
+                                                SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
+                                        }
                                         break;
                                     }
                             }
@@ -671,19 +699,19 @@ namespace ORTS
                                 SampleRate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.Frequency;
 
                                 Start();
-
-                                if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.Loop)
-                                    EnterLoop();
+                                NeedsFrequentUpdate = true;
                             }
                             // Otherwise mark as done
                             else
                             {
                                 SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
+                                NeedsFrequentUpdate = false;
                             }
                             break;
                         }
                     case PlayState.NOP:
                         {
+                            NeedsFrequentUpdate = false;
                             break;
                         }
                 }
@@ -712,6 +740,7 @@ namespace ORTS
             {
                 SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
                 Stop();
+                NeedsFrequentUpdate = false;
             }
         }
 

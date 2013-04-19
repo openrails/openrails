@@ -55,6 +55,8 @@ namespace ORTS
         public MSTSWagon Car = null;          // the sound may be from a train car
         public Viewer3D Viewer;                 // the listener is connected to this viewer
 
+        public bool NeedsFrequentUpdate = false;
+
         public abstract void Dispose();
     }
 
@@ -246,7 +248,7 @@ namespace ORTS
             {
                 ss.Stop();
                 ss.HardDeactivate();
-                _wasOutOfDistance = true;
+                WasOutOfDistance = true;
             }
         }
         
@@ -261,7 +263,7 @@ namespace ORTS
         public bool IsExternal = true;
 
         private float _distanceSquared;
-        private bool _wasOutOfDistance = true;
+        private bool WasOutOfDistance = true;
         private bool _isSlowRolloff = false;
 
         List<SoundStream> SoundStreams = new List<SoundStream>();
@@ -345,63 +347,39 @@ namespace ORTS
 
             if (isOutOfDistance())
             {
-
-                if (!_wasOutOfDistance)
+                if (!WasOutOfDistance)
                 {
-                    _wasOutOfDistance = true;
                     foreach (SoundStream stream in SoundStreams)
                         stream.HardDeactivate();
                 }
+                WasOutOfDistance = true;
+                NeedsFrequentUpdate = false;
             }
             else
             {
-                if (_wasOutOfDistance)
+                if (WasOutOfDistance)
                 {
                     foreach (SoundStream stream in SoundStreams)
+                    {
                         stream.HardActivate();
+                        // run the initial triggers
+                        foreach (ORTSTrigger trigger in stream.Triggers)
+                            trigger.Initialize();
+                    }
                 }
+                WasOutOfDistance = false;
             }
-
-            _wasOutOfDistance = false;
-
-            // run the initial triggers
-            foreach (SoundStream stream in SoundStreams)
-                foreach (ORTSTrigger trigger in stream.Triggers)
-                    trigger.Initialize();
         }
         
         public override bool Update()
         {
-            if (Car != null)
-            {
-                if (!Car.IsPartOfActiveTrain)
+            if (Car != null && !Car.IsPartOfActiveTrain)
                     return false;
 
-                WorldLocation = Car.WorldPosition.WorldLocation;
-            }
+            InitInitials();
 
-            if (isOutOfDistance())
-            {
-
-                if (!_wasOutOfDistance)
-                {
-                    _wasOutOfDistance = true;
-                    foreach (SoundStream stream in SoundStreams)
-                        stream.HardDeactivate();
-                }
-
+            if (WasOutOfDistance)
                 return true;
-            }
-            else
-            {
-                if (_wasOutOfDistance)
-                {
-                    foreach (SoundStream stream in SoundStreams)
-                        stream.HardActivate();
-                }
-            }
-
-            _wasOutOfDistance = false;
 
             if (!Active)
             {
@@ -483,18 +461,26 @@ namespace ORTS
 
                 } while (false);
 #endif
+                bool needsFrequentUpdate = false;
+
                 foreach (SoundStream stream in SoundStreams)
                 {
                     stream.Update(XNARelativePosition.X , XNARelativePosition.Y , XNARelativePosition.Z, spx, spy, spz );
+                    needsFrequentUpdate |= stream.NeedsFrequentUpdate;
                 }
+                NeedsFrequentUpdate = needsFrequentUpdate;
             }
             else
             {
                 // Car is null, no doppler
+                bool needsFrequentUpdate = false;
+
                 foreach (SoundStream stream in SoundStreams)
                 {
                     stream.Update(0, 0, 0);
+                    needsFrequentUpdate |= stream.NeedsFrequentUpdate;
                 }
+                NeedsFrequentUpdate = needsFrequentUpdate;
             }
 
             return true;
@@ -509,8 +495,8 @@ namespace ORTS
             }
 
             if (float.IsNaN(WorldLocation.Location.X) ||
-                float.IsNaN(WorldLocation.Location.X) ||
-                float.IsNaN(WorldLocation.Location.X))
+                float.IsNaN(WorldLocation.Location.Y) ||
+                float.IsNaN(WorldLocation.Location.Z))
             {
                 _distanceSquared = CUTOFFDISTANCE + 1;
                 return true;
@@ -653,6 +639,8 @@ namespace ORTS
 
         private ORTSInitialTrigger _InitialTrigger = null;
 
+        public bool NeedsFrequentUpdate = false;
+
         public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, int index, bool isSlowRolloff, float factor)
         {
             float Threshold = float.NaN;
@@ -781,6 +769,7 @@ namespace ORTS
             SetFreqAndVolume();
 
             ALSoundSource.Update();
+            NeedsFrequentUpdate |= ALSoundSource.NeedsFrequentUpdate;
         }
 
         /// <summary>
@@ -801,6 +790,7 @@ namespace ORTS
                     {
                         Console.Write("");
                     }
+                    NeedsFrequentUpdate = true;
                 }
                 if (MSTSStream.VolumeCurve != null)
                 {

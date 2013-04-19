@@ -22,6 +22,9 @@ namespace ORTS
         readonly Viewer3D Viewer;
 		readonly Thread Thread;
 
+        private int UpdateCounter = -1;
+        private const int FULLUPDATECYCLE = 4; // Number of frequent updates needed till a full update
+
         public SoundProcess(Viewer3D viewer)
         {
             Threaded = true;
@@ -155,11 +158,17 @@ namespace ORTS
 				// Update all sound in our list
 				lock (SoundSources)
 				{
+                    UpdateCounter++;
+                    UpdateCounter %= FULLUPDATECYCLE;
+
 					List<KeyValuePair<List<SoundSourceBase>, SoundSourceBase>> remove = null;
 					foreach (List<SoundSourceBase> src in SoundSources.Values)
 					{
 						foreach (SoundSourceBase ss in src)
 						{
+                            if (!ss.NeedsFrequentUpdate && UpdateCounter > 0)
+                                continue;
+
 							if (!ss.Update())
 							{
 								if (remove == null)
