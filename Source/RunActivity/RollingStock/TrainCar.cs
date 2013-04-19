@@ -534,9 +534,10 @@ namespace ORTS
         public float sx=0.0f, sy=0.0f, sz=0.0f, prevElev, prevTilted;//time series from 0-3.14
         public float currentStiffness = 1.0f;
         public double lastTime = -1.0;
-        public Matrix prevMatrix = Matrix.Identity;
-        public float prevMax = -1f;
         public float totalRotationZ = 0.0f;
+        public float totalRotationX = 0.0f;
+        public float prevY2 = -1000f;
+        public float prevY = -1000f;
         public void SuperElevation(float speed, int superEV, Traveller traveler)
         {
             speed = (float) Math.Abs(speed);//will make computation easier later, as we only deal with abs value
@@ -548,6 +549,7 @@ namespace ORTS
                 sy = (float)Program.Random.NextDouble()*3.13f;
                 sz = (float)Program.Random.NextDouble()*3.13f;
                 currentStiffness = Stiffness;
+                prevY = prevY2 = WorldPosition.XNAMatrix.Translation.Y;//remember Y values for accelaration compute
             }
             else
             {
@@ -573,28 +575,28 @@ namespace ORTS
             }
             if (this.Flipped) z *= -1f;
 
-            //compute max shaking (rotation value), will pick at MaxVibSpeed, then decrease with half the value
+            //compute max shaking (rotation value), will peak at MaxVibSpeed, then decrease with half the value
             var max = 1f;
             if (speed <= MaxVibSpeed) max = speed / MaxVibSpeed;
             else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
-            max *= Program.Simulator.CarVibrating/500f;//user may want more vibration (by Ctrl-V)
+            max *= Program.Simulator.CarVibrating/200f;//user may want more vibration (by Ctrl-V)
+            var tz = traveler.FindTiltedZ(speed);//rotation if tilted, an indication of centralfuge
 
-            max = ComputeMaxTilting(timeInterval, max);//add a damping, also based on accelaration
-            prevMax = max;
+            max = ComputeMaxXZ(timeInterval, max, tz);//add a damping, also based on accelaration
             //small vibration (rotation to add on x,y,z axis)
             var sx1 = (float)Math.Sin(sx) * max; var sy1 = (float)Math.Sin(sy) * max; var sz1 = (float)Math.Sin(sz) * max;
 
             //check for tilted train, add more to the body
             if (this.Train != null && this.Train.tilted == true)
             {
-                var tz = traveler.FindTiltedZ(speed);
                 tz = prevTilted + (tz - prevTilted)*timeInterval;//smooth rotation
                 prevTilted = tz;
                 if (this.Flipped) tz *= -1f;
                 sz1 += tz;
             }
 
-            totalRotationZ = -(sz1 + z)/2;
+            totalRotationZ = -(sz1 + z) / 4;
+            totalRotationX = sx1 / 2;
             //this matrix is for the body, boggie will do an inverse to keep on track
             SuperElevationMatrix = Matrix.CreateRotationX(sx1) * Matrix.CreateRotationY(sy1) * Matrix.CreateRotationZ(sz1);
             //SuperElevationMatrix.Translation += new Vector3(sx1, sy1, sz1);
@@ -606,26 +608,23 @@ namespace ORTS
             catch { SuperElevationMatrix = Matrix.Identity; }
         }
 
-        public Matrix prev2Matrix = Matrix.Identity;
         public float accumedAcceTime = 4f;
-        public float ComputeMaxTilting(float interval, float max)
+        //compute the max shaking around x and z based on accelation on Y and centralfuge values
+        public float ComputeMaxXZ(float interval, float max, float tz)
         {
-            float maxV = 0f;
-            var oldLoco1 = prevMatrix.Translation; var oldLoco2 = prev2Matrix.Translation; var newLoco = WorldPosition.XNAMatrix.Translation;
-            var acce = (newLoco - 2 * oldLoco1 + oldLoco2) / (interval * interval);
-            maxV = acce.Length()/50f;
-            prev2Matrix = prevMatrix;
-            prevMatrix = WorldPosition.XNAMatrix;
-            interval = 0.1f;
-            if (maxV > 1) accumedAcceTime = 0f;
+            if (interval < 0.001f) return max;
 
-            if (maxV > 1 || accumedAcceTime < 2f)//
-            {
-                accumedAcceTime += interval;
-                return max;
-            }
-            if (prevMax < 0.0001) return 0f;
-            return prevMax * (1-interval);
+            float maxV = 0f;
+            var newY = WorldPosition.XNAMatrix.Translation.Y;
+            //compute accelaration on Y
+            var acce = (newY - 2 * prevY + prevY2) / (interval * interval);
+            prevY2 = prevY; prevY = newY;
+            maxV = Math.Abs(acce);
+
+            //if has big accelaration, will resume vibration
+            if (maxV > 1 || Math.Abs(tz) > 0.02) { accumedAcceTime = 1f; return max; }
+            accumedAcceTime += interval/5;
+            return max / accumedAcceTime;//otherwise slowly decrease the value
         }
     }
 
