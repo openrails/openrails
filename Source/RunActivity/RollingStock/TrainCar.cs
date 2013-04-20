@@ -579,7 +579,7 @@ namespace ORTS
             var max = 1f;
             if (speed <= MaxVibSpeed) max = speed / MaxVibSpeed;
             else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
-            max *= Program.Simulator.CarVibrating/200f;//user may want more vibration (by Ctrl-V)
+            max *= Program.Simulator.CarVibrating/500f;//user may want more vibration (by Ctrl-V)
             var tz = traveler.FindTiltedZ(speed);//rotation if tilted, an indication of centralfuge
 
             max = ComputeMaxXZ(timeInterval, max, tz);//add a damping, also based on accelaration
@@ -598,7 +598,7 @@ namespace ORTS
             totalRotationZ = -(sz1 + z) / 4;
             totalRotationX = sx1 / 2;
             //this matrix is for the body, boggie will do an inverse to keep on track
-            SuperElevationMatrix = Matrix.CreateRotationX(sx1) * Matrix.CreateRotationY(sy1) * Matrix.CreateRotationZ(sz1);
+            SuperElevationMatrix = Matrix.CreateRotationX(sx1) /** Matrix.CreateRotationY(sy1)*/ * Matrix.CreateRotationZ(sz1);
             //SuperElevationMatrix.Translation += new Vector3(sx1, sy1, sz1);
             WorldPosition.XNAMatrix = Matrix.CreateRotationZ(z) * SuperElevationMatrix * WorldPosition.XNAMatrix;
             try
