@@ -482,7 +482,8 @@ namespace ORTS
                 case Train.TRAINTYPE.AI:
                     if (!PowerOn)
                         PowerOn = true;
-                    LimitMotiveForce(elapsedClockSeconds);
+                    //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
+                    LimitMotiveForce();                         //let's call the basic physics instead for now
                     break;
                 case Train.TRAINTYPE.STATIC:
                     break;

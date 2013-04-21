@@ -802,7 +802,8 @@ namespace ORTS
                         Pan = true;
                         Pan1Up = true;
                     }
-                    LimitMotiveForce(elapsedClockSeconds);
+                    //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
+                    LimitMotiveForce();                         //let's call the basic physics instead for now
                     break;
                 case Train.TRAINTYPE.STATIC:
                     break;
@@ -855,23 +856,48 @@ namespace ORTS
         Wheelslip WheelslipState = Wheelslip.None;
 
         public void ConfirmWheelslip() {
-            // Wheelslip
-            if( LocomotiveAxle.IsWheelSlip ) {
-                if( WheelslipState != Wheelslip.Occurring ) {
-                    WheelslipState = Wheelslip.Occurring;
-                    Simulator.Confirmer.Warning( CabControl.Wheelslip, CabSetting.On );
+            if (Simulator.UseAdvancedAdhesion)
+            {
+                // Wheelslip
+                if (LocomotiveAxle.IsWheelSlip)
+                {
+                    if (WheelslipState != Wheelslip.Occurring)
+                    {
+                        WheelslipState = Wheelslip.Occurring;
+                        Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
+                    }
                 }
-            } else {
-                if( LocomotiveAxle.IsWheelSlipWarning ) {
-                    if( WheelslipState != Wheelslip.Warning ) {
-                        WheelslipState = Wheelslip.Warning;
-                        Simulator.Confirmer.Confirm( CabControl.Wheelslip, CabSetting.Warn1 );
+                else
+                {
+                    if (LocomotiveAxle.IsWheelSlipWarning)
+                    {
+                        if (WheelslipState != Wheelslip.Warning)
+                        {
+                            WheelslipState = Wheelslip.Warning;
+                            Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Warn1);
+                        }
                     }
-                } else {
-                    if( WheelslipState != Wheelslip.None ) {
-                        WheelslipState = Wheelslip.None;
-                        Simulator.Confirmer.Confirm( CabControl.Wheelslip, CabSetting.Off );
+                    else
+                    {
+                        if (WheelslipState != Wheelslip.None)
+                        {
+                            WheelslipState = Wheelslip.None;
+                            Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
+                        }
                     }
+                }
+            }
+            else
+            {
+                if (WheelSlip && (WheelslipState != Wheelslip.Occurring))
+                {
+                    WheelslipState = Wheelslip.Occurring;
+                    Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
+                }
+                if ((!WheelSlip)&&(WheelslipState != Wheelslip.None))
+                {
+                    WheelslipState = Wheelslip.None;
+                    Simulator.Confirmer.Confirm(CabControl.Wheelslip, CabSetting.Off);
                 }
             }
         }
@@ -927,11 +953,25 @@ namespace ORTS
                     if (SanderSpeedEffectUpToMpS > 0.0f)
                     {
                         if ((Sander) && (Math.Abs(SpeedMpS) < SanderSpeedEffectUpToMpS))
-                            max0 *= 2.0f - 1.0f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS);
+                        {
+                            switch (Program.Simulator.Weather)
+                            {
+                                case WeatherType.Clear:     max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 1.2f; break;
+                                case WeatherType.Rain:      max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 1.8f; break;
+                                case WeatherType.Snow:      max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 2.5f; break;
+                            }
+                        }
                     }
                     else
-                        if(Sander)
-                            max0 *= 1.5f;
+                        if (Sander)
+                        {
+                            switch (Program.Simulator.Weather)
+                            {
+                                case WeatherType.Clear:     max0 *= 1.2f; break;
+                                case WeatherType.Rain:      max0 *= 1.8f; break;
+                                case WeatherType.Snow:      max0 *= 2.5f; break;
+                            }
+                        }
                 }
 
                 //Set adhesion coeff to the model
@@ -1004,6 +1044,7 @@ namespace ORTS
                 LimitMotiveForce();
             }
         }
+
         public void LimitMotiveForce()
         {
             if (NumWheels <= 0)
@@ -1033,7 +1074,36 @@ namespace ORTS
                     max0 *= .7f;
             }
             //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
-            max1 = (Sander ? 1.5f : 1.0f) * max0; //Increase adhesion when sander is on
+            max1 = MaxForceN;
+            //add sander
+            if (Math.Abs(SpeedMpS) < SanderSpeedOfMpS)
+            {
+                if (SanderSpeedEffectUpToMpS > 0.0f)
+                {
+                    if ((Sander) && (Math.Abs(SpeedMpS) < SanderSpeedEffectUpToMpS))
+                    {
+                        switch (Program.Simulator.Weather)
+                        {
+                            case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 1.2f; break;
+                            case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 1.8f; break;
+                            case WeatherType.Snow: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * Math.Abs(SpeedMpS)) * 2.5f; break;
+                        }
+                    }
+                }
+                else
+                    if (Sander)
+                    {
+                        switch (Program.Simulator.Weather)
+                        {
+                            case WeatherType.Clear: max0 *= 1.2f; break;
+                            case WeatherType.Rain: max0 *= 1.8f; break;
+                            case WeatherType.Snow: max0 *= 2.5f; break;
+                        }
+                    }
+            }
+
+            max1 = max0;
+
             WheelSlip = false;
 
             // always set AntiSlip for AI trains
@@ -1059,8 +1129,9 @@ namespace ORTS
                     MotiveForceN = -Adhesion1 * max0;       //Lowers the adhesion limit to 20% of its full
             }
 
+            //This doesn't help at all, the force is already limited!!! The "AntiSlip = true;" statement is much better.
             // overrule wheelslip for AI trains
-            if (Train.TrainType != Train.TRAINTYPE.AI)
+            if (Train.TrainType == Train.TRAINTYPE.AI)
             {
                 WheelSlip = false;
             }
@@ -1996,7 +2067,10 @@ namespace ORTS
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                        if(Simulator.UseAdvancedAdhesion)
+                            data = LocomotiveAxle.IsWheelSlipWarning ? 1 : 0;
+                        else
+                            data = WheelSlip ? 1 : 0;
                         break;
                     }
     

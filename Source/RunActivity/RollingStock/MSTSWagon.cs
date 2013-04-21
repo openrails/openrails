@@ -59,6 +59,7 @@ namespace ORTS
         public float WheelRadiusM = 1;          // provide some defaults in case its missing from the wag
         public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case its missing from the wag
         public float Friction0N = 0;    // static friction
+        public bool IsStandStill = true;
         public float DavisAN = 0;       // davis equation constant
         public float DavisBNSpM = 0;    // davis equation constant for speed
         public float DavisCNSSpMM = 0;  // davis equation constant for speed squared
@@ -302,10 +303,11 @@ namespace ORTS
                 //     Roller Bearing       5 lb/ton        15 lb/ton
                 //
                 // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
-                Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg
+                //Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg 
                 DavisAN = 6.3743f * MassKG / 1000 + 128.998f * 4;
                 DavisBNSpM = .49358f * MassKG / 1000;
                 DavisCNSSpMM = .11979f * 100 / 10.76f;
+                Friction0N = DavisAN * 2.0f;            //More firendly to high load trains and the new physics
             }
             else
             {   // probably fcalc, recover approximate davis equation
@@ -418,7 +420,12 @@ namespace ORTS
             base.Update(elapsedClockSeconds);
 
             float s = Math.Abs(SpeedMpS);
-            if (s < 0.1)
+            if (s > 0.1)
+                IsStandStill = false;
+            if (s == 0.0)
+                IsStandStill = true;
+
+            if(IsStandStill)
                 FrictionForceN = Friction0N;
             else
                 FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM);
