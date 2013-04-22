@@ -6213,6 +6213,10 @@ namespace ORTS
         public int SignalReserved;                                 // signal reserving section      //
         public TrainQueue TrainPreReserved;                        // trains with pre-reservation   //
         public TrainQueue TrainClaimed;                            // trains with normal claims     //
+        public bool RemoteAvailable;                               // remote info available         //
+        public bool RemoteOccupied;                                // remote occupied state         //
+        public bool RemoteSignalReserved;                          // remote signal reserved        //
+        public int RemoteReserved;                                 // remote reserved (number only) //
 
         //================================================================================================//
         //
@@ -6721,7 +6725,17 @@ namespace ORTS
         //              public enum CONTROLSTATE
         //              {
         //                      AUTO,                           // signal is in AUTO mode
-        //                      MANUAL                          // signal is under MANUAL control
+        //                      AUTO_PATHED,                    // signal is in AUTO mode but will revert to MANUAL for unpathed train
+        //                      MANUAL_RESTRICT,                // signal is under MANUAL control - for restricted access
+        //                      MANUAL_FULL,                    // signal is under MANUAL control - full route only
+        //                      MANUAL_REPEAT,                  // signal is under MANUAL control - repeated clearance
+        //                      MANUAL_PATHED                   // signal is under MANUAL control - follow pathed route if available
+        //              }
+        //
+        //              public enum MANUALREQUESTRESPONSE
+        //              {
+        //                      ALLREADY_ENABLED,               // request rejected as signal is allready enabled by train
+        //                      ROUTE_NOT_AVAILABLE             // request rejected as route is not available
         //              }
 
         public Signals signalRef;               // reference to overlaying Signal class
@@ -6760,6 +6774,9 @@ namespace ORTS
         public PERMISSION hasPermission = PERMISSION.DENIED;  // Permission to pass red signal
         public HOLDSTATE holdState = HOLDSTATE.NONE;
         //              public CONTROLSTATE controlState = CONTROLSTATE.AUTO;   // future extension
+        //              public Train.TCSubpathRoute manualRoute = new Train.TCSubpathRoute();
+        //              public bool manualRouteSet = false;
+        //              public int manualRouteState = 0;
 
         public int[] sigfound = new int[(int)SignalHead.SIGFN.UNKNOWN];  // active next signal - used for signals with NORMAL heads only
         private int[] defaultNextSignal = new int[(int)SignalHead.SIGFN.UNKNOWN];  // default next signal
@@ -6781,6 +6798,18 @@ namespace ORTS
             {
                 if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.PreferGreen == true) return true;
                 return (enabledTrain != null);
+
+                // future extension when manual is included : replace above with :
+                //
+                // if (enabledTrain != null)
+                // {
+                //    return (true);
+                // }
+                // else if (manualRouteSet)
+                // {
+                //    return (true);
+                // {
+                // return (false);
             }
         }
 
@@ -6918,6 +6947,19 @@ namespace ORTS
                 enabledTrain = thisTrainRouted;
             }
 
+            // restore for manual settings
+
+            // controlState = (CONTROLSTATE) inf.ReadInt32();
+            // bool validManualRoute = inf.ReadBoolean();
+            // if (validManualRoute)
+            // {
+            //     manualRoute = new Train.TCSubpathRoute(inf);
+            // }
+            //
+            // manualRouteSet = inf.ReadBoolean();
+            // manualRouteState = inf.ReadInt32();
+            //
+
         }
 
         //================================================================================================//
@@ -7037,6 +7079,21 @@ namespace ORTS
             outf.Write(propagated);
             outf.Write(isPropagated);
             outf.Write(ReqNumClearAhead);
+
+            //  outf.Write((int) ControlState);
+            //  if (manualRoute == null)
+            //  {
+            //     outf.Write(false);
+            //  }
+            //  else
+            //  {
+            //     outf.Write(true);
+            //     manualRoute.Save(outf);
+            //  }
+            //
+            //  outf.Write(manualRouteSet);
+            //  outf.Write(manualRouteState);
+            //
         }
 
         //================================================================================================//
@@ -9076,19 +9133,19 @@ namespace ORTS
 
             // enabled, cleared , reset required : check train speed
             // if train is moving : no action
-                //temporarily removed by JTang, before the full revision is ready
-            else /*if (Math.Abs(enabledTrain.Train.SpeedMpS) > 0.1f)
-            {
-            }
+            //temporarily removed by JTang, before the full revision is ready
+//          else if (Math.Abs(enabledTrain.Train.SpeedMpS) > 0.1f)
+//          {
+//          }
 
             // if train is stopped : reset signal, breakdown train route, set holdstate
 
-            else*/
+            else
             {
                 int signalRouteIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, 0);
                 if (signalRouteIndex >= 0)
                 {
-                    signalRef.BreakDownRoute(signalRouteIndex, enabledTrain);
+                    signalRef.BreakDownRoute(TCNextTC, enabledTrain);
                     ResetSignal(true);
                     holdState = HOLDSTATE.MANUAL_LOCK;
                     returnValue[0] = true;
@@ -9117,8 +9174,6 @@ namespace ORTS
         {
             holdState = HOLDSTATE.NONE;
         }
-        
-        //================================================================================================//
 
     }  // SignalObject
 

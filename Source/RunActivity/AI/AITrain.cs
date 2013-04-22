@@ -850,17 +850,33 @@ namespace ORTS
 
             // get distance to station
 
-            float[] distancesM = CalculateDistancesToNextStation(thisStation, TrainMaxSpeedMpS, false);
+            bool validStop = false;
+            while (!validStop)
+            {
+                float[] distancesM = CalculateDistancesToNextStation(thisStation, TrainMaxSpeedMpS, false);
+                if (distancesM[0] < 0f) // stop is not valid
+                {
+                    StationStops.RemoveAt(0);
+                    if (StationStops.Count == 0)
+                    {
+                        return;  // no more stations - exit
+                    }
 
-            AIActionItem newAction = new AIActionItem(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM,
-                    null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
+                    thisStation = StationStops[0];
+                    if (thisStation.SubrouteIndex > TCRoute.activeSubpath) return;  // station not in this subpath - exit
+                }
+                else
+                {
+                    validStop = true;
+                    AIActionItem newAction = new AIActionItem(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM,
+                            null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
 
-            requiredActions.InsertAction(newAction);
+                    requiredActions.InsertAction(newAction);
 
 #if DEBUG_REPORTS
-            if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
-            {
-                File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
+                    if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                    {
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
                             Number.ToString() + ", type STATION_STOP (" +
                             StationStops[0].PlatformItem.Name + "), at " +
                             FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
@@ -874,27 +890,29 @@ namespace ORTS
                             FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
                             FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
                             FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
-            }
+                    }
 #endif
 
-            if (CheckTrain)
-            {
-                if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
-                {
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
-                            Number.ToString() + ", type STATION_STOP (" +
-                            StationStops[0].PlatformItem.Name + "), at " +
-                            FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
-                            FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
-                            FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
-                }
-                else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
-                {
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
-                                Number.ToString() + ", type WAITING_POINT (" +
-                                FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
-                                FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
-                                FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                    if (CheckTrain)
+                    {
+                        if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
+                                    Number.ToString() + ", type STATION_STOP (" +
+                                    StationStops[0].PlatformItem.Name + "), at " +
+                                    FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
+                                    FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
+                                    FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                        }
+                        else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
+                                        Number.ToString() + ", type WAITING_POINT (" +
+                                        FormatStrings.FormatDistance(distancesM[0], true) + ", trigger at " +
+                                        FormatStrings.FormatDistance(distancesM[1], true) + " (now at " +
+                                        FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                        }
+                    }
                 }
             }
         }
@@ -910,14 +928,33 @@ namespace ORTS
             TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
             float leftInSectionM = thisSection.Length - PresentPosition[0].TCOffset;
 
-            int stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[0].RouteListIndex);
-            float distanceToTrainM = ValidRoute[0].GetDistanceAlongRoute(PresentPosition[0].RouteListIndex,
-                    leftInSectionM, stationIndex, thisStation.StopOffset, true, signalRef);
+            // get station route index - if not found, return distances < 0
+
+            int stationIndex0 = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[0].RouteListIndex);
+            int stationIndex1 = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[1].RouteListIndex);
+
+            float distanceToTrainM = -1f;
+            if (stationIndex0 >= 0)
+            {
+                distanceToTrainM = ValidRoute[0].GetDistanceAlongRoute(PresentPosition[0].RouteListIndex,
+                    leftInSectionM, stationIndex0, thisStation.StopOffset, true, signalRef);
+            }
+            // front of train is passed station but rear is not or train is stopped - return present position
+            if (distanceToTrainM < 0f && MovementState == AI_MOVEMENT_STATE.STATION_STOP)
+            {
+                return (new float[2] { PresentPosition[0].DistanceTravelledM, 0.0f });
+            }
+
+            // if station not on route at all return negative values
+            if (distanceToTrainM < 0f && stationIndex0 < 0 && stationIndex1 < 0)
+            {
+                return (new float[2] { -1f, -1f });
+            }
+
+            // if reschedule, use actual speed
 
             float activateDistanceTravelledM = PresentPosition[0].DistanceTravelledM + distanceToTrainM;
             float triggerDistanceM = 0.0f;
-
-            // if reschedule, use actual speed
 
             if (reschedule)
             {
@@ -2810,7 +2847,7 @@ namespace ORTS
                 if (routeIndex < 0)
                 {
                     Trace.TraceInformation("Waiting point for train " + Number.ToString() + " is not on route - point removed");
-                    break;
+                    continue;
                 }
 
                 // waiting point is in same section as previous - add time to previous point, remove this point
@@ -2819,8 +2856,10 @@ namespace ORTS
                     int[] prevWP = TCRoute.WaitingPoints[iWait + 1];
                     prevWP[2] += waitingPoint[2];
                     TCRoute.WaitingPoints.RemoveAt(iWait);
+                    StationStops[StationStops.Count - 1].DepartTime = -prevWP[2];
+                    StationStops[StationStops.Count - 1].ActualDepart = -prevWP[2];
                     Trace.TraceInformation("Waiting points for train " + Number.ToString() + " combined, total time set to " + prevWP[2].ToString());
-                    break;
+                    continue;
                 }
 
                 // check if section has signal
@@ -2900,8 +2939,9 @@ namespace ORTS
                     thisRoute.RemoveAt(iElement);
                 }
 
-                // repeat actual waiting section in next subroute
+                // repeat actual waiting section in next subroute (if not allready there)
 
+                if (nextRoute.Count <= 0 || nextRoute[0].TCSectionIndex != thisRoute[thisRoute.Count - 1].TCSectionIndex)
                 nextRoute.Insert(0, thisRoute[thisRoute.Count - 1]);
 
                 // build station stop
@@ -2925,6 +2965,25 @@ namespace ORTS
                         DepartTime,
                         StationStop.STOPTYPE.WAITING_POINT);
                 StationStops.Add(thisStation);
+            }
+
+	    // adjust station stop indices for removed subpaths
+            for (int i = 0; i < StationStops.Count; i++)
+            {
+                var WPcur = StationStops[i];
+                for (int iTC = TCRoute.TCRouteSubpaths.Count - 1; iTC >= 0; iTC--)
+                {
+                    var tcRS = TCRoute.TCRouteSubpaths[iTC];
+                    for (int iTCE = tcRS.Count - 1; iTCE >= 0; iTCE--)
+                    {
+                        var tcSR = tcRS[iTCE];
+                        if (WPcur.TCSectionIndex == tcSR.TCSectionIndex)
+                        {
+                            WPcur.SubrouteIndex = iTC;
+                            WPcur.RouteIndex = iTCE;
+                        }
+                    }
+                }
             }
         }
 

@@ -3443,13 +3443,24 @@ namespace ORTS
                 if (signalRef.TrackCircuitList[ValidRoute[0][lastValidRouteIndex].TCSectionIndex].CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
                     lastValidRouteIndex--;
                 
-                // if on last section in route - end of route reached
-                // if waiting for next signal and section in front of or beyond signal is last in route - end of route reached
+                // if end of train on last section in route - end of route reached
 
-                if ((PresentPosition[0].RouteListIndex == lastValidRouteIndex) ||
-                    (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
-                    (NextSignalObject[0].TCReference == ValidRoute[0][lastValidRouteIndex].TCSectionIndex ||
-                     NextSignalObject[0].TCNextTC == ValidRoute[0][lastValidRouteIndex].TCSectionIndex)))
+                if (PresentPosition[1].RouteListIndex == lastValidRouteIndex)
+                {
+                    endOfRoute = true;
+                }
+
+                // if waiting for next signal and section in front of signal is last in route - end of route reached
+
+                if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
+                     NextSignalObject[0].TCReference == ValidRoute[0][lastValidRouteIndex].TCSectionIndex)
+                {
+                    endOfRoute = true;
+                }
+
+                // if waiting for next signal and section beyond signal is last in route and there is no valid reversal index - end of route reached
+                if (NextSignalObject[0] != null && PresentPosition[0].TCSectionIndex == NextSignalObject[0].TCReference &&
+                     NextSignalObject[0].TCNextTC == ValidRoute[0][lastValidRouteIndex].TCSectionIndex && reversalSectionIndex < 0)
                 {
                     endOfRoute = true;
                 }
@@ -3465,12 +3476,12 @@ namespace ORTS
                 // if no junctions or signals to end of route - end of route reached
                 else
                 {
-                    float offset = PresentPosition[0].TCOffset;
-                    float length = 0.0f;
+                    float offset = PresentPosition[1].TCOffset; // check for any further signals from rear of train
+                    float length = -Length;                     // compensate for train length
                     bool intermediateJunction = false;
                     bool intermediateSignal = false;
 
-                    for (int iIndex = PresentPosition[0].RouteListIndex; iIndex >= 0 && iIndex < ValidRoute[0].Count - 1; iIndex++)
+                    for (int iIndex = PresentPosition[1].RouteListIndex; iIndex >= 0 && iIndex <= ValidRoute[0].Count - 1; iIndex++)
                     {
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
                         int direction = ValidRoute[0][iIndex].Direction;
@@ -3483,18 +3494,18 @@ namespace ORTS
                             intermediateJunction = true;
                         }
 
-                        if (thisSection.EndSignals[direction] != null)
+                        if (thisSection.EndSignals[0] != null || thisSection.EndSignals[1] != null)  // check for signal in either direction
                         {
                             intermediateSignal = true;
                         }
                     }
 
-                    if (!intermediateJunction && !intermediateSignal)
+                    if (!intermediateJunction && !intermediateSignal)  // no more junctions and no more signal - reverse subpath
                     {
                         endOfRoute = true;
                     }
 
-                    if (length < Length && !intermediateJunction)
+                    if (length < Length && !intermediateJunction)  // no more junctions and short track - reverse subpath
                     {
                         endOfRoute = true;
                     }
