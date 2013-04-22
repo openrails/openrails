@@ -2703,7 +2703,7 @@ namespace ORTS
 
                 if (remLength > 0)
                 {
-                    if (routeIndex <= ValidRoute[0].Count - 1)
+                    if (routeIndex < ValidRoute[0].Count - 1)
                     {
                         routeIndex++;
                         thisElement = ValidRoute[0][routeIndex];
