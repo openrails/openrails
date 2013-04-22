@@ -3073,11 +3073,9 @@ namespace ORTS
         {
             // Cab view vertical position adjusted to allow for clip or stretch.
             Rectangle stretchedCab;
-            var CabXOffset = (int)(_CabRect.Height * 0.08);
-            var CabYOffset = (int)(_Viewer.CabHeightPixels * 0.04);
             if (_Viewer.Simulator.CarVibrating > 0 || _Viewer.Simulator.UseSuperElevation > 0 || _Locomotive.Train.tilted)
             {
-                stretchedCab = new Rectangle(_CabRect.Left - CabXOffset, _CabRect.Top + _Viewer.CabYOffsetPixels - CabYOffset, _CabRect.Width + 2 * CabXOffset, _CabRect.Height+2*CabYOffset);
+                stretchedCab = new Rectangle(-50, -40, _CabTexture.Width+100, _CabTexture.Height+80);
             }
             else
                 stretchedCab = new Rectangle(_CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
@@ -3094,10 +3092,11 @@ namespace ORTS
 
             if (this._Viewer.Simulator.UseSuperElevation > 0 || _Viewer.Simulator.CarVibrating > 0 || _Locomotive.Train.tilted)
             {
-                var place = new Vector2(_Viewer.DisplaySize.X / 2 - CabXOffset, _Viewer.DisplaySize.Y / 2 - CabYOffset);
-                var place2 = new Vector2(_Viewer.DisplaySize.X / 2, _Viewer.DisplaySize.Y / 2);
+                var scale = new Vector2((float)_CabRect.Width / _CabTexture.Width, (float)_CabRect.Height / _CabTexture.Height);
+                var place = new Vector2(_CabRect.Width / 2 - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
+                var place2 = new Vector2(_CabTexture.Width/2, _CabTexture.Height/2);
                 if (_CabTexture != null)
-                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, _Locomotive.totalRotationZ, place2, 1, SpriteEffects.None, 0f);
+                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, _Locomotive.totalRotationZ, place2, scale, SpriteEffects.None, 0f);
             }
             else
             {
@@ -3247,14 +3246,6 @@ namespace ORTS
             Position.Y = (float)Viewer.CabHeightPixels / 480 * ((float)Control.PositionY + Origin.Y) + Viewer.CabYOffsetPixels;
             ScaleToScreen = (float)Viewer.DisplaySize.X / 640 * Scale;
 
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
-            {
-                // Cab view height and vertical position adjusted to allow for clip or stretch.
-                Position.X = (float)Viewer.DisplaySize.X / 640  * ((float)Control.PositionX + Origin.X);
-                Position.Y = (float)Viewer.CabHeightPixels / 480  * ((float)Control.PositionY + Origin.Y);
-                ScaleToScreen = (float)Viewer.DisplaySize.X / 640 * Scale;
-            }
-
             var rangeFraction = GetRangeFraction();
             var direction = ControlDial.Direction == 0 ? 1 : -1;
             var rangeDegrees = direction * (ControlDial.ToDegree - ControlDial.FromDegree);
@@ -3263,9 +3254,9 @@ namespace ORTS
             Rotation = MathHelper.WrapAngle(MathHelper.ToRadians(ControlDial.FromDegree + direction * rangeDegrees * rangeFraction));
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
             {
-                Position.X -= Viewer.DisplaySize.X / 2; Position.Y -= Viewer.DisplaySize.Y / 2;
+                Position.X -= Viewer.DisplaySize.X / 2; Position.Y -= (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
                 Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.totalRotationZ));
-                Position.X += Viewer.DisplaySize.X / 2; Position.Y += Viewer.DisplaySize.Y / 2;
+                Position.X += Viewer.DisplaySize.X / 2; Position.Y += (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
             }
         }
 
@@ -3427,12 +3418,11 @@ namespace ORTS
                 DestinationRectangle.Width = (int)(xratio * Gauge.Area.Width);
                 DestinationRectangle.Height = (int)(yratio * Gauge.Area.Height);
             }
-
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
             {
-                var Position = new Vector2(DestinationRectangle.X-Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.CabYOffsetPixels-Viewer.DisplaySize.Y / 2);
+                var Position = new Vector2(DestinationRectangle.X-Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.CabYOffsetPixels-Viewer.CabHeightPixels / 2);
                 Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.totalRotationZ));
-                Position.X += Viewer.DisplaySize.X / 2; Position.Y += Viewer.DisplaySize.Y / 2;
+                Position.X += Viewer.DisplaySize.X / 2; Position.Y += (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
                 DestinationRectangle.X = (int)(Position.X + 0.5f); DestinationRectangle.Y = (int)(Position.Y + 0.5f);
             }
             if (Control.ControlType == CABViewControlTypes.LOAD_METER)
@@ -3499,10 +3489,10 @@ namespace ORTS
                 DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels;
                 DestinationRectangle.Width = (int)(xratio * Control.Width);
                 DestinationRectangle.Height = (int)(yratio * Control.Height);
-                var Position = new Vector2(DestinationRectangle.X - Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.DisplaySize.Y / 2);
+                var Position = new Vector2(DestinationRectangle.X - Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.CabHeightPixels / 2 - Viewer.CabYOffsetPixels);
 
                 Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.totalRotationZ));
-                Position.X += Viewer.DisplaySize.X / 2 + 0.5f; Position.Y += Viewer.DisplaySize.Y / 2 + 0.5f;
+                Position.X += Viewer.DisplaySize.X / 2 + 0.5f; Position.Y += Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels + 0.5f;
                 DestinationRectangle.X = (int)Position.X; DestinationRectangle.Y = (int)Position.Y;
                 DrawPosition.X = Position.X; DrawPosition.Y = Position.Y;
             }
@@ -3735,10 +3725,10 @@ namespace ORTS
             DrawPosition.Height = (int)(Control.Height * Viewer.DisplaySize.Y / 480);
             if (Viewer.Simulator.CarVibrating > 0 || Viewer.Simulator.UseSuperElevation > 0 || Locomotive.Train.tilted)
             {
-                var position = new Vector2(DrawPosition.X - Viewer.DisplaySize.X / 2, DrawPosition.Y - Viewer.DisplaySize.Y / 2);
+                var position = new Vector2(DrawPosition.X - Viewer.DisplaySize.X / 2, DrawPosition.Y - Viewer.CabHeightPixels / 2 - Viewer.CabYOffsetPixels);
 
                 position = Vector2.Transform(position, Matrix.CreateRotationZ(Locomotive.totalRotationZ));
-                position.X += Viewer.DisplaySize.X / 2 + 0.5f; position.Y += Viewer.DisplaySize.Y / 2 + 0.5f;
+                position.X += Viewer.DisplaySize.X / 2 + 0.5f; position.Y += Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels + 0.5f;
                 DrawPosition.X = (int)position.X; DrawPosition.Y = (int)position.Y;
             }
             if (Control.ControlType == CABViewControlTypes.CLOCK)
