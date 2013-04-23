@@ -1168,6 +1168,8 @@ namespace ORTS
         internal void UncoupleBehind(int carPosition)
         {
             Simulator.UncoupleBehind(carPosition);
+            //make the camera train to be the player train
+            if (PlayerLocomotive != null && PlayerLocomotive.Train != null) this.SelectedTrain = PlayerLocomotive.Train;
             CameraActivate();
         }
     }

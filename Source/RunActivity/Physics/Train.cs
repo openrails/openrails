@@ -393,6 +393,7 @@ namespace ORTS
             signalRef = simulator.Signals;
 
             TrainType = (TRAINTYPE)inf.ReadInt32();
+            tilted = inf.ReadBoolean();
             ClaimState = inf.ReadBoolean();
 
             TCRoute = null;
@@ -639,6 +640,7 @@ namespace ORTS
             outf.Write(allowedMaxSpeedLimitMpS);
 
             outf.Write((int)TrainType);
+            outf.Write(tilted);
             outf.Write(ClaimState);
 
             if (TCRoute == null)
