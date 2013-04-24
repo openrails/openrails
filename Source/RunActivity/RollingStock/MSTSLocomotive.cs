@@ -3075,7 +3075,9 @@ namespace ORTS
             Rectangle stretchedCab;
             if (_Viewer.Simulator.CarVibrating > 0 || _Viewer.Simulator.UseSuperElevation > 0 || _Locomotive.Train.tilted)
             {
-                stretchedCab = new Rectangle(-50, -40, _CabTexture.Width+100, _CabTexture.Height+80);
+                if (_CabTexture != null)
+                    stretchedCab = new Rectangle(-50, -40, _CabTexture.Width + 100, _CabTexture.Height + 80);
+                else stretchedCab = new Rectangle(_CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
             }
             else
                 stretchedCab = new Rectangle(_CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
@@ -3090,18 +3092,19 @@ namespace ORTS
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
 
-            if (this._Viewer.Simulator.UseSuperElevation > 0 || _Viewer.Simulator.CarVibrating > 0 || _Locomotive.Train.tilted)
+            if (_CabTexture != null)
             {
-                var scale = new Vector2((float)_CabRect.Width / _CabTexture.Width, (float)_CabRect.Height / _CabTexture.Height);
-                var place = new Vector2(_CabRect.Width / 2 - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
-                var place2 = new Vector2(_CabTexture.Width/2, _CabTexture.Height/2);
-                if (_CabTexture != null)
+                if (this._Viewer.Simulator.UseSuperElevation > 0 || _Viewer.Simulator.CarVibrating > 0 || _Locomotive.Train.tilted)
+                {
+                    var scale = new Vector2((float)_CabRect.Width / _CabTexture.Width, (float)_CabRect.Height / _CabTexture.Height);
+                    var place = new Vector2(_CabRect.Width / 2 - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
+                    var place2 = new Vector2(_CabTexture.Width / 2, _CabTexture.Height / 2);
                     _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, _Locomotive.totalRotationZ, place2, scale, SpriteEffects.None, 0f);
-            }
-            else
-            {
-                if (_CabTexture != null)
+                }
+                else
+                {
                     _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, stretchedCab, Color.White);
+                }
             }
                 //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
 

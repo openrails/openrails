@@ -833,7 +833,11 @@ namespace ORTS
             }
             lookAtPosition.Z *= -1;
             lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.GetXNAMatrix());
-            if (tiltingLand) return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
+            if (tiltingLand)
+            {
+                var up = attachedCar.WorldPosition.XNAMatrix.Up;
+                return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
+            }
             else
                 return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
         }

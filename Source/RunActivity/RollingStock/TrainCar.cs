@@ -622,7 +622,7 @@ namespace ORTS
             maxV = Math.Abs(acce);
 
             //if has big accelaration, will resume vibration
-            if (maxV > 1 || Math.Abs(tz) > 0.02) { accumedAcceTime = 1f; return max; }
+            if (maxV > 1 || Math.Abs(tz) > 0.02 || Math.Abs(AccelerationMpSS)>0.5) { accumedAcceTime = 1f; return max; }
             accumedAcceTime += interval/5;
             return max / accumedAcceTime;//otherwise slowly decrease the value
         }
