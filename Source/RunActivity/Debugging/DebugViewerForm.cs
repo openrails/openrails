@@ -313,7 +313,14 @@ namespace ORTS.Debugging
 			  }
 		  }
 
-		  foreach (TrItem item in simulator.TDB.TrackDB.TrItemTable)
+          var maxsize = maxX - minX > maxX - minX ? maxX - minX : maxX - minX;
+          maxsize = (int)maxsize / 100 * 100;
+          windowSizeUpDown.Maximum = (decimal)maxsize;
+          Inited = true;
+
+          if (simulator.TDB == null || simulator.TDB.TrackDB == null || simulator.TDB.TrackDB.TrItemTable == null) return;
+
+		  foreach (var item in simulator.TDB.TrackDB.TrItemTable)
 		  {
 			  if (item.ItemType == TrItem.trItemType.trSIGNAL)
 			  {
@@ -338,12 +345,9 @@ namespace ORTS.Debugging
 
 			  }
 		  }
-
-          var maxsize = maxX - minX > maxX - minX ? maxX - minX : maxX - minX;
-          maxsize = (int)maxsize / 100 * 100;
-          windowSizeUpDown.Maximum = (decimal)maxsize; 
-		  Inited = true;
+          return;
 	  }
+
 	  bool Inited = false;
 	  List<LineSegment> segments = new List<LineSegment>();
 	  List<SwitchWidget> switches;

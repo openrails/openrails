@@ -71,13 +71,14 @@ namespace ORTS.MultiPlayer
 			public int num, count;
 			public int TileX, TileZ, trackNodeIndex, direction, tdbDir;
 			public float X, Z;
-			public MSGMoveItem(string u, float s, float t, int n, int tX, int tZ, float x, float z, int tni, int cnt, int dir, int tDir)
+            public float Length;
+			public MSGMoveItem(string u, float s, float t, int n, int tX, int tZ, float x, float z, int tni, int cnt, int dir, int tDir, float len)
 			{
-				user = u; speed = s; travelled = t; num = n; TileX = tX; TileZ = tZ; X = x; Z = z; trackNodeIndex = tni; count = cnt; direction = dir; tdbDir = tDir;
+                user = u; speed = s; travelled = t; num = n; TileX = tX; TileZ = tZ; X = x; Z = z; trackNodeIndex = tni; count = cnt; direction = dir; tdbDir = tDir; Length = len;
 			}
 			public override string ToString()
 			{
-				return user + " " + speed + " " + travelled + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + trackNodeIndex + " " + count + " " + direction + " " + tdbDir;
+				return user + " " + speed + " " + travelled + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + trackNodeIndex + " " + count + " " + direction + " " + tdbDir + " " + Length;
 			}
 		}
 		List<MSGMoveItem> items;
@@ -85,7 +86,7 @@ namespace ORTS.MultiPlayer
 		{
 			m = m.Trim();
 			string[] areas = m.Split(' ');
-			if (areas.Length%12  != 0) //user speed travelled
+			if (areas.Length%13  != 0) //user speed travelled
 			{
 				throw new Exception("Parsing error " + m);
 			}
@@ -93,8 +94,8 @@ namespace ORTS.MultiPlayer
 			{
 				int i = 0;
 				items = new List<MSGMoveItem>();
-				for (i = 0; i < areas.Length / 12; i++)
-					items.Add(new MSGMoveItem(areas[12 * i], float.Parse(areas[12 * i + 1]), float.Parse(areas[12 * i + 2]), int.Parse(areas[12 * i + 3]), int.Parse(areas[12 * i + 4]), int.Parse(areas[12 * i + 5]), float.Parse(areas[12 * i + 6]), float.Parse(areas[12 * i + 7]), int.Parse(areas[12 * i + 8]), int.Parse(areas[12 * i + 9]), int.Parse(areas[12 * i + 10]), int.Parse(areas[12*i+11])));
+                for (i = 0; i < areas.Length / 13; i++)
+                    items.Add(new MSGMoveItem(areas[13 * i], float.Parse(areas[13 * i + 1]), float.Parse(areas[13 * i + 2]), int.Parse(areas[13 * i + 3]), int.Parse(areas[13 * i + 4]), int.Parse(areas[13 * i + 5]), float.Parse(areas[13 * i + 6]), float.Parse(areas[13 * i + 7]), int.Parse(areas[13 * i + 8]), int.Parse(areas[13 * i + 9]), int.Parse(areas[13 * i + 10]), int.Parse(areas[13 * i + 11]), float.Parse(areas[13 * i + 12])));
 			}
 			catch (Exception e)
 			{
@@ -128,7 +129,7 @@ namespace ORTS.MultiPlayer
 		public void AddNewItem(string u, Train t)
 		{
 			if (items == null) items = new List<MSGMoveItem>();
-			items.Add(new MSGMoveItem(u, t.SpeedMpS, t.travelled, t.Number, t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, t.RearTDBTraveller.Z, t.RearTDBTraveller.TrackNodeIndex, t.Cars.Count, (int)t.MUDirection, (int)t.RearTDBTraveller.Direction));
+			items.Add(new MSGMoveItem(u, t.SpeedMpS, t.travelled, t.Number, t.RearTDBTraveller.TileX, t.RearTDBTraveller.TileZ, t.RearTDBTraveller.X, t.RearTDBTraveller.Z, t.RearTDBTraveller.TrackNodeIndex, t.Cars.Count, (int)t.MUDirection, (int)t.RearTDBTraveller.Direction, t.Length));
 			t.LastReportedSpeed = t.SpeedMpS;
 		}
 
@@ -154,7 +155,7 @@ namespace ORTS.MultiPlayer
 					//if I am a remote controlled train now
 					if (Program.Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE)
 					{
-						Program.Simulator.PlayerLocomotive.Train.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir);
+						Program.Simulator.PlayerLocomotive.Train.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
 					}
 					found = true;/*
 					try
@@ -184,7 +185,7 @@ namespace ORTS.MultiPlayer
 							}
 							if (t.TrainType == Train.TRAINTYPE.REMOTE)
 							{
-								t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir);
+								t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
 								break;
 							}
 						}
@@ -196,7 +197,7 @@ namespace ORTS.MultiPlayer
 					if (t != null)
 					{
 							found = true;
-							t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir);
+							t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
 					}
 				}
 				if (found == false) //I do not have the train, tell server to send it to me

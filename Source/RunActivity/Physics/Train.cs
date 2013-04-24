@@ -11551,10 +11551,10 @@ namespace ORTS
 
         //used by remote train to update location based on message received
         public int expectedTileX, expectedTileZ, expectedTracIndex, expectedDIr, expectedTDir;
-        public float expectedX, expectedZ, expectedTravelled;
+        public float expectedX, expectedZ, expectedTravelled, expectedLength;
         public bool updateMSGReceived = false;
 
-        public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir, int tDir)
+        public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir, int tDir, float len)
         {
             SpeedMpS = speed;
             expectedTileX = tX;
@@ -11565,9 +11565,25 @@ namespace ORTS
             expectedTracIndex = tni;
             expectedDIr = dir;
             expectedTDir = tDir;
+            expectedLength = len;
             updateMSGReceived = true;
         }
 
+        private void UpdateCarSlack(float expectedLength)
+        {
+            if (Cars.Count <= 1) return;
+            var staticLength = 0f;
+            foreach (var car in Cars)
+            {
+                staticLength += car.Length;
+            }
+            staticLength = (expectedLength - staticLength) / (Cars.Count - 1);
+            foreach (var car in Cars)//update slack for each car
+            {
+                car.CouplerSlackM = staticLength - car.GetCouplerZeroLengthM();
+            }
+
+        }
         public void UpdateRemoteTrainPos(float elapsedClockSeconds)
         {
             if (updateMSGReceived)
@@ -11577,6 +11593,8 @@ namespace ORTS
                 var requestedSpeed = SpeedMpS;
                 try
                 {
+                    UpdateCarSlack(expectedLength);//update car slack first
+
                     var x = travelled + LastSpeedMpS * elapsedClockSeconds + (SpeedMpS - LastSpeedMpS) / 2 * elapsedClockSeconds;
                     this.MUDirection = (Direction)expectedDIr;
 
