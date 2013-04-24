@@ -122,6 +122,7 @@ namespace ORTS
         public bool EmergencyCausesThrottleDown = false;
         public bool EmergencyEngagesHorn = false;
         public bool WheelslipCausesThrottleDown = false;
+        public float CabRotationZ { get { return (UsingRearCab==true?-totalRotationZ:totalRotationZ);} }
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
 
@@ -3099,7 +3100,7 @@ namespace ORTS
                     var scale = new Vector2((float)_CabRect.Width / _CabTexture.Width, (float)_CabRect.Height / _CabTexture.Height);
                     var place = new Vector2(_CabRect.Width / 2 - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
                     var place2 = new Vector2(_CabTexture.Width / 2, _CabTexture.Height / 2);
-                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, _Locomotive.totalRotationZ, place2, scale, SpriteEffects.None, 0f);
+                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, _Locomotive.CabRotationZ, place2, scale, SpriteEffects.None, 0f);
                 }
                 else
                 {
@@ -3258,7 +3259,7 @@ namespace ORTS
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
             {
                 Position.X -= Viewer.DisplaySize.X / 2; Position.Y -= (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
-                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.totalRotationZ));
+                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
                 Position.X += Viewer.DisplaySize.X / 2; Position.Y += (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
             }
         }
@@ -3272,7 +3273,7 @@ namespace ORTS
                 Shader.CurrentTechnique.Passes[0].Begin();
             }
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
-                ControlView.SpriteBatch.Draw(Texture, Position, null, Color.White, Rotation + Locomotive.totalRotationZ, Origin, ScaleToScreen, SpriteEffects.None, 0);
+                ControlView.SpriteBatch.Draw(Texture, Position, null, Color.White, Rotation + Locomotive.CabRotationZ, Origin, ScaleToScreen, SpriteEffects.None, 0);
             else
                 ControlView.SpriteBatch.Draw(Texture, Position, null, Color.White, Rotation, Origin, ScaleToScreen, SpriteEffects.None, 0);
             if (Shader != null)
@@ -3424,7 +3425,7 @@ namespace ORTS
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
             {
                 var Position = new Vector2(DestinationRectangle.X-Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.CabYOffsetPixels-Viewer.CabHeightPixels / 2);
-                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.totalRotationZ));
+                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
                 Position.X += Viewer.DisplaySize.X / 2; Position.Y += (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
                 DestinationRectangle.X = (int)(Position.X + 0.5f); DestinationRectangle.Y = (int)(Position.Y + 0.5f);
             }
@@ -3442,7 +3443,7 @@ namespace ORTS
             }
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
             {
-                ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor, Locomotive.totalRotationZ, Vector2.Zero, SpriteEffects.None, 0f);
+                ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor, Locomotive.CabRotationZ, Vector2.Zero, SpriteEffects.None, 0f);
             }
             else
                 ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor);
@@ -3494,7 +3495,7 @@ namespace ORTS
                 DestinationRectangle.Height = (int)(yratio * Control.Height);
                 var Position = new Vector2(DestinationRectangle.X - Viewer.DisplaySize.X / 2, DestinationRectangle.Y - Viewer.CabHeightPixels / 2 - Viewer.CabYOffsetPixels);
 
-                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.totalRotationZ));
+                Position = Vector2.Transform(Position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
                 Position.X += Viewer.DisplaySize.X / 2 + 0.5f; Position.Y += Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels + 0.5f;
                 DestinationRectangle.X = (int)Position.X; DestinationRectangle.Y = (int)Position.Y;
                 DrawPosition.X = Position.X; DrawPosition.Y = Position.Y;
@@ -3517,7 +3518,7 @@ namespace ORTS
                 Shader.CurrentTechnique.Passes[0].Begin();
             }
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
-                ControlView.SpriteBatch.Draw(Texture, DrawPosition, SourceRectangle, Color.White, Locomotive.totalRotationZ, Vector2.Zero, new Vector2((float)Viewer.DisplaySize.X / 640,
+                ControlView.SpriteBatch.Draw(Texture, DrawPosition, SourceRectangle, Color.White, Locomotive.CabRotationZ, Vector2.Zero, new Vector2((float)Viewer.DisplaySize.X / 640,
                     (float)Viewer.CabHeightPixels / 480), SpriteEffects.None, 0f);
             else
                 ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, Color.White);
@@ -3730,7 +3731,7 @@ namespace ORTS
             {
                 var position = new Vector2(DrawPosition.X - Viewer.DisplaySize.X / 2, DrawPosition.Y - Viewer.CabHeightPixels / 2 - Viewer.CabYOffsetPixels);
 
-                position = Vector2.Transform(position, Matrix.CreateRotationZ(Locomotive.totalRotationZ));
+                position = Vector2.Transform(position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
                 position.X += Viewer.DisplaySize.X / 2 + 0.5f; position.Y += Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels + 0.5f;
                 DrawPosition.X = (int)position.X; DrawPosition.Y = (int)position.Y;
             }
@@ -3775,7 +3776,7 @@ namespace ORTS
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             if (Viewer.Simulator.CarVibrating > 0 || Viewer.Simulator.UseSuperElevation > 0 || Locomotive.Train.tilted)
-                DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor, Locomotive.totalRotationZ);
+                DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor, Locomotive.CabRotationZ);
             else DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor);
         }
     }
