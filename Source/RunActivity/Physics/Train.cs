@@ -2193,7 +2193,7 @@ namespace ORTS
 
         public void CalculatePositionOfCars(float distance)
         {
-            if (distance == float.NaN) return;//sanity check
+            if (float.IsNaN(distance)) return;//sanity check
 
             var tn = RearTDBTraveller.TN;
             RearTDBTraveller.Move(distance);

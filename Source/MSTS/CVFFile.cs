@@ -65,6 +65,7 @@ namespace MSTS
         BRAKE_PIPE,
         LINE_VOLTAGE,
         AMMETER,
+        AMMETER_ABS,
         LOAD_METER,
         THROTTLE,
         PANTOGRAPH,

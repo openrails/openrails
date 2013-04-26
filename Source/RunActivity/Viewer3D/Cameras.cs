@@ -135,7 +135,7 @@ namespace ORTS
             var fovWidthRadians = MathHelper.ToRadians(Viewer.Settings.ViewingFOV);
             if (Viewer.Settings.DistantMountains)
             {
-                XNADMProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, Viewer.Settings.ViewingDistance - 500, 2048 * Viewer.Settings.DistantMountainsViewingTiles);//can see 40KM
+                XNADMProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, Viewer.Settings.ViewingDistance - 700, 2048 * Viewer.Settings.DistantMountainsViewingTiles);//can see 40KM
             }
             xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, Viewer.Settings.ViewingDistance);
             XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, farPlaneDistance);    // TODO remove? 

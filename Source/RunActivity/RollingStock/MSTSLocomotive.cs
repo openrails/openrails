@@ -1909,6 +1909,7 @@ namespace ORTS
                         break;
                     }
                 case CABViewControlTypes.AMMETER:
+                case CABViewControlTypes.AMMETER_ABS:
                 case CABViewControlTypes.LOAD_METER:
                 case CABViewControlTypes.TRACTION_BRAKING:
                     {
@@ -2672,8 +2673,12 @@ namespace ORTS
             var frameIndex = 0;
 
             if (controlSize.X < frameSize.X || controlSize.Y < frameSize.Y)
-                Trace.TraceWarning("Cab control size {1}x{2} is smaller than frame size {3}x{4} (frames may be cut-off) for {0}", fileName, controlSize.X, controlSize.Y, frameSize.X, frameSize.Y);
-
+            {
+                Trace.TraceWarning("Cab control size {1}x{2} is smaller than frame size {3}x{4} (frames may be cut-off) for {0}. OR will try to reverse the dimension.", fileName, controlSize.X, controlSize.Y, frameSize.X, frameSize.Y);
+                //some may mess up the dimension, will try to reverse
+                var tmp = frameGrid.X; frameGrid.X = frameGrid.Y; frameGrid.Y = tmp;
+                frameSize = new Point(texture.Width / frameGrid.X, texture.Height / frameGrid.Y);
+            }
             if (frameCount > frameGrid.X * frameGrid.Y)
                 Trace.TraceWarning("Cab control frame count {1} is larger than the number of frames {2}*{3}={4} (some frames will be blank) for {0}", fileName, frameCount, frameGrid.X, frameGrid.Y, frameGrid.X * frameGrid.Y);
 
