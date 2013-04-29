@@ -106,6 +106,7 @@ namespace ORTS
             DMDistance.Value = settings.DistantMountainsViewingTiles * 2;
             DMLoweringValue.Value = settings.DistantMountainsLoweringValue;
             NormalViewingDistance.Value = settings.ViewingDistance;
+            LODExtention.Checked = settings.LODViewingExtention;
         }
 
         string ParseCategoryFrom(string name)
@@ -320,6 +321,7 @@ namespace ORTS
             Settings.DistantMountainsViewingTiles = (int) DMDistance.Value / 2;
             Settings.DistantMountainsLoweringValue = (int)DMLoweringValue.Value;
             Settings.ViewingDistance = (int)NormalViewingDistance.Value;
+            Settings.LODViewingExtention = LODExtention.Checked;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

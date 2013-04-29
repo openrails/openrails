@@ -3480,39 +3480,96 @@ namespace ORTS
                 // if no junctions or signals to end of route - end of route reached
                 else
                 {
-                    float offset = PresentPosition[1].TCOffset; // check for any further signals from rear of train
-                    float length = -Length;                     // compensate for train length
                     bool intermediateJunction = false;
                     bool intermediateSignal = false;
+                    float length = 0f;
+                    float distanceToNextJunction = -1f;
+                    float distanceToNextSignal   = -1f;
 
-                    for (int iIndex = PresentPosition[1].RouteListIndex; iIndex >= 0 && iIndex <= ValidRoute[0].Count - 1; iIndex++)
+                    if (PresentPosition[1].RouteListIndex >= 0) // end of train is on route
                     {
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
-                        int direction = ValidRoute[0][iIndex].Direction;
-                        length += (thisSection.Length - offset);
-                        offset = 0;
-
-                        if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
-                            thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
-                        {
-                            intermediateJunction = true;
-                        }
-
-                        if (thisSection.EndSignals[0] != null || thisSection.EndSignals[1] != null)  // check for signal in either direction
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][PresentPosition[1].RouteListIndex].TCSectionIndex];
+                        int direction = ValidRoute[0][PresentPosition[1].RouteListIndex].Direction;
+                        length = (thisSection.Length - PresentPosition[1].TCOffset);
+                        if (thisSection.EndSignals[direction] != null)                         // check for signal only in direction of train (other signal is behind train)
                         {
                             intermediateSignal = true;
+                            distanceToNextSignal = length + Length; // distance is total length plus train length (must be re-compensated)
+                        }
+
+                        if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION || thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                        {
+                            intermediateJunction = true;
+                            distanceToNextJunction = 0f;
+                        }
+
+                        for (int iIndex = PresentPosition[1].RouteListIndex + 1; iIndex >= 0 && iIndex <= ValidRoute[0].Count - 1; iIndex++)
+                        {
+                            thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
+                            length += thisSection.Length;
+
+                            if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
+                                thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                            {
+                                intermediateJunction = true;
+                                distanceToNextJunction = distanceToNextJunction < 0 ? length : distanceToNextJunction;
+                            }
+
+                            if (thisSection.EndSignals[direction] != null)
+                            {
+                                intermediateSignal = true;
+                                distanceToNextSignal = distanceToNextSignal < 0 ? length : distanceToNextSignal;
+                            }
+                            if (thisSection.EndSignals[direction == 1 ? 0 : 1] != null) // check in other direction
+                            {
+                                intermediateSignal = true;
+                                distanceToNextSignal = distanceToNextSignal < 0 ? length - thisSection.Length : distanceToNextSignal; // signal is at start of section
+                            }
+                        }
+                        // check if intermediate junction or signal is valid : only so if there is enough distance (from the front of the train) left for train to pass that junction
+
+                        float frontlength = length - Length;
+                        if (intermediateJunction)
+                        {
+                            if ((frontlength - distanceToNextJunction) < Length) intermediateJunction = false;
+                        }
+
+                        if (intermediateSignal)
+                        {
+                            if ((frontlength - distanceToNextSignal) < Length) intermediateSignal = false;
                         }
                     }
+                    else if (PresentPosition[0].RouteListIndex >= 0) // else use front position - check for further signals or junctions only
+                    {
+                        for (int iIndex = PresentPosition[0].RouteListIndex; iIndex >= 0 && iIndex <= ValidRoute[0].Count - 1; iIndex++)
+                        {
+                            TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
+                            int direction = ValidRoute[0][iIndex].Direction;
+
+                            if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
+                                thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                            {
+                                intermediateJunction = true;
+                            }
+
+                            if (thisSection.EndSignals[direction] != null)
+                            {
+                                intermediateSignal = true;
+                            }
+                        }
+                    }
+
+                    // check overall position
 
                     if (!intermediateJunction && !intermediateSignal)  // no more junctions and no more signal - reverse subpath
                     {
                         endOfRoute = true;
                     }
 
-                    if (length < Length && !intermediateJunction)  // no more junctions and short track - reverse subpath
-                    {
-                        endOfRoute = true;
-                    }
+//                    if (length < Length && !intermediateJunction)  // no more junctions and short track - reverse subpath
+//                    {
+//                        endOfRoute = true;
+//                    }
                 }
             }
             // not end of route - no action
@@ -6079,6 +6136,7 @@ namespace ORTS
 
             ControlMode = TRAIN_CONTROL.AUTO_NODE;
             EndAuthorityType[0] = END_AUTHORITY.NO_PATH_RESERVED;
+            IndexNextSignal = -1; // no next signal in Node Control
 
             // if section is set, check if it is on route and ahead of train
 

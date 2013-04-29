@@ -176,6 +176,10 @@ namespace ORTS
         [Default(false)]
         public bool BreakCouplers { get; set; }
 
+        // experimentel setting for LOD extention
+        [Default (false)]
+        public bool LODViewingExtention { get; set; }
+
         // Window position settings.
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_Activity { get; set; }

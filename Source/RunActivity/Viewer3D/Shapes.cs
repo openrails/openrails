@@ -1121,6 +1121,13 @@ namespace ORTS
                 while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
                     chosenDistanceLevelIndex--;
                 var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
+
+                // If set, extend the outer LOD to the max. viewing distance
+                if (Viewer.Settings.LODViewingExtention)
+                {
+                    if (chosenDistanceLevelIndex == lodControl.DistanceLevels.Length - 1) chosenDistanceLevel.ViewingDistance = Viewer.Settings.ViewingDistance;
+                }
+
                 // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
                 foreach (var subObject in chosenDistanceLevel.SubObjects.Where((so, i) => (subObjVisible == null || subObjVisible[i]) && (i != 1 || !HasNightSubObj || Viewer.MaterialManager.sunDirection.Y < 0)))
                 {
