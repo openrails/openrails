@@ -95,9 +95,7 @@ namespace ORTS.Popups
 
         internal WindowTextFont(string fontFamily, float sizeInPt, FontStyle style, int outlineSize)
         {
-            var font = new Font(fontFamily, sizeInPt, style);
-            Font = new Font(fontFamily, (int)font.GetHeight(), style, GraphicsUnit.Pixel);
-            Debug.Assert(Font.Height == (int)Math.Ceiling(Font.GetHeight()), "Font.Height is not expected value.");
+            Font = new Font(fontFamily, (int)Math.Round(sizeInPt * 96 / 72), style, GraphicsUnit.Pixel);
             FontHeight = Font.Height;
             OutlineSize = outlineSize;
             Characters = new CharacterGroup(Font, OutlineSize);
@@ -142,13 +140,13 @@ namespace ORTS.Popups
         [CallOnThread("Render")]
         public void Draw(SpriteBatch spriteBatch, Point offset, string text, Color color)
         {
-            Draw(spriteBatch, offset, 0, text, LabelAlignment.Left, color, Color.Black);
+            Draw(spriteBatch, offset, 0, 0, text, LabelAlignment.Left, color, Color.Black);
         }
 
         [CallOnThread("Render")]
         public void Draw(SpriteBatch spriteBatch, Point offset, string text, Color color, Color outline)
         {
-            Draw(spriteBatch, offset, 0, text, LabelAlignment.Left, color, outline);
+            Draw(spriteBatch, offset, 0, 0, text, LabelAlignment.Left, color, outline);
         }
 
         [CallOnThread("Render")]
@@ -168,7 +166,7 @@ namespace ORTS.Popups
         {
             offset.X += position.Location.X;
             offset.Y += position.Location.Y;
-            Draw(spriteBatch, offset, position.Width, text, align, color, outline);
+            Draw(spriteBatch, offset, 0, position.Width, text, align, color, outline);
         }
 
         [CallOnThread("Render")]
@@ -176,10 +174,11 @@ namespace ORTS.Popups
         {
             offset.X += position.Location.X;
             offset.Y += position.Location.Y;
-            Draw(spriteBatch, offset, position.Width, text, align, color, outline, rotation);
+            Draw(spriteBatch, offset, rotation, position.Width, text, align, color, outline);
         }
+
         [CallOnThread("Render")]
-        void Draw(SpriteBatch spriteBatch, Point position, int width, string text, LabelAlignment align, Color color, Color outline)
+        void Draw(SpriteBatch spriteBatch, Point position, float rotation, int width, string text, LabelAlignment align, Color color, Color outline)
         {
             EnsureCharacterData(text);
             var characters = Characters;
@@ -187,6 +186,8 @@ namespace ORTS.Popups
             var chIndexes = new int[text.Length];
             for (var i = 0; i < text.Length; i++)
                 chIndexes[i] = characters.IndexOfCharacter(text[i]);
+
+            var rotationScale = Matrix.CreateRotationZ(rotation) * Matrix.CreateTranslation(position.X - OutlineSize, position.Y - OutlineSize, 0);
 
             var current = Vector2.Zero;
             if (align != LabelAlignment.Left)
@@ -203,9 +204,6 @@ namespace ORTS.Popups
                     current.X = width - current.X;
             }
 
-            current.X += position.X - OutlineSize;
-            current.Y += position.Y - OutlineSize;
-
             var start = current;
             var texture = characters.Texture;
             if (texture == null)
@@ -220,7 +218,7 @@ namespace ORTS.Popups
                     var box = characters.Boxes[chIndexes[i]];
                     box.Y += outlineOffset;
                     if (text[i] > ' ')
-                        spriteBatch.Draw(texture, current, box, outline, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                        spriteBatch.Draw(texture, Vector2.Transform(current, rotationScale), box, outline, rotation, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
                     current.X += characters.AbcWidths[chIndexes[i]].X;
                     current.X += characters.AbcWidths[chIndexes[i]].Y;
                     current.X += characters.AbcWidths[chIndexes[i]].Z;
@@ -235,75 +233,7 @@ namespace ORTS.Popups
             for (var i = 0; i < text.Length; i++)
             {
                 if (text[i] > ' ')
-                    spriteBatch.Draw(texture, current, characters.Boxes[chIndexes[i]], color, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
-                current.X += characters.AbcWidths[chIndexes[i]].X;
-                current.X += characters.AbcWidths[chIndexes[i]].Y;
-                current.X += characters.AbcWidths[chIndexes[i]].Z;
-                if (text[i] == '\n')
-                {
-                    current.X = start.X;
-                    current.Y += Height;
-                }
-            }
-        }
-        [CallOnThread("Render")]
-        void Draw(SpriteBatch spriteBatch, Point position, int width, string text, LabelAlignment align, Color color, Color outline, float rotation)
-        {
-            EnsureCharacterData(text);
-            var characters = Characters;
-
-            var chIndexes = new int[text.Length];
-            for (var i = 0; i < text.Length; i++)
-                chIndexes[i] = characters.IndexOfCharacter(text[i]);
-
-            var current = Vector2.Zero;
-            if (align != LabelAlignment.Left)
-            {
-                for (var i = 0; i < text.Length; i++)
-                {
-                    current.X += characters.AbcWidths[chIndexes[i]].X;
-                    current.X += characters.AbcWidths[chIndexes[i]].Y;
-                    current.X += characters.AbcWidths[chIndexes[i]].Z;
-                }
-                if (align == LabelAlignment.Center)
-                    current.X = (int)((width - current.X) / 2);
-                else
-                    current.X = width - current.X;
-            }
-
-            current.X += position.X - OutlineSize;
-            current.Y += position.Y - OutlineSize;
-
-            var start = current;
-            var texture = characters.Texture;
-            if (texture == null)
-                return;
-            
-            if (OutlineSize > 0)
-            {
-                var outlineOffset = characters.BoxesMaxBottom;
-                current = start;
-                for (var i = 0; i < text.Length; i++)
-                {
-                    var box = characters.Boxes[chIndexes[i]];
-                    box.Y += outlineOffset;
-                    if (text[i] > ' ')
-                        spriteBatch.Draw(texture, current, box, outline, rotation, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
-                    current.X += characters.AbcWidths[chIndexes[i]].X;
-                    current.X += characters.AbcWidths[chIndexes[i]].Y;
-                    current.X += characters.AbcWidths[chIndexes[i]].Z;
-                    if (text[i] == '\n')
-                    {
-                        current.X = start.X;
-                        current.Y += Height;
-                    }
-                }
-            }
-            current = start;
-            for (var i = 0; i < text.Length; i++)
-            {
-                if (text[i] > ' ')
-                    spriteBatch.Draw(texture, current, characters.Boxes[chIndexes[i]], color, rotation, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
+                    spriteBatch.Draw(texture, Vector2.Transform(current, rotationScale), characters.Boxes[chIndexes[i]], color, rotation, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);
                 current.X += characters.AbcWidths[chIndexes[i]].X;
                 current.X += characters.AbcWidths[chIndexes[i]].Y;
                 current.X += characters.AbcWidths[chIndexes[i]].Z;

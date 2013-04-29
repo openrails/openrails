@@ -3701,7 +3701,7 @@ namespace ORTS
     /// </summary>
     public class CabViewDigitalRenderer : CabViewControlRenderer
     {
-        readonly float FontScale = 12f / 480;
+        const float FontScale = 12f / 480;
         readonly LabelAlignment Alignment;
         readonly string Format = "{0}";
 
@@ -3717,7 +3717,6 @@ namespace ORTS
         {
             Position.X = (float)Control.PositionX;
             Position.Y = (float)Control.PositionY;
-            FontScale = (float)(Control.Height / 480 / 96 * 72 * 0.80f); // This 80% scale factor is here because the font engine always gives us a font >= requested size.
 
             // Clock defaults to centered.
             if (Control.ControlType == CABViewControlTypes.CLOCK)
@@ -3732,19 +3731,20 @@ namespace ORTS
             var digital = Control as CVCDigital;
 
             Num = Locomotive.GetDataOf(Control);
-            DrawFont = Viewer.WindowManager.TextManager.Get("Arial", Viewer.DisplaySize.Y * FontScale, System.Drawing.FontStyle.Regular);
+            DrawFont = Viewer.WindowManager.TextManager.Get("Courier New", Viewer.CabHeightPixels * FontScale, System.Drawing.FontStyle.Regular);
             DrawPosition.X = (int)(Position.X * Viewer.DisplaySize.X / 640);
-            DrawPosition.Y = (int)(Position.Y * Viewer.CabHeightPixels / 480) + Viewer.CabYOffsetPixels;
+            DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels;
             DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);
             DrawPosition.Height = (int)(Control.Height * Viewer.DisplaySize.Y / 480);
+
             if (Viewer.Simulator.CarVibrating > 0 || Viewer.Simulator.UseSuperElevation > 0 || Locomotive.Train.tilted)
             {
                 var position = new Vector2(DrawPosition.X - Viewer.DisplaySize.X / 2, DrawPosition.Y - Viewer.CabHeightPixels / 2 - Viewer.CabYOffsetPixels);
-
                 position = Vector2.Transform(position, Matrix.CreateRotationZ(Locomotive.CabRotationZ));
-                position.X += Viewer.DisplaySize.X / 2 + 0.5f; position.Y += Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels + 0.5f;
-                DrawPosition.X = (int)position.X; DrawPosition.Y = (int)position.Y;
+                DrawPosition.X = (int)Math.Round(position.X + Viewer.DisplaySize.X / 2);
+                DrawPosition.Y = (int)Math.Round(position.Y + Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
             }
+
             if (Control.ControlType == CABViewControlTypes.CLOCK)
             {
                 // Clock is drawn specially.
@@ -3787,7 +3787,8 @@ namespace ORTS
         {
             if (Viewer.Simulator.CarVibrating > 0 || Viewer.Simulator.UseSuperElevation > 0 || Locomotive.Train.tilted)
                 DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor, Locomotive.CabRotationZ);
-            else DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor);
+            else
+                DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor);
         }
     }
 }

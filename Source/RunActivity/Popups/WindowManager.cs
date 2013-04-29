@@ -63,10 +63,10 @@ namespace ORTS.Popups
             WindowManagerMaterial = new BasicBlendedMaterial(viewer, "WindowManager");
             PopupWindowMaterial = (PopupWindowMaterial)Viewer.MaterialManager.Load("PopupWindow");
             TextManager = new WindowTextManager();
-            TextFontDefault = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular);
-            TextFontDefaultOutlined = TextManager.Get("Arial", 9, System.Drawing.FontStyle.Regular, 1);
+            TextFontDefault = TextManager.Get("Arial", 10, System.Drawing.FontStyle.Regular);
+            TextFontDefaultOutlined = TextManager.Get("Arial", 10, System.Drawing.FontStyle.Regular, 1);
 #if NEW_SIGNALLING
-            TextFontSmall = TextManager.Get("Arial", 7, System.Drawing.FontStyle.Regular);
+            TextFontSmall = TextManager.Get("Arial", 8, System.Drawing.FontStyle.Regular);
 #endif
 
             SpriteBatch = new SpriteBatch(Viewer.GraphicsDevice);
