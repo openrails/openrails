@@ -2056,6 +2056,13 @@ namespace ORTS
                         data = Sander ? 1 : 0;
                         break;
                     }
+                // MultStateDisplay entry in CVF file had Type SANDING. W/O the below entry and another entry at line 3625
+                // the independant sanding light found in some cabs would not work.
+                case CABViewControlTypes.SANDING:
+                    {
+                        data = Sander ? 1 : 0;
+                        break;
+                    }
                 case CABViewControlTypes.CLOCK:
                     {
                         data = 0;
@@ -3615,6 +3622,7 @@ namespace ORTS
                 case CABViewControlTypes.HORN:
                 case CABViewControlTypes.BELL:
                 case CABViewControlTypes.SANDERS:
+                case CABViewControlTypes.SANDING:
                 case CABViewControlTypes.WHEELSLIP:
                 case CABViewControlTypes.FRONT_HLIGHT:
                 case CABViewControlTypes.PANTOGRAPH:
