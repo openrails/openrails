@@ -1919,17 +1919,17 @@ namespace ORTS
                             if (ThrottlePercent > 0)
                             {
                                 if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxForceN * (float)(cvc.MaxValue - cvc.MinValue);
+                                    data = this.FilteredMotiveForceN / MaxForceN * (float)(cvc.MaxValue);
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)(cvc.MaxValue - cvc.MinValue);
+                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)(cvc.MaxValue);
                                 data = Math.Abs(data);
                             }
                             if (DynamicBrakePercent > 0)
                             {
                                 if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * (float)(cvc.MaxValue - cvc.MinValue);
+                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * (float)(cvc.MaxValue);
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * (float)(cvc.MaxValue - cvc.MinValue);
+                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * (float)(cvc.MaxValue);
                                 data = -Math.Abs(data);
                             }
                             break;
