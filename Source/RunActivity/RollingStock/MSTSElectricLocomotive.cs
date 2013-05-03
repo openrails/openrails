@@ -191,9 +191,17 @@ namespace ORTS
             base.Update(elapsedClockSeconds);
             //Variable2 = Variable1 * 100F ;
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN * 100F ;
-            Variable2 = 0;
-            if ( ThrottlePercent > 0)
-                Variable2 = Math.Abs(MotiveForceN) / MaxForceN * 100F;
+
+            if ( ThrottlePercent == 0f ) Variable2 = 0;
+            else 
+            {
+                float dV2;
+                dV2 = Math.Abs(MotiveForceN) / MaxForceN * 100f - Variable2;
+                float max = 2f;
+                if (dV2 > max) dV2 = max;
+                else if (dV2 < -max) dV2 = -max;
+                Variable2 += dV2;
+            }
             Variable3 = 0;
             if ( DynamicBrakePercent > 0)
                 Variable3 = Math.Abs(MotiveForceN) / MaxDynamicBrakeForceN;

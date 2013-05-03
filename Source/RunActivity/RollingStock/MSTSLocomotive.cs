@@ -640,7 +640,11 @@ namespace ORTS
                         currentWheelSpeedMpS = currentSpeedMpS;
                     if (maxForceN * currentWheelSpeedMpS > maxPowerW)
                         maxForceN = maxPowerW / currentWheelSpeedMpS;
-                    if (currentSpeedMpS > MaxSpeedMpS)
+                    //if (currentSpeedMpS > MaxSpeedMpS)
+                    //    maxForceN = 0;
+                    if (currentSpeedMpS > MaxSpeedMpS -0.05f)
+                        maxForceN = 20 * (MaxSpeedMpS - currentSpeedMpS) * maxForceN;
+                    if (currentSpeedMpS > (MaxSpeedMpS))
                         maxForceN = 0;
                     MotiveForceN = maxForceN;
                 }
@@ -1537,7 +1541,7 @@ namespace ORTS
 
         private bool CanUseDynamicBrake()
         {
-            return (DynamicBrakeController != null && DynamicBrakeForceCurves != null
+            return (DynamicBrakeController != null
                 && ThrottlePercent == 0 && !HasDefectiveComboDynamicBreak);
         }
 
@@ -1924,7 +1928,7 @@ namespace ORTS
                                     data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)(cvc.MaxValue);
                                 data = Math.Abs(data);
                             }
-                            if (DynamicBrakePercent > 0)
+                            if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * (float)(cvc.MaxValue);

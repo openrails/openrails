@@ -306,7 +306,11 @@ namespace ORTS
                         currentWheelSpeedMpS = currentSpeedMpS;
                     if (maxForceN * currentWheelSpeedMpS > maxPowerW)
                         maxForceN = maxPowerW / currentWheelSpeedMpS;
-                    if (currentSpeedMpS > MaxSpeedMpS)
+                    //if (currentSpeedMpS > MaxSpeedMpS)
+                    //    maxForceN = 0;
+                    if (currentSpeedMpS > MaxSpeedMpS -0.05f)
+                        maxForceN = 20 * (MaxSpeedMpS - currentSpeedMpS) * maxForceN;
+                    if (currentSpeedMpS > (MaxSpeedMpS))
                         maxForceN = 0;
                     MotiveForceN = maxForceN;
                 }

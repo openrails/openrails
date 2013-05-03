@@ -1935,6 +1935,12 @@ namespace ORTS
                 }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
+                if (lead.DynamicBrakeController != null)
+                {
+                    MUDynamicBrakePercent = lead.DynamicBrakeController.Update(1000) * 100;
+                    if (MUDynamicBrakePercent == 0)
+                        MUDynamicBrakePercent = -1;
+                }
             }
             else
             {
