@@ -3713,7 +3713,7 @@ namespace ORTS
     /// </summary>
     public class CabViewDigitalRenderer : CabViewControlRenderer
     {
-        const float FontScale = 12f / 480;
+        const float FontScale = 10f / 480;
         readonly LabelAlignment Alignment;
         readonly string Format = "{0}";
 
