@@ -861,7 +861,8 @@ namespace ORTS
             Wipers = new AnimatedPart(TrainCarShape);
 
             LoadCarSounds(wagonFolderSlash);
-            LoadTrackSounds();
+            if (!(MSTSWagon is MSTSLocomotive))
+                LoadTrackSounds();
 
             // Adding all loaded SoundSource to the main sound update thread
             _Viewer3D.SoundProcess.AddSoundSource(this, SoundSources);
@@ -1152,13 +1153,6 @@ namespace ORTS
         /// </summary>
         private void LoadTrackSounds()
         {
-            if (MSTSWagon is MSTSLocomotive)
-            {
-                TrackSoundSource ts = new TrackSoundSource(MSTSWagon, Viewer);
-                SoundSources.Add(ts);
-                return;
-            }
-
             if (Viewer.TTypeDatFile.Count > 0)  // TODO, still have to figure out if this should be part of the car, or train, or track
             {
                 if (!string.IsNullOrEmpty(MSTSWagon.InteriorSoundFileName))

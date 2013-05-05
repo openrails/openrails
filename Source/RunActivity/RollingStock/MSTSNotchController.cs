@@ -430,7 +430,8 @@ namespace ORTS
             float? target = null;
             if (Notches.Count > 0 && CurrentNotch < Notches.Count - 1 && Notches[CurrentNotch].Smooth)
                 target = Notches[CurrentNotch + 1].Value;
-            else if (Notches.Count == 0)
+            else if (Notches.Count == 0
+                || (Notches.Count == 1 && Notches[CurrentNotch].Smooth))
                 target = MaximumValue;
             return target;
         }

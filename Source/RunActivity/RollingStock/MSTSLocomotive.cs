@@ -2299,6 +2299,7 @@ namespace ORTS
             string wagonFolderSlash = Path.GetDirectoryName(Locomotive.WagFilePath) + "\\";
             if (Locomotive.CabSoundFileName != null) LoadCarSound(wagonFolderSlash, Locomotive.CabSoundFileName);
 
+            SoundSources.Add(new TrackSoundSource(MSTSWagon, Viewer));
         }
 
         bool SwapControl()
