@@ -3760,7 +3760,25 @@ namespace ORTS
             if (Control.ControlType == CABViewControlTypes.CLOCK)
             {
                 // Clock is drawn specially.
-                DrawText = InfoDisplay.FormattedTime(Locomotive.Simulator.ClockTime);
+                var clockSeconds = Locomotive.Simulator.ClockTime;
+                var hour = (int)(clockSeconds / 3600) % 24;
+                var minute = (int)(clockSeconds / 60) % 60;
+                var seconds = (int)clockSeconds % 60;
+
+                if (hour < 0)
+                    hour += 24;
+                if (minute < 0)
+                    minute += 60;
+                if (seconds < 0)
+                    seconds += 60;
+
+                if (digital.ControlStyle == CABViewControlStyles._12HOUR)
+                {
+                    hour %= 12;
+                    if (hour == 0)
+                        hour = 12;
+                }
+                DrawText = String.Format(digital.Accuracy > 0 ? "{0:D2}:{1:D2}:{2:D2}" : "{0:D2}:{1:D2}", hour, minute, seconds);
                 DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B);
             }
             else if (digital.OldValue != 0 && digital.OldValue > Num && digital.DecreaseColor.A != 0)
