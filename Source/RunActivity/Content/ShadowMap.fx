@@ -141,9 +141,9 @@ float4 PSShadowMapBlocker() : COLOR0
 
 float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : COLOR0
 {
-	float2 centreTap =	tex2D(ShadowMapSampler, In.SampleCentre).rg	* 0.4414401;	
-	float2 tap01 =		tex2D(ShadowMapSampler, In.Sample_01).rg * 0.2774689;
-	float2 tap23 =		tex2D(ShadowMapSampler, In.Sample_23).rg * 0.2774689;
+	float2 centreTap =	tex2D(ShadowMapSampler, In.SampleCentre).rg	* 0.4430448;
+	float2 tap01 =		tex2D(ShadowMapSampler, In.Sample_01).rg * 0.2784776;
+	float2 tap23 =		tex2D(ShadowMapSampler, In.Sample_23).rg * 0.2784776;
 		
 	return float4(tap01 + centreTap + tap23, 0, 0);
 }

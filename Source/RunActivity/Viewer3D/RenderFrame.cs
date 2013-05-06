@@ -261,8 +261,8 @@ namespace ORTS
                     shadowMapLocation.Y -= shadowMapAlignAxisY.Y * adjustY;
                     shadowMapLocation.Z -= shadowMapAlignAxisY.Z * adjustY;
 
-                    ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + 2 * viewingDistance * SteppedSolarDirection, shadowMapLocation, Vector3.Up);
-                    ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, viewingDistance, 2 * viewingDistance + shadowMapDiameter / 2);
+                    ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + viewingDistance * SteppedSolarDirection, shadowMapLocation, Vector3.Up);
+                    ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, 0, viewingDistance + shadowMapDiameter / 2);
                     ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
                     ShadowMapCenter[shadowMapIndex] = shadowMapLocation;
                 }

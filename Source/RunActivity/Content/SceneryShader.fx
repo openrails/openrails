@@ -315,12 +315,12 @@ float _PSGetShadowEffect(uniform bool ShaderModel3, uniform bool NormalLighting,
 	else
 		moments = _PS2GetShadowEffect(In);
 
-	bool not_shadowed = (moments.z <= moments.x);
+	bool not_shadowed = moments.z - moments.x < 0.00005;
 	float E_x2 = moments.y;
 	float Ex_2 = moments.x * moments.x;
-	float variance = clamp(E_x2 - Ex_2, 0.0002, 1.0);
-	float m_d = moments.x - moments.z;
-	float p = pow(variance / (variance + m_d * m_d), 20);
+	float variance = clamp(E_x2 - Ex_2, 0.00005, 1.0);
+	float m_d = moments.z - moments.x;
+	float p = pow(variance / (variance + m_d * m_d), 50);
 	if (NormalLighting)
 		return saturate(not_shadowed + p) * saturate(In.Normal_Light.w * 5 - 2);
 	return saturate(not_shadowed + p);
