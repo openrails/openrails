@@ -2708,14 +2708,15 @@ namespace ORTS
                 var copySize = new Point(Math.Min(controlSize.X, frameSize.X), Math.Min(controlSize.Y, frameSize.Y));
                 if (texture.Format == SurfaceFormat.Dxt1)
                 {
-                    var textureSize = new Point((int)Math.Ceiling((float)controlSize.X / 4) * 4, (int)Math.Ceiling((float)controlSize.Y / 4) * 4);
-                    var buffer = new byte[copySize.X * copySize.Y / 2];
-                    frameIndex = DisassembleFrames(graphicsDevice, texture, controlSize, frameCount, frameGrid, frames, frameSize, copySize, textureSize, buffer);
+                    controlSize.X = (int)Math.Ceiling((float)controlSize.X / 4) * 4;
+                    controlSize.Y = (int)Math.Ceiling((float)controlSize.Y / 4) * 4;
+                    var buffer = new byte[(int)Math.Ceiling((float)copySize.X / 4) * 4 * (int)Math.Ceiling((float)copySize.Y / 4) * 4 / 2];
+                    frameIndex = DisassembleFrames(graphicsDevice, texture, frameCount, frameGrid, frames, frameSize, copySize, controlSize, buffer);
                 }
                 else
                 {
                     var buffer = new Color[copySize.X * copySize.Y];
-                    frameIndex = DisassembleFrames(graphicsDevice, texture, controlSize, frameCount, frameGrid, frames, frameSize, copySize, controlSize, buffer);
+                    frameIndex = DisassembleFrames(graphicsDevice, texture, frameCount, frameGrid, frames, frameSize, copySize, controlSize, buffer);
                 }
             }
 
@@ -2725,9 +2726,9 @@ namespace ORTS
             return frames;
         }
 
-        static int DisassembleFrames<T>(GraphicsDevice graphicsDevice, Texture2D texture, Point controlSize, int frameCount, Point frameGrid, Texture2D[] frames, Point frameSize, Point copySize, Point textureSize, T[] buffer) where T : struct
+        static int DisassembleFrames<T>(GraphicsDevice graphicsDevice, Texture2D texture, int frameCount, Point frameGrid, Texture2D[] frames, Point frameSize, Point copySize, Point controlSize, T[] buffer) where T : struct
         {
-            //Trace.TraceInformation("Disassembling {0} {11} frames in {1}x{2}; control {3}x{4}, frame {5}x{6}, copy {7}x{8}, texture {9}x{10}. {12}", frameCount, frameGrid.X, frameGrid.Y, controlSize.X, controlSize.Y, frameSize.X, frameSize.Y, copySize.X, copySize.Y, textureSize.X, textureSize.Y, texture.Format, controlSize == frameSize && frameSize == copySize && copySize == textureSize ? "" : "VARIABLE");
+            //Trace.TraceInformation("Disassembling {0} {1} frames in {2}x{3}; control {4}x{5}, frame {6}x{7}, copy {8}x{9}.", texture.Format, frameCount, frameGrid.X, frameGrid.Y, controlSize.X, controlSize.Y, frameSize.X, frameSize.Y, copySize.X, copySize.Y);
             var frameIndex = 0;
             for (var y = 0; y < frameGrid.Y; y++)
             {
@@ -2736,7 +2737,7 @@ namespace ORTS
                     if (frameIndex < frameCount)
                     {
                         texture.GetData(0, new Rectangle(x * frameSize.X, y * frameSize.Y, copySize.X, copySize.Y), buffer, 0, buffer.Length);
-                        var frame = frames[frameIndex++] = new Texture2D(graphicsDevice, textureSize.X, textureSize.Y, 1, TextureUsage.None, texture.Format);
+                        var frame = frames[frameIndex++] = new Texture2D(graphicsDevice, controlSize.X, controlSize.Y, 1, TextureUsage.None, texture.Format);
                         frame.SetData(0, new Rectangle(0, 0, copySize.X, copySize.Y), buffer, 0, buffer.Length, SetDataOptions.None);
                     }
                 }
