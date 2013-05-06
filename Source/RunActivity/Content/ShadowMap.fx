@@ -98,12 +98,12 @@ VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT_BLUR Out;
 	
-	const float2 halfPixelOffset = float2(0.5, 0.5);
+	float2 offsetTexCoord = In.TexCoord + float2(0.5, 0.5);
 
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.SampleCentre = (In.TexCoord + halfPixelOffset) * ImageBlurStep;
-	Out.Sample_01 = (In.TexCoord + halfPixelOffset - float2(1.5, 0)) * ImageBlurStep;
-	Out.Sample_23 = (In.TexCoord + halfPixelOffset + float2(1.5, 0)) * ImageBlurStep;
+	Out.SampleCentre = offsetTexCoord * ImageBlurStep;
+	Out.Sample_01 = (offsetTexCoord - float2(1.5, 0)) * ImageBlurStep;
+	Out.Sample_23 = (offsetTexCoord + float2(1.5, 0)) * ImageBlurStep;
 
 	return Out;
 }
@@ -112,8 +112,7 @@ VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT_BLUR Out;
 	
-	const float2 halfPixelOffset = float2(0.5, 0.5);
-	float2 offsetTexCoord = In.TexCoord + halfPixelOffset;
+	float2 offsetTexCoord = In.TexCoord + float2(0.5, 0.5);
 
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.SampleCentre = offsetTexCoord * ImageBlurStep;

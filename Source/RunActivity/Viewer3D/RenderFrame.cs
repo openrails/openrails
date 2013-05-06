@@ -261,8 +261,8 @@ namespace ORTS
                     shadowMapLocation.Y -= shadowMapAlignAxisY.Y * adjustY;
                     shadowMapLocation.Z -= shadowMapAlignAxisY.Z * adjustY;
 
-                    ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + (viewingDistance + shadowMapDiameter / 2) * SteppedSolarDirection, shadowMapLocation, Vector3.Up);
-                    ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, viewingDistance, viewingDistance + shadowMapDiameter);
+                    ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + 2 * viewingDistance * SteppedSolarDirection, shadowMapLocation, Vector3.Up);
+                    ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, viewingDistance, 2 * viewingDistance + shadowMapDiameter / 2);
                     ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
                     ShadowMapCenter[shadowMapIndex] = shadowMapLocation;
                 }
@@ -366,22 +366,22 @@ namespace ORTS
             objectRadius += RenderProcess.ShadowMapDiameter[shadowMapIndex] / 2;
 
             // Check if object is inside the sphere.
-            var distanceSquared = mstsLocation.X * mstsLocation.X + mstsLocation.Y * mstsLocation.Y + mstsLocation.Z * mstsLocation.Z;
-            if (distanceSquared <= objectRadius * objectRadius)
+            var length = mstsLocation.LengthSquared();
+            if (length <= objectRadius * objectRadius)
                 return true;
 
             // Check if object is inside cylinder.
-            var dotX = Math.Abs(mstsLocation.X * ShadowMapX.X + mstsLocation.Y * ShadowMapX.Y + mstsLocation.Z * ShadowMapX.Z);
+            var dotX = Math.Abs(Vector3.Dot(mstsLocation, ShadowMapX));
             if (dotX > objectRadius)
                 return false;
 
-            var dotY = Math.Abs(mstsLocation.X * ShadowMapY.X + mstsLocation.Y * ShadowMapY.Y + mstsLocation.Z * ShadowMapY.Z);
+            var dotY = Math.Abs(Vector3.Dot(mstsLocation, ShadowMapY));
             if (dotY > objectRadius)
                 return false;
 
             // Check if object is on correct side of center.
-            var dotZ = Math.Abs(mstsLocation.X + SteppedSolarDirection.X + mstsLocation.Y + SteppedSolarDirection.Y + mstsLocation.Z + SteppedSolarDirection.Z);
-            if (dotZ < -objectRadius)
+            var dotZ = Vector3.Dot(mstsLocation, SteppedSolarDirection);
+            if (dotZ < 0)
                 return false;
 
             return true;

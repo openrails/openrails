@@ -200,8 +200,7 @@ namespace ORTS
                 var cornerCenter = (corner1 + corner2) / 2;
                 var length = cornerCenter.Length();
                 cornerCenter.Normalize();
-                var cornerCenterPlane = new Plane(cornerCenter, length);
-                var center = cornerCenterPlane.DotCoordinate(Vector3.UnitZ);
+                var center = length / Vector3.Dot(cornerCenter, Vector3.UnitZ);
                 var diameter = 2 * (float)Math.Sqrt(height2 * height2 + width2 * width2 + (C - center) * (C - center));
 
                 ShadowMapDistance[shadowMapIndex] = (int)center;
