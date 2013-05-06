@@ -670,7 +670,7 @@ namespace ORTS
                         }
                         else
                         {
-                            BufferIDs[i] = 0;
+                            BufferIDs[i + 1] = 0;
                         }
                     }
                     prevAdjPos = adjPos;
