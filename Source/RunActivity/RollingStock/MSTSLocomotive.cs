@@ -1883,26 +1883,24 @@ namespace ORTS
                                 break;
 
                             case CABViewControlUnits.METRES_SEC_HOUR:
-                                data = this.AccelerationMpSS / 3600.0f;
+                                data = this.AccelerationMpSS * 3600.0f;
                                 break;
 
                             case CABViewControlUnits.KM_HOUR_SEC:
-                                data = this.AccelerationMpSS / 3.6f;
+                                data = this.AccelerationMpSS * 3.6f;
                                 break;
 
                             case CABViewControlUnits.KM_HOUR_HOUR:
-                                data = this.AccelerationMpSS / 3600.0f / 3.6f;
+                                data = this.AccelerationMpSS * 3.6f * 3600.0f;
                                 break;
 
-                            // TODO needs dimensional analysis for conversion factor
                             case CABViewControlUnits.MILES_HOUR_MIN:
-                                data = this.AccelerationMpSS  / 60.0f;
+                                data = this.AccelerationMpSS * 2.236936f * 60.0f;
                                 break;
 
-                            // TODO needs dimensional analysis for conversion factor
                             case CABViewControlUnits.MILES_HOUR_HOUR:
                                 // 
-                                data = this.AccelerationMpSS  / 3600.0f / 3.6f;
+                                data = this.AccelerationMpSS * 2.236936f * 3600.0f;
                                 break;
 
                             default:
@@ -1912,7 +1910,7 @@ namespace ORTS
                         }
                         break;
                     }
-                case CABViewControlTypes.AMMETER:
+                case CABViewControlTypes.AMMETER: // Current not modelled yet to ammeter shows tractive effort until then.
                 case CABViewControlTypes.AMMETER_ABS:
                 case CABViewControlTypes.LOAD_METER:
                 case CABViewControlTypes.TRACTION_BRAKING:
@@ -3325,11 +3323,19 @@ namespace ORTS
             : base(viewer, locomotive, control, shader)
         {
             Gauge = control;
-            SourceRectangle = Gauge.Area;
-            if (Control.ControlType == CABViewControlTypes.REVERSER_PLATE)
+            //SourceRectangle = Gauge.Area;
+            if ((Control.ControlType == CABViewControlTypes.REVERSER_PLATE) || (Gauge.ControlStyle == CABViewControlStyles.POINTER))
+            {
                 DrawColor = Color.White;
+                Texture = CABTextureManager.GetTexture(Control.ACEFile, false, Locomotive.CabLightOn, out IsNightTexture);
+                SourceRectangle.Width = (int)Texture.Width;
+                SourceRectangle.Height = (int)Texture.Height;
+            }
             else
+            {
                 DrawColor = new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B);
+                SourceRectangle = Gauge.Area;
+            }
         }
 
         public override void PrepareFrame(RenderFrame frame)
@@ -3347,17 +3353,8 @@ namespace ORTS
             var yratio = (float)Viewer.CabHeightPixels / 480;
 
             float percent, xpos, ypos;
-            if (Control.ControlType == CABViewControlTypes.LOAD_METER)
+            if (Control.MinValue < 0)
             {
-                // Test numbers
-                //percent = -0.25f;
-                //percent = 0.25f;
-                //percent = -0.5f;
-                //percent =  0.5f;
-                //percent = -0.75f;
-                //percent = -1.0f;
-                //percent =  1.0f;
-
                 percent = GetRangeFractionLoadMeter();
                 LoadMeterPositive = percent >= 0;
                 Gauge.Direction = LoadMeterPositive ? 0 : 1;
@@ -3371,52 +3368,54 @@ namespace ORTS
             if (Gauge.Orientation == 0)  // gauge horizontal
             {
                 ypos = (float)Gauge.Height;
+                var adjustGaugeWidth = (float)Gauge.Width * (float)Control.MaxValue / (float)(Control.MaxValue - Control.MinValue);
                 if (Gauge.Direction == 0)  // bar grows from left
                 {
-                    if (Control.ControlType == CABViewControlTypes.LOAD_METER && LoadMeterPositive)
-                    {
-                        // -1200 to + 1800 = 3000 abs 1200/3000 = 0.40 
-                        // range 76 x 0.40 = 30.4
-                        var adjustGaugeWidth = (float)Gauge.Width - 30.4f;
+                    if ((Control.MinValue < 0) && LoadMeterPositive)
                         xpos = adjustGaugeWidth * percent;
-                    }
                     else
-                    {
                         xpos = (float)Gauge.Width * percent;
-                    }
                 }
                 else  // bar grows from right
                 {
-                    if (Control.ControlType == CABViewControlTypes.LOAD_METER && !LoadMeterPositive)
-                    {
-                        var adjustGaugeWidth = (float)Gauge.Width - 45.6f;
-                        xpos = adjustGaugeWidth * percent;
-                    }
+                    if ((Control.MinValue < 0) && !LoadMeterPositive)
+                        xpos = (adjustGaugeWidth - 1) * percent;
                     else
-                    {
-                        xpos = (float)Gauge.Width - (float)Gauge.Width * percent;
-                    }
+                        xpos = (float)Gauge.Width * percent;
                 }
             }
             else  // gauge vertical
             {
                 xpos = (float)Gauge.Width;
-                ypos = (float)Gauge.Height * percent;
+                var adjustGaugeHeight = (float)Gauge.Height * (float)Control.MaxValue / (float)(Control.MaxValue - Control.MinValue);
+                if (Gauge.Direction == 0)  // bar grows from top
+                {
+                    if ((Control.MinValue < 0) && LoadMeterPositive)
+                        ypos = adjustGaugeHeight * percent;
+                    else
+                        ypos = (float)Gauge.Height * percent;
+                }
+                else  // bar grows from bottom
+                {
+                    if ((Control.MinValue < 0) && !LoadMeterPositive)
+                        ypos = (adjustGaugeHeight - 1) * percent;
+                    else
+                        ypos = (float)Gauge.Height * percent;
+                }
             }
 
             if (Gauge.ControlStyle == CABViewControlStyles.SOLID || Gauge.ControlStyle == CABViewControlStyles.LIQUID)
             {
-                if (Control.ControlType == CABViewControlTypes.LOAD_METER)
+                if (Control.MinValue < 0)
                 {
-                    DestinationRectangle.X = (int)(xratio * Control.PositionX);  // left hand start position
-                    if (LoadMeterPositive)
+                    if (LoadMeterPositive)  // left hand start position
                     {
                         // gauge width - area  offset to center
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + (int)30.4f));
+                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + (float)Gauge.Width * (float)Control.MinValue / (float)(Control.MinValue - Control.MaxValue)));
                     }
                     else
                     {
-                        var centDrec = (int)(xratio * (Control.PositionX + (int)30.4f));
+                        var centDrec = (int)(xratio * (Control.PositionX + (float)Gauge.Width * (float)Control.MinValue / (float)(Control.MinValue - Control.MaxValue)));
                         DestinationRectangle.X = centDrec - (int)(xratio * xpos);
                     }
                     // Cab view vertical position adjusted to allow for clip or stretch.
@@ -3428,20 +3427,35 @@ namespace ORTS
                 {
                     DestinationRectangle.X = (int)(xratio * Control.PositionX);
                     var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
-                    if (Gauge.Direction != 0)  // column grows up from bottom
+                    if (Gauge.Direction != 0)  // column grows from bottom or from right
+                    {
+                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - xpos));
                         topY += Gauge.Height * (1 - percent);
-
+                    }
                     // Cab view vertical position adjusted to allow for clip or stretch.
                     DestinationRectangle.Y = (int)(yratio * topY) + Viewer.CabYOffsetPixels;
                     DestinationRectangle.Width = (int)(xratio * xpos);
                     DestinationRectangle.Height = (int)(yratio * ypos);
                 }
             }
-            else
+            else // pointer gauge using texture
             {
-                DestinationRectangle.X = (int)(xratio * (Control.PositionX + xpos));
+                var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
+                if (Gauge.Orientation == 0) // gauge horizontal
+                {
+                    DestinationRectangle.X = (int)(xratio * (Control.PositionX - 0.5 * Gauge.Area.Width + xpos));
+                    if (Gauge.Direction != 0)  // column grows from right
+                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - 0.5 * Gauge.Area.Width - xpos));
+                }
+                else // gauge vertical
+                {
+                    topY += ypos - 0.5 * Gauge.Area.Height;
+                    DestinationRectangle.X = (int)(xratio * Control.PositionX);
+                    if (Gauge.Direction != 0)  // column grows from bottom
+                        topY += Gauge.Height - 2 * ypos;
+                }
                 // Cab view vertical position adjusted to allow for clip or stretch.
-                DestinationRectangle.Y = (int)(yratio * (Control.PositionY + ypos)) + Viewer.CabYOffsetPixels;
+                DestinationRectangle.Y = (int)(yratio * topY) + Viewer.CabYOffsetPixels;
                 DestinationRectangle.Width = (int)(xratio * Gauge.Area.Width);
                 DestinationRectangle.Height = (int)(yratio * Gauge.Area.Height);
             }
@@ -3452,8 +3466,8 @@ namespace ORTS
                 Position.X += Viewer.DisplaySize.X / 2; Position.Y += (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
                 DestinationRectangle.X = (int)(Position.X + 0.5f); DestinationRectangle.Y = (int)(Position.Y + 0.5f);
             }
-            if (Control.ControlType == CABViewControlTypes.LOAD_METER)
-                DrawColor = LoadMeterPositive ? Color.Green : Color.Yellow;
+            if (Control.MinValue < 0)
+                DrawColor = LoadMeterPositive ? new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B) : new Color(Gauge.NegativeColor.R, Gauge.NegativeColor.G, Gauge.NegativeColor.B);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -3717,7 +3731,9 @@ namespace ORTS
     {
         const float FontScale = 10f / 480;
         readonly LabelAlignment Alignment;
-        readonly string Format = "{0}";
+        string Format = "{0}";
+        readonly string Format1 = "{0}";
+        readonly string Format2 = "{0}";
 
         float Num;
         WindowTextFont DrawFont;
@@ -3737,7 +3753,8 @@ namespace ORTS
                 Alignment = LabelAlignment.Center;
             Alignment = digital.Justification == 1 ? LabelAlignment.Center : digital.Justification == 2 ? LabelAlignment.Left : digital.Justification == 3 ? LabelAlignment.Right : Alignment;
 
-            Format = "{0:0" + new String('0', digital.LeadingZeros) + (digital.Accuracy > 0 ? "." + new String('0', (int)digital.Accuracy) : "") + "}";
+            Format1 = "{0:0" + new String('0', digital.LeadingZeros) + (digital.Accuracy > 0 ? "." + new String('0', (int)digital.Accuracy) : "") + "}";
+            Format2 = "{0:0" + new String('0', digital.LeadingZeros) + (digital.AccuracySwitch > 0 ? "." + new String('0', (int)(digital.Accuracy + 1)) : "") + "}";
         }
 
         public override void PrepareFrame(RenderFrame frame)
@@ -3745,6 +3762,10 @@ namespace ORTS
             var digital = Control as CVCDigital;
 
             Num = Locomotive.GetDataOf(Control);
+            if (Math.Abs(Num) < digital.AccuracySwitch)
+                Format = Format2;
+            else
+                Format = Format1;
             DrawFont = Viewer.WindowManager.TextManager.Get("Courier New", Viewer.CabHeightPixels * FontScale, System.Drawing.FontStyle.Regular);
             DrawPosition.X = (int)(Position.X * Viewer.DisplaySize.X / 640);
             DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels;
