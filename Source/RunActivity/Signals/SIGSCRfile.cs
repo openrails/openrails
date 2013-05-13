@@ -3316,15 +3316,19 @@ namespace ORTS
                     break;
 
                 // this_sig_lr
-
+                    
                 case (SCRExternalFunctions.THIS_SIG_LR):
-                    return_value = (int)thisHead.this_sig_lr((SignalHead.SIGFN)parameter1_value);
+                    bool sigfound_lr = false;
+                    SignalHead.SIGASP returnState_lr = thisHead.this_sig_lr((SignalHead.SIGFN)parameter1_value, ref sigfound_lr);
+                    return_value = sigfound_lr ? (int)returnState_lr : -1;
                     break;
 
                 // this_sig_mr
 
                 case (SCRExternalFunctions.THIS_SIG_MR):
-                    return_value = (int)thisHead.this_sig_mr((SignalHead.SIGFN)parameter1_value);
+                    bool sigfound_mr = false;
+                    SignalHead.SIGASP returnState_mr = thisHead.this_sig_mr((SignalHead.SIGFN)parameter1_value, ref sigfound_mr);
+                    return_value = sigfound_mr ? (int)returnState_mr : -1;
                     break;
 
                 // opp_sig_lr

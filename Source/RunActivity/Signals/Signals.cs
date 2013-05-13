@@ -906,8 +906,10 @@ namespace ORTS
             {
                 SignalWorldObject thisWorldObject = SignalWorldList[iWorldIndex];
                 SignalObject MainSignal = null;
+
                 if (thisWorldObject.HeadReference.Count > 1)
                 {
+                    
                     foreach (KeyValuePair<uint, uint> thisReference in thisWorldObject.HeadReference)
                     {
                         if (SignalHeadList.ContainsKey(thisReference.Key))
@@ -7346,7 +7348,15 @@ namespace ORTS
         // this_sig_mr : Returns the most restrictive state of this signal's heads of required type
         //
 
+        // standard version without state return
         public SignalHead.SIGASP this_sig_mr(SignalHead.SIGFN fn_type)
+        {
+            bool sigfound = false;
+            return (this_sig_mr(fn_type, ref sigfound));
+        }
+
+        // additional version with state return
+        public SignalHead.SIGASP this_sig_mr(SignalHead.SIGFN fn_type, ref bool sigfound)
         {
             SignalHead.SIGASP sigAsp = SignalHead.SIGASP.UNKNOWN;
             foreach (SignalHead sigHead in SignalHeads)
@@ -7358,10 +7368,12 @@ namespace ORTS
             }
             if (sigAsp == SignalHead.SIGASP.UNKNOWN)
             {
+                sigfound = false;
                 return SignalHead.SIGASP.STOP;
             }
             else
             {
+                sigfound = true;
                 return sigAsp;
             }
         }//this_sig_mr
@@ -7371,7 +7383,15 @@ namespace ORTS
         // this_sig_lr : Returns the least restrictive state of this signal's heads of required type
         //
 
+        // standard version without state return
         public SignalHead.SIGASP this_sig_lr(SignalHead.SIGFN fn_type)
+        {
+            bool sigfound = false;
+            return (this_sig_lr(fn_type, ref sigfound));
+        }
+
+        // additional version with state return
+        public SignalHead.SIGASP this_sig_lr(SignalHead.SIGFN fn_type, ref bool sigfound)
         {
             SignalHead.SIGASP sigAsp = SignalHead.SIGASP.STOP;
             bool sigAspSet = false;
@@ -7383,6 +7403,9 @@ namespace ORTS
                     sigAspSet = true;
                 }
             }
+
+            sigfound = sigAspSet;
+
             if (sigAspSet)
             {
                 return sigAsp;
@@ -9358,9 +9381,19 @@ namespace ORTS
             return mainSignal.this_sig_lr(sigFN);
         }
 
+        public SIGASP this_sig_lr(SIGFN sigFN, ref bool sigfound)
+        {
+            return mainSignal.this_sig_lr(sigFN, ref sigfound);
+        }
+
         public SIGASP this_sig_mr(SIGFN sigFN)
         {
             return mainSignal.this_sig_mr(sigFN);
+        }
+
+        public SIGASP this_sig_mr(SIGFN sigFN, ref bool sigfound)
+        {
+            return mainSignal.this_sig_mr(sigFN, ref sigfound);
         }
 
         public SIGASP opp_sig_mr(SIGFN sigFN)
