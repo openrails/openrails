@@ -1,3 +1,20 @@
+﻿// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
+// 
+// This file is part of Open Rails.
+// 
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+
 /// Track Paths
 /// 
 /// The PAT file contains a series of waypoints ( x,y,z coordinates ) for
@@ -6,11 +23,6 @@
 /// for the path.  The TrPathNode also contains a link to the next TrPathNode.  
 /// Open the next TrPathNode and read the PDP that defines the next waypoint.
 /// The last TrPathNode is marked with a 4294967295 ( -1L ) in its next field.
-
-/// COPYRIGHT 2009 by the Open Rails project.
-/// This code is provided to enable you to contribute improvements to the open rails program.  
-/// Use of the code for any other purpose or distribution of the code to anyone else
-/// is prohibited without specific written permission from admin@openrails.org.
 
 using System;
 using System.Collections;
