@@ -6,6 +6,9 @@
 // admin@openrails.org.
 //
 // This file is the responsibility of the 3D & Environment Team. 
+
+#undef ENUMERATION
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -155,16 +158,9 @@ namespace ORTS
                     OpenAL.alSourceQueueBuffers(soundSourceID, 1, ref BufferIDs[i]);
         }
 
-        public void Queue1(int soundSourceID)
-        {
-            if (isValid && BufferIDs[0] != 0)
-                OpenAL.alSourceQueueBuffers(soundSourceID, 1, ref BufferIDs[0]);
-            NextBuffer = 1;
-        }
-
         public void Queue2(int soundSourceID)
         {
-            if (!isValid || isSingle)
+            if (!isValid)
                 return;
             if (BufferIDs[NextBuffer] != 0)
                 OpenAL.alSourceQueueBuffers(soundSourceID, 1, ref BufferIDs[NextBuffer]);
@@ -184,9 +180,9 @@ namespace ORTS
         /// <summary>
         /// Checkpoint when the buffer near exhausting.
         /// </summary>
-        /// <param name="SoundSourceID">ID of the AL sound source</param>
-        /// <param name="BufferID">ID of the buffer</param>
-        /// <param name="Pitch">Current playback pitch</param>
+        /// <param name="soundSourceID">ID of the AL sound source</param>
+        /// <param name="bufferID">ID of the buffer</param>
+        /// <param name="pitch">Current playback pitch</param>
         /// <returns>True if near exhausting</returns>
         public bool IsCheckpoint(int soundSourceID, int bufferID, float pitch)
         {
@@ -276,8 +272,8 @@ namespace ORTS
         /// <summary>
         /// Updates queue of Sound Piece sustain part for looping or quick releasing
         /// </summary>
-        /// <param name="SoundSourceID">ID of the AL Sound Source</param>
-        /// <param name="Pitch">The current pitch of the sound</param>
+        /// <param name="soundSourceID">ID of the AL Sound Source</param>
+        /// <param name="pitch">The current pitch of the sound</param>
         /// <returns>False if finished queueing the last chunk in sustain part, True if needs further calling for full Release</returns>
         public bool Update(int soundSourceID, float pitch)
         {
@@ -328,7 +324,8 @@ namespace ORTS
                     }
                 case PlayMode.LoopRelease:
                     {
-                        SoundPiece.Queue1(soundSourceID);
+                        SoundPiece.NextBuffer = 0;
+                        SoundPiece.Queue2(soundSourceID);
                         PlayState = PlayState.Playing;
                         break;
                     }
@@ -361,12 +358,7 @@ namespace ORTS
     public class ALSoundSource : IDisposable
     {
         private static int refCount = 0;
-		private static float volumeLevel = 1f;
         private const int QUEUELENGHT = 16;
-
-        float[] ListenerPosition = new float[] { 0.0f, 0.0f, 0.0f };
-        float[] ListenerVelocity = new float[] { 0.0f, 0.0f, 0.0f };
-        float[] ListenerOrientation = new float[] { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f };
 
         int SoundSourceID = -1;
         bool _isEnv = false;
@@ -384,17 +376,22 @@ namespace ORTS
         {
             if (refCount == 0)
             {
+#if ENUMERATION
+                if (OpenAL.alcIsExtensionPresent(IntPtr.Zero, "ALC_ENUMERATION_EXT") == OpenAL.AL_TRUE)
+                {
+                    string deviceList = OpenAL.alcGetString(IntPtr.Zero, OpenAL.ALC_DEVICE_SPECIFIER);
+                    string[] split = deviceList.Split('\0');
+                    Trace.TraceInformation("___devlist {0}",deviceList);
+                }
+#endif
                 int[] attribs = new int[0];
-                IntPtr device = OpenAL.alcOpenDevice("Generic Software");
+                IntPtr device = OpenAL.alcOpenDevice("DirectSound");
                 IntPtr context = OpenAL.alcCreateContext(device, attribs);
                 OpenAL.alcMakeContextCurrent(context);
 
-                //Trace.TraceInformation("OpenAL using device " + OpenAL.AlInitialize("DirectSound"));
                 Trace.TraceInformation("OpenAL " + OpenAL.alGetString(OpenAL.AL_VERSION) 
                     + " using device " + OpenAL.alGetString(OpenAL.AL_RENDERER)
                     + " by " + OpenAL.alGetString(OpenAL.AL_VENDOR));
-
-				volumeLevel = Program.Simulator.Settings.SoundVolumePercent / 100f;
             }
 
             refCount++;
@@ -429,7 +426,7 @@ namespace ORTS
         private bool _nxtUpdate = false;
         private bool _MustActivate = false;
 
-        private static int _ActiveCount = 0;
+        public static int _ActiveCount = 0;
         private static bool _MustWarn = true;
         private void TryActivate()
         {
@@ -445,7 +442,9 @@ namespace ORTS
                         _MustActivate = false;
                         _MustWarn = true;
 
-                        //OpenAL.alSourcef(_SoundSourceID, OpenAL.AL_MAX_DISTANCE, _distanceFactor);
+                        //OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_DISTANCE, _distanceFactor);
+                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_REFERENCE_DISTANCE, 5f); // meter - below is no attenuation
+                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_GAIN, 1);
                         if (_isSlowRolloff)
                         {
                             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_ROLLOFF_FACTOR, .4f);
@@ -474,18 +473,33 @@ namespace ORTS
 
         private void SetVolume(float volume)
         {
-            volume *= .7f*volumeLevel;
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_GAIN, volume);
         }
 
-        public void SetPosition(float x, float y, float z)
+        public void SetPosition(float[] position)
         {
-            OpenAL.alSource3f(SoundSourceID, OpenAL.AL_POSITION, x / 10, y / 10, z / 10);
+            OpenAL.alSourcefv(SoundSourceID, OpenAL.AL_POSITION, position);
         }
 
-        public void SetVelocity(float x, float y, float z)
+        public void SetVelocity(float[] velocity)
         {
-            OpenAL.alSource3f(SoundSourceID, OpenAL.AL_VELOCITY, x , y , z );
+            OpenAL.alSourcefv(SoundSourceID, OpenAL.AL_VELOCITY, velocity);
+        }
+
+        public void Set2D(bool sound2D)
+        {
+            if (sound2D)
+            {
+                OpenAL.alSourcei(SoundSourceID, OpenAL.AL_SOURCE_RELATIVE, OpenAL.AL_TRUE);
+                OpenAL.alSourcef(SoundSourceID, OpenAL.AL_DOPPLER_FACTOR, 0);
+                OpenAL.alSource3f(SoundSourceID, OpenAL.AL_POSITION, 0, 0, 0);
+                OpenAL.alSource3f(SoundSourceID, OpenAL.AL_VELOCITY, 0, 0, 0);
+            }
+            else
+            {
+                OpenAL.alSourcei(SoundSourceID, OpenAL.AL_SOURCE_RELATIVE, OpenAL.AL_FALSE);
+                OpenAL.alSourcef(SoundSourceID, OpenAL.AL_DOPPLER_FACTOR, 1);
+            }
         }
 
         public bool HardActive
@@ -514,7 +528,7 @@ namespace ORTS
             }
         }
 
-        private bool _Active = true;
+        private bool _Active = false;
         public bool Active
         {
             get
@@ -786,8 +800,8 @@ namespace ORTS
 
                     PlayMode prevMode = prev.PlayMode;
 
-                    // Ignore repeated command
-                    if (prevMode == Mode)
+                    // Ignore repeated Loop commands
+                    if (prevMode == Mode && Mode != PlayMode.OneShot)
                     {
                         if (prev.SoundPiece != null && prev.SoundPiece.Name == Name)
                             return;

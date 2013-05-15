@@ -147,7 +147,7 @@ namespace MSTS
         public int Priority = 0;
         public Triggers Triggers;
         public float Volume = 1.0f;
-        public VolumeCurve VolumeCurve = null;
+        public List<VolumeCurve> VolumeCurves = new List<VolumeCurve>();
         public FrequencyCurve FrequencyCurve = null;
 
         public SMSStream(STFReader stf, float VolumeOfScGroup)
@@ -157,7 +157,7 @@ namespace MSTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("priority", ()=>{ Priority = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("triggers", ()=>{ Triggers = new Triggers(stf); }),
-                new STFReader.TokenProcessor("volumecurve", ()=>{ VolumeCurve = new VolumeCurve(stf); }),
+                new STFReader.TokenProcessor("volumecurve", ()=>{ VolumeCurves.Add(new VolumeCurve(stf)); }),
                 new STFReader.TokenProcessor("frequencycurve", ()=>{ FrequencyCurve = new FrequencyCurve(stf); }),
                 new STFReader.TokenProcessor("volume", ()=>{ Volume = stf.ReadFloatBlock(STFReader.UNITS.None, Volume); }),
             });
@@ -201,7 +201,11 @@ namespace MSTS
                     for (int i = 0; i < count; ++i)
                     {
                         CurvePoints[i].X = stf.ReadFloat(STFReader.UNITS.None, null);
-                        if (Control == Controls.DistanceControlled) CurvePoints[i].X *= CurvePoints[i].X;
+                        if (Control == Controls.DistanceControlled)
+						{
+							if (CurvePoints[i].X >= 0) CurvePoints[i].X *= CurvePoints[i].X;
+							else CurvePoints[i].X *= -CurvePoints[i].X;
+						}
                         CurvePoints[i].Y = stf.ReadFloat(STFReader.UNITS.None, null);
                     }
                     stf.SkipRestOfBlock();

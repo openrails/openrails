@@ -54,6 +54,7 @@ namespace ORTS
 
         public MSTSWagon Car = null;          // the sound may be from a train car
         public Viewer3D Viewer;                 // the listener is connected to this viewer
+        public float Volume = 1;                // Volume of the ScalabiltyGroup
 
         public bool NeedsFrequentUpdate = false;
 
@@ -190,7 +191,7 @@ namespace ORTS
     
     public class SoundSource : SoundSourceBase
     {
-        private const int CUTOFFDISTANCE = 40000;
+        private const int CUTOFFDISTANCE = 100000;
         /// <summary>
         /// Construct a SoundSource attached to a train car.
         /// </summary>
@@ -256,15 +257,18 @@ namespace ORTS
 
         public string SMSFolder;              // the wave files will be relative to this folder
         public string SMSFileName;
-        public bool Active = true;
+        public bool Active = false;
         private MSTS.Activation ActivationConditions;
         private MSTS.Deactivation DeactivationConditions;
         public bool IsEnvSound = false;
         public bool IsExternal = true;
+        public bool Ignore3D = false;
 
-        private float _distanceSquared;
+        public float DistanceSquared = CUTOFFDISTANCE + 1;
         private bool WasOutOfDistance = true;
         private bool _isSlowRolloff = false;
+
+        private Traveller SoundSourceTraveller;
 
         List<SoundStream> SoundStreams = new List<SoundStream>();
 
@@ -295,6 +299,8 @@ namespace ORTS
 
                 ActivationConditions = mstsScalabiltyGroup.Activation;
                 DeactivationConditions = mstsScalabiltyGroup.Deactivation;
+                Volume = mstsScalabiltyGroup.Volume;
+                Ignore3D = mstsScalabiltyGroup.Ignore3D;
 
                 if (ActivationConditions.ExternalCam)
                     IsExternal = true;
@@ -365,6 +371,8 @@ namespace ORTS
                         // run the initial triggers
                         foreach (ORTSTrigger trigger in stream.Triggers)
                             trigger.Initialize();
+
+                        stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D);
                     }
                 }
                 WasOutOfDistance = false;
@@ -374,7 +382,7 @@ namespace ORTS
         public override bool Update()
         {
             if (Car != null && !Car.IsPartOfActiveTrain)
-                    return false;
+                return false;
 
             InitInitials();
 
@@ -403,85 +411,58 @@ namespace ORTS
                 }
             }
 
+            bool needsFrequentUpdate = false;
+
             // Must start and stop by triggers - by GeorgeS
             //if (Active)
-            if (WorldLocation != null)
+            if (WorldLocation != null && !Ignore3D)
             {
-                // update the sound position relative to the listener
-                Vector3 RelativePosition = WorldLocation.Location;
-                RelativePosition.X += 2048 * (WorldLocation.TileX - Viewer.Camera.TileX);
-                RelativePosition.Z += 2048 * (WorldLocation.TileZ - Viewer.Camera.TileZ);
-
-                Vector3 XNARelativePosition = new Vector3(RelativePosition.X, RelativePosition.Y, -RelativePosition.Z);
-                XNARelativePosition = Vector3.Transform(XNARelativePosition, Viewer.Camera.XNAView);
-                
-                float spx = 0;
-                float spy = 0;
-                float spz = 0;
+                float[] velocity = new float[] {0, 0, 0};
 
 #if DOPPLER
-                do
+                // Stationary or otherwise invalid Car
+                if (Car != null && Car.Train != null)
                 {
-                    // Stationary or otherwise invalid Car
-                    if (Car == null || Car.Train == null)
-                        break;
-
-                    // For sure we have a Camera
-                    if (Viewer == null || Viewer.Camera == null)
-                        break;
-
-                    // Check for the Train or Car equality
-                    if (Viewer.Camera.AttachedCar != null && Viewer.Camera.AttachedCar.Train != null)
+                    if (Viewer.Camera.AttachedCar != null && Viewer.Camera.AttachedCar.Train != null 
+                        && Car.Train == Viewer.Camera.AttachedCar.Train
+                        && !(Viewer.Camera is TracksideCamera))
                     {
-                        // If the same train, no doppler
-                        if (Car.Train == Viewer.Camera.AttachedCar.Train && !(Viewer.Camera is TracksideCamera) && !(Viewer.Camera is FreeRoamCamera))
-                            break;
+                        velocity = new float[] { Viewer.Camera.Velocity.X, Viewer.Camera.Velocity.Y, Viewer.Camera.Velocity.Z };
                     }
                     else
                     {
-                        // If no train but the same Car, no doppler
-                        if (Car == Viewer.Camera.AttachedCar && !(Viewer.Camera is TracksideCamera) && !(Viewer.Camera is FreeRoamCamera))
-                            break;
+                        SoundSourceTraveller = new Traveller(Car.Train.FrontTDBTraveller);
+                        float speedMpS = Car.SpeedMpS;
+                        if (Car.Flipped)
+                            speedMpS *= -1;
+
+                        Vector3 location = -SoundSourceTraveller.Location;
+                        SoundSourceTraveller.Move(speedMpS);
+                        location += SoundSourceTraveller.Location;
+                        velocity = new float[] { location.X, location.Y, location.Z };
                     }
-
-                    Traveller tdb = new Traveller(Car.Train.FrontTDBTraveller);
-                    float speed = Car.SpeedMpS;
-                    if (Car.Flipped)
-                        speed *= -1;
-
-                    Vector3 tp = -Vector3.Transform(Viewer.Camera.XNALocation(tdb.WorldLocation), Viewer.Camera.XNAView);
-
-                    tdb.Move(speed);
-
-                    tp += Vector3.Transform(Viewer.Camera.XNALocation(tdb.WorldLocation), Viewer.Camera.XNAView);
-
-                    spx = tp.X;
-                    spy = tp.Y;
-                    spz = tp.Z;
-
-                } while (false);
+                }
 #endif
-                bool needsFrequentUpdate = false;
+                float[] position = new float[] {
+                    WorldLocation.Location.X + 2048 * WorldLocation.TileX,
+                    WorldLocation.Location.Y,
+                    WorldLocation.Location.Z + 2048 * WorldLocation.TileZ};
 
                 foreach (SoundStream stream in SoundStreams)
                 {
-                    stream.Update(XNARelativePosition.X , XNARelativePosition.Y , XNARelativePosition.Z, spx, spy, spz );
+                    stream.Update(position, velocity);
                     needsFrequentUpdate |= stream.NeedsFrequentUpdate;
                 }
-                NeedsFrequentUpdate = needsFrequentUpdate;
             }
             else
             {
-                // Car is null, no doppler
-                bool needsFrequentUpdate = false;
-
                 foreach (SoundStream stream in SoundStreams)
                 {
-                    stream.Update(0, 0, 0);
+                    stream.Update();
                     needsFrequentUpdate |= stream.NeedsFrequentUpdate;
                 }
-                NeedsFrequentUpdate = needsFrequentUpdate;
             }
+            NeedsFrequentUpdate = needsFrequentUpdate;
 
             return true;
         } // Update
@@ -490,7 +471,7 @@ namespace ORTS
         {
             if (WorldLocation == null)
             {
-                _distanceSquared = 0;
+                DistanceSquared = 0;
                 return false;
             }
 
@@ -498,16 +479,16 @@ namespace ORTS
                 float.IsNaN(WorldLocation.Location.Y) ||
                 float.IsNaN(WorldLocation.Location.Z))
             {
-                _distanceSquared = CUTOFFDISTANCE + 1;
+                DistanceSquared = CUTOFFDISTANCE + 1;
                 return true;
             }
-            
-            _distanceSquared = WorldLocation.GetDistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
 
-            if (IsEnvSound)
+            DistanceSquared = WorldLocation.GetDistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
+
+            if (Car != null && Viewer.Camera.AttachedCar != null && Car.Train == Viewer.Camera.AttachedCar.Train)
                 return false;
-
-            return _distanceSquared > CUTOFFDISTANCE;
+            
+            return DistanceSquared > CUTOFFDISTANCE;
         }
 
         /// <summary>
@@ -524,9 +505,8 @@ namespace ORTS
             {
                 if (WorldLocation != null)
                 {
-                    //float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
-                    if (_distanceSquared < ActivationConditions.Distance * ActivationConditions.Distance &&
-                        _distanceSquared < CUTOFFDISTANCE)
+                    if (DistanceSquared < ActivationConditions.Distance * ActivationConditions.Distance &&
+                        DistanceSquared < CUTOFFDISTANCE)
                         return true;
                 }
                 else
@@ -544,15 +524,14 @@ namespace ORTS
         {
             if (DeactivationConditions == null)
                 return false;
-            
+         
             if (ConditionsMet(DeactivationConditions))
                 return true;
 
             if (WorldLocation != null)
             {
-                //float distanceSquared = WorldLocation.DistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
-                if (_distanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance ||
-                    _distanceSquared > CUTOFFDISTANCE)
+                if (DistanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance ||
+                    DistanceSquared > CUTOFFDISTANCE)
                     return true;
             }
 
@@ -563,7 +542,7 @@ namespace ORTS
         {
             get
             {
-                return (Viewer.Camera.Style == Camera.Styles.Cab) && (Viewer.Camera.AttachedCar != Car);
+                return (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.Passenger) && (Viewer.Camera.AttachedCar != Car);
             }
         }
 
@@ -580,7 +559,7 @@ namespace ORTS
 
             Camera.Styles viewpoint = Viewer.Camera.Style;
 
-            if (!IsEnvSound && IsntThisCabView)
+            if (IsEnvSound || (!IsEnvSound && IsntThisCabView))
             {
                 viewpoint = Camera.Styles.External;
             }
@@ -615,17 +594,8 @@ namespace ORTS
     {
         public SoundSource SoundSource;
         public int Index = 0;
-        public float Volume
-        {
-            get { return volume / MSTSStream.Volume; }
-            set { volume = value * MSTSStream.Volume * tvolume; if (ALSoundSource != null) ALSoundSource.Volume = volume; }
-        }
-        private float volume = 1;
-        private float tvolume = 1;
-        public float TriggerVolume
-        {
-            set { tvolume = value; volume = value * MSTSStream.Volume * tvolume; if (ALSoundSource != null) ALSoundSource.Volume = volume; }
-        }
+        
+        public float Volume;
 
         public List<ORTSTrigger> Triggers = new List<ORTSTrigger>();
 
@@ -647,6 +617,7 @@ namespace ORTS
             Index = index;
             SoundSource = soundSource;
             MSTSStream = mstsStream;
+            Volume = MSTSStream.Volume;
 
             ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, isSlowRolloff, factor);
 
@@ -705,24 +676,23 @@ namespace ORTS
                 }  // for each mstsStream.Trigger
         }
 
-        public void Update(float x, float y, float z, float spx, float spy, float spz)
+        public void Update(float[] position, float[] velocity)
         {
-            ALSoundSource.SetVelocity(spx, spy, spz);
-            Update(x, y, z);
+            ALSoundSource.SetPosition(position);
+            ALSoundSource.SetVelocity(velocity);
+            Update();
         }
 
         /// <summary>
-        /// Update frequency and volume relative to curves
-        /// Position is in Sound space relative to listener
+        /// Update frequency and volume relative to curves.
+        /// Position is the absolute world position
         /// </summary>
-        public void Update(float x, float y, float z)
+        public void Update()
         {
             if (ALSoundSource == null)
             {
                 return;
             }
-
-            ALSoundSource.SetPosition(x, y, z);
 
             foreach (ORTSTrigger trigger in Triggers)
                 trigger.TryTrigger();
@@ -777,12 +747,14 @@ namespace ORTS
         /// </summary>
         private void SetFreqAndVolume()
         {
-            MSTSWagon car = SoundSource.Car;
-            if (car != null && ALSoundSource != null)
+            if (ALSoundSource == null)
+                return;
+
+            if (SoundSource.Car != null)
             {
                 if (MSTSStream.FrequencyCurve != null)
                 {
-                    float x = ReadValue(MSTSStream.FrequencyCurve.Control, car);
+                    float x = ReadValue(MSTSStream.FrequencyCurve.Control, SoundSource.Car);
                     float y = Interpolate(x, MSTSStream.FrequencyCurve);
 
                     ALSoundSource.PlaybackSpeed = y / ALSoundSource.SampleRate;
@@ -792,36 +764,31 @@ namespace ORTS
                     }
                     NeedsFrequentUpdate = true;
                 }
-                if (MSTSStream.VolumeCurve != null)
-                {
-                    float x = ReadValue(MSTSStream.VolumeCurve.Control, car);
-                    float y = Interpolate(x, MSTSStream.VolumeCurve);
+            }
 
-                    if (SoundSource.IsntThisCabView)
-                        y *= .75f;
-                    Volume = y;
-                }
+            float volume = SoundSource.Volume * Volume;
 
-                // By GeorgeS
-                // No volume curve, set Volume to 1, it will set volume
-                // This is for a sound which was initially deactivated
-                else
+            if (MSTSStream.VolumeCurves.Count > 0)
+                for (int i = 0; i < MSTSStream.VolumeCurves.Count; i++)
                 {
-                    if (SoundSource.IsntThisCabView)
-                        Volume = .75f;
+                    float x;
+                    if (SoundSource.Car != null)
+                        x = ReadValue(MSTSStream.VolumeCurves[i].Control, SoundSource.Car);
+                    else if (SoundSource.Viewer.Camera.AttachedCar != null)
+                        x = ReadValue(MSTSStream.VolumeCurves[i].Control, (MSTSWagon)SoundSource.Viewer.Camera.AttachedCar);
                     else
-                        Volume = 1;
+                        x = SoundSource.DistanceSquared;
+
+                    volume *= Interpolate(x, MSTSStream.VolumeCurves[i]);
                 }
-            }
-            else if (ALSoundSource != null && SoundSource.IsEnvSound)
-            {
-                if (MSTSStream.VolumeCurve != null)
-                {
-                    float x = WorldLocation.GetDistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation) / 500;
-                    float y = Interpolate(x, MSTSStream.VolumeCurve);
-                    Volume = y;
-                }
-            }
+
+            if (SoundSource.IsntThisCabView)
+                volume *= 0.75f;
+
+            if (SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External)
+                volume *= 0.5f;
+
+            ALSoundSource.Volume = volume;
         }
 
         /// <summary>
@@ -865,7 +832,7 @@ namespace ORTS
         {
             switch (control)
             {
-                case MSTS.VolumeCurve.Controls.DistanceControlled: return WorldLocation.GetDistanceSquared(SoundSource.WorldLocation, SoundSource.Viewer.Camera.CameraWorldLocation);
+                case MSTS.VolumeCurve.Controls.DistanceControlled: return SoundSource.DistanceSquared;
                 case MSTS.VolumeCurve.Controls.SpeedControlled: return Math.Abs(car.SpeedMpS);
                 case MSTS.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
                 case MSTS.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
@@ -1146,7 +1113,7 @@ namespace ORTS
 
         public override void Initialize()
         {
-            StartValue = 100000;
+            StartValue = 1000000;
         }
 
         public override void TryTrigger()
@@ -1187,7 +1154,7 @@ namespace ORTS
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    return WorldLocation.GetDistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.CameraWorldLocation);
+                    return _SoundStream.SoundSource.DistanceSquared;
                 default:
                     return 100000;
             }
@@ -1301,7 +1268,7 @@ namespace ORTS
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    return  WorldLocation.GetDistanceSquared(_SoundStream.SoundSource.WorldLocation, _SoundStream.SoundSource.Viewer.Camera.CameraWorldLocation);
+                    return _SoundStream.SoundSource.DistanceSquared;
                 case MSTS.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Speed_Inc_Past:
                     return Math.Abs(car.SpeedMpS);
@@ -1488,7 +1455,7 @@ namespace ORTS
 
         public override void Run()
         {
-            ORTSStream.TriggerVolume = Volume;
+            ORTSStream.Volume = Volume;
         }
     }
 

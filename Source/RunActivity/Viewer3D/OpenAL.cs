@@ -22,6 +22,8 @@ namespace ORTS
     /// </summary>
     public class OpenAL
     {
+        public const int AL_FALSE = 0;
+        public const int AL_TRUE = 1;
         public const int AL_BUFFER = 0x1009;
         public const int AL_BUFFERS_QUEUED = 0x1015;
         public const int AL_BUFFERS_PROCESSED = 0x1016;
@@ -30,6 +32,7 @@ namespace ORTS
         public const int AL_LOOPING = 0x1007;
         public const int AL_GAIN = 0x100a;
         public const int AL_VELOCITY = 0x1006;
+        public const int AL_ORIENTATION = 0x100f;
         public const int AL_DISTANCE_MODEL = 0xd000;
         public const int AL_INVERSE_DISTANCE = 0xd001;
         public const int AL_INVERSE_DISTANCE_CLAMPED = 0xd002;
@@ -43,6 +46,7 @@ namespace ORTS
         public const int AL_PITCH = 0x1003;
         public const int AL_POSITION = 0x1004;
         public const int AL_DIRECTION = 0x1005;
+        public const int AL_SOURCE_RELATIVE = 0x0202;
         public const int AL_FREQUENCY = 0x2001;
         public const int AL_BITS = 0x2002;
         public const int AL_CHANNELS = 0x2003;
@@ -52,6 +56,10 @@ namespace ORTS
         public const int AL_VENDOR = 0xb001;
         public const int AL_VERSION = 0xb002;
         public const int AL_RENDERER = 0xb003;
+        public const int AL_DOPPLER_FACTOR = 0xc000;
+
+        public const int ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004;
+        public const int ALC_DEVICE_SPECIFIER = 0x1005;
 
         [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr alcOpenDevice(string deviceName);
@@ -59,6 +67,10 @@ namespace ORTS
         public static extern IntPtr alcCreateContext(IntPtr device, int[] attribute);
         [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int alcMakeContextCurrent(IntPtr context);
+        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern string alcGetString(IntPtr device, int attribute);
+        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int alcIsExtensionPresent(IntPtr device, string extensionName);
 
         [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern string AlInitialize(string devName);
@@ -100,6 +112,8 @@ namespace ORTS
         public static extern void alSourcef(int source, int attribute, float val);
         [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSource3f(int source, int attribute, float value1, float value2, float value3);
+        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alSourcefv(int source, int attribute, [In] float[] values);
         [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourceStop(int source);
         [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]

@@ -7,11 +7,14 @@
 //
 // This file is the responsibility of the 3D & Environment Team. 
 
+#define DOPPLER
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Microsoft.Xna.Framework;
 
 namespace ORTS
 {
@@ -155,7 +158,27 @@ namespace ORTS
 						}
 					}
 				}
-				// Update all sound in our list
+#if DOPPLER
+                if (Viewer != null || Viewer.Camera != null) // For sure we have a Camera
+                {
+                    Viewer.Camera.PrepareSoundFrame();
+
+                    float[] cameraPosition = new float[] {
+                        Viewer.Camera.CameraWorldLocation.Location.X + 2048 * Viewer.Camera.CameraWorldLocation.TileX,
+                        Viewer.Camera.CameraWorldLocation.Location.Y,
+                        Viewer.Camera.CameraWorldLocation.Location.Z + 2048 * Viewer.Camera.CameraWorldLocation.TileZ};
+                    float[] cameraVelocity = new float[] { Viewer.Camera.Velocity.X, Viewer.Camera.Velocity.Y, Viewer.Camera.Velocity.Z };
+                    float[] cameraOrientation = new float[] { 
+                        Viewer.Camera.XNAView.Forward.X, Viewer.Camera.XNAView.Forward.Y, Viewer.Camera.XNAView.Forward.Z,
+                        Viewer.Camera.XNAView.Up.X, Viewer.Camera.XNAView.Up.Y, Viewer.Camera.XNAView.Up.Z };
+
+                    OpenAL.alListenerfv(OpenAL.AL_POSITION, cameraPosition);
+                    OpenAL.alListenerfv(OpenAL.AL_VELOCITY, cameraVelocity);
+                    OpenAL.alListenerfv(OpenAL.AL_ORIENTATION, cameraOrientation);
+                    OpenAL.alListenerf(OpenAL.AL_GAIN, (float)Program.Simulator.Settings.SoundVolumePercent / 100f);
+                }
+#endif
+                // Update all sound in our list
 				lock (SoundSources)
 				{
                     UpdateCounter++;
