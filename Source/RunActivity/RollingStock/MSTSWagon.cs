@@ -68,17 +68,17 @@ namespace ORTS
         public string InteriorShapeFileName = null; // passenger view shape file name
         public string MainSoundFileName = null;
         public string InteriorSoundFileName = null;
-        public float WheelRadiusM = 1;          // provide some defaults in case its missing from the wag
-        public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case its missing from the wag
+        public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
+        public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case i'ts missing from the wag
         public float Friction0N = 0;    // static friction
         public bool IsStandStill = true;
         public float DavisAN = 0;       // davis equation constant
         public float DavisBNSpM = 0;    // davis equation constant for speed
         public float DavisCNSSpMM = 0;  // davis equation constant for speed squared
         public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
-        public float Adhesion1 = .27f;   // 1st MSTS adheasion value
-        public float Adhesion2 = .49f;   // 2nd MSTS adheasion value
-        public float Adhesion3 = 2;   // 3rd MSTS adheasion value
+        public float Adhesion1 = .27f;   // 1st MSTS adhesion value
+        public float Adhesion2 = .49f;   // 2nd MSTS adhesion value
+        public float Adhesion3 = 2;   // 3rd MSTS adhesion value
         public float Curtius_KnifflerA = 7.5f;               //Curtius-Kniffler constants                   A
         public float Curtius_KnifflerB = 44.0f;              // (adhesion coeficient)       umax = ---------------------  + C
         public float Curtius_KnifflerC = 0.161f;             //                                      speedMpS * 3.6 + B
@@ -87,6 +87,7 @@ namespace ORTS
         public float AxleInertiaKgm2 = 0;   //axle inertia
         public float WheelSpeedMpS = 0;
         public float SlipWarningTresholdPercent = 70;
+        public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
@@ -218,6 +219,7 @@ namespace ORTS
                     break;
                 case "wagon(or_adhesion(wheelset(axle(radius":
                     stf.MustMatch("(");
+                    // <CJ Comment> Shouldn't this be "WheelRadiusM = " ? </CJ Comment>
                     AxleInertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
@@ -231,6 +233,7 @@ namespace ORTS
                         stf.SkipBlock();
                     break;
                 case "wagon(inside": ParseWagonInside(stf); break;
+                case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);

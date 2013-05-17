@@ -384,7 +384,12 @@ namespace MSTS
             {
                 // Consume the step-back end-of-block
                 stepbackoneitemFlag = false;
-                UpdateTreeAndStepBack(")");
+                
+                //<CJ Comment> Following statement commented out until we know why it might be needed.
+                // E.g. "engine ( numwheels ( )" warns of missing number correctly and replaces with default.
+                // However UpdateTreeAndStepBack() skips the rest of the "engine (" block which is not the required behaviour.</CJ Comment>
+                
+                //UpdateTreeAndStepBack(")");
                 return;
             }
             // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket
@@ -1420,7 +1425,7 @@ namespace MSTS
             else if (token == ")")
             {
                 if (tree != null)
-                {
+                    {
                     stepback.Tree = new List<string>(tree);
                     if (tree.Count > 0)
                     {

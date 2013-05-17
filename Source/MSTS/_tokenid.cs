@@ -30,7 +30,7 @@ namespace MSTS
     public enum TokenID : uint
     {
         //////////////////////////////////////////////////////////////
-        /// These were take from coreids.tok ( in the UTILS folder )
+        /// These were taken from coreids.tok ( in the UTILS folder )
         //////////////////////////////////////////////////////////////
         error = 0,
         comment = 1,

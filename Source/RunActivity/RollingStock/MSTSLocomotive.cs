@@ -124,7 +124,7 @@ namespace ORTS
 
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
-        public float NumWheels = 4;
+        public float NumWheelsAdhesionFactor = 4;   // MSTS adhesion factor loosely based on the number of driven axles
         public bool AntiSlip = false;
         public float SanderSpeedEffectUpToMpS = 0.0f;
         public float SanderSpeedOfMpS = 30.0f;
@@ -372,7 +372,7 @@ namespace ORTS
                 case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
                 case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(numwheels": NumWheels = stf.ReadFloatBlock(STFReader.UNITS.Any, null); if (NumWheels < 1) STFException.TraceWarning(stf, "NumWheels is less than 1, parts of the simulation may not function correctly"); break;
+                case "engine(numwheels": NumWheelsAdhesionFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (NumWheelsAdhesionFactor < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero) }); break;
@@ -383,7 +383,6 @@ namespace ORTS
                 case "engine(orts(emergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(orts(emergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
                 case "engine(orts(wheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
-                    
 
                 default: base.Parse(lowercasetoken, stf); break;
             }
@@ -410,7 +409,7 @@ namespace ORTS
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             DynamicBrakeDelayS = locoCopy.DynamicBrakeDelayS;
-            NumWheels = locoCopy.NumWheels;
+            NumWheelsAdhesionFactor = locoCopy.NumWheelsAdhesionFactor;
             AntiSlip = locoCopy.AntiSlip;
             EffectData = locoCopy.EffectData;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
@@ -936,13 +935,16 @@ namespace ORTS
         /// </summary>
         public void LimitMotiveForce(float elapsedClockSeconds)
         {
-            if (NumWheels <= 0)
-                return;
-
-            //Curtius-Kniffler computation for the basic model
             float currentSpeedMpS = Math.Abs(SpeedMpS);
 
-            float max0 = 1.0f;  //Ahesion conditions [N]
+            if (NumWheelsAdhesionFactor <= 0)
+            {
+                WheelSpeedMpS = currentSpeedMpS;
+                return;
+            }
+
+            //Curtius-Kniffler computation for the basic model
+            float max0 = 1.0f;  //Adhesion conditions [N]
             float max1 = MassKG * 9.81f * Adhesion2;
 
             if ((Simulator.UseAdvancedAdhesion)&&(!Simulator.Paused)&&(!AntiSlip))
@@ -1003,15 +1005,15 @@ namespace ORTS
                 // but make sure the value is sufficietn
                 //if (MaxPowerW < 200000.0f)
                 //{
-                //    if (NumWheels > 4.0f)
-                //        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheels * 4000.0f;
+                //    if (NumWheelsAdhesionFactor > 4.0f)
+                //        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheelsAdhesionFactor * 4000.0f;
                 //    else
                 //        LocomotiveAxle.InertiaKgm2 = 32000.0f;
                 //}
                 //else
                 //{
-                //    if (NumWheels > 4.0f)
-                //        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheels * MaxPowerW / 500.0f;
+                //    if (NumWheelsAdhesionFactor > 4.0f)
+                //        LocomotiveAxle.InertiaKgm2 = 2.0f * NumWheelsAdhesionFactor * MaxPowerW / 500.0f;
                 //    else
                 //        LocomotiveAxle.InertiaKgm2 = 32000.0f;
                 //}
@@ -1064,9 +1066,9 @@ namespace ORTS
 
         public void LimitMotiveForce()
         {
-            if (NumWheels <= 0)
+            if (NumWheelsAdhesionFactor <= 0)
                 return;
-            //float max0 = MassKG * 9.8f * Adhesion3 / NumWheels;   //Not used
+            //float max0 = MassKG * 9.8f * Adhesion3 / NumWheelsAdhesionFactor;   //Not used
 
             //Curtius-Kniffler computation
             float currentSpeedMpS = Math.Abs(SpeedMpS);
