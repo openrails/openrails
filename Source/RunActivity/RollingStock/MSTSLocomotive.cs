@@ -2967,7 +2967,7 @@ namespace ORTS
 
         private Point _PrevScreenSize;
 
-        private List<CabViewControls> CabViewControlsList = new List<CabViewControls>();
+        //private List<CabViewControls> CabViewControlsList = new List<CabViewControls>();
         private List<List<CabViewControlRenderer>> CabViewControlRenderersList = new List<List<CabViewControlRenderer>>();
         private Viewer3D _Viewer;
         private MSTSLocomotive _Locomotive;
@@ -3004,59 +3004,68 @@ namespace ORTS
             {
                 if (cabView.CVFFile != null)
                 {
-            // Loading ACE files, skip displaying ERROR messages
+                    // Loading ACE files, skip displaying ERROR messages
                     foreach (var cabfile in cabView.CVFFile.TwoDViews)
-            {
-                CABTextureManager.LoadTextures(viewer, cabfile);
-            }
+                    {
+                        CABTextureManager.LoadTextures(viewer, cabfile);
+                    }
 
+                    var controlSortIndex = 1;  // Controls are drawn atop the cabview and in order they appear in the CVF file.
+                    // This allows the segments of moving-scale meters to be hidden by covers (e.g. TGV-A)
                     CabViewControlRenderersList.Add(new List<CabViewControlRenderer>());
                     foreach (CabViewControl cvc in cabView.CVFFile.CabViewControls)
-            {
-                    CVCDial dial = cvc as CVCDial;
-                    if (dial != null)
                     {
-                        CabViewDialRenderer cvcr = new CabViewDialRenderer(viewer, car, dial, _Shader);
+                        controlSortIndex++;
+                        CVCDial dial = cvc as CVCDial;
+                        if (dial != null)
+                        {
+                            CabViewDialRenderer cvcr = new CabViewDialRenderer(viewer, car, dial, _Shader);
+                            cvcr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvcr);
-                        continue;
-                    }
-                    CVCGauge gauge = cvc as CVCGauge;
-                    if (gauge != null)
-                    {
-                        CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(viewer, car, gauge, _Shader);
+                            continue;
+                        }
+                        CVCGauge gauge = cvc as CVCGauge;
+                        if (gauge != null)
+                        {
+                            CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(viewer, car, gauge, _Shader);
+                            cvgr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvgr);
-                        continue;
-                    }
-                    CVCSignal asp = cvc as CVCSignal;
-                    if (asp != null)
-                    {
-                        CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(viewer, car, asp, _Shader);
+                            continue;
+                        }
+                        CVCSignal asp = cvc as CVCSignal;
+                        if (asp != null)
+                        {
+                            CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(viewer, car, asp, _Shader);
+                            aspr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(aspr);
-                        continue;
-                    }
-                    CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
-                    if (multi != null)
-                    {
-                        CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(viewer, car, multi, _Shader);
+                            continue;
+                        }
+                        CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
+                        if (multi != null)
+                        {
+                            CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(viewer, car, multi, _Shader);
+                            mspr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(mspr);
-                        continue;
-                    }
-                    CVCDiscrete disc = cvc as CVCDiscrete;
-                    if (disc != null)
-                    {
-                        CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(viewer, car, disc, _Shader);
+                            continue;
+                        }
+                        CVCDiscrete disc = cvc as CVCDiscrete;
+                        if (disc != null)
+                        {
+                            CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(viewer, car, disc, _Shader);
+                            cvdr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvdr);
-                        continue;
-                    }
-                    CVCDigital digital = cvc as CVCDigital;
-                    if (digital != null)
-                    {
-                        CabViewDigitalRenderer cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
+                            continue;
+                        }
+                        CVCDigital digital = cvc as CVCDigital;
+                        if (digital != null)
+                        {
+                            CabViewDigitalRenderer cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
+                            cvdr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvdr);
-                        continue;
+                            continue;
+                        }
                     }
                 }
-            }
                 i++;
             }
             #endregion
@@ -3186,9 +3195,6 @@ namespace ORTS
             Shader = shader;
 
             ControlView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
-
-            // Cab view controls must render atop the cab view itself.
-            SortIndex = 1;
 
             CABTextureManager.LoadTextures(Viewer, Control.ACEFile);
         }
