@@ -27,7 +27,7 @@ namespace ORTS {
 		MSG,
     };
 
-    // <CJ Comment> Some of these are not cab controls or even controls. However they all make good use of structured text. </CJ Comment>
+    // <CJComment> Some of these are not cab controls or even controls. However they all make good use of structured text. </CJComment>
     public enum CabControl {
         None
         // Power

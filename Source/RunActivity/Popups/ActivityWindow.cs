@@ -191,10 +191,10 @@ namespace ORTS.Popups
             }
         }
 
-        // <CJ comment> Would like the dialog box background as solid black to indicate "simulator paused",
+        // <CJComment> Would like the dialog box background as solid black to indicate "simulator paused",
         // and change it later to see-through, if box is left on-screen when simulator resumes.
         // Don't know how.
-        // </CJ comment>
+        // </CJComment>
         void ResumeMenu()
         {
             ResumeLabel.Text = "Resume";
@@ -204,9 +204,9 @@ namespace ORTS.Popups
             StatusLabel.Color = Color.LightSalmon;
         }
 
-        // <CJ comment> At this point, would like to change dialog box background from solid to see-through,
+        // <CJComment> At this point, would like to change dialog box background from solid to see-through,
         // but don't know how.
-        // </CJ comment>
+        // </CJComment>
         void CloseMenu()
         {
             ResumeLabel.Text = "";

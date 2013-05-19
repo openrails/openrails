@@ -717,7 +717,7 @@ namespace ORTS
                     }
                 }
                 // One confirmation however many helper locomotives
-                // <CJ Comment> Couldn't make one confirmation per loco work correctly :-( </CJ Comment>
+                // <CJComment> Couldn't make one confirmation per loco work correctly :-( </CJComment>
                 if( helperLocos > 0 ) {
                     Viewer.Simulator.Confirmer.Confirm( CabControl.HelperDiesel, powerOn ? CabSetting.On : CabSetting.Off );
                 }

@@ -1582,8 +1582,8 @@ namespace ORTS
             }
 
 #if PLAYSOUNDS
-            //<CJ Comment>SMSFolder is often same as BasePath, which means this searches the more general folder 
-            // before the more specific folder. This is surely not intended.</CJ Comment>
+            //<CJComment>SMSFolder is often same as BasePath, which means this searches the more general folder 
+            // before the more specific folder. This is surely not intended.</CJComment>
             string[] pathArray = {ORTSStream.SoundSource.SMSFolder, 
                                      Program.Simulator.RoutePath + @"\SOUND", 
                                      Program.Simulator.BasePath + @"\SOUND"};

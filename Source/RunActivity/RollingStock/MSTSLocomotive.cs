@@ -1810,7 +1810,7 @@ namespace ORTS
                 case Event.WiperOn: { Wiper = true; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
                 case Event.WiperOff: { Wiper = false; if (this == Program.Simulator.PlayerLocomotive)  Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.Off); break; }
 
-                // <CJ Comment> The "H" key doesn't call these SignalEvents yet. </CJ Comment>
+                // <CJComment> The "H" key doesn't call these SignalEvents yet. </CJComment>
                 case Event._HeadlightOff: { Headlight = 0; break; }
                 case Event._HeadlightDim: { Headlight = 1; break; }
                 case Event._HeadlightOn: { Headlight = 2; break; }
@@ -2505,10 +2505,10 @@ namespace ORTS
             if( UserInput.IsPressed( UserCommands.ControlBrakeHoseDisconnect ) ) new BrakeHoseConnectCommand( Viewer.Log, false );
             if( UserInput.IsPressed( UserCommands.ControlEmergency ) ) new EmergencyBrakesCommand( Viewer.Log );
 
-            // <CJ Comment> Some inputs calls their method directly, other via a SignalEvent. 
+            // <CJComment> Some inputs calls their method directly, other via a SignalEvent. 
             // Probably because a signal can then be handled more than once, 
             // e.g. by every locomotive on the train or every car in the consist.
-            // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJ Comment>
+            // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJComment>
             if( UserInput.IsPressed( UserCommands.ControlSander ) ) new SanderCommand( Viewer.Log, Locomotive.Sander );
             if( UserInput.IsPressed( UserCommands.ControlWiper ) ) new ToggleWipersCommand( Viewer.Log );
             if( UserInput.IsPressed( UserCommands.ControlHorn ) ) new HornCommand( Viewer.Log, true );

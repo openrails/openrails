@@ -150,7 +150,7 @@ namespace ORTS {
 
     [Serializable()]
     public class SaveCommand : Command {
-        // <CJ Comment> Receiver is static so that all commands of this type will share it, 
+        // <CJComment> Receiver is static so that all commands of this type will share it, 
         // especially new commands created by the deserializing process.
         public static Viewer3D Receiver { get; set; }
         public string FileStem;

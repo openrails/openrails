@@ -510,7 +510,7 @@ namespace ORTS
         {
         }
 
-        // <CJ Comment> To Do: Add a way to record this zoom operation. </CJ Comment>
+        // <CJComment> To Do: Add a way to record this zoom operation. </CJComment>
         protected void ZoomByMouseWheel(float speed, float factor)
         {
             // Will not zoom-in-out when help windows is up.
@@ -1215,7 +1215,7 @@ namespace ORTS
             base.SetCameraCar(car);
             var viewPoint = attachedCar.PassengerViewpoints[0];
             attachedLocation = viewPoint.Location;
-            // <CJ Comment> More useful without resetting. </CJ Comment>
+            // <CJComment> More useful without resetting. </CJComment>
             //RotationXRadians = MSTSMath.M.Radians( viewPoint.StartDirection.X );
             //RotationYRadians = MSTSMath.M.Radians( viewPoint.StartDirection.Y );
         }

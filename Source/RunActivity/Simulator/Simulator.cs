@@ -112,9 +112,9 @@ namespace ORTS
 
         public TrainCar PlayerLocomotive = null;    // Set by the Viewer - TODO there could be more than one player so eliminate this.
 
-        // <CJ Comment> Works but not entirely happy about this arrangement. 
+        // <CJComment> Works but not entirely happy about this arrangement. 
         // Confirmer should be part of the Viewer, rather than the Simulator, as it is part of the user interface.
-        // Perhaps an Observer design pattern would be better, so the Simulator sends messages to any observers. </CJ Comment>
+        // Perhaps an Observer design pattern would be better, so the Simulator sends messages to any observers. </CJComment>
         public Confirmer Confirmer;                 // Set by the Viewer
 
         public Simulator(UserSettings settings, string activityPath)

@@ -441,10 +441,10 @@ namespace ORTS
             // For wider screens (e.g. 16:9), the height of the cab view before adjustment exceeds the height of the display.
             // The user can decide how much of this excess to keep. Setting of 0 keeps all the excess and 100 keeps none.
 
-            // <CJ Comment> This scheme treats all cab views the same and assumes that they have a 4:3 aspect ratio.
+            // <CJComment> This scheme treats all cab views the same and assumes that they have a 4:3 aspect ratio.
             // For a cab view with a different aspect ratio (e.g. designed for a 16:9 screen), use a setting of 100 which
             // will disable this feature. A smarter scheme would discover the aspect ratio of the cab view and adjust
-            // appropriately. </CJ Comment>
+            // appropriately. </CJComment>
 
             int CabExceedsDisplay;
             if( ((float)windowWidth / windowHeight) > (4.0 / 3) ) {

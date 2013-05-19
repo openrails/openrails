@@ -460,9 +460,9 @@ namespace ORTS
                 new SaveScreenshotCommand(RenderProcess.Viewer.Log);
 
             // SaveActivityThumbnail and FileStem set by Viewer3D
-            // <CJ comment> Intended to save a thumbnail-sized image but can't find a way to do this.
+            // <CJComment> Intended to save a thumbnail-sized image but can't find a way to do this.
             // Currently saving a full screen image and then showing it in Menu.exe at a thumbnail size.
-            // </CJ comment>
+            // </CJComment>
             if (RenderProcess.Viewer.SaveActivityThumbnail)
             {
                 RenderProcess.Viewer.SaveActivityThumbnail = false;

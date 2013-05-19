@@ -219,7 +219,7 @@ namespace ORTS
                     break;
                 case "wagon(or_adhesion(wheelset(axle(radius":
                     stf.MustMatch("(");
-                    // <CJ Comment> Shouldn't this be "WheelRadiusM = " ? </CJ Comment>
+                    // <CJComment> Shouldn't this be "WheelRadiusM = " ? </CJComment>
                     AxleInertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
@@ -475,8 +475,8 @@ namespace ORTS
             base.SignalEvent(evt);
         }
 
-        // <CJ Comment> Expected pantograph handling to be in MSTSElectricLocomotive.cs,
-        // but guess that some trains have pantographs on non-motorised cars </CJ Comment>
+        // <CJComment> Expected pantograph handling to be in MSTSElectricLocomotive.cs,
+        // but guess that some trains have pantographs on non-motorised cars </CJComment>
         public void ToggleFirstPantograph() {
     		Pan1Up = !Pan1Up;
             if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train

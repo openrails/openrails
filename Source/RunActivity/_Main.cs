@@ -441,7 +441,7 @@ namespace ORTS
 
         /// <summary>
         /// Tests OR against every activity in every route in every folder.
-        /// <CJ comment>
+        /// <CJComment>
         /// From v974 (and probably much before) this method fails on the second activity, raising a fatal error InvalidOperationException in MSTSLocomotive.cs:DisassembleFrames()
         /// (Tried on just the JAPAN2 activities and on just the USA2 activities.)
         /// Superseded by the Test() method.

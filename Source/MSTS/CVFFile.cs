@@ -580,10 +580,10 @@ namespace MSTS
                         FramesY = stf.ReadInt(STFReader.UNITS.None, null);
                         stf.SkipRestOfBlock();
                     }),
-                    // <CJ Comment> Would like to revise this, as it is difficult to follow and debug.
+                    // <CJComment> Would like to revise this, as it is difficult to follow and debug.
                     // Can't do that until interaction of ScaleRange, NumFrames, NumPositions and NumValues is more fully specified.
                     // What is needed is samples of data that must be accommodated.
-                    // Some decisions appear unwise but they might be a pragmatic solution to a real problem. </CJ Comment>
+                    // Some decisions appear unwise but they might be a pragmatic solution to a real problem. </CJComment>
                     //
                     // Code accommodates:
                     // - NumValues before NumPositions or the other way round.

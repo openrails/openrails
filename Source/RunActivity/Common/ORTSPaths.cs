@@ -27,7 +27,7 @@ namespace ORTS
 {
     class ORTSPaths
     {
-        //<CJ Comment> Cleaner to use GetFileFromFolders() instead, but not sure how to test this. </CJ Comment>
+        //<CJComment> Cleaner to use GetFileFromFolders() instead, but not sure how to test this. </CJComment>
         public static string FindTrainCarPlugin( string initialFolder, string filename )
         {
             string dllPath = initialFolder + "\\" + filename;  // search in trainset folder

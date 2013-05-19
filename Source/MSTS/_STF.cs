@@ -385,9 +385,9 @@ namespace MSTS
                 // Consume the step-back end-of-block
                 stepbackoneitemFlag = false;
                 
-                //<CJ Comment> Following statement commented out until we know why it might be needed.
+                //<CJComment> Following statement commented out until we know why it might be needed.
                 // E.g. "engine ( numwheels ( )" warns of missing number correctly and replaces with default.
-                // However UpdateTreeAndStepBack() skips the rest of the "engine (" block which is not the required behaviour.</CJ Comment>
+                // However UpdateTreeAndStepBack() skips the rest of the "engine (" block which is not the required behaviour.</CJComment>
                 
                 //UpdateTreeAndStepBack(")");
                 return;
@@ -548,9 +548,9 @@ namespace MSTS
             /// <summary>No unit parsing is done on the {constant_item} - which is obviously fastest
             /// </summary>
             None = 0,
-            /// <summary>Combined using an | with other UNITS if the unit is compulsary (compulsary units will slow parsing)
+            /// <summary>Combined using an | with other UNITS if the unit is compulsory (compulsory units will slow parsing)
             /// </summary>
-            Compulsary = 1 << 0,
+            Compulsory = 1 << 0,
             /// <summary>Valid Units: m, cm, mm, km, ft, ', in, "
             /// <para>Scaled to meters.</para>
             /// </summary>
@@ -638,7 +638,7 @@ namespace MSTS
             }
             if (i == constant.Length)
             {
-                if ((validUnits & UNITS.Compulsary) > 0)
+                if ((validUnits & UNITS.Compulsory) > 0)
                     STFException.TraceWarning(this, "Missing a suffix for data expecting " + validUnits.ToString() + " units");
                 else
                     return 1; // There is no suffix, it's all numeric
@@ -735,7 +735,7 @@ namespace MSTS
             if ((validUnits & UNITS.Volume) > 0)
                 switch (suffix)
                 {
-                    case "*(ft^3)": return 1;
+                    case "*(ft^3)": return 1;  // <CJComment> Why is area in m^2 but volume not in m^3 ? </CJComment>
                     case "*(m^3)": return 35.3146667;
                     case "*(in^3)": return 0.000578703704;
                 }

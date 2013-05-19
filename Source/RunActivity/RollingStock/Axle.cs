@@ -732,7 +732,7 @@ namespace ORTS
         ///     u = ---------------------
         ///           umax^2*dv^2 + K^2
         /// </summary>
-        /// <param name="slipSpeed">Diference between train speed and wheel speed MpS</param>
+        /// <param name="slipSpeed">Difference between train speed and wheel speed MpS</param>
         /// <param name="speed">Current speed MpS</param>
         /// <param name="K">Slip speed correction. If is set K = 0 then K = 0.7 is used</param>
         /// <param name="conditions">Relative weather conditions, usually from 0.2 to 1.0</param>
