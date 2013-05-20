@@ -531,12 +531,6 @@ namespace ORTS
                 Log.ReplayComplete = false;
             }
 
-            // Mute sound when paused
-            if (Simulator.Paused)
-                ALSoundSource.MuteAll();
-            else
-                ALSoundSource.UnMuteAll();
-
             if (ScreenHasChanged())
             {
                 Camera.ScreenChanged();

@@ -185,7 +185,7 @@ namespace ORTS
                     OpenAL.alListenerfv(OpenAL.AL_POSITION, cameraPosition);
                     OpenAL.alListenerfv(OpenAL.AL_VELOCITY, cameraVelocity);
                     OpenAL.alListenerfv(OpenAL.AL_ORIENTATION, cameraOrientation);
-                    OpenAL.alListenerf(OpenAL.AL_GAIN, (float)Program.Simulator.Settings.SoundVolumePercent / 100f);
+                    OpenAL.alListenerf(OpenAL.AL_GAIN, Program.Simulator.Paused ? 0 : (float)Program.Simulator.Settings.SoundVolumePercent / 100f);
                 }
 #endif
                 // Update all sound in our list
