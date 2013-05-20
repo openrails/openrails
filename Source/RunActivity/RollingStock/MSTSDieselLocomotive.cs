@@ -500,6 +500,7 @@ namespace ORTS
                         PowerOn = true;
                     //LimitMotiveForce(elapsedClockSeconds);    //calls the advanced physics
                     LimitMotiveForce();                         //let's call the basic physics instead for now
+                    WheelSpeedMpS = Flipped ? -currentSpeedMpS : currentSpeedMpS;            //make the wheels go round
                     break;
                 case Train.TRAINTYPE.STATIC:
                     break;
