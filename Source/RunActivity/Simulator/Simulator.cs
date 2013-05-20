@@ -559,6 +559,11 @@ namespace ORTS
             PATTraveller patTraveller = new PATTraveller(patFileName);
             AIPath aiPath = new AIPath(patFile, TDB, TSectionDat, patFileName);
 
+            if (aiPath.Nodes == null)
+            {
+                throw new InvalidDataException("Broken path " + patFileName + " for Player train - activity cannot be started");
+            }
+
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
 
             // figure out if the next waypoint is forward or back

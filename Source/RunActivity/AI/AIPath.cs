@@ -39,11 +39,7 @@ namespace ORTS
         public TSectionDatFile TSectionDat;
         public AIPathNode FirstNode;    // path starting node
         public AIPathNode LastVisitedNode;
-#if !NEW_SIGNALLING
-        List<AIPathNode> Nodes = new List<AIPathNode>();
-#else
         public List<AIPathNode> Nodes = new List<AIPathNode>();
-#endif
 
         /// <summary>
         /// Creates an AIPath from PAT file information.
@@ -52,6 +48,8 @@ namespace ORTS
         /// </summary>
         public AIPath(PATFile patFile, TDBFile TDB, TSectionDatFile tsectiondat, string filename)
         {
+            bool fatalerror = false;
+
             TrackDB = TDB.TrackDB;
             TSectionDat = tsectiondat;
             foreach (TrPathNode tpn in patFile.TrPathNodes)
@@ -72,6 +70,7 @@ namespace ORTS
                     {
                         node.NextMainNode = null;
                         Trace.TraceWarning("Cannot find main track for node {1} in path {0}", filename, i);
+                        fatalerror = true;
                     }
                 }
                 if (tpn.C != 0xffffffff)
@@ -84,6 +83,7 @@ namespace ORTS
                     {
                         node.NextSidingNode = null;
                         Trace.TraceWarning("Cannot find siding track for node {1} in path {0}", filename, i);
+                        fatalerror = true;
                     }
                 }
                 if (node.NextMainNode != null && node.NextSidingNode != null)
@@ -108,6 +108,8 @@ namespace ORTS
                 kvp.Value.IsLastSwitchUse = true;
 
             LastVisitedNode = FirstNode;
+
+            if (fatalerror) Nodes = null; // invalid path - do not return any nodes
         }
 
         // restore game state
@@ -153,121 +155,6 @@ namespace ORTS
             else
                 outf.Write(node.Index);
         }
-
-#if !NEW_SIGNALLING
-        /// <summary>
-        /// Aligns the switch for the specified juction node so that the specified
-        /// vector node will be used as the selected route.
-        /// </summary>
-        public void AlignSwitch(int junctionIndex, int vectorIndex)
-        {
-            if (junctionIndex < 0 || vectorIndex < 0)
-                return;
-            TrackNode tn = TrackDB.TrackNodes[junctionIndex];
-            if (tn.TrJunctionNode == null || tn.TrPins[0].Link == vectorIndex)
-                return;
-
-            // By GeorgeS - XCheck for reservations
-            int link = tn.TrPins[1].Link == vectorIndex ? vectorIndex : tn.TrPins[2].Link;
-            //if (Dispatcher.Reservations != null && Dispatcher.Reservations[tn.TrPins[0].Link] != Dispatcher.Reservations[link])
-            if (Dispatcher.Reservations != null && Dispatcher.Reservations[junctionIndex] != Dispatcher.Reservations[link])
-                return;
-
-            //Console.WriteLine("alignsw {0} {1} {2} {3}", junctionIndex, vectorIndex, tn.TrJunctionNode.SelectedRoute, tn.TrPins[1].Link);
-			if (MultiPlayer.MPManager.IsServer()) //multiplayer, check if trains are on the switch
-			{
-				if (Program.Simulator.SwitchIsOccupied(tn.TrJunctionNode)) return;
-			}
-			tn.TrJunctionNode.SelectedRoute = tn.TrPins[1].Link == vectorIndex ? 0 : 1;
-            return;
-        }
-
-        public void AlignAllSwitches()
-        {
-            AIPathNode prevNode = null;
-            for (AIPathNode node = FirstNode; node != null; node = node.NextMainNode)
-            {
-                if (node.IsFacingPoint)
-                    AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
-                else if (prevNode != null)
-                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
-                prevNode = node;
-            }
-        }
-
-        public void AlignInitSwitches(Traveller rear, int id, float distance)
-        {
-            AIPathNode prevNode = null;
-            
-            for (AIPathNode node = FirstNode; node != null; node = node.NextMainNode)
-            {
-                float dist = rear.DistanceTo(node.Location.TileX, node.Location.TileZ,
-                    node.Location.Location.X, node.Location.Location.Y, node.Location.Location.Z);
-                if (dist > distance || dist == -1)
-                    return;
-
-                if (node.IsFacingPoint)
-                {
-                    AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
-                    if (node.JunctionIndex != -1 && Dispatcher.Reservations != null)
-                        Dispatcher.Reservations[node.JunctionIndex] = id;
-                }
-                else if (prevNode != null)
-                {
-                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
-                    if (node.JunctionIndex != -1 && Dispatcher.Reservations != null)
-                        Dispatcher.Reservations[node.JunctionIndex] = id;
-                }
-                prevNode = node;
-            }
-        }
-
-        /// <summary>
-        /// Aligns switches to the specified node
-        /// </summary>
-        /// <param name="tonode">Stop node</param>
-        public void AlignSwitchesTo(AIPathNode tonode)
-        {
-            AIPathNode prevNode = null;
-            for (AIPathNode node = LastVisitedNode; node != null && node != tonode; node = node.NextMainNode)
-            {
-                if (node.IsFacingPoint)
-                    AlignSwitch(node.JunctionIndex, node.NextMainTVNIndex);
-                else if (prevNode != null)
-                    AlignSwitch(node.JunctionIndex, prevNode.NextMainTVNIndex);
-                prevNode = node;
-            }
-        }
-
-        /// <summary>
-        /// returns true if the switch for the specified juction node is aligned
-        /// so that the specified vector node will be used as the selected route.
-        /// </summary>
-        public bool SwitchIsAligned(int junctionIndex, int vectorIndex)
-        {
-            if (junctionIndex < 0 || vectorIndex < 0)
-                return true;
-            TrackNode tn = TrackDB.TrackNodes[junctionIndex];
-            if (tn.TrJunctionNode == null || tn.TrPins[0].Link == vectorIndex)
-                return true;
-            return tn.TrJunctionNode.SelectedRoute == (tn.TrPins[1].Link == vectorIndex ? 0 : 1);
-        }
-
-        /// <summary>
-        /// aligns the specified switch to its default/main route.
-        /// </summary>
-        public void RestoreSwitch(int junctionIndex)
-        {
-            if (junctionIndex < 0)
-                return;
-            TrackNode tn = TrackDB.TrackNodes[junctionIndex];
-            if (tn.TrJunctionNode == null)
-                return;
-            TrackShape ts = TSectionDat.TrackShapes.Get(tn.TrJunctionNode.ShapeIndex);
-            // By GeorgeS
-            //tn.TrJunctionNode.SelectedRoute = (int)ts.MainRoute;
-        }
-#endif
 
         /// <summary>
         /// returns true if the specified vector node is at the facing point end of

@@ -9886,6 +9886,31 @@ namespace ORTS
         {
             PlatformReference[0] = platformReference;
         }
+
+        //================================================================================================//
+        //
+        // Constructor for copy
+        //
+
+        public PlatformDetails(PlatformDetails orgDetails)
+        {
+            foreach (int sectionIndex in orgDetails.TCSectionIndex)
+            {
+                TCSectionIndex.Add(sectionIndex);
+            }
+
+            orgDetails.PlatformReference.CopyTo(PlatformReference,0);
+            TCOffset[0, 0] = orgDetails.TCOffset[0, 0];
+            TCOffset[0, 1] = orgDetails.TCOffset[0, 1];
+            TCOffset[1, 0] = orgDetails.TCOffset[1, 0];
+            TCOffset[1, 1] = orgDetails.TCOffset[1, 1];
+            orgDetails.nodeOffset.CopyTo(nodeOffset,0);
+            Length = orgDetails.Length;
+            orgDetails.EndSignals.CopyTo(EndSignals,0);
+            orgDetails.DistanceToSignals.CopyTo(DistanceToSignals,0);
+            Name = String.Copy(orgDetails.Name);
+            MinWaitingTime = orgDetails.MinWaitingTime;
+        }
     }
 
     //================================================================================================//

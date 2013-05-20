@@ -18,9 +18,6 @@
 /* AI
  * 
  * Contains code to initialize and control AI trains.
- * Currently, AI trains are created at startup and moved down 1000 meters to make them
- * invisible.  This is done so the rendering code can discover the model it needs to draw.
- * 
  * 
  */
 
@@ -220,7 +217,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 24)
+            if (Number == 1)
             {
                 CheckTrain = true;
             }
@@ -394,7 +391,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 24)
+            if (Number == 1)
             {
                 CheckTrain = true;
             }
@@ -2650,6 +2647,13 @@ namespace ORTS
                 MovementState = AI_MOVEMENT_STATE.STOPPED;
                 AITrainThrottlePercent = 0;
             }
+            else if (nextActionInfo != null)  // train has valid action, so start in BRAKE mode
+            {
+                MovementState = AI_MOVEMENT_STATE.BRAKING;
+                Alpha10 = 10;
+                AITrainThrottlePercent = 25;
+                AdjustControlsBrakeOff();
+            }
             else
             {
                 MovementState = AI_MOVEMENT_STATE.ACCELERATING;
@@ -3802,14 +3806,6 @@ namespace ORTS
                             {
                                 earlier = true;
                             }
-
-                            //                          float reqAccelMpSS = (thisItem.RequiredSpeedMpS - nextActionInfo.RequiredSpeedMpS)
-                            //                              / (nextDistanceToTrainM - thisDistanceToTrainM);
-
-                            //                          if (reqAccelMpSS > MaxAccelMpSS)
-                            //                          {
-                            //                              earlier = true;
-                            //                          }
                         }
                     }
                     else if (thisItem.RequiredSpeedMpS < nextActionInfo.RequiredSpeedMpS)
@@ -3822,14 +3818,6 @@ namespace ORTS
                         {
                             earlier = true;
                         }
-
-                        //			float reqAccelMpSS = (nextActionInfo.RequiredSpeedMpS - thisItem.RequiredSpeedMpS)
-                        //                              / (thisDistanceToTrainM - nextDistanceToTrainM);
-
-                        //                        if (reqAccelMpSS > MaxAccelMpSS)
-                        //                        {
-                        //                            earlier = true;
-                        //                        }
                     }
 
                     // if earlier : check if present action is station stop, new action is signal - if so, check is signal really in front of or behind station stop
@@ -3931,6 +3919,11 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
                     " , new state : " + MovementState.ToString() + "\n");
 #endif
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
+                        " , new state : " + MovementState.ToString() + "\n");
+                    }
                 }
                 else
                 {
@@ -3938,6 +3931,11 @@ namespace ORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
                     " , unchanged \n");
 #endif
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
+                        " , unchanged \n");
+                    }
                 }
             }
             else

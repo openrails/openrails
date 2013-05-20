@@ -363,6 +363,19 @@ namespace ORTS
             AllowedMaxSpeedMpS = orgTrain.AllowedMaxSpeedMpS;
             allowedMaxSpeedLimitMpS = orgTrain.allowedMaxSpeedLimitMpS;
             allowedMaxSpeedSignalMpS = orgTrain.allowedMaxSpeedSignalMpS;
+
+            if (orgTrain.StationStops != null)
+            {
+                foreach (StationStop thisStop in orgTrain.StationStops)
+                {
+                    StationStop newStop = new StationStop(thisStop);
+                    StationStops.Add(newStop);
+                }
+            }
+            else
+            {
+                StationStops = null;
+            }
         }
 
         //================================================================================================//
@@ -1641,7 +1654,7 @@ namespace ORTS
                 if (firstObject.ObjectDetails.isSignal)
                 {
                     firstObject.signal_state = firstObject.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL);
-                    ObjectSpeedInfo thisSpeed = firstObject.ObjectDetails.this_lim_speed(SignalHead.SIGFN.NORMAL);
+                    ObjectSpeedInfo thisSpeed = firstObject.ObjectDetails.this_sig_speed(SignalHead.SIGFN.NORMAL);
                     firstObject.speed_passenger = thisSpeed == null ? -1 : thisSpeed.speed_pass;
                     firstObject.speed_freight = thisSpeed == null ? -1 : thisSpeed.speed_freight;
                     firstObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
@@ -1666,7 +1679,7 @@ namespace ORTS
                         nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL);
                         if (nextObject.ObjectDetails.enabledTrain != null && nextObject.ObjectDetails.enabledTrain.Train != this)
                             nextObject.signal_state = SignalHead.SIGASP.STOP; // state not valid if not enabled for this train
-                        ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_lim_speed(SignalHead.SIGFN.NORMAL);
+                        ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.SIGFN.NORMAL);
                         nextObject.speed_passenger = thisSpeed == null || nextObject.signal_state == SignalHead.SIGASP.STOP ? -1 : thisSpeed.speed_pass;
                         nextObject.speed_freight = thisSpeed == null || nextObject.signal_state == SignalHead.SIGASP.STOP ? -1 : thisSpeed.speed_freight;
                         nextObject.speed_flag = thisSpeed == null || nextObject.signal_state == SignalHead.SIGASP.STOP ? 0 : thisSpeed.speed_flag;
@@ -1745,7 +1758,7 @@ namespace ORTS
                         {
                             nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL);
                             nextAspect = nextObject.signal_state;
-                            ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_lim_speed(SignalHead.SIGFN.NORMAL);
+                            ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.SIGFN.NORMAL);
                             nextObject.speed_passenger = thisSpeed == null ? -1 : thisSpeed.speed_pass;
                             nextObject.speed_freight = thisSpeed == null ? -1 : thisSpeed.speed_freight;
                             nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
@@ -1754,6 +1767,18 @@ namespace ORTS
                         prevObject = nextObject;
                         listChanged = true;
                     }
+                }
+
+                //
+                // check if IndexNextSignal still valid, if not, force list changed
+                //
+
+                if (IndexNextSignal >= SignalObjectItems.Count)
+                {
+                    if (CheckTrain)
+                        File.AppendAllText(@"F:\temp\checktrain.txt", "Error in UpdateSignalState: IndexNextSignal out of range : " + IndexNextSignal + 
+                                             " (max value : " + SignalObjectItems.Count + ") \n");
+                    listChanged = true;
                 }
 
                 //
@@ -5224,7 +5249,7 @@ namespace ORTS
             if (passedSignalIndex >= 0)
             {
                 SignalObject passedSignal = signalRef.SignalObjects[passedSignalIndex];
-                ObjectSpeedInfo thisSpeedInfo = passedSignal.this_lim_speed(SignalHead.SIGFN.NORMAL);
+                ObjectSpeedInfo thisSpeedInfo = passedSignal.this_sig_speed(SignalHead.SIGFN.NORMAL);
 
                 if (thisSpeedInfo != null)
                 {
@@ -7867,12 +7892,19 @@ namespace ORTS
                 foreach (StationStop thisStation in StationStops)
                 {
                     File.AppendAllText(@"C:\temp\TCSections.txt", "\n");
-                    File.AppendAllText(@"C:\temp\TCSections.txt", "Station : " + thisStation.PlatformItem.Name + "\n");
-                    DateTime baseDT = new DateTime();
-                    DateTime arrTime = baseDT.AddSeconds(thisStation.ArrivalTime);
-                    File.AppendAllText(@"C:\temp\TCSections.txt", "Arrive  : " + arrTime.ToString("HH:mm:ss") + "\n");
-                    DateTime depTime = baseDT.AddSeconds(thisStation.DepartTime);
-                    File.AppendAllText(@"C:\temp\TCSections.txt", "Depart  : " + depTime.ToString("HH:mm:ss") + "\n");
+                    if (thisStation.PlatformItem == null)
+                    {
+                        File.AppendAllText(@"C:\temp\TCSections.txt", "Waiting Point");
+                    }
+                    else
+                    {
+                        File.AppendAllText(@"C:\temp\TCSections.txt", "Station : " + thisStation.PlatformItem.Name + "\n");
+                        DateTime baseDT = new DateTime();
+                        DateTime arrTime = baseDT.AddSeconds(thisStation.ArrivalTime);
+                        File.AppendAllText(@"C:\temp\TCSections.txt", "Arrive  : " + arrTime.ToString("HH:mm:ss") + "\n");
+                        DateTime depTime = baseDT.AddSeconds(thisStation.DepartTime);
+                        File.AppendAllText(@"C:\temp\TCSections.txt", "Depart  : " + depTime.ToString("HH:mm:ss") + "\n");
+                    }
                     File.AppendAllText(@"C:\temp\TCSections.txt", "Exit Sig: " + thisStation.ExitSignal.ToString() + "\n");
                     File.AppendAllText(@"C:\temp\TCSections.txt", "Hold Sig: " + thisStation.HoldSignal.ToString() + "\n");
                     File.AppendAllText(@"C:\temp\TCSections.txt", "Subpath : " + thisStation.SubrouteIndex.ToString() + "\n");
@@ -11359,6 +11391,31 @@ namespace ORTS
                 ActualDepart = departTime;
                 DistanceToTrainM = 9999999f;
                 Passed = false;
+            }
+
+            //================================================================================================//
+            //
+            // Constructor from copy
+            //
+
+            public StationStop(StationStop orgStop)
+            {
+                ActualStopType = orgStop.ActualStopType;
+                PlatformReference = orgStop.PlatformReference;
+                PlatformItem = new PlatformDetails(orgStop.PlatformItem);
+                SubrouteIndex = orgStop.SubrouteIndex;
+                RouteIndex = orgStop.RouteIndex;
+                TCSectionIndex = orgStop.TCSectionIndex;
+                Direction = orgStop.Direction;
+                ExitSignal = orgStop.ExitSignal;
+                HoldSignal = orgStop.HoldSignal;
+                StopOffset = orgStop.StopOffset;
+                ArrivalTime = orgStop.ArrivalTime;
+                DepartTime = orgStop.DepartTime;
+                ActualArrival = orgStop.ActualArrival;
+                ActualDepart = orgStop.ActualDepart;
+                DistanceToTrainM = orgStop.DistanceToTrainM;
+                Passed = orgStop.Passed;
             }
 
             //================================================================================================//

@@ -239,7 +239,12 @@ namespace ORTS
 
             PATFile patFile = new PATFile(pathFileName);
             AIPath aiPath = new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName);
-
+            if (aiPath.Nodes == null)
+            {
+                Trace.TraceWarning("Invalid path " + pathFileName + " for AI train : " + sd.Name + " ; train not started\n");
+                return null;
+            }
+            
             AITrain train = new AITrain(Simulator, sd.UiD, this, aiPath, sd.Time, srvFile.Efficiency, sd.Name, trfDef);
             if (consistFileName.Contains("tilted")) train.tilted = true;
 
