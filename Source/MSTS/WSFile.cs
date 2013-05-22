@@ -41,9 +41,8 @@ namespace ORTS
                     stf.ParseFile(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("tr_worldsoundfile", ()=>{ TR_WorldSoundFile = new TR_WorldSoundFile(stf); }),
                     });
-                    //TODO This should be changed to STFException.TraceError() with defaults values created
                     if (TR_WorldSoundFile == null)
-                        throw new STFException(stf, "Missing TR_WorldSoundFile statement");
+                        STFException.TraceWarning(stf, "Missing TR_WorldSoundFile statement");
                 }
             }
         }
