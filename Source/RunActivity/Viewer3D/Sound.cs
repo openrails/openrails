@@ -171,12 +171,19 @@ namespace ORTS
             UpdateTType();
 
             bool retval = true;
+            NeedsFrequentUpdate = false;
 
             if (_activeInSource != null)
+            {
                 retval &= _activeInSource.Update();
+                NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+            }
 
             if (_activeOutSource != null)
+            {
+                NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
                 retval &= _activeOutSource.Update();
+            }
 
             return retval;
         }
