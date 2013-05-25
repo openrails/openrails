@@ -74,6 +74,7 @@ namespace ORTS
         readonly UserSettings Settings;
         readonly Route Route;
         readonly Activity Activity;
+        readonly MainForm ParentForm;
 
         List<Save> Saves = new List<Save>();
         Task<List<Save>> SaveLoader;
@@ -134,8 +135,9 @@ namespace ORTS
         public string SelectedSaveFile { get; set; }
         public MainForm.UserAction SelectedAction { get; set; }
 
-        public ResumeForm(UserSettings settings, Route route, Activity activity)
+        public ResumeForm(UserSettings settings, Route route, Activity activity, MainForm parentForm)
         {
+            ParentForm = parentForm;
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
@@ -166,6 +168,7 @@ namespace ORTS
             if (SaveLoader != null)
                 SaveLoader.Cancel();
 
+            var warning = "";
             SaveLoader = new Task<List<Save>>(this, () =>
             {
                 var saves = new List<Save>();
@@ -178,10 +181,25 @@ namespace ORTS
                     {
                         try
                         {
-                            // Skip activities of the same name (e.g. Short Passenger Run shrtpass.act) which belong to a different route.
+                            // SavePacks are all in the same folder and activities may have the same name 
+                            // (e.g. Short Passenger Run shrtpass.act) but belong to a different route,
+                            // so pick only the activities for the current route.
                             var save = new Save(saveFile, build);
-                            if (Route.Name == save.RouteName)
+                            if (save.RouteName == Route.Name)
+                            {
                                 saves.Add(save);
+                            }
+                            else    // In case you receive a SavePack where the activity is recognised but the route has been renamed.
+                                    // Checks the route is not in your list of routes.
+                                    // If so, add it with a warning.
+                            {
+                                if (!ParentForm.Routes.Any(el => el.Name == save.RouteName))
+                                {
+                                    saves.Add(save);
+                                    // Save a warning to show later.
+                                    warning += String.Format("Warning: Save {0} found from a route with an unexpected name:\n{1}.\n\n", save.RealTime, save.RouteName);
+                                }
+                            }
                         }
                         catch { }
                     }
@@ -193,6 +211,9 @@ namespace ORTS
                 saveBindingSource.DataSource = Saves;
                 labelInvalidSaves.Text = String.Format(InvalidTextString, Saves.Count(s => !s.Valid), Saves.Count);
                 gridSaves_SelectionChanged(null, null);
+                // Show warning after the list has been updated as this is more useful.
+                if (warning != "")
+                    MessageBox.Show(warning);
             });
         }
 

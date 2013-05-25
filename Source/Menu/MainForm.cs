@@ -42,7 +42,9 @@ namespace ORTS
         bool Initialized;
         UserSettings Settings;
         List<Folder> Folders = new List<Folder>();
-        List<Route> Routes = new List<Route>();
+        
+        public List<Route> Routes = new List<Route>();  // So can be used for checking in ResumeForm 
+        
         List<Activity> Activities = new List<Activity>();
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
@@ -201,7 +203,7 @@ namespace ORTS
 
         void buttonResume_Click(object sender, EventArgs e)
         {
-            using (var form = new ResumeForm(Settings, SelectedRoute, SelectedActivity))
+            using (var form = new ResumeForm(Settings, SelectedRoute, SelectedActivity, this))
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
