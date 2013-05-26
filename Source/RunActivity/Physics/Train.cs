@@ -88,7 +88,7 @@ namespace ORTS
         public float SlipperySpotLengthM = 0;
 
         // These signals pass through to all cars and locomotives on the train
-        public Direction MUDirection = Direction.N;      //set by player locomotive to control MU'd locomotives
+        public Direction MUDirection = Direction.N;      // set by player locomotive to control MU'd locomotives
         public float MUThrottlePercent = 0;              // set by player locomotive to control MU'd locomotives
         public float MUReverserPercent = 100;            // steam engine direction/cutoff control for MU'd locomotives
         public float MUDynamicBrakePercent = -1;         // dynamic brake control for MU'd locomotives, <0 for off
@@ -989,26 +989,25 @@ namespace ORTS
 
         public void ReverseFormation(bool setMUParameters)
         {
-            for (int i = Cars.Count - 1; i > 0; i--)
+            // Shift all the coupler data along the train by 1 car.
+            for (var i = Cars.Count - 1; i > 0; i--)
                 Cars[i].CopyCoupler(Cars[i - 1]);
-            for (int i = 0; i < Cars.Count / 2; i++)
-            {
-                int j = Cars.Count - i - 1;
-                TrainCar car = Cars[i];
-                Cars[i] = Cars[j];
-                Cars[j] = car;
-            }
+            // Reverse the actual order of the cars in the train.
+            Cars.Reverse();
+            // Update leading locomotive index.
             if (LeadLocomotiveIndex >= 0)
                 LeadLocomotiveIndex = Cars.Count - LeadLocomotiveIndex - 1;
-            for (int i = 0; i < Cars.Count; i++)
+            // Update flipped state of each car.
+            for (var i = 0; i < Cars.Count; i++)
                 Cars[i].Flipped = !Cars[i].Flipped;
-
-            Traveller t = FrontTDBTraveller;
+            // Flip the train's travellers.
+            var t = FrontTDBTraveller;
             FrontTDBTraveller = new Traveller(RearTDBTraveller, Traveller.TravellerDirection.Backward);
             RearTDBTraveller = new Traveller(t, Traveller.TravellerDirection.Backward);
-
+            // If we are updating the controls...
             if (setMUParameters)
             {
+                // Flip the controls.
                 MUDirection = DirectionControl.Flip(MUDirection);
                 MUReverserPercent = -MUReverserPercent;
             }

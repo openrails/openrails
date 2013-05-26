@@ -465,13 +465,12 @@ namespace ORTS
             if (this.IsLeadLocomotive())
             {
                 Train.MUReverserPercent = CutoffController.Update(elapsedClockSeconds) * 100.0f;
-                if (Train.MUReverserPercent >= 0)
-                    Train.MUDirection = Direction.Forward;
-                else
-                    Train.MUDirection = Direction.Reverse;
+                Direction = Train.MUReverserPercent >= 0 ? Direction.Forward : Direction.Reverse;
             }
             else
+            {
                 CutoffController.Update(elapsedClockSeconds);
+            }
 
             Injector1Controller.Update(elapsedClockSeconds);
             if( Injector1Controller.UpdateValue > 0.0 )
@@ -718,10 +717,7 @@ namespace ORTS
         public void SetCutoffPercent(float percent)
         {
             Train.MUReverserPercent = CutoffController.SetRDPercent(percent);
-            if (Train.MUReverserPercent >= 0)
-                Train.MUDirection = Direction.Forward;
-            else
-                Train.MUDirection = Direction.Reverse;
+            Direction = Train.MUReverserPercent >= 0 ? Direction.Forward : Direction.Reverse;
         }
 
         public void StartInjector1Increase( float? target ) {
