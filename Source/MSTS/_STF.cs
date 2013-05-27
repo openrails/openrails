@@ -31,69 +31,78 @@ using Microsoft.Xna.Framework;
 
 namespace MSTS
 {
-    /// <summary>Used for reading data from Structured Text Format (MSTS1 style) files.
-    /// </summary><remarks><para>
-    /// An STF file is whitespace delimitered file, taking the format - {item}{whitespace}[repeated].</para><para>
-    /// &#160;</para><para>
-    /// At it's most simple an STF file has the format - {token_item}{whitespace}{data_item}{whitespace}(repeated)</para><para>
-    /// Even, more simplisitically every {data_item} can be a {constant_item}</para>
-    /// <code lang="STF" title="STF Example"><para>
-    ///     Example:</para><para>
-    ///     name SimpleSTFfile</para><para>
-    ///     weight 100</para><para>
-    ///     speed 50.25</para>
-    /// </code>&#160;<para>
-    /// STF also has a block methodology where a {data_item} following a {token_item} can start with '(' followed by any number of {data_item}s and closed with a ')'.
+    /// Used for reading data from Structured Text Format (MSTS1 style) files.
+    /// 
+    /// An STF file is whitespace delimitered file, taking the format - {item}{whitespace}[repeated].
+    ///  
+    /// At its most simple an STF file has the format - {token_item}{whitespace}{data_item}{whitespace}(repeated)
+    /// Even, more simplisitically every {data_item} can be a {constant_item}
+    /// 
+    ///     Example:
+    ///     name SimpleSTFfile
+    ///     weight 100
+    ///     speed 50.25
+    ///  
+    /// STF also has a block methodology where a {data_item} following a {token_item} can start with '(' 
+    /// followed by any number of {data_item}s and closed with a ')'.
     /// The contents of the block are defined in the specific file schema, and not in the STF definition.
-    /// The STF defintion allows that inside a pair of parentheses may be a single {constant_item}, multiple whitespace delimitered {constant_item}s, or a nested {token_item}{data_item} pair (which could contain a further nested block recursively).</para>
-    /// <code lang="STF" title="STF Example"><para>
-    ///     Example:</para><para>
-    ///     name BlockedSTFfile</para><para>
-    ///     root_constant 100</para><para>
-    ///     root_block_1</para><para>
-    ///     (</para><para>
-    ///         &#160;&#160;nested_block_1_1</para><para>
-    ///         &#160;&#160;(</para><para>
-    ///             &#160;&#160;&#160;&#160;1</para><para>
-    ///         &#160;&#160;)</para><para>
-    ///         &#160;&#160;nested_block_1_2 ( 5 )</para><para>
-    ///     )</para><para>
-    ///     root_block_2</para><para>
-    ///     (</para><para>
-    ///         &#160;&#160;1 2 3</para><para>
-    ///     )</para><para>
-    ///     root_block_3 ( a b c )</para>
-    /// </code>&#160;<para>
-    /// Numeric {constan_item}s can include a 'unit' suffix, which is handled in the ReadDouble() function.</para><para>
-    /// Within ReadDouble these units are then converted to the standards used throughout OR - meters, newtons, kilograms.</para>
-    /// <code lang="STF" title="STF Example"><para>
-    ///     Example:</para><para>
-    ///     name STFfileWithUnits</para><para>
-    ///     weight 100kg</para><para>
-    ///     speed 50mph</para>
-    /// </code>&#160;<para>
+    /// The STF defintion allows that inside a pair of parentheses may be a single {constant_item}, 
+    /// multiple whitespace delimitered {constant_item}s, or a nested {token_item}{data_item} pair (which could 
+    /// contain a further nested block recursively).
+    /// 
+    ///     Example:
+    ///     name BlockedSTFfile
+    ///     root_constant 100
+    ///     root_block_1
+    ///     (
+    ///           nested_block_1_1
+    ///           (
+    ///                 1
+    ///           )
+    ///           nested_block_1_2 ( 5 )
+    ///     )
+    ///     root_block_2
+    ///     (
+    ///           1 2 3
+    ///     )
+    ///     root_block_3 ( a b c )
+    ///  
+    /// Numeric {constan_item}s can include a 'unit' suffix, which is handled in the ReadDouble() function.
+    /// Within ReadDouble these units are then converted to the standards used throughout OR - meters, newtons, 
+    /// kilograms.
+    /// 
+    ///     Example:
+    ///     name STFfileWithUnits
+    ///     weight 100kg
+    ///     speed 50mph
+    ///  
     /// Whitespaces can be included within any {item} using a double quotation notation.
-    /// Quoted values also support a trailing addition operator to indicate an append operation of multiple quoted strings.</para><para>
-    /// Although append operations are technically allowed for {token_item}'s this practice is *strongly* discouraged for readability.</para>
-    /// <code lang="STF" title="STF Example"><para>
-    ///     Example:</para><para>
-    ///     simple_token "Data Item with" + " whitespace"</para><para>
-    ///     block_token ( "Data " + "Item 1" "Data Item 2" )</para><para>
-    ///     "discouraged_" + "token" -1</para><para>
-    ///     Error Example:</para><para>
-    ///     error1 "You cannot use append suffix to non quoted " + items</para>
-    /// </code>&#160;<para>
-    /// The STF format also supports 3 special {token_item}s - include, comment &amp; skip.</para><list class="bullet">
-    /// <listItem><para>include - must be at the root level (that is to say it cannot be included within a block).
+    /// Quoted values also support a trailing addition operator to indicate an append operation of multiple quoted 
+    /// strings.
+    /// Although append operations are technically allowed for {token_item}'s this practice is *strongly* 
+    /// discouraged for readability.
+    /// 
+    ///     Example:
+    ///     simple_token "Data Item with" + " whitespace"
+    ///     block_token ( "Data " + "Item 1" "Data Item 2" )
+    ///     "discouraged_" + "token" -1
+    ///     Error Example:
+    ///     error1 "You cannot use append suffix to non quoted " + items
+    ///  
+    /// The STF format also supports 3 special {token_item}s - include, comment & skip.
+    /// include - must be at the root level (that is to say it cannot be included within a block).
     /// After an include directive the {constant_item} is a filename relative to the current processing STF file.
-    /// The include token has the effect of in-lining the defined file into the current document.</para></listItem>
-    /// <listItem><para>comment &amp; skip - must be followed by a block which will not be processed in OR</para></listItem>
-    /// </list>&#160;<para>
-    /// Finally any token which begins with a '#' character will be ignored, and then the next {data_item} (constant or block) will not be processed.</para><para>
-    /// &#160;</para>
-    /// <alert class="important"><para>NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy "#\u00b6" is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</para></alert>
-    /// </remarks>
-    /// <example><code lang="C#" title="STF parsing using Parse...() and delegate/lambda functions in C#">
+    /// The include token has the effect of in-lining the defined file into the current document.
+    /// comment & skip - must be followed by a block which will not be processed in OR
+    ///  
+    /// Finally any token which begins with a '#' character will be ignored, and then the next {data_item} 
+    /// (constant or block) will not be processed.
+    ///  
+    /// NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy 
+    /// "#\u00b6" is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be 
+    /// ignored).
+    /// 
+    /// 
     ///     using (STFReader stf = new STFReader(filename, false))
     ///         stf.ParseFile(new STFReader.TokenProcessor[] {
     ///             new STFReader.TokenProcessor("item_single_constant", ()=>{ float isc = stf.ReadFloat(STFReader.UNITS.None, 0); }),
@@ -110,8 +119,8 @@ namespace MSTS
     ///                 new STFReader.TokenProcessor("subblock", ()=>{ string sb = stf.ReadStringBlock(""); }),
     ///             });}),
     ///         });
-    /// </code></example>
-    /// <example><code lang="C#" title="Alternate functional method to parse STF using C#">
+    /// 
+    /// 
     ///        using (STFReader stf = new STFReader(filename, false))
     ///            while (!stf.Eof)
     ///                switch (stf.ReadItem().ToLower())
@@ -137,7 +146,7 @@ namespace MSTS
     ///                        break;
     ///                    case "(": stf.SkipRestOfBlock(); break;
     ///                }
-    /// </code></example>
+
     /// <exception cref="STFException"><para>
     /// STF reports errors using the  exception static members</para><para>
     /// There are three broad categories of error</para><list class="bullet">
@@ -438,7 +447,7 @@ namespace MSTS
         }
         /// <summary>Read an signed integer {constant_item}
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
         public int ReadInt(UNITS validUnits, int? defaultValue)
@@ -464,7 +473,7 @@ namespace MSTS
         }
         /// <summary>Read an unsigned integer {constant_item}
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
         public uint ReadUInt(UNITS validUnits, uint? defaultValue)
@@ -490,7 +499,7 @@ namespace MSTS
         }
         /// <summary>Read an single precision floating point number {constant_item}
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
         public float ReadFloat(UNITS validUnits, float? defaultValue)
@@ -516,7 +525,7 @@ namespace MSTS
         }
         /// <summary>Read an double precision floating point number {constant_item}
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
         /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
         public double ReadDouble(UNITS validUnits, double? defaultValue)
@@ -614,7 +623,7 @@ namespace MSTS
         /// <remarks>This function is marked internal so it can be used to support arithmetic processing once the elements are seperated (eg. 5*2m)
         /// </remarks>
         /// <param name="constant">string with suffix (ie "23 mph"), after the function call the suffix is removed.</param>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <returns>The scaler that should be used to modify the constant to standard OR units.</returns>
         internal double ParseUnitSuffix(ref string constant, UNITS validUnits)
         {
@@ -732,7 +741,7 @@ namespace MSTS
                     case "psi": return 1;
                     case "bar": return 14.5037738;
                 }
-            if ((validUnits & UNITS.Volume) > 0)
+            if ((validUnits & UNITS.Volume) > 0) // <CJComment> Why is area in m^2 but volume not in m^3 ? </CJComment>
                 switch (suffix)
                 {
                     case "*(ft^3)": return 1;  // <CJComment> Why is area in m^2 but volume not in m^3 ? </CJComment>
@@ -828,7 +837,7 @@ namespace MSTS
         }
 		/// <summary>Read an integer constant from the STF format '( {int_constant} ... )'
 		/// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
 		/// <returns>The STF block with the first {item} converted to a integer constant.</returns>
 		public int ReadIntBlock(UNITS validUnits, int? defaultValue)
@@ -855,7 +864,7 @@ namespace MSTS
 		}
 		/// <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a unsigned integer constant.</returns>
         public uint ReadUIntBlock(UNITS validUnits, uint? defaultValue)
@@ -882,7 +891,7 @@ namespace MSTS
         }
         /// <summary>Read an single precision constant from the STF format '( {float_constant} ... )'
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a single precision constant.</returns>
         public float ReadFloatBlock(UNITS validUnits, float? defaultValue)
@@ -909,7 +918,7 @@ namespace MSTS
         }
         /// <summary>Read an double precision constant from the STF format '( {double_constant} ... )'
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
         /// <returns>The STF block with the first {item} converted to a double precision constant.</returns>
         public double ReadDoubleBlock(UNITS validUnits, double? defaultValue)
@@ -971,7 +980,7 @@ namespace MSTS
         }
         /// <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">The default vector if any of the values are not specified</param>
         /// <returns>The STF block as a Vector3</returns>
         public Vector3 ReadVector3Block(UNITS validUnits, Vector3 defaultValue)
@@ -1000,7 +1009,7 @@ namespace MSTS
         }
         /// <summary>Read a Vector4 object in the STF format '( {X} {Y} {Z} {W} ... )'
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the availale suffixes to reasonable values.</param>
+        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">The default vector if any of the values are not specified</param>
         /// <returns>The STF block as a Vector4</returns>
         public Vector4 ReadVector4Block(UNITS validUnits, Vector4 defaultValue)
