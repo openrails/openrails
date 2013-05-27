@@ -229,6 +229,52 @@ namespace ORTS
         public uint ulByteStart;
     }
 
+
+    /// <summary>
+    /// SMPLCHUNK binary structure
+    /// Describes the SMPL chunk list of a wave file
+    /// </summary>
+    [StructLayout(LayoutKind.Explicit, Pack = 1)]
+    public struct SMPLCHUNK
+    {
+        [FieldOffset(0), MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        public char[] ChunkName;
+        [FieldOffset(4), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint ChunkSize;
+        [FieldOffset(8), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint Manufacturer;
+        [FieldOffset(12), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint Product;
+        [FieldOffset(16), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint SmplPeriod;
+        [FieldOffset(20), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint MIDIUnityNote;
+        [FieldOffset(24), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint MIDIPitchFraction;
+        [FieldOffset(28), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint SMPTEFormat;
+        [FieldOffset(32), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint SMPTEOffset;
+        [FieldOffset(36), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint NumSmplLoops;
+        [FieldOffset(40), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint SamplerData;
+    }
+
+    /// <summary>
+    /// SMPLLOOP binary structure
+    /// Describes one SMPL loop in loop list
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct SMPLLOOP
+    {
+        public uint ID;
+        public uint Type;
+        public uint ChunkStart;
+        public uint ChunkEnd;
+        public uint Fraction;
+        public uint PlayCount;
+    }
     public enum WAVEFORMATTYPE
     {
         WT_UNKNOWN,
@@ -388,6 +434,25 @@ namespace ORTS
                                         pos += cuePt.ulByteStart;
 
                                         CuePoints[i] = pos;
+                                    }
+                                }
+                            }
+                        }
+                        else if (hdr == "smpl")
+                        {
+                            // Seek back and read SMPL header
+                            pFile.Seek(Marshal.SizeOf(riffChunk) * -1, SeekOrigin.Current);
+                            SMPLCHUNK smplChunk;
+                            GetNextStructureValue<SMPLCHUNK>(pFile, out smplChunk, -1);
+                            CuePoints = new uint[smplChunk.NumSmplLoops * 2];
+                            {
+                                SMPLLOOP smplLoop;
+                                for (uint i = 0; i < smplChunk.NumSmplLoops; i++)
+                                {
+                                    if (GetNextStructureValue<SMPLLOOP>(pFile, out smplLoop, -1))
+                                    {
+                                        CuePoints[i * 2] = smplLoop.ChunkStart;
+                                        CuePoints[i * 2 + 1] = smplLoop.ChunkEnd;
                                     }
                                 }
                             }
