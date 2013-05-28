@@ -17,7 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-#undef ENUMERATION
+//#define ENUMERATION
 
 using System;
 using System.Collections.Generic;
@@ -395,7 +395,7 @@ namespace ORTS
                 }
 #endif
                 int[] attribs = new int[0];
-                IntPtr device = OpenAL.alcOpenDevice("DirectSound");
+                IntPtr device = OpenAL.alcOpenDevice(null);
                 IntPtr context = OpenAL.alcCreateContext(device, attribs);
                 OpenAL.alcMakeContextCurrent(context);
 

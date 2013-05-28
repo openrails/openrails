@@ -87,7 +87,7 @@ namespace ORTS
 			foreach (var file in new[] {
 				// Required libraries:
 				"ICSharpCode.SharpZipLib.dll",
-				"wrap_oal.dll",
+				"OpenAL32.dll",
 				"PIEHidDotNet.dll",
 				// Programs:
 				"Menu.exe",

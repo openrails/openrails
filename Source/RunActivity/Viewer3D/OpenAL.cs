@@ -68,74 +68,75 @@ namespace ORTS
         public const int AL_VERSION = 0xb002;
         public const int AL_RENDERER = 0xb003;
         public const int AL_DOPPLER_FACTOR = 0xc000;
+        public const int AL_LOOP_POINTS_SOFT = 0x2015;
 
         public const int ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004;
         public const int ALC_DEVICE_SPECIFIER = 0x1005;
 
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr alcOpenDevice(string deviceName);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr alcCreateContext(IntPtr device, int[] attribute);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int alcMakeContextCurrent(IntPtr context);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern string alcGetString(IntPtr device, int attribute);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int alcIsExtensionPresent(IntPtr device, string extensionName);
 
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern string AlInitialize(string devName);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alGetBufferi(int buffer, int attribute, out int val);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern string alGetString(int state);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int alGetError();
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alDeleteBuffers(int number, [In] ref int buffer);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alDeleteBuffers(int number, int[] buffers);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alDeleteSources(int number, [In] int[] sources);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alDeleteSources(int number, [In] ref int sources);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alDistanceModel(int model);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alGenSources(int number, out int source);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alGetSourcei(int source, int attribute, out int val);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alGetSourcef(int source, int attribute, out float val);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alListener3f(int attribute, float value1, float value2, float value3);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alListenerfv(int attribute, [In] float[] values);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alListenerf(int attribute, float value);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcePlay(int source);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourceQueueBuffers(int source, int number, [In] ref int buffer);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcei(int source, int attribute, int val);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcef(int source, int attribute, float val);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSource3f(int source, int attribute, float value1, float value2, float value3);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcefv(int source, int attribute, [In] float[] values);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourceStop(int source);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourceUnqueueBuffers(int source, int number, int[] buffers);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourceUnqueueBuffers(int source, int number, ref int buffers);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int alGetEnumValue(string enumName);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alGenBuffers(int number, out int buffer);
-        [SuppressUnmanagedCodeSecurity, DllImport("wrap_oal.dll", CallingConvention = CallingConvention.Cdecl)]
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alBufferData(int buffer, int format, [In] byte[] data, int size, int frequency);
 
         public static int alSourceUnqueueBuffer(int SoundSourceID)

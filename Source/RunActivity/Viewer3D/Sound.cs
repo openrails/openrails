@@ -767,11 +767,15 @@ namespace ORTS
             if (ALSoundSource == null)
                 return;
 
-            if (SoundSource.Car != null)
+            if (MSTSStream.FrequencyCurve != null) 
             {
-                if (MSTSStream.FrequencyCurve != null)
+                if (SoundSource.Car != null || SoundSource.Viewer.Camera.AttachedCar != null)
                 {
-                    float x = ReadValue(MSTSStream.FrequencyCurve.Control, SoundSource.Car);
+                    float x = 0;
+                    if (SoundSource.Car != null)
+                        x = ReadValue(MSTSStream.FrequencyCurve.Control, SoundSource.Car);
+                    else if (SoundSource.Viewer.Camera.AttachedCar != null)
+                        x = ReadValue(MSTSStream.FrequencyCurve.Control, (MSTSWagon)SoundSource.Viewer.Camera.AttachedCar);
                     float y = Interpolate(x, MSTSStream.FrequencyCurve);
 
                     ALSoundSource.PlaybackSpeed = y / ALSoundSource.SampleRate;

@@ -1,0 +1,1233 @@
+The system is: Windows - 6.1 - AMD64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler:  
+Build flags: 
+Id flags: 
+
+The output was:
+0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:18:52.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\2.8.11\CompilerIdC\CompilerIdC.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "Debug\".
+InitializeBuildStatus:
+  Creating "Debug\CompilerIdC.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /nologo /W0 /WX- /Od /Oy- /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TC /analyze- /errorReport:queue CMakeCCompilerId.c
+  CMakeCCompilerId.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:".\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\CompilerIdC.lib" /MACHINE:X86 /SAFESEH Debug\CMakeCCompilerId.obj
+  CompilerIdC.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\2.8.11\CompilerIdC\.\CompilerIdC.exe
+PostBuildEvent:
+  for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+  :VCEnd
+  CMAKE_C_COMPILER=C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\cl.exe
+FinalizeBuildStatus:
+  Deleting file "Debug\CompilerIdC.unsuccessfulbuild".
+  Touching "Debug\CompilerIdC.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\2.8.11\CompilerIdC\CompilerIdC.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.05
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+
+The C compiler identification is MSVC, found in "D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/2.8.11/CompilerIdC/CompilerIdC.exe"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec269450293.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:18:54.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec269450293.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec269450293.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec269450293.dir\Debug\cmTryCompileExec269450293.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec269450293.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec269450293.pdb" /Gd /TC /analyze- /errorReport:queue testCCompiler.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec269450293.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec269450293.pdb" /Gd /TC /analyze- /errorReport:queue testCCompiler.c
+  
+  testCCompiler.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec269450293.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec269450293.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec269450293.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec269450293.dir\Debug\testCCompiler.obj
+  cmTryCompileExec269450293.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec269450293.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec269450293.dir\Debug\cmTryCompileExec269450293.unsuccessfulbuild".
+  Touching "cmTryCompileExec269450293.dir\Debug\cmTryCompileExec269450293.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec269450293.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.79
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec2298255552.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:18:55.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2298255552.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec2298255552.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec2298255552.dir\Debug\cmTryCompileExec2298255552.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2298255552.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2298255552.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompilerABI.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2298255552.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2298255552.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CMakeCCompilerABI.c"
+  CMakeCCompilerABI.c
+  
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2298255552.exe" /INCREMENTAL /NOLOGO /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2298255552.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2298255552.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec2298255552.dir\Debug\CMakeCCompilerABI.obj
+  cmTryCompileExec2298255552.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2298255552.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec2298255552.dir\Debug\cmTryCompileExec2298255552.unsuccessfulbuild".
+  Touching "cmTryCompileExec2298255552.dir\Debug\cmTryCompileExec2298255552.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2298255552.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+
+Determining if the include file sys/types.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec1754629747.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:18:55.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1754629747.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1754629747.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1754629747.dir\Debug\cmTryCompileExec1754629747.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1754629747.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1754629747.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1754629747.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1754629747.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1754629747.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1754629747.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1754629747.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec1754629747.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec1754629747.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1754629747.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec1754629747.dir\Debug\cmTryCompileExec1754629747.unsuccessfulbuild".
+  Touching "cmTryCompileExec1754629747.dir\Debug\cmTryCompileExec1754629747.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1754629747.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.65
+
+
+Determining if the include file stdint.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec3534895797.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:18:56.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3534895797.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec3534895797.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec3534895797.dir\Debug\cmTryCompileExec3534895797.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3534895797.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3534895797.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3534895797.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3534895797.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3534895797.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3534895797.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3534895797.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec3534895797.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec3534895797.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3534895797.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec3534895797.dir\Debug\cmTryCompileExec3534895797.unsuccessfulbuild".
+  Touching "cmTryCompileExec3534895797.dir\Debug\cmTryCompileExec3534895797.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3534895797.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.72
+
+
+Determining if the include file stddef.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec1052702308.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:18:57.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1052702308.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1052702308.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1052702308.dir\Debug\cmTryCompileExec1052702308.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1052702308.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1052702308.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1052702308.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1052702308.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1052702308.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1052702308.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1052702308.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec1052702308.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec1052702308.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1052702308.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec1052702308.dir\Debug\cmTryCompileExec1052702308.unsuccessfulbuild".
+  Touching "cmTryCompileExec1052702308.dir\Debug\cmTryCompileExec1052702308.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1052702308.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.68
+
+
+Determining size of long passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec3110197348.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:18:58.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3110197348.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec3110197348.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec3110197348.dir\Debug\cmTryCompileExec3110197348.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3110197348.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3110197348.pdb" /Gd /TC /analyze- /errorReport:queue "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CheckTypeSize\SIZEOF_LONG.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3110197348.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3110197348.pdb" /Gd /TC /analyze- /errorReport:queue "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CheckTypeSize\SIZEOF_LONG.c"
+  SIZEOF_LONG.c
+  
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3110197348.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3110197348.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3110197348.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec3110197348.dir\Debug\SIZEOF_LONG.obj
+  cmTryCompileExec3110197348.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3110197348.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec3110197348.dir\Debug\cmTryCompileExec3110197348.unsuccessfulbuild".
+  Touching "cmTryCompileExec3110197348.dir\Debug\cmTryCompileExec3110197348.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3110197348.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.60
+
+
+Determining size of long long passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec3860244407.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:18:58.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3860244407.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec3860244407.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec3860244407.dir\Debug\cmTryCompileExec3860244407.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3860244407.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3860244407.pdb" /Gd /TC /analyze- /errorReport:queue "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CheckTypeSize\SIZEOF_LONG_LONG.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3860244407.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3860244407.pdb" /Gd /TC /analyze- /errorReport:queue "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CheckTypeSize\SIZEOF_LONG_LONG.c"
+  SIZEOF_LONG_LONG.c
+  
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3860244407.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3860244407.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3860244407.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec3860244407.dir\Debug\SIZEOF_LONG_LONG.obj
+  cmTryCompileExec3860244407.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3860244407.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec3860244407.dir\Debug\cmTryCompileExec3860244407.unsuccessfulbuild".
+  Touching "cmTryCompileExec3860244407.dir\Debug\cmTryCompileExec3860244407.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3860244407.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.53
+
+
+Performing C SOURCE FILE Test HAVE___RESTRICT succeded with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec940313792.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:00.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec940313792.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec940313792.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec940313792.dir\Debug\cmTryCompileExec940313792.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D HAVE___RESTRICT /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec940313792.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec940313792.pdb" /Gd /TC /analyze- /errorReport:queue src.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D HAVE___RESTRICT /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec940313792.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec940313792.pdb" /Gd /TC /analyze- /errorReport:queue src.c
+  
+  src.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec940313792.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec940313792.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec940313792.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec940313792.dir\Debug\src.obj
+  cmTryCompileExec940313792.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec940313792.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec940313792.dir\Debug\cmTryCompileExec940313792.unsuccessfulbuild".
+  Touching "cmTryCompileExec940313792.dir\Debug\cmTryCompileExec940313792.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec940313792.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.58
+
+Source file was:
+int *__restrict foo;
+                             int main() {return 0;}
+Performing C SOURCE FILE Test HAVE_MSSE_SWITCH succeded with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec2699931075.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:00.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2699931075.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec2699931075.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec2699931075.dir\Debug\cmTryCompileExec2699931075.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2699931075.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2699931075.pdb" /Gd /TC /analyze- /errorReport:queue  -msse src.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2699931075.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2699931075.pdb" /Gd /TC /analyze- /errorReport:queue  -msse src.c
+  
+cl : Command line warning D9002: ignoring unknown option '-msse' [D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2699931075.vcxproj]
+  src.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2699931075.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2699931075.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2699931075.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec2699931075.dir\Debug\src.obj
+  cmTryCompileExec2699931075.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2699931075.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec2699931075.dir\Debug\cmTryCompileExec2699931075.unsuccessfulbuild".
+  Touching "cmTryCompileExec2699931075.dir\Debug\cmTryCompileExec2699931075.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2699931075.vcxproj" (default targets).
+
+Build succeeded.
+
+"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2699931075.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  cl : Command line warning D9002: ignoring unknown option '-msse' [D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2699931075.vcxproj]
+
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.53
+
+Source file was:
+
+Determining if the include file malloc.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec1302235980.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:02.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1302235980.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1302235980.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1302235980.dir\Debug\cmTryCompileExec1302235980.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1302235980.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1302235980.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1302235980.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1302235980.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1302235980.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1302235980.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1302235980.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec1302235980.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec1302235980.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1302235980.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec1302235980.dir\Debug\cmTryCompileExec1302235980.unsuccessfulbuild".
+  Touching "cmTryCompileExec1302235980.dir\Debug\cmTryCompileExec1302235980.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1302235980.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.66
+
+
+Determining if the include file float.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec3573808644.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:03.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3573808644.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec3573808644.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec3573808644.dir\Debug\cmTryCompileExec3573808644.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3573808644.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3573808644.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3573808644.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3573808644.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3573808644.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3573808644.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3573808644.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec3573808644.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec3573808644.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3573808644.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec3573808644.dir\Debug\cmTryCompileExec3573808644.unsuccessfulbuild".
+  Touching "cmTryCompileExec3573808644.dir\Debug\cmTryCompileExec3573808644.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3573808644.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.70
+
+
+Determining if the include file guiddef.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec4227018177.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:05.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec4227018177.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec4227018177.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec4227018177.dir\Debug\cmTryCompileExec4227018177.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec4227018177.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec4227018177.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec4227018177.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec4227018177.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec4227018177.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec4227018177.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec4227018177.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec4227018177.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec4227018177.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec4227018177.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec4227018177.dir\Debug\cmTryCompileExec4227018177.unsuccessfulbuild".
+  Touching "cmTryCompileExec4227018177.dir\Debug\cmTryCompileExec4227018177.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec4227018177.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.55
+
+
+Determining if the _aligned_malloc exist passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec357040460.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:07.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec357040460.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec357040460.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec357040460.dir\Debug\cmTryCompileExec357040460.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec357040460.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec357040460.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec357040460.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec357040460.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  
+  CheckSymbolExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec357040460.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec357040460.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec357040460.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec357040460.dir\Debug\CheckSymbolExists.obj
+  cmTryCompileExec357040460.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec357040460.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec357040460.dir\Debug\cmTryCompileExec357040460.unsuccessfulbuild".
+  Touching "cmTryCompileExec357040460.dir\Debug\cmTryCompileExec357040460.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec357040460.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.59
+
+File D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <malloc.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef _aligned_malloc
+  return ((int*)(&_aligned_malloc))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the _controlfp exist passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec1195374988.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:08.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1195374988.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1195374988.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1195374988.dir\Debug\cmTryCompileExec1195374988.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1195374988.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1195374988.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1195374988.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1195374988.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  
+  CheckSymbolExists.c
+CheckSymbolExists.c(8): warning C4996: '_controlfp': This function or variable may be unsafe. Consider using _controlfp_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1195374988.vcxproj]
+          C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\include\float.h(86) : see declaration of '_controlfp'
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1195374988.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1195374988.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1195374988.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec1195374988.dir\Debug\CheckSymbolExists.obj
+  cmTryCompileExec1195374988.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1195374988.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec1195374988.dir\Debug\cmTryCompileExec1195374988.unsuccessfulbuild".
+  Touching "cmTryCompileExec1195374988.dir\Debug\cmTryCompileExec1195374988.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1195374988.vcxproj" (default targets).
+
+Build succeeded.
+
+"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1195374988.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  CheckSymbolExists.c(8): warning C4996: '_controlfp': This function or variable may be unsafe. Consider using _controlfp_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. [D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1195374988.vcxproj]
+
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.59
+
+File D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef _controlfp
+  return ((int*)(&_controlfp))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the __control87_2 exist passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec3169843181.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:09.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3169843181.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec3169843181.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec3169843181.dir\Debug\cmTryCompileExec3169843181.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3169843181.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3169843181.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3169843181.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3169843181.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  
+  CheckSymbolExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3169843181.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3169843181.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3169843181.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec3169843181.dir\Debug\CheckSymbolExists.obj
+  cmTryCompileExec3169843181.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3169843181.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec3169843181.dir\Debug\cmTryCompileExec3169843181.unsuccessfulbuild".
+  Touching "cmTryCompileExec3169843181.dir\Debug\cmTryCompileExec3169843181.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3169843181.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.59
+
+File D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <float.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef __control87_2
+  return ((int*)(&__control87_2))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function stat exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec2943117753.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:10.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2943117753.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec2943117753.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec2943117753.dir\Debug\cmTryCompileExec2943117753.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=stat /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2943117753.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2943117753.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=stat /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2943117753.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2943117753.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  
+  CheckFunctionExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2943117753.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2943117753.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2943117753.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec2943117753.dir\Debug\CheckFunctionExists.obj
+  cmTryCompileExec2943117753.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2943117753.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec2943117753.dir\Debug\cmTryCompileExec2943117753.unsuccessfulbuild".
+  Touching "cmTryCompileExec2943117753.dir\Debug\cmTryCompileExec2943117753.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2943117753.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.60
+
+
+Determining if the function _stricmp exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec2559813229.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:11.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2559813229.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec2559813229.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec2559813229.dir\Debug\cmTryCompileExec2559813229.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_stricmp /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2559813229.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2559813229.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_stricmp /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2559813229.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2559813229.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  
+  CheckFunctionExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2559813229.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2559813229.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2559813229.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec2559813229.dir\Debug\CheckFunctionExists.obj
+  cmTryCompileExec2559813229.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2559813229.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec2559813229.dir\Debug\cmTryCompileExec2559813229.unsuccessfulbuild".
+  Touching "cmTryCompileExec2559813229.dir\Debug\cmTryCompileExec2559813229.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2559813229.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.65
+
+
+Determining if the function _strnicmp exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec3937200500.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:13.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3937200500.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec3937200500.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec3937200500.dir\Debug\cmTryCompileExec3937200500.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_strnicmp /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3937200500.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3937200500.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_strnicmp /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3937200500.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3937200500.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  
+  CheckFunctionExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3937200500.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3937200500.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3937200500.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec3937200500.dir\Debug\CheckFunctionExists.obj
+  cmTryCompileExec3937200500.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3937200500.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec3937200500.dir\Debug\cmTryCompileExec3937200500.unsuccessfulbuild".
+  Touching "cmTryCompileExec3937200500.dir\Debug\cmTryCompileExec3937200500.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3937200500.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.59
+
+
+Determining if the function _snprintf exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec2032226450.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:14.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2032226450.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec2032226450.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec2032226450.dir\Debug\cmTryCompileExec2032226450.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_snprintf /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2032226450.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2032226450.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_snprintf /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2032226450.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2032226450.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  
+  CheckFunctionExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2032226450.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2032226450.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2032226450.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec2032226450.dir\Debug\CheckFunctionExists.obj
+  cmTryCompileExec2032226450.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2032226450.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec2032226450.dir\Debug\cmTryCompileExec2032226450.unsuccessfulbuild".
+  Touching "cmTryCompileExec2032226450.dir\Debug\cmTryCompileExec2032226450.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2032226450.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.56
+
+
+Determining if the function vsnprintf exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec444156899.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:15.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec444156899.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec444156899.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec444156899.dir\Debug\cmTryCompileExec444156899.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=vsnprintf /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec444156899.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec444156899.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=vsnprintf /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec444156899.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec444156899.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  
+  CheckFunctionExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec444156899.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec444156899.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec444156899.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec444156899.dir\Debug\CheckFunctionExists.obj
+  cmTryCompileExec444156899.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec444156899.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec444156899.dir\Debug\cmTryCompileExec444156899.unsuccessfulbuild".
+  Touching "cmTryCompileExec444156899.dir\Debug\cmTryCompileExec444156899.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec444156899.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+
+Determining if the function _finite exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec1552123678.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:16.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1552123678.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1552123678.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1552123678.dir\Debug\cmTryCompileExec1552123678.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_finite /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1552123678.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1552123678.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_finite /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1552123678.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1552123678.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  
+  CheckFunctionExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1552123678.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1552123678.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1552123678.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec1552123678.dir\Debug\CheckFunctionExists.obj
+  cmTryCompileExec1552123678.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1552123678.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec1552123678.dir\Debug\cmTryCompileExec1552123678.unsuccessfulbuild".
+  Touching "cmTryCompileExec1552123678.dir\Debug\cmTryCompileExec1552123678.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1552123678.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.52
+
+
+Determining if the function _isnan exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec10223246.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:18.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec10223246.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec10223246.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec10223246.dir\Debug\cmTryCompileExec10223246.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_isnan /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec10223246.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec10223246.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=_isnan /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec10223246.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec10223246.pdb" /Gd /TC /analyze- /errorReport:queue "C:\Program Files (x86)\CMake 2.8\share\cmake-2.8\Modules\CheckFunctionExists.c"
+  
+  CheckFunctionExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec10223246.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec10223246.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec10223246.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec10223246.dir\Debug\CheckFunctionExists.obj
+  cmTryCompileExec10223246.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec10223246.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec10223246.dir\Debug\cmTryCompileExec10223246.unsuccessfulbuild".
+  Touching "cmTryCompileExec10223246.dir\Debug\cmTryCompileExec10223246.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec10223246.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.57
+
+
+Determining if the include file windows.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec2907304747.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:19.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2907304747.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec2907304747.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec2907304747.dir\Debug\cmTryCompileExec2907304747.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _WIN32_WINNT=0x0501 /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2907304747.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2907304747.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _WIN32_WINNT=0x0501 /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2907304747.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2907304747.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2907304747.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2907304747.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2907304747.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec2907304747.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec2907304747.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2907304747.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec2907304747.dir\Debug\cmTryCompileExec2907304747.unsuccessfulbuild".
+  Touching "cmTryCompileExec2907304747.dir\Debug\cmTryCompileExec2907304747.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2907304747.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.32
+
+
+Determining if the timeGetTime exist in winmm passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec3887348124.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:21.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3887348124.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec3887348124.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec3887348124.dir\Debug\cmTryCompileExec3887348124.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3887348124.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3887348124.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3887348124.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3887348124.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  
+  CheckSymbolExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3887348124.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib winmm.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3887348124.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3887348124.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec3887348124.dir\Debug\CheckSymbolExists.obj
+  cmTryCompileExec3887348124.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3887348124.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec3887348124.dir\Debug\cmTryCompileExec3887348124.unsuccessfulbuild".
+  Touching "cmTryCompileExec3887348124.dir\Debug\cmTryCompileExec3887348124.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3887348124.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.98
+
+File D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <windows.h>
+#include <mmsystem.h>
+
+void cmakeRequireSymbol(int dummy,...){(void)dummy;}
+int main()
+{
+  cmakeRequireSymbol(0,&timeGetTime);
+  return 0;
+}
+
+Determining if the include file xmmintrin.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec113874490.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:22.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec113874490.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec113874490.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec113874490.dir\Debug\cmTryCompileExec113874490.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec113874490.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec113874490.pdb" /Gd /TC /analyze- /errorReport:queue  -msse CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec113874490.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec113874490.pdb" /Gd /TC /analyze- /errorReport:queue  -msse CheckIncludeFile.c
+  
+cl : Command line warning D9002: ignoring unknown option '-msse' [D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec113874490.vcxproj]
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec113874490.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec113874490.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec113874490.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec113874490.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec113874490.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec113874490.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec113874490.dir\Debug\cmTryCompileExec113874490.unsuccessfulbuild".
+  Touching "cmTryCompileExec113874490.dir\Debug\cmTryCompileExec113874490.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec113874490.vcxproj" (default targets).
+
+Build succeeded.
+
+"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec113874490.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  cl : Command line warning D9002: ignoring unknown option '-msse' [D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec113874490.vcxproj]
+
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.57
+
+
+Determining if the include file mmdeviceapi.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec1210031532.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:25.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1210031532.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1210031532.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1210031532.dir\Debug\cmTryCompileExec1210031532.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1210031532.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1210031532.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1210031532.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1210031532.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1210031532.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1210031532.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1210031532.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec1210031532.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec1210031532.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1210031532.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec1210031532.dir\Debug\cmTryCompileExec1210031532.unsuccessfulbuild".
+  Touching "cmTryCompileExec1210031532.dir\Debug\cmTryCompileExec1210031532.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1210031532.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.97
+
+
+Determining if the include file dsound.h exists passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec2105523048.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:26.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2105523048.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec2105523048.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec2105523048.dir\Debug\cmTryCompileExec2105523048.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2105523048.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2105523048.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec2105523048.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2105523048.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFile.c
+  
+  CheckIncludeFile.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2105523048.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2105523048.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec2105523048.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec2105523048.dir\Debug\CheckIncludeFile.obj
+  cmTryCompileExec2105523048.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec2105523048.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec2105523048.dir\Debug\cmTryCompileExec2105523048.unsuccessfulbuild".
+  Touching "cmTryCompileExec2105523048.dir\Debug\cmTryCompileExec2105523048.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec2105523048.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.94
+
+
+Determining if the DirectSoundCreate exist in dsound passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec3148841769.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:28.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3148841769.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec3148841769.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec3148841769.dir\Debug\cmTryCompileExec3148841769.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3148841769.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3148841769.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec3148841769.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3148841769.pdb" /Gd /TC /analyze- /errorReport:queue CheckSymbolExists.c
+  
+  CheckSymbolExists.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3148841769.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib dsound.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3148841769.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec3148841769.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec3148841769.dir\Debug\CheckSymbolExists.obj
+  cmTryCompileExec3148841769.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec3148841769.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec3148841769.dir\Debug\cmTryCompileExec3148841769.unsuccessfulbuild".
+  Touching "cmTryCompileExec3148841769.dir\Debug\cmTryCompileExec3148841769.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec3148841769.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.97
+
+File D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <dsound.h>
+
+void cmakeRequireSymbol(int dummy,...){(void)dummy;}
+int main()
+{
+  cmakeRequireSymbol(0,&DirectSoundCreate);
+  return 0;
+}
+
+Determining if files windows.h;mmsystem.h exist passed with the following output:
+Change Dir: D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe cmTryCompileExec1301456363.vcxproj /p:Configuration=Debug /p:VisualStudioVersion=11.0
+Microsoft (R) Build Engine version 4.0.30319.17929
+[Microsoft .NET Framework, version 4.0.30319.18034]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 2013.05.28. 23:19:29.
+Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1301456363.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1301456363.dir\Debug\".
+  Creating directory "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1301456363.dir\Debug\cmTryCompileExec1301456363.unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1301456363.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1301456363.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFiles.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 17.00.51106.1 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:/Program Files (x86)/Microsoft DirectX SDK (August 2009)/Include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1301456363.dir\Debug\\" /Fd"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1301456363.pdb" /Gd /TC /analyze- /errorReport:queue CheckIncludeFiles.c
+  
+  CheckIncludeFiles.c
+Link:
+  C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1301456363.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1301456363.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1301456363.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec1301456363.dir\Debug\CheckIncludeFiles.obj
+  cmTryCompileExec1301456363.vcxproj -> D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1301456363.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec1301456363.dir\Debug\cmTryCompileExec1301456363.unsuccessfulbuild".
+  Touching "cmTryCompileExec1301456363.dir\Debug\cmTryCompileExec1301456363.lastbuildstate".
+Done Building Project "D:\Sim_Devel\svn\openrails\Source\3rdPartyLibs\openal-soft\build\CMakeFiles\CMakeTmp\cmTryCompileExec1301456363.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.94
+
+
