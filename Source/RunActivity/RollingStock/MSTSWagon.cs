@@ -911,17 +911,20 @@ namespace ORTS
             var matrixAnimated = TrainCarShape.SharedShape.Animations != null && TrainCarShape.SharedShape.Animations.Count > 0 && TrainCarShape.SharedShape.Animations[0].anim_nodes.Count > matrix && TrainCarShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0;
             if (matrixName.StartsWith("WHEELS") && matrixName.Length == 7 | matrixName.Length == 8)
             {
-                if (matrixName.Length == 8 || !matrixAnimated)
-                    WheelPartIndexes.Add(matrix);
-                else
-                    RunningGear.AddMatrix(matrix);
-
-                var id = 0;
-                if (matrixName.Length == 8)
-                    Int32.TryParse(matrixName.Substring(6, 1), out id);
                 var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
-                var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
-                car.AddWheelSet(m.M43, id, pmatrix);
+                //someone uses wheel to animate fans, thus check if the wheel is not too high (lower than 3m), will animate it as real wheel
+                if (m.M42 < 3)
+                {
+                    var id = 0;
+                    if (matrixName.Length == 8)
+                        Int32.TryParse(matrixName.Substring(6, 1), out id);
+                    if (matrixName.Length == 8 || !matrixAnimated)
+                        WheelPartIndexes.Add(matrix);
+                    else
+                        RunningGear.AddMatrix(matrix);
+                    var pmatrix = TrainCarShape.SharedShape.GetParentMatrix(matrix);
+                    car.AddWheelSet(m.M43, id, pmatrix);
+                }
             }
             else if (matrixName.StartsWith("BOGIE"))
             {

@@ -609,6 +609,7 @@ namespace ORTS
 
             float distanceM = SpeedMpS * elapsedClockSeconds;
 
+            if (float.IsNaN(distanceM)) distanceM = 0;//sometime it may become NaN, force it to be 0, so no move
             // force stop
 
             if (distanceM > (NextStopDistanceM + 1.0f))

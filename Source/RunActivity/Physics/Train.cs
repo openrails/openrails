@@ -1120,6 +1120,7 @@ namespace ORTS
             UpdateCouplerSlack(elapsedClockSeconds);
 
             float distanceM = LastCar.SpeedMpS * elapsedClockSeconds;
+            if (float.IsNaN(distanceM)) distanceM = 0;//avoid NaN, if so will not move
             if (TrainType == TRAINTYPE.AI && LeadLocomotiveIndex == (Cars.Count - 1) && LastCar.Flipped)
                 distanceM = -distanceM;
             DistanceTravelledM += distanceM;
@@ -2235,7 +2236,7 @@ namespace ORTS
 
         public void CalculatePositionOfCars(float distance)
         {
-            if (float.IsNaN(distance)) return;//sanity check
+            if (float.IsNaN(distance)) distance = 0;//sanity check
 
             var tn = RearTDBTraveller.TN;
             RearTDBTraveller.Move(distance);
