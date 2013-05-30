@@ -75,7 +75,7 @@
 /* #undef HAVE_STRTOF */
 
 /* Define if we have the __int64 type */
-/* #undef HAVE___INT64 */
+#define HAVE___INT64
 
 /* Define to the size of a long int type */
 #define SIZEOF_LONG 4
@@ -90,7 +90,7 @@
 /* #undef HAVE_GCC_FORMAT */
 
 /* Define if we have stdint.h */
-#define HAVE_STDINT_H
+/* #undef HAVE_STDINT_H */
 
 /* Define if we have windows.h */
 #define HAVE_WINDOWS_H

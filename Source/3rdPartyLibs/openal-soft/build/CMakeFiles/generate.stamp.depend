@@ -14,14 +14,14 @@ C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/FindPkgConfig.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/FindPackageHandleStandardArgs.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/FindPackageMessage.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeParseArguments.cmake
-C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeVS11FindMake.cmake
+C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeVS9FindMake.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeDetermineSystem.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeSystem.cmake.in
 D:/Sim_Devel/svn/openrails/Source/3rdPartyLibs/openal-soft/build/CMakeFiles/2.8.11/CMakeSystem.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeDetermineCCompiler.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeDetermineCompiler.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeDetermineCompilerId.cmake
-C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CompilerId/VS-10.vcxproj.in
+C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CompilerId/VS-7.vcproj.in
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeClDeps.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeFindBinUtils.cmake
 C:/Program Files (x86)/CMake 2.8/share/cmake-2.8/Modules/CMakeCCompiler.cmake.in
