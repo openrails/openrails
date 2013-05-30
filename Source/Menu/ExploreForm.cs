@@ -64,9 +64,20 @@ namespace ORTS
 		{
 			get
 			{
-                return new ExploreActivity(listPaths.SelectedIndex >= 0 ? Paths[listPaths.SelectedIndex] : null, listConsists.SelectedIndex >= 0 ? Consists[listConsists.SelectedIndex] : null, listSeason.SelectedIndex, listWeather.SelectedIndex, (int)numericHour.Value, (int)numericMinute.Value);
+                return new ExploreActivity(listPaths.SelectedIndex >= 0 ? Paths[listPaths.SelectedIndex] : null, FindConsistFromIndex(), listSeason.SelectedIndex, listWeather.SelectedIndex, (int)numericHour.Value, (int)numericMinute.Value);
 			}
 		}
+
+        //find consists from the list's selected index
+        Consist FindConsistFromIndex()
+        {
+            if (listConsists.SelectedIndex < 0) return null;
+
+            var conName = ((string)listConsists.SelectedItem).Split('\t')[1];
+            var index = Consists.FindIndex(c => c.Name == conName);
+            if (index >= 0) return Consists[index];
+            return null;
+        }
 
 		void LoadPaths()
 		{
@@ -105,11 +116,14 @@ namespace ORTS
 			ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(folder).OrderBy(c => c.ToString()).ToList(), (consists) =>
 			{
 				Consists = consists;
-				foreach (var consist in Consists)
-					listConsists.Items.Add(consist.ToString());
+                listConsists.Sorted = true;
+                foreach (var consist in Consists)
+                {
+                    if (ConsistsHasEngine(consist)) listConsists.Items.Add(ConsistsFirstEngine(consist).PadRight(20,' ')+"\t"+consist.ToString());
+                }
                 var selectionIndex = exploreActivity.Consist != null ? Consists.FindIndex(c => c.FilePath == exploreActivity.Consist.FilePath) : -1;
                 if (selectionIndex >= 0)
-                    listConsists.SelectedIndex = selectionIndex;
+                    listConsists.SelectedIndex = ConsistsIndex (Consists[selectionIndex]);
                 else if (Consists.Count > 0)
                     listConsists.SelectedIndex = 0;
                 else
@@ -118,7 +132,53 @@ namespace ORTS
             });
 		}
 
-		void ExploreForm_FormClosing(object sender, FormClosingEventArgs e)
+        //check whether consist has engine
+        bool ConsistsHasEngine(Consist con)
+        {
+            try
+            {
+                var WagonList = con.CONFile.Train.TrainCfg.WagonList;
+                foreach (var wagon in WagonList)
+                {
+                    if (wagon.IsEngine) return true;
+                }
+            }
+            catch { return true; }
+            return false;
+        }
+
+        //check the name of the first engine
+        string ConsistsFirstEngine(Consist con)
+        {
+            try
+            {
+                var WagonList = con.CONFile.Train.TrainCfg.WagonList;
+                foreach (var wagon in WagonList)
+                {
+                    if (wagon.IsEngine) return wagon.Name;
+                }
+            }
+            catch { return "N/A"; }
+            return "N/A";
+        }
+
+        //find the index of a consist in the sorted list
+        int ConsistsIndex(Consist con)
+        {
+            try
+            {
+                var index = 0;
+                foreach (var item in listConsists.Items)
+                {
+                    if (con.Name == ((string)item).Split('\t')[1]) return index;
+                    index++;
+                }
+            }
+            catch { return -1; }
+            return -1;
+        }
+        
+        void ExploreForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			if (PathLoader != null)
 				PathLoader.Cancel();
