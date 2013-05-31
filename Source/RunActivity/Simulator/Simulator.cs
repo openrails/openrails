@@ -122,7 +122,7 @@ namespace ORTS
             Settings = settings;
             UseAdvancedAdhesion = Settings.UseAdvancedAdhesion;
             BreakCouplers = Settings.BreakCouplers;
-            CarVibrating = 0; //0 no vib, 1-2 mid vib, 3 max vib
+            CarVibrating = Settings.CarVibratingLevel; //0 no vib, 1-2 mid vib, 3 max vib
             UseSuperElevation = Settings.UseSuperElevation;
             SuperElevationMinLen = Settings.SuperElevationMinLen;
             SuperElevationGauge = (float)Settings.SuperElevationGauge/1000f;//gauge transfer from mm to m

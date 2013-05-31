@@ -548,7 +548,7 @@ namespace ORTS
             }
         }
 
-        public float sx=0.0f, sy=0.0f, sz=0.0f, prevElev, prevTilted;//time series from 0-3.14
+        public float sx=0.0f, sy=0.0f, sz=0.0f, prevElev=-100f, prevTilted;//time series from 0-3.14
         public float currentStiffness = 1.0f;
         public double lastTime = -1.0;
         public float totalRotationZ = 0.0f;
@@ -557,6 +557,7 @@ namespace ORTS
         public float prevY = -1000f;
         public void SuperElevation(float speed, int superEV, Traveller traveler)
         {
+            if (prevElev < -30f) { prevElev += 40f; return; }//avoid the first two updates as they are not valid
             speed = (float) Math.Abs(speed);//will make computation easier later, as we only deal with abs value
             if (speed > 40) speed = 40; //vib will not increase after 120km
             float timeInterval = 0f;
@@ -587,10 +588,17 @@ namespace ORTS
             if (superEV > 0)
             {
                 z = traveler.SuperElevationValue(speed, timeInterval, true);
-                z = prevElev + (z - prevElev) * timeInterval;//smooth rotation
-                prevElev = z;
+                if (this.Flipped) z *= -1f;
+
+                var diffz = Math.Abs(z - prevElev)-0.01;
+                if (prevElev < -10f) prevElev = z;//initial, will jump to the desired value
+                else if (diffz > Math.Abs(z)) { z = prevElev; }//the change is too big will stick to the old value
+                else
+                {
+                    z = prevElev + (z - prevElev) * timeInterval;//smooth rotation
+                    prevElev = z;
+                }
             }
-            if (this.Flipped) z *= -1f;
 
             //compute max shaking (rotation value), will peak at MaxVibSpeed, then decrease with half the value
             var max = 1f;

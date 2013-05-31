@@ -679,7 +679,9 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.CameraVibrate))
             {
                 Program.Simulator.CarVibrating = (Program.Simulator.CarVibrating + 1) % 4;
-                Simulator.Confirmer.Message(ConfirmLevel.Information, "Vibrating at level " + Program.Simulator.CarVibrating);
+                Simulator.Confirmer.Message(ConfirmLevel.None, "Vibrating at level " + Program.Simulator.CarVibrating);
+                Settings.CarVibratingLevel = Program.Simulator.CarVibrating;
+                Settings.Save("CarVibratingLevel");
             }
 
             //hit 9 key, get back to player train

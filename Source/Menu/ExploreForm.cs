@@ -74,7 +74,7 @@ namespace ORTS
             if (listConsists.SelectedIndex < 0) return null;
 
             var conName = ((string)listConsists.SelectedItem).Split('\t')[1];
-            var index = Consists.FindIndex(c => c.Name == conName);
+            var index = Consists.FindIndex(c => c.Name.Replace('\t', ' ') == conName);
             if (index >= 0) return Consists[index];
             return null;
         }
@@ -119,7 +119,7 @@ namespace ORTS
                 listConsists.Sorted = true;
                 foreach (var consist in Consists)
                 {
-                    if (ConsistsHasEngine(consist)) listConsists.Items.Add(ConsistsFirstEngine(consist).PadRight(20,' ')+"\t"+consist.ToString());
+                    if (ConsistsHasEngine(consist)) listConsists.Items.Add(ConsistsFirstEngine(consist).PadRight(20,' ')+"\t"+consist.ToString().Replace('\t',' '));
                 }
                 var selectionIndex = exploreActivity.Consist != null ? Consists.FindIndex(c => c.FilePath == exploreActivity.Consist.FilePath) : -1;
                 if (selectionIndex >= 0)
@@ -170,7 +170,7 @@ namespace ORTS
                 var index = 0;
                 foreach (var item in listConsists.Items)
                 {
-                    if (con.Name == ((string)item).Split('\t')[1]) return index;
+                    if (con.Name.Replace('\t', ' ') == ((string)item).Split('\t')[1]) return index;
                     index++;
                 }
             }

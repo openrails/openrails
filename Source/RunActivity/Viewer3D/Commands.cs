@@ -851,7 +851,7 @@ namespace ORTS {
             Receiver.SaveScreenshot = true;
             // Report();
         }
-    }    
+    }
 
     [Serializable()]
     public class ResumeActivityCommand : ActivityCommand {

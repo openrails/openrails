@@ -177,7 +177,8 @@ namespace ORTS
 
 		[Default(false)]
         public bool DistantMountains { get; set; }
-
+        [Default(0)]
+        public int CarVibratingLevel { get; set; }
         [Default(20)]
         public int DistantMountainsViewingTiles { get; set; }
         [Default(5)]
