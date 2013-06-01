@@ -563,7 +563,7 @@ namespace ORTS.Popups
             }
 
             markerIntervalD = Convert.ToInt32(markerIntervalD / roundingValue) * roundingValue;
-            float markerIntervalM = metric ? markerIntervalD * 1000 : Miles.toM(markerIntervalD, metric);
+            float markerIntervalM = metric ? markerIntervalD * 1000 : Miles.ToM(markerIntervalD, metric);
 
                 for (int ipos = 1; ipos <= noMarkers; ipos++)
                 {

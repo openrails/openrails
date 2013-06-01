@@ -20,7 +20,7 @@ using System.Diagnostics;
 
 namespace MSTSMath
 {
-	public class M
+	public class M // Not Math to avoid conflict with default Math
 	{
 
 		public static float Bearing( float x1, float z1, float x2, float z2 )

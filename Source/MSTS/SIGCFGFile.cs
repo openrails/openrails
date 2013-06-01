@@ -597,8 +597,11 @@ namespace MSTS
             }
             DrawStateName = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("speedmph", ()=>{ SpeedMpS = MpH.ToMpS(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
-                new STFReader.TokenProcessor("speedkph", ()=>{ SpeedMpS = KpH.ToMpS(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
+                //CJ
+                //new STFReader.TokenProcessor("speedmph", ()=>{ SpeedMpS = MpH.ToMpS(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
+                //new STFReader.TokenProcessor("speedkph", ()=>{ SpeedMpS = KpH.ToMpS(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
+                new STFReader.TokenProcessor("speedmph", ()=>{ SpeedMpS = MpS.FromMpH(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
+                new STFReader.TokenProcessor("speedkph", ()=>{ SpeedMpS = MpS.FromKpH(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
                 new STFReader.TokenProcessor("signalflags", ()=>{
                     stf.MustMatch("(");
                     while (!stf.EndOfBlock())

@@ -99,9 +99,9 @@ namespace ORTS
                 case "engine(dieselsmokeeffectmaxmagnitude": ExhaustMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(or_diesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;
                 case "engine(or_diesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;
-                case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
-                case "engine(dieselusedperhouratmaxpower": DieselUsedPerHourAtMaxPowerL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
-                case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.Diesel, null); break;
+                case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.LiquidVolume, null); break;
+                case "engine(dieselusedperhouratmaxpower": DieselUsedPerHourAtMaxPowerL = stf.ReadFloatBlock(STFReader.UNITS.LiquidVolume, null); break;
+                case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.LiquidVolume, null); break;
                 // for example
                 //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
                 //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
