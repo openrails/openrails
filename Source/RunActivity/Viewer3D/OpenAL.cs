@@ -445,15 +445,18 @@ namespace ORTS
                             pFile.Seek(Marshal.SizeOf(riffChunk) * -1, SeekOrigin.Current);
                             SMPLCHUNK smplChunk;
                             GetNextStructureValue<SMPLCHUNK>(pFile, out smplChunk, -1);
-                            CuePoints = new uint[smplChunk.NumSmplLoops * 2];
+                            if (smplChunk.NumSmplLoops > 0)
                             {
-                                SMPLLOOP smplLoop;
-                                for (uint i = 0; i < smplChunk.NumSmplLoops; i++)
+                                CuePoints = new uint[smplChunk.NumSmplLoops * 2];
                                 {
-                                    if (GetNextStructureValue<SMPLLOOP>(pFile, out smplLoop, -1))
+                                    SMPLLOOP smplLoop;
+                                    for (uint i = 0; i < smplChunk.NumSmplLoops; i++)
                                     {
-                                        CuePoints[i * 2] = smplLoop.ChunkStart;
-                                        CuePoints[i * 2 + 1] = smplLoop.ChunkEnd;
+                                        if (GetNextStructureValue<SMPLLOOP>(pFile, out smplLoop, -1))
+                                        {
+                                            CuePoints[i * 2] = smplLoop.ChunkStart;
+                                            CuePoints[i * 2 + 1] = smplLoop.ChunkEnd;
+                                        }
                                     }
                                 }
                             }
