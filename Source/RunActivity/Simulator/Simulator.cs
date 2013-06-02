@@ -433,6 +433,7 @@ namespace ORTS
                             {
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
+                                car.prevElev = -60f;
                             }
                             FinishRearCoupling(drivenTrain, train);
                             if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGCouple(drivenTrain, train)).ToString());
@@ -456,6 +457,7 @@ namespace ORTS
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
+                                car.prevElev = -60f;
                             }
                             FinishRearCoupling(drivenTrain, train);
                             if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGCouple(drivenTrain, train)).ToString());
@@ -493,6 +495,7 @@ namespace ORTS
                                 TrainCar car = train.Cars[i];
                                 drivenTrain.Cars.Insert(i, car);
                                 car.Train = drivenTrain;
+                                car.prevElev = -60f;
                             }
                             FinishFrontCoupling(drivenTrain, train, lead);
                             if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGCouple(drivenTrain, train)).ToString());
@@ -517,6 +520,7 @@ namespace ORTS
                                 drivenTrain.Cars.Insert(0, car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
+                                car.prevElev = -60f;
                             }
                             FinishFrontCoupling(drivenTrain, train, lead);
                             if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGCouple(drivenTrain, train)).ToString());

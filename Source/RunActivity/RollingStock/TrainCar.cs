@@ -592,7 +592,7 @@ namespace ORTS
 
                 var diffz = Math.Abs(z - prevElev)-0.01;
                 if (prevElev < -10f) prevElev = z;//initial, will jump to the desired value
-                else if (diffz > Math.Abs(z)) { z = prevElev; }//the change is too big will stick to the old value
+                //else if (Math.Abs(z) > 0.0001 && Math.Sign(prevElev) >0.0001 && Math.Sign(z) != Math.Sign(prevElev)) { z = prevElev; }//changing signs indicating something wrong
                 else
                 {
                     z = prevElev + (z - prevElev) * timeInterval;//smooth rotation
