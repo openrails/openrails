@@ -414,31 +414,32 @@ namespace ORTS
             lodItem.Polylines.Add(pl); 
             lodItem.Accum(pl.Vertices.Count);
 
-            /* REMOVED CATENARY TO BETTER MATCH MSTS APPEARANCE 
-            pl = new Polyline(this, "TopWire1", 5);
-            pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
-            topHeight += 1.0f;
+            if (RenderProcess.Viewer.Settings.DoubleWire)
+            {
+                pl = new Polyline(this, "TopWire1", 5);
+                pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
+                topHeight += 1.0f;
 
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -1f, 0f, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, 0f, 1f, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, 1f, 0f, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.04f, 0.0f, -1f, 0f, 0f, u1, v1));
-            lodItem.Polylines.Add(pl);
-            lodItem.Accum(pl.Vertices.Count); 
+                pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -1f, 0f, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, 0f, 1f, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, 1f, 0f, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, 0f, -1f, 0f, u1, v1));
+                pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.04f, 0.0f, -1f, 0f, 0f, u1, v1));
+                lodItem.Polylines.Add(pl);
+                lodItem.Accum(pl.Vertices.Count);
 
-            vertical = new Polyline(this, "TopWireVertical", 5);
-            vertical.DeltaTexCoord = new Vector2(0.00f, 0.00f);
+                vertical = new Polyline(this, "TopWireVertical", 5);
+                vertical.DeltaTexCoord = new Vector2(0.00f, 0.00f);
 
-            vertical.Vertices.Add(new Vertex(-0.008f, topHeight, 0.008f, 0f, 0f, 1f, u1, v1));
-            vertical.Vertices.Add(new Vertex(-.008f, topHeight, -.008f, -1f, 0f, 0f, u1, v1));
-            vertical.Vertices.Add(new Vertex(.008f, topHeight, -.008f, 0f, 0f, -1f, u1, v1));
-            vertical.Vertices.Add(new Vertex(.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
-            vertical.Vertices.Add(new Vertex(-.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
-            lodItem.VerticalPolylines = new ArrayList(); 
-            lodItem.VerticalPolylines.Add(vertical); 
-            lodItem.VerticalAccum(vertical.Vertices.Count); 
-            */
+                vertical.Vertices.Add(new Vertex(-0.008f, topHeight, 0.008f, 0f, 0f, 1f, u1, v1));
+                vertical.Vertices.Add(new Vertex(-.008f, topHeight, -.008f, -1f, 0f, 0f, u1, v1));
+                vertical.Vertices.Add(new Vertex(.008f, topHeight, -.008f, 0f, 0f, -1f, u1, v1));
+                vertical.Vertices.Add(new Vertex(.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
+                vertical.Vertices.Add(new Vertex(-.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
+                lodItem.VerticalPolylines = new ArrayList();
+                lodItem.VerticalPolylines.Add(vertical);
+                lodItem.VerticalAccum(vertical.Vertices.Count);
+            }
 
 
             lod.LODItems.Add(lodItem); // Append to LODItems array 

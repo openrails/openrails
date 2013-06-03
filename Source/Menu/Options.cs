@@ -119,6 +119,7 @@ namespace ORTS
             DMLoweringValue.Value = settings.DistantMountainsLoweringValue;
             NormalViewingDistance.Value = settings.ViewingDistance;
             LODExtention.Checked = settings.LODViewingExtention;
+            checkDoubleWire.Checked = settings.DoubleWire;
         }
 
         string ParseCategoryFrom(string name)
@@ -334,6 +335,7 @@ namespace ORTS
             Settings.DistantMountainsLoweringValue = (int)DMLoweringValue.Value;
             Settings.ViewingDistance = (int)NormalViewingDistance.Value;
             Settings.LODViewingExtention = LODExtention.Checked;
+            Settings.DoubleWire = checkDoubleWire.Checked;
             Settings.Save();
 
             DialogResult = DialogResult.OK;
