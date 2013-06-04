@@ -951,6 +951,7 @@ namespace ORTS
             }
             else if (matrixName.StartsWith("PANTOGRAPH")) //pantographs (1/2)
             {
+
                 switch (matrixName)
                 {
                     case "PANTOGRAPHBOTTOM1":
@@ -975,6 +976,13 @@ namespace ORTS
                     case "PANTOGRAPHTOP2B":
                         Pantograph2.AddMatrix(matrix);
                         break;
+                    default ://someone used other language
+                        if (matrixName.Contains("1"))
+                            Pantograph1.AddMatrix(matrix);
+                        else if (matrixName.Contains("2"))
+                            Pantograph2.AddMatrix(matrix);
+                        else Pantograph2.AddMatrix(matrix); //some may have only one, will put it as panto 2
+                        break;
                 }
             }
             else if (matrixName.StartsWith("MIRROR")) // mirrors
@@ -988,6 +996,7 @@ namespace ORTS
                     Pantograph1.AddMatrix(matrix);
                 else if (matrixName.Contains("2"))
                     Pantograph2.AddMatrix(matrix);
+                else Pantograph1.AddMatrix(matrix); //some may have only one, will put it as panto 1
             }
             else
             {
