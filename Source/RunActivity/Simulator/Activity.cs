@@ -481,7 +481,8 @@ namespace ORTS {
         public bool IsMissedStation() {
             // Check if station is in present train path
 
-            if (Program.Simulator.PlayerLocomotive.Train.TCRoute.activeSubpath != Program.Simulator.PlayerLocomotive.Train.StationStops[0].SubrouteIndex)
+            if (Program.Simulator.PlayerLocomotive.Train.StationStops.Count == 0 ||
+                Program.Simulator.PlayerLocomotive.Train.TCRoute.activeSubpath != Program.Simulator.PlayerLocomotive.Train.StationStops[0].SubrouteIndex)
             {
                 return (false);
             }
