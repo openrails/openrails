@@ -852,6 +852,7 @@ namespace ORTS
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
         protected Viewer3D _Viewer3D;
 
+        bool HasFirstPanto = false;
         public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car)
             : base(viewer, car)
         {
@@ -881,6 +882,12 @@ namespace ORTS
 
             // Adding all loaded SoundSource to the main sound update thread
             _Viewer3D.SoundProcess.AddSoundSource(this, SoundSources);
+
+            // Determine if it has first pantograph. So we can match unnamed panto parts correctly
+            for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
+                if (TrainCarShape.SharedShape.MatrixNames[i].Contains('1')) {
+                    if (TrainCarShape.SharedShape.MatrixNames[i].ToUpper().StartsWith("PANTO")) { HasFirstPanto = true; break; }
+                }
 
             // Match up all the matrices with their parts.
             for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
@@ -981,7 +988,11 @@ namespace ORTS
                             Pantograph1.AddMatrix(matrix);
                         else if (matrixName.Contains("2"))
                             Pantograph2.AddMatrix(matrix);
-                        else Pantograph2.AddMatrix(matrix); //some may have only one, will put it as panto 2
+                        else
+                        {
+                            if (HasFirstPanto) Pantograph1.AddMatrix(matrix); //some may have no first panto, will put it as panto 2
+                            else Pantograph2.AddMatrix(matrix);
+                        }
                         break;
                 }
             }
@@ -996,7 +1007,11 @@ namespace ORTS
                     Pantograph1.AddMatrix(matrix);
                 else if (matrixName.Contains("2"))
                     Pantograph2.AddMatrix(matrix);
-                else Pantograph1.AddMatrix(matrix); //some may have only one, will put it as panto 1
+                else
+                {
+                    if (HasFirstPanto) Pantograph1.AddMatrix(matrix); //some may have no first panto, will put it as panto 2
+                    else Pantograph2.AddMatrix(matrix);
+                }
             }
             else
             {
