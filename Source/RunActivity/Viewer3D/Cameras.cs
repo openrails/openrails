@@ -75,7 +75,6 @@ namespace ORTS
 
         // Sound related properties
         public Vector3 Velocity { get; protected set; }
-        protected Traveller CameraTraveller;
         
         protected Camera(Viewer3D viewer)
         {
@@ -174,24 +173,6 @@ namespace ORTS
             frustumRight.Y = xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
             frustumRight.Z = xnaView.M31 * frustumRightProjected.X + xnaView.M33 * frustumRightProjected.Z;
             frustumRight.Normalize();
-        }
-
-        public void PrepareSoundFrame()
-        {
-            if (this is TracksideCamera || this is FreeRoamCamera
-                || AttachedCar == null || AttachedCar.Train == null)
-            {
-                Velocity = new Vector3(0, 0, 0);
-                return;
-            }
-            CameraTraveller = new Traveller(AttachedCar.Train.FrontTDBTraveller);
-            float speedMpS = AttachedCar.SpeedMpS;
-            if (AttachedCar.Flipped)
-                speedMpS *= -1;
-
-            Velocity = -CameraTraveller.Location;
-            CameraTraveller.Move(speedMpS);
-            Velocity += CameraTraveller.Location;
         }
 
         // Cull for fov

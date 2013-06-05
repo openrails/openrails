@@ -171,13 +171,19 @@ namespace ORTS
 #if DOPPLER
                 if (Viewer != null || Viewer.Camera != null) // For sure we have a Camera
                 {
-                    Viewer.Camera.PrepareSoundFrame();
-
                     float[] cameraPosition = new float[] {
                         Viewer.Camera.CameraWorldLocation.Location.X + 2048 * Viewer.Camera.CameraWorldLocation.TileX,
                         Viewer.Camera.CameraWorldLocation.Location.Y,
                         Viewer.Camera.CameraWorldLocation.Location.Z + 2048 * Viewer.Camera.CameraWorldLocation.TileZ};
-                    float[] cameraVelocity = new float[] { Viewer.Camera.Velocity.X, Viewer.Camera.Velocity.Y, Viewer.Camera.Velocity.Z };
+
+                    float[] cameraVelocity = new float[] { 0, 0, 0 };
+
+                    if (!(Viewer.Camera is TracksideCamera) && !(Viewer.Camera is FreeRoamCamera) && Viewer.Camera.AttachedCar != null)
+                    {
+                        Vector3 directionVector = Vector3.Multiply(Viewer.Camera.AttachedCar.GetXNAMatrix().Forward, Viewer.Camera.AttachedCar.SpeedMpS);
+                        cameraVelocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
+                    }
+
                     float[] cameraOrientation = new float[] { 
                         Viewer.Camera.XNAView.Forward.X, Viewer.Camera.XNAView.Forward.Y, Viewer.Camera.XNAView.Forward.Z,
                         Viewer.Camera.XNAView.Up.X, Viewer.Camera.XNAView.Up.Y, Viewer.Camera.XNAView.Up.Z };

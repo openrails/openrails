@@ -442,21 +442,15 @@ namespace ORTS
                 {
                     if (Viewer.Camera.AttachedCar != null && Viewer.Camera.AttachedCar.Train != null 
                         && Car.Train == Viewer.Camera.AttachedCar.Train
-                        && !(Viewer.Camera is TracksideCamera))
+                        && !(Viewer.Camera is TracksideCamera) && !(Viewer.Camera is FreeRoamCamera))
                     {
-                        velocity = new float[] { Viewer.Camera.Velocity.X, Viewer.Camera.Velocity.Y, Viewer.Camera.Velocity.Z };
+                        Vector3 directionVector = Vector3.Multiply(Viewer.Camera.AttachedCar.GetXNAMatrix().Forward, Viewer.Camera.AttachedCar.SpeedMpS);
+                        velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
                     }
                     else
                     {
-                        SoundSourceTraveller = new Traveller(Car.Train.FrontTDBTraveller);
-                        float speedMpS = Car.SpeedMpS;
-                        if (Car.Flipped)
-                            speedMpS *= -1;
-
-                        Vector3 location = -SoundSourceTraveller.Location;
-                        SoundSourceTraveller.Move(speedMpS);
-                        location += SoundSourceTraveller.Location;
-                        velocity = new float[] { location.X, location.Y, location.Z };
+                        Vector3 directionVector = Vector3.Multiply(Car.GetXNAMatrix().Forward, Car.SpeedMpS);
+                        velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
                     }
                 }
 #endif
