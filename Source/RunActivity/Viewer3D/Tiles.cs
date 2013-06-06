@@ -199,7 +199,7 @@ namespace ORTS
 
         public bool IsEmpty { get { return TFile == null; } }
 
-        public int tilesCovered = 1;
+        public int TilesCovered = 1;
         /// <param name="visible">Tiles adjacent to the current visible tile may not be modelled.
         /// This flag decides whether a missing file leads to a warning message.</param>
         public Tile(string filePath, int tileX, int tileZ, bool visible)
@@ -235,7 +235,7 @@ namespace ORTS
                     try
                     {
                         TFile = new TFile(name);
-                        tilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
+                        TilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
                         name = fileName + "_y.raw";
                         YFile = new YFile(name);
                         name = fileName + "_f.raw";
@@ -271,7 +271,7 @@ namespace ORTS
                 try
                 {
                     TFile = new TFile(name);
-                    tilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
+                    TilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
                     name = filePath + fileName + "_y.raw";
                     YFile = new YFile(name, TFile.terrain.terrain_patchsets[0].xdim * 16);
                     name = filePath + fileName + "_f.raw";
@@ -293,7 +293,7 @@ namespace ORTS
                     try
                     {
                         TFile = new TFile(name);
-                        tilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
+                        TilesCovered = (int)(TFile.terrain.terrain_samples.terrain_nsamples * TFile.terrain.terrain_samples.terrain_sample_size / 2048);
                         name = filePath + fileName + "_y.raw";
                         YFile = new YFile(name, TFile.terrain.terrain_patchsets[0].xdim * 16);
                         name = filePath + fileName + "_f.raw";

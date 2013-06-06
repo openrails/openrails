@@ -86,8 +86,8 @@ namespace ORTS
                     for (var z = -needed; z <= needed; z++)
                     {
                         var tile = worldFiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
-                        var visible = (x == 0 && z == 0);   // Indicates whether this tile is visible or an adjacent one.
-                        tile = LoadWorldFile(TileX + x, TileZ + z, visible);
+                        if (tile == null)
+                            tile = LoadWorldFile(TileX + x, TileZ + z, x == 0 && z == 0);
                         newWorldFiles.Add(tile);
                         oldWorldFiles.Remove(tile);
                     }

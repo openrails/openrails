@@ -59,12 +59,8 @@ namespace ORTS
                 TileX = VisibleTileX;
                 TileZ = VisibleTileZ;
                 var tiles = Tiles;
-                var maxTileCovered = 1;
-                foreach (var tile in tiles)
-                {
-                    if (tile.tileCovered > maxTileCovered) maxTileCovered = tile.tileCovered;
-                }
                 var newTiles = new List<TerrainTile>();
+                var maxTileCovered = tiles.Count > 0 ? tiles.Max(t => t.TilesCovered) : 1;
                 var needed = (int)Math.Ceiling((float)Viewer.Settings.ViewingDistance * maxTileCovered / 2048f);
                 for (var x = -needed; x <= needed; x++)
                 {
@@ -72,15 +68,15 @@ namespace ORTS
                     {
                         var tile = tiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         if (tile == null)
-                        {
-                            var visible = (x == 0 && z == 0);
-                            tile = LoadTile(TileX + x, TileZ + z, visible);
-                        }
+                            tile = LoadTile(TileX + x, TileZ + z, x == 0 && z == 0);
                         newTiles.Add(tile);
                     }
                 }
                 Tiles = newTiles;
-                if (!Viewer.Settings.DistantMountains) return;
+
+                if (!Viewer.Settings.DistantMountains)
+                    return;
+
                 tiles = LOTiles;
                 newTiles = new List<TerrainTile>();
                 needed = Viewer.Settings.DistantMountainsViewingTiles;//LO_TILES has longer viewing distance (40KM)
@@ -97,13 +93,11 @@ namespace ORTS
                         try
                         {
                             if (tile == null)
-                            {
-                                var visible = (x == 0 && z == 0);
-                                tile = LoadTile(TileX + x, TileZ + z, visible, Viewer.LOTiles);
-                            }
-                            if (tile != null) newTiles.Add(tile);
+                                tile = LoadTile(TileX + x, TileZ + z, x == 0 && z == 0, Viewer.LOTiles);
+                            if (tile != null)
+                                newTiles.Add(tile);
                         }
-                        catch  {  }
+                        catch { }
                     }
                 }
                 LOTiles = newTiles;
@@ -122,13 +116,13 @@ namespace ORTS
         {
             var tiles = Tiles;
             foreach (var tile in tiles)
-                if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448*tile.tileCovered))
+                if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448*tile.TilesCovered))
                     tile.PrepareFrame(frame, elapsedTime);
             if (!Viewer.Settings.DistantMountains) return;
             tiles = LOTiles;
             foreach (var tile in tiles)
             {
-                if (Viewer.Camera.InFOV(new Vector3((tile.TileX + tile.tileCovered / 2 - Viewer.Camera.TileX) * 2048, Viewer.Camera.Location.Y, (tile.TileZ + tile.tileCovered / 2 - Viewer.Camera.TileZ) * 2048), 2000 * tile.tileCovered))
+                if (Viewer.Camera.InFOV(new Vector3((tile.TileX + tile.TilesCovered / 2 - Viewer.Camera.TileX) * 2048, Viewer.Camera.Location.Y, (tile.TileZ + tile.TilesCovered / 2 - Viewer.Camera.TileZ) * 2048), 2000 * tile.TilesCovered))
                     tile.PrepareFrame(frame, elapsedTime);
             }
         }
@@ -178,7 +172,7 @@ namespace ORTS
 
         TerrainPatch[,] TerrainPatches = null; 
         WaterTile WaterTile;
-        public  int tileCovered = 1;
+        public int TilesCovered = 1;
 
         public TerrainTile(Viewer3D viewer, int tileX, int tileZ, bool visible)
         {
@@ -195,7 +189,7 @@ namespace ORTS
             var tile = viewer.Tiles.GetTile(tileX, tileZ);
             if (tile != null && !tile.IsEmpty)
             {
-                this.tileCovered = tile.tilesCovered;
+                this.TilesCovered = tile.TilesCovered;
                 if (tile.TFile.ContainsWater)
                     WaterTile = new WaterTile(viewer, TileX, TileZ);
 
@@ -204,7 +198,7 @@ namespace ORTS
                         if (tile.TFile.terrain.terrain_patchsets[0].GetPatch(x, z).DrawingEnabled)
                         {
                             TerrainPatches[x, z] = new TerrainPatch(viewer, tile, x, z, tileX, tileZ, 16);
-                            if (tile.tilesCovered != 1) TerrainPatches[x, z].ViewingDistance = TerrainPatches[x, z].ViewingDistance * tile.tilesCovered;
+                            if (tile.TilesCovered != 1) TerrainPatches[x, z].ViewingDistance = TerrainPatches[x, z].ViewingDistance * tile.TilesCovered;
                         }
             }
         }
@@ -220,7 +214,7 @@ namespace ORTS
 
             // Terrain needs all surrounding tiles to correctly join up the meshes.
             var tile = tiles.GetTile(tileX, tileZ);
-            this.tileCovered = tile.tilesCovered;
+            this.TilesCovered = tile.TilesCovered;
             if (tile != null && !tile.IsEmpty)
             {
                 if (tile.TFile.ContainsWater)
@@ -379,18 +373,18 @@ namespace ORTS
             var points = parentDim * 16;//normal tiles cover 256 points, lotiles cover 64 points
             if (hx > points - 1 || hx < 0 || hz > points - 1 || hz < 0)
             {
-                if (Tile.tilesCovered == 2 || Tile.tilesCovered == 16) //for quad tiles and 32x32KM lotiles
+                if (Tile.TilesCovered == 2 || Tile.TilesCovered == 16) //for quad tiles and 32x32KM lotiles
                 {
-                    var normalStep = Tile.tilesCovered / 2; 
-                    var halfPoints = 128; if (Tile.tilesCovered == 16) halfPoints = 32; 
+                    var normalStep = Tile.TilesCovered / 2; 
+                    var halfPoints = 128; if (Tile.TilesCovered == 16) halfPoints = 32; 
                     var TX = TileX; var TZ = TileZ;
                     if (hx < 0) { hx = points - 1; TX -= normalStep; }
                     if (hz < 0) { hz = points - 1; TZ += normalStep; }
                     if (hx > points - 1)//too big for this tile, check next
                     {
                         //move to right, check next tile, if normal, decide which portion z should be (top/bottom)
-                        hx = 0; TX += Tile.tilesCovered; var tmpTile = tiles.GetTile(TX, TZ);
-                        if (tmpTile == null || tmpTile.tilesCovered == normalStep) 
+                        hx = 0; TX += Tile.TilesCovered; var tmpTile = tiles.GetTile(TX, TZ);
+                        if (tmpTile == null || tmpTile.TilesCovered == normalStep) 
                             if (hz >= halfPoints)
                             {
                                 hz -= halfPoints; hz *= 2; TZ -= normalStep;
@@ -401,8 +395,8 @@ namespace ORTS
                     if (hz > points - 1)//too big for this tile, check next
                     {
                         //move down, check next tile, if normal, decide which portion x should be (left/right)
-                        hz = 0; TZ -= Tile.tilesCovered; var tmpTile = tiles.GetTile(TX, TZ);
-                        if (tmpTile == null || tmpTile.tilesCovered == normalStep)
+                        hz = 0; TZ -= Tile.TilesCovered; var tmpTile = tiles.GetTile(TX, TZ);
+                        if (tmpTile == null || tmpTile.TilesCovered == normalStep)
                             if (hx >= halfPoints)
                             {
                                 hx -= halfPoints; hx *= 2; TX += normalStep;
