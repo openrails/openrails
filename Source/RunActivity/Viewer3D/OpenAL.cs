@@ -738,7 +738,7 @@ namespace ORTS
                     uint adjPos = wfi.CuePoints[i] * wfi.nBitsPerSample / 8 * wfi.nChannels;
                     if (adjPos > wfi.ulDataSize)
                     {
-                        Trace.TraceWarning("Invalid cue point in wave file; Length {1}, CUE {2}, BitsPerSample {4}, Channels {5} in {0}", Name, wfi.ulDataSize, adjPos, wfi.nBitsPerSample, wfi.nChannels);
+                        Trace.TraceWarning("Invalid cue point in wave file; Length {1}, CUE {2}, BitsPerSample {3}, Channels {4} in {0}", Name, wfi.ulDataSize, adjPos, wfi.nBitsPerSample, wfi.nChannels);
                         wfi.CuePoints[i] = 0xFFFFFFFF;
                         adjPos = prevAdjPos;
                     }
