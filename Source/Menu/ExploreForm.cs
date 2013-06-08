@@ -36,10 +36,13 @@ namespace ORTS
 		List<Consist> Consists = new List<Consist>();
         Task<List<Path>> PathLoader;
 		Task<List<Consist>> ConsistLoader;
+        private ListViewColumnSorter lvwColumnSorter;
 
 		public ExploreForm(Folder folder, Route route, ExploreActivity exploreActivity)
 		{
 			InitializeComponent();
+            lvwColumnSorter = new ListViewColumnSorter();
+            ConsistsListView.ListViewItemSorter = lvwColumnSorter;
 
 			// Windows 2000 and XP should use 8.25pt Tahoma, while Windows
 			// Vista and later should use 9pt "Segoe UI". We'll use the
@@ -71,9 +74,9 @@ namespace ORTS
         //find consists from the list's selected index
         Consist FindConsistFromIndex()
         {
-            if (listConsists.SelectedIndex < 0) return null;
+            if (this.ConsistsListView.SelectedIndices[0] < 0) return null;
 
-            var conName = ((string)listConsists.SelectedItem).Split('\t')[1];
+            var conName = this.ConsistsListView.SelectedItems[0].SubItems[1].Text;
             var index = Consists.FindIndex(c => c.Name.Replace('\t', ' ') == conName);
             if (index >= 0) return Consists[index];
             return null;
@@ -100,7 +103,7 @@ namespace ORTS
                     listPaths.SelectedIndex = 0;
                 else
                     listPaths.ClearSelected();
-                buttonOk.Enabled = listPaths.Items.Count > 0 && listConsists.Items.Count > 0;
+                buttonOk.Enabled = listPaths.Items.Count > 0 && ConsistsListView.Items.Count > 0;
             });
 		}
 
@@ -109,26 +112,36 @@ namespace ORTS
 			if (ConsistLoader != null)
 				ConsistLoader.Cancel();
 
-			listConsists.Items.Clear();
+            this.ConsistsListView.Items.Clear();
             buttonOk.Enabled = false;
             var folder = Folder;
 			var exploreActivity = ExploreActivity;
 			ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(folder).OrderBy(c => c.ToString()).ToList(), (consists) =>
 			{
 				Consists = consists;
-                listConsists.Sorted = true;
                 foreach (var consist in Consists)
                 {
-                    if (ConsistsHasEngine(consist)) listConsists.Items.Add(ConsistsFirstEngine(consist).PadRight(20,' ')+"\t"+consist.ToString().Replace('\t',' '));
+                    if (ConsistsHasEngine(consist))
+                    {
+                        ListViewItem LVI = new ListViewItem(ConsistsFirstEngine(consist));
+                        LVI.SubItems.Add(consist.ToString());
+                        ConsistsListView.Items.Add(LVI);
+                    }
                 }
+                lvwColumnSorter.SortColumn = 0;
+                lvwColumnSorter.Order = SortOrder.Ascending;
+                ConsistsListView.Sort();
                 var selectionIndex = exploreActivity.Consist != null ? Consists.FindIndex(c => c.FilePath == exploreActivity.Consist.FilePath) : -1;
+                ConsistsListView.SelectedItems.Clear();
                 if (selectionIndex >= 0)
-                    listConsists.SelectedIndex = ConsistsIndex (Consists[selectionIndex]);
+                {
+                    ConsistsListView.Focus();
+                    this.ConsistsListView.Items[ConsistsIndex(Consists[selectionIndex])].Selected = true;
+                    ConsistsListView.Select();
+                }
                 else if (Consists.Count > 0)
-                    listConsists.SelectedIndex = 0;
-                else
-                    listConsists.ClearSelected();
-                buttonOk.Enabled = listPaths.Items.Count > 0 && listConsists.Items.Count > 0;
+                    this.ConsistsListView.Items[0].Selected = true;
+                buttonOk.Enabled = listPaths.Items.Count > 0 && this.ConsistsListView.Items.Count > 0;
             });
 		}
 
@@ -168,14 +181,14 @@ namespace ORTS
             try
             {
                 var index = 0;
-                foreach (var item in listConsists.Items)
+                foreach (var item in this.ConsistsListView.Items)
                 {
-                    if (con.Name.Replace('\t', ' ') == ((string)item).Split('\t')[1]) return index;
+                    if (con.Name == ((ListViewItem)item).SubItems[1].Text) return index;
                     index++;
                 }
             }
-            catch { return -1; }
-            return -1;
+            catch { return 0; }
+            return 0;
         }
         
         void ExploreForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -185,5 +198,123 @@ namespace ORTS
 			if (ConsistLoader != null)
 				ConsistLoader.Cancel();
 		}
+
+        private void ConsistsViewColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            // Determine if clicked column is already the column that is being sorted.
+            if (e.Column == lvwColumnSorter.SortColumn)
+            {
+                // Reverse the current sort direction for this column.
+                if (lvwColumnSorter.Order == SortOrder.Ascending)
+                {
+                    lvwColumnSorter.Order = SortOrder.Descending;
+                }
+                else
+                {
+                    lvwColumnSorter.Order = SortOrder.Ascending;
+                }
+            }
+            else
+            {
+                // Set the column number that is to be sorted; default to ascending.
+                lvwColumnSorter.SortColumn = e.Column;
+                lvwColumnSorter.Order = SortOrder.Ascending;
+            }
+
+            // Perform the sort with these new sort options.
+            this.ConsistsListView.Sort();
+        }
 	}
+
+    // Implements the manual sorting of items by columns.
+    class ListViewColumnSorter  : System.Collections.IComparer
+    {
+        /// <summary>
+        /// Specifies the column to be sorted
+        /// </summary>
+        private int ColumnToSort;
+        /// <summary>
+        /// Specifies the order in which to sort (i.e. 'Ascending').
+        /// </summary>
+        private SortOrder OrderOfSort;
+        /// <summary>
+        /// Case insensitive comparer object
+        /// </summary>
+
+        public ListViewColumnSorter()
+        {
+            // Initialize the column to '0'
+            ColumnToSort = 0;
+
+            // Initialize the sort order to 'none'
+            OrderOfSort = SortOrder.None;
+
+        }
+
+        /// <summary>
+        /// This method is inherited from the IComparer interface.  It compares the two objects passed using a case insensitive comparison.
+        /// </summary>
+        /// <param name="x">First object to be compared</param>
+        /// <param name="y">Second object to be compared</param>
+        /// <returns>The result of the comparison. "0" if equal, negative if 'x' is less than 'y' and positive if 'x' is greater than 'y'</returns>
+        public int Compare(object x, object y)
+        {
+            int compareResult;
+            ListViewItem listviewX, listviewY;
+
+            // Cast the objects to be compared to ListViewItem objects
+            listviewX = (ListViewItem)x;
+            listviewY = (ListViewItem)y;
+
+            // Compare the two items
+            compareResult = string.Compare(listviewX.SubItems[ColumnToSort].Text, listviewY.SubItems[ColumnToSort].Text, true);
+
+            // Calculate correct return value based on object comparison
+            if (OrderOfSort == SortOrder.Ascending)
+            {
+                // Ascending sort is selected, return normal result of compare operation
+                return compareResult;
+            }
+            else if (OrderOfSort == SortOrder.Descending)
+            {
+                // Descending sort is selected, return negative result of compare operation
+                return (-compareResult);
+            }
+            else
+            {
+                // Return '0' to indicate they are equal
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of the column to which to apply the sorting operation (Defaults to '0').
+        /// </summary>
+        public int SortColumn
+        {
+            set
+            {
+                ColumnToSort = value;
+            }
+            get
+            {
+                return ColumnToSort;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the order of sorting to apply (for example, 'Ascending' or 'Descending').
+        /// </summary>
+        public SortOrder Order
+        {
+            set
+            {
+                OrderOfSort = value;
+            }
+            get
+            {
+                return OrderOfSort;
+            }
+        }
+    }
 }

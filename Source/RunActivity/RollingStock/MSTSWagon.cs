@@ -1015,7 +1015,7 @@ namespace ORTS
             }
             else
             {
-                if (matrixAnimated)
+                if (matrixAnimated && matrix != 0)
                     RunningGear.AddMatrix(matrix);
 
                 for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
