@@ -357,17 +357,13 @@ namespace ORTS
         {
             drivenTrain.LeadLocomotive = lead;
             drivenTrain.CalculatePositionOfCars(0);
-
             FinishCoupling(drivenTrain, train, true);
-
-            drivenTrain.FirstCar.SignalEvent(Event.Couple);
         }
 
         private void FinishRearCoupling(Train drivenTrain, Train train)
         {
             drivenTrain.RepositionRearTraveller();
             FinishCoupling(drivenTrain, train, false);
-            drivenTrain.LastCar.SignalEvent(Event.Couple);
         }
 
         private void FinishCoupling(Train drivenTrain, Train train, bool couple_to_front)
@@ -429,6 +425,7 @@ namespace ORTS
                             }
                             // couple my rear to front of train
                             //drivenTrain.SetCoupleSpeed(train, 1);
+                            drivenTrain.LastCar.SignalEvent(Event.Couple);
                             foreach (TrainCar car in train.Cars)
                             {
                                 drivenTrain.Cars.Add(car);
@@ -451,6 +448,7 @@ namespace ORTS
                             }
                             // couple my rear to rear of train
                             //drivenTrain.SetCoupleSpeed(train, -1);
+                            drivenTrain.LastCar.SignalEvent(Event.Couple);
                             for (int i = train.Cars.Count - 1; i >= 0; --i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -489,6 +487,7 @@ namespace ORTS
                             }
                             // couple my front to rear of train
                             //drivenTrain.SetCoupleSpeed(train, 1);
+                            drivenTrain.FirstCar.SignalEvent(Event.Couple);
                             TrainCar lead = drivenTrain.LeadLocomotive;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
@@ -513,6 +512,7 @@ namespace ORTS
                             }
                             // couple my front to front of train
                             //drivenTrain.SetCoupleSpeed(train, -1);
+                            drivenTrain.FirstCar.SignalEvent(Event.Couple);
                             TrainCar lead = drivenTrain.LeadLocomotive;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {
