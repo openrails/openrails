@@ -597,6 +597,9 @@ namespace ORTS
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
         {
+            if (UserInput.IsPressed(UserCommands.CameraReset))
+                Camera.Reset();
+
             Camera.HandleUserInput(elapsedTime);
 
             if (PlayerLocomotiveViewer != null)

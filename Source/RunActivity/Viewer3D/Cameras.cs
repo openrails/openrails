@@ -75,7 +75,7 @@ namespace ORTS
 
         // Sound related properties
         public Vector3 Velocity { get; protected set; }
-        
+
         protected Camera(Viewer3D viewer)
         {
             Viewer = viewer;
@@ -96,6 +96,13 @@ namespace ORTS
         protected internal virtual void Restore(BinaryReader inf)
         {
             cameraLocation.Restore(inf);
+        }
+
+        /// <summary>
+        /// Resets a camera's position, location and attachment information.
+        /// </summary>
+        public virtual void Reset()
+        {
         }
 
         /// <summary>
@@ -358,6 +365,12 @@ namespace ORTS
             RotationYRadians = inf.ReadSingle();
         }
 
+        public override void Reset()
+        {
+            base.Reset();
+            RotationXRadians = RotationYRadians = XRadians = YRadians = ZRadians = 0;
+        }
+
         protected override Matrix GetCameraView()
         {
             var lookAtPosition = Vector3.UnitZ;
@@ -536,6 +549,11 @@ namespace ORTS
         public void SetLocation(WorldLocation location)
         {
             cameraLocation = location;
+        }
+
+        public override void Reset()
+        {
+            // Intentionally do nothing at all.
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -933,6 +951,16 @@ namespace ORTS
             PositionYRadians = inf.ReadSingle();
         }
 
+        public override void Reset()
+        {
+            base.Reset();
+            PositionDistance = StartPositionDistance;
+            PositionXRadians = StartPositionXRadians;
+            PositionYRadians = StartPositionYRadians + (Front ? 0 : MathHelper.Pi);
+            RotationXRadians = PositionXRadians;
+            RotationYRadians = PositionYRadians - MathHelper.Pi;
+        }
+
         protected override void OnActivate(bool sameCamera)
         {
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain)
@@ -1107,7 +1135,6 @@ namespace ORTS
 
     public abstract class NonTrackingCamera : AttachedCamera
     {
-
         public NonTrackingCamera(Viewer3D viewer)
             : base(viewer)
         {
@@ -1271,6 +1298,13 @@ namespace ORTS
         {
             base.Restore(inf);
             sideLocation = inf.ReadInt32();
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            Viewer.CabYOffsetPixels = (Viewer.DisplaySize.Y - Viewer.CabHeightPixels) / 2;
+            OnActivate(true);
         }
 
         protected override void OnActivate(bool sameCamera)
@@ -1441,6 +1475,13 @@ namespace ORTS
             : base(viewer)
         {
             Random = new Random();
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            cameraLocation.Location.Y -= CameraAltitudeOffset;
+            CameraAltitudeOffset = 0;
         }
 
         protected override void OnActivate(bool sameCamera)
