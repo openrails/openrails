@@ -137,8 +137,9 @@ namespace ORTS
             {
                 // First time around, initialize the following items:
                 worldLoc = new WorldLatLon();
-                oldClockTime = Viewer.Simulator.ClockTime;
-                step1 = step2 = (int)(Viewer.Simulator.ClockTime / 1200);
+                oldClockTime = Viewer.Simulator.ClockTime % 86400;
+                while (oldClockTime < 0) oldClockTime += 86400;
+                step1 = step2 = (int)(oldClockTime / 1200);
                 step2++;
                 // Get the current latitude and longitude coordinates
                 worldLoc.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);

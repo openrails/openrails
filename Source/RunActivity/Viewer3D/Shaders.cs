@@ -375,6 +375,7 @@ namespace ORTS
         EffectParameter wvp = null;
         EffectParameter invView = null;
         EffectParameter texture = null;
+        EffectParameter lightVector = null;
 
         public float CurrentTime
         {
@@ -401,6 +402,11 @@ namespace ORTS
             set { emitSize.SetValue(value); }
         }
 
+        public Vector3 LightVector
+        {
+            set { lightVector.SetValue(value); }
+        }
+
         public ParticleEmitterShader(GraphicsDevice graphicsDevice, ContentManager content)
             : base(graphicsDevice, content.Load<Effect>("ParticleEmitterShader"))
         {
@@ -411,6 +417,7 @@ namespace ORTS
             invView = Parameters["invView"];
             tileXY = Parameters["cameraTileXY"];
             texture = Parameters["particle_Tex"];
+            lightVector = Parameters["LightVector"];
         }
 
         public void SetMatrix(Matrix world, ref Matrix view, ref Matrix projection)

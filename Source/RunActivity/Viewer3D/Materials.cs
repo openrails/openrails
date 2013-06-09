@@ -1058,6 +1058,7 @@ namespace ORTS
         {
             var shader = Viewer.MaterialManager.ParticleEmitterShader;
             shader.CurrentTime = (float)Viewer.Simulator.GameTime;
+            shader.LightVector = Viewer.World.Sky.solarDirection;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
