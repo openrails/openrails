@@ -112,7 +112,7 @@ namespace MSTS
         public bool ExternalCam = false;
         public bool CabCam = false;
         public bool PassengerCam = false;
-        public float Distance = 10000;  // by default we are 'in range' to hear this
+        public float Distance = 1000;  // by default we are 'in range' to hear this
         public int TrackType = -1;
 
         public Activation(STFReader stf)
@@ -122,7 +122,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("externalcam", ()=>{ ExternalCam = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("cabcam", ()=>{ CabCam = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("passengercam", ()=>{ PassengerCam = stf.ReadBoolBlock(true); }),
-                new STFReader.TokenProcessor("distance", ()=>{ Distance = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("distance", ()=>{ Distance = stf.ReadFloatBlock(STFReader.UNITS.Distance, Distance); }),
                 new STFReader.TokenProcessor("tracktype", ()=>{ TrackType = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
             });
         }
