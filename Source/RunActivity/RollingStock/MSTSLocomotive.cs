@@ -2165,35 +2165,15 @@ namespace ORTS
                     }
                 case CABViewControlTypes.SPEEDLIM_DISPLAY:
                     {
-                        data = 0;
                         bool metric = cvc.Units == CABViewControlUnits.KM_PER_HOUR;
-                        if (this.Train != null && this.Train.SignalObjectItems != null)
-                        foreach(ObjectItemInfo oi in this.Train.SignalObjectItems)
-                        {
-                            if (this.Train.CABAspect == SignalHead.SIGASP.STOP ||
+                        if (this.Train.CABAspect == SignalHead.SIGASP.STOP ||
                                 this.Train.CABAspect == SignalHead.SIGASP.STOP_AND_PROCEED)
-                            {
-                                data = 0;
-                                break;
-                            }
-                            if (oi.ObjectType == ObjectItemInfo.ObjectItemType.SPEEDLIMIT)
-                            {
-                                continue;
-                            }
-                            if (oi.speed_passenger == -1)
-                            {
-#if !NEW_SIGNALLING
-                                data = MpS.FromMpS(this.Train.RouteMaxSpeedMpS, metric);
-#else
-                                data = MpS.FromMpS(this.Train.TrainMaxSpeedMpS, metric);
-#endif
-                                break;
-                            }
-                            else
-                            {
-                                data = MpS.FromMpS(oi.speed_passenger, metric);
-                                break;
-                            }
+                        {
+                            data = 0;
+                        }
+                        else
+                        {
+                            data = MpS.FromMpS(this.Train.AllowedMaxSpeedMpS, metric);
                         }
                         break;
                     }
