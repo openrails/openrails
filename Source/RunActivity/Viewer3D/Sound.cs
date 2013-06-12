@@ -285,8 +285,6 @@ namespace ORTS
         private bool WasOutOfDistance = true;
         private bool _isSlowRolloff = false;
 
-        private Traveller SoundSourceTraveller;
-
         List<SoundStream> SoundStreams = new List<SoundStream>();
 
         public void Initialize(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
@@ -496,9 +494,6 @@ namespace ORTS
 
             DistanceSquared = WorldLocation.GetDistanceSquared(WorldLocation, Viewer.Camera.CameraWorldLocation);
 
-            if (Car != null && Viewer.Camera.AttachedCar != null && Car.Train == Viewer.Camera.AttachedCar.Train)
-                return false;
-            
             return DistanceSquared > CUTOFFDISTANCE;
         }
 
