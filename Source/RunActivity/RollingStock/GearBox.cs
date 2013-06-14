@@ -369,7 +369,7 @@ namespace ORTS
 
         public void Update(float elapsedClockSeconds)
         {
-            if (shaft <= 0.05)
+            if ((shaft <= 0.05)||(shaft >= 1f))
                 currentGearIndex = nextGearIndex;
 
             switch (GearBoxOperation)

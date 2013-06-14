@@ -349,6 +349,9 @@ namespace ORTS
                 else
                     de.DemandedThrottlePercent = 0f;
 
+                if (Direction == Direction.Reverse)
+                    PrevMotiveForceN *= -1f;
+
                 if (de.RealRPM > de.StartingRPM)
                     de.OutputPowerW = PrevMotiveForceN > 0 ? PrevMotiveForceN * currentSpeedMpS : 0;
                 else

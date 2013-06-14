@@ -523,7 +523,7 @@ namespace ORTS
             }
 
             if ((OutputPowerW > MaxOutputPowerW)&&(EngineStatus == Status.Running))
-                dRPM = (MaxOutputPowerW - OutputPowerW) / MaximalPowerW * MaxRPM;
+                dRPM = (MaxOutputPowerW - OutputPowerW) / MaximalPowerW * RateOfChangeDownRPMpSS;
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
 
@@ -672,7 +672,7 @@ namespace ORTS
             RateOfChangeUpRPMpSS = ChangeUpRPMpS;
             RateOfChangeDownRPMpSS = ChangeDownRPMpS;
             MaximalPowerW = diesel.MaxPowerW;
-            DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { 0, diesel.MaxPowerW });
+            DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxPowerW });
             DieselConsumptionTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { diesel.DieselUsedPerHourAtIdleL, diesel.DieselUsedPerHourAtMaxPowerL });
             ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { diesel.IdleRPM, diesel.MaxRPM });
             IdleExhaust = diesel.IdleExhaust;
