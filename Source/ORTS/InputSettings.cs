@@ -175,6 +175,8 @@ namespace ORTS
         ControlReverserBackwards,
         ControlThrottleIncrease,
         ControlThrottleDecrease,
+        ControlGearUp,
+        ControlGearDown,
         ControlTrainBrakeIncrease,
         ControlTrainBrakeDecrease,
         ControlEngineBrakeIncrease,
@@ -425,7 +427,7 @@ namespace ORTS
             Commands[(int)UserCommands.GameSwitchWithMouse] = new UserCommandModifierInput(KeyModifiers.Alt);
             Commands[(int)UserCommands.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
             Commands[(int)UserCommands.GameChangeCab] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
-            Commands[(int)UserCommands.GameRequestControl] = new UserCommandKeyInput(0x12, KeyModifiers.Shift);
+            Commands[(int)UserCommands.GameRequestControl] = new UserCommandKeyInput(0x12, KeyModifiers.Alt);
 
             Commands[(int)UserCommands.DisplayNextWindowTab] = new UserCommandModifierInput(KeyModifiers.Shift);
             Commands[(int)UserCommands.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommands.DisplayNextWindowTab]);
@@ -503,6 +505,8 @@ namespace ORTS
             Commands[(int)UserCommands.ControlReverserBackwards] = new UserCommandKeyInput(0x1F);
             Commands[(int)UserCommands.ControlThrottleIncrease] = new UserCommandKeyInput(0x20);
             Commands[(int)UserCommands.ControlThrottleDecrease] = new UserCommandKeyInput(0x1E);
+            Commands[(int)UserCommands.ControlGearUp] = new UserCommandKeyInput(0x12);
+            Commands[(int)UserCommands.ControlGearDown] = new UserCommandKeyInput(0x12, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlTrainBrakeIncrease] = new UserCommandKeyInput(0x28);
             Commands[(int)UserCommands.ControlTrainBrakeDecrease] = new UserCommandKeyInput(0x27);
             Commands[(int)UserCommands.ControlEngineBrakeIncrease] = new UserCommandKeyInput(0x1B);

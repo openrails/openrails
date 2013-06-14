@@ -352,6 +352,11 @@ namespace ORTS
         public float TrainSpeedMpS { set; get; }
 
         /// <summary>
+        /// Flipped physics flag
+        /// </summary>
+        public bool Flipped { set; get; }
+
+        /// <summary>
         /// Read only wheel slip indicator
         /// - is true when absolute value of SlipSpeedMpS is greater than WheelSlipThresholdMpS, otherwise is false
         /// </summary>
@@ -612,6 +617,16 @@ namespace ORTS
                     //    axleForceN = -brakeForceN;
                     //}
                     //Axle revolutions integration
+                    if (Flipped)
+                    {
+                        TrainSpeedMpS *= -1f;
+                        axleSpeedMpS *= -1f;
+                        driveForceN *= -1f;
+                        brakeForceN *= -1f;
+                        axleForceN *= -1f;
+                        slipDerivationMpSS *= -1f;
+                    }
+
                     if (TrainSpeedMpS > 0.0f)
                     {
                         if (((brakeForceN) > (driveForceN)) && (AxleSpeedMpS < 0.1f))
@@ -693,6 +708,16 @@ namespace ORTS
                 else
                     adhesionK = (adhesionK <= 0.7f) ? 0.7f : (adhesionK - 0.005f);
             }
+
+            if (Flipped)
+            {
+                TrainSpeedMpS *= -1f;
+                axleSpeedMpS *= -1f;
+                driveForceN *= -1f;
+                brakeForceN *= -1f;
+                axleForceN *= -1f;
+                slipDerivationMpSS *= -1f;
+            }
         }
 
         /// <summary>
@@ -740,7 +765,7 @@ namespace ORTS
         public float SlipCharacteristics(float slipSpeed, float speed, float K, float conditions, float Adhesion2)
         {
             speed = Math.Abs(3.6f*speed);
-            float umax = (CurtiusKnifflerA / (speed + CurtiusKnifflerB) + CurtiusKnifflerC);// *Adhesion2 / 0.331455f; // Curtius - Kniffler equation
+            float umax = 1.3f*(CurtiusKnifflerA / (speed + CurtiusKnifflerB) + CurtiusKnifflerC);// *Adhesion2 / 0.331455f; // Curtius - Kniffler equation
             umax *= conditions;
             if (K == 0.0)
                 K = 1;

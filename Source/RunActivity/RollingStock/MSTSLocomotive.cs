@@ -145,7 +145,10 @@ namespace ORTS
         public MSTSBrakeController  EngineBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController  DynamicBrakeController;
-        
+        public MSTSNotchController GearBoxController = null;
+
+        public float Throttle;
+                
         public Axle LocomotiveAxle;
         public IIRFilter CurrentFilter;
         public IIRFilter AdhesionFilter;
@@ -386,6 +389,11 @@ namespace ORTS
 
                 default: base.Parse(lowercasetoken, stf); break;
             }
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
         }
 
         /// <summary>
@@ -666,8 +674,13 @@ namespace ORTS
                         MotiveForceN = 0;
                 }
             }
-
-
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
+                if (f > 0)
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
+            }
+            
             if (MaxForceN > 0 && MaxContinuousForceN > 0)
             {
                 MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
@@ -801,12 +814,7 @@ namespace ORTS
             //Variable2 = Math.Abs(WheelSpeedMpS);
             //Variable3 = DynamicBrakePercent / 100f;
 
-            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
-            {
-                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
-                if (f > 0)
-                    MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
-            }
+            
 
 
             switch (this.Train.TrainType)
@@ -860,7 +868,7 @@ namespace ORTS
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
-
+            PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
         } // End Method Update
 
@@ -1001,6 +1009,8 @@ namespace ORTS
                     //LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0, elapsedClockSeconds);
                 //Filtered random condition
                 LocomotiveAxle.AdhesionConditions = AdhesionFilter.Filter(max0 + (float)(0.2*Program.Random.NextDouble()),elapsedClockSeconds);
+                LocomotiveAxle.Flipped = Flipped;
+
                 //LocomotiveAxle.AdhesionConditions = max0;
                 //Set axle inertia (this should be placed within the ENG parser)
                 // but make sure the value is sufficietn
@@ -1517,6 +1527,67 @@ namespace ORTS
             EngineBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             Simulator.Confirmer.Confirm( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
         }
+
+        public virtual void StartGearBoxIncrease()
+        {
+            if (GearBoxController != null)
+            {
+                GearBoxController.StartIncrease();
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                AlerterReset();
+            }
+
+            if (this.GetType() == typeof(MSTSDieselLocomotive))
+            {
+                if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox != null)
+                {
+                    if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                    {
+                        ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.AutoGearUp();
+                        GearBoxController.SetValue((float)((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.NextGearIndex);
+                    }
+                }
+            }
+        }
+
+        public virtual void StopGearBoxIncrease()
+        {
+            if (GearBoxController != null)
+            {
+                GearBoxController.StopIncrease();
+            }
+        }
+
+        public virtual void StartGearBoxDecrease()
+        {
+            if (GearBoxController != null)
+            {
+                GearBoxController.StartDecrease();
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                AlerterReset();
+            }
+
+            if (this.GetType() == typeof(MSTSDieselLocomotive))
+            {
+                if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox != null)
+                {
+                    if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                    {
+                        ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.AutoGearDown();
+                        GearBoxController.SetValue((float)((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.NextGearIndex);
+                    }
+                }
+            }
+        }
+
+        public virtual void StopGearBoxDecrease()
+        {
+            if (GearBoxController != null)
+            {
+                GearBoxController.StopDecrease();
+            }
+        }
+
 
         /// <summary>
         /// Ends change of brake value.
@@ -2423,6 +2494,30 @@ namespace ORTS
             new ReverserCommand( Viewer.Log, false );    // No harm in trying to engage Reverse when already engaged.
         }
 
+        protected virtual void StartGearBoxIncrease()
+        {
+            if(Locomotive.GearBoxController != null)
+                Locomotive.StartGearBoxIncrease();
+        }
+
+        protected virtual void StopGearBoxIncrease()
+        {
+            if(Locomotive.GearBoxController != null)
+                Locomotive.StopGearBoxIncrease();
+        }
+
+        protected virtual void StartGearBoxDecrease()
+        {
+            if (Locomotive.GearBoxController != null)
+                Locomotive.StartGearBoxDecrease();
+        }
+
+        protected virtual void StopGearBoxDecrease()
+        {
+            if (Locomotive.GearBoxController != null)
+                Locomotive.StopGearBoxDecrease();
+        }
+
         /// <summary>
         /// A keyboard or mouse click has occurred. Read the UserInput
         /// structure to determine what was pressed.
@@ -2431,6 +2526,11 @@ namespace ORTS
         {
             if (UserInput.IsPressed(UserCommands.ControlForwards)) ReverserControlForwards();
             if (UserInput.IsPressed(UserCommands.ControlBackwards)) ReverserControlBackwards();
+
+            if (UserInput.IsPressed(UserCommands.ControlGearUp)) StartGearBoxIncrease();
+            if (UserInput.IsReleased(UserCommands.ControlGearUp)) StopGearBoxIncrease();
+            if (UserInput.IsPressed(UserCommands.ControlGearDown)) StartGearBoxDecrease();
+            if (UserInput.IsReleased(UserCommands.ControlGearDown)) StopGearBoxDecrease();
 
             if (UserInput.IsPressed( UserCommands.ControlThrottleIncrease)) StartThrottleIncrease();
             if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) StopThrottleIncrease();
@@ -2552,6 +2652,8 @@ namespace ORTS
 
 			base.HandleUserInput(elapsedTime);
         }
+
+
 
         /// <summary>
         /// We are about to display a video frame.  Calculate positions for 
