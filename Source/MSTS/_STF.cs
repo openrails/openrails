@@ -805,7 +805,6 @@ namespace MSTS
             if ((validUnits & UNITS.LiquidVolume) > 0)
                 switch (suffix)
                 {
-                    case "*(l)":
                     case "l": return 1;
                     case "gal": return 3.785f;
                     case "gals": return 3.785f;

@@ -159,15 +159,6 @@ namespace ORTS
             StepSize = stepSize;
         }
 
-        public MSTSNotchController(int numOfNotches)
-        {
-            MinimumValue = 0;
-            MaximumValue = numOfNotches - 1;
-            StepSize = 1;
-            for(int i = 0; i < numOfNotches; i++)
-                Notches.Add(new MSTSNotch(i, false, 0));
-        }
-
         public MSTSNotchController(MSTSNotchController other)
         {
             CurrentValue = other.CurrentValue;

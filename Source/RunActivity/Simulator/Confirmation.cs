@@ -81,7 +81,6 @@ namespace ORTS {
       , Activity
       , Replay
       , Labels
-      , GearBox
     }
 
     public enum CabSetting {
@@ -163,7 +162,6 @@ namespace ORTS {
             , new string [] { "Activity", "quit", null, "resume" } 
             , new string [] { "Replay", null, null, null, null, null, "Overriding camera replay. Press Esc to resume camera replay." } 
             , new string [] { "Location labels", "none", "sidings", "stations", "stations and sidings" } 
-            , new string [] { "GearBox", null, null, null, "down", "up", "locked. Use shaft befor changing gear." } 
             };
 
         public readonly Viewer3D Viewer;

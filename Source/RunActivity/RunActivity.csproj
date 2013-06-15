@@ -392,10 +392,6 @@
     </Compile>
     <Compile Include="Popups\ComposeMessage.cs" />
     <Compile Include="Popups\QuitWindow.cs" />
-    <Compile Include="RollingStock\Auxiliaries.cs" />
-    <Compile Include="RollingStock\DieselEngine.cs" />
-    <Compile Include="RollingStock\GearBox.cs" />
-    <Compile Include="RollingStock\Generator.cs" />
     <Compile Include="RollingStock\LocomotiveAttributes.cs" />
     <Compile Include="Signals\Signals.cs">
       <SubType>Code</SubType>

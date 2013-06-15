@@ -122,14 +122,8 @@ namespace ORTS
                     string token = stf.ReadItem();
                     Parse(stf.Tree.ToLower(), stf);
                 }
-            
-            if (BrakeSystem == null)
-                BrakeSystem = new AirSinglePipe(this);
-            Initialize();
-        }
-
-        public virtual void Initialize()
-        {
+             if (BrakeSystem == null)
+                    BrakeSystem = new AirSinglePipe(this);
         }
 
         string brakeSystemType = null;
