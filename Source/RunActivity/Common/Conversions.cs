@@ -22,7 +22,6 @@ using System.Text;
 
 namespace ORTS
 {
-    //CJ
     // OR will use metric units (m, kg, s, A, 'C) for internal properties and calculations, preferably from SI (m/s, not km/hr).
     // Currently (v1618), some internal units are Imperial and will be changed.
     // Classes are provided for converting into and out of these internal units.
@@ -72,8 +71,6 @@ namespace ORTS
 	{
         public static float FromM(float distance, bool isMetric)
 		{
-            //CJ
-            //return isMetric ? distance : (0.000621371192f * distance);
             return isMetric ? distance : Me.FromMi(distance);
         }
         public static float ToM(float distance, bool isMetric)

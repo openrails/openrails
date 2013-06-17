@@ -217,7 +217,7 @@ namespace ORTS
             WellKnownCameras.Add(HeadOutForwardCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Forward));
             WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
             WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
-            WellKnownCameras.Add(FreeRoamCamera = new FreeRoamCamera( this, FrontCamera ) ); // Any existing camera will suffice to satisfy .Save() and .Restore()
+            WellKnownCameras.Add(new FreeRoamCamera( this, FrontCamera ) ); // Any existing camera will suffice to satisfy .Save() and .Restore()
 
             SharedMaterialManager.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
 
@@ -709,7 +709,7 @@ namespace ORTS
                 CheckReplaying();
                 new UseFreeRoamCameraCommand( Log );
                 Simulator.Confirmer.Message(ConfirmLevel.None, String.Format(
-                    "{0} viewpoints stored. Use Shift+8 to restore viewpoints.", FreeRoamCameraList.Count));
+                    "{0} viewpoints stored. Use Shift+8 to restore viewpoints.", FreeRoamCameraList.Count-1));
             }
             if (UserInput.IsPressed(UserCommands.CameraPreviousFree))
             {

@@ -968,11 +968,15 @@ namespace ORTS {
 
         public override void Redo()
         {
-            // Make a new camera that adopts the same viewpoint as the current camera.
-            // Add new camera at head of list
-            Receiver.FreeRoamCameraList.Insert(0, new FreeRoamCamera(Receiver, Receiver.Camera)); 
+            // Makes a new free roam camera that adopts the same viewpoint as the current camera.
+            // List item [0] is the current free roam camera, most recent free roam camera is at item [1]. 
+            // Adds existing viewpoint to the head of the history list.
+            // If this is the first use of the free roam camera, then the view point is added twice, so
+            // it gets stored in the history list.
+            if (Receiver.FreeRoamCameraList.Count == 0)
+                Receiver.FreeRoamCameraList.Insert(0, new FreeRoamCamera(Receiver, Receiver.Camera));
+            Receiver.FreeRoamCameraList.Insert(0, new FreeRoamCamera(Receiver, Receiver.Camera));
             Receiver.FreeRoamCamera.Activate();
-            // Report();
         }
     }
     
@@ -988,21 +992,6 @@ namespace ORTS {
         public override void Redo()
         {
             Receiver.ChangeToPreviousFreeRoamCamera();
-            //var length = Receiver.FreeRoamCameraList.Count;
-            //// Rotate list moving 1 to 0 etc. (by adding 0 to end, then removing 0)
-            //if (Receiver.Camera == Receiver.FreeRoamCamera)
-            //{
-            //    Receiver.FreeRoamCameraList.Add(Receiver.FreeRoamCamera);
-            //    Receiver.FreeRoamCameraList.RemoveAt(0);
-            //    Receiver.FreeRoamCamera.Activate();
-            //}
-            //else
-            //{
-            //    Receiver.FreeRoamCamera.Activate();
-            //    Receiver.FreeRoamCameraList.Add(Receiver.FreeRoamCamera);
-            //    Receiver.FreeRoamCameraList.RemoveAt(0);
-            //}
-            // Report();
         }
     }
     
