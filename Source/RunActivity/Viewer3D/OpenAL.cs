@@ -33,8 +33,10 @@ namespace ORTS
     /// </summary>
     public class OpenAL
     {
+        public const int AL_NONE = 0;
         public const int AL_FALSE = 0;
         public const int AL_TRUE = 1;
+
         public const int AL_BUFFER = 0x1009;
         public const int AL_BUFFERS_QUEUED = 0x1015;
         public const int AL_BUFFERS_PROCESSED = 0x1016;
@@ -69,9 +71,18 @@ namespace ORTS
         public const int AL_RENDERER = 0xb003;
         public const int AL_DOPPLER_FACTOR = 0xc000;
         public const int AL_LOOP_POINTS_SOFT = 0x2015;
+        public const int AL_STATIC = 0x4136;
 
         public const int ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004;
         public const int ALC_DEVICE_SPECIFIER = 0x1005;
+
+        public const int AL_NO_ERROR = 0;
+        public const int AL_INVALID = -1;
+        public const int AL_INVALID_NAME = 0xa001; // 40961
+        public const int AL_INVALID_ENUM = 0xa002; // 40962
+        public const int AL_INVALID_VALUE = 0xa003; // 40963
+        public const int AL_INVALID_OPERATION = 0xa004; // 40964
+        public const int AL_OUT_OF_MEMORY = 0xa005; // 40965
 
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr alcOpenDevice(string deviceName);
@@ -86,6 +97,8 @@ namespace ORTS
 
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern string AlInitialize(string devName);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int alIsExtensionPresent(string extensionName);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alGetBufferi(int buffer, int attribute, out int val);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -117,6 +130,8 @@ namespace ORTS
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcePlay(int source);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alSourceRewind(int source);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourceQueueBuffers(int source, int number, [In] ref int buffer);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcei(int source, int attribute, int val);
@@ -138,12 +153,32 @@ namespace ORTS
         public static extern void alGenBuffers(int number, out int buffer);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alBufferData(int buffer, int format, [In] byte[] data, int size, int frequency);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alBufferiv(int buffer, int attribute, [In] int[] values);
 
         public static int alSourceUnqueueBuffer(int SoundSourceID)
         {
             int bufid = 0;
             OpenAL.alSourceUnqueueBuffers(SoundSourceID, 1, ref bufid);
             return bufid;
+        }
+
+        public static string GetErrorString(int error)
+        {
+            if (error == AL_INVALID_ENUM)
+                return "Invalid Enumeration";
+            else if (error == AL_INVALID_NAME)
+                return "Invalid Name";
+            else if (error == AL_INVALID_OPERATION)
+                return "Invalid Operation";
+            else if (error == AL_INVALID_VALUE)
+                return "Invalid Value";
+            else if (error == AL_OUT_OF_MEMORY)
+                return "Out Of Memory";
+            else if (error == AL_NO_ERROR)
+                return "No Error";
+            
+            return "";
         }
     }
 
@@ -678,8 +713,9 @@ namespace ORTS
         /// <param name="BufferIDs">Array of the buffer IDs to place</param>
         /// <param name="BufferLens">Array of the length data to place</param>
         /// <param name="ToMono">Indicates if the wave must be converted to mono</param>
+        /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
         /// <returns>True if success</returns>
-        public bool OpenWavFile(string Name, ref int[] BufferIDs, ref int[] BufferLens, bool ToMono)
+        public bool OpenWavFile(string Name, ref int[] BufferIDs, ref int[] BufferLens, bool ToMono, bool isReleasedWithJump)
         {
             WaveFileData wfi = new WaveFileData();
             int fmt = -1;
@@ -712,7 +748,17 @@ namespace ORTS
                 wfi.ulDataSize = (uint)buffer.Length;
             }
 
-            if (wfi.CuePoints == null || wfi.CuePoints.Length == 1)
+            bool alLoopPointsSoft = false;
+            int[] samplePos = new int[2];
+            if (!isReleasedWithJump && wfi.CuePoints != null && wfi.CuePoints.Length > 1)
+            {
+                samplePos[0] = (int)(wfi.CuePoints[0]);
+                samplePos[1] = (int)(wfi.CuePoints.Last());
+                if (samplePos[0] < samplePos[1] && samplePos[1] <= wfi.ulDataSize / (wfi.nBitsPerSample / 8 * wfi.nChannels))
+                    alLoopPointsSoft = OpenAL.alIsExtensionPresent("AL_SOFT_LOOP_POINTS") == OpenAL.AL_TRUE;
+            }
+
+            if (wfi.CuePoints == null || wfi.CuePoints.Length == 1 || alLoopPointsSoft)
             {
                 BufferIDs = new int[1];
                 BufferLens = new int[1];
@@ -723,9 +769,14 @@ namespace ORTS
                 {
                     OpenAL.alGenBuffers(1, out BufferIDs[0]);
                     OpenAL.alBufferData(BufferIDs[0], fmt, buffer, (int)wfi.ulDataSize, (int)wfi.nSamplesPerSec);
+
+                    if (alLoopPointsSoft)
+                        OpenAL.alBufferiv(BufferIDs[0], OpenAL.AL_LOOP_POINTS_SOFT, samplePos);
                 }
                 else
                     BufferIDs[0] = 0;
+
+                return true;
             }
             else
             {

@@ -52,7 +52,8 @@ namespace ORTS
         public int Frequency { get; private set; }
         public int BitsPerSample { get; private set; }
         public int Channels { get; private set; }
-        public bool IsExternal {get; private set; }
+        public bool IsExternal { get; private set; }
+        public bool IsReleasedWithJump { get; private set; }
 
         private int[] BufferIDs;
         private int[] BufferLens;
@@ -71,12 +72,14 @@ namespace ORTS
         /// </summary>
         /// <param name="Name">Name of the wave file to open</param>
         /// <param name="IsExternal">True if external sound, must be converted to mono</param>
-        public SoundPiece(string Name, bool IsExternal)
+        /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
+        public SoundPiece(string Name, bool IsExternal, bool isReleasedWithJump)
         {
             this.Name = Name;
             this.IsExternal = IsExternal;
+            this.IsReleasedWithJump = IsReleasedWithJump;
             WaveFileData wfd = new WaveFileData();
-            if (!wfd.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal))
+            if (!wfd.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal, isReleasedWithJump))
             {
                 BufferIDs = new int[1];
                 BufferIDs[0] = 0;
@@ -187,6 +190,11 @@ namespace ORTS
             NextBuffer = 0;
         }
 
+        public void SetBuffer(int soundSourceID)
+        {
+            OpenAL.alSourcei(soundSourceID, OpenAL.AL_BUFFER, BufferIDs[0]);
+        }
+
         /// <summary>
         /// Checkpoint when the buffer near exhausting.
         /// </summary>
@@ -254,12 +262,15 @@ namespace ORTS
         /// </summary>
         /// <param name="Name">Name of the file</param>
         /// <param name="IsExternal">True if external sound</param>
-        public void SetPiece(string name, bool IsExternal)
+        /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
+        public void SetPiece(string name, bool IsExternal, bool isReleasedWithJump)
         {
             if (string.IsNullOrEmpty(name))
                 return;
 
             string n = name;
+            if (isReleasedWithJump)
+                n += ".j";
             if (IsExternal)
                 n += ".x";
 
@@ -269,7 +280,7 @@ namespace ORTS
             }
             else
             {
-                SoundPiece = new SoundPiece(name, IsExternal);
+                SoundPiece = new SoundPiece(name, IsExternal, isReleasedWithJump);
                 AllPieces.Add(n, SoundPiece);
             }
         }
@@ -304,7 +315,6 @@ namespace ORTS
             }
             else if (IsCheckpoint(soundSourceID, bufferID))
             {
-                OpenAL.alSourceUnqueueBuffers(soundSourceID, 1, ref bufferID);
                 OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_BUFFERS_QUEUED, out buffersQueued);
                 if (buffersQueued < 2)
                     SoundPiece.Queue2(soundSourceID);
@@ -334,10 +344,30 @@ namespace ORTS
                     }
                 case PlayMode.LoopRelease:
                     {
-                        SoundPiece.NextBuffer = 0;
-                        SoundPiece.Queue2(soundSourceID);
-                        PlayState = PlayState.Playing;
-                        break;
+                        if (SoundPiece.isSingle)
+                        {
+                            // Utilizing AL_LOOP_POINTS_SOFT. We need to set a static buffer instead of queueing that.
+                            int state;
+                            OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_SOURCE_STATE, out state);
+                            if (state != OpenAL.AL_PLAYING)
+                            {
+                                OpenAL.alSourceStop(soundSourceID);
+                                OpenAL.alSourcei(soundSourceID, OpenAL.AL_BUFFER, OpenAL.AL_NONE);
+                                SoundPiece.SetBuffer(soundSourceID);
+                                OpenAL.alSourcePlay(soundSourceID);
+                                OpenAL.alSourcei(soundSourceID, OpenAL.AL_LOOPING, OpenAL.AL_TRUE);
+                                PlayState = PlayState.Playing;
+                                PlayMode = PlayMode.Loop;
+                            }
+                            break;
+                        }
+                        else
+                        {
+                            SoundPiece.NextBuffer = 0;
+                            SoundPiece.Queue2(soundSourceID);
+                            PlayState = PlayState.Playing;
+                            break;
+                        }
                     }
                 default:
                     {
@@ -400,7 +430,7 @@ namespace ORTS
                 OpenAL.alcMakeContextCurrent(context);
 
                 Trace.TraceInformation("OpenAL " + OpenAL.alGetString(OpenAL.AL_VERSION) 
-                    + " using device " + OpenAL.alGetString(OpenAL.AL_RENDERER)
+                    + ", device " + OpenAL.alGetString(OpenAL.AL_RENDERER)
                     + " by " + OpenAL.alGetString(OpenAL.AL_VENDOR));
             }
 
@@ -429,8 +459,7 @@ namespace ORTS
             SoundQueue[QueueTail].PlayState = PlayState.NOP;
             _isEnv = isEnv;
             _isSlowRolloff = isSlowRolloff;
-            if (distanceFactor != 10000)
-                _distanceFactor = 1 / (distanceFactor / 350);
+            _distanceFactor = 1 / (distanceFactor / 350);
         }
 
         private bool _nxtUpdate = false;
@@ -470,7 +499,7 @@ namespace ORTS
                             SetVolume(0);
 
                         OpenAL.alSourcef(SoundSourceID, OpenAL.AL_PITCH, _PlaybackSpeed);
-                        OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, _isLooping ? 1 : 0);
+                        OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, _isLooping ? OpenAL.AL_TRUE : OpenAL.AL_FALSE);
                     }
                     else if (_MustWarn)
                     {
@@ -657,7 +686,7 @@ namespace ORTS
                                         if (SoundQueue[QueueTail % QUEUELENGHT].Update(SoundSourceID, _PlaybackSpeed))
                                         {
                                             Start(); // Restart if buffers had been exhausted because of large update time
-                                            NeedsFrequentUpdate = true; // We still queueing fast
+                                            NeedsFrequentUpdate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.IsReleasedWithJump;
                                         }
                                         else
                                         {
@@ -718,12 +747,11 @@ namespace ORTS
                             if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.Release
                                 && SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.ReleaseWithJump)
                             {
-                                FlushBuffers();
                                 SoundQueue[QueueTail % QUEUELENGHT].InitItemPlay(SoundSourceID);
                                 SampleRate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.Frequency;
 
                                 Start();
-                                NeedsFrequentUpdate = true;
+                                NeedsFrequentUpdate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.IsReleasedWithJump;
                             }
                             // Otherwise mark as done
                             else
@@ -736,6 +764,7 @@ namespace ORTS
                     case PlayState.NOP:
                         {
                             NeedsFrequentUpdate = false;
+                            LeaveLoop();
                             break;
                         }
                 }
@@ -775,7 +804,8 @@ namespace ORTS
         /// <param name="Name">Name of the wave to play</param>
         /// <param name="Mode">Mode of the play</param>
         /// <param name="isExternal">Indicator of external sound</param>
-        public void Queue(string Name, PlayMode Mode, bool isExternal)
+        /// <param name="isReleasedWithJump">Indicator of sound may be released with jump</param>
+        public void Queue(string Name, PlayMode Mode, bool isExternal, bool isReleasedWithJump)
         {
             lock (SoundQueue)
             {
@@ -789,14 +819,9 @@ namespace ORTS
                     else if (Mode == PlayMode.Loop || Mode == PlayMode.LoopRelease)
                     {
                         // Cannot optimize, put into Queue
-                        SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal);
+                        SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, isReleasedWithJump);
                         SoundQueue[QueueHeader % QUEUELENGHT].PlayState = PlayState.New;
-
-                        // If single, it can't LoopReleased, play one shot instead
-                        if (SoundQueue[QueueHeader % QUEUELENGHT].SoundPiece.isSingle && Mode == PlayMode.LoopRelease)
-                            SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = PlayMode.Loop;
-                        else
-                            SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
+                        SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
 
                         QueueHeader++;
                     }
@@ -852,21 +877,9 @@ namespace ORTS
                 }
 
                 // Cannot optimize, put into Queue
-                SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal);
+                SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, isReleasedWithJump);
                 SoundQueue[QueueHeader % QUEUELENGHT].PlayState = PlayState.New;
-
-                // If single, it can't LoopReleased, play loop instead
-                if (Mode != PlayMode.Release && Mode != PlayMode.ReleaseWithJump)
-                {
-                    if (SoundQueue[QueueHeader % QUEUELENGHT].SoundPiece.isSingle && Mode == PlayMode.LoopRelease)
-                        SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = PlayMode.Loop;
-                    else
-                        SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
-                }
-                else
-                {
-                    SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
-                }
+                SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
 
                 QueueHeader++;
             }
@@ -944,14 +957,9 @@ namespace ORTS
         public void Stop()
         {
             OpenAL.alSourceStop(SoundSourceID);
-            FlushBuffers();
+            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_BUFFER, OpenAL.AL_NONE); 
             SkipProcessed();
             isPlaying = false;
-        }
-
-        public void FlushBuffers()
-        {
-            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_BUFFER, 0);
         }
 
         private void EnterLoop()
@@ -959,16 +967,13 @@ namespace ORTS
             if (_isLooping)
                 return;
 
-            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, 1);
+            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, OpenAL.AL_TRUE);
             _isLooping = true;
         }
 
         private void LeaveLoop()
         {
-            if (!_isLooping)
-                return;
-
-            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, 0);
+            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, OpenAL.AL_FALSE);
             _isLooping = false;
         }
 

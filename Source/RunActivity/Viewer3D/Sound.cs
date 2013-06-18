@@ -616,6 +616,7 @@ namespace ORTS
         private ORTSInitialTrigger _InitialTrigger = null;
 
         public bool NeedsFrequentUpdate = false;
+        public bool IsReleasedWithJump = false;
 
         public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, int index, bool isSlowRolloff, float factor)
         {
@@ -679,6 +680,7 @@ namespace ORTS
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                         DiscreteTriggers++;
                     }
+                    IsReleasedWithJump |= (Triggers.Last().SoundCommand is ORTSReleaseLoopReleaseWithJump);
                 }  // for each mstsStream.Trigger
         }
 
@@ -855,9 +857,6 @@ namespace ORTS
         {
             if (ALSoundSource != null)
             {
-#if DEBUGSCR
-                Console.WriteLine("Stopping: " + _playingSound.Name.Substring(_playingSound.Name.LastIndexOf('\\')));
-#endif
                 ALSoundSource.Stop();
             }
         }
@@ -1319,7 +1318,7 @@ namespace ORTS
             if (p != "")
             {
 				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-					ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal);
+					ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal, false);
             }
         }
     } 
@@ -1342,7 +1341,7 @@ namespace ORTS
             if (p != "")
             {
 				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-					ORTSStream.ALSoundSource.Queue(p, PlayMode.Loop, ORTSStream.SoundSource.IsExternal);
+					ORTSStream.ALSoundSource.Queue(p, PlayMode.Loop, ORTSStream.SoundSource.IsExternal, false);
             }
         }
     } 
@@ -1362,7 +1361,7 @@ namespace ORTS
         public override void Run()
         {
 			if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-				ORTSStream.ALSoundSource.Queue("", PlayMode.Release, ORTSStream.SoundSource.IsExternal);
+				ORTSStream.ALSoundSource.Queue("", PlayMode.Release, ORTSStream.SoundSource.IsExternal, false);
         }
     }
 
@@ -1387,7 +1386,7 @@ namespace ORTS
             if (p != "")
             {
 				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-					ORTSStream.ALSoundSource.Queue(p, PlayMode.LoopRelease, ORTSStream.SoundSource.IsExternal);
+					ORTSStream.ALSoundSource.Queue(p, PlayMode.LoopRelease, ORTSStream.SoundSource.IsExternal, ORTSStream.IsReleasedWithJump);
             }
         }
     }
@@ -1406,7 +1405,7 @@ namespace ORTS
         public override void Run()
         {
 			if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-				ORTSStream.ALSoundSource.Queue("", PlayMode.ReleaseWithJump, ORTSStream.SoundSource.IsExternal);
+				ORTSStream.ALSoundSource.Queue("", PlayMode.ReleaseWithJump, ORTSStream.SoundSource.IsExternal, true);
         }
     }
 
