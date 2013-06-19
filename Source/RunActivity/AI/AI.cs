@@ -387,6 +387,7 @@ namespace ORTS
                     foreach (TrainCar car in train.Cars)
                     {
                         car.Train = null; // WorldPosition.XNAMatrix.M42 -= 1000;
+                        car.IsPartOfActiveTrain = false;  // to stop sounds
                     }
                 }
             }
