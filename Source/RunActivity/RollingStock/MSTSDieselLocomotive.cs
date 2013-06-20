@@ -339,7 +339,10 @@ namespace ORTS
 
                 DieselLevelL -= DieselFlowLps * elapsedClockSeconds;
                 if (DieselLevelL <= 0.0f)
+                {
                     PowerOn = false;
+                    SignalEvent(Event.EnginePowerOff);
+                }
                 MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
 
@@ -700,6 +703,10 @@ namespace ORTS
             if( UserInput.IsPressed( UserCommands.ControlDieselPlayer ) ) {
                 if( DieselLocomotive.ThrottlePercent < 1 ) {
                     DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
+                    if (DieselLocomotive.PowerOn)
+                        DieselLocomotive.SignalEvent(Event.EnginePowerOn);
+                    else
+                        DieselLocomotive.SignalEvent(Event.EnginePowerOff);
                     Viewer.Simulator.Confirmer.Confirm( CabControl.PlayerDiesel, DieselLocomotive.PowerOn ? CabSetting.On : CabSetting.Off );
                 } else {
                     Viewer.Simulator.Confirmer.Warning( CabControl.PlayerDiesel, CabSetting.Warn1 );
@@ -714,6 +721,10 @@ namespace ORTS
                     if( traincar.GetType() == typeof( MSTSDieselLocomotive ) ) {
                         ((MSTSDieselLocomotive)traincar).StartStopDiesel();
                         powerOn = ((MSTSDieselLocomotive)traincar).PowerOn;
+                        if (((MSTSDieselLocomotive)traincar).PowerOn)
+                            ((MSTSDieselLocomotive)traincar).SignalEvent(Event.EnginePowerOn);
+                        else
+                            ((MSTSDieselLocomotive)traincar).SignalEvent(Event.EnginePowerOff);
                         helperLocos++;
                     }
                 }
