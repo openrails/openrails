@@ -229,29 +229,14 @@ namespace ORTS
         public bool CarIsReversed;
         public bool CarIsFirst;
         public bool CarIsLast;
-        public bool CarCoupledFront;
-        public bool CarCoupledRear;
+        public bool Penalty;
         public bool CarIsPlayer;
         public bool CarInService;
         public bool IsDay;
-        public bool TrainIsSpad
-        {
-            get
-            {
-                var result = false;
-                if (Car.Train != null && Car.Train.LeadLocomotive!=null) {
-                    try
-                    {
-                        var loc = Car.Train.LeadLocomotive as MSTSLocomotive;
-                        result = loc.TrainBrakeController.GetIsEmergency();
-                    }
-                    catch { }
-                }
-                return result;
-            }
-        }
         public WeatherType Weather;
-        public bool Penalty;
+        public bool CarCoupledFront;
+        public bool CarCoupledRear;
+
         public bool IsLightConeActive { get { return ActiveLightCone != null; } }
         List<LightMesh> LightMeshes = new List<LightMesh>();
 
@@ -400,7 +385,7 @@ namespace ORTS
         }
 
 #if DEBUG_LIGHT_STATES
-        public const string MeshStateLabel = "Index       Enabled     Type        Headlight   Unit        Coupling    Control     Penalty     Service     Time        Weather   ";
+        public const string MeshStateLabel = "Index       Enabled     Type        Headlight   Unit        Penalty     Control     Service     Time        Weather     Coupling  ";
         public const string MeshStateFormat = "{0,-10  }  {1,-10   }  {2,-10   }  {3,-10   }  {4,-10   }  {5,-10   }  {6,-10   }  {7,-10   }  {8,-10   }  {9,-10   }  {10,-10  }";
 #endif
 
@@ -415,60 +400,62 @@ namespace ORTS
 			var newCarIsReversed = Car.Flipped ^ locoIsFlipped;
             var newCarIsFirst = Car.Train == null || (locoIsFlipped ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
             var newCarIsLast = Car.Train == null || (locoIsFlipped ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
-            // Coupling
-            var newCarCoupledFront = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.LastCar : Car.Train.FirstCar) != Car);
-            var newCarCoupledRear = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);
+            // Penalty
+            var newPenalty = Car.Train != null && Car.Train.LeadLocomotive != null && Car.Train.LeadLocomotive is MSTSLocomotive && (Car.Train.LeadLocomotive as MSTSLocomotive).TrainBrakeController.GetIsEmergency();
             // Control
             var newCarIsPlayer = Car == Viewer.PlayerLocomotive;
-			if (Car.Train != null && Car.Train.TrainType == Train.TRAINTYPE.REMOTE) newCarIsPlayer = true;//for remote trains
-            var newPenalty = this.TrainIsSpad;			// TODO: Check for relevant Penalty changes.
+            if (Car.Train != null && Car.Train.TrainType == Train.TRAINTYPE.REMOTE) newCarIsPlayer = true;//for remote trains
             // Service
             var newCarInService = Car.Train != null;
-            // Time
+            // Time of day
             var newIsDay = Viewer.World.Sky.solarDirection.Y > 0;
             // Weather
             var newWeather = Viewer.Simulator.Weather;
+            // Coupling
+            var newCarCoupledFront = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.LastCar : Car.Train.FirstCar) != Car);
+            var newCarCoupledRear = Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);
 
             if (
                 (TrainHeadlight != newTrainHeadlight) ||
                 (CarIsReversed != newCarIsReversed) ||
                 (CarIsFirst != newCarIsFirst) ||
                 (CarIsLast != newCarIsLast) ||
-                (CarCoupledFront != newCarCoupledFront) ||
-                (CarCoupledRear != newCarCoupledRear) ||
+                (Penalty != newPenalty) ||
                 (CarIsPlayer != newCarIsPlayer) ||
                 (CarInService != newCarInService) ||
                 (IsDay != newIsDay) ||
-                (Penalty != newPenalty) ||
-                (Weather != newWeather))
+                (Weather != newWeather) ||
+                (CarCoupledFront != newCarCoupledFront) ||
+                (CarCoupledRear != newCarCoupledRear))
             {
                 TrainHeadlight = newTrainHeadlight;
                 CarIsReversed = newCarIsReversed;
                 CarIsFirst = newCarIsFirst;
                 CarIsLast = newCarIsLast;
-                CarCoupledFront = newCarCoupledFront;
-                CarCoupledRear = newCarCoupledRear;
+                Penalty = newPenalty;
                 CarIsPlayer = newCarIsPlayer;
                 CarInService = newCarInService;
                 IsDay = newIsDay;
                 Weather = newWeather;
-                Penalty = newPenalty;
+                CarCoupledFront = newCarCoupledFront;
+                CarCoupledRear = newCarCoupledRear;
 
 #if DEBUG_LIGHT_STATES
                 Console.WriteLine();
                 Console.WriteLine();
-                Console.WriteLine("LightDrawer: {0} {1} {2:D}{3}:{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}",
+                Console.WriteLine("LightDrawer: {0} {1} {2:D}{3}:{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}{14}",
                     Car.Train != null ? Car.Train.FrontTDBTraveller.WorldLocation : Car.WorldPosition.WorldLocation, Car.Train != null ? "train car" : "car", Car.Train != null ? Car.Train.Cars.IndexOf(Car) : 0, Car.Flipped ? " (flipped)" : "",
                     TrainHeadlight == 2 ? " HL=Bright" : TrainHeadlight == 1 ? " HL=Dim" : "",
                     CarIsReversed ? " Reversed" : "",
                     CarIsFirst ? " First" : "",
                     CarIsLast ? " Last" : "",
-                    CarCoupledFront ? " CoupledFront" : "",
-                    CarCoupledRear ? " CoupledRear" : "",
+                    Penalty ? " Penalty" : "",
                     CarIsPlayer ? " Player" : " AI",
                     CarInService ? " Service" : "",
                     IsDay ? "" : " Night",
-                    Weather == WeatherType.Snow ? " Snow" : Weather == WeatherType.Rain ? " Rain" : "");
+                    Weather == WeatherType.Snow ? " Snow" : Weather == WeatherType.Rain ? " Rain" : "",
+                    CarCoupledFront ? " CoupledFront" : "",
+                    CarCoupledRear ? " CoupledRear" : "");
                 if (Car.Lights != null)
                 {
                     Console.WriteLine();
@@ -529,10 +516,6 @@ namespace ORTS
         {
             var oldEnabled = Enabled;
             Enabled = true;
-            if (this.Light.Penalty != LightPenaltyCondition.Ignore)
-            {
-                Enabled &= lightDrawer.Penalty;
-            }
             if (Light.Headlight != LightHeadlightCondition.Ignore)
             {
                 if (Light.Headlight == LightHeadlightCondition.Off)
@@ -565,14 +548,12 @@ namespace ORTS
                 else
                     Enabled &= false;
             }
-            if (Light.Coupling != LightCouplingCondition.Ignore)
+            if (Light.Penalty != LightPenaltyCondition.Ignore)
             {
-                if (Light.Coupling == LightCouplingCondition.Front)
-                    Enabled &= lightDrawer.CarCoupledFront && !lightDrawer.CarCoupledRear;
-                else if (Light.Coupling == LightCouplingCondition.Rear)
-                    Enabled &= !lightDrawer.CarCoupledFront && lightDrawer.CarCoupledRear;
-                else if (Light.Coupling == LightCouplingCondition.Both)
-                    Enabled &= lightDrawer.CarCoupledFront && lightDrawer.CarCoupledRear;
+                if (Light.Penalty == LightPenaltyCondition.No)
+                    Enabled &= !lightDrawer.Penalty;
+                else if (Light.Penalty == LightPenaltyCondition.Yes)
+                    Enabled &= lightDrawer.Penalty;
                 else
                     Enabled &= false;
             }
@@ -585,7 +566,6 @@ namespace ORTS
                 else
                     Enabled &= false;
             }
-            // TODO: Check Penalty here.
             if (Light.Service != LightServiceCondition.Ignore)
             {
                 if (Light.Service == LightServiceCondition.No)
@@ -615,6 +595,17 @@ namespace ORTS
                 else
                     Enabled &= false;
             }
+            if (Light.Coupling != LightCouplingCondition.Ignore)
+            {
+                if (Light.Coupling == LightCouplingCondition.Front)
+                    Enabled &= lightDrawer.CarCoupledFront && !lightDrawer.CarCoupledRear;
+                else if (Light.Coupling == LightCouplingCondition.Rear)
+                    Enabled &= !lightDrawer.CarCoupledFront && lightDrawer.CarCoupledRear;
+                else if (Light.Coupling == LightCouplingCondition.Both)
+                    Enabled &= lightDrawer.CarCoupledFront && lightDrawer.CarCoupledRear;
+                else
+                    Enabled &= false;
+            }
 
             if (oldEnabled != Enabled)
             {
@@ -624,7 +615,7 @@ namespace ORTS
             }
 
 #if DEBUG_LIGHT_STATES
-            Console.WriteLine(LightDrawer.MeshStateFormat, Light.Index, Enabled, Light.Type, Light.Headlight, Light.Unit, Light.Coupling, Light.Control, Light.Penalty, Light.Service, Light.TimeOfDay, Light.Weather);
+            Console.WriteLine(LightDrawer.MeshStateFormat, Light.Index, Enabled, Light.Type, Light.Headlight, Light.Unit, Light.Penalty, Light.Control, Light.Service, Light.TimeOfDay, Light.Weather, Light.Coupling);
 #endif
         }
 
