@@ -185,8 +185,8 @@ namespace ORTS
                     }
 
                     float[] cameraOrientation = new float[] { 
-                        Viewer.Camera.XNAView.Forward.X, Viewer.Camera.XNAView.Forward.Y, Viewer.Camera.XNAView.Forward.Z,
-                        Viewer.Camera.XNAView.Up.X, Viewer.Camera.XNAView.Up.Y, Viewer.Camera.XNAView.Up.Z };
+                        Viewer.Camera.XNAView.Backward.X, Viewer.Camera.XNAView.Backward.Y, Viewer.Camera.XNAView.Backward.Z,
+                        Viewer.Camera.XNAView.Down.X, Viewer.Camera.XNAView.Down.Y, Viewer.Camera.XNAView.Down.Z };
 
                     OpenAL.alListenerfv(OpenAL.AL_POSITION, cameraPosition);
                     OpenAL.alListenerfv(OpenAL.AL_VELOCITY, cameraVelocity);
