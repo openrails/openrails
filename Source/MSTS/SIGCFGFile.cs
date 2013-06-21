@@ -232,12 +232,8 @@ namespace MSTS
 		public IList<SignalLight> Lights;
 		public IDictionary<string, SignalDrawState> DrawStates;
 		public IList<SignalAspect> Aspects;
-#if NEW_SIGNALLING
 		public int NumClearAhead_MSTS;
 		public int NumClearAhead_ORTS;
-#else
-		public int NumClearAhead;
-#endif
 		public float SemaphoreInfo = -1; //[Rob Roeterdink] default -1 as 0 is active value
 
 	public SignalType(FnTypes reqType, ORTS.SignalHead.SIGASP reqAspect)
@@ -258,10 +254,8 @@ namespace MSTS
         {
             stf.MustMatch("(");
             Name = stf.ReadString().ToLowerInvariant();
-#if NEW_SIGNALLING
             int numClearAhead = -2;
             int numdefs = 0;
-#endif
 
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalfntype", ()=>{ FnType = ReadFnType(stf); }),  //[Rob Roeterdink] value was not passed
@@ -269,11 +263,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("signallights", ()=>{ Lights = ReadLights(stf); }),
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
                 new STFReader.TokenProcessor("signalaspects", ()=>{ Aspects = ReadAspects(stf); }),
-#if NEW_SIGNALLING
                 new STFReader.TokenProcessor("signalnumclearahead", ()=>{ numClearAhead = numClearAhead >= -1 ? numClearAhead : stf.ReadIntBlock(STFReader.UNITS.None, null); numdefs++;}),
-#else
-                new STFReader.TokenProcessor("signalnumclearahead", ()=>{ NumClearAhead = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-#endif
                 new STFReader.TokenProcessor("semaphoreinfo", ()=>{ SemaphoreInfo = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("sigflashduration", ()=>{
                     stf.MustMatch("(");
@@ -293,10 +283,8 @@ namespace MSTS
                         }
                 }),
             });
-#if NEW_SIGNALLING
             NumClearAhead_MSTS = numdefs == 1 ? numClearAhead : -2;
             NumClearAhead_ORTS = numdefs == 2 ? numClearAhead : -2;
-#endif
         }
 
 		static FnTypes ReadFnType(STFReader stf)
@@ -346,9 +334,16 @@ namespace MSTS
                     {
                         var drawState = new SignalDrawState(stf);
                         if (drawStates.ContainsKey(drawState.Name))
-                            STFException.TraceWarning(stf, "Skipped duplicate SignalDrawState " + drawState.Name);
+                        {
+                            string TempNew = String.Copy("DST");
+                            TempNew = String.Concat(TempNew,drawStates.Count.ToString());
+                            drawStates.Add(TempNew, drawState);
+                            STFException.TraceInformation(stf, "Duplicate SignalDrawState name \'"+drawState.Name+"\', using name \'"+TempNew+"\' instead");
+                        }
                         else
+                        {
                             drawStates.Add(drawState.Name, drawState);
+                        }
                     }
                 }),
             });
