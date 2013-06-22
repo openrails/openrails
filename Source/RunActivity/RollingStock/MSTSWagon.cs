@@ -124,6 +124,11 @@ namespace ORTS
                 }
              if (BrakeSystem == null)
                     BrakeSystem = new AirSinglePipe(this);
+             Initialize();
+        }
+
+        public virtual void Initialize()
+        {
         }
 
         string brakeSystemType = null;

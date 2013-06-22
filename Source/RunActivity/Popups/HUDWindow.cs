@@ -66,6 +66,7 @@ namespace ORTS.Popups
                 TextPageCommon,
                 TextPageBrakeInfo,
 				TextPageForceInfo,
+                TextPageLocoInfo,
                 TextPageDispatcherInfo,
 				TextPageDebugInfo,
             };
@@ -329,6 +330,89 @@ namespace ORTS.Popups
                 TableSetCell(table, 7, car.Flipped ? "Flipped" : "");
                 TableSetCell(table, 8, car.CouplerOverloaded ? "Coupler overloaded" : "");
                 TableAddLine(table);
+            }
+        }
+
+        void TextPageLocoInfo(TableData table)
+        {
+            TextPageHeading(table, "LOCOMOTIVE INFORMATION");
+
+            var train = Viewer.PlayerLocomotive.Train;
+            var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            if (mstsLocomotive != null)
+            {
+                if (mstsLocomotive.GetType() == typeof(MSTSDieselLocomotive))
+                {
+                    var locomotiveStatus = ((MSTSDieselLocomotive)mstsLocomotive).GetSpecialInfoStatus();
+                    if (locomotiveStatus != null)
+                    {
+                        var lines = locomotiveStatus.Split('\n');
+                        foreach (var line in lines)
+                        {
+                            if (line.Length > 0)
+                            {
+                                var parts = line.Split(new[] { " = " }, 2, StringSplitOptions.None);
+                                TableAddLabelValue(table, parts[0], parts.Length > 1 ? parts[1] : "");
+                            }
+                        }
+                    }
+                }
+                TableAddLine(table);
+            }
+
+
+            //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
+            TableAddLine(table, "Electric Locomotives:");
+            TableSetCells(table, 0, "Car", "PowerOn", "Throttle", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
+            TableAddLine(table);
+
+            int numDispCars = 0;
+            foreach(TrainCar car in train.Cars)
+            {
+                if (car.GetType() == typeof(MSTSElectricLocomotive))
+                {
+                    TableSetCell(table, 0, "{0}", numDispCars);
+                    TableSetCell(table, 1, "{0}", ((MSTSElectricLocomotive)car).PowerOn ? "On" : "Off");
+                    TableSetCell(table, 2, "{0:F0}", ((MSTSElectricLocomotive)car).ThrottlePercent);
+                    TableSetCell(table, 3, "{0:F0}", ((MSTSElectricLocomotive)car).MotiveForceN * car.SpeedMpS);
+                    TableSetCell(table, 4, "{0:F0}", ((MSTSElectricLocomotive)car).MotiveForceN);
+                    TableSetCell(table, 5, "{0:F0}", ((MSTSElectricLocomotive)car).LocomotiveAxle.SlipSpeedPercent);
+                    TableSetCell(table, 6, "{0:F0}", car.Flipped ? "Flipped" : "");
+                    TableSetCell(table, 7, "{0:F0}", "");
+                    TableSetCell(table, 8, car.CouplerOverloaded ? "Coupler overloaded" : "");
+                    TableAddLine(table);
+                    if (++numDispCars > 10)
+                        break;
+                }
+                
+            }
+
+            TableAddLine(table);
+            TableAddLine(table, "Diesel Locomotives:");
+            TableSetCells(table, 0, "Car", "Status", "RPM", "Fuel/h", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
+            TableAddLine(table);
+            foreach (TrainCar car in train.Cars)
+            {
+                if (car.GetType() == typeof(MSTSDieselLocomotive))
+                {
+                    TableSetCell(table, 0, "{0}", numDispCars);
+                    TableSetCell(table, 1, "{0}", ((MSTSDieselLocomotive)car).DieselEngines[0].EngineStatus.ToString());
+                    TableSetCell(table, 2, "{0:F0}", ((MSTSDieselLocomotive)car).DieselEngines[0].RealRPM);
+                    TableSetCell(table, 3, "{0:F0}", ((MSTSDieselLocomotive)car).DieselEngines.DieselFlowLps * 3600.0f);
+                    TableSetCell(table, 4, "{0:F0}", ((MSTSDieselLocomotive)car).MotiveForceN * car.SpeedMpS);
+                    TableSetCell(table, 5, "{0:F0}", ((MSTSDieselLocomotive)car).MotiveForceN);
+                    if((car.Simulator.UseAdvancedAdhesion)&&(!((MSTSLocomotive)car).AntiSlip))
+                        TableSetCell(table, 6, "{0:F0}", ((MSTSDieselLocomotive)car).LocomotiveAxle.SlipSpeedPercent);
+                    else
+                        TableSetCell(table, 6, "{0}", "-");
+                    TableSetCell(table, 7, "{0:F0}", car.Flipped ? "Flipped" : "");
+                    TableSetCell(table, 8, "{0:F0}", "");
+                    TableSetCell(table, 9, car.CouplerOverloaded ? "Coupler overloaded" : "");
+                    TableAddLine(table);
+                    if (++numDispCars > 10)
+                        break;
+                }
             }
         }
 

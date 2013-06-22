@@ -90,6 +90,7 @@ namespace ORTS
         // These signals pass through to all cars and locomotives on the train
         public Direction MUDirection = Direction.N;      // set by player locomotive to control MU'd locomotives
         public float MUThrottlePercent = 0;              // set by player locomotive to control MU'd locomotives
+        public int MUGearboxGearIndex = 0;               // set by player locomotive to control MU'd locomotives
         public float MUReverserPercent = 100;            // steam engine direction/cutoff control for MU'd locomotives
         public float MUDynamicBrakePercent = -1;         // dynamic brake control for MU'd locomotives, <0 for off
         public float BrakeLine1PressurePSI = 90;         // set by player locomotive to control entire train brakes
@@ -251,6 +252,18 @@ namespace ORTS
                 MUThrottlePercent = value;
             }
         }
+
+        public int AITrainGearboxGearIndex
+        {
+            set
+            {
+                MUGearboxGearIndex = value;
+            }
+            get
+            {
+                return MUGearboxGearIndex;
+            }
+        }
         public bool AITrainDirectionForward
         {
             get
@@ -397,6 +410,7 @@ namespace ORTS
             TrainType = (TRAINTYPE)inf.ReadInt32();
             MUDirection = (Direction)inf.ReadInt32();
             MUThrottlePercent = inf.ReadSingle();
+            MUGearboxGearIndex = inf.ReadInt32();
             MUDynamicBrakePercent = inf.ReadSingle();
             BrakeLine1PressurePSI = inf.ReadSingle();
             BrakeLine2PressurePSI = inf.ReadSingle();
@@ -647,6 +661,7 @@ namespace ORTS
             outf.Write((int)TrainType);
             outf.Write((int)MUDirection);
             outf.Write(MUThrottlePercent);
+            outf.Write(MUGearboxGearIndex);
             outf.Write(MUDynamicBrakePercent);
             outf.Write(BrakeLine1PressurePSI);
             outf.Write(BrakeLine2PressurePSI);

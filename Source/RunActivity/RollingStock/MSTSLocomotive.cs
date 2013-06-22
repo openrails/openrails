@@ -145,6 +145,7 @@ namespace ORTS
         public MSTSBrakeController  EngineBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController  DynamicBrakeController;
+        public MSTSNotchController GearBoxController = null;
         
         public Axle LocomotiveAxle;
         public IIRFilter CurrentFilter;
@@ -549,6 +550,14 @@ namespace ORTS
 		public bool notificationReceived = false;
 
         /// <summary>
+        /// Called just after the InitializeFromWagFile
+        /// </summary>
+        public override void Initialize()
+        {
+            base.Initialize();
+        }
+
+        /// <summary>
         /// This is a periodic update to calculate physics 
         /// parameters and update the base class's MotiveForceN 
         /// and FrictionForceN values based on throttle settings
@@ -860,7 +869,7 @@ namespace ORTS
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
-
+            PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
         } // End Method Update
 
@@ -1383,6 +1392,66 @@ namespace ORTS
         public void SetThrottlePercent(float percent)
         {
             ThrottlePercent = ThrottleController.SetRDPercent(percent);
+        }
+
+        public virtual void StartGearBoxIncrease()
+        {
+            if (GearBoxController != null)
+            {
+                GearBoxController.StartIncrease();
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
+                AlerterReset();
+            }
+
+            if (this.GetType() == typeof(MSTSDieselLocomotive))
+            {
+                if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox != null)
+                {
+                    if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                    {
+                        ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.AutoGearUp();
+                        GearBoxController.SetValue((float)((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.NextGearIndex);
+                    }
+                }
+            }
+        }
+
+        public virtual void StopGearBoxIncrease()
+        {
+            if (GearBoxController != null)
+            {
+                GearBoxController.StopIncrease();
+            }
+        }
+
+        public virtual void StartGearBoxDecrease()
+        {
+            if (GearBoxController != null)
+            {
+                GearBoxController.StartDecrease();
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
+                AlerterReset();
+            }
+
+            if (this.GetType() == typeof(MSTSDieselLocomotive))
+            {
+                if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox != null)
+                {
+                    if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                    {
+                        ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.AutoGearDown();
+                        GearBoxController.SetValue((float)((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.NextGearIndex);
+                    }
+                }
+            }
+        }
+
+        public virtual void StopGearBoxDecrease()
+        {
+            if (GearBoxController != null)
+            {
+                GearBoxController.StopDecrease();
+            }
         }
 
         public void StartTrainBrakeIncrease( float? target ) {
@@ -1976,8 +2045,8 @@ namespace ORTS
                     }
                 case CABViewControlTypes.RPM:
                     {
-                        if (((MSTSDieselLocomotive)this).EngineRPM != null)
-                            data = ((MSTSDieselLocomotive)this).EngineRPM;
+                        if (((MSTSDieselLocomotive)this).DieselEngines[0] != null)
+                            data = ((MSTSDieselLocomotive)this).DieselEngines[0].RealRPM;
                         break;
                     }
                 case CABViewControlTypes.THROTTLE:
@@ -2403,6 +2472,30 @@ namespace ORTS
             }
         }
 
+        protected virtual void StartGearBoxIncrease()
+        {
+            if (Locomotive.GearBoxController != null)
+                Locomotive.StartGearBoxIncrease();
+        }
+
+        protected virtual void StopGearBoxIncrease()
+        {
+            if (Locomotive.GearBoxController != null)
+                Locomotive.StopGearBoxIncrease();
+        }
+
+        protected virtual void StartGearBoxDecrease()
+        {
+            if (Locomotive.GearBoxController != null)
+                Locomotive.StartGearBoxDecrease();
+        }
+
+        protected virtual void StopGearBoxDecrease()
+        {
+            if (Locomotive.GearBoxController != null)
+                Locomotive.StopGearBoxDecrease();
+        }
+
         protected virtual void ReverserControlForwards() {
             if( Locomotive.Direction != Direction.Forward
             && (Locomotive.ThrottlePercent >= 1 
@@ -2436,6 +2529,11 @@ namespace ORTS
             if (UserInput.IsReleased(UserCommands.ControlThrottleIncrease)) StopThrottleIncrease();
             if (UserInput.IsPressed( UserCommands.ControlThrottleDecrease)) StartThrottleDecrease();
             if (UserInput.IsReleased(UserCommands.ControlThrottleDecrease)) StopThrottleDecrease();
+
+            if (UserInput.IsPressed(UserCommands.ControlGearUp)) StartGearBoxIncrease();
+            if (UserInput.IsReleased(UserCommands.ControlGearUp)) StopGearBoxIncrease();
+            if (UserInput.IsPressed(UserCommands.ControlGearDown)) StartGearBoxDecrease();
+            if (UserInput.IsReleased(UserCommands.ControlGearDown)) StopGearBoxDecrease();
 
             if( UserInput.IsPressed( UserCommands.ControlTrainBrakeIncrease ) ) {
                 Locomotive.StartTrainBrakeIncrease( null );
