@@ -741,7 +741,7 @@ namespace ORTS
         public float SlipCharacteristics(float slipSpeed, float speed, float K, float conditions, float Adhesion2)
         {
             speed = Math.Abs(3.6f*speed);
-            float umax = (CurtiusKnifflerA / (speed + CurtiusKnifflerB) + CurtiusKnifflerC);// *Adhesion2 / 0.331455f; // Curtius - Kniffler equation
+            float umax = 1.3f * (CurtiusKnifflerA / (speed + CurtiusKnifflerB) + CurtiusKnifflerC);// *Adhesion2 / 0.331455f; // Curtius - Kniffler equation
             umax *= conditions;
             if (K == 0.0)
                 K = 1;

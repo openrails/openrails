@@ -1084,7 +1084,7 @@ namespace ORTS
 
             //Curtius-Kniffler computation
             float currentSpeedMpS = Math.Abs(SpeedMpS);
-            float uMax = (7.5f / (currentSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
+            float uMax = 1.3f * (7.5f / (currentSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
             float adhesionUtil = 0.95f;   //Adhesion utilization
 
             float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
