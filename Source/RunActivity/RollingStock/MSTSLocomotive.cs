@@ -430,6 +430,8 @@ namespace ORTS
             EngineBrakeController = locoCopy.EngineBrakeController != null ? (MSTSBrakeController)locoCopy.EngineBrakeController.Clone() : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
 
+            Initialize();
+
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
 

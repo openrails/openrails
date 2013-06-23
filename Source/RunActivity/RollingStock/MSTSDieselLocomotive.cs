@@ -189,6 +189,7 @@ namespace ORTS
             ExhaustSteadyColor = locoCopy.ExhaustSteadyColor;
             ExhaustTransientColor = locoCopy.ExhaustTransientColor;
             DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
+            Initialize();
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
 

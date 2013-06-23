@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using MSTS;
 using System.IO;
+using System.Diagnostics;
 
 namespace ORTS
 {
@@ -23,7 +24,7 @@ namespace ORTS
 
         int initLevel = 0;
 
-        public bool IsInitialized { get { return initLevel >= 9; } }
+        public bool IsInitialized { get { return initLevel >= 7; } }
         public bool AtLeastOneParamFound { get { return initLevel >= 1; } }
 
         public MSTSGearBoxParams()
@@ -53,7 +54,7 @@ namespace ORTS
             switch (lowercasetoken)
             {
                 case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(STFReader.UNITS.None, 1); initLevel++; break;
-                case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(STFReader.UNITS.None, 1); initLevel++; break;
+                case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(STFReader.UNITS.None, 1); break; // initLevel++; break;
                 case "engine(gearboxoperation":
                     temp = stf.ReadStringBlock("manual");
                     switch (temp)
@@ -105,11 +106,11 @@ namespace ORTS
                         initLevel++;
                     }
                     break;
-                case "engine(gearboxoverspeedpercentageforfailure": GearBoxOverspeedPercentageForFailure = stf.ReadFloatBlock(STFReader.UNITS.None, 150f); initLevel++; break;
+                case "engine(gearboxoverspeedpercentageforfailure": GearBoxOverspeedPercentageForFailure = stf.ReadFloatBlock(STFReader.UNITS.None, 150f); break; // initLevel++; break;
                 case "engine(gearboxbackloadforce": GearBoxBackLoadForce = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); initLevel++; break;
                 case "engine(gearboxcoastingforce": GearBoxCoastingForce = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); initLevel++; break;
-                case "engine(gearboxupgearproportion": GearBoxUpGearProportion = stf.ReadFloatBlock(STFReader.UNITS.None, 0.85f); initLevel++; break;
-                case "engine(gearboxdowngearproportion": GearBoxDownGearProportion = stf.ReadFloatBlock(STFReader.UNITS.None, 0.25f); initLevel++; break;
+                case "engine(gearboxupgearproportion": GearBoxUpGearProportion = stf.ReadFloatBlock(STFReader.UNITS.None, 0.85f); break; // initLevel++; break;
+                case "engine(gearboxdowngearproportion": GearBoxDownGearProportion = stf.ReadFloatBlock(STFReader.UNITS.None, 0.25f); break; // initLevel++; break;
                 default: break;
             }
         }
@@ -326,6 +327,8 @@ namespace ORTS
 
             if (mstsParams != null)
             {
+                if ((!mstsParams.IsInitialized) && (mstsParams.AtLeastOneParamFound))
+                    Trace.TraceWarning("Some of the gearbox parameters are missing! Default physics will be used.");
                 for (int i = 0; i < mstsParams.GearBoxNumberOfGears; i++)
                 {
                     Gears.Add(new Gear(this));
