@@ -387,7 +387,7 @@ namespace ORTS
                         foreach (ORTSTrigger trigger in stream.Triggers)
                             trigger.Initialize();
 
-                        stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D);
+                        stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D || IsCABSound || IsPassengerSound);
                     }
                 }
                 WasOutOfDistance = false;
@@ -430,7 +430,7 @@ namespace ORTS
 
             // Must start and stop by triggers - by GeorgeS
             //if (Active)
-            if (WorldLocation != null && !Ignore3D)
+            if (WorldLocation != null && !Ignore3D && !IsCABSound && !IsPassengerSound)
             {
                 float[] velocity = new float[] {0, 0, 0};
 
