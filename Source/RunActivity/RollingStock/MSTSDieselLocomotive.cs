@@ -710,7 +710,10 @@ namespace ORTS
             var result = new StringBuilder();
 
             result.AppendFormat("Diesel engine = {0}\n", DieselEngines[0].EngineStatus.ToString());
-            result.AppendFormat("Diesel RPM = {0:F0}\n", DieselEngines[0].RealRPM);
+            if(DieselEngines.HasGearBox)
+                result.AppendFormat("Diesel RPM = {0:F0} - Gear: {1}\n", DieselEngines[0].RealRPM, DieselEngines[0].GearBox.CurrentGearIndex < 0 ? "N" : (DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString(), DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Automatic ? "Automatic gear" : "");
+            else
+                result.AppendFormat("Diesel RPM = {0:F0}\n", DieselEngines[0].RealRPM);
             result.AppendFormat("Diesel level = {0:F0} L ({1:F0} gal)\n", DieselLevelL, DieselLevelL / 3.785f);
             result.AppendFormat("Diesel flow = {0:F1} L/h ({1:F1} gal/h)", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
             return result.ToString();

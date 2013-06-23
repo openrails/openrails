@@ -377,7 +377,10 @@ namespace ORTS.Popups
                     TableSetCell(table, 2, "{0:F0}", ((MSTSElectricLocomotive)car).ThrottlePercent);
                     TableSetCell(table, 3, "{0:F0}", ((MSTSElectricLocomotive)car).MotiveForceN * car.SpeedMpS);
                     TableSetCell(table, 4, "{0:F0}", ((MSTSElectricLocomotive)car).MotiveForceN);
-                    TableSetCell(table, 5, "{0:F0}", ((MSTSElectricLocomotive)car).LocomotiveAxle.SlipSpeedPercent);
+                    if ((car.Simulator.UseAdvancedAdhesion) && (!((MSTSLocomotive)car).AntiSlip))
+                        TableSetCell(table, 5, "{0:F0}", ((MSTSLocomotive)car).LocomotiveAxle.SlipSpeedPercent);
+                    else
+                        TableSetCell(table, 5, "{0}", car.WheelSlip ? "WhlSlp!" : "-");
                     TableSetCell(table, 6, "{0:F0}", car.Flipped ? "Flipped" : "");
                     TableSetCell(table, 7, "{0:F0}", "");
                     TableSetCell(table, 8, car.CouplerOverloaded ? "Coupler overloaded" : "");
@@ -405,7 +408,7 @@ namespace ORTS.Popups
                     if((car.Simulator.UseAdvancedAdhesion)&&(!((MSTSLocomotive)car).AntiSlip))
                         TableSetCell(table, 6, "{0:F0}", ((MSTSDieselLocomotive)car).LocomotiveAxle.SlipSpeedPercent);
                     else
-                        TableSetCell(table, 6, "{0}", "-");
+                        TableSetCell(table, 6, "{0}", car.WheelSlip ? "WhlSlp!" : "-");
                     TableSetCell(table, 7, "{0:F0}", car.Flipped ? "Flipped" : "");
                     TableSetCell(table, 8, "{0:F0}", "");
                     TableSetCell(table, 9, car.CouplerOverloaded ? "Coupler overloaded" : "");

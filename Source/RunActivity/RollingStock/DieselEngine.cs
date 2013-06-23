@@ -534,8 +534,8 @@ namespace ORTS
                 }
             }
 
-            if ((OutputPowerW > (1.1f * MaxOutputPowerW))&&(EngineStatus == Status.Running))
-                dRPM = (MaxOutputPowerW - OutputPowerW) / MaximalPowerW *0.01f * RateOfChangeDownRPMpSS;
+            if ((OutputPowerW > (1.1f * MaxOutputPowerW)) && (EngineStatus == Status.Running))
+                dRPM = (MaxOutputPowerW - OutputPowerW) / MaximalPowerW * 0.01f * RateOfChangeDownRPMpSS;
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
 
@@ -689,10 +689,10 @@ namespace ORTS
             DieselConsumptionTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { diesel.DieselUsedPerHourAtIdleL, diesel.DieselUsedPerHourAtMaxPowerL });
             ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { diesel.IdleRPM, diesel.MaxRPM });
             
-            int count = 15;
-            float[] rpm = new float[count];
-            float[] power = new float[] {0.02034f, 0.09302f, 0.36628f, 0.52326f, 0.60756f, 0.69767f, 0.75581f, 0.81395f, 0.87209f, 0.93023f, 0.9686f, 0.99418f, .099418f, 1f, 1f };
-            float[] torque = new float[] {0.05f, 0.2f, 0.7f, 0.9f, 0.95f, 1f, 1f, 1f, 1f, 1f, 0.98f, 0.95f, 0.9f, 0.86f, 0.81f};
+            int count = 11;
+            float[] rpm = new float[count + 1];
+            float[] power = new float[] {0.02034f,  0.09302f,   0.36628f,   0.60756f,   0.69767f,   0.81395f,   0.93023f,   0.9686f,    0.99418f,   0.99418f,  1f,     0.5f };
+            float[] torque = new float[] {0.05f,    0.2f,       0.7f,       0.95f,      1f,         1f,         0.98f,      0.95f,      0.9f,       0.86f,      0.81f,  0.3f};
 
             for (int i = 0; i < count; i++)
             {
@@ -702,6 +702,7 @@ namespace ORTS
                     rpm[i] = rpm[i - 1] + (diesel.MaxRPM - diesel.IdleRPM) / (count - 1);
                 power[i] *= MaximalPowerW;
             }
+            rpm[count] = diesel.MaxRPM * 1.5f;
             DieselPowerTab = new Interpolator(rpm, power);
             //DieselPowerTab.test("PowerTab", count);
             DieselTorqueTab = new Interpolator(rpm, torque);

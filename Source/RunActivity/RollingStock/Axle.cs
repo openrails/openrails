@@ -612,7 +612,7 @@ namespace ORTS
                     //    axleForceN = -brakeForceN;
                     //}
                     //Axle revolutions integration
-                    if (TrainSpeedMpS > 0.0f)
+                    if (TrainSpeedMpS > 0.09f)
                     {
                         if (((brakeForceN) > (driveForceN)) && (AxleSpeedMpS < 0.1f))
                         {
@@ -635,7 +635,7 @@ namespace ORTS
                     }
                     else
                     {
-                        if (TrainSpeedMpS < 0.0f)
+                        if (TrainSpeedMpS < -0.09f)
                         {
                             if (((brakeForceN) > (Math.Abs(driveForceN))) && (AxleSpeedMpS > -0.1f))
                             {
@@ -670,6 +670,7 @@ namespace ORTS
                                 if (Math.Abs(axleSpeedMpS) < 0.1f)
                                     Reset();
                             }
+                            axleSpeedMpS = TrainSpeedMpS;
                         }
                     }
                     break;
