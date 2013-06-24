@@ -343,22 +343,6 @@ namespace ORTS
             }
         }
 
-        public bool IsCABSound
-        {
-            get
-            {
-                return ActivationConditions.CabCam && !ActivationConditions.ExternalCam;
-            }
-        }
-
-        public bool IsPassengerSound
-        {
-            get
-            {
-                return ActivationConditions.PassengerCam && !ActivationConditions.ExternalCam;
-            }
-        }
-
         public override void InitInitials()
         {
             if (Car != null)
@@ -387,7 +371,7 @@ namespace ORTS
                         foreach (ORTSTrigger trigger in stream.Triggers)
                             trigger.Initialize();
 
-                        stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D || IsCABSound || IsPassengerSound);
+                        stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D || !IsExternal);
                     }
                 }
                 WasOutOfDistance = false;
@@ -430,7 +414,7 @@ namespace ORTS
 
             // Must start and stop by triggers - by GeorgeS
             //if (Active)
-            if (WorldLocation != null && !Ignore3D && !IsCABSound && !IsPassengerSound)
+            if (WorldLocation != null && !Ignore3D && IsExternal)
             {
                 float[] velocity = new float[] {0, 0, 0};
 
