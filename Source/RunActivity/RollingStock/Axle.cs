@@ -658,7 +658,7 @@ namespace ORTS
                         }
                         else
                         {
-                            if (Math.Abs(driveForceN) < 0.1f)
+                            if (Math.Abs(driveForceN) < 1f)
                             {
                                 Reset();
                                 axleSpeedMpS = 0.0f;
@@ -667,7 +667,7 @@ namespace ORTS
                             else
                             {
                                 axleForceN = driveForceN - brakeForceN;
-                                if (Math.Abs(axleSpeedMpS) < 0.1f)
+                                if (Math.Abs(axleSpeedMpS) < 0.01f)
                                     Reset();
                             }
                             axleSpeedMpS = TrainSpeedMpS;
