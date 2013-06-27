@@ -70,14 +70,14 @@ namespace ORTS
         /// <summary>
         /// Constructs a Sound Piece
         /// </summary>
-        /// <param name="Name">Name of the wave file to open</param>
-        /// <param name="IsExternal">True if external sound, must be converted to mono</param>
+        /// <param name="name">Name of the wave file to open</param>
+        /// <param name="isExternal">True if external sound, must be converted to mono</param>
         /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
-        public SoundPiece(string Name, bool IsExternal, bool isReleasedWithJump)
+        public SoundPiece(string name, bool isExternal, bool isReleasedWithJump)
         {
-            this.Name = Name;
-            this.IsExternal = IsExternal;
-            this.IsReleasedWithJump = IsReleasedWithJump;
+            Name = name;
+            IsExternal = isExternal;
+            IsReleasedWithJump = isReleasedWithJump;
             WaveFileData wfd = new WaveFileData();
             if (!wfd.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal, isReleasedWithJump))
             {
@@ -338,8 +338,24 @@ namespace ORTS
                 case PlayMode.OneShot:
                 case PlayMode.Loop:
                     {
-                        SoundPiece.QueueAll(soundSourceID);
-                        PlayState = PlayState.Playing;
+                        int type;
+                        OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_SOURCE_TYPE, out type);
+                        if (type == OpenAL.AL_STATIC)
+                        {
+                            int state;
+                            OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_SOURCE_STATE, out state);
+                            if (state != OpenAL.AL_PLAYING)
+                            {
+                                OpenAL.alSourcei(soundSourceID, OpenAL.AL_BUFFER, OpenAL.AL_NONE);
+                                type = OpenAL.AL_UNDETERMINED;
+                            }
+                        }
+
+                        if (type != OpenAL.AL_STATIC)
+                        {
+                            SoundPiece.QueueAll(soundSourceID);
+                            PlayState = PlayState.Playing;
+                        }
                         break;
                     }
                 case PlayMode.LoopRelease:
@@ -359,15 +375,30 @@ namespace ORTS
                                 PlayState = PlayState.Playing;
                                 PlayMode = PlayMode.Loop;
                             }
-                            break;
                         }
                         else
                         {
-                            SoundPiece.NextBuffer = 0;
-                            SoundPiece.Queue2(soundSourceID);
-                            PlayState = PlayState.Playing;
-                            break;
+                            int type;
+                            OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_SOURCE_TYPE, out type);
+                            if (type == OpenAL.AL_STATIC)
+                            {
+                                int state;
+                                OpenAL.alGetSourcei(soundSourceID, OpenAL.AL_SOURCE_STATE, out state);
+                                if (state != OpenAL.AL_PLAYING)
+                                {
+                                    OpenAL.alSourcei(soundSourceID, OpenAL.AL_BUFFER, OpenAL.AL_NONE);
+                                    type = OpenAL.AL_UNDETERMINED;
+                                }
+                            }
+
+                            if (type != OpenAL.AL_STATIC)
+                            {
+                                SoundPiece.NextBuffer = 0;
+                                SoundPiece.Queue2(soundSourceID);
+                                PlayState = PlayState.Playing;
+                            }
                         }
+                        break;
                     }
                 default:
                     {

@@ -42,6 +42,7 @@ namespace ORTS
         public const int AL_BUFFERS_PROCESSED = 0x1016;
         public const int AL_PLAYING = 0x1012;
         public const int AL_SOURCE_STATE = 0x1010;
+        public const int AL_SOURCE_TYPE = 0x1027;
         public const int AL_LOOPING = 0x1007;
         public const int AL_GAIN = 0x100a;
         public const int AL_VELOCITY = 0x1006;
@@ -71,7 +72,9 @@ namespace ORTS
         public const int AL_RENDERER = 0xb003;
         public const int AL_DOPPLER_FACTOR = 0xc000;
         public const int AL_LOOP_POINTS_SOFT = 0x2015;
-        public const int AL_STATIC = 0x4136;
+        public const int AL_STATIC = 0x1028;
+        public const int AL_STREAMING = 0x1029;
+        public const int AL_UNDETERMINED = 0x1030;
 
         public const int ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004;
         public const int ALC_DEVICE_SPECIFIER = 0x1005;

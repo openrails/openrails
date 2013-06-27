@@ -713,10 +713,6 @@ namespace ORTS
                                    select t;
                         if (vtqb.Count() == vtq.Count)
                         {
-#if DEBUGSCR
-                            if (!string.IsNullOrEmpty(_InitialTrigger.SoundCommand.FileName))
-                                Console.WriteLine("({0})InitialTrigger: {1}", Index, _InitialTrigger.SoundCommand.FileName);
-#endif
                             _InitialTrigger.Initialize();
                         }
                     }
@@ -1018,15 +1014,24 @@ namespace ORTS
     /// </summary>
     public class ORTSInitialTrigger: ORTSTrigger
     {
+        private SoundStream SoundStream;
+
         public ORTSInitialTrigger(SoundStream soundStream, MSTS.Initial_Trigger smsData)
         {
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
+            SoundStream = soundStream;
         }
 
         public override void Initialize()
         {
-            if( Enabled )
+            if (Enabled)
+            {
                 SoundCommand.Run();
+#if DEBUGSCR
+                if (!string.IsNullOrEmpty(SoundCommand.FileName))
+                    Console.WriteLine("({0})InitialTrigger: {1}", SoundStream.Index, SoundCommand.FileName);
+#endif
+            }
 
             Signaled = true;
         }
@@ -1351,7 +1356,6 @@ namespace ORTS
 
     /// <summary>
     /// Start a looping sound that uses repeat markers
-    /// TODO - until we implement markers, this will start the sound as a simple one shot
     /// </summary>
     public class ORTSStartLoopRelease : ORTSSoundPlayCommand
     {
@@ -1587,9 +1591,10 @@ namespace ORTS
     public class WorldSounds
     {
         List<WSFile> Files = new List<WSFile>();
-        Dictionary<string, List<SoundSourceBase>> Sounds = new Dictionary<string, List<SoundSourceBase>>();
         Dictionary<string, List<WorldSoundRegion>> SoundRegions = new Dictionary<string, List<WorldSoundRegion>>();
         private Viewer3D Viewer;
+        private SoundSource ss;
+        private List<SoundSourceBase> ls;
 
         public WorldSounds(Viewer3D viewer)
         {
@@ -1766,37 +1771,31 @@ namespace ORTS
         {
             string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
 #if PLAYENVSOUNDS
-            lock (Sounds)
+            WSFile wf = new WSFile(name);
+            if (wf.TR_WorldSoundFile != null)
             {
-                if (!Sounds.ContainsKey(name))
+                string[] pathArray = {Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath};
+                
+                ls = new List<SoundSourceBase>();
+                foreach (WorldSoundSource fss in wf.TR_WorldSoundFile.SoundSources)
                 {
-                    WSFile wf = new WSFile(name);
-                    List<SoundSourceBase> ls = new List<SoundSourceBase>();
-                    if (wf.TR_WorldSoundFile != null)
+                    WorldLocation wl = new WorldLocation(TileX, TileZ, fss.X, fss.Y, fss.Z);
+                    var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + fss.SoundSourceFileName);
+                    if (fullPath != null)
                     {
-                        string[] pathArray = {Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath};
-
-                        foreach (WorldSoundSource fss in wf.TR_WorldSoundFile.SoundSources)
-                        {
-                            WorldLocation wl = new WorldLocation(TileX, TileZ, fss.X, fss.Y, fss.Z);
-                            var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + fss.SoundSourceFileName);
-                            if (fullPath != null)
-                            {
-                                var ss = new SoundSource(Viewer, wl, Events.Source.None, fullPath, true);
-                            if (ss != null)
-                                ls.Add(ss);
-                        }
-                        }
-
-                        lock (SoundRegions)
-                        {
-                            if (!SoundRegions.ContainsKey(name))
-                            {
-                                SoundRegions.Add(name, wf.TR_WorldSoundFile.SoundRegions);
-                            }
-                        }
+                        ss = new SoundSource(Viewer, wl, Events.Source.None, fullPath, true);
+                        if (ss != null)
+                            ls.Add(ss);
                     }
-                    Viewer.SoundProcess.AddSoundSource(name, ls);
+                }
+                Viewer.SoundProcess.AddSoundSource(name, ls);
+
+                lock (SoundRegions)
+                {
+                    if (!SoundRegions.ContainsKey(name))
+                    {
+                        SoundRegions.Add(name, wf.TR_WorldSoundFile.SoundRegions);
+                    }
                 }
             }
 #endif
@@ -1805,18 +1804,12 @@ namespace ORTS
         public void RemoveByTile(int TileX, int TileZ)
         {
             string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
-            lock (Sounds)
+            Viewer.SoundProcess.RemoveSoundSource(name);
+            lock (SoundRegions)
             {
-                if (Sounds.ContainsKey(name))
+                if (SoundRegions.ContainsKey(name))
                 {
-                    Viewer.SoundProcess.RemoveSoundSource(name);
-                    lock (SoundRegions)
-                    {
-                        if (SoundRegions.ContainsKey(name))
-                        {
-                            SoundRegions.Remove(name);
-                        }
-                    }
+                    SoundRegions.Remove(name);
                 }
             }
         }
