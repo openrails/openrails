@@ -382,26 +382,43 @@ namespace ORTS
             if ((shaft <= 0.05)||(shaft >= 1f))
                 currentGearIndex = nextGearIndex;
 
-            switch (GearBoxOperation)
+            if (DieselEngine.EngineStatus == DieselEngine.Status.Running)
             {
-                case GearBoxOperation.Manual:
-                    break;
-                case GearBoxOperation.Automatic:
-                case GearBoxOperation.Semiautomatic:
-                    if ((CurrentGear != null))
-                    {
-                        if ((CurrentSpeedMpS > (DieselEngine.MaxRPM * CurrentGear.UpGearProportion * CurrentGear.Ratio)))// && (!GearedUp) && (!GearedDown))
-                            AutoGearUp();
+                switch (GearBoxOperation)
+                {
+                    case GearBoxOperation.Manual:
+                        break;
+                    case GearBoxOperation.Automatic:
+                    case GearBoxOperation.Semiautomatic:
+                        if ((CurrentGear != null))
+                        {
+                            if ((CurrentSpeedMpS > (DieselEngine.MaxRPM * CurrentGear.UpGearProportion * CurrentGear.Ratio)))// && (!GearedUp) && (!GearedDown))
+                                AutoGearUp();
+                            else
+                            {
+                                if ((CurrentSpeedMpS < (DieselEngine.MaxRPM * CurrentGear.DownGearProportion * CurrentGear.Ratio)))// && (!GearedUp) && (!GearedDown))
+                                    AutoGearDown();
+                                else
+                                    AutoAtGear();
+                            }
+                            if (DieselEngine.locomotive.ThrottlePercent == 0)
+                            {
+                                if ((CurrentGear != null) || (NextGear == null))
+                                {
+                                    nextGearIndex = -1;
+                                    currentGearIndex = -1;
+                                    shaftOn = false;
+                                    gearedDown = false;
+                                    gearedUp = false;
+                                }
+
+                            }
+                        }
                         else
                         {
-                            if ((CurrentSpeedMpS < (DieselEngine.MaxRPM * CurrentGear.DownGearProportion * CurrentGear.Ratio)))// && (!GearedUp) && (!GearedDown))
-                                AutoGearDown();
+                            if ((DieselEngine.locomotive.ThrottlePercent > 0))
+                                AutoGearUp();
                             else
-                                AutoAtGear();
-                        }
-                        if (DieselEngine.locomotive.ThrottlePercent == 0)
-                        {
-                            if ((CurrentGear != null)||(NextGear == null))
                             {
                                 nextGearIndex = -1;
                                 currentGearIndex = -1;
@@ -409,24 +426,19 @@ namespace ORTS
                                 gearedDown = false;
                                 gearedUp = false;
                             }
-
                         }
-                    }
-                    else
-                    {
-                        if ((DieselEngine.locomotive.ThrottlePercent > 0))
-                            AutoGearUp();
-                        else
-                        {
-                            nextGearIndex = -1;
-                            currentGearIndex = -1;
-                            shaftOn = false;
-                            gearedDown = false;
-                            gearedUp = false;
-                        }
-                    }
-                    break;
+                        break;
+                }
             }
+            else
+            {
+                nextGearIndex = -1;
+                currentGearIndex = -1;
+                shaftOn = false;
+                gearedDown = false;
+                gearedUp = false;
+            }
+
         }
 
     }
