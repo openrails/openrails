@@ -379,9 +379,12 @@ namespace ORTS
 
         public void Update(float elapsedClockSeconds)
         {
-            if ((shaft <= 0.05)||(shaft >= 1f))
+            if ((shaft <= 0.05) || (shaft >= 1f))
+            {
+                if (currentGearIndex < nextGearIndex) DieselEngine.locomotive.SignalEvent(Event.GearUp);
+                if (currentGearIndex > nextGearIndex) DieselEngine.locomotive.SignalEvent(Event.GearDown);
                 currentGearIndex = nextGearIndex;
-
+            }
             if (DieselEngine.EngineStatus == DieselEngine.Status.Running)
             {
                 switch (GearBoxOperation)

@@ -1179,6 +1179,12 @@ namespace ORTS
             if ( Direction != direction && ThrottlePercent < 1)
             {
                 Direction = direction;
+                switch (direction)
+                {
+                    case Direction.Reverse: SignalEvent(Event.ReverserToForwardBackward); break;
+                    case Direction.N: SignalEvent(Event.ReverserToNeutral); break;
+                    case Direction.Forward: SignalEvent(Event.ReverserToForwardBackward); break;
+                }
                 SignalEvent(Event.ReverserChange);
                 if (direction == Direction.Forward)
                     Train.MUReverserPercent = 100;

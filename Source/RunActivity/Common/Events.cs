@@ -47,8 +47,8 @@ namespace ORTS
         EngineBrakeChange, // NOTE: Currently not used in Open Rails.
         EngineBrakePressureDecrease,
         EngineBrakePressureIncrease,
-        EnginePowerOff, // NOTE: Currently not used in Open Rails.
-        EnginePowerOn, // NOTE: Currently not used in Open Rails.
+        EnginePowerOff, 
+        EnginePowerOn, 
         FireboxDoorChange, // NOTE: Currently not used in Open Rails.
         FireboxDoorClose, // NOTE: Currently not used in Open Rails.
         FuelTowerDown, // NOTE: Currently not used in Open Rails.
@@ -95,6 +95,16 @@ namespace ORTS
         _HeadlightOff,
         _HeadlightOn,
         _ResetWheelSlip,
+        // ORTS only triggers
+        GearUp, // for gearbox based engines.
+        GearDown, // for gearbox based engines.
+        ReverserToForwardBackward, // reverser moved to forward or backward position
+        ReverserToNeutral, // reversed moved to neutral
+        DoorOpen, // door opened
+        DoorClose, // door closed
+        MirrorOpen, // when mirrors not available can be used for other purposes
+        MirrorClose, // ditto
+
     }
 
     public static class Events
@@ -198,6 +208,18 @@ namespace ORTS
                         case 62: return Event.UncoupleB;
                         case 63: return Event.UncoupleC;
                         // Event 64 is unused in MSTS.
+
+                        // ORTS only Events
+                        case 68: return Event.GearUp; // for gearbox based engines
+                        case 69: return Event.GearDown; // for gearbox based engines
+                        case 70: return Event.ReverserToForwardBackward; // reverser moved to forward or backward position
+                        case 71: return Event.ReverserToNeutral; // reversed moved to neutral
+                        case 72: return Event.DoorOpen; // door opened
+                        case 73: return Event.DoorClose; // door closed
+                        case 74: return Event.MirrorOpen; // when mirrors not present can be used for other purposes
+                        case 75: return Event.MirrorClose; // ditto
+                        //
+
                         default: return 0;
                     }
                 case Source.MSTSCrossing:

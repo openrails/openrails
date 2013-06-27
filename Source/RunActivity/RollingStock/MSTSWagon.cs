@@ -515,9 +515,8 @@ namespace ORTS
                         ((MSTSWagon)car).DoorLeftOpen = DoorLeftOpen;
                     }
                 }
-                /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
-                else Car.SignalEvent(EventID.DoorClose);*/
-                //comment out, but can be added back to animate sound
+                if (DoorLeftOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
+                else SignalEvent(Event.DoorClose);
                 Simulator.Confirmer.Confirm( CabControl.DoorsLeft, DoorLeftOpen ? CabSetting.On : CabSetting.Off );
             }
         }
@@ -528,15 +527,16 @@ namespace ORTS
                 foreach( TrainCar car in Train.Cars ) {
                     if( car != this && car is MSTSWagon ) ((MSTSWagon)car).DoorRightOpen = DoorRightOpen;
                 }
-                /*if (MSTSWagon.DoorLeftOpen) Car.SignalEvent(EventID.DoorOpen);
-                else Car.SignalEvent(EventID.DoorClose);*/
-                //comment out, but can be added back to animate sound
+                if (DoorRightOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
+                else SignalEvent(Event.DoorClose);
                 Simulator.Confirmer.Confirm( CabControl.DoorsRight, DoorRightOpen ? CabSetting.On : CabSetting.Off );
             }
         }
 
         public void ToggleMirrors() {
             MirrorOpen = !MirrorOpen;
+            if (MirrorOpen) SignalEvent(Event.MirrorOpen); // hook for sound trigger
+            else SignalEvent(Event.MirrorClose);
             Simulator.Confirmer.Confirm( CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off );
         }
 

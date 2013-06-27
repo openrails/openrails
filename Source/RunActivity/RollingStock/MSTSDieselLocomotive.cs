@@ -58,6 +58,7 @@ namespace ORTS
         public float ExhaustDynamics = 4.0f;
         public float EngineRPMderivation = 0.0f;
         float EngineRPMold = 0.0f;
+        float EngineRPMRatio = 0.0f; // used to compute Variable1 and Variable2
 
         public float MaxDieselLevelL = 5000.0f;
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
@@ -459,7 +460,10 @@ namespace ORTS
 
                 DieselLevelL -= DieselEngines.DieselFlowLps * elapsedClockSeconds;
                 if (DieselLevelL <= 0.0f)
+                {
                     PowerOn = false;
+                    SignalEvent(Event.EnginePowerOff);
+                }
                 MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
 
@@ -610,8 +614,8 @@ namespace ORTS
             //    ExhaustParticles = 0;
 
             //}
-            Variable1 = (DieselEngines[0].RealRPM - DieselEngines[0].IdleRPM) / (DieselEngines[0].MaxRPM - DieselEngines[0].IdleRPM);
-
+            EngineRPMRatio = (DieselEngines[0].RealRPM - DieselEngines[0].IdleRPM) / (DieselEngines[0].MaxRPM - DieselEngines[0].IdleRPM);
+            // Variable1 is computed after Variable2;
 
             //Variable2 = Math.Abs(WheelSpeedMpS);
 
@@ -666,13 +670,13 @@ namespace ORTS
             
 
             // Refined Variable2 setting to graduate
-            if (Variable2 != Variable1)
+            if (Variable2 != EngineRPMRatio)
             {
                 // Calculated value
                 float addition = PercentChangePerSec;
                 bool neg = false;
 
-                if (Variable1 < Variable2)
+                if (EngineRPMRatio < Variable2)
                 {
                     addition *= -1;
                     neg = true;
@@ -682,9 +686,14 @@ namespace ORTS
 
                 Variable2 += addition;
 
-                if ((neg && Variable2 < Variable1) || (!neg && Variable2 > Variable1))
-                    Variable2 = Variable1;
+                if ((neg && Variable2 < EngineRPMRatio) || (!neg && Variable2 > EngineRPMRatio))
+                    Variable2 = EngineRPMRatio;
             }
+            // Gearbased or not?
+            if (GearBox == null) Variable1 = EngineRPMRatio; // Not gearbased, Variable1 similar to Variable2
+            else Variable1 = ThrottlePercent / 100.0f ; // Gearbased, Variable1 proportional to ThrottlePercent
+            // else Variable1 = MotiveForceN / MaxForceN; // Gearbased, Variable1 proportional to motive force
+            // allows for motor volume proportional to effort.
 
             EngineRPM = Variable2 * (MaxRPM - IdleRPM) + IdleRPM;
 
@@ -743,7 +752,7 @@ namespace ORTS
         /// </summary>
         public void StartStopDiesel()
         {
-            if (!this.IsLeadLocomotive()&&(this.ThrottlePercent == 0))
+            if (!this.IsLeadLocomotive() && (this.ThrottlePercent == 0))
                 PowerOn = !PowerOn;
         }
 
@@ -797,10 +806,12 @@ namespace ORTS
                     if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped)
                     {
                         DieselLocomotive.DieselEngines[0].Start();
+                        DieselLocomotive.SignalEvent(Event.EnginePowerOn); // power on sound hook
                     }
                     if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Running)
                     {
                         DieselLocomotive.DieselEngines[0].Stop();
+                        DieselLocomotive.SignalEvent(Event.EnginePowerOff); // power off sound hook
                     }
                     Viewer.Simulator.Confirmer.Confirm( CabControl.PlayerDiesel, DieselLocomotive.PowerOn ? CabSetting.On : CabSetting.Off );
                 } 
@@ -854,6 +865,14 @@ namespace ORTS
                         }
                         //((MSTSDieselLocomotive)traincar).StartStopDiesel();
                         powerOn = ((MSTSDieselLocomotive)traincar).PowerOn;
+                        if ((traincar != Program.Simulator.PlayerLocomotive))
+                        {
+                            if ((((MSTSDieselLocomotive)traincar).DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped)||
+                                (((MSTSDieselLocomotive)traincar).DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping))
+                                ((MSTSDieselLocomotive)traincar).SignalEvent(Event.EnginePowerOff);
+                            else
+                                ((MSTSDieselLocomotive)traincar).SignalEvent(Event.EnginePowerOn);
+                        }
                         helperLocos++;
                     }
                 }
