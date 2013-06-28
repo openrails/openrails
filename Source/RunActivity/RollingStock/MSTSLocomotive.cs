@@ -2260,6 +2260,12 @@ namespace ORTS
                         data = ConvertFromPSI(cvc, ((MSTSSteamLocomotive)this).BoilerPressurePSI);
                         break;
                     }
+                // For gearbox engines
+                case CABViewControlTypes.GEARS:
+                    {
+                        data = ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        break;
+                    }
                 default:
                     {
                         data = 0;
@@ -3757,6 +3763,7 @@ namespace ORTS
                 case CABViewControlTypes.DIRECTION:
                 case CABViewControlTypes.DIRECTION_DISPLAY:
                 case CABViewControlTypes.ASPECT_DISPLAY:
+                case CABViewControlTypes.GEARS:
                     index = (int)data;
                     break;
             }

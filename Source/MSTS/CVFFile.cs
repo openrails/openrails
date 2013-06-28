@@ -134,7 +134,8 @@ namespace MSTS
         RPM,
         FIREHOLE,
         CUTOFF,
-        VACUUM_RESERVOIR_PRESSURE
+        VACUUM_RESERVOIR_PRESSURE,
+        GEARS
     }
 
     public enum CABViewControlStyles

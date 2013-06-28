@@ -513,6 +513,8 @@ namespace ORTS
                     if (car != this && car is MSTSWagon)
                     {
                         ((MSTSWagon)car).DoorLeftOpen = DoorLeftOpen;
+                        if (DoorLeftOpen) ((MSTSWagon)car).SignalEvent(Event.DoorOpen); // hook for sound trigger
+                        else ((MSTSWagon)car).SignalEvent(Event.DoorClose);
                     }
                 }
                 if (DoorLeftOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
@@ -525,7 +527,12 @@ namespace ORTS
             DoorRightOpen = !DoorRightOpen;
             if( Simulator.PlayerLocomotive == this ) { //inform everyone else in the train
                 foreach( TrainCar car in Train.Cars ) {
-                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).DoorRightOpen = DoorRightOpen;
+                    if (car != this && car is MSTSWagon)
+                    {
+                        ((MSTSWagon)car).DoorRightOpen = DoorRightOpen;
+                        if (DoorRightOpen) ((MSTSWagon)car).SignalEvent(Event.DoorOpen); // hook for sound trigger
+                        else ((MSTSWagon)car).SignalEvent(Event.DoorClose);
+                    }
                 }
                 if (DoorRightOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
                 else SignalEvent(Event.DoorClose);
