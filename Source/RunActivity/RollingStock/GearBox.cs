@@ -24,7 +24,7 @@ namespace ORTS
 
         int initLevel = 0;
 
-        public bool IsInitialized { get { return initLevel >= 7; } }
+        public bool IsInitialized { get { return initLevel >= 5; } }
         public bool AtLeastOneParamFound { get { return initLevel >= 1; } }
 
         public MSTSGearBoxParams()
@@ -107,8 +107,8 @@ namespace ORTS
                     }
                     break;
                 case "engine(gearboxoverspeedpercentageforfailure": GearBoxOverspeedPercentageForFailure = stf.ReadFloatBlock(STFReader.UNITS.None, 150f); break; // initLevel++; break;
-                case "engine(gearboxbackloadforce": GearBoxBackLoadForce = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); initLevel++; break;
-                case "engine(gearboxcoastingforce": GearBoxCoastingForce = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); initLevel++; break;
+                case "engine(gearboxbackloadforce": GearBoxBackLoadForce = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); break;
+                case "engine(gearboxcoastingforce": GearBoxCoastingForce = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); break;
                 case "engine(gearboxupgearproportion": GearBoxUpGearProportion = stf.ReadFloatBlock(STFReader.UNITS.None, 0.85f); break; // initLevel++; break;
                 case "engine(gearboxdowngearproportion": GearBoxDownGearProportion = stf.ReadFloatBlock(STFReader.UNITS.None, 0.25f); break; // initLevel++; break;
                 default: break;
@@ -180,7 +180,7 @@ namespace ORTS
 
         public bool AutoGearUp()
         {
-            if (shaft < 0.05f)
+            if (clutch < 0.05f)
             {
                 if (!gearedUp)
                 {
@@ -197,7 +197,7 @@ namespace ORTS
 
         public bool AutoGearDown()
         {
-            if (shaft < 0.05f)
+            if (clutch < 0.05f)
             {
                 if (!gearedDown)
                 {
@@ -218,16 +218,16 @@ namespace ORTS
             gearedDown = false;
         }
 
-        public bool shaftOn = false;
-        public bool IsShaftOn
+        public bool clutchOn = false;
+        public bool IsClutchOn
         {
             get
             {
                 if (ShaftRPM >= (CurrentGear.DownGearProportion * DieselEngine.MaxRPM))
-                    shaftOn = true;
+                    clutchOn = true;
                 if (ShaftRPM < DieselEngine.StartingRPM)
-                    shaftOn = false;
-                return shaftOn;
+                    clutchOn = false;
+                return clutchOn;
             }
         }
 
@@ -280,10 +280,10 @@ namespace ORTS
             }
         }
 
-        float shaft = 0;
-        public float ShaftPercent { set { shaft = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; } get { return shaft * 100f; } }
+        float clutch = 0;
+        public float ClutchPercent { set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; } get { return clutch * 100f; } }
 
-        public bool AutoShaft = true;
+        public bool AutoClutch = true;
 
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
 
@@ -293,7 +293,7 @@ namespace ORTS
             {
                 if (CurrentGear != null)
                 {
-                    if (ShaftPercent >= -20)
+                    if (ClutchPercent >= -20)
                     {
                         //float motiveForceN = DieselEngine.DemandedThrottlePercent / 100f * CurrentGear.MaxTractiveForceN;
                         //if (CurrentSpeedMpS > 0)
@@ -311,7 +311,7 @@ namespace ORTS
                         return motiveForceN;
                     }
                     else
-                        return -CurrentGear.CoastingForceN * (100f + ShaftPercent) / 100f;
+                        return -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;
                 }
                 else
                     return 0;
@@ -362,7 +362,7 @@ namespace ORTS
             nextGearIndex = inf.ReadInt32();
             gearedUp = inf.ReadBoolean();
             gearedDown = inf.ReadBoolean();
-            shaftOn = inf.ReadBoolean();
+            clutchOn = inf.ReadBoolean();
             IsRestored = true;
         }
 
@@ -372,14 +372,14 @@ namespace ORTS
             outf.Write(nextGearIndex);
             outf.Write(gearedUp);
             outf.Write(gearedDown);
-            outf.Write(shaftOn);
+            outf.Write(clutchOn);
         }
 
         public bool IsInitialized { get { return mstsParams.IsInitialized; } }
 
         public void Update(float elapsedClockSeconds)
         {
-            if ((shaft <= 0.05) || (shaft >= 1f))
+            if ((clutch <= 0.05) || (clutch >= 1f))
             {
                 if (currentGearIndex < nextGearIndex) DieselEngine.locomotive.SignalEvent(Event.GearUp);
                 if (currentGearIndex > nextGearIndex) DieselEngine.locomotive.SignalEvent(Event.GearDown);
@@ -410,7 +410,7 @@ namespace ORTS
                                 {
                                     nextGearIndex = -1;
                                     currentGearIndex = -1;
-                                    shaftOn = false;
+                                    clutchOn = false;
                                     gearedDown = false;
                                     gearedUp = false;
                                 }
@@ -425,7 +425,7 @@ namespace ORTS
                             {
                                 nextGearIndex = -1;
                                 currentGearIndex = -1;
-                                shaftOn = false;
+                                clutchOn = false;
                                 gearedDown = false;
                                 gearedUp = false;
                             }
@@ -437,7 +437,7 @@ namespace ORTS
             {
                 nextGearIndex = -1;
                 currentGearIndex = -1;
-                shaftOn = false;
+                clutchOn = false;
                 gearedDown = false;
                 gearedUp = false;
             }

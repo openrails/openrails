@@ -364,7 +364,7 @@ namespace ORTS.Popups
 
             //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
             TableAddLine(table, "Electric Locomotives:");
-            TableSetCells(table, 0, "Car", "PowerOn", "Throttle", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
+            TableSetCells(table, 0, "Car", "PowerOn", "Pantos", "Throttle", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
             TableAddLine(table);
 
             int numDispCars = 0;
@@ -374,6 +374,7 @@ namespace ORTS.Popups
                 {
                     TableSetCell(table, 0, "{0}", numDispCars);
                     TableSetCell(table, 1, "{0}", ((MSTSElectricLocomotive)car).PowerOn ? "On" : "Off");
+                    TableSetCell(table, 1, "{0} {1}", ((MSTSElectricLocomotive)car).Pan1Up ? "Up" : "Dn", ((MSTSElectricLocomotive)car).Pan2Up ? "Up" : "Dn");
                     TableSetCell(table, 2, "{0:F0}", ((MSTSElectricLocomotive)car).ThrottlePercent);
                     TableSetCell(table, 3, "{0:F0}", ((MSTSElectricLocomotive)car).MotiveForceN * car.SpeedMpS);
                     TableSetCell(table, 4, "{0:F0}", ((MSTSElectricLocomotive)car).MotiveForceN);
@@ -401,7 +402,10 @@ namespace ORTS.Popups
                 {
                     TableSetCell(table, 0, "{0}", numDispCars);
                     TableSetCell(table, 1, "{0}", ((MSTSDieselLocomotive)car).DieselEngines[0].EngineStatus.ToString());
-                    TableSetCell(table, 2, "{0:F0}", ((MSTSDieselLocomotive)car).DieselEngines[0].RealRPM);
+                    if (((MSTSDieselLocomotive)car).DieselEngines.HasGearBox)
+                        TableSetCell(table, 2, "{0:F0}({1})", ((MSTSDieselLocomotive)car).DieselEngines[0].RealRPM, ((MSTSDieselLocomotive)car).DieselEngines[0].GearBox.CurrentGearIndex < 0 ? "N" : (((MSTSDieselLocomotive)car).DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString()); 
+                    else
+                        TableSetCell(table, 2, "{0:F0}", ((MSTSDieselLocomotive)car).DieselEngines[0].RealRPM);
                     TableSetCell(table, 3, "{0:F0}", ((MSTSDieselLocomotive)car).DieselEngines.DieselFlowLps * 3600.0f);
                     TableSetCell(table, 4, "{0:F0}", ((MSTSDieselLocomotive)car).MotiveForceN * car.SpeedMpS);
                     TableSetCell(table, 5, "{0:F0}", ((MSTSDieselLocomotive)car).MotiveForceN);

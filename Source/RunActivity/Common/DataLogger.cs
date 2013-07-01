@@ -29,6 +29,16 @@ namespace ORTS
         readonly StringBuilder Cache = new StringBuilder(CacheSize);
         bool FirstItem = true;
 
+        public enum Separators
+        {
+            comma = ',',
+            semicolon = ';',
+            tab = '\t',
+            space = ' '
+        };
+
+        public Separators Separator = Separators.comma;
+
         public DataLogger()
         {
         }
@@ -36,7 +46,7 @@ namespace ORTS
         public void Data(string data)
         {
             if (!FirstItem)
-                Cache.Append(',');
+                Cache.Append((char)Separator);
             Cache.Append(data);
             FirstItem = false;
         }

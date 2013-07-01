@@ -86,6 +86,22 @@ namespace ORTS
                 "1920x1200"
             };
 
+            string[] separators = 
+            {
+                "comma",
+                "semicolon",
+                "tab",
+                "space"
+            };
+
+            string[] speedUnits = 
+            {
+                "route",
+                "mps",
+                "mph",
+                "kmph"
+            };
+
             numericWorldObjectDensity.Value = 10;
             numericSoundDetailLevel.Value = 5;
             comboBoxWindowSize.Items.AddRange(strContents);
@@ -120,6 +136,14 @@ namespace ORTS
             NormalViewingDistance.Value = settings.ViewingDistance;
             LODExtention.Checked = settings.LODViewingExtention;
             checkDoubleWire.Checked = settings.DoubleWire;
+            comboBoxSeparators.Items.AddRange(separators);
+            comboBoxSeparators.Text = settings.DataLoggerSeparator;
+            checkBoxDataLoggerPhysics.Checked = settings.DataLogPhysics;
+            checkBoxDataLoggerPerformance.Checked = settings.DataLogPerformance;
+            checkBoxDataLoggerMiscelanous.Checked = settings.DataLogMisc;
+            checkBoxDataLoggerStart.Checked = Settings.DataLogger;
+            comboBoxDataLoggerSpeedUnits.Items.AddRange(speedUnits);
+            comboBoxDataLoggerSpeedUnits.Text = settings.DataLogSpeedUnits;
         }
 
         string ParseCategoryFrom(string name)
@@ -336,6 +360,12 @@ namespace ORTS
             Settings.ViewingDistance = (int)NormalViewingDistance.Value;
             Settings.LODViewingExtention = LODExtention.Checked;
             Settings.DoubleWire = checkDoubleWire.Checked;
+            Settings.DataLogPhysics = checkBoxDataLoggerPhysics.Checked;
+            Settings.DataLogPerformance = checkBoxDataLoggerPerformance.Checked;
+            Settings.DataLogMisc = checkBoxDataLoggerMiscelanous.Checked;
+            Settings.DataLogger = checkBoxDataLoggerStart.Checked;
+            Settings.DataLoggerSeparator = comboBoxSeparators.Text;
+            Settings.DataLogSpeedUnits = comboBoxDataLoggerSpeedUnits.Text;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

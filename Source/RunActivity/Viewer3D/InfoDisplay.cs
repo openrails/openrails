@@ -17,6 +17,8 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+#define GEARBOX_DEBUG_LOG
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,6 +30,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using ORTS.Popups;
+
 
 namespace ORTS
 {
@@ -87,7 +90,7 @@ namespace ORTS
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
 
             if (Viewer.Settings.DataLogger)
-                DataLoggerStart();
+                DataLoggerStart(Viewer.Settings);
         }
 
         [ThreadName("Render")]
@@ -103,7 +106,7 @@ namespace ORTS
             {
                 Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
                 if (Viewer.Settings.DataLogger)
-                    DataLoggerStart();
+                    DataLoggerStart(Viewer.Settings);
                 else
                     DataLoggerStop();
             }
@@ -143,35 +146,147 @@ namespace ORTS
             //Here's where the logger stores the data from each frame
             if (Viewer.Settings.DataLogger)
             {
-                Logger.Data(VersionInfo.Version);
-                Logger.Data(FrameNumber.ToString("F0"));
-                Logger.Data(GetWorkingSetSize().ToString("F0"));
-                Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
-                Logger.Data(GC.CollectionCount(0).ToString("F0"));
-                Logger.Data(GC.CollectionCount(1).ToString("F0"));
-                Logger.Data(GC.CollectionCount(2).ToString("F0"));
-                Logger.Data(ProcessorCount.ToString("F0"));
-                Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
-                Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
-                Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4"));
-                Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
-                Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
-                Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
-                Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
-                Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
-                Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
-                Logger.Data(FormattedTime(Viewer.Simulator.ClockTime));
-                Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
-                Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
-                Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
-                Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
+                Logger.Separator = (DataLogger.Separators) Enum.Parse(typeof(DataLogger.Separators), Viewer.Settings.DataLoggerSeparator);
+                if (Viewer.Settings.DataLogPerformance)
+                {
+                    Logger.Data(VersionInfo.Version);
+                    Logger.Data(FrameNumber.ToString("F0"));
+                    Logger.Data(GetWorkingSetSize().ToString("F0"));
+                    Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
+                    Logger.Data(GC.CollectionCount(0).ToString("F0"));
+                    Logger.Data(GC.CollectionCount(1).ToString("F0"));
+                    Logger.Data(GC.CollectionCount(2).ToString("F0"));
+                    Logger.Data(ProcessorCount.ToString("F0"));
+                    Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
+                    Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
+                    Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4"));
+                    Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
+                    Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
+                    Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
+                    Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
+                    Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
+                    Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
+                }
+                if (Viewer.Settings.DataLogPhysics)
+                {
+                    Logger.Data(FormattedPreciseTime(Viewer.Simulator.ClockTime));
+                    Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
+                    Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
+                    Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
+                    Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
+                    Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
+                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.AxleForceN.ToString("F2"));
+                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F1"));
 #if !NEW_SIGNALLING
                 Logger.Data(TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
 #else
-                Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+                    switch(Viewer.Settings.DataLogSpeedUnits)
+                    {
+                        case "route":
+                            Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+                            break;
+                        case "mps":
+                            Logger.Data(Viewer.PlayerLocomotive.SpeedMpS.ToString("F1"));
+                            break;
+                        case "mph":
+                            Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, false).ToString("F1"));
+                            break;
+                        case "kmph":
+                            Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, true).ToString("F1"));
+                            break;
+                        default:
+                            Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+                            break;
+                    }
 #endif
-                Logger.Data((Viewer.PlayerLocomotive.GravityForceN / (Viewer.PlayerLocomotive.MassKG * 9.81f)).ToString("F0"));
-                Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F0"));
+                    Logger.Data((Viewer.PlayerLocomotive.DistanceM.ToString("F0")));
+                    Logger.Data((Viewer.PlayerLocomotive.GravityForceN.ToString("F0")));
+                    
+                    if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController != null)
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController.CurrentValue.ToString("F2"));
+                    else
+                        Logger.Data("null");
+
+                    if ((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController != null)
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController.CurrentValue.ToString("F2"));
+                    else
+                        Logger.Data("null");
+
+                    Logger.Data(Viewer.PlayerLocomotive.BrakeSystem.GetCylPressurePSI().ToString("F0"));
+                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI.ToString("F0"));
+                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).CompressorOn.ToString());
+#if GEARBOX_DEBUG_LOG
+                    if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSDieselLocomotive))
+                    {
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].RealRPM.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].DemandedRPM.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].LoadPercent.ToString("F0"));
+                        if ((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines.HasGearBox)
+                        {
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.CurrentGearIndex.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.NextGearIndex.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.ClutchPercent.ToString());
+                        }
+                        else
+                        {
+                            Logger.Data("null");
+                            Logger.Data("null");
+                            Logger.Data("null");
+                        }
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselFlowLps.ToString("F2"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselLevelL.ToString("F0"));
+                        Logger.Data("null");
+                        Logger.Data("null");
+                        Logger.Data("null");
+                    }
+                    if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSElectricLocomotive))
+                    {
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pan1Up.ToString());
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pan2Up.ToString());
+                        Logger.Data("null");
+                        Logger.Data("null");
+                        Logger.Data("null");
+                        Logger.Data("null");
+                        Logger.Data("null");
+                        Logger.Data("null");
+                        Logger.Data("null");
+                        Logger.Data("null");
+                        Logger.Data("null");
+                    }
+                    if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSSteamLocomotive))
+                    {
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerSteamUsageLBpS.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BoilerPressurePSI.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderCocksOpen.ToString());
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).EvaporationLBpS.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FireMassKG.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).SteamUsageLBpS.ToString("F0"));
+                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerController != null)
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerController.CurrentValue.ToString("F0"));
+                        else
+                            Logger.Data("null");
+
+                        if((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController != null)
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController.CurrentValue.ToString("F0"));
+                        else
+                            Logger.Data("null");
+                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FiringRateController != null)
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FiringRateController.CurrentValue.ToString("F0"));
+                        else
+                            Logger.Data("null");
+                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector1Controller != null)
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector1Controller.CurrentValue.ToString("F0"));
+                        else
+                            Logger.Data("null");
+                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector2Controller != null)
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector2Controller.CurrentValue.ToString("F0"));
+                        else
+                            Logger.Data("null");
+                    }
+
+#endif
+                }
+
                 Logger.End();
             }
             if (DrawCarNumber == true)
@@ -296,37 +411,87 @@ namespace ORTS
             return string.Format( "{0:D2}:{1:D2}", hour, minute );
         }
         
-        static void DataLoggerStart()
+        static void DataLoggerStart(UserSettings settings)
         {
             using (StreamWriter file = File.AppendText("dump.csv"))
             {
-                file.WriteLine(String.Join(",", new[] {
-							"SVN",
-							"Frame",
-							"Memory",
-							"Memory (Managed)",
-							"Gen 0 GC",
-							"Gen 1 GC",
-							"Gen 2 GC",
-							"Processors",
-							"Frame Rate",
-							"Frame Time",
-							"Frame Jitter",
-							"Shadow Primitives",
-							"Render Primitives",
-							"Render Process",
-							"Updater Process",
-							"Loader Process",
-							"Sound Process",
-                            "Time",
-                            "Player Direction",
-                            "Player Reverser",
-                            "Player Throttle",
-                            "Player Motive Force [N]",
-                            "Player Speed [Mps]",
-                            "Player Elevation [N/kN]",
-                            "Player Wheelslip",
-						}));
+                DataLogger.Separators separator = (DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), settings.DataLoggerSeparator);
+                string headerLine = "";
+                if (settings.DataLogPerformance)
+                {
+                    headerLine = String.Join(Convert.ToString((char)separator),
+                        new string[] 
+                            {    
+                                "SVN",
+                                "Frame",
+                                "Memory",
+                                "Memory (Managed)",
+                                "Gen 0 GC",
+                                "Gen 1 GC",
+                                "Gen 2 GC",
+                                "Processors",
+                                "Frame Rate",
+                                "Frame Time",
+                                "Frame Jitter",
+                                "Shadow Primitives",
+                                "Render Primitives",
+                                "Render Process",
+                                "Updater Process",
+                                "Loader Process",
+                                "Sound Process"
+                            }
+                        );
+                }
+                if (settings.DataLogPhysics)
+                {
+                    if (settings.DataLogPerformance)
+                        headerLine += Convert.ToString((char)separator);
+
+                    headerLine += String.Join(Convert.ToString((char)separator),
+                            new string[] 
+                            {
+                                "Time",
+                                "Player Direction",
+                                "Player Reverser [%]",
+                                "Player Throttle [%]",
+                                "Player Motive Force [N]",
+                                "Player Brake Force [N]",
+                                "Player Axle Force [N]",
+                                "Player Wheelslip",
+                                "Player Speed [" + settings.DataLogSpeedUnits + "]",
+                                "Distance [m]",
+                                "Player Gravity Force [N]",
+                                "Train Brake",
+                                "Engine Brake",
+                                "Player Cylinder PSI",
+                                "Player Main Res PSI",
+                                "Player Compressor On",
+                                "D:Real RPM / E:panto 1 / S:Blower usage LBpS",
+                                "D:Demanded RPM / E:panto 2 / S:Boiler PSI",
+                                "D:Load % / E:null / S:Cylinder Cocks open",
+                                "D:Gearbox Current Gear / E:null / S:Evaporation LBpS",
+                                "D:Gearbox Next Gear / E:null / S:Fire Mass KG",
+                                "D:Clutch % / E:null / S:Steam usage LBpS",
+                                "D:Fuel Flow Lps / E:null / S:Blower",
+                                "D:Fuel level L / E:null / S:Damper",
+                                "D:null / E:null / S:Firing Rate",
+                                "D:null / E:null / S:Injector 1",
+                                "D:null / E:null / S:Injector 2"
+                            }
+                        );
+                }
+                //Ready to use...
+                //if (settings.DataLogMisc)
+                //{
+                //    if (settings.DataLogPerformance || settings.DataLogPhysics)
+                //        headerLine += Convert.ToString((char)separator);
+                //    headerLine += String.Join(Convert.ToString((char)separator),
+                //        new string[] {"null",
+                //        "null"});
+                //}
+
+                file.WriteLine(headerLine);
+
                 file.Close();
             }
         }

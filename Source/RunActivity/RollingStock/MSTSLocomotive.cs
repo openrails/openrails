@@ -652,14 +652,17 @@ namespace ORTS
             float currentSpeedMpS = Math.Abs(SpeedMpS);
             float currentWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
             //Only if a power is "ON" - pantograph up or diesel is running
+            
+            if (!this.Simulator.UseAdvancedAdhesion)
+                currentWheelSpeedMpS = currentSpeedMpS;
+
             if (PowerOn)
             {
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = MaxForceN * t;
                     float maxPowerW = MaxPowerW * t * t;
-                    if (!this.Simulator.UseAdvancedAdhesion)
-                        currentWheelSpeedMpS = currentSpeedMpS;
+                    
                     if (maxForceN * currentWheelSpeedMpS > maxPowerW)
                         maxForceN = maxPowerW / currentWheelSpeedMpS;
                     //if (currentSpeedMpS > MaxSpeedMpS)
@@ -2263,7 +2266,11 @@ namespace ORTS
                 // For gearbox engines
                 case CABViewControlTypes.GEARS:
                     {
-                        data = ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        if (this.GetType() == typeof(MSTSDieselLocomotive))
+                        {
+                            if (((MSTSDieselLocomotive)this).DieselEngines.HasGearBox)
+                                data = ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        }
                         break;
                     }
                 default:

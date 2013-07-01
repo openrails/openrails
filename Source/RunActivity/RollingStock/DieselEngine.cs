@@ -491,13 +491,13 @@ namespace ORTS
             if (GearBox != null)
             {
                 if (RealRPM > 0)
-                    GearBox.ShaftPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
+                    GearBox.ClutchPercent = (RealRPM - GearBox.ShaftRPM) / RealRPM * 100f;
                 else
-                    GearBox.ShaftPercent = 100f;
+                    GearBox.ClutchPercent = 100f;
                 
                 if (GearBox.CurrentGear != null)
                 {
-                    if (GearBox.IsShaftOn)
+                    if (GearBox.IsClutchOn)
                         DemandedRPM = GearBox.ShaftRPM;
                 }
             }
@@ -632,7 +632,7 @@ namespace ORTS
             {
                 result.AppendFormat("Current gear = {0} {1}\n", GearBox.CurrentGearIndex < 0 ? "N" : (GearBox.CurrentGearIndex + 1).ToString(), GearBox.GearBoxOperation == GearBoxOperation.Automatic ? "Automatic gear" : "");
                 //if (GearBox.GearBoxOperation == GearBoxOperation.Manual)
-                result.AppendFormat("Next gear = {0}, Shaft: {1:F0}%\n", GearBox.NextGearIndex < 0 ? "N" : (GearBox.NextGearIndex + 1).ToString(), GearBox.ShaftPercent);
+                result.AppendFormat("Next gear = {0}, Clutch: {1:F0}%\n", GearBox.NextGearIndex < 0 ? "N" : (GearBox.NextGearIndex + 1).ToString(), GearBox.ClutchPercent);
                 if(GearBox.CurrentGear != null)
                     result.AppendFormat("RealRPM = {0:F0} - min: {1:F0}, max: {2:F0}\n", RealRPM, MaxRPM * GearBox.CurrentGear.DownGearProportion, MaxRPM * GearBox.CurrentGear.UpGearProportion);
                 result.AppendFormat("ShaftRPM = {0:F0} - {1}\n", GearBox.ShaftRPM, GearBox.GearedUp ? "UP" : (GearBox.GearedDown ? "DOWN" : "At gear"));

@@ -188,7 +188,7 @@ namespace ORTS
         public bool UseAdvancedAdhesion { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
-
+        
         // experimentel setting for LOD extention
         [Default (false)]
         public bool LODViewingExtention { get; set; }
@@ -219,6 +219,21 @@ namespace ORTS
 		[Default(new[] { 50, 50 })]
 		public int[] WindowPosition_ComposeMessage { get; set; }
 
+        //DataLogger
+        [Default("comma")]
+        public string DataLoggerSeparator { set; get; }
+        [Default(false)]
+        public bool DataLogStart { get; set; }
+        [Default(true)]
+        public bool DataLogPerformance { get; set; }
+        [Default(false)]
+        public bool DataLogPhysics { get; set; }
+        [Default(false)]
+        public bool DataLogMisc { get; set; }
+        [Default("route")]
+        public string DataLogSpeedUnits { get; set; }
+
+        
         #endregion
 
         /// <summary>

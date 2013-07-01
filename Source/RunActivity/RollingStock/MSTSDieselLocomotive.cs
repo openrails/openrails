@@ -302,10 +302,7 @@ namespace ORTS
                     Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
             }
 
-            if (GearBoxController != null)
-            {
-                GearboxGearIndex = (int)GearBoxController.Update(elapsedClockSeconds);
-            }
+            
 
 
             //Currently the ThrottlePercent is global to the entire train
@@ -313,10 +310,19 @@ namespace ORTS
             if (this.IsLeadLocomotive())
             {
                 ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
+
+                if (GearBoxController != null)
+                {
+                    GearboxGearIndex = (int)GearBoxController.Update(elapsedClockSeconds);
+                }
             }
             else
             {
                 ThrottleController.Update(elapsedClockSeconds);
+                if (GearBoxController != null)
+                {
+                    GearBoxController.Update(elapsedClockSeconds);
+                }
             }
 
 #if INDIVIDUAL_CONTROL
@@ -363,7 +369,7 @@ namespace ORTS
 
                 if (de.GearBox != null)
                 {
-                    if ((GearBoxController != null))
+                    if ((this.IsLeadLocomotive()))
                     {
                         if (de.GearBox.GearBoxOperation == GearBoxOperation.Manual)
                         {
@@ -383,6 +389,9 @@ namespace ORTS
                                 de.GearBox.NextGear = null;
                         }
                     }
+                    if (de.GearBox.CurrentGear == null)
+                        de.OutputPowerW = 0f;
+
                     de.GearBox.Update(elapsedClockSeconds);
                 }
             }
