@@ -41,6 +41,8 @@ namespace ORTS
         Derail1, // NOTE: Currently not used in Open Rails.
         Derail2, // NOTE: Currently not used in Open Rails.
         Derail3, // NOTE: Currently not used in Open Rails.
+        DoorClose,
+        DoorOpen,
         DynamicBrakeChange, // NOTE: Currently not used in Open Rails.
         DynamicBrakeIncrease, // NOTE: Currently not used in Open Rails.
         DynamicBrakeOff, // NOTE: Currently not used in Open Rails.
@@ -55,9 +57,13 @@ namespace ORTS
         FuelTowerTransferEnd, // NOTE: Currently not used in Open Rails.
         FuelTowerTransferStart, // NOTE: Currently not used in Open Rails.
         FuelTowerUp, // NOTE: Currently not used in Open Rails.
+        GearDown,
+        GearUp,
         HornOff,
         HornOn,
         LightSwitchToggle,
+        MirrorClose, 
+        MirrorOpen, 
         Pantograph1Down,
         Pantograph1Toggle, // NOTE: Currently not used in Open Rails.
         Pantograph1Up,
@@ -67,6 +73,8 @@ namespace ORTS
         PermissionGranted,
         PermissionToDepart,
         ReverserChange,
+        ReverserToForwardBackward,
+        ReverserToNeutral,
         SanderOff,
         SanderOn,
         SemaphoreArm, // NOTE: Currently not used in Open Rails.
@@ -94,16 +102,8 @@ namespace ORTS
         _HeadlightDim,
         _HeadlightOff,
         _HeadlightOn,
-        _ResetWheelSlip,
-        // ORTS only triggers
-        GearUp, // for gearbox based engines.
-        GearDown, // for gearbox based engines.
-        ReverserToForwardBackward, // reverser moved to forward or backward position
-        ReverserToNeutral, // reversed moved to neutral
-        DoorOpen, // door opened
-        DoorClose, // door closed
-        MirrorOpen, // when mirrors not available can be used for other purposes
-        MirrorClose, // ditto
+        _ResetWheelSlip
+
 
     }
 
@@ -210,14 +210,14 @@ namespace ORTS
                         // Event 64 is unused in MSTS.
 
                         // ORTS only Events
-                        case 68: return Event.GearUp; // for gearbox based engines
-                        case 69: return Event.GearDown; // for gearbox based engines
-                        case 70: return Event.ReverserToForwardBackward; // reverser moved to forward or backward position
-                        case 71: return Event.ReverserToNeutral; // reversed moved to neutral
-                        case 72: return Event.DoorOpen; // door opened
-                        case 73: return Event.DoorClose; // door closed
-                        case 74: return Event.MirrorOpen; // when mirrors not present can be used for other purposes
-                        case 75: return Event.MirrorClose; // ditto
+                        case 101: return Event.GearUp; // for gearbox based engines
+                        case 102: return Event.GearDown; // for gearbox based engines
+                        case 103: return Event.ReverserToForwardBackward; // reverser moved to forward or backward position
+                        case 104: return Event.ReverserToNeutral; // reversed moved to neutral
+                        case 105: return Event.DoorOpen; // door opened; propagated to all locos and wagons of the consist
+                        case 106: return Event.DoorClose; // door closed; propagated to all locos and wagons of the consist
+                        case 107: return Event.MirrorOpen; 
+                        case 108: return Event.MirrorClose; 
                         //
 
                         default: return 0;
