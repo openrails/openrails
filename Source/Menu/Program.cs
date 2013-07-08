@@ -76,17 +76,20 @@ namespace ORTS
                             case MainForm.UserAction.SingleplayerNewGame:
                             case MainForm.UserAction.MultiplayerClient:
                             case MainForm.UserAction.MultiplayerServer:
-                                var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
-                                if (exploreActivity == null)
-                                    parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FilePath));
+                                if (MainForm.SelectedActivity is ORTS.Menu.ExploreActivity)
+                                {
+                                    var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
+                                    parameters.Add(String.Format("\"{0}\" \"{1}\" {2} {3} {4}",
+                                        exploreActivity.Path.FilePath,
+                                        exploreActivity.Consist.FilePath,
+                                        exploreActivity.StartTime,
+                                        (int)exploreActivity.Season,
+                                        (int)exploreActivity.Weather));
+                                }
                                 else
-                                    parameters.Add(String.Format("\"{0}\" \"{1}\" {2}:{3} {4} {5}",
-                                    exploreActivity.Path.FilePath,
-                                    exploreActivity.Consist.FilePath,
-                                    exploreActivity.StartHour,
-                                    exploreActivity.StartMinute,
-                                    exploreActivity.Season,
-                                    exploreActivity.Weather));
+                                {
+                                    parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FilePath));
+                                }
                                 break;
                             case MainForm.UserAction.SingleplayerResumeSave:
                             case MainForm.UserAction.SingleplayerReplaySave:

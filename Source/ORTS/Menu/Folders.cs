@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -51,23 +51,27 @@ namespace ORTS.Menu
 
             if (File.Exists(FolderDataFile))
             {
-                using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
+                try
                 {
-                    var count = inf.ReadInt32();
-                    for (var i = 0; i < count; ++i)
+                    using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
                     {
-                        var path = inf.ReadString();
-                        var name = inf.ReadString();
-                        folders.Add(new Folder(name, path));
+                        var count = inf.ReadInt32();
+                        for (var i = 0; i < count; ++i)
+                        {
+                            var path = inf.ReadString();
+                            var name = inf.ReadString();
+                            folders.Add(new Folder(name, path));
+                        }
                     }
                 }
+                catch { }
             }
 
             if (folders.Count == 0)
             {
                 try
                 {
-                    folders.Add(new Folder("- Default -", MSTSPath.Base()));
+                    folders.Add(new Folder("Train Simulator", MSTSPath.Base()));
                 }
                 catch { }
             }

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -24,14 +24,30 @@ namespace ORTS.Menu
     public class Route
     {
         public readonly string Name;
+        public readonly string Description;
         public readonly string Path;
-        public readonly TRKFile TRKFile;
 
-        public Route(string path, TRKFile trkFile)
+        Route(string path)
         {
-            Name = trkFile.Tr_RouteFile.Name;
+            if (Directory.Exists(path))
+            {
+                var trkFilePath = MSTSPath.GetTRKFileName(path);
+                try
+                {
+                    var trkFile = new TRKFile(MSTSPath.GetTRKFileName(path));
+                    Name = trkFile.Tr_RouteFile.Name.Trim();
+                    Description = trkFile.Tr_RouteFile.Description.Trim();
+                }
+                catch
+                {
+                    Name = "<load error: " + System.IO.Path.GetFileName(path) + ">";
+                }
+            }
+            else
+            {
+                Name = "<missing: " + System.IO.Path.GetFileName(path) + ">";
+            }
             Path = path;
-            TRKFile = trkFile;
         }
 
         public override string ToString()
@@ -49,8 +65,7 @@ namespace ORTS.Menu
                 {
                     try
                     {
-                        var trkFile = new TRKFile(MSTSPath.GetTRKFileName(routeDirectory));
-                        routes.Add(new Route(routeDirectory, trkFile));
+                        routes.Add(new Route(routeDirectory));
                     }
                     catch { }
                 }

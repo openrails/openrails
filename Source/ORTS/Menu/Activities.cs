@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -25,21 +25,50 @@ namespace ORTS.Menu
     public class Activity
     {
         public readonly string Name;
+        public readonly string Description;
+        public readonly string Briefing;
+        public readonly StartTime StartTime = new StartTime(10, 0, 0);
+        public readonly SeasonType Season = SeasonType.Summer;
+        public readonly WeatherType Weather = WeatherType.Clear;
+        public readonly Difficulty Difficulty = Difficulty.Easy;
+        public readonly Duration Duration = new Duration(1, 0);
+        public readonly Consist Consist = new Consist("unknown", null);
+        public readonly Path Path = new Path("unknown");
         public readonly string FilePath;
-        public readonly ACTFile ACTFile;
 
-        public Activity(string filePath, ACTFile actFile)
+        protected Activity(string filePath, Folder folder, Route route)
         {
-            Name = actFile.Tr_Activity.Tr_Activity_Header.Name;
+            if (filePath == null)
+            {
+                Name = "- Explore Route -";
+            }
+            else if (File.Exists(filePath))
+            {
+                try
+                {
+                    var actFile = new ACTFile(filePath);
+                    var srvFile = new SRVFile(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "SERVICES"), actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name + ".srv"));
+                    Name = actFile.Tr_Activity.Tr_Activity_Header.Name.Trim();
+                    Description = actFile.Tr_Activity.Tr_Activity_Header.Description;
+                    Briefing = actFile.Tr_Activity.Tr_Activity_Header.Briefing;
+                    StartTime = actFile.Tr_Activity.Tr_Activity_Header.StartTime;
+                    Season = actFile.Tr_Activity.Tr_Activity_Header.Season;
+                    Weather = actFile.Tr_Activity.Tr_Activity_Header.Weather;
+                    Difficulty = actFile.Tr_Activity.Tr_Activity_Header.Difficulty;
+                    Duration = actFile.Tr_Activity.Tr_Activity_Header.Duration;
+                    Consist = new Consist(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS"), srvFile.Train_Config + ".con"), folder);
+                    Path = new Path(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "PATHS"), srvFile.PathID + ".pat"));
+                }
+                catch
+                {
+                    Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                }
+            }
+            else
+            {
+                Name = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+            }
             FilePath = filePath;
-            ACTFile = actFile;
-        }
-
-        public Activity(string name)
-        {
-            Name = name;
-            FilePath = null;
-            ACTFile = null;
         }
 
         public override string ToString()
@@ -47,7 +76,7 @@ namespace ORTS.Menu
             return Name;
         }
 
-        public static List<Activity> GetActivities(Route route)
+        public static List<Activity> GetActivities(Folder folder, Route route)
         {
             var activities = new List<Activity>();
             if (route != null)
@@ -62,8 +91,7 @@ namespace ORTS.Menu
                             continue;
                         try
                         {
-                            var actFile = new ACTFile(activityFile, true);
-                            activities.Add(new Activity(activityFile, actFile));
+                            activities.Add(new Activity(activityFile, folder, route));
                         }
                         catch { }
                     }
@@ -75,26 +103,14 @@ namespace ORTS.Menu
 
     public class ExploreActivity : Activity
     {
-        public readonly Path Path;
-        public readonly Consist Consist;
-        public readonly int StartHour;
-        public readonly int StartMinute;
-        public readonly int Season;
-        public readonly int Weather;
+        public new string StartTime;
+        public new SeasonType Season = SeasonType.Summer;
+        public new WeatherType Weather = WeatherType.Clear;
+        public new Consist Consist = new Consist("unknown", null);
+        public new Path Path = new Path("unknown");
 
-        public ExploreActivity(Path path, Consist consist, int season, int weather, int startHour, int startMinute)
-            : base("- Explore Route -")
-        {
-            Path = path;
-            Consist = consist;
-            Season = season;
-            Weather = weather;
-            StartHour = startHour;
-            StartMinute = startMinute;
-        }
-
-        public ExploreActivity()
-            : this(null, null, 0, 0, 12, 0)
+        internal ExploreActivity()
+            : base(null, null, null)
         {
         }
     }

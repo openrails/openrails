@@ -67,44 +67,8 @@ namespace ORTS
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
 
-            string[] strContents = 
-            {
-                "1024x768",
-                "1152x864",
-                "1280x720",
-                "1280x768",
-                "1280x800",
-                "1280x960",
-                "1280x1024",
-                "1360x768",
-                "1440x900",
-                "1600x900",
-                "1680x1050",
-                "1600x1200",
-                "1768x992",
-                "1920x1080",
-                "1920x1200"
-            };
-
-            string[] separators = 
-            {
-                "comma",
-                "semicolon",
-                "tab",
-                "space"
-            };
-
-            string[] speedUnits = 
-            {
-                "route",
-                "mps",
-                "mph",
-                "kmph"
-            };
-
             numericWorldObjectDensity.Value = 10;
             numericSoundDetailLevel.Value = 5;
-            comboBoxWindowSize.Items.AddRange(strContents);
             comboBoxWindowSize.Text = "1024x768";
             numericBrakePipeChargingRatePSIpS.Value = 21;
 
@@ -136,13 +100,11 @@ namespace ORTS
             NormalViewingDistance.Value = settings.ViewingDistance;
             LODExtention.Checked = settings.LODViewingExtention;
             checkDoubleWire.Checked = settings.DoubleWire;
-            comboBoxSeparators.Items.AddRange(separators);
             comboBoxSeparators.Text = settings.DataLoggerSeparator;
             checkBoxDataLoggerPhysics.Checked = settings.DataLogPhysics;
             checkBoxDataLoggerPerformance.Checked = settings.DataLogPerformance;
             checkBoxDataLoggerMiscelanous.Checked = settings.DataLogMisc;
             checkBoxDataLoggerStart.Checked = Settings.DataLogger;
-            comboBoxDataLoggerSpeedUnits.Items.AddRange(speedUnits);
             comboBoxDataLoggerSpeedUnits.Text = settings.DataLogSpeedUnits;
         }
 

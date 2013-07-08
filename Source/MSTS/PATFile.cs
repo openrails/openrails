@@ -163,7 +163,7 @@ namespace MSTS
         {
             return this.Name;
         }
-	} // Class CONFile
+	}
 
 	public class TrackPDP
 	{

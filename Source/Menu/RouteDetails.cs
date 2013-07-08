@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -47,8 +47,8 @@ namespace ORTS
 			: this()
         {
             Text = "Route Details";
-			groupBoxDescription.Text = route.TRKFile.Tr_RouteFile.Name;
-			textDescription.Text = route.TRKFile.Tr_RouteFile.Description.Replace("\n", "\r\n");
+			groupBoxDescription.Text = route.Name;
+			textDescription.Text = route.Description.Replace("\n", "\r\n");
 			groupBoxDescription.Height *= 2;
 			groupBoxBriefing.Visible = false;
 			groupEnvironment.Visible = false;
@@ -59,14 +59,14 @@ namespace ORTS
 			: this()
 		{
             Text = "Activity Details";
-			groupBoxDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Name;
-			textDescription.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Description.Replace("\n", "\r\n");
-			textBriefing.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Briefing.Replace("\n", "\r\n");
-			textStartTime.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
-			textDuration.Text = activity.ACTFile.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
-			textSeason.Text = Seasons[Math.Min(4, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Season)];
-			textWeather.Text = Weathers[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Weather)];
-			textDifficulty.Text = Difficulties[Math.Min(3, (int)activity.ACTFile.Tr_Activity.Tr_Activity_Header.Difficulty)];
+			groupBoxDescription.Text = activity.Name;
+			textDescription.Text = activity.Description.Replace("\n", "\r\n");
+			textBriefing.Text = activity.Briefing.Replace("\n", "\r\n");
+			textStartTime.Text = activity.StartTime.FormattedStartTime();
+			textDuration.Text = activity.Duration.FormattedDurationTime();
+			textSeason.Text = Seasons[Math.Min(4, (int)activity.Season)];
+			textWeather.Text = Weathers[Math.Min(3, (int)activity.Weather)];
+			textDifficulty.Text = Difficulties[Math.Min(3, (int)activity.Difficulty)];
         }
 
     }

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MSTS;
 
 namespace ORTS.Menu
@@ -24,14 +25,29 @@ namespace ORTS.Menu
     public class Consist
     {
         public readonly string Name;
+        public readonly Locomotive Locomotive = new Locomotive("unknown");
         public readonly string FilePath;
-        public readonly CONFile CONFile;
 
-        public Consist(string filePath, CONFile conFile)
+        internal Consist(string filePath, Folder folder)
         {
-            Name = conFile.Description;
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    var conFile = new CONFile(filePath);
+                    Name = conFile.Name.Trim();
+                    Locomotive = GetLocomotive(conFile, folder);
+                }
+                catch
+                {
+                    Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                }
+            }
+            else
+            {
+                Name = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+            }
             FilePath = filePath;
-            CONFile = conFile;
         }
 
         public override string ToString()
@@ -49,13 +65,74 @@ namespace ORTS.Menu
                 {
                     try
                     {
-                        var conFile = new CONFile(consist);
-                        consists.Add(new Consist(consist, conFile));
+                        consists.Add(new Consist(consist, folder));
                     }
                     catch { }
                 }
             }
             return consists;
+        }
+
+        Locomotive GetLocomotive(CONFile conFile, Folder folder)
+        {
+            foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
+            {
+                var filePath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "TRAINSET"), wagon.Folder), wagon.Name + ".eng");
+                try
+                {
+                    return new Locomotive(filePath);
+                }
+                catch { }
+            }
+            return null;
+        }
+    }
+
+    public class Locomotive
+    {
+        public readonly string Name;
+        public readonly string Description;
+        public readonly string FilePath;
+
+        internal Locomotive(string filePath)
+        {
+            if (filePath == null)
+            {
+                Name = "- Any Locomotive -";
+            }
+            else if (File.Exists(filePath))
+            {
+                try
+                {
+                    var engFile = new ENGFile(filePath);
+                    Name = engFile.Name.Trim();
+                    Description = engFile.Description.Trim();
+                }
+                catch
+                {
+                    Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                }
+            }
+            else
+            {
+                Name = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+            }
+            FilePath = filePath;
+        }
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Locomotive && ((obj as Locomotive).Name == Name || (obj as Locomotive).FilePath == null || FilePath == null);
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
         }
     }
 }

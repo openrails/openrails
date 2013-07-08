@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -28,20 +28,33 @@ namespace ORTS.Menu
         public readonly string Start;
         public readonly string End;
         public readonly string FilePath;
-        public readonly PATFile PATFile;
 
-        public Path(string filePath, PATFile patFile)
+        internal Path(string filePath)
         {
-            Name = patFile.Name;
-            Start = patFile.Start;
-            End = patFile.End;
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    var patFile = new PATFile(filePath);
+                    Name = patFile.Name.Trim();
+                    Start = patFile.Start.Trim();
+                    End = patFile.End.Trim();
+                }
+                catch
+                {
+                    Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                }
+            }
+            else
+            {
+                Start = End = Name = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+            }
             FilePath = filePath;
-            PATFile = patFile;
         }
 
         public override string ToString()
         {
-            return String.Format("{0} - {1}", Start, End);
+            return End;
         }
 
         public static List<Path> GetPaths(Route route)
@@ -54,8 +67,7 @@ namespace ORTS.Menu
                 {
                     try
                     {
-                        var patFile = new PATFile(path);
-                        paths.Add(new Path(path, patFile));
+                        paths.Add(new Path(path));
                     }
                     catch { }
                 }

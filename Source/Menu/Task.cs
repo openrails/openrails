@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,7 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// Undefining this will let all exceptions be uncaught for debugging.
+#define TASK_CATCH_EXCEPTIONS_AND_THREADED
+
+// Defining this will log information on the processing of background loading tasks.
+//#define DEBUG_BACKGROUND_TASKS
+
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -39,13 +46,20 @@ namespace ORTS
 
         Task(Control control, Func<T> work, Action<T> success, Action failure, Action complete)
         {
+#if DEBUG_BACKGROUND_TASKS
+            Trace.TraceInformation("Task<{0}> created", typeof(T).ToString());
+#endif
             Control = control;
             Work = work;
             Success = success;
             Failure = failure;
             Complete = complete;
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
             Thread = new Thread(TaskWorker);
             Thread.Start();
+#else
+            TaskWorker();
+#endif
         }
 
         public Task(Control control, Func<T> work, Action<T> success)
@@ -60,6 +74,9 @@ namespace ORTS
 
         public void Cancel()
         {
+#if DEBUG_BACKGROUND_TASKS
+            Trace.TraceInformation("Task<{0}> cancelled", typeof(T).ToString());
+#endif
             lock (this)
             {
                 Cancelled = true;
@@ -68,44 +85,96 @@ namespace ORTS
 
         void TaskWorker()
         {
+#if DEBUG_BACKGROUND_TASKS
+            var typeName = typeof(T).ToString();
+#endif
             T result = default(T);
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
             try
             {
+#endif
                 // Get the new background thread to execute the "work" part.
+#if DEBUG_BACKGROUND_TASKS
+                Trace.TraceInformation("Task<{0}> invoke Work()", typeName);
+#endif
                 result = Work();
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
             }
-            catch { }
+            catch (Exception error)
+            {
+#if DEBUG_BACKGROUND_TASKS
+                Trace.TraceInformation("Task<{0}> work error: {1}", typeName, error.ToString());
+#endif
+            }
+#endif
 
             var cancelled = false;
             lock (this)
                 cancelled = Cancelled;
+#if DEBUG_BACKGROUND_TASKS
+            Trace.TraceInformation("Task<{0}> cancelled = {1}", typeName, cancelled);
+#endif
 
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
             // If the control we've been passed is still setting itself up, we must wait before invoking the callbacks.
             while (!Control.IsHandleCreated)
                 Thread.Sleep(100);
+#endif
 
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
             try
             {
+#endif
                 // Execute the success/failure handlers if they exist.
                 if (!cancelled)
                 {
+#if DEBUG_BACKGROUND_TASKS
+                    Trace.TraceInformation("Task<{0}> invoke Success()", typeName);
+#endif
                     if (Success != null)
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
                         Control.Invoke(Success, result);
+#else
+                        Success(result);
+#endif
                 }
                 else
                 {
+#if DEBUG_BACKGROUND_TASKS
+                    Trace.TraceInformation("Task<{0}> invoke Failure()", typeName);
+#endif
                     if (Failure != null)
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
                         Control.Invoke(Failure);
+#else
+                        Failure();
+#endif
                 }
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
             }
             catch { }
             try
             {
+#endif
+#if DEBUG_BACKGROUND_TASKS
+                Trace.TraceInformation("Task<{0}> invoke Complete()", typeName);
+#endif
                 // Execute the complete handler if it exists.
                 if (Complete != null)
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
                     Control.Invoke(Complete);
+#else
+                    Complete();
+#endif
+#if TASK_CATCH_EXCEPTIONS_AND_THREADED
             }
-            catch { }
+            catch (Exception error)
+            {
+#if DEBUG_BACKGROUND_TASKS
+                Trace.TraceInformation("Task<{0}> invoke error: {1}", typeName, error.ToString());
+#endif
+            }
+#endif
         }
     }
 }

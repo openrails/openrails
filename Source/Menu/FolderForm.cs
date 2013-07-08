@@ -23,12 +23,25 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ORTS.Menu;
 
 namespace ORTS
 {
-    public partial class FormFolderName : Form
+    public partial class FolderForm : Form
     {
-        public FormFolderName()
+        public Folder Folder {
+            get
+            {
+                return new Folder(textBoxName.Text, textBoxPath.Text);
+            }
+            set
+            {
+                textBoxName.Text = value.Name;
+                textBoxPath.Text = value.Path;
+            }
+        }
+
+        public FolderForm()
         {
             InitializeComponent();
 

@@ -451,12 +451,13 @@ namespace ORTS
         {
             var settings = GetSettings(new[] { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" });
             InitLogging(settings, args);
-            var activities = (args.Length == 0 ? ORTS.Menu.Folder.GetFolders() : args.Select(a => new ORTS.Menu.Folder(Path.GetFileName(a), a)))
-                .SelectMany(f => ORTS.Menu.Route.GetRoutes(f))
-                .SelectMany(r => ORTS.Menu.Activity.GetActivities(r))
-                .Where(a => !(a is ORTS.Menu.ExploreActivity))
-                .OrderBy(a => a.FilePath, StringComparer.OrdinalIgnoreCase)
-                .ToList();
+            var folders = args.Length == 0 ? ORTS.Menu.Folder.GetFolders() : args.Select(a => new ORTS.Menu.Folder(Path.GetFileName(a), a));
+            var activities = (from f in folders
+                              from r in ORTS.Menu.Route.GetRoutes(f)
+                              from a in ORTS.Menu.Activity.GetActivities(f, r)
+                              where !(a is ORTS.Menu.ExploreActivity)
+                              orderby a.FilePath.ToLowerInvariant()
+                              select a).ToList();
             var results = new bool[activities.Count];
             Action<int> run = (i) =>
             {

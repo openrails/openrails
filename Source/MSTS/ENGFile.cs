@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -22,20 +22,26 @@ using System.IO;
 namespace MSTS
 {
     /// <summary>
-    /// Work with consist files
+    /// Work with engine files
     /// </summary>
-    public class CONFile
+    public class ENGFile
     {
-        public string Name; // from the Name field or label field of the consist file
-        public Train_Config Train;
+        public string Name = "";
+        public string Description = "";
 
-        public CONFile(string filePath)
+        public ENGFile(string filePath)
         {
+            Name = Path.GetFileNameWithoutExtension(filePath);
             using (var stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
+                    new STFReader.TokenProcessor("engine", ()=>{
+                        stf.ReadString();
+                        stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
+                            new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(""); }),
+                        });
+                    }),
                 });
-            Name = Train.TrainCfg.Name;
         }
 
         public override string ToString()
