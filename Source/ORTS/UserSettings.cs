@@ -248,6 +248,19 @@ namespace ORTS
             LoadUserSettings(options);
         }
 
+        public object GetDefault(string name)
+        {
+            var property = GetType().GetProperty(name);
+
+            if (CustomDefaultValues.ContainsKey(property.Name))
+                return CustomDefaultValues[property.Name];
+
+            if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
+                return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
+
+            throw new InvalidDataException(String.Format("UserSetting property {0} has no default value.", property.Name));
+        }
+
         void InitUserSettings()
         {
             CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
@@ -279,13 +292,7 @@ namespace ORTS
                 foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
                 {
                     // Get the default value.
-                    object defValue = null;
-                    if (CustomDefaultValues.ContainsKey(property.Name))
-                        defValue = CustomDefaultValues[property.Name];
-                    else if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
-                        defValue = (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
-                    else
-                        throw new InvalidDataException(String.Format("UserSetting property {0} has no default value.", property.Name));
+                    var defValue = GetDefault(property.Name);
                     // Read in the registry option, if it exists.
                     var regValue = allowRegistryValues && RK != null ? RK.GetValue(property.Name, null) : null;
                     // Read in the command-line option, if it exists into optValue.

@@ -344,7 +344,7 @@ namespace ORTS
             checkBoxWarnings.Checked = Settings.Logging;
             checkBoxWindowed.Checked = !Settings.FullScreen;
             textBoxMPUser.Text = Settings.Multiplayer_User;
-            textBoxMPHost.Text = Settings.Multiplayer_Host;
+            textBoxMPHost.Text = Settings.Multiplayer_Host + ":" + Settings.Multiplayer_Port;
         }
 
         void SaveOptions()
@@ -352,7 +352,18 @@ namespace ORTS
             Settings.Logging = checkBoxWarnings.Checked;
             Settings.FullScreen = !checkBoxWindowed.Checked;
             Settings.Multiplayer_User = textBoxMPUser.Text;
-            Settings.Multiplayer_Host = textBoxMPHost.Text;
+            var mpHost = textBoxMPHost.Text.Split(':');
+            Settings.Multiplayer_Host = mpHost[0];
+            if (mpHost.Length > 1)
+            {
+                var port = Settings.Multiplayer_Port;
+                if (int.TryParse(mpHost[1], out port))
+                    Settings.Multiplayer_Port = port;
+            }
+            else
+            {
+                Settings.Multiplayer_Port = (int)Settings.GetDefault("Multiplayer_Port");
+            }
             Settings.Menu_Selection = new[] {
                 comboBoxFolder.SelectedItem != null ? (comboBoxFolder.SelectedItem as Folder).Path : "",
                 comboBoxRoute.SelectedItem != null ? (comboBoxRoute.SelectedItem as Route).Path : "",
