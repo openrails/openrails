@@ -22,9 +22,9 @@ using System.Text;
 
 namespace ORTS
 {
+    // Classes are provided for converting into and out of these internal units.
     // OR will use metric units (m, kg, s, A, 'C) for internal properties and calculations, preferably from SI (m/s, not km/hr).
     // Currently (v1618), some internal units are Imperial and will be changed.
-    // Classes are provided for converting into and out of these internal units.
     // Use these classes rather than in-line literal factors.
     //
     // For example to convert a number from metres to inches, use "DiameterIn = M.ToIn(DiameterM);"
@@ -229,5 +229,7 @@ namespace ORTS
     public class C {
         public static float FromF(float f) { return (f - 32f) * 100f / 180f; }    // Fahrenheit => Celsius
         public static float   ToF(float c) { return (c * 180f / 100f) + 32f; }    // Celsius => Fahrenheit
+        public static float FromK(float k) { return k - 273.15f; }   // Kelvin => Celsius
+        public static float   ToK(float c) { return c + 273.15f; }   // Celsius => Kelvin
     }
 }
