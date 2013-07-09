@@ -9010,7 +9010,7 @@ namespace ORTS
 
             // set new train route
 
-            TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
+            TCSubpathRoute thisRoute = ValidRoute[0];
             TCSubpathRoute newRoute = new TCSubpathRoute();
 
             TCSubpathRoute altRoute = TCRoute.TCAlternativePaths[altRouteIndex];

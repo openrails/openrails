@@ -3348,8 +3348,9 @@ namespace ORTS
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
-                        SignalObject foundSignal;
-                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.SIGFN)parameter1_value, ref SignalObject foundSignal);
+                        SignalObject foundSignal = null;
+                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.SIGFN)parameter1_value, ref foundSignal);
+                        int foundRef = foundSignal != null ? foundSignal.thisRef : -1;
                         File.AppendAllText(dpe_fileLoc + @"printproc.txt",
                                 " OPP_SIG_LR : Located signal : " + foundRef.ToString() + "\n");
                     }
@@ -3381,7 +3382,7 @@ namespace ORTS
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
-                        dumpfile = String.Concat(dpr_fileLoc,"printproc.txt");
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
                     }
 #endif
 
