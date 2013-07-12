@@ -604,7 +604,9 @@ namespace MSTS
                     //  To do: Check flags seetings and parse accordingly.
 		    if (!IsResume)
 		    {
-                    	SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
+                //SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
+                if (IsMilePost && ((Flags & (1 << 9)) == 0)) SpeedInd = (float)Math.Truncate(stf.ReadDouble(STFReader.UNITS.None, null));
+                else SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
 		    }
     		if (ShowNumber)
 		    {

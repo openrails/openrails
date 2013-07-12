@@ -376,7 +376,7 @@ namespace ORTS
                 case "engine(numwheels": NumWheelsAdhesionFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (NumWheelsAdhesionFactor < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
-                case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero) }); break;
+                case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero) }); break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
                 case "engine(orts(sanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(orts(powerondelay": PowerOnDelay = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
