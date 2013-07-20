@@ -44,9 +44,7 @@ namespace ORTS
         bool Initialized;
         public UserSettings Settings;
         List<Folder> Folders = new List<Folder>();
-        
-        public List<Route> Routes = new List<Route>();  // So can be used for checking in ResumeForm 
-        
+        public List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
         List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
@@ -84,6 +82,8 @@ namespace ORTS
 #endif
 
             CleanupPre021();
+            ShowEnvironment();
+            ShowDetails();
             UpdateEnabled();
         }
 
@@ -434,7 +434,12 @@ namespace ORTS
                 RouteLoader.Cancel();
 
             Routes.Clear();
+            Activities.Clear();
+            Paths.Clear();
             ShowRouteList();
+            ShowActivityList();
+            ShowStartAtList();
+            ShowHeadToList();
 
             var selectedFolder = SelectedFolder;
             RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
@@ -530,6 +535,8 @@ namespace ORTS
                 comboBoxLocomotive.Items.Add(new Locomotive(null));
                 foreach (var loco in Consists.Where(c => c.Locomotive != null).Select(c => c.Locomotive).Distinct().OrderBy(l => l.ToString()))
                     comboBoxLocomotive.Items.Add(loco);
+                if (comboBoxLocomotive.Items.Count == 1)
+                    comboBoxLocomotive.Items.Clear();
                 if (comboBoxLocomotive.Items.Count > 0)
                     comboBoxLocomotive.SelectedIndex = 0;
             }
@@ -710,9 +717,9 @@ namespace ORTS
             summaryControl.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
             summaryControl.Left = summaryControl.Margin.Left;
             summaryControl.Width = panelDetails.ClientSize.Width - summaryControl.Margin.Horizontal;
-            summaryControl.Height = TextRenderer.MeasureText("1\n2\n3\n4", summaryControl.Font).Height;
+            summaryControl.Height = TextRenderer.MeasureText("1\n2\n3\n4\n5", summaryControl.Font).Height;
 
-            // Find out where we need to cut the text to make the summary 4 lines long. Uses a binaty search to find the cut point.
+            // Find out where we need to cut the text to make the summary 5 lines long. Uses a binaty search to find the cut point.
             var size = MeasureText(summaryControl.Text, summaryControl);
             if (size > summaryControl.Height)
             {
