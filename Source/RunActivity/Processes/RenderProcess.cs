@@ -78,8 +78,7 @@ namespace ORTS
 
         // Diagnostic information
         public readonly SmoothedData FrameRate = new SmoothedData();
-        public readonly SmoothedData FrameTime = new SmoothedData();
-        public readonly SmoothedData FrameJitter = new SmoothedData();
+        public readonly SmoothedDataWithPercentiles FrameTime = new SmoothedDataWithPercentiles();
         public int[] PrimitiveCount = new int[(int)RenderPrimitiveSequence.Sentinel];
         public int[] PrimitivePerFrame = new int[(int)RenderPrimitiveSequence.Sentinel];
         public int[] ShadowPrimitiveCount;
@@ -381,8 +380,6 @@ namespace ORTS
             base.OnExiting(sender, args);
         }
 
-        float lastElapsedTime = -1;
-
         [CallOnThread("Render")]
         [CallOnThread("Updater")]
         public void ComputeFPS(float elapsedRealTime)
@@ -392,9 +389,6 @@ namespace ORTS
 
             FrameRate.Update(elapsedRealTime, 1f / elapsedRealTime);
             FrameTime.Update(elapsedRealTime, elapsedRealTime);
-            if (lastElapsedTime != -1)
-                FrameJitter.Update(elapsedRealTime, Math.Abs(lastElapsedTime - elapsedRealTime));
-            lastElapsedTime = elapsedRealTime;
         }
     }
 }

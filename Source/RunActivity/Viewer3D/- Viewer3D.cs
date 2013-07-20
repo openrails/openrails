@@ -310,7 +310,7 @@ namespace ORTS
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
 
-            TextureManager = new SharedTextureManager(GraphicsDevice);
+            TextureManager = new SharedTextureManager(this, GraphicsDevice);
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
             InfoDisplay = new InfoDisplay(this);

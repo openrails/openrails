@@ -67,6 +67,7 @@ namespace ORTS
                 try
                 {
                     Shapes.Add(path, new SharedShape(Viewer, path));
+                    Thread.Sleep(Viewer.Settings.LoadingDelay);
                 }
                 catch (Exception error)
                 {

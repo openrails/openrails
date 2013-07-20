@@ -159,7 +159,8 @@ namespace ORTS
                     Logger.Data(ProcessorCount.ToString("F0"));
                     Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
                     Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
-                    Logger.Data(Viewer.RenderProcess.FrameJitter.Value.ToString("F4"));
+                    Logger.Data(Viewer.RenderProcess.FrameTime.P95.ToString("F4"));
+                    Logger.Data(Viewer.RenderProcess.FrameTime.P99.ToString("F4"));
                     Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
                     Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
                     Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
@@ -432,7 +433,8 @@ namespace ORTS
                                 "Processors",
                                 "Frame Rate",
                                 "Frame Time",
-                                "Frame Jitter",
+                                "Frame Time P95",
+                                "Frame Time P99",
                                 "Shadow Primitives",
                                 "Render Primitives",
                                 "Render Process",

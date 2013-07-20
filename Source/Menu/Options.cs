@@ -100,6 +100,7 @@ namespace ORTS
             NormalViewingDistance.Value = settings.ViewingDistance;
             LODExtention.Checked = settings.LODViewingExtention;
             checkDoubleWire.Checked = settings.DoubleWire;
+            numericUpDownLoadingDelay.Value = Settings.LoadingDelay;
             comboBoxSeparators.Text = settings.DataLoggerSeparator;
             checkBoxDataLoggerPhysics.Checked = settings.DataLogPhysics;
             checkBoxDataLoggerPerformance.Checked = settings.DataLogPerformance;
@@ -322,6 +323,7 @@ namespace ORTS
             Settings.ViewingDistance = (int)NormalViewingDistance.Value;
             Settings.LODViewingExtention = LODExtention.Checked;
             Settings.DoubleWire = checkDoubleWire.Checked;
+            Settings.LoadingDelay = (int)numericUpDownLoadingDelay.Value;
             Settings.DataLogPhysics = checkBoxDataLoggerPhysics.Checked;
             Settings.DataLogPerformance = checkBoxDataLoggerPerformance.Checked;
             Settings.DataLogMisc = checkBoxDataLoggerMiscelanous.Checked;

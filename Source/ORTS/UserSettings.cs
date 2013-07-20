@@ -197,6 +197,10 @@ namespace ORTS
         [Default(false)]
         public bool DoubleWire { get; set; }
 
+        // experimental setting for loading stuttering
+        [Default(0)]
+        public int LoadingDelay { get; set; }
+
         // Window position settings.
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_Activity { get; set; }

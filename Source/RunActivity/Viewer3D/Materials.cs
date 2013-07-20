@@ -31,13 +31,15 @@ namespace ORTS
     [CallOnThread("Loader")]
     public class SharedTextureManager
     {
+        readonly Viewer3D Viewer;
         readonly GraphicsDevice GraphicsDevice;
         Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
         Dictionary<string, bool> TextureMarks;
 
         [CallOnThread("Render")]
-        internal SharedTextureManager(GraphicsDevice graphicsDevice)
+        internal SharedTextureManager(Viewer3D viewer, GraphicsDevice graphicsDevice)
         {
+            Viewer = viewer;
             GraphicsDevice = graphicsDevice;
         }
 
@@ -56,6 +58,7 @@ namespace ORTS
                 {
                     var texture = MSTS.ACEFile.Texture2DFromFile(GraphicsDevice, path);
                     Textures.Add(path, texture);
+                    Thread.Sleep(Viewer.Settings.LoadingDelay);
                     return texture;
                 }
                 catch (InvalidDataException error)

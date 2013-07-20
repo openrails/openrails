@@ -72,6 +72,8 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.label9 = new System.Windows.Forms.Label();
+            this.numericUpDownLoadingDelay = new System.Windows.Forms.NumericUpDown();
             this.checkDoubleWire = new System.Windows.Forms.CheckBox();
             this.LODExtention = new System.Windows.Forms.CheckBox();
             this.label16 = new System.Windows.Forms.Label();
@@ -112,6 +114,7 @@
             this.tabPageSimulation.SuspendLayout();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownLoadingDelay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMLoweringValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).BeginInit();
@@ -665,6 +668,8 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.label9);
+            this.tabPageExperimental.Controls.Add(this.numericUpDownLoadingDelay);
             this.tabPageExperimental.Controls.Add(this.checkDoubleWire);
             this.tabPageExperimental.Controls.Add(this.LODExtention);
             this.tabPageExperimental.Controls.Add(this.label16);
@@ -687,6 +692,32 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(65, 245);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(95, 13);
+            this.label9.TabIndex = 16;
+            this.label9.Text = "Loading delay (ms)";
+            // 
+            // numericUpDownLoadingDelay
+            // 
+            this.numericUpDownLoadingDelay.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.numericUpDownLoadingDelay.Location = new System.Drawing.Point(6, 243);
+            this.numericUpDownLoadingDelay.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.numericUpDownLoadingDelay.Name = "numericUpDownLoadingDelay";
+            this.numericUpDownLoadingDelay.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownLoadingDelay.TabIndex = 15;
             // 
             // checkDoubleWire
             // 
@@ -1044,6 +1075,7 @@
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownLoadingDelay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMLoweringValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).EndInit();
@@ -1126,5 +1158,7 @@
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox comboBoxDataLoggerSpeedUnits;
         private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.NumericUpDown numericUpDownLoadingDelay;
     }
 }
