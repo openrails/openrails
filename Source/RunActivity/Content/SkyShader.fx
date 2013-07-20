@@ -131,8 +131,8 @@ VERTEX_OUTPUT VSMoon(VERTEX_INPUT In)
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	
 	float3 position = In.Pos.xyz; 
-	position += (In.TexCoord.x) * RightVector;
-	position += (In.TexCoord.y) * UpVector;
+	position += (In.TexCoord.x - 0.5) * RightVector;
+	position += (In.TexCoord.y - 0.5) * UpVector;
 
 	Out.Pos      = mul(WorldViewProjection, float4(position, 1));
 	Out.Normal   = In.Normal;

@@ -315,8 +315,12 @@ namespace ORTS
             if (_moonPhase == 6)
                 moonScale *= 2;
 
-            rightVector.SetValue(view.Right * moonScale);
-            upVector.SetValue(Vector3.Down * moonScale);
+            var eye = Vector3.Normalize(new Vector3(view.M13, view.M23, view.M33));
+            var right = Vector3.Cross(eye, Vector3.Up);
+            var up = Vector3.Cross(right, eye);
+
+            rightVector.SetValue(right * moonScale);
+            upVector.SetValue(up * moonScale);
         }
 
         public void SetMatrix(ref Matrix wvp)
