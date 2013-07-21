@@ -25,6 +25,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Popups;
 
 namespace ORTS
 {
@@ -122,6 +123,7 @@ namespace ORTS
         public readonly SceneryShader SceneryShader;
         public readonly ShadowMapShader ShadowMapShader;
         public readonly SkyShader SkyShader;
+        public readonly HUDDebugShader DebugShader;
 
         public static Texture2D MissingTexture;
 
@@ -153,6 +155,7 @@ namespace ORTS
             }
             ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
             SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            DebugShader = new HUDDebugShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
 
             // MUST only call XNA Content from main (Render) thread!
             MissingTexture = viewer.RenderProcess.Content.Load<Texture2D>("blank");
@@ -184,6 +187,9 @@ namespace ORTS
             {
                 switch (materialName)
                 {
+                    case "Debug":
+                        Materials[materialKey] = new HUDDebugMaterial(Viewer);
+                        break;
                     case "DrawInfor":
                         Materials[materialKey] = new ActivityInforMaterial(Viewer);
                         break;

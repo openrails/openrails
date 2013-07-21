@@ -208,7 +208,7 @@ namespace ORTS.Popups
 		}
 
         [CallOnThread("Updater")]
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool updateFull)
+        public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool updateFull)
         {
             if (Visible)
                 PrepareFrame(elapsedTime, updateFull);

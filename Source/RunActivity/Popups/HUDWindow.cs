@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 
@@ -51,6 +52,13 @@ namespace ORTS.Popups
         int TextPage = 0;
         TableData TextTable = new TableData() { Cells = new string[0, 0] };
 
+        HUDDebugMaterial DebugMaterial;
+        HUDDebugGraphMesh DebugGraphFT;
+        HUDDebugGraphMesh DebugGraphProcessRender;
+        HUDDebugGraphMesh DebugGraphProcessUpdater;
+        HUDDebugGraphMesh DebugGraphProcessLoader;
+        HUDDebugGraphMesh DebugGraphProcessSound;
+
         public HUDWindow(WindowManager owner)
             : base(owner, TextOffset, TextOffset, "HUD")
         {
@@ -72,6 +80,18 @@ namespace ORTS.Popups
             };
 
             TextFont = owner.TextFontDefaultOutlined;
+
+            DebugMaterial = (HUDDebugMaterial)Viewer.MaterialManager.Load("Debug");
+            DebugGraphFT = new HUDDebugGraphMesh(Viewer, Color.LightGreen, 1000, 100);
+            DebugGraphProcessRender = new HUDDebugGraphMesh(Viewer, Color.Red, 1000, 25);
+            DebugGraphProcessUpdater = new HUDDebugGraphMesh(Viewer, Color.Yellow, 1000, 25);
+            DebugGraphProcessLoader = new HUDDebugGraphMesh(Viewer, Color.Magenta, 1000, 25);
+            DebugGraphProcessSound = new HUDDebugGraphMesh(Viewer, Color.Cyan, 1000, 25);
+            DebugGraphFT.GraphPos.Y = 10 * 5 + 25 * 4;
+            DebugGraphProcessRender.GraphPos.Y = 10 * 4 + 25 * 3;
+            DebugGraphProcessUpdater.GraphPos.Y = 10 * 3 + 25 * 2;
+            DebugGraphProcessLoader.GraphPos.Y = 10 * 2 + 25;
+            DebugGraphProcessSound.GraphPos.Y = 10;
         }
 
         protected internal override void Save(BinaryWriter outf)
@@ -99,6 +119,26 @@ namespace ORTS.Popups
         public override void TabAction()
         {
             TextPage = (TextPage + 1) % TextPages.Length;
+        }
+
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(frame, elapsedTime, updateFull);
+            if (Visible && TextPages[TextPage] == TextPageDebugInfo)
+            {
+                DebugGraphFT.GraphPos.X = DebugGraphProcessRender.GraphPos.X = DebugGraphProcessUpdater.GraphPos.X = DebugGraphProcessLoader.GraphPos.X = DebugGraphProcessSound.GraphPos.X = Viewer.DisplaySize.X - DebugGraphFT.GraphPos.Z - 10;
+                DebugGraphFT.AddSample(Viewer.RenderProcess.FrameTime.Value * 10);
+                DebugGraphProcessRender.AddSample(Viewer.RenderProcess.Profiler.Wall.Value / 100);
+                DebugGraphProcessUpdater.AddSample(Viewer.UpdaterProcess.Profiler.Wall.Value / 100);
+                DebugGraphProcessLoader.AddSample(Viewer.LoaderProcess.Profiler.Wall.Value / 100);
+                DebugGraphProcessSound.AddSample(Viewer.SoundProcess.Profiler.Wall.Value / 100);
+                var matrix = Matrix.Identity;
+                frame.AddPrimitive(DebugMaterial, DebugGraphFT, RenderPrimitiveGroup.Overlay, ref matrix);
+                frame.AddPrimitive(DebugMaterial, DebugGraphProcessRender, RenderPrimitiveGroup.Overlay, ref matrix);
+                frame.AddPrimitive(DebugMaterial, DebugGraphProcessUpdater, RenderPrimitiveGroup.Overlay, ref matrix);
+                frame.AddPrimitive(DebugMaterial, DebugGraphProcessLoader, RenderPrimitiveGroup.Overlay, ref matrix);
+                frame.AddPrimitive(DebugMaterial, DebugGraphProcessSound, RenderPrimitiveGroup.Overlay, ref matrix);
+            }
         }
 
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
@@ -531,6 +571,135 @@ namespace ORTS.Popups
             GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.cb);
             var memory = ProcessMemoryCounters.WorkingSetSize;
             return memory;
+        }
+    }
+
+    public class HUDDebugGraphMesh : RenderPrimitive
+    {
+        const int SampleCount = 1000;
+        const int VerticiesPerSample = 6;
+        const int PrimitivesPerSample = 2;
+        const int VertexCount = VerticiesPerSample * SampleCount;
+
+        readonly VertexDeclaration VertexDeclaration;
+        readonly DynamicVertexBuffer VertexBuffer;
+        readonly Color Color;
+
+        public Vector4 GraphPos;
+        public Vector2 Sample;
+
+        public HUDDebugGraphMesh(Viewer3D viewer, Color color, int width, int height)
+        {
+            VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColor.VertexElements);
+            VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, VertexCount * VertexPositionColor.SizeInBytes, BufferUsage.WriteOnly);
+            Color = color;
+            GraphPos.Z = width;
+            GraphPos.W = height;
+            Sample.Y = SampleCount;
+        }
+
+        public void AddSample(float value)
+        {
+            value = MathHelper.Clamp(value, 0, 1);
+            var x0 = Sample.X / Sample.Y;
+            var x1 = (Sample.X + 1) / Sample.Y;
+
+            VertexBuffer.SetData((int)Sample.X * VerticiesPerSample * VertexPositionColor.SizeInBytes, new [] {
+                new VertexPositionColor(new Vector3(x0, value, 0), Color),
+                new VertexPositionColor(new Vector3(x1, value, 0), Color),
+                new VertexPositionColor(new Vector3(x1, 0, 0), Color),
+                new VertexPositionColor(new Vector3(x1, 0, 0), Color),
+                new VertexPositionColor(new Vector3(x0, value, 0), Color),
+                new VertexPositionColor(new Vector3(x0, 0, 0), Color),
+            }, 0, VerticiesPerSample, VertexPositionColor.SizeInBytes, SetDataOptions.NoOverwrite);
+
+            Sample.X = (Sample.X + 1) % SampleCount;
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            graphicsDevice.VertexDeclaration = VertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColor.SizeInBytes);
+            if (Sample.X > 1)
+                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, ((int)Sample.X - 1) * PrimitivesPerSample);
+            if (Sample.X + 1 < SampleCount)
+                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, ((int)Sample.X + 1) * VerticiesPerSample, (SampleCount - (int)Sample.X - 1) * PrimitivesPerSample);
+        }
+    }
+
+    public class HUDDebugMaterial : Material
+    {
+        IEnumerator<EffectPass> ShaderPassesGraph;
+
+        public HUDDebugMaterial(Viewer3D viewer)
+            : base(viewer, null)
+        {
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            var shader = Viewer.MaterialManager.DebugShader;
+            shader.CurrentTechnique = shader.Techniques["Graph"];
+            if (ShaderPassesGraph == null) ShaderPassesGraph = shader.Techniques["Graph"].Passes.GetEnumerator();
+            shader.ScreenSize = new Vector2(Viewer.DisplaySize.X, Viewer.DisplaySize.Y);
+
+            var rs = graphicsDevice.RenderState;
+            rs.CullMode = CullMode.None;
+            rs.DepthBufferEnable = false;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            var shader = Viewer.MaterialManager.DebugShader;
+
+            shader.Begin();
+            ShaderPassesGraph.Reset();
+            while (ShaderPassesGraph.MoveNext())
+            {
+                ShaderPassesGraph.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    var graphMesh = item.RenderPrimitive as HUDDebugGraphMesh;
+                    if (graphMesh != null)
+                    {
+                        shader.GraphPos = graphMesh.GraphPos;
+                        shader.GraphSample = graphMesh.Sample;
+                        shader.CommitChanges();
+                    }
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPassesGraph.Current.End();
+            }
+            shader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            var rs = graphicsDevice.RenderState;
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            rs.DepthBufferEnable = true;
+        }
+    }
+
+    [CallOnThread("Render")]
+    public class HUDDebugShader : Effect
+    {
+        readonly EffectParameter screenSize;
+        readonly EffectParameter graphPos;
+        readonly EffectParameter graphSample;
+
+        public Vector2 ScreenSize { set { screenSize.SetValue(value); } }
+
+        public Vector4 GraphPos { set { graphPos.SetValue(value); } }
+
+        public Vector2 GraphSample { set { graphSample.SetValue(value); } }
+
+        public HUDDebugShader(GraphicsDevice graphicsDevice, ContentManager content)
+            : base(graphicsDevice, content.Load<Effect>("DebugShader"))
+        {
+            screenSize = Parameters["ScreenSize"];
+            graphPos = Parameters["GraphPos"];
+            graphSample = Parameters["GraphSample"];
         }
     }
 }
