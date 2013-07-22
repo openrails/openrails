@@ -53,7 +53,7 @@ namespace ORTS
         public float PercentChangePerSec = .2f;
         public float IdleExhaust = 0.0f;
         public float InitialExhaust = 0.0f;
-        float ExhaustMagnitude = 4.0f;
+        public float ExhaustMagnitude = 4.0f;
         public float MaxExhaust = 50.0f;
         public float ExhaustDynamics = 4.0f;
         public float EngineRPMderivation = 0.0f;

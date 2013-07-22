@@ -24,7 +24,7 @@ namespace ORTS
         /// <summary>
         /// Reference to the locomotive carrying the auxiliaries
         /// </summary>
-        public readonly MSTSLocomotive Locomotive;
+        public readonly MSTSDieselLocomotive Locomotive;
 
         /// <summary>
         /// not applicable, but still can be used
@@ -38,7 +38,7 @@ namespace ORTS
         /// Creates a set of auxiliaries connected to the locomotive
         /// </summary>
         /// <param name="loco">Host locomotive</param>
-        public DieselEngines(MSTSLocomotive loco)
+        public DieselEngines(MSTSDieselLocomotive loco)
         {
             Locomotive = loco;
         }
@@ -46,7 +46,7 @@ namespace ORTS
         /// <summary>
         /// constructor from copy
         /// </summary>
-        public DieselEngines(DieselEngines copy, MSTSLocomotive loco)
+        public DieselEngines(DieselEngines copy, MSTSDieselLocomotive loco)
         {
             DEList = new List<DieselEngine>();
             foreach (DieselEngine de in copy.DEList)
@@ -61,7 +61,7 @@ namespace ORTS
         /// </summary>
         /// <param name="loco">Host locomotive</param>
         /// <param name="stf">Reference to the ENG file reader</param>
-        public DieselEngines(MSTSLocomotive loco, STFReader stf)
+        public DieselEngines(MSTSDieselLocomotive loco, STFReader stf)
         {
             Locomotive = loco;
             Parse(stf, loco);
@@ -89,7 +89,7 @@ namespace ORTS
         /// Parses all the parameters within the ENG file
         /// </summary>
         /// <param name="stf">eference to the ENG file reader</param>
-        public void Parse(STFReader stf, MSTSLocomotive loco)
+        public void Parse(STFReader stf, MSTSDieselLocomotive loco)
         {
             stf.MustMatch("(");
             int count = stf.ReadInt(STFReader.UNITS.None, 0);
@@ -322,7 +322,7 @@ namespace ORTS
         {
         }
 
-        public DieselEngine(DieselEngine copy, MSTSLocomotive loco)
+        public DieselEngine(DieselEngine copy, MSTSDieselLocomotive loco)
         {
             IdleRPM = copy.IdleRPM;
             MaxRPM = copy.MaxRPM;
@@ -392,11 +392,16 @@ namespace ORTS
 
         public float ExhaustParticles = 10.0f;
         public Color ExhaustColor = Color.Gray;
-        Color ExhaustSteadyColor = Color.Gray;
-        Color ExhaustTransientColor = Color.Black;
+        public Color ExhaustSteadyColor = Color.Gray;
+        public Color ExhaustTransientColor = Color.Black;
+        public Color ExhaustDecelColor = Color.TransparentWhite;
+
+        public float InitialExhaust = 0.0f;
         public float ExhaustDynamics = 1.5f;
-        public float MaxExhaust = 100;
+        public float ExhaustMagnitude = 4.0f;
+        public float MaxExhaust = 50.0f;
         public float IdleExhaust = 10;
+
         public float LoadPercent
         {
             get
@@ -502,17 +507,27 @@ namespace ORTS
                 }
             }
 
-            ExhaustParticles = ((MaxExhaust - IdleExhaust) * ThrottlePercent / 100f + IdleExhaust);
-            if (ExhaustParticles < 5.0f)
-                ExhaustParticles = 5.0f;
+            //ExhaustParticles = ((MaxExhaust - IdleExhaust) * ThrottlePercent / 100f + IdleExhaust);
+            //if (ExhaustParticles < 5.0f)
+                //ExhaustParticles = 5.0f;
             //Rate of change decission
+
+            if (RealRPM == IdleRPM)
+            {
+                ExhaustParticles = IdleExhaust;
+                ExhaustDynamics = InitialExhaust;
+                ExhaustColor = ExhaustSteadyColor;
+            }
             if (RealRPM < (DemandedRPM))
             {
                 dRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (DemandedRPM - RealRPM)), ChangeUpRPMpS);
                 if (dRPM == ChangeUpRPMpS)
                 {
-                    ExhaustParticles *= ExhaustDynamics * MaxExhaust;
-                    ExhaustColor = ExhaustTransientColor;
+                    //ExhaustParticles *= ExhaustDynamics * MaxExhaust;
+                    //ExhaustColor = ExhaustTransientColor;
+                    ExhaustParticles = IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust);
+                    ExhaustDynamics = InitialExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * ExhaustMagnitude);
+                    ExhaustColor = ExhaustTransientColor; 
                 }
                 else
                 {
@@ -524,10 +539,12 @@ namespace ORTS
                 if (RealRPM > (DemandedRPM))
                 {
                     dRPM = (float)Math.Max(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
-                    ExhaustColor = ExhaustSteadyColor;
-                    ExhaustParticles = 3.0f;
+                    ExhaustParticles = IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust);
+                    ExhaustDynamics = InitialExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * ExhaustMagnitude);
+                    ExhaustColor = ExhaustDecelColor;
+                    //ExhaustParticles = 3.0f;
                 }
-                else
+               else
                 {
                     dRPM = 0;
                     ExhaustColor = ExhaustSteadyColor;
@@ -544,7 +561,7 @@ namespace ORTS
                 MaxOutputPowerW = DieselPowerTab[RealRPM] <= MaximalPowerW ? DieselPowerTab[RealRPM] : MaximalPowerW;
                 MaxOutputPowerW = MaxOutputPowerW < 0f ? 0f : MaxOutputPowerW;
             }
-            else
+             else
             {
                 MaxOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximalPowerW;
             }
@@ -673,21 +690,26 @@ namespace ORTS
                 GearBox.Save(outf);
         }
 
-        public void InitFromMSTS(MSTSDieselLocomotive diesel)
+        public void InitFromMSTS(MSTSDieselLocomotive locomotive)
         {
-            IdleRPM = diesel.IdleRPM;
-            MaxRPM = diesel.MaxRPM;
-            StartingRPM = diesel.IdleRPM * 2.0f / 3.0f;
-            StartingConfirmationRPM = diesel.IdleRPM * 1.1f;
-            ChangeUpRPMpS = diesel.MaxRPMChangeRate;
-            ChangeDownRPMpS = diesel.MaxRPMChangeRate;
+            IdleRPM = locomotive.IdleRPM;
+            MaxRPM = locomotive.MaxRPM;
+            InitialExhaust = locomotive.InitialExhaust;
+            ExhaustDynamics = locomotive.ExhaustDynamics;
+            ExhaustMagnitude = locomotive.ExhaustMagnitude;
+            MaxExhaust = locomotive.MaxExhaust;
+            IdleExhaust = locomotive.InitialExhaust;
+            StartingRPM = locomotive.IdleRPM * 2.0f / 3.0f;
+            StartingConfirmationRPM = locomotive.IdleRPM * 1.1f;
+            ChangeUpRPMpS = locomotive.MaxRPMChangeRate;
+            ChangeDownRPMpS = locomotive.MaxRPMChangeRate;
             RateOfChangeUpRPMpSS = ChangeUpRPMpS;
             RateOfChangeDownRPMpSS = ChangeDownRPMpS;
-            MaximalPowerW = diesel.MaxPowerW;
+            MaximalPowerW = locomotive.MaxPowerW;
             //DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.IdleRPM * 1.01f, diesel.MaxRPM * 0.5f, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxRPM * 0.1f, diesel.MaxRPM * 0.5f, diesel.MaxPowerW });
             //DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxPowerW });
-            DieselConsumptionTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { diesel.DieselUsedPerHourAtIdleL, diesel.DieselUsedPerHourAtMaxPowerL });
-            ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { diesel.IdleRPM, diesel.MaxRPM });
+            DieselConsumptionTab = new Interpolator(new float[] { locomotive.IdleRPM, locomotive.MaxRPM }, new float[] { locomotive.DieselUsedPerHourAtIdleL, locomotive.DieselUsedPerHourAtMaxPowerL });
+            ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { locomotive.IdleRPM, locomotive.MaxRPM });
             
             int count = 11;
             float[] rpm = new float[count + 1];
@@ -697,21 +719,21 @@ namespace ORTS
             for (int i = 0; i < count; i++)
             {
                 if (i == 0)
-                    rpm[i] = diesel.IdleRPM;
+                    rpm[i] = locomotive.IdleRPM;
                 else
-                    rpm[i] = rpm[i - 1] + (diesel.MaxRPM - diesel.IdleRPM) / (count - 1);
+                    rpm[i] = rpm[i - 1] + (locomotive.MaxRPM - locomotive.IdleRPM) / (count - 1);
                 power[i] *= MaximalPowerW;
             }
-            rpm[count] = diesel.MaxRPM * 1.5f;
+            rpm[count] = locomotive.MaxRPM * 1.5f;
             DieselPowerTab = new Interpolator(rpm, power);
             //DieselPowerTab.test("PowerTab", count);
             DieselTorqueTab = new Interpolator(rpm, torque);
             //DieselTorqueTab.test("TorqueTab", count);
 
-            IdleExhaust = diesel.IdleExhaust;
-            MaxExhaust = diesel.MaxExhaust;
-            ExhaustDynamics = diesel.ExhaustDynamics;
-            locomotive = diesel;
+            IdleExhaust = locomotive.IdleExhaust;
+            MaxExhaust = locomotive.MaxExhaust;
+            ExhaustDynamics = locomotive.ExhaustDynamics;
+            locomotive = locomotive;
         }
 
     }
