@@ -549,10 +549,16 @@ namespace ORTS
 
             Camera.Styles viewpoint = Viewer.Camera.Style;
 
-            if (IsEnvSound || (!IsEnvSound && IsntThisCabView))
-            {
-                viewpoint = Camera.Styles.External;
-            }
+            if (!IsEnvSound && !IsExternal
+                && Car != null && Viewer.Camera.AttachedCar != null
+                && !(Car is MSTSLocomotive) && Car.Train == Viewer.Camera.AttachedCar.Train
+                && conditions.CabCam && viewpoint == Camera.Styles.Cab)
+                return true;
+
+            //if (IsEnvSound || (!IsEnvSound && IsntThisCabView))
+            //{
+            //    viewpoint = Camera.Styles.External;
+            //}
 
             if (conditions.CabCam && viewpoint == Camera.Styles.Cab)
                 return true;
@@ -1203,6 +1209,11 @@ namespace ORTS
             switch (SMS.Event)
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
+                    if (newValue <= SMS.Threshold)
+                        triggered = true;
+                    if (newValue <= SMS.Threshold)
+                        Signaled = true;
+                    break;
                 case MSTS.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Variable1_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Variable2_Dec_Past:
@@ -1214,6 +1225,11 @@ namespace ORTS
                         Signaled = true;
                     break;
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
+                    if (newValue >= SMS.Threshold)
+                        triggered = true;
+                    if (newValue >= SMS.Threshold)
+                        Signaled = true;
+                    break;
                 case MSTS.Variable_Trigger.Events.Speed_Inc_Past:
                 case MSTS.Variable_Trigger.Events.Variable1_Inc_Past:
                 case MSTS.Variable_Trigger.Events.Variable2_Inc_Past:
