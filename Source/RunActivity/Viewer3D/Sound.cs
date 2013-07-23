@@ -1128,18 +1128,20 @@ namespace ORTS
             switch (SMS.Event)
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
-                    if (newValue < SMS.Threshold
-                        && StartValue >= SMS.Threshold)
+                    if (newValue <= SMS.Threshold)
+                    {   
                         triggered = true;
-                    if (newValue < SMS.Threshold)
                         Signaled = true;
+                    }
+                    
                     break;
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    if (newValue > SMS.Threshold
-                        && StartValue <= SMS.Threshold)
+                    if (newValue >= SMS.Threshold)
+                    {
                         triggered = true;
-                    if (newValue > SMS.Threshold)
                         Signaled = true;
+                    }
+                    
                     break;
             }
 
@@ -1210,9 +1212,10 @@ namespace ORTS
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
                     if (newValue <= SMS.Threshold)
+                    {
                         triggered = true;
-                    if (newValue <= SMS.Threshold)
                         Signaled = true;
+                    }
                     break;
                 case MSTS.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Variable1_Dec_Past:
@@ -1226,9 +1229,10 @@ namespace ORTS
                     break;
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
                     if (newValue >= SMS.Threshold)
+                    {
                         triggered = true;
-                    if (newValue >= SMS.Threshold)
                         Signaled = true;
+                    }
                     break;
                 case MSTS.Variable_Trigger.Events.Speed_Inc_Past:
                 case MSTS.Variable_Trigger.Events.Variable1_Inc_Past:
