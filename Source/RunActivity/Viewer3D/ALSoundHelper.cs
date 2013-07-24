@@ -173,7 +173,7 @@ namespace ORTS
 
         public void Queue2(int soundSourceID)
         {
-            if (!isValid)
+            if (!isValid || isSingle)
                 return;
             if (BufferIDs[NextBuffer] != 0)
                 OpenAL.alSourceQueueBuffers(soundSourceID, 1, ref BufferIDs[NextBuffer]);
@@ -373,7 +373,6 @@ namespace ORTS
                                 OpenAL.alSourcePlay(soundSourceID);
                                 OpenAL.alSourcei(soundSourceID, OpenAL.AL_LOOPING, OpenAL.AL_TRUE);
                                 PlayState = PlayState.Playing;
-                                PlayMode = PlayMode.Loop;
                             }
                         }
                         else
@@ -725,6 +724,13 @@ namespace ORTS
                                             SoundQueue[QueueTail % QUEUELENGHT].LeaveItemPlay(SoundSourceID);
                                             Start(); // Restart if buffers had been exhausted because of large update time
                                             NeedsFrequentUpdate = false; // Queued the last chunk, get rest
+                                            int state;
+                                            OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_SOURCE_STATE, out state);
+                                            if (state != OpenAL.AL_PLAYING)
+                                            {
+                                                SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
+                                                isPlaying = false;
+                                            }
                                         }
 
                                         break;
@@ -763,8 +769,13 @@ namespace ORTS
                                         else if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.OneShot)
                                         {
                                             NeedsFrequentUpdate = false;
-                                            if (SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isLast(SoundSourceID))
+                                            int state;
+                                            OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_SOURCE_STATE, out state);
+                                            if (state != OpenAL.AL_PLAYING)
+                                            {
                                                 SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
+                                                isPlaying = false;
+                                            }
                                         }
                                         break;
                                     }
@@ -796,6 +807,12 @@ namespace ORTS
                         {
                             NeedsFrequentUpdate = false;
                             LeaveLoop();
+
+                            int state;
+                            OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_SOURCE_STATE, out state);
+                            if (state != OpenAL.AL_PLAYING)
+                                isPlaying = false;
+
                             break;
                         }
                 }
@@ -835,8 +852,8 @@ namespace ORTS
         /// <param name="Name">Name of the wave to play</param>
         /// <param name="Mode">Mode of the play</param>
         /// <param name="isExternal">Indicator of external sound</param>
-        /// <param name="isReleasedWithJump">Indicator of sound may be released with jump</param>
-        public void Queue(string Name, PlayMode Mode, bool isExternal, bool isReleasedWithJump)
+        /// <param name="isReleasedWithJumpOrOneShotRepeated">Indicator if sound may be released with jump (LoopRelease), or is repeated command (OneShot)</param>
+        public void Queue(string Name, PlayMode Mode, bool isExternal, bool isReleasedWithJumpOrOneShotRepeated)
         {
             lock (SoundQueue)
             {
@@ -850,7 +867,7 @@ namespace ORTS
                     else if (Mode == PlayMode.Loop || Mode == PlayMode.LoopRelease)
                     {
                         // Cannot optimize, put into Queue
-                        SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, isReleasedWithJump);
+                        SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, isReleasedWithJumpOrOneShotRepeated);
                         SoundQueue[QueueHeader % QUEUELENGHT].PlayState = PlayState.New;
                         SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
 
@@ -866,8 +883,9 @@ namespace ORTS
 
                     PlayMode prevMode = prev.PlayMode;
 
-                    // Ignore repeated Loop commands
-                    if (prevMode == Mode && Mode != PlayMode.OneShot)
+                    // Ignore repeated commands
+                    // In case we play OneShot, enable repeating same file only by defining it multiple times in sms, otherwise disable.
+                    if (prevMode == Mode && (Mode != PlayMode.OneShot || Mode == PlayMode.OneShot && isReleasedWithJumpOrOneShotRepeated))
                     {
                         if (prev.SoundPiece != null && prev.SoundPiece.Name == Name)
                             return;
@@ -908,7 +926,7 @@ namespace ORTS
                 }
 
                 // Cannot optimize, put into Queue
-                SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, isReleasedWithJump);
+                SoundQueue[QueueHeader % QUEUELENGHT].SetPiece(Name, isExternal, Mode == PlayMode.LoopRelease && isReleasedWithJumpOrOneShotRepeated);
                 SoundQueue[QueueHeader % QUEUELENGHT].PlayState = PlayState.New;
                 SoundQueue[QueueHeader % QUEUELENGHT].PlayMode = Mode;
 

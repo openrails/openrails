@@ -537,6 +537,20 @@ namespace ORTS
         }
 
         /// <summary>
+        /// Hack for enabling additional cab sounds (like radio sounds) of an attached (maybe invisible) car.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsInvisibleSoundCar
+        {
+            get
+            {
+                return (!IsEnvSound && !IsExternal && Viewer.Camera.Style == Camera.Styles.Cab
+                    && Car != null && Viewer.Camera.AttachedCar != null
+                    && !(Car is MSTSLocomotive) && Car.Train == Viewer.Camera.AttachedCar.Train);
+            }
+        }
+
+        /// <summary>
         /// Return true of the ViewPoint matches any of the ones specified in the conditions
         /// for activation or deactivation.
         /// </summary>
@@ -549,16 +563,10 @@ namespace ORTS
 
             Camera.Styles viewpoint = Viewer.Camera.Style;
 
-            if (!IsEnvSound && !IsExternal
-                && Car != null && Viewer.Camera.AttachedCar != null
-                && !(Car is MSTSLocomotive) && Car.Train == Viewer.Camera.AttachedCar.Train
-                && conditions.CabCam && viewpoint == Camera.Styles.Cab)
-                return true;
-
-            //if (IsEnvSound || (!IsEnvSound && IsntThisCabView))
-            //{
-            //    viewpoint = Camera.Styles.External;
-            //}
+            if (IsEnvSound || !IsEnvSound && IsntThisCabView && !IsInvisibleSoundCar)
+            {
+                viewpoint = Camera.Styles.External;
+            }
 
             if (conditions.CabCam && viewpoint == Camera.Styles.Cab)
                 return true;
@@ -1323,11 +1331,12 @@ namespace ORTS
         }
         public override void Run()
         {
+            int iFileOld = iFile;
             string p = GetNextFile();
             if (p != "")
             {
 				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-					ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal, false);
+					ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal, iFile == iFileOld);
             }
         }
     } 
