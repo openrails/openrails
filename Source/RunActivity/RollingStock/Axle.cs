@@ -612,7 +612,7 @@ namespace ORTS
                     //    axleForceN = -brakeForceN;
                     //}
                     //Axle revolutions integration
-                    if (TrainSpeedMpS > 0.09f)
+                    if (TrainSpeedMpS > 0.01f)
                     {
                         if (((brakeForceN) > (driveForceN)) && (AxleSpeedMpS < 0.1f))
                         {
@@ -635,7 +635,7 @@ namespace ORTS
                     }
                     else
                     {
-                        if (TrainSpeedMpS < -0.09f)
+                        if (TrainSpeedMpS < -0.01f)
                         {
                             if (((brakeForceN) > (Math.Abs(driveForceN))) && (AxleSpeedMpS > -0.1f))
                             {
@@ -658,22 +658,22 @@ namespace ORTS
                         }
                         else
                         {
-                            //if (Math.Abs(driveForceN) < 1f)
-                            //{
-                            //    Reset();
-                            //    axleSpeedMpS = 0.0f;
-                            //    //axleForceN = 0.0f;
-                            //}
-                            //else
-                            //{
-                            //    axleForceN = driveForceN - brakeForceN;
-                            //    if (Math.Abs(axleSpeedMpS) < 0.01f)
-                            //        Reset();
-                            //}
+                            if (Math.Abs(driveForceN) < 1f)
+                            {
+                                Reset();
+                                axleSpeedMpS = 0.0f;
+                                //axleForceN = 0.0f;
+                            }
+                            else
+                            {
+                                axleForceN = driveForceN - brakeForceN;
+                                if (Math.Abs(axleSpeedMpS) < 0.01f)
+                                    Reset();
+                            }
 
-                            Reset(TrainSpeedMpS);
-                            axleForceN = driveForceN - brakeForceN;
-                            axleSpeedMpS = AxleRevolutionsInt.Value;
+                            //Reset(TrainSpeedMpS);
+                            //axleForceN = driveForceN - brakeForceN;
+                            //axleSpeedMpS = AxleRevolutionsInt.Value;
                         }
                     }
                     break;

@@ -190,6 +190,8 @@ namespace ORTS
             ExhaustSteadyColor = locoCopy.ExhaustSteadyColor;
             ExhaustTransientColor = locoCopy.ExhaustTransientColor;
             DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
+            if (locoCopy.GearBoxController != null)
+                GearBoxController = new MSTSNotchController(locoCopy.GearBoxController);
             Initialize();
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
@@ -822,7 +824,7 @@ namespace ORTS
                         DieselLocomotive.DieselEngines[0].Stop();
                         DieselLocomotive.SignalEvent(Event.EnginePowerOff); // power off sound hook
                     }
-                    Viewer.Simulator.Confirmer.Confirm( CabControl.PlayerDiesel, DieselLocomotive.PowerOn ? CabSetting.On : CabSetting.Off );
+                    Viewer.Simulator.Confirmer.Confirm( CabControl.PlayerDiesel, DieselLocomotive.DieselEngines.PowerOn ? CabSetting.On : CabSetting.Off );
                 } 
                 else
                 {
@@ -873,7 +875,7 @@ namespace ORTS
                             }
                         }
                         //((MSTSDieselLocomotive)traincar).StartStopDiesel();
-                        powerOn = ((MSTSDieselLocomotive)traincar).PowerOn;
+                        powerOn = ((MSTSDieselLocomotive)traincar).DieselEngines.PowerOn;
                         if ((traincar != Program.Simulator.PlayerLocomotive))
                         {
                             if ((((MSTSDieselLocomotive)traincar).DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped)||

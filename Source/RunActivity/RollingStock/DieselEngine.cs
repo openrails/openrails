@@ -164,6 +164,22 @@ namespace ORTS
         }
 
         /// <summary>
+        /// A power-on indicator
+        /// </summary>
+        public bool PowerOn
+        {
+            get
+            {
+                bool temp = false;
+                foreach (DieselEngine de in DEList)
+                {
+                    temp |= (de.EngineStatus == DieselEngine.Status.Running) || (de.EngineStatus == DieselEngine.Status.Starting);
+                }
+                return temp;
+            }
+        }
+
+        /// <summary>
         /// A summary of maximal power of all the diesels
         /// </summary>
         public float MaxPowerW
