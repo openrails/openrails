@@ -285,7 +285,7 @@ namespace ORTS
         private bool WasOutOfDistance = true;
         private bool _isSlowRolloff = false;
 
-        List<SoundStream> SoundStreams = new List<SoundStream>();
+        public List<SoundStream> SoundStreams = new List<SoundStream>();
 
         public void Initialize(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
         {
@@ -545,8 +545,9 @@ namespace ORTS
             get
             {
                 return (!IsEnvSound && !IsExternal && Viewer.Camera.Style == Camera.Styles.Cab
-                    && Car != null && Viewer.Camera.AttachedCar != null
-                    && !(Car is MSTSLocomotive) && Car.Train == Viewer.Camera.AttachedCar.Train);
+                    && Car != null && Viewer.Camera.AttachedCar != null && !(Car is MSTSLocomotive) 
+                    && (Car.Train == Viewer.Camera.AttachedCar.Train || Car.Train.TrainType == Train.TRAINTYPE.STATIC || Car.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED
+                    || Car.MainShapeFileName == "invisible.s")); // this one is by Edward K.
             }
         }
 
