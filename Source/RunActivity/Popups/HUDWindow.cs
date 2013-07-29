@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 // This file is the responsibility of the 3D & Environment Team. 
+#define SHOW_PHYSICS_GRAPHS     //Matej Pacha - if commented, the physics graphs are not ready for public release
 
 using System;
 using System.Collections.Generic;
@@ -59,6 +60,10 @@ namespace ORTS.Popups
         HUDDebugGraphMesh DebugGraphProcessLoader;
         HUDDebugGraphMesh DebugGraphProcessSound;
 
+        HUDDebugGraphMesh DebugGraphMotiveForce;
+        HUDDebugGraphMesh DebugGraphDynamicForce;
+        HUDDebugGraphMesh DebugGraphNumOfSubsteps;
+
         public HUDWindow(WindowManager owner)
             : base(owner, TextOffset, TextOffset, "HUD")
         {
@@ -92,6 +97,13 @@ namespace ORTS.Popups
             DebugGraphProcessUpdater.GraphPos.Y = 10 * 3 + 25 * 2;
             DebugGraphProcessLoader.GraphPos.Y = 10 * 2 + 25;
             DebugGraphProcessSound.GraphPos.Y = 10;
+
+            DebugGraphMotiveForce = new HUDDebugGraphMesh(Viewer, Color.Green, 500, 100);
+            DebugGraphDynamicForce = new HUDDebugGraphMesh(Viewer, Color.Red, 500, 100);
+            DebugGraphNumOfSubsteps = new HUDDebugGraphMesh(Viewer, Color.Blue, 500, 25);
+            DebugGraphMotiveForce.GraphPos.Y = 10 * 5 + 25 * 4;
+            DebugGraphDynamicForce.GraphPos.Y = 10 * 5 + 25 * 4;    //Overlapped - showing negative values of the same parameter
+            DebugGraphNumOfSubsteps.GraphPos.Y = 10 * 4 + 25 * 3;
         }
 
         protected internal override void Save(BinaryWriter outf)
@@ -139,6 +151,23 @@ namespace ORTS.Popups
                 frame.AddPrimitive(DebugMaterial, DebugGraphProcessLoader, RenderPrimitiveGroup.Overlay, ref matrix);
                 frame.AddPrimitive(DebugMaterial, DebugGraphProcessSound, RenderPrimitiveGroup.Overlay, ref matrix);
             }
+#if SHOW_PHYSICS_GRAPHS
+            if (Visible && TextPages[TextPage] == TextPageForceInfo)
+            {
+                DebugGraphMotiveForce.GraphPos.X = Viewer.DisplaySize.X - DebugGraphMotiveForce.GraphPos.Z - 10;
+                DebugGraphDynamicForce.GraphPos.X = Viewer.DisplaySize.X - DebugGraphMotiveForce.GraphPos.Z - 10;
+                DebugGraphNumOfSubsteps.GraphPos.X = Viewer.DisplaySize.X - DebugGraphMotiveForce.GraphPos.Z - 10;
+                var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
+                DebugGraphMotiveForce.AddSample(loco.MotiveForceN / (loco.MaxForceN));
+                DebugGraphDynamicForce.AddSample(-loco.MotiveForceN / (loco.MaxForceN));
+                DebugGraphNumOfSubsteps.AddSample((float)loco.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS / (float)loco.LocomotiveAxle.AxleRevolutionsInt.MaxSubsteps);
+
+                var matrix = Matrix.Identity;
+                frame.AddPrimitive(DebugMaterial, DebugGraphMotiveForce, RenderPrimitiveGroup.Overlay, ref matrix);
+                frame.AddPrimitive(DebugMaterial, DebugGraphDynamicForce, RenderPrimitiveGroup.Overlay, ref matrix);
+                frame.AddPrimitive(DebugMaterial, DebugGraphNumOfSubsteps, RenderPrimitiveGroup.Overlay, ref matrix); 
+            }
+#endif
         }
 
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
@@ -336,8 +365,7 @@ namespace ORTS.Popups
                     TableAddLabelValue(table, "Wheel slip", "{0:F0}% ({1:F0}%/s)", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS);
                     TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);
                     TableAddLabelValue(table, "Axle brake force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.BrakeForceN);
-                    if (mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.IsStepDividing)
-                        TableAddLabelValue(table, "Step dividing acitve", "({0:F0} steps/frame)", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS);
+                    TableAddLabelValue(table, "Num of substeps", "{0:F0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS);
                     TableAddLabelValue(table, "Solver", "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
                     TableAddLabelValue(table, "Stability correction", "{0:F0}", mstsLocomotive.LocomotiveAxle.AdhesionK);
                     TableAddLabelValue(table, "Axle out force", "{0:F0} N ({1:F0} kW)", mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.WheelSpeedMpS / 1000.0f);

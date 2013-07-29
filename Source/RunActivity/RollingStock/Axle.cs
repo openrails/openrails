@@ -89,6 +89,10 @@ namespace ORTS
         /// </summary>
         public float DampingNs { set { dampingNs = Math.Abs(value); } get { return dampingNs; } }
 
+        protected float frictionN;
+
+        public float FrictionN { set { frictionN = Math.Abs(value); } get { return frictionN; } }
+
         /// <summary>
         /// Read/Write flag to enable/disable stability correction.
         /// If enabled, AdhesionK is increased by 0.05 each time the slipSpeedDerivationPercent reaches 1000%/s
@@ -627,6 +631,7 @@ namespace ORTS
                                         driveForceN * transmitionEfficiency
                                         - brakeForceN
                                         - slipDerivationMpSS * dampingNs
+                                        - Math.Abs(SlipSpeedMpS) * frictionN
                                         - AxleForceN
                                         )
                                     / totalInertiaKgm2)
@@ -650,6 +655,7 @@ namespace ORTS
                                             driveForceN * transmitionEfficiency
                                             + brakeForceN
                                             - slipDerivationMpSS * dampingNs
+                                            - Math.Abs(SlipSpeedMpS) * frictionN
                                             - AxleForceN
                                             )
                                         / totalInertiaKgm2)

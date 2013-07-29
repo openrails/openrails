@@ -436,7 +436,7 @@ namespace ORTS
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = MaxForceN * t;
-                    float maxPowerW = DieselEngines.MaxPowerW;
+                    float maxPowerW = 0.98f * DieselEngines.MaxPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
                     if (DieselEngines.HasGearBox)
                     {

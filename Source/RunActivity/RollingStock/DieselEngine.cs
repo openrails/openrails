@@ -706,26 +706,26 @@ namespace ORTS
                 GearBox.Save(outf);
         }
 
-        public void InitFromMSTS(MSTSDieselLocomotive locomotive)
+        public void InitFromMSTS(MSTSDieselLocomotive loco)
         {
-            IdleRPM = locomotive.IdleRPM;
-            MaxRPM = locomotive.MaxRPM;
-            InitialExhaust = locomotive.InitialExhaust;
-            ExhaustDynamics = locomotive.ExhaustDynamics;
-            ExhaustMagnitude = locomotive.ExhaustMagnitude;
-            MaxExhaust = locomotive.MaxExhaust;
-            IdleExhaust = locomotive.InitialExhaust;
-            StartingRPM = locomotive.IdleRPM * 2.0f / 3.0f;
-            StartingConfirmationRPM = locomotive.IdleRPM * 1.1f;
-            ChangeUpRPMpS = locomotive.MaxRPMChangeRate;
-            ChangeDownRPMpS = locomotive.MaxRPMChangeRate;
+            IdleRPM = loco.IdleRPM;
+            MaxRPM = loco.MaxRPM;
+            InitialExhaust = loco.InitialExhaust;
+            ExhaustDynamics = loco.ExhaustDynamics;
+            ExhaustMagnitude = loco.ExhaustMagnitude;
+            MaxExhaust = loco.MaxExhaust;
+            IdleExhaust = loco.InitialExhaust;
+            StartingRPM = loco.IdleRPM * 2.0f / 3.0f;
+            StartingConfirmationRPM = loco.IdleRPM * 1.1f;
+            ChangeUpRPMpS = loco.MaxRPMChangeRate;
+            ChangeDownRPMpS = loco.MaxRPMChangeRate;
             RateOfChangeUpRPMpSS = ChangeUpRPMpS;
             RateOfChangeDownRPMpSS = ChangeDownRPMpS;
-            MaximalPowerW = locomotive.MaxPowerW;
+            MaximalPowerW = loco.MaxPowerW;
             //DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.IdleRPM * 1.01f, diesel.MaxRPM * 0.5f, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxRPM * 0.1f, diesel.MaxRPM * 0.5f, diesel.MaxPowerW });
             //DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxPowerW });
-            DieselConsumptionTab = new Interpolator(new float[] { locomotive.IdleRPM, locomotive.MaxRPM }, new float[] { locomotive.DieselUsedPerHourAtIdleL, locomotive.DieselUsedPerHourAtMaxPowerL });
-            ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { locomotive.IdleRPM, locomotive.MaxRPM });
+            DieselConsumptionTab = new Interpolator(new float[] { loco.IdleRPM, loco.MaxRPM }, new float[] { loco.DieselUsedPerHourAtIdleL, loco.DieselUsedPerHourAtMaxPowerL });
+            ThrottleRPMTab = new Interpolator(new float[] { 0, 100 }, new float[] { loco.IdleRPM, loco.MaxRPM });
             
             int count = 11;
             float[] rpm = new float[count + 1];
@@ -735,21 +735,21 @@ namespace ORTS
             for (int i = 0; i < count; i++)
             {
                 if (i == 0)
-                    rpm[i] = locomotive.IdleRPM;
+                    rpm[i] = loco.IdleRPM;
                 else
-                    rpm[i] = rpm[i - 1] + (locomotive.MaxRPM - locomotive.IdleRPM) / (count - 1);
+                    rpm[i] = rpm[i - 1] + (loco.MaxRPM - loco.IdleRPM) / (count - 1);
                 power[i] *= MaximalPowerW;
             }
-            rpm[count] = locomotive.MaxRPM * 1.5f;
+            rpm[count] = loco.MaxRPM * 1.5f;
             DieselPowerTab = new Interpolator(rpm, power);
             //DieselPowerTab.test("PowerTab", count);
             DieselTorqueTab = new Interpolator(rpm, torque);
             //DieselTorqueTab.test("TorqueTab", count);
 
-            IdleExhaust = locomotive.IdleExhaust;
-            MaxExhaust = locomotive.MaxExhaust;
-            ExhaustDynamics = locomotive.ExhaustDynamics;
-            locomotive = locomotive;
+            IdleExhaust = loco.IdleExhaust;
+            MaxExhaust = loco.MaxExhaust;
+            ExhaustDynamics = loco.ExhaustDynamics;
+            locomotive = loco;
         }
 
     }

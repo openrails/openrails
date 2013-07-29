@@ -167,6 +167,7 @@ namespace ORTS
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
             LocomotiveAxle.DampingNs = MassKG / 1000.0f;
+            LocomotiveAxle.FrictionN = MassKG / 100.0f;
             LocomotiveAxle.AdhesionK = AdhesionK;
             LocomotiveAxle.CurtiusKnifflerA = Curtius_KnifflerA;
             LocomotiveAxle.CurtiusKnifflerB = Curtius_KnifflerB;
