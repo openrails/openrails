@@ -288,20 +288,6 @@ namespace ORTS
             }
 
             var y = cvfFile.Directions[0].Y; // abbreviation
-            // Most models use range -180 to 180 but Making Trains have some with 0 to 360
-            var isRearFacing = (y < -90 || (y > 90 && y < 270));
-            if (type == CabViewType.Front)
-            {
-                // Most models use range -180 to 180 but Making Trains have some with 0 to 360
-                if (isRearFacing)
-                    Trace.TraceWarning("Front-facing cab view is not facing forward {0}", cvfFilePath);
-            }
-            else
-            {
-                // Most models use range -180 to 180 but Making Trains have some with 0 to 360
-                if (!isRearFacing)
-                    Trace.TraceWarning("Rear-facing cab view is not facing rearward {0}", cvfFilePath);
-            }
             if (!(this is MSTSSteamLocomotive))
             {
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
