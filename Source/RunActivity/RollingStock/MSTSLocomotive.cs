@@ -91,6 +91,7 @@ namespace ORTS
         public bool ShowCab = true;
 
         bool AlerterIsActive = false;
+        bool DoesHornTriggerBell = false;
 
         // wag file data
         public string CabSoundFileName = null;
@@ -365,6 +366,7 @@ namespace ORTS
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero) }); break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
+                case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadIntBlock(STFReader.UNITS.Any, 0) == 1; break;
                 case "engine(orts(sanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(orts(powerondelay": PowerOnDelay = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(orts(emergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
@@ -403,6 +405,7 @@ namespace ORTS
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
             PowerOnDelay = locoCopy.PowerOnDelay;
+            DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
 
             EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
             EmergencyCausesThrottleDown = locoCopy.EmergencyCausesThrottleDown;
@@ -1848,6 +1851,8 @@ namespace ORTS
                 case Event.HornOn:
                     {
                         Horn = true;
+                        if (DoesHornTriggerBell)
+                            SignalEvent(Event.BellOn);
                         if (this != Program.Simulator.PlayerLocomotive) break;
                         if (this is MSTSSteamLocomotive)
                         {
