@@ -4986,6 +4986,11 @@ namespace ORTS
 
                 if (switchSet)
                     ProcessManualSwitch(routeDirectionIndex, reqSwitch, direction);
+                //CJ
+                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                    Simulator.Confirmer.Confirm(
+                        (direction == Direction.Forward) ? CabControl.SwitchAhead : CabControl.SwitchBehind, 
+                        CabSetting.On);
             }
             else
             {
@@ -6269,6 +6274,7 @@ namespace ORTS
                     else
                     {
                         ToggleFromManualMode(routeIndex);
+                        Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.On);
                     }
                 }
 
@@ -6283,11 +6289,12 @@ namespace ORTS
                 if (Math.Abs(SpeedMpS) > 0.1f)
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, "Train must be at standstill before switching Mode");
+                        Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Warn1);
                 }
                 else
                 {
                     ToggleToManualMode();
+                    Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Off);
                 }
             }
         }

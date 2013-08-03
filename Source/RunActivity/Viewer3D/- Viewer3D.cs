@@ -740,11 +740,15 @@ namespace ORTS
             {
                 if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
                     new ToggleSwitchAheadCommand(Log);
+                else
+                    Simulator.Confirmer.Warning(CabControl.SwitchAhead, CabSetting.Warn1);
             }
             if (UserInput.IsPressed(UserCommands.GameSwitchBehind))
             {
                 if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
                     new ToggleSwitchBehindCommand(Log);
+                else
+                    Simulator.Confirmer.Warning(CabControl.SwitchBehind, CabSetting.Warn1);
             }
 #endif
 

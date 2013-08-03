@@ -82,6 +82,7 @@ namespace ORTS {
       , Replay
       , Labels
       , GearBox
+      , SignalMode
     }
 
     public enum CabSetting {
@@ -155,15 +156,16 @@ namespace ORTS {
             , new string [] { "Doors Right", "close", null, "open" } 
             , new string [] { "Mirror", "retract", null, "extend" } 
             // Track Devices
-            , new string [] { "Switch Ahead", null, null, "change", null, null, "is occupied and cannot change" } 
-            , new string [] { "Switch Behind", null, null, "change", null, null, "is occupied and cannot change" } 
+            , new string [] { "Switch Ahead", null, null, "change", null, null, "locked. Use Ctrl+M to change signals to manual mode then re-try." } 
+            , new string [] { "Switch Behind", null, null, "change", null, null, "locked. Use Ctrl+M to change signals to manual mode then re-try." } 
             // Simulation
             , new string [] { "Simulation Speed", "reset", null, null, "decrease", "increase" } 
             , new string [] { "Uncouple After" } 
             , new string [] { "Activity", "quit", null, "resume" } 
             , new string [] { "Replay", null, null, null, null, null, "Overriding camera replay. Press Esc to resume camera replay." } 
             , new string [] { "Location labels", "none", "sidings", "stations", "stations and sidings" } 
-            , new string [] { "GearBox", null, null, null, "down", "up", "locked. Use shaft befor changing gear." } 
+            , new string [] { "Gearbox", null, null, null, "down", "up", "locked. Use shaft before changing gear." } 
+            , new string [] { "Signal mode", "manual", null, "auto", null, null, "locked. Stop train, then re-try." } 
             };
 
         public readonly Viewer3D Viewer;
