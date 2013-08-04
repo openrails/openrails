@@ -27,14 +27,12 @@ float2 ScreenSize;
 float4 GraphPos; // xy = xy position, zw = width/height
 float2 GraphSample; // x = index, y = count
 
-const float2 GraphOffset = float2(10, 10);
-
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////
 
 struct VERTEX_INPUT
 {
 	float4 Position : POSITION;
-	float4 Color    : COLOR0;
+	float4 Color    : COLOR0;  // rgb = color, a = 1 for data, 0 for border
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -51,13 +49,16 @@ VERTEX_OUTPUT VSGraph(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	
-	float x = frac(In.Position.x - GraphSample.x / GraphSample.y + 1);
-	Out.Position.x = x * GraphPos.z + GraphPos.x;
-	Out.Position.y = In.Position.y * GraphPos.w + GraphPos.y;
+	// The graph is displayed at (GraphPos.xy) and is sized (GraphPos.zw).
+	
+	float x = lerp(In.Position.x, frac(In.Position.x - GraphSample.x / GraphSample.y + 1), In.Color.a);
+	Out.Position.x = GraphPos.x + GraphPos.z * x + In.Position.z;
+	Out.Position.y = GraphPos.y + GraphPos.w * In.Position.y + 1;
 	Out.Position.xy /= ScreenSize / 2;
-	Out.Position.xy -= 1;
+	Out.Position.xy -= 1 + 1 / ScreenSize;
 	Out.Position.w = 1;
-	Out.Color = In.Color;
+	Out.Color.rgb = In.Color.rgb;
+	Out.Color.a = 1;
 
 	return Out;
 }

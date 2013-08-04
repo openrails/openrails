@@ -188,7 +188,7 @@ namespace ORTS
                 switch (materialName)
                 {
                     case "Debug":
-                        Materials[materialKey] = new HUDDebugMaterial(Viewer);
+                        Materials[materialKey] = new HUDGraphMaterial(Viewer);
                         break;
                     case "DrawInfor":
                         Materials[materialKey] = new ActivityInforMaterial(Viewer);
