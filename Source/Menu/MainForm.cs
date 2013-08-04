@@ -725,13 +725,14 @@ namespace ORTS
             {
                 var index = (float)summaryControl.Text.Length;
                 var indexChunk = (float)summaryControl.Text.Length / 2;
-                while (indexChunk > 0.001f || size > summaryControl.Height)
+                while (indexChunk > 0.5f || size > summaryControl.Height)
                 {
                     if (size > summaryControl.Height)
                         index -= indexChunk;
                     else
                         index += indexChunk;
-                    indexChunk /= 2;
+                    if (indexChunk > 0.5f)
+                        indexChunk /= 2;
                     size = MeasureText(summaryControl.Text.Substring(0, (int)index) + "...", summaryControl);
                 }
                 summaryControl.Text = summaryControl.Text.Substring(0, (int)index) + "...";
