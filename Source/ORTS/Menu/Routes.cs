@@ -42,6 +42,8 @@ namespace ORTS.Menu
                 {
                     Name = "<load error: " + System.IO.Path.GetFileName(path) + ">";
                 }
+                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(path) + ">";
+                if (string.IsNullOrEmpty(Description)) Description = null;
             }
             else
             {

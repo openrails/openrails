@@ -44,10 +44,13 @@ namespace ORTS.Menu
             }
             else if (File.Exists(filePath))
             {
+                var showInList = true;
                 try
                 {
                     var actFile = new ACTFile(filePath);
                     var srvFile = new SRVFile(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "SERVICES"), actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name + ".srv"));
+                    // ITR activities are excluded.
+                    showInList = actFile.Tr_Activity.Tr_Activity_Header.Mode != ActivityMode.IntroductoryTrainRide;
                     Name = actFile.Tr_Activity.Tr_Activity_Header.Name.Trim();
                     Description = actFile.Tr_Activity.Tr_Activity_Header.Description;
                     Briefing = actFile.Tr_Activity.Tr_Activity_Header.Briefing;
@@ -63,6 +66,10 @@ namespace ORTS.Menu
                 {
                     Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
+                if (!showInList) throw new InvalidDataException("Activity '" + filePath + "' is excluded.");
+                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (string.IsNullOrEmpty(Description)) Description = null;
+                if (string.IsNullOrEmpty(Briefing)) Briefing = null;
             }
             else
             {
@@ -87,8 +94,6 @@ namespace ORTS.Menu
                 {
                     foreach (var activityFile in Directory.GetFiles(directory, "*.act"))
                     {
-                        if (System.IO.Path.GetFileName(activityFile).StartsWith("ITR_e1_s1_w1_t1", StringComparison.OrdinalIgnoreCase))
-                            continue;
                         try
                         {
                             activities.Add(new Activity(activityFile, folder, route));

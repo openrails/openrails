@@ -276,13 +276,19 @@ using System.IO;
 #endif
 
 namespace MSTS {
-    public enum SeasonType { Spring = 0, Summer, Autumn, Winter };
-    public enum WeatherType { Clear = 0, Snow, Rain };
-    public enum Difficulty { Easy = 0, Medium, Hard };
+    public enum SeasonType { Spring = 0, Summer, Autumn, Winter }
+    public enum WeatherType { Clear = 0, Snow, Rain }
+    public enum Difficulty { Easy = 0, Medium, Hard }
     public enum EventType {
         AllStops = 0, AssembleTrain, AssembleTrainAtLocation, DropOffWagonsAtLocation, PickUpPassengers,
         PickUpWagons, ReachSpeed
-    };
+    }
+    public enum ActivityMode
+    {
+        IntroductoryTrainRide = 0,
+        Player = 2,
+        Tutorial = 3,
+    }
 
     /// <summary>
     /// Parse and *.act file.
@@ -334,7 +340,7 @@ namespace MSTS {
         public string Briefing = " ";
         public int CompleteActivity = 1;
         public int Type = 0;
-        public int Mode = 2;
+        public ActivityMode Mode = ActivityMode.Player;
         public StartTime StartTime = new StartTime(10, 0, 0);
         public SeasonType Season = SeasonType.Summer;
         public WeatherType Weather = WeatherType.Clear;
@@ -357,7 +363,7 @@ namespace MSTS {
                 new STFReader.TokenProcessor("briefing", ()=>{ Briefing = stf.ReadStringBlock(Briefing); }),
                 new STFReader.TokenProcessor("completeactivity", ()=>{ CompleteActivity = stf.ReadIntBlock(STFReader.UNITS.None, CompleteActivity); }),
                 new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadIntBlock(STFReader.UNITS.None, Type); }),
-                new STFReader.TokenProcessor("mode", ()=>{ Mode = stf.ReadIntBlock(STFReader.UNITS.None, Mode); }),
+                new STFReader.TokenProcessor("mode", ()=>{ Mode = (ActivityMode)stf.ReadIntBlock(STFReader.UNITS.None, (int)Mode); }),
                 new STFReader.TokenProcessor("starttime", ()=>{ StartTime = new StartTime(stf); }),
                 new STFReader.TokenProcessor("season", ()=>{ Season = (SeasonType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("weather", ()=>{ Weather = (WeatherType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),

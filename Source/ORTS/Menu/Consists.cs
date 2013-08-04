@@ -42,6 +42,8 @@ namespace ORTS.Menu
                 {
                     Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
+                if (Locomotive == null) throw new InvalidDataException("Consist '" + filePath + "' is excluded.");
+                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             else
             {
@@ -102,9 +104,11 @@ namespace ORTS.Menu
             }
             else if (File.Exists(filePath))
             {
+                var showInList = true;
                 try
                 {
                     var engFile = new ENGFile(filePath);
+                    showInList = !string.IsNullOrEmpty(engFile.CabViewFile);
                     Name = engFile.Name.Trim();
                     Description = engFile.Description.Trim();
                 }
@@ -112,6 +116,9 @@ namespace ORTS.Menu
                 {
                     Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
+                if (!showInList) throw new InvalidDataException("Locomotive '" + filePath + "' is excluded.");
+                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (string.IsNullOrEmpty(Description)) Description = null;
             }
             else
             {

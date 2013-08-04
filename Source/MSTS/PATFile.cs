@@ -77,6 +77,12 @@ namespace MSTS
         TrackPDP CurrentTrackPDP;
     }
 
+    [Flags]
+    public enum PathFlags
+    {
+        NotPlayerPath = 0x20,
+    }
+
 	/// <summary>
 	/// Work with consist files, contains an ArrayList of ConsistTrainset
 	/// </summary>
@@ -95,8 +101,8 @@ namespace MSTS
         public string Name { get; set; }
         public string Start { get; set; }
         public string End { get; set; }
-        public uint Flags { get; set; }
-		public bool IsPlayerPath { get { return (Flags & 0x20) == 0; } }
+        public PathFlags Flags { get; set; }
+        public bool IsPlayerPath { get { return (Flags & PathFlags.NotPlayerPath) == 0; } }
 
         public List<TrackPDP> TrackPDPs
         {
@@ -138,7 +144,7 @@ namespace MSTS
                     new STFReader.TokenProcessor("trackpath", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
 						new STFReader.TokenProcessor("trpathname", ()=>{ PathID = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
-						new STFReader.TokenProcessor("trpathflags", ()=>{ Flags = stf.ReadHexBlock(null); }),
+						new STFReader.TokenProcessor("trpathflags", ()=>{ Flags = (PathFlags)stf.ReadHexBlock(null); }),
 						new STFReader.TokenProcessor("trpathstart", ()=>{ Start = stf.ReadStringBlock(null); }),
 						new STFReader.TokenProcessor("trpathend", ()=>{ End = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("trpathnodes", ()=>{

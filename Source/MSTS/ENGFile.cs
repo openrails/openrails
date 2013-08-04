@@ -26,8 +26,9 @@ namespace MSTS
     /// </summary>
     public class ENGFile
     {
-        public string Name = "";
-        public string Description = "";
+        public string Name;
+        public string Description;
+        public string CabViewFile;
 
         public ENGFile(string filePath)
         {
@@ -37,8 +38,9 @@ namespace MSTS
                     new STFReader.TokenProcessor("engine", ()=>{
                         stf.ReadString();
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
-                            new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(""); }),
+                            new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                            new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(null); }),
+                            new STFReader.TokenProcessor("cabview", ()=>{ CabViewFile = stf.ReadStringBlock(null); }),
                         });
                     }),
                 });

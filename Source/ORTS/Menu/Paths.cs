@@ -33,9 +33,11 @@ namespace ORTS.Menu
         {
             if (File.Exists(filePath))
             {
+                var showInList = true;
                 try
                 {
                     var patFile = new PATFile(filePath);
+                    showInList = patFile.IsPlayerPath;
                     Name = patFile.Name.Trim();
                     Start = patFile.Start.Trim();
                     End = patFile.End.Trim();
@@ -44,10 +46,14 @@ namespace ORTS.Menu
                 {
                     Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
+                if (!showInList) throw new InvalidDataException("Path '" + filePath + "' is excluded.");
+                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (string.IsNullOrEmpty(Start)) Start = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (string.IsNullOrEmpty(End)) End = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             else
             {
-                Start = End = Name = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                Name = Start = End = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             FilePath = filePath;
         }
