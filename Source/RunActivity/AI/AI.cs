@@ -253,11 +253,6 @@ namespace ORTS
             if (conFile.Train.TrainCfg.MaxVelocity.A > 0 && srvFile.Efficiency > 0)
                 train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, conFile.Train.TrainCfg.MaxVelocity.A);
             
-            // insert in start list
-
-            StartList.InsertTrain(train);
-            train.RearTDBTraveller = new Traveller(tempTraveller);
-
             // add wagons
             TrainCar previousCar = null;
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
@@ -293,10 +288,16 @@ namespace ORTS
 
             train.Cars[0].Headlight = 2;//AI train always has light on
 
+            train.RearTDBTraveller = new Traveller(tempTraveller); // create traveller
+
             train.CreateRoute(false);  // create route without use of FrontTDBtraveller
             train.CheckFreight(); // check if train is freight or passenger
             train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
+
+            // insert in start list
+
+            StartList.InsertTrain(train);
 
             return train;
         }
