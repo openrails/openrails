@@ -546,8 +546,7 @@ namespace ORTS
             {
                 return (!IsEnvSound && !IsExternal && Viewer.Camera.Style == Camera.Styles.Cab
                     && Car != null && Viewer.Camera.AttachedCar != null && !(Car is MSTSLocomotive) 
-                    && (Car.Train == Viewer.Camera.AttachedCar.Train || Car.Train.TrainType == Train.TRAINTYPE.STATIC || Car.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED
-                    || Car.MainShapeFileName == "invisible.s")); // this one is by Edward K.
+                    && (Car.Train == Viewer.Camera.AttachedCar.Train || Car.Train.TrainType == Train.TRAINTYPE.STATIC || Car.Train.TrainType == Train.TRAINTYPE.AI_NOTSTARTED));
             }
         }
 
@@ -1186,7 +1185,7 @@ namespace ORTS
         MSTSWagon car;
         SoundStream _SoundStream;
 
-        float StartValue;
+        float? StartValue;
         public bool IsBellow = false;
 
         public ORTSVariableTrigger(SoundStream soundStream, MSTS.Variable_Trigger smsData)
@@ -1200,7 +1199,8 @@ namespace ORTS
 
         public override void  Initialize()
         {
- 	        StartValue = 0;
+            // Leave StartValue uninitialized. It isn't known in advance if it should be initialized with 0 or float.MaxValue, so leave it untouched.
+
             /*if ((new Variable_Trigger.Events[] { Variable_Trigger.Events.Variable1_Dec_Past,
                 Variable_Trigger.Events.Variable1_Inc_Past, Variable_Trigger.Events.Variable2_Dec_Past, 
                 Variable_Trigger.Events.Variable2_Inc_Past, Variable_Trigger.Events.Variable3_Dec_Past,
@@ -1220,45 +1220,35 @@ namespace ORTS
             switch (SMS.Event)
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
-                    if (newValue <= SMS.Threshold)
-                    {
-                        triggered = true;
-                        Signaled = true;
-                    }
-                    break;
                 case MSTS.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Variable1_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Variable2_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Variable3_Dec_Past:
-                    if (newValue < SMS.Threshold
-                        && StartValue >= SMS.Threshold)
-                        triggered = true;
                     if (newValue < SMS.Threshold)
-                        Signaled = true;
-                    break;
-                case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    if (newValue >= SMS.Threshold)
                     {
-                        triggered = true;
                         Signaled = true;
+                        if (StartValue == null || SMS.Threshold <= StartValue)
+                            triggered = true;
                     }
                     break;
+                case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
                 case MSTS.Variable_Trigger.Events.Speed_Inc_Past:
                 case MSTS.Variable_Trigger.Events.Variable1_Inc_Past:
                 case MSTS.Variable_Trigger.Events.Variable2_Inc_Past:
                 case MSTS.Variable_Trigger.Events.Variable3_Inc_Past:
-                    if (newValue > SMS.Threshold
-                        && StartValue <= SMS.Threshold)
-                        triggered = true;
                     if (newValue > SMS.Threshold)
+                    {
                         Signaled = true;
+                        if (StartValue != null && SMS.Threshold >= StartValue)
+                            triggered = true;
+                    }
                     break;
             }
 
             //Signaled = triggered;
 
             StartValue = newValue;
-            IsBellow = StartValue < SMS.Threshold;
+            IsBellow = newValue < SMS.Threshold;
 
             if (triggered && Enabled)
             {
