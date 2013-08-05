@@ -933,6 +933,7 @@ namespace ORTS
         public Event TriggerID;
         // Added in order to check the activeness of the SoundSource - by GeorgeS
         private SoundStream _soundStream;
+        private bool Triggered;
 
         public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, MSTS.Discrete_Trigger smsData)
         {
@@ -946,6 +947,15 @@ namespace ORTS
         {
             if (Enabled && eventID == TriggerID)
             {
+                Triggered = true;
+            }
+        }
+
+        public override void TryTrigger()
+        {
+            if (Triggered)
+            {
+                Triggered = false;
                 SoundCommand.Run();
 #if DEBUGSCR
                 Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", _soundStream.Index, (int)eventID, SoundCommand.FileName);
