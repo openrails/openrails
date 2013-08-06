@@ -186,6 +186,8 @@ namespace ORTS
         // Physics options
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }
+        [Default(10)]
+        public int AdhesionMovingAverageFilterSize { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
         

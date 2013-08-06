@@ -462,4 +462,51 @@ namespace ORTS
         }
 
     }
+
+
+    public class MovingAverage
+    {
+        public MovingAverage()
+        {
+            Buffer = new Queue<float>(100);
+            Size = 10;
+        }
+        public MovingAverage(int size)
+        {
+            Buffer = new Queue<float>(100);
+            Size = size;
+        }
+
+        Queue<float> Buffer;
+
+        int size;
+        public int Size { get { if (Buffer != null) return Buffer.Count; else return 0; } 
+                          set { if(value > 0) size = value; else size = 1; Initialize(); }
+                        }
+
+        float currentValue;
+
+        public void Initialize(float value)
+        {
+            Buffer.Clear();
+            for (int i = 0; i < size; i++)
+            {
+                Buffer.Enqueue(value);
+            }
+        }
+        public void Initialize()
+        {
+            Initialize(0f);
+        }
+
+        public float Update(float value)
+        {
+            if ((!float.IsNaN(value)) || (!float.IsNaN(value)))
+            {
+                Buffer.Enqueue(value);
+                Buffer.Dequeue();
+            }
+            return currentValue = Buffer.Average();
+        }
+    }
 }

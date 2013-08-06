@@ -367,7 +367,8 @@ namespace ORTS.Popups
                     TableAddLabelValue(table, "Wheel slip", "{0:F0}% ({1:F0}%/s)", mstsLocomotive.LocomotiveAxle.SlipSpeedPercent, mstsLocomotive.LocomotiveAxle.SlipDerivationPercentpS);
                     TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);
                     TableAddLabelValue(table, "Axle brake force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.BrakeForceN);
-                    TableAddLabelValue(table, "Num of substeps", "{0:F0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS);
+                    TableAddLabelValue(table, "Num of substeps", "{0:F0} (filtered by {1:F0})", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS,
+                                                                                               mstsLocomotive.LocomotiveAxle.FilterMovingAverage.Size);
                     TableAddLabelValue(table, "Solver", "{0}", mstsLocomotive.LocomotiveAxle.AxleRevolutionsInt.Method.ToString());
                     TableAddLabelValue(table, "Stability correction", "{0:F0}", mstsLocomotive.LocomotiveAxle.AdhesionK);
                     TableAddLabelValue(table, "Axle out force", "{0:F0} N ({1:F0} kW)", mstsLocomotive.LocomotiveAxle.AxleForceN, mstsLocomotive.LocomotiveAxle.AxleForceN * mstsLocomotive.WheelSpeedMpS / 1000.0f);

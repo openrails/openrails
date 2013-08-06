@@ -62,6 +62,8 @@ namespace ORTS
         /// </summary>
         public Integrator AxleRevolutionsInt = new Integrator(0.0f, IntegratorMethods.RungeKutta4);
 
+        public MovingAverage FilterMovingAverage = new MovingAverage(10);
+
         /// <summary>
         /// Brake force covered by BrakeForceN interface
         /// </summary>
@@ -703,6 +705,8 @@ namespace ORTS
                 else
                     adhesionK = (adhesionK <= 0.7f) ? 0.7f : (adhesionK - 0.005f);
             }
+
+            axleForceN = FilterMovingAverage.Update(axleForceN);
         }
 
         /// <summary>

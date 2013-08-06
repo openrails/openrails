@@ -107,6 +107,7 @@ namespace ORTS
             checkBoxDataLoggerMiscelanous.Checked = settings.DataLogMisc;
             checkBoxDataLoggerStart.Checked = Settings.DataLogger;
             comboBoxDataLoggerSpeedUnits.Text = settings.DataLogSpeedUnits;
+            numericUpDownAdhesionFilterSize.Value = settings.AdhesionMovingAverageFilterSize;
         }
 
         string ParseCategoryFrom(string name)
@@ -330,6 +331,7 @@ namespace ORTS
             Settings.DataLogger = checkBoxDataLoggerStart.Checked;
             Settings.DataLoggerSeparator = comboBoxSeparators.Text;
             Settings.DataLogSpeedUnits = comboBoxDataLoggerSpeedUnits.Text;
+            Settings.AdhesionMovingAverageFilterSize = (int)numericUpDownAdhesionFilterSize.Value;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

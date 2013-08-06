@@ -174,6 +174,7 @@ namespace ORTS
             LocomotiveAxle.CurtiusKnifflerB = Curtius_KnifflerB;
             LocomotiveAxle.CurtiusKnifflerC = Curtius_KnifflerC;
             LocomotiveAxle.StabilityCorrection = true;
+            LocomotiveAxle.FilterMovingAverage.Size = simulator.Settings.AdhesionMovingAverageFilterSize;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
         }
