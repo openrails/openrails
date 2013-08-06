@@ -363,7 +363,7 @@ namespace ORTS
                 if (Direction == Direction.Reverse)
                     PrevMotiveForceN *= -1f;
 
-                if (de.RealRPM > de.StartingRPM)
+                if ((de.RealRPM > de.StartingRPM)&&(ThrottlePercent>0))
                     de.OutputPowerW = PrevMotiveForceN > 0 ? PrevMotiveForceN * currentSpeedMpS : 0;
                 else
                     de.OutputPowerW = 0.0f;
@@ -436,7 +436,7 @@ namespace ORTS
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = MaxForceN * t;
-                    float maxPowerW = 0.98f * DieselEngines.MaxPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
+                    float maxPowerW = 0.98f * DieselEngines.MaxOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -460,6 +460,8 @@ namespace ORTS
                 }
                 else
                 {
+                    if (t > (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW))
+                        t = (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW);
                     MotiveForceN = TractiveForceCurves.Get(t, currentWheelSpeedMpS);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
@@ -468,7 +470,7 @@ namespace ORTS
                 //    DieselFlowLps = DieselUsedPerHourAtIdleL / 3600.0f;
                 //else
                 //    DieselFlowLps = ((DieselUsedPerHourAtMaxPowerL - DieselUsedPerHourAtIdleL) * t + DieselUsedPerHourAtIdleL) / 3600.0f;
-
+                DieselFlowLps = DieselEngines.DieselFlowLps;
                 DieselLevelL -= DieselEngines.DieselFlowLps * elapsedClockSeconds;
                 if (DieselLevelL <= 0.0f)
                 {
@@ -483,6 +485,8 @@ namespace ORTS
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
                 if (f > 0)
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
+                if (Flipped)
+                    MotiveForceN *= -1f;
             }
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0)

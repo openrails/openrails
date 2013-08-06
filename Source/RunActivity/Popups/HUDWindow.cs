@@ -94,9 +94,9 @@ namespace ORTS.Popups
             var graphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
 
             ForceGraphs = new HUDGraphSet(Viewer, graphMaterial);
-            ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "", "", Color.Green, 100);
+            ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "0%", "100%", Color.Green, 100);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 100);
-            ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "", "", Color.Blue, 25);
+            ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "0", "300", Color.Blue, 25);
 
             DebugGraphs = new HUDGraphSet(Viewer, graphMaterial);
             DebugGraphMemory = DebugGraphs.Add("Memory", "0GB", "2GB", Color.Orange, 50);

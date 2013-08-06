@@ -189,6 +189,22 @@ namespace ORTS
                 float temp = 0f;
                 foreach (DieselEngine de in DEList)
                 {
+                    temp += de.MaximalPowerW;
+                }
+                return temp;
+            }
+        }
+
+        /// <summary>
+        /// A summary of maximal power of all the diesels
+        /// </summary>
+        public float MaxOutputPowerW
+        {
+            get
+            {
+                float temp = 0f;
+                foreach (DieselEngine de in DEList)
+                {
                     temp += de.MaxOutputPowerW;
                 }
                 return temp;
