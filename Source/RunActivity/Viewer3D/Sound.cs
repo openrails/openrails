@@ -606,8 +606,6 @@ namespace ORTS
         public ALSoundSource ALSoundSource { get; private set; }
         
         private int DiscreteTriggers = 0;
-        private int VariableTriggers = 0;
-        private bool DiscreteVariableTrigger = false;
 
         protected MSTS.SMSStream MSTSStream;
 
@@ -615,10 +613,11 @@ namespace ORTS
 
         public bool NeedsFrequentUpdate = false;
         public bool IsReleasedWithJump = false;
+        public ORTSTrigger LastTriggered = new ORTSTrigger();
+        public bool RepeatedTrigger = false;
 
         public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, int index, bool isSlowRolloff, float factor)
         {
-            float Threshold = float.NaN;
             Index = index;
             SoundSource = soundSource;
             MSTSStream = mstsStream;
@@ -646,25 +645,9 @@ namespace ORTS
                     {
                         Triggers.Add(new ORTSRandomTrigger(this, (MSTS.Random_Trigger)trigger));
                     }
-                    else if (trigger.GetType() == typeof(MSTS.Variable_Trigger) && soundSource.Car != null )
+                    else if (trigger.GetType() == typeof(MSTS.Variable_Trigger) && (soundSource.Car != null || soundSource.IsEnvSound))
                     {
-                        MSTS.Variable_Trigger vt = (MSTS.Variable_Trigger)trigger;
-                        Triggers.Add(new ORTSVariableTrigger(this, vt));
-                        VariableTriggers++;
-                        if (float.IsNaN(Threshold))
-                        {
-                            Threshold = vt.Threshold;
-                            DiscreteVariableTrigger = true;
-                        }
-                        else
-                        {
-                            DiscreteVariableTrigger &= Threshold == vt.Threshold;
-                            Threshold = vt.Threshold;
-                        }
-                    }
-                    else if (trigger.GetType() == typeof(MSTS.Variable_Trigger) && soundSource.IsEnvSound)
-                    {
-                        Triggers.Add (new ORTSDistanceTrigger (this, (MSTS.Variable_Trigger)trigger));
+                        Triggers.Add(new ORTSVariableTrigger(this, (MSTS.Variable_Trigger)trigger));
                     }
                     else if (trigger.GetType() == typeof(MSTS.Discrete_Trigger) && soundSource.Car != null)
                     {
@@ -932,15 +915,14 @@ namespace ORTS
     {
         public Event TriggerID;
         // Added in order to check the activeness of the SoundSource - by GeorgeS
-        private SoundStream _soundStream;
+        private SoundStream SoundStream;
         private bool Triggered;
 
         public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, MSTS.Discrete_Trigger smsData)
         {
             TriggerID = Events.From(eventSound, smsData.TriggerID);
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
-            // Save SoundStream - by GeorgeS
-            _soundStream = soundStream;
+            SoundStream = soundStream;
         }
 
         public void HandleEvent(Event eventID)
@@ -956,18 +938,17 @@ namespace ORTS
             if (Triggered)
             {
                 Triggered = false;
+                SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                 SoundCommand.Run();
+                SoundStream.LastTriggered = this;
 #if DEBUGSCR
-                Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", _soundStream.Index, (int)eventID, SoundCommand.FileName);
+                Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", SoundStream.Index, (int)eventID, SoundCommand.FileName);
 #endif
-                // Added in order to check the activeness of the SoundSource - by GeorgeS
-                if (!_soundStream.SoundSource.Active)
-                {
-                    // If the SoundSource is not active, should deactivate the SoundStream also
-                    //   preventing the hearing when not should be audible
-                    _soundStream.Deactivate();
-                }
             }
+            // If the SoundSource is not active, should deactivate the SoundStream also
+            //   preventing the hearing when not should be audible
+            if (!SoundStream.SoundSource.Active)
+                SoundStream.Deactivate();
         }
 
     } // class ORTSDiscreteTrigger
@@ -1003,9 +984,11 @@ namespace ORTS
                 Signaled = true;
                 if (Enabled)
                 {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                     SoundCommand.Run();
                     float volume = (float)Program.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
                     SoundStream.Volume = volume;
+                    SoundStream.LastTriggered = this;
                 }
                 UpdateTriggerDistance();
 #if DEBUGSCR
@@ -1050,7 +1033,9 @@ namespace ORTS
         {
             if (Enabled)
             {
+                SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                 SoundCommand.Run();
+                SoundStream.LastTriggered = this;
 #if DEBUGSCR
                 if (!string.IsNullOrEmpty(SoundCommand.FileName))
                     Console.WriteLine("({0})InitialTrigger: {1}", SoundStream.Index, SoundCommand.FileName);
@@ -1095,9 +1080,11 @@ namespace ORTS
                 Signaled = true;
                 if (Enabled)
                 {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                     SoundCommand.Run();
                     float volume = (float)Program.Random.NextDouble() * (SMS.Volume_Max - SMS.Volume_Min) + SMS.Volume_Min;
                     SoundStream.Volume = volume;
+                    SoundStream.LastTriggered = this;
                 }
                 UpdateTriggerAtSeconds();
             }
@@ -1118,82 +1105,11 @@ namespace ORTS
     /// <summary>
     /// Control sounds based on TrainCar variables in the simulator 
     /// </summary>
-    public class ORTSDistanceTrigger : ORTSTrigger
-    {
-        MSTS.Variable_Trigger SMS;
-        SoundStream _SoundStream;
-
-        float StartValue;
-
-        public ORTSDistanceTrigger(SoundStream soundStream, MSTS.Variable_Trigger smsData)
-        {
-            SMS = smsData;
-            _SoundStream = soundStream;
-            SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
-            Initialize();
-        }
-
-        public override void Initialize()
-        {
-            StartValue = 1000000;
-        }
-
-        public override void TryTrigger()
-        {
-            float newValue = ReadValue();
-            bool triggered = false;
-            Signaled = false;
-            switch (SMS.Event)
-            {
-                case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
-                    if (newValue <= SMS.Threshold)
-                    {   
-                        triggered = true;
-                        Signaled = true;
-                    }
-                    
-                    break;
-                case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    if (newValue >= SMS.Threshold)
-                    {
-                        triggered = true;
-                        Signaled = true;
-                    }
-                    
-                    break;
-            }
-
-            //Signaled = triggered;
-
-            StartValue = newValue;
-            if (triggered && Enabled)
-            {
-                SoundCommand.Run();
-            }
-        } // TryTrigger
-
-        private float ReadValue()		
-        {
-            switch (SMS.Event)
-            {
-                case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
-                case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    return _SoundStream.SoundSource.DistanceSquared;
-                default:
-                    return 100000;
-            }
-        }
-
-    }  // class DistanceTrigger
-
-    /// <summary>
-    /// Control sounds based on TrainCar variables in the simulator 
-    /// </summary>
     public class ORTSVariableTrigger: ORTSTrigger
     {
         MSTS.Variable_Trigger SMS;
         MSTSWagon car;
-        SoundStream _SoundStream;
+        SoundStream SoundStream;
 
         float? StartValue;
         public bool IsBellow = false;
@@ -1202,7 +1118,7 @@ namespace ORTS
         {
             SMS = smsData;
             car = soundStream.SoundSource.Car;
-            _SoundStream = soundStream;
+            SoundStream = soundStream;
             SoundCommand = ORTSSoundCommand.FromMSTS(smsData.SoundCommand, soundStream);
             Initialize();
         }
@@ -1262,28 +1178,30 @@ namespace ORTS
 
             if (triggered && Enabled)
             {
+                SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                 SoundCommand.Run();
+                SoundStream.LastTriggered = this;
 
 #if DEBUGSCR
                 ORTSStartLoop sl = SoundCommand as ORTSStartLoop;
                 if (sl != null)
                 {
-                    Console.WriteLine("({0})StartLoop ({1} {2}): {3} ", _SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), sl.FileName);
+                    Console.WriteLine("({0})StartLoop ({1} {2}): {3} ", SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), sl.FileName);
                 }
                 ORTSStartLoopRelease slr = SoundCommand as ORTSStartLoopRelease;
                 if (slr != null)
                 {
-                    Console.WriteLine("({0})StartLoopRelease ({1} {2}): {3} ", _SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), slr.FileName);
+                    Console.WriteLine("({0})StartLoopRelease ({1} {2}): {3} ", SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), slr.FileName);
                 }
                 ORTSReleaseLoopRelease rlr = SoundCommand as ORTSReleaseLoopRelease;
                 if (rlr != null)
                 {
-                    Console.WriteLine("({0})ReleaseLoopRelease ({1} {2}): {3} ", _SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), rlr.FileName);
+                    Console.WriteLine("({0})ReleaseLoopRelease ({1} {2}): {3} ", SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), rlr.FileName);
                 }
                 ORTSReleaseLoopReleaseWithJump rlrwj = SoundCommand as ORTSReleaseLoopReleaseWithJump;
                 if (rlrwj != null)
                 {
-                    Console.WriteLine("({0})ReleaseLoopReleaseWithJump ({1} {2}): {3} ", _SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), rlrwj.FileName);
+                    Console.WriteLine("({0})ReleaseLoopReleaseWithJump ({1} {2}): {3} ", SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), rlrwj.FileName);
                 }
 #endif
             }
@@ -1295,7 +1213,7 @@ namespace ORTS
             {
                 case MSTS.Variable_Trigger.Events.Distance_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Distance_Inc_Past:
-                    return _SoundStream.SoundSource.DistanceSquared;
+                    return SoundStream.SoundSource.DistanceSquared;
                 case MSTS.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Variable_Trigger.Events.Speed_Inc_Past:
                     return Math.Abs(car.SpeedMpS);
@@ -1332,12 +1250,11 @@ namespace ORTS
         }
         public override void Run()
         {
-            int iFileOld = iFile;
             string p = GetNextFile();
             if (p != "")
             {
 				if (ORTSStream != null && ORTSStream.ALSoundSource != null)
-					ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal, iFile == iFileOld);
+					ORTSStream.ALSoundSource.Queue(p, PlayMode.OneShot, ORTSStream.SoundSource.IsExternal, ORTSStream.RepeatedTrigger);
             }
         }
     } 
