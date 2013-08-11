@@ -79,7 +79,7 @@ namespace ORTS
 
                 tiles = LOTiles;
                 newTiles = new List<TerrainTile>();
-                needed = Viewer.Settings.DistantMountainsViewingTiles;//LO_TILES has longer viewing distance (40KM)
+                needed = Viewer.Settings.DistantMountainsViewingTiles; //LO_TILES has longer viewing distance (40KM)
                 for (var x = -needed; x <= needed; x++)
                 {
                     for (var z = -needed; z <= needed; z++)
@@ -116,15 +116,16 @@ namespace ORTS
         {
             var tiles = Tiles;
             foreach (var tile in tiles)
-                if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448*tile.TilesCovered))
+                if (Viewer.Camera.InFOV(new Vector3((tile.TileX - Viewer.Camera.TileX) * 2048, 0, (tile.TileZ - Viewer.Camera.TileZ) * 2048), 1448 * tile.TilesCovered))
                     tile.PrepareFrame(frame, elapsedTime);
-            if (!Viewer.Settings.DistantMountains) return;
+
+            if (!Viewer.Settings.DistantMountains)
+                return;
+
             tiles = LOTiles;
             foreach (var tile in tiles)
-            {
                 if (Viewer.Camera.InFOV(new Vector3((tile.TileX + tile.TilesCovered / 2 - Viewer.Camera.TileX) * 2048, Viewer.Camera.Location.Y, (tile.TileZ + tile.TilesCovered / 2 - Viewer.Camera.TileZ) * 2048), 2000 * tile.TilesCovered))
                     tile.PrepareFrame(frame, elapsedTime);
-            }
         }
 
         TerrainTile LoadTile(int tileX, int tileZ, bool visible)

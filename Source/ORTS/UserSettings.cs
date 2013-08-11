@@ -148,6 +148,12 @@ namespace ORTS
         [Default(false)]
         public bool LODViewingExtention { get; set; }
 
+        // Experimental settings for auto-tuning performance:
+        [Default(false)]
+        public bool PerformanceTuner { get; set; }
+        [Default(60)]
+        public int PerformanceTunerTarget { get; set; }
+
         // Experimental settings for overhead wire:
         [Default(false)]
         public bool DoubleWire { get; set; }
@@ -155,7 +161,6 @@ namespace ORTS
         // Experimental settings for loading stuttering:
         [Default(0)]
         public int LoadingDelay { get; set; }
-
         
         // Data Logger settings:
         [Default("comma")]

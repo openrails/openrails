@@ -99,6 +99,8 @@ namespace ORTS
             DMLoweringValue.Value = settings.DistantMountainsLoweringValue;
             NormalViewingDistance.Value = settings.ViewingDistance;
             LODExtention.Checked = settings.LODViewingExtention;
+            checkBoxPerformanceTuner.Checked = settings.PerformanceTuner;
+            numericUpDownPerformanceTunerTarget.Value = settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = settings.DoubleWire;
             numericUpDownLoadingDelay.Value = Settings.LoadingDelay;
             comboBoxSeparators.Text = settings.DataLoggerSeparator;
@@ -323,6 +325,8 @@ namespace ORTS
             Settings.DistantMountainsLoweringValue = (int)DMLoweringValue.Value;
             Settings.ViewingDistance = (int)NormalViewingDistance.Value;
             Settings.LODViewingExtention = LODExtention.Checked;
+            Settings.PerformanceTuner = checkBoxPerformanceTuner.Checked;
+            Settings.PerformanceTunerTarget = (int)numericUpDownPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
             Settings.LoadingDelay = (int)numericUpDownLoadingDelay.Value;
             Settings.DataLogPhysics = checkBoxDataLoggerPhysics.Checked;

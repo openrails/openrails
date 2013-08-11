@@ -17,6 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using Microsoft.Xna.Framework;
 
 namespace ORTS
 {
@@ -37,6 +38,7 @@ namespace ORTS
         int TileZ;
         int VisibleTileX;
         int VisibleTileZ;
+        bool PerformanceTune;
 
         [CallOnThread("Render")]
         public World(Viewer3D viewer)
@@ -93,6 +95,36 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void Update(ElapsedTime elapsedTime)
         {
+            if (PerformanceTune)
+            {
+                // Work out how far we need to change the actual FPS to get to the target.
+                var target = Viewer.Settings.PerformanceTunerTarget - Viewer.RenderProcess.FrameRate.SmoothedValue;
+
+                // If vertical sync is on, we're capped to 60 FPS. This means we need to shift a target of 60FPS down to 57FPS.
+                if (Viewer.Settings.VerticalSync && Viewer.Settings.PerformanceTunerTarget > 55)
+                    target -= 3;
+
+                // Now we adjust the viewing distance to try and balance out the FPS.
+                var oldViewingDistance = Viewer.Settings.ViewingDistance;
+                if (target > 2.5)
+                {
+                    if (Viewer.Settings.ViewingDistance > 250)
+                        Viewer.Settings.ViewingDistance -= (int)(target - 1.5);
+                }
+                else if (target < -2.5)
+                {
+                    if (Viewer.Settings.ViewingDistance < 5000)
+                        Viewer.Settings.ViewingDistance += (int)(-target - 1.5);
+                }
+                Viewer.Settings.ViewingDistance = (int)MathHelper.Clamp(Viewer.Settings.ViewingDistance, 250, 5000);
+
+                // If we've changed the viewing distance, we need to update the camera matricies.
+                if (oldViewingDistance != Viewer.Settings.ViewingDistance)
+                    Viewer.Camera.ScreenChanged();
+
+                // Flag as done, so the next load prep (every 250ms) can trigger us again.
+                PerformanceTune = false;
+            }
             Scenery.Update(elapsedTime);
         }
 
@@ -105,6 +137,7 @@ namespace ORTS
             RoadCars.LoadPrep();
             VisibleTileX = Viewer.Camera.TileX;
             VisibleTileZ = Viewer.Camera.TileZ;
+            PerformanceTune = Viewer.Settings.PerformanceTuner;
         }
 
         [CallOnThread("Updater")]
