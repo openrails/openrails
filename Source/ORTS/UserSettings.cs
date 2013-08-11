@@ -66,41 +66,118 @@ namespace ORTS
         // Please put all user settings in here as auto-properties. Public properties
         // of type 'string', 'int', 'bool', 'string[]' and 'int[]' are automatically loaded/saved.
 
-        // General settings.
-        [Default(false)]
-        public bool Alerter { get; set; }
-        [Default(21)]
-        public int BrakePipeChargingRate { get; set; }
-        [Default( 0 )]
-        public int Cab2DStretch { get; set; }
-        [Default(false)]
-        public bool DataLogger { get; set; }
-        [Default(false)]
-        public bool DynamicShadows { get; set; }
-        [Default(false)]
-        public bool FullScreen { get; set; }
-        [Default(false)]
-        public bool GraduatedRelease { get; set; }
+        // Main menu settings:
         [Default(true)]
         public bool Logging { get; set; }
-        [Default("OpenRailsLog.txt")]
-        public string LoggingFilename { get; set; }
-        [Default( "" )] // If left as "", OR will use the user's desktop folder
-        public string LoggingPath { get; set; }
+        [Default(false)]
+        public bool FullScreen { get; set; }
+        [Default("")]
+        public string Multiplayer_User { get; set; }
+        [Default("127.0.0.1")]
+        public string Multiplayer_Host { get; set; }
+        [Default(30000)]
+        public int Multiplayer_Port { get; set; }
+
+        // General settings:
+        [Default(false)]
+        public bool Alerter { get; set; }
+        [Default(false)]
+        public bool GraduatedRelease { get; set; }
+        [Default(21)]
+        public int BrakePipeChargingRate { get; set; }
+        [Default(false)]
+        public bool SuppressConfirmations { get; set; }
+        [Default(false)]
+        public bool ViewDispatcher { get; set; }
+
+        // Audio settings:
+        [Default(5)]
+        public int SoundDetailLevel { get; set; }
         [Default(false)]
         public bool MSTSBINSound { get; set; }
+		[Default(100)]
+		public int SoundVolumePercent { get; set; }
+
+        // Video settings:
+        [Default(10)]
+        public int WorldObjectDensity { get; set; }
+        [Default("1024x768")]
+        public string WindowSize { get; set; }
+        [Default(false)]
+        public bool TrainLights { get; set; }
         [Default(false)]
         public bool Precipitation { get; set; }
         [Default(false)]
-        public bool Profiling { get; set; }
+        public bool Wire { get; set; }
+        [Default(false)]
+        public bool DynamicShadows { get; set; }
+        [Default(false)]
+        public bool WindowGlass { get; set; }
+        [Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
+        public int ViewingFOV { get; set; }
         [Default(0)]
-        public int ProfilingFrameCount { get; set; }
+        public int Cab2DStretch { get; set; }
+        [Default(2000)]
+        public int ViewingDistance { get; set; }
+
+        // Simulation settings:
+        [Default(true)]
+        public bool UseAdvancedAdhesion { get; set; }
+        [Default(10)]
+        public int AdhesionMovingAverageFilterSize { get; set; }
+        [Default(false)]
+        public bool BreakCouplers { get; set; }
+
+        // Experimental settings for super-elevation:
         [Default(0)]
-        public int ProfilingTime { get; set; }
-        [Default( 0 )]
-        public int ReplayPauseBeforeEndS { get; set; }
-        [Default( true )]
-        public bool ReplayPauseBeforeEnd { get; set; }
+        public int UseSuperElevation { get; set; }
+        [Default(50)]
+        public int SuperElevationMinLen { get; set; }
+        [Default(1435)]
+        public int SuperElevationGauge { get; set; }
+
+        // Experimental settings for distant mountains:
+        [Default(false)]
+        public bool DistantMountains { get; set; }
+        [Default(20)]
+        public int DistantMountainsViewingTiles { get; set; }
+        [Default(5)]
+        public int DistantMountainsLoweringValue { get; set; }
+
+        // Experimental settings for LOD extension:
+        [Default(false)]
+        public bool LODViewingExtention { get; set; }
+
+        // Experimental settings for overhead wire:
+        [Default(false)]
+        public bool DoubleWire { get; set; }
+
+        // Experimental settings for loading stuttering:
+        [Default(0)]
+        public int LoadingDelay { get; set; }
+
+        
+        // Data Logger settings:
+        [Default("comma")]
+        public string DataLoggerSeparator { set; get; }
+        [Default("route")]
+        public string DataLogSpeedUnits { get; set; }
+        [Default(false)]
+        public bool DataLogStart { get; set; }
+        [Default(true)]
+        public bool DataLogPerformance { get; set; }
+        [Default(false)]
+        public bool DataLogPhysics { get; set; }
+        [Default(false)]
+        public bool DataLogMisc { get; set; }
+
+        // Hidden settings:
+        [Default(0)]
+        public int CarVibratingLevel { get; set; }
+        [Default("OpenRailsLog.txt")]
+        public string LoggingFilename { get; set; }
+        [Default("")] // If left as "", OR will use the user's desktop folder
+        public string LoggingPath { get; set; }
         [Default("")]
         public string ScreenshotPath { get; set; }
         [Default(0)]
@@ -115,95 +192,34 @@ namespace ORTS
         public int ShadowMapDistance { get; set; }
         [Default(1024)]
         public int ShadowMapResolution { get; set; }
-        [Default(true)]
-        public bool ShowErrorDialogs { get; set; }
-        [Default(5)]
-        public int SoundDetailLevel { get; set; }
-		[Default(100)]
-		public int SoundVolumePercent { get; set; }
-        [Default(false)]
-        public bool SuppressConfirmations { get; set; }
-        [Default(false)]
-        public bool TrainLights { get; set; }
         [Default(false)]
         public bool VerticalSync { get; set; }
-        [Default(2000)]
-        public int ViewingDistance { get; set; }
-        [Default(45)] // MSTS uses 60 FOV horizontally, on 4:3 displays this is 45 FOV vertically (what OR uses).
-        public int ViewingFOV { get; set; }
-        [Default(false)]
-        public bool WindowGlass { get; set; }
-        [Default("1024x768")]
-        public string WindowSize { get; set; }
-        [Default(false)]
-        public bool Wire { get; set; }
-        [Default(10)]
-        public int WorldObjectDensity { get; set; }
-        [Default(0)]
-        public int UseSuperElevation{ get; set; }
-        [Default(false)]
-        public bool ViewDispatcher { get; set; }
-        [Default(50)]
-        public int SuperElevationMinLen { get; set; }
-        [Default(1435)]
-        public int SuperElevationGauge { get; set; }
-
-        [Default(new string[0])]
-        public string[] Menu_Selection { get; set; }
-
-        // These two are command-line only flags to start multiplayer modes.
-        [Default(false)]
-        [DoNotSave]
-        public bool MultiplayerClient { get; set; }
-        [Default(false)]
-        [DoNotSave]
-        public bool MultiplayerServer { get; set; }
-
-        // Multiplayer settings.
-        [Default(false)]
-        public bool Multiplayer { get; set; }
-        [Default("")]
-        public string Multiplayer_User { get; set; }
-        [Default("127.0.0.1")]
-        public string Multiplayer_Host { get; set; }
-        [Default(30000)]
-        public int Multiplayer_Port { get; set; }
         [Default(10)]
         public int Multiplayer_UpdateInterval { get; set; }
-		[Default("http://openrails.org/images/support-logos.jpg")]
-		public string AvatarURL { get; set; }
-		[Default(false)]
-		public bool ShowAvatar { get; set; }
+        [Default("http://openrails.org/images/support-logos.jpg")]
+        public string AvatarURL { get; set; }
+        [Default(false)]
+        public bool ShowAvatar { get; set; }
 
-		[Default(false)]
-        public bool DistantMountains { get; set; }
+        // Internal settings:
+        [Default(false)]
+        public bool DataLogger { get; set; }
+        [Default(false)]
+        public bool Profiling { get; set; }
         [Default(0)]
-        public int CarVibratingLevel { get; set; }
-        [Default(20)]
-        public int DistantMountainsViewingTiles { get; set; }
-        [Default(5)]
-        public int DistantMountainsLoweringValue { get; set; }
-        // Physics options
+        public int ProfilingFrameCount { get; set; }
+        [Default(0)]
+        public int ProfilingTime { get; set; }
+        [Default(0)]
+        public int ReplayPauseBeforeEndS { get; set; }
         [Default(true)]
-        public bool UseAdvancedAdhesion { get; set; }
-        [Default(10)]
-        public int AdhesionMovingAverageFilterSize { get; set; }
+        public bool ReplayPauseBeforeEnd { get; set; }
+        [Default(true)]
+        public bool ShowErrorDialogs { get; set; }
+        [Default(new string[0])]
+        public string[] Menu_Selection { get; set; }
         [Default(false)]
-        public bool BreakCouplers { get; set; }
-        
-        // experimentel setting for LOD extention
-        [Default (false)]
-        public bool LODViewingExtention { get; set; }
-
-        // experimentel setting for LOD extention
-        [Default(false)]
-        public bool DoubleWire { get; set; }
-
-        // experimental setting for loading stuttering
-        [Default(0)]
-        public int LoadingDelay { get; set; }
-
-        // Window position settings.
+        public bool Multiplayer { get; set; }
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_Activity { get; set; }
         [Default(new[] { 50, 0 })]
@@ -220,25 +236,18 @@ namespace ORTS
         public int[] WindowPosition_Switch { get; set; }
         [Default(new[] { 100, 0 })]
         public int[] WindowPosition_TrackMonitor { get; set; }
-		[Default(new[] { 50, 50 })]
-		public int[] WindowPosition_TrainOperations { get; set; }
-		[Default(new[] { 50, 50 })]
-		public int[] WindowPosition_ComposeMessage { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainOperations { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_ComposeMessage { get; set; }
 
-        //DataLogger
-        [Default("comma")]
-        public string DataLoggerSeparator { set; get; }
+        // Menu-game communication settings:
         [Default(false)]
-        public bool DataLogStart { get; set; }
-        [Default(true)]
-        public bool DataLogPerformance { get; set; }
+        [DoNotSave]
+        public bool MultiplayerClient { get; set; }
         [Default(false)]
-        public bool DataLogPhysics { get; set; }
-        [Default(false)]
-        public bool DataLogMisc { get; set; }
-        [Default("route")]
-        public string DataLogSpeedUnits { get; set; }
-
+        [DoNotSave]
+        public bool MultiplayerServer { get; set; }
         
         #endregion
 
