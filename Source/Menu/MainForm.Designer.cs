@@ -464,8 +464,8 @@
             this.comboBoxStartWeather.FormattingEnabled = true;
             this.comboBoxStartWeather.Items.AddRange(new object[] {
             "Clear",
-            "Rain",
-            "Snow"});
+            "Snow",
+            "Rain"});
             this.comboBoxStartWeather.Location = new System.Drawing.Point(69, 407);
             this.comboBoxStartWeather.Name = "comboBoxStartWeather";
             this.comboBoxStartWeather.Size = new System.Drawing.Size(73, 21);
