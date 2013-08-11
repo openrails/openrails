@@ -1022,7 +1022,10 @@ namespace ORTS
         {
             var dx = X - other.X + 2048 * (TileX - other.TileX);
             var dz = Z - other.Z + 2048 * (TileZ - other.TileZ);
+            var dy = Y - other.Y;
             if (dx * dx + dz * dz > 1)
+                return 1;
+            if ( Math.Abs(dy) > 1 )
                 return 1;
             var dot = dx * (float)Math.Sin(directionVector.Y) + dz * (float)Math.Cos(directionVector.Y);
             return rear ? dot : -dot;
