@@ -193,6 +193,8 @@
             // 
             // comboBoxFolder
             // 
+            this.comboBoxFolder.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxFolder.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxFolder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxFolder.FormattingEnabled = true;
             this.comboBoxFolder.Location = new System.Drawing.Point(12, 31);
@@ -203,6 +205,8 @@
             // 
             // comboBoxRoute
             // 
+            this.comboBoxRoute.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxRoute.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxRoute.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxRoute.FormattingEnabled = true;
             this.comboBoxRoute.Location = new System.Drawing.Point(12, 77);
@@ -213,6 +217,8 @@
             // 
             // comboBoxActivity
             // 
+            this.comboBoxActivity.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxActivity.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxActivity.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxActivity.FormattingEnabled = true;
             this.comboBoxActivity.Location = new System.Drawing.Point(12, 123);
@@ -223,6 +229,8 @@
             // 
             // comboBoxLocomotive
             // 
+            this.comboBoxLocomotive.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxLocomotive.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxLocomotive.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLocomotive.Enabled = false;
             this.comboBoxLocomotive.FormattingEnabled = true;
@@ -234,6 +242,8 @@
             // 
             // comboBoxConsist
             // 
+            this.comboBoxConsist.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxConsist.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxConsist.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxConsist.Enabled = false;
             this.comboBoxConsist.FormattingEnabled = true;
@@ -245,6 +255,8 @@
             // 
             // comboBoxStartAt
             // 
+            this.comboBoxStartAt.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxStartAt.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxStartAt.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxStartAt.Enabled = false;
             this.comboBoxStartAt.FormattingEnabled = true;
@@ -256,6 +268,8 @@
             // 
             // comboBoxHeadTo
             // 
+            this.comboBoxHeadTo.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxHeadTo.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxHeadTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxHeadTo.Enabled = false;
             this.comboBoxHeadTo.FormattingEnabled = true;
@@ -383,6 +397,8 @@
             // 
             // comboBoxDuration
             // 
+            this.comboBoxDuration.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxDuration.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxDuration.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDuration.Enabled = false;
             this.comboBoxDuration.FormattingEnabled = true;
@@ -393,6 +409,8 @@
             // 
             // comboBoxStartTime
             // 
+            this.comboBoxStartTime.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.comboBoxStartTime.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxStartTime.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxStartTime.Enabled = false;
             this.comboBoxStartTime.FormattingEnabled = true;
@@ -404,6 +422,8 @@
             // 
             // comboBoxStartSeason
             // 
+            this.comboBoxStartSeason.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxStartSeason.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxStartSeason.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxStartSeason.Enabled = false;
             this.comboBoxStartSeason.FormattingEnabled = true;
@@ -420,6 +440,8 @@
             // 
             // comboBoxDifficulty
             // 
+            this.comboBoxDifficulty.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxDifficulty.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxDifficulty.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDifficulty.Enabled = false;
             this.comboBoxDifficulty.FormattingEnabled = true;
@@ -435,6 +457,8 @@
             // 
             // comboBoxStartWeather
             // 
+            this.comboBoxStartWeather.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.comboBoxStartWeather.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxStartWeather.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxStartWeather.Enabled = false;
             this.comboBoxStartWeather.FormattingEnabled = true;
