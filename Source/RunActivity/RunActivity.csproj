@@ -301,6 +301,7 @@
     <Compile Include="RollingStock\MSTSWagon.cs" />
     <Compile Include="RollingStock\SeriesMotor.cs" />
     <Compile Include="RollingStock\TrainCar.cs" />
+    <Compile Include="RollingStock\TrainControlSystem.cs" />
     <Compile Include="Signals\Signals.cs" />
     <Compile Include="Signals\SIGSCRfile.cs" />
     <Compile Include="Simulator\Activity.cs" />

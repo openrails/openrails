@@ -90,7 +90,6 @@ namespace ORTS
         public bool CabLightOn = false;
         public bool ShowCab = true;
 
-        bool AlerterIsActive = false;
         bool DoesHornTriggerBell = false;
 
         // wag file data
@@ -174,7 +173,6 @@ namespace ORTS
             LocomotiveAxle.CurtiusKnifflerB = Curtius_KnifflerB;
             LocomotiveAxle.CurtiusKnifflerC = Curtius_KnifflerC;
             LocomotiveAxle.StabilityCorrection = true;
-            LocomotiveAxle.FilterMovingAverage.Size = simulator.Settings.AdhesionMovingAverageFilterSize;
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f),0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 0.001f);
         }
@@ -188,6 +186,7 @@ namespace ORTS
             TrainBrakeController = new MSTSBrakeController(Simulator);
             EngineBrakeController = new MSTSBrakeController(Simulator);
             DynamicBrakeController = new MSTSNotchController();
+            TrainControlSystem = new MSTSTrainControlSystem(this);
             base.InitializeFromWagFile(wagFilePath);
 
             if (ThrottleController == null)
@@ -197,12 +196,9 @@ namespace ORTS
                 ThrottleController.StepSize = 0.1f;
             }
 
-            // Is Alerter option checked in menu
-            if (Program.Simulator.Settings.Alerter)
+            if (VigilanceMonitor)
             {
-                int startTime = (int)Simulator.ClockTime;
-                if (VigilanceMonitor)
-                    AlerterStartUp();
+                TrainControlSystem.Startup();
             }
 
             // Assumes that CabViewList[0] is the front cab
@@ -339,7 +335,9 @@ namespace ORTS
 
                 //case "engine(enginecontrollers(combined_control": HasCombCtrl = true; break;
                 //case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
-                case "engine(vigilancemonitor": VigilanceMonitor = true; break;
+                case "engine(vigilancemonitor":
+                case "engine(emergencystopmonitor":
+                case "engine(overspeedmonitor": VigilanceMonitor = true; TrainControlSystem.Parse(lowercasetoken, stf); break;
                 case "engine(enginecontrollers(combined_control": HasCombCtrl = true; if (!DynamicBrakeController.IsValid()) DynamicBrakeController = new MSTSNotchController(0, 1, .05f); break;
 
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Any, null); break;
@@ -864,6 +862,9 @@ namespace ORTS
                 SignalEvent(Event.CompressorOff);
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
+
+            if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
+                TrainControlSystem.Update();
 
             PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
@@ -1534,14 +1535,7 @@ namespace ORTS
         public void SetEmergency()
         {
             if (this.Train != null && this.Train.TrainType == Train.TRAINTYPE.REMOTE) return; //not apply emergency for remote trains.
-            if (TrainBrakeController.GetIsEmergency())
-                return;
-            if(EmergencyCausesThrottleDown) ThrottleController.SetValue(0.0f);
-            if (EmergencyCausesPowerDown) { SignalEvent(Event.Pantograph1Down); SignalEvent(Event.Pantograph2Down); }
-            if (EmergencyEngagesHorn) SignalEvent(Event.HornOn);
-            TrainBrakeController.SetEmergency();
-            SignalEvent(Event.TrainBrakePressureDecrease);
-            Simulator.Confirmer.Confirm( CabControl.EmergencyBrake, CabSetting.On );
+            TrainControlSystem.SetEmergency();
         }
 
         public override string GetTrainBrakeStatus()
@@ -1763,82 +1757,16 @@ namespace ORTS
         }
 #endif
 
-        public class Alerter
-        {
-            int AlerterStartTime;
-            int AlerterAlarmTime;
-            public bool AlerterIsEnabled = false;
-            public bool AlerterResetReceived = false;
-
-            public void AlerterEnableSetup(int alarmStart, int alarmEnd)
-            {
-                AlerterStartTime = alarmStart;
-                AlerterAlarmTime = alarmEnd;
-            }
-
-            public void AlerterEnableSet()
-            {
-                AlerterIsEnabled = true;
-            }
-
-            public void AlerterDisAble()
-            {
-                AlerterIsEnabled = false;
-            }
-
-            public void AlerterReset()
-            {
-                if (AlerterResetReceived)
-                    AlerterResetReceived = false;
-                else
-                    AlerterResetReceived = true;
-            }
-            
-            public bool AlerterTimerTrigger(int clockTime)
-            {
-                if (AlerterIsEnabled && clockTime >= AlerterAlarmTime)
-                    return true;
-                else
-                    return false;
-            }
-        } //End Class Alerter
-
-        Alerter timerAlerter1 = new Alerter();
-        Alerter timerAlerter2 = new Alerter();
-        //bool alarm1Fired = false;
-        //bool alarm2Fired = false;
-
-        public void AlerterStartUp()
-        {
-            AlerterEnableGetTime();
-            timerAlerter1.AlerterEnableSet();
-            timerAlerter2.AlerterEnableSet();
-            AlerterIsActive = true;
-        }
-
-        public void AlerterEnableGetTime()
-        {
-            int startTime = (int)Simulator.ClockTime;
-            int alterterAlarm = startTime + 30;
-            int penaltyAlarm = startTime + 49;
-            timerAlerter1.AlerterEnableSetup(startTime, alterterAlarm);
-            timerAlerter2.AlerterEnableSetup(startTime, penaltyAlarm);
-            //SignalEvent(Event.AlerterSoundOff);
-        }
+        TrainControlSystem TrainControlSystem;
 
         public void AlerterReset()
         {
-            if (AlerterIsActive)
-            {
-                AlerterEnableGetTime();
-            }
+            TrainControlSystem.AlerterReset();
         }
 
-        public void AlerterResetExternal()
+        public void AlerterPressed(bool pressed)
         {
-            timerAlerter1.AlerterReset();
-            timerAlerter2.AlerterReset();
-            AlerterEnableGetTime();
+            TrainControlSystem.AlerterPressed(pressed);
         }
 
         public override void SignalEvent(Event evt)
@@ -1897,53 +1825,8 @@ namespace ORTS
             base.SignalEvent(evt);
         }
 
-        /// <summary>
-        /// Gets the Locomotive data needed by the Cab View Control
-        /// Check here for Signal display
-        /// </summary>
-        /// <param name="cvc">The Cab View Control</param>
-        /// <returns>The data converted to the requested unit</returns>
-        public void CheckVigilance()
-        {
-
-            {
-                bool alarm1Fired = false;
-                bool alarm2Fired = false;
-
-                if (timerAlerter1.AlerterIsEnabled)
-                {
-                    if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
-                        alarm1Fired = true;
-                    //SignalEvent(Event.AlerterOn);
-                }
-
-                if (timerAlerter2.AlerterIsEnabled)
-                {
-                    if (timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
-                    {
-                        alarm2Fired = true;
-                        SetEmergency();
-                    }
-                }
-
-                if (alarm1Fired)
-                {
-                    if( ! AlerterSnd ) {
-                        SignalEvent(Event.VigilanceAlarmOn);
-                    }
-                }
-                else
-                {
-                    if( AlerterSnd ) {
-                        SignalEvent(Event.VigilanceAlarmOff);
-                    }
-                }
-            }
-        }
-
         public virtual float GetDataOf(CabViewControl cvc)
         {
-            if( Simulator.Settings.Alerter ) CheckVigilance();
             float data = 0;
             switch (cvc.ControlType)
             {
@@ -2097,7 +1980,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.RESET:
                     {
-                        if (timerAlerter1.AlerterResetReceived)
+                        if (TrainControlSystem.AlerterButtonPressed)
                             data = 1;
                         else
                             data = 0;
@@ -2106,40 +1989,14 @@ namespace ORTS
  
                 case CABViewControlTypes.ALERTER_DISPLAY:
                     {
-                        if( Simulator.Settings.Alerter ) {
-                            bool alarm1Fired = false;
-                            bool alarm2Fired = false;
-
-                            if (timerAlerter1.AlerterIsEnabled)
-                            {
-                                if (timerAlerter1.AlerterTimerTrigger((int)Simulator.ClockTime))
-                                    alarm1Fired = true;
-                            }
-
-                            if (timerAlerter2.AlerterIsEnabled)
-                            {
-                                if (timerAlerter2.AlerterTimerTrigger((int)Simulator.ClockTime))
-                                {
-                                    alarm2Fired = true;
-                                }
-                            }
-
-                            if (alarm1Fired)
-                            {
+                        if( Simulator.Settings.Alerter )
+                        {
+                            if (TrainControlSystem.VigilanceWarning)
                                 data = 1;
-                                if( ! AlerterSnd ) {
-                                    SignalEvent(Event.VigilanceAlarmOn);
-                                }
-                            }
-                            else if (alarm2Fired)
+                            else if (TrainControlSystem.VigilanceAlarm)
                                 data = 2;
                             else
-                            {
                                 data = 0;
-                                if( AlerterSnd ) {
-                                    SignalEvent(Event.VigilanceAlarmOff);
-                                }
-                            }
                         }
                         break;
                     }
@@ -2609,7 +2466,8 @@ namespace ORTS
             if( UserInput.IsPressed( UserCommands.ControlHorn ) ) new HornCommand( Viewer.Log, true );
             if( UserInput.IsReleased( UserCommands.ControlHorn ) ) new HornCommand( Viewer.Log, false );
             if( UserInput.IsPressed( UserCommands.ControlBell ) ) new BellCommand( Viewer.Log, !Locomotive.Bell );
-            if( UserInput.IsPressed( UserCommands.ControlAlerter ) ) new AlerterCommand( Viewer.Log );  // z
+            if (UserInput.IsPressed(UserCommands.ControlAlerter)) new AlerterCommand(Viewer.Log, true);  // z
+            if (UserInput.IsReleased(UserCommands.ControlAlerter)) new AlerterCommand(Viewer.Log, false);  // z
 
             if( UserInput.IsPressed( UserCommands.ControlHeadlightDecrease ) ) new HeadlightCommand( Viewer.Log, false );
             if( UserInput.IsPressed( UserCommands.ControlHeadlightIncrease ) ) new HeadlightCommand( Viewer.Log, true );

@@ -446,16 +446,16 @@ namespace ORTS {
     }
 
     [Serializable()]
-    public class AlerterCommand : Command {
+    public class AlerterCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
-        public AlerterCommand( CommandLog log ) 
-            : base( log ) {
+        public AlerterCommand( CommandLog log, bool toState ) 
+            : base( log, toState ) {
             Redo();
         }
 
         public override void Redo() {
-            Receiver.AlerterResetExternal();
+            Receiver.AlerterPressed(ToState);
             // Report();
         }
     }
