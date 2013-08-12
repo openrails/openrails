@@ -50,7 +50,7 @@ namespace ORTS
         bool DrawPlatform = false;
 
         SpriteBatchMaterial TextMaterial;
-        ActivityInforMaterial DrawInforMaterial;
+        Label3DMaterial DrawInforMaterial;
 
         Matrix Identity = Matrix.Identity;
         int FrameNumber = 0;
@@ -84,7 +84,7 @@ namespace ORTS
         {
             Viewer = viewer;
             TextMaterial = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
-            DrawInforMaterial = (ActivityInforMaterial)viewer.MaterialManager.Load("DrawInfor");
+            DrawInforMaterial = (Label3DMaterial)viewer.MaterialManager.Load("Label3D");
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
             ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
@@ -117,7 +117,7 @@ namespace ORTS
                 // Steps along a sequence of 5 states
                 // none > both > sidings only > platforms only > none
                 //   00 >   11 >           10 >             01 >   00
-                
+
                 // Set the first 2 bits of an int
                 int bitArray = 0;
                 bitArray += DrawSiding ? 1 : 0;
@@ -128,7 +128,7 @@ namespace ORTS
                 DrawSiding = ((bitArray & 1) == 1);
                 DrawPlatform = ((bitArray & 2) == 2);
                 // Take modulus 4 to keep in range 0-3. +1 as messages are in range 1-4
-                Viewer.Simulator.Confirmer.Confirm( CabControl.Labels, (CabSetting)(bitArray % 4) + 1 );
+                Viewer.Simulator.Confirmer.Confirm(CabControl.Labels, (CabSetting)(bitArray % 4) + 1);
             }
         }
 
@@ -146,7 +146,7 @@ namespace ORTS
             //Here's where the logger stores the data from each frame
             if (Viewer.Settings.DataLogger)
             {
-                Logger.Separator = (DataLogger.Separators) Enum.Parse(typeof(DataLogger.Separators), Viewer.Settings.DataLoggerSeparator);
+                Logger.Separator = (DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Viewer.Settings.DataLoggerSeparator);
                 if (Viewer.Settings.DataLogPerformance)
                 {
                     Logger.Data(VersionInfo.Version);
@@ -181,7 +181,7 @@ namespace ORTS
 #if !NEW_SIGNALLING
                 Logger.Data(TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
 #else
-                    switch(Viewer.Settings.DataLogSpeedUnits)
+                    switch (Viewer.Settings.DataLogSpeedUnits)
                     {
                         case "route":
                             Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
@@ -202,7 +202,7 @@ namespace ORTS
 #endif
                     Logger.Data((Viewer.PlayerLocomotive.DistanceM.ToString("F0")));
                     Logger.Data((Viewer.PlayerLocomotive.GravityForceN.ToString("F0")));
-                    
+
                     if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController != null)
                         Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController.CurrentValue.ToString("F2"));
                     else
@@ -267,7 +267,7 @@ namespace ORTS
                         else
                             Logger.Data("null");
 
-                        if((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController != null)
+                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController != null)
                             Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController.CurrentValue.ToString("F0"));
                         else
                             Logger.Data("null");
@@ -290,38 +290,26 @@ namespace ORTS
 
                 Logger.End();
             }
-            if (DrawCarNumber == true)
-            {
-                var cars = Viewer.World.Trains.Cars;
-                foreach (var car in cars.Keys)
-                    frame.AddPrimitive(DrawInforMaterial, new ActivityInforPrimitive(DrawInforMaterial, car), RenderPrimitiveGroup.World, ref Identity);
-
-                //	UpdateCarNumberText(frame, elapsedTime);
-            }
             if (DrawSiding == true || DrawPlatform == true)
             {
+                // TODO: Don't construct new ItemLabelPrimitive on every frame.
                 var worldFiles = Viewer.World.Scenery.WorldFiles;
-                foreach (var w in worldFiles)
+                foreach (var worldFile in worldFiles)
                 {
-                    if (DrawSiding == true && w != null && w.sidings != null)
-                    {
-                        foreach (var sd in w.sidings)
-                        {
-                            if (sd != null) frame.AddPrimitive(DrawInforMaterial,
-                                new ActivityInforPrimitive(DrawInforMaterial, sd, Color.Coral),
-                                RenderPrimitiveGroup.World, ref Identity);
-                        }
-                    }
-                    if (DrawPlatform == true && w != null && w.platforms != null)
-                    {
-                        foreach (var pd in w.platforms)
-                        {
-                            if (pd != null) frame.AddPrimitive(DrawInforMaterial,
-                                new ActivityInforPrimitive(DrawInforMaterial, pd, Color.Yellow),
-                                RenderPrimitiveGroup.World, ref Identity);
-                        }
-                    }
+                    if (DrawSiding == true && worldFile.sidings != null)
+                        foreach (var siding in worldFile.sidings)
+                            frame.AddPrimitive(DrawInforMaterial, new ItemLabelPrimitive(DrawInforMaterial, siding, Color.Coral), RenderPrimitiveGroup.World, ref Identity);
+                    if (DrawPlatform == true && worldFile.platforms != null)
+                        foreach (var platform in worldFile.platforms)
+                            frame.AddPrimitive(DrawInforMaterial, new ItemLabelPrimitive(DrawInforMaterial, platform, Color.Yellow), RenderPrimitiveGroup.World, ref Identity);
                 }
+            }
+            if (DrawCarNumber == true)
+            {
+                // TODO: Don't construct new CarLabelPrimitive on every frame.
+                var cars = Viewer.World.Trains.Cars;
+                foreach (var car in cars.Keys)
+                    frame.AddPrimitive(DrawInforMaterial, new CarLabelPrimitive(DrawInforMaterial, car), RenderPrimitiveGroup.World, ref Identity);
             }
         }
 
@@ -370,7 +358,7 @@ namespace ORTS
         /// </summary>
         /// <param name="clockTimeSeconds"></param>
         /// <returns></returns>
-        public static string FormattedPreciseTime( double clockTimeSeconds ) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
+        public static string FormattedPreciseTime(double clockTimeSeconds) //some measure of time so it can be sorted.  Good enuf for now. Might add more later. Okay
         {
             int hour = (int)(clockTimeSeconds / (60.0 * 60.0));
             clockTimeSeconds -= hour * 60.0 * 60.0;
@@ -378,16 +366,16 @@ namespace ORTS
             clockTimeSeconds -= minute * 60.0;
             double seconds = clockTimeSeconds;
             // Reset clock before and after midnight
-            if( hour >= 24 )
+            if (hour >= 24)
                 hour %= 24;
-            if( hour < 0 )
+            if (hour < 0)
                 hour += 24;
-            if( minute < 0 )
+            if (minute < 0)
                 minute += 60;
-            if( seconds < 0 )
+            if (seconds < 0)
                 seconds += 60;
 
-            return string.Format( "{0:D2}:{1:D2}:{2:00.00}", hour, minute, seconds );
+            return string.Format("{0:D2}:{1:D2}:{2:00.00}", hour, minute, seconds);
         }
 
 
@@ -396,22 +384,23 @@ namespace ORTS
         /// </summary>
         /// <param name="clockTimeSeconds"></param>
         /// <returns></returns>
-        public static string FormattedApproxTime( double clockTimeSeconds ) {
+        public static string FormattedApproxTime(double clockTimeSeconds)
+        {
             int hour = (int)(clockTimeSeconds / (60.0 * 60.0));
             clockTimeSeconds -= hour * 60.0 * 60.0;
             int minute = (int)((clockTimeSeconds / 60.0) + 0.5);    // + 0.5 to round to nearest minute
             clockTimeSeconds -= minute * 60.0;
             // Reset clock before and after midnight
-            if( hour >= 24 )
+            if (hour >= 24)
                 hour %= 24;
-            if( hour < 0 )
+            if (hour < 0)
                 hour += 24;
-            if( minute < 0 )
+            if (minute < 0)
                 minute += 60;
 
-            return string.Format( "{0:D2}:{1:D2}", hour, minute );
+            return string.Format("{0:D2}:{1:D2}", hour, minute);
         }
-        
+
         static void DataLoggerStart(UserSettings settings)
         {
             using (StreamWriter file = File.AppendText("dump.csv"))
@@ -515,240 +504,74 @@ namespace ORTS
         }
     }
 
-    public class TextPrimitive : RenderPrimitive
+    public abstract class InfoLabelPrimitive : RenderPrimitive
     {
-        public readonly SpriteBatchMaterial Material;
-        public Point Position;
-        public readonly Color Color;
-        public readonly WindowTextFont Font;
-        public string Text;
+        public readonly Label3DMaterial Material;
 
-        public TextPrimitive(SpriteBatchMaterial material, Point position, Color color, WindowTextFont font)
+        protected readonly Viewer3D Viewer;
+        protected readonly Color Color;
+        protected readonly Color Outline;
+
+        protected InfoLabelPrimitive(Label3DMaterial material, Color color, Color outline)
         {
             Material = material;
-            Position = position;
+            Viewer = material.Viewer;
             Color = color;
-            Font = font;
+            Outline = outline;
         }
 
-        public override void Draw(GraphicsDevice graphicsDevice)
+        protected void DrawLabel(WorldPosition position, float yOffset, string text)
         {
-            Font.Draw(Material.SpriteBatch, Position, Text, Color);
+            var lineLocation3D = position.XNAMatrix.Translation;
+            lineLocation3D.X += (position.TileX - Viewer.Camera.TileX) * 2048;
+            lineLocation3D.Y += yOffset;
+            lineLocation3D.Z += (Viewer.Camera.TileZ - position.TileZ) * 2048;
+
+            var lineLocation2DStart = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+            if (lineLocation2DStart.Z > 1 || lineLocation2DStart.Z < 0)
+                return; // Out of range or behind the camera
+
+            lineLocation3D.Y += 10;
+            var lineLocation2DEndY = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity).Y;
+
+            var labelLocation2D = Material.GetTextLocation((int)lineLocation2DStart.X, (int)lineLocation2DEndY - Material.Font.Height, text);
+            lineLocation2DEndY = labelLocation2D.Y + Material.Font.Height;
+
+            Material.Font.Draw(Material.SpriteBatch, labelLocation2D, text, Color, Outline);
+            Material.SpriteBatch.Draw(Material.Texture, new Vector2(lineLocation2DStart.X - 1, lineLocation2DEndY), null, Outline, 0, Vector2.Zero, new Vector2(4, lineLocation2DStart.Y - lineLocation2DEndY), SpriteEffects.None, lineLocation2DStart.Z);
+            Material.SpriteBatch.Draw(Material.Texture, new Vector2(lineLocation2DStart.X, lineLocation2DEndY), null, Color, 0, Vector2.Zero, new Vector2(2, lineLocation2DStart.Y - lineLocation2DEndY), SpriteEffects.None, lineLocation2DStart.Z);
         }
     }
 
-    //2D straight lines
-    public class LinePrimitive : RenderPrimitive
+    public class CarLabelPrimitive : InfoLabelPrimitive
     {
-        public readonly SpriteBatchLineMaterial Material;
-        public Vector2 PositionStart;
-        public Vector2 PositionEnd;
-        public readonly Color Color;
-        public float Depth; //z buffer value: 0 always show, 1 always not show, in between, depends
-        public int Width; //line width
+        readonly TrainCar Car;
 
-        //constructor: startX, startY: X,Y of the start point, endXY the end point, depth: z buffer value (between 0, 1)
-        public LinePrimitive(SpriteBatchLineMaterial material, float startX, float startY, float endX, float endY, Color color, float depth, int width)
+        public CarLabelPrimitive(Label3DMaterial material, TrainCar car)
+            : base(material, Color.Blue, Color.White)
         {
-            Material = material;
-            Color = color;
-            Depth = depth;
-            Width = width;
-            PositionEnd = new Vector2(endX, endY);
-            PositionStart = new Vector2(startX, startY);
-        }
-        public void UpdateLocation(float startX, float startY, float endX, float endY)
-        {
-            PositionEnd.X = endX;
-            PositionEnd.Y = endY;
-            PositionStart.X = startX;
-            PositionStart.Y = startY;
+            Car = car;
         }
 
-        //draw 2D straight lines
-        public void DrawLine(SpriteBatch batch, Color color, Vector2 point1,
-                                    Vector2 point2, float Layer)
-        {
-            float angle = (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
-            float length = (point2 - point1).Length();
-
-            batch.Draw(Material.Texture, point1, null, color,
-                       angle, Vector2.Zero, new Vector2(length, Width),
-                       SpriteEffects.None, Layer);
-        }
-
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            DrawLine(Material.SpriteBatch, Color, PositionStart, PositionEnd, Depth);
+            DrawLabel(Car.WorldPosition, Car.Height, Car.CarID);
         }
-
     }
 
-    //2D textures
-    public class ActivityInforPrimitive : RenderPrimitive
+    public class ItemLabelPrimitive : InfoLabelPrimitive
     {
-        public readonly ActivityInforMaterial Material;
-        public SpriteFont Font;
-        public Viewer3D Viewer;
-        TrainCar TrainCar = null;
-        TrItemLabel TrItemLabel = null;
-        Color LabelColor = Color.Blue;
-        float LineSpacing;
-		WindowTextFont TextFont;
+        readonly TrItemLabel Item;
 
-        //constructor: create one that draw car numbers
-        public ActivityInforPrimitive(ActivityInforMaterial material, TrainCar tcar)
+        public ItemLabelPrimitive(Label3DMaterial material, TrItemLabel item, Color color)
+            : base(material, color, Color.Black)
         {
-            Material = material;
-            Font = material.Font;
-            Viewer = material.Viewer;
-            TrainCar = tcar;
-            LineSpacing = Material.LineSpacing;
-			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1);
+            Item = item;
         }
 
-        /// <summary>
-        /// Information for showing labels of track items such as sidings and platforms
-        /// </summary>
-        public ActivityInforPrimitive(ActivityInforMaterial material, TrItemLabel pd, Color labelColor)
-        {
-            Material = material;
-            Font = material.Font;
-            Viewer = material.Viewer;
-            TrItemLabel = pd;
-            LineSpacing = Material.LineSpacing;
-            LabelColor = labelColor;
-			TextFont = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1);
-        }
-
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            if (TrainCar != null) UpdateCarNumberText();
-            if (TrItemLabel != null) UpdateTrItemNameText();
+            DrawLabel(Item.Location, 0, Item.ItemName);
         }
-
-        //draw car numbers above train cars when F7 is hit
-        void UpdateCarNumberText()
-        {
-            float X, BottomY, TopY;
-
-            //find car location vs. camera
-            Vector3 Location = TrainCar.WorldPosition.XNAMatrix.Translation +
-                    new Vector3((TrainCar.WorldPosition.TileX - Viewer.Camera.TileX) * 2048, 0, (-TrainCar.WorldPosition.TileZ + Viewer.Camera.TileZ) * 2048);
-
-            //project 3D space to 2D (for the top of the line)
-            Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-                Location + new Vector3(0, TrainCar.Height, 0),
-                Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
-            if (cameraVector.Z > 1 || cameraVector.Z < 0) return; //out of range or behind the camera
-            X = cameraVector.X;
-            BottomY = cameraVector.Y;//remember them
-
-            ////project for the top of the line
-            cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-                Location + new Vector3(0, 10, 0),
-                Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
-
-            //want to draw the train car name at cameraVector.Y, but need to check if it overlap other texts in Material.AlignedTextB
-            //and determine the new location if conflict occurs
-            TopY = AlignVertical(cameraVector.Y, X, X + Font.MeasureString(TrainCar.CarID).X, LineSpacing, Material.AlignedTextA);
-			TextFont.Draw(Material.SpriteBatch, new Point((int)X, (int)TopY), TrainCar.CarID, LabelColor, Color.White);
-
-
-            //draw the vertical line with length Math.Abs(cameraVector.Y + LineSpacing - BottomY)
-            //the term LineSpacing is used so that the text is above the line head
-            Material.SpriteBatch.Draw(Material.Texture, new Vector2(X, BottomY), null, Color.Blue,
-                       (float)-Math.PI / 2, Vector2.Zero, new Vector2(Math.Abs(cameraVector.Y + LineSpacing - BottomY), 2),
-                       SpriteEffects.None, cameraVector.Z);
-        }
-
-        /// <summary>
-        /// When F6 is pressed, draws names above track items such as sidings and platforms.
-        /// </summary>
-        void UpdateTrItemNameText()
-        {
-            float X, BottomY, TopY;
-
-            //loop through all wfile and each platform to draw platform names and lines
-
-            //the location w.r.t. the camera
-            Vector3 locationWRTCamera = TrItemLabel.Location.WorldLocation.Location + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (TrItemLabel.Location.TileZ - Viewer.Camera.TileZ) * 2048);
-
-            //if the platform is out of viewing range
-            if (!Viewer.Camera.InFOV(locationWRTCamera, 10)) return;
-
-            //project 3D space to 2D (for the bottom of the line)
-            Vector3 cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-            TrItemLabel.Location.XNAMatrix.Translation + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 0, (-TrItemLabel.Location.TileZ + Viewer.Camera.TileZ) * 2048),
-                Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
-            if (cameraVector.Z > 1 || cameraVector.Z < 0) return; //out of range or behind the camera
-            X = cameraVector.X;
-            BottomY = cameraVector.Y;//remember them
-
-            ////project for the top of the line
-            cameraVector = Viewer.GraphicsDevice.Viewport.Project(
-            TrItemLabel.Location.XNAMatrix.Translation + new Vector3((TrItemLabel.Location.TileX - Viewer.Camera.TileX) * 2048, 20, (-TrItemLabel.Location.TileZ + Viewer.Camera.TileZ) * 2048),
-                Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
-
-            //want to draw the text at cameraVector.Y, but need to check if it overlap other texts in Material.AlignedTextB
-            //and determine the new location if conflict occurs
-            TopY = AlignVertical(cameraVector.Y, X, X + Font.MeasureString(TrItemLabel.ItemName).X, LineSpacing, Material.AlignedTextB);
-			TextFont.Draw(Material.SpriteBatch, new Point((int)X, (int)TopY), TrItemLabel.ItemName, LabelColor);
-
-            //draw a vertical line with length TopY + LineSpacing - BottomY
-            //the term LineSpacing is used so that the text is above the line head
-            Material.SpriteBatch.Draw(Material.Texture, new Vector2(X, BottomY), null, LabelColor,
-                           -(float)Math.PI / 2, Vector2.Zero, new Vector2(Math.Abs(TopY + LineSpacing - BottomY), 2),
-                           SpriteEffects.None, cameraVector.Z);
-
-        }
-
-        //helper function to make the train car and siding name align nicely on the screen
-        //the basic idea is to space the screen vertically as table cell, each cell holds a list of text assigned.
-        //new text in will check its destinated cell, if it overlap with a text in the cell, it will move up a cell and continue
-        //once it is determined in a cell, it will be pushed in the list of text of that cell, and the new Y will be returned.
-        float AlignVertical(float wantY, float startX, float endX, float spacing, List<Vector2>[] alignedTextY)
-        {
-            if (alignedTextY == null || wantY < 0) return wantY; //data checking
-            int position = (int)(wantY / spacing);//the cell of the text it wants in
-            if (position > alignedTextY.Length) return wantY;//position is larger than the number of cells
-            int desiredPosition = position;
-            while (position < alignedTextY.Length && position >= 0)
-            {
-                if (alignedTextY[position].Count == 0)
-                {
-                    alignedTextY[position].Add(new Vector2(startX, endX));//add info for the text (i.e. start and end location)
-                    if (position == desiredPosition) return wantY; //if it can be in the desired cell, use the desired Y instead of the cell Y, so the text won't jump up-down
-                    else return position * spacing;//the cell location is the new Y
-                }
-                bool conflict = false;
-                //check if it is intersect any one in the cell
-                foreach (Vector2 v in alignedTextY[position])
-                {
-                    //check conflict with a text, v.x is the start of the text, v.y is the end of the text
-                    if ((startX > v.X && startX < v.Y) || (endX > v.X && endX < v.Y) || (v.X > startX && v.X < endX) || (v.Y > startX && v.Y < endX))
-                    {
-                        conflict = true;
-                        break;
-                    }
-                }
-                if (conflict == false) //no conflict
-                {
-                    alignedTextY[position].Add(new Vector2(startX, endX));//add info for the text (i.e. start and end location)
-                    if (position == desiredPosition) return wantY;
-                    else return position * spacing;//the cell location is the new Y
-                }
-                position--;
-            }
-            if (position == desiredPosition) return wantY;
-            else return position * spacing;//the cell location is the new Y
-        }
-
     }
 }

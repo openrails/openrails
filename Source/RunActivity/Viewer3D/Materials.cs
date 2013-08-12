@@ -190,11 +190,11 @@ namespace ORTS
                     case "Debug":
                         Materials[materialKey] = new HUDGraphMaterial(Viewer);
                         break;
-                    case "DrawInfor":
-                        Materials[materialKey] = new ActivityInforMaterial(Viewer);
-                        break;
                     case "Forest":
                         Materials[materialKey] = new ForestMaterial(Viewer, textureName);
+                        break;
+                    case "Label3D":
+                        Materials[materialKey] = new Label3DMaterial(Viewer);
                         break;
                     case "LightCone":
                         Materials[materialKey] = new LightConeMaterial(Viewer);
@@ -222,9 +222,6 @@ namespace ORTS
                         break;
                     case "Sky":
                         Materials[materialKey] = new SkyMaterial(Viewer);
-                        break;
-                    case "SpriteBatchLine":
-                        Materials[materialKey] = new SpriteBatchLineMaterial(Viewer);
                         break;
                     case "SpriteBatch":
                         Materials[materialKey] = new SpriteBatchMaterial(Viewer);
@@ -407,7 +404,7 @@ namespace ORTS
 
     public class SpriteBatchMaterial : BasicBlendedMaterial
     {
-        public SpriteBatch SpriteBatch;
+        public readonly SpriteBatch SpriteBatch;
 
         public SpriteBatchMaterial(Viewer3D viewer)
             : base(viewer, null)
@@ -431,54 +428,6 @@ namespace ORTS
             rs.DepthBufferEnable = true;
             rs.DestinationBlend = Blend.Zero;
             rs.SourceBlend = Blend.One;
-        }
-    }
-
-    //Material to draw lines, which needs to open z-buffer
-    public class SpriteBatchLineMaterial : Material
-    {
-        public readonly SpriteBatch SpriteBatch;
-        public readonly Texture2D Texture;
-
-        public SpriteBatchLineMaterial(Viewer3D viewer)
-            : base(viewer, null)
-        {
-            SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
-            Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-            Texture.SetData(new[] { Color.White });
-        }
-
-        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
-        {
-            float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / Viewer.RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
-            Vector3 screenScaling = new Vector3(scaling);
-            Matrix xForm = Matrix.CreateScale(screenScaling);
-            SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
-            SpriteBatch.GraphicsDevice.RenderState.DepthBufferEnable = true;//want to line to have z-buffer effect
-        }
-
-        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-        {
-            foreach (var item in renderItems)
-            {
-                item.RenderPrimitive.Draw(graphicsDevice);
-            }
-        }
-
-        public override void ResetState(GraphicsDevice graphicsDevice)
-        {
-            SpriteBatch.End();//DepthBufferEnable will be restored to previous state
-        }
-
-        public override bool GetBlending()
-        {
-            return true;
-        }
-
-        public override void Mark()
-        {
-            Viewer.TextureManager.Mark(Texture);
-            base.Mark();
         }
     }
 
@@ -1711,78 +1660,58 @@ namespace ORTS
         }
     }
 
-    //Material to draw train car numbers, sidings and platforms
-    public class ActivityInforMaterial : Material
+    public class Label3DMaterial : SpriteBatchMaterial
     {
-        public SpriteBatch SpriteBatch;
-        public Texture2D Texture;
-        public SpriteFont Font;
+        public readonly Texture2D Texture;
+        public readonly WindowTextFont Font;
 
-        //texts are aligned as table cells, but they can be either in table A or table B
-        public List<Vector2>[] AlignedTextA;
-        public List<Vector2>[] AlignedTextB;
-        public float LineSpacing;
+        readonly List<Rectangle> TextBoxes = new List<Rectangle>();
 
-        public ActivityInforMaterial(Viewer3D viewer)
-            : base(viewer, null)
+        public Label3DMaterial(Viewer3D viewer)
+            : base(viewer)
         {
-            SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
             Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
             Texture.SetData(new[] { Color.White });
-            Font = Viewer.RenderProcess.Content.Load<SpriteFont>("Arial");
-            LineSpacing = Font.LineSpacing;
-            if (LineSpacing < 10) LineSpacing = 10; //if spacing between text lines is too small
+            //LineSpacing = 16; // FIXME!!
+            //if (LineSpacing < 10) LineSpacing = 10; //if spacing between text lines is too small
+            Font = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1); // FIXME: Bold needed?
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            float scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / Viewer.RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
-            Vector3 screenScaling = new Vector3(scaling);
-            Matrix xForm = Matrix.CreateScale(screenScaling);
-            SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.SaveState, xForm);
-            SpriteBatch.GraphicsDevice.RenderState.DepthBufferEnable = true;//want the line to have z-buffer effect
+            var scaling = (float)graphicsDevice.PresentationParameters.BackBufferHeight / Viewer.RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight;
+            SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None, Matrix.CreateScale(scaling));
+
+            var rs = graphicsDevice.RenderState;
+            rs.DepthBufferEnable = true;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            //texts are put to a virtual table on the screen, which has one column each row, and texts in the same row
-            //do not overlap each other. to put more information, we created two tables, and a primitive can use either of them. 
-            //For example, train car name use AlignedTextA, and siding names use AlignedTextB
-            //each rending process, we will clear the text in the tables before put texts in
-            if (AlignedTextA == null || Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1 != AlignedTextA.Length)
-            {
-                AlignedTextA = new List<Vector2>[Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1];
-                for (var i = 0; i < AlignedTextA.Length; i++) AlignedTextA[i] = new List<Vector2>();
-            }
-            else
-            {
-                foreach (List<Vector2> ls in AlignedTextA) ls.Clear();
-            }
-
-            if (AlignedTextB == null || Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1 != AlignedTextB.Length)
-            {
-                AlignedTextB = new List<Vector2>[Viewer.GraphicsDevice.Viewport.Height / (int)LineSpacing + 1];
-                for (var i = 0; i < AlignedTextB.Length; i++) AlignedTextB[i] = new List<Vector2>();
-            }
-            else
-            {
-                foreach (List<Vector2> ls in AlignedTextB) ls.Clear();
-            }
-
-            foreach (var item in renderItems)
-            {
-                item.RenderPrimitive.Draw(graphicsDevice);
-            }
-        }
-
-        public override void ResetState(GraphicsDevice graphicsDevice)
-        {
-            SpriteBatch.End();//DepthBufferEnable will be restored to previous state
+            TextBoxes.Clear();
+            base.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
         }
 
         public override bool GetBlending()
         {
-            return true;
+            return false;
+        }
+
+        public Point GetTextLocation(int x, int y, string text)
+        {
+            // Start with a box in the location specified.
+            var textBox = new Rectangle(x, y, Font.MeasureString(text), Font.Height);
+            textBox.X -= textBox.Width / 2;
+            textBox.Inflate(5, 2);
+            // Find all the existing boxes which overlap with the new box, as if its top was extended upwards to infinity.
+            var boxes = TextBoxes.Where(box => box.Top <= textBox.Bottom && box.Right >= textBox.Left && box.Left <= textBox.Right).OrderBy(box => -box.Top);
+            // For each possible colliding box, if it does collide, shift the new box above it.
+            foreach (var box in boxes)
+                if (box.Top <= textBox.Bottom && box.Bottom >= textBox.Top)
+                    textBox.Y = box.Top - textBox.Height;
+            // And we're done.
+            TextBoxes.Add(textBox);
+            return new Point(textBox.X + 5, textBox.Y + 2);
         }
     }
 }

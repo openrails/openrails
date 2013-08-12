@@ -313,7 +313,6 @@ namespace ORTS
             TextureManager = new SharedTextureManager(this, GraphicsDevice);
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
-            InfoDisplay = new InfoDisplay(this);
 
             WindowManager = new WindowManager(this);
             QuitWindow = new QuitWindow(WindowManager);
@@ -331,6 +330,8 @@ namespace ORTS
             SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
 			ComposeMessageWindow = new ComposeMessage(WindowManager);
             WindowManager.Initialize();
+
+            InfoDisplay = new InfoDisplay(this);
 
             World = new World(this);
 
