@@ -662,9 +662,15 @@ namespace MSTS
             /// </summary>            
             TemperatureDifference = 1 << 18,    // "TemperatureDifference" not "Temperature" as 0'C <> 0'F
 
-            /// <summary>UNITS.Any is deprecated and may be removed in a later version.
-            /// It allows numbers to be parsed without specifying what the units represent, so permitting errors like "lb" for "lbf"
-            /// </summary>
+            /// <summary>
+            /// Valid Units: kgm^2
+            /// <para>Scaled to kgm^2.</para>
+            /// </summary>            
+            RotationalInertia = 1 << 19,
+
+            // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values
+            // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
+            // "Any" should not be used where the dimensions of a unit are predictable.
             Any = ~Compulsory // All bits set except the Compulsory bit
         }
 

@@ -207,10 +207,10 @@ namespace ORTS
         public void Parse(STFReader stf)
         {
             stf.MustMatch("(");
-            MinimumValue = stf.ReadFloat(STFReader.UNITS.Any, null);
-            MaximumValue = stf.ReadFloat(STFReader.UNITS.Any, null);
-            StepSize = stf.ReadFloat(STFReader.UNITS.Any, null);
-            IntermediateValue = CurrentValue = stf.ReadFloat(STFReader.UNITS.Any, null);
+            MinimumValue = stf.ReadFloat(STFReader.UNITS.None, null);
+            MaximumValue = stf.ReadFloat(STFReader.UNITS.None, null);
+            StepSize = stf.ReadFloat(STFReader.UNITS.None, null);
+            IntermediateValue = CurrentValue = stf.ReadFloat(STFReader.UNITS.None, null);
             string token = stf.ReadItem(); // s/b numnotches
             if (string.Compare(token, "NumNotches", true) != 0) // handle error in gp38.eng where extra parameter provided before NumNotches statement 
                 stf.ReadItem();
@@ -219,8 +219,8 @@ namespace ORTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("notch", ()=>{
                     stf.MustMatch("(");
-                    float value = stf.ReadFloat(STFReader.UNITS.Any, null);
-                    int smooth = stf.ReadInt(STFReader.UNITS.Any, null);
+                    float value = stf.ReadFloat(STFReader.UNITS.None, null);
+                    int smooth = stf.ReadInt(STFReader.UNITS.None, null);
                     string type = stf.ReadString();
                     Notches.Add(new MSTSNotch(value, smooth, type, stf));
                     if (type != ")") stf.SkipRestOfBlock();

@@ -86,7 +86,7 @@ namespace ORTS
         //public AntislipControl AntislipControl = AntislipControl.None;
         public float AxleInertiaKgm2 = 0;   //axle inertia
         public float WheelSpeedMpS = 0;
-        public float SlipWarningTresholdPercent = 70;
+        public float SlipWarningThresholdPercent = 70;
         public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
@@ -192,24 +192,24 @@ namespace ORTS
                 case "wagon(adhesion":  // Permits correct spelling
                 case "wagon(adheasion":
                     stf.MustMatch("(");
-                    Adhesion1 = stf.ReadFloat(STFReader.UNITS.Any, null);
-                    Adhesion2 = stf.ReadFloat(STFReader.UNITS.Any, null);
-                    Adhesion3 = stf.ReadFloat(STFReader.UNITS.Any, null);
-                    stf.ReadFloat(STFReader.UNITS.Any, null);
+                    Adhesion1 = stf.ReadFloat(STFReader.UNITS.None, null);
+                    Adhesion2 = stf.ReadFloat(STFReader.UNITS.None, null);
+                    Adhesion3 = stf.ReadFloat(STFReader.UNITS.None, null);
+                    stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(or_adhesion(curtius_kniffler":   
                     stf.MustMatch("(");                      //e.g. Wagon ( OR_adhesion ( Curtius_Kniffler ( 7.5 44 0.161 0.7 ) ) )
-                    Curtius_KnifflerA = stf.ReadFloat(STFReader.UNITS.Any, 7.5f);   if (Curtius_KnifflerA <= 0) Curtius_KnifflerA = 7.5f;
-                    Curtius_KnifflerB = stf.ReadFloat(STFReader.UNITS.Any, 44.0f);  if (Curtius_KnifflerB <= 0) Curtius_KnifflerB = 44.0f;
-                    Curtius_KnifflerC = stf.ReadFloat(STFReader.UNITS.Any, 0.161f); if (Curtius_KnifflerC <= 0) Curtius_KnifflerA = 0.161f;
-                    AdhesionK = stf.ReadFloat(STFReader.UNITS.Any, 0.7f);           if (AdhesionK <= 0) AdhesionK = 0.7f;
+                    Curtius_KnifflerA = stf.ReadFloat(STFReader.UNITS.None, 7.5f); if (Curtius_KnifflerA <= 0) Curtius_KnifflerA = 7.5f;
+                    Curtius_KnifflerB = stf.ReadFloat(STFReader.UNITS.None, 44.0f); if (Curtius_KnifflerB <= 0) Curtius_KnifflerB = 44.0f;
+                    Curtius_KnifflerC = stf.ReadFloat(STFReader.UNITS.None, 0.161f); if (Curtius_KnifflerC <= 0) Curtius_KnifflerA = 0.161f;
+                    AdhesionK = stf.ReadFloat(STFReader.UNITS.None, 0.7f); if (AdhesionK <= 0) AdhesionK = 0.7f;
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(or_adhesion(slipwarningtreshold":
                     stf.MustMatch("(");
-                    SlipWarningTresholdPercent = stf.ReadFloat(STFReader.UNITS.Any, 70.0f); if (SlipWarningTresholdPercent <= 0) SlipWarningTresholdPercent = 70.0f ; 
-                    stf.ReadFloat(STFReader.UNITS.Any, null);
+                    SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
+                    stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(or_adhesion(antislip":
@@ -219,7 +219,7 @@ namespace ORTS
                     break;
                 case "wagon(or_adhesion(wheelset(axle(inertia":
                     stf.MustMatch("(");                    
-                    AxleInertiaKgm2 = stf.ReadFloat(STFReader.UNITS.Any, null);
+                    AxleInertiaKgm2 = stf.ReadFloat(STFReader.UNITS.RotationalInertia, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(or_adhesion(wheelset(axle(radius":
@@ -279,7 +279,7 @@ namespace ORTS
             Curtius_KnifflerC = copy.Curtius_KnifflerC;
             AdhesionK = copy.AdhesionK;
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
-            SlipWarningTresholdPercent = copy.SlipWarningTresholdPercent;
+            SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
             foreach (ViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
