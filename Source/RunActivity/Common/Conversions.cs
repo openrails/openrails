@@ -163,8 +163,12 @@ namespace ORTS
     /// Pressure conversions from and to kilopascals
     /// </summary>
     public class KPa {
-        public static float FromPSI(float p)    { return p * 6.89475729f; } // PSI => kPa
-        public static float   ToPSI(float k)    { return k / 6.89475729f; } // kPa => PSI
+        public static float  FromPSI(float p)   { return p * 6.89475729f; } // PSI => kPa
+        public static float    ToPSI(float k)   { return k / 6.89475729f; } // kPa => PSI
+        public static float FromInHg(float i)   { return i * 3.386389f; }   // inHg => kPa
+        public static float   ToInHg(float k)   { return k / 3.386389f; }   // kPa => inHg
+        public static float FromBar(float b)    { return b * 100.0f; }      // bar => kPa
+        public static float   ToBar(float k)    { return k / 100.0f; }      // kPa => bar
     }
 
     /// <summary>

@@ -555,6 +555,7 @@ namespace MSTS
 		}
         /// <summary>Enumeration limiting which units are valid when parsing a numeric constant.
         /// </summary>
+        // Additional entries because MSTS has multiple default units, e.g. some speeds in metres/sec and other in miles/hr
         [Flags]
         public enum UNITS
         {
@@ -566,107 +567,139 @@ namespace MSTS
             /// </summary>
             Compulsory = 1 << 0,
 
-            /// <summary>Valid Units: m, cm, mm, km, ft, ', in, "
-            /// <para>Scaled to meters.</para>
-            /// </summary>
-            Distance = 1 << 1,
-
-            /// <summary>Valid Units: m/s, mph, kph, kmh, km/h
-            /// <para>Scaled to meters/second.</para>
-            /// </summary>
-            Speed = 1 << 2,
-
             /// <summary>Valid Units: kg, t, lb
             /// <para>Scaled to kilograms.</para>
             /// </summary>
-            Mass = 1 << 3,
+            Mass = 1 << 1,
 
-            /// <summary>Valid Units: n, kn, lbf
-            /// <para>Scaled to newtons.</para>
+            /// <summary>Valid Units: m, cm, mm, km, ft, ', in, "
+            /// <para>Scaled to meters.</para>
             /// </summary>
-            Force = 1 << 4,
-
-            /// <summary>Valid Units: w, kw, hp
-            /// <para>Scaled to watts.</para>
-            /// </summary>
-            Power = 1 << 5,
-
-            /// <summary>Valid Units: n/m
-            /// <para>Scaled to newtons/metre.</para>
-            /// </summary>
-            Stiffness = 1 << 6,
-
-            /// <summary>Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
-            /// <para>Scaled to newtons/speed(m/s)</para>
-            /// </summary>
-            Resistance = 1 << 7,
-
-            /// <summary>Valid Units: lb/h
-            /// <para>Scaled to pounds per hour.</para>
-            /// </summary>
-            MassRate = 1 << 8,
-
-            /// <summary>Valid Units: *(ft^3)
-            /// <para>Scaled to cubic feet.</para>
-            /// </summary>
-            Volume = 1 << 9,
-
-            /// <summary>Valid Units: psi, bar, inhg, kpa
-            /// <para>Scaled to pounds per square inch.</para>
-            /// </summary>
-            Pressure = 1 << 10,
+            Distance = 1 << 2,
 
             /// <summary>Valid Units: *(ft^2)
             /// <para>Scaled to square meters.</para>
             /// </summary>
-            Area = 1 << 11,
-
-            /// <summary>Valid Units: kj/kg, j/g, btu/lb
-            /// <para>Scaled to kj/kg.</para>
-            /// </summary>
-            EnergyDensity = 1 << 12,
+            AreaDefaultFT2 = 1 << 3,
 
             /// <summary>
             /// Valid Units: gal, l
             /// <para>Scaled to litres.</para>
             /// </summary>
-            LiquidVolume = 1 << 13,
+            Volume = 1 << 4,
 
-            /// <summary>
-            /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
-            /// <para>Scaled to psi/s.</para>
-            /// </summary>            
-            PressureRate = 1 << 14,
-
-            /// <summary>
-            /// Valid Units: a, amps
-            /// <para>Scaled to amps.</para>
-            /// </summary>            
-            Current = 1 << 15,
-
-            /// <summary>
-            /// Valid Units: Hz, rps, rpm
-            /// <para>Scaled to Hz.</para>
-            /// </summary>            
-            Frequency = 1 << 16,
+            /// <summary>Valid Units: *(ft^3)
+            /// <para>Scaled to cubic feet.</para>
+            /// </summary>
+            VolumeDefaultFT3 = 1 << 5,
 
             /// <summary>
             /// Valid Units: s, m, h
             /// <para>Scaled to secs.</para>
             /// </summary>            
-            Time = 1 << 17,
+            Time = 1 << 6,
+
+            /// <summary>
+            /// Valid Units: s, m, h
+            /// <para>Scaled to secs.</para>
+            /// </summary>            
+            TimeDefaultM = 1 << 7,
+
+            /// <summary>
+            /// Valid Units: s, m, h
+            /// <para>Scaled to secs.</para>
+            /// </summary>            
+            TimeDefaultH = 1 << 8,
+
+            /// <summary>
+            /// Valid Units: a, amps
+            /// <para>Scaled to amps.</para>
+            /// </summary>            
+            Current = 1 << 9,
+
+            /// <summary>Valid Units: lb/h
+            /// <para>Scaled to pounds per hour.</para>
+            /// </summary>
+            MassRateDefaultLBpH = 1 << 10,
+
+            /// <summary>Valid Units: m/s, mph, kph, kmh, km/h
+            /// <para>Scaled to meters/second.
+            /// See also SpeedMPH </para>
+            /// </summary>
+            Speed = 1 << 11,
+
+            /// <summary>Valid Units: m/s, mph, kph, kmh, km/h
+            /// <para>Scaled to miles/hour.</para>
+            /// Similar to UNITS.Speed except default unit is mph.
+            /// </summary>
+            SpeedDefaultMPH = 1 << 12,
+
+            /// <summary>
+            /// Valid Units: Hz, rps, rpm
+            /// <para>Scaled to Hz.</para>
+            /// </summary>            
+            Frequency = 1 << 13,
+
+            /// <summary>Valid Units: n, kn, lbf
+            /// <para>Scaled to newtons.</para>
+            /// </summary>
+            Force = 1 << 14,
+
+            /// <summary>Valid Units: w, kw, hp
+            /// <para>Scaled to watts.</para>
+            /// </summary>
+            Power = 1 << 15,
+
+            /// <summary>Valid Units: n/m
+            /// <para>Scaled to newtons/metre.</para>
+            /// </summary>
+            Stiffness = 1 << 16,
+
+            /// <summary>Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
+            /// <para>Scaled to newtons/speed(m/s)</para>
+            /// </summary>
+            Resistance = 1 << 17,
+
+            /// <summary>Valid Units: psi, bar, inhg, kpa
+            /// <para>Scaled to pounds per square inch.</para>
+            /// </summary>
+            PressureDefaultPSI = 1 << 18,
+
+            /// <summary>Valid Units: psi, bar, inhg, kpa
+            /// <para>Scaled to pounds per square inch.</para>
+            /// Similar to UNITS.Pressure except default unit is inHg.
+            /// </summary>
+            PressureDefaultInHg = 1 << 19,
+
+            /// <summary>
+            /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
+            /// <para>Scaled to psi/s.</para>
+            /// </summary>            
+            PressureRateDefaultPSIpS = 1 << 20,
+
+            /// <summary>
+            /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
+            /// <para>Scaled to psi/s.</para>
+            /// Similar to UNITS.PressureRate except default unit is inHg/s.
+            /// </summary>            
+            PressureRateDefaultInHgpS = 1 << 21,
+
+            /// <summary>Valid Units: kj/kg, j/g, btu/lb
+            /// <para>Scaled to kj/kg.</para>
+            /// </summary>
+            EnergyDensity = 1 << 22,
 
             /// <summary>
             /// Valid Units: degc, degf
             /// <para>Scaled to Deg Celsius</para>
             /// </summary>            
-            TemperatureDifference = 1 << 18,    // "TemperatureDifference" not "Temperature" as 0'C <> 0'F
+            TemperatureDifference = 1 << 23,    // "TemperatureDifference" not "Temperature" as 0'C <> 0'F
 
             /// <summary>
             /// Valid Units: kgm^2
             /// <para>Scaled to kgm^2.</para>
             /// </summary>            
-            RotationalInertia = 1 << 19,
+            RotationalInertia = 1 << 24,
 
             // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
@@ -701,35 +734,47 @@ namespace MSTS
                 }
                 if ((c < '0') || (c > '9')) break;
             }
+            string suffix = "";
             if (i == constant.Length)
             {
                 if ((validUnits & UNITS.Compulsory) > 0)
                     STFException.TraceWarning(this, "Missing a suffix for data expecting " + validUnits.ToString() + " units");
-                else
-                    return 1; // There is no suffix, it's all numeric
             }
-            while ((i < constant.Length) && (constant[i] == ' ')) ++i; // skip the spaces
+            else
+            {
+                while ((i < constant.Length) && (constant[i] == ' ')) ++i; // skip the spaces
 
-            // Enclose the unit suffix
-            int suffixStart = i;
-            int suffixLength = constant.Length - suffixStart;  
+                // Enclose the unit suffix
+                int suffixStart = i;
+                int suffixLength = constant.Length - suffixStart;
 
-            // Check for an embedded comment in the unit suffix string, ( ie "220kN#est" used in acela.eng ) 
-            int commentStart = constant.IndexOf('#', suffixStart);
-            if( commentStart != -1 ) 
-                suffixLength = commentStart - suffixStart;
+                // Check for an embedded comment in the unit suffix string, ( ie "220kN#est" used in acela.eng ) 
+                int commentStart = constant.IndexOf('#', suffixStart);
+                if (commentStart != -1)
+                    suffixLength = commentStart - suffixStart;
 
-            // Extract the unit suffix
-            string suffix = constant.Substring(suffixStart, suffixLength).ToLowerInvariant();
-            suffix = suffix.Trim();
+                // Extract the unit suffix
+                suffix = constant.Substring(suffixStart, suffixLength).ToLowerInvariant();
+                suffix = suffix.Trim();
 
-            // Extract the prefixed numeric string
-            constant = constant.Substring(beg, end - beg);
-
+                // Extract the prefixed numeric string
+                constant = constant.Substring(beg, end - beg);
+            }
             // Select and return the scalar value
+            if ((validUnits & UNITS.Mass) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "kg": return 1;
+                    case "t": return 1e3;
+                    case "t-uk": return 1016.05;
+                    case "t-us": return 907.18474;
+                    case "lb": return 0.45359237;
+                }
             if ((validUnits & UNITS.Distance) > 0)
                 switch (suffix)
                 {
+                    case "": return 1.0;
                     case "m": return 1;
                     case "cm": return 0.01;
                     case "mm": return 0.001;
@@ -740,35 +785,102 @@ namespace MSTS
                     case "\"": return 0.0254;
                     case "in/2": return 0.0127; // This is a strange unit used to measure radius
                 }
-            if ((validUnits & UNITS.Speed) > 0)
+            if ((validUnits & UNITS.AreaDefaultFT2) > 0)
                 switch (suffix)
                 {
-                    case "m/s": return 1;
-                    case "mph": return 0.44704;
-                    case "kph": return 0.27778;
-                    case "kmh": return 0.27778;
-                    case "km/h": return 0.27778;
-                    default: return 0.44704;
+                    case "": return 0.09290304f;
+                    case "*(m^2)": return 1.0f;
+                    case "*(ft^2)": return 0.09290304f;
                 }
-            if ((validUnits & UNITS.Mass) > 0)
+            if ((validUnits & UNITS.Volume) > 0)
                 switch (suffix)
                 {
-                    case "kg": return 1;
-                    case "t": return 1e3;
-                    case "t-uk": return 1016.05;
-                    case "t-us": return 907.18474;
-                    case "lb": return 0.45359237;
+                    case "": return 1.0;
+                    case "l": return 1;
+                    case "gal": return 3.785f;
+                    case "gals": return 3.785f;
+                    case "g-us": return 3.785f;
+                    case "g-uk": return 4.546f;
                 }
-            if ((validUnits & UNITS.MassRate) > 0)
+            if ((validUnits & UNITS.VolumeDefaultFT3) > 0)
                 switch (suffix)
                 {
+                    case "": return 1.0;
+                    case "*(ft^3)": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "*(m^3)": return 35.3146667;
+                    case "*(in^3)": return 0.000578703704;
+                }
+            if ((validUnits & UNITS.Time) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "s": return 1;
+                    case "m": return 60;    // If validUnits == UNITS.Any then "m" for meters will be returned instead of "m" for minutes.
+                                            // Use of UNITS.Any is not good practice.
+                    case "h": return 3600;
+                }
+            if ((validUnits & UNITS.TimeDefaultM) > 0)
+                switch (suffix)
+                {
+                    case "": return 60.0;
+                    case "s": return 1;
+                    case "m": return 60; 
+                    case "h": return 3600;
+                }
+            if ((validUnits & UNITS.TimeDefaultH) > 0)
+                switch (suffix)
+                {
+                    case "": return 3600.0;
+                    case "s": return 1;
+                    case "m": return 60;
+                    case "h": return 3600;
+                } 
+            if ((validUnits & UNITS.Current) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "amps": return 1;
+                    case "a": return 1;
+                } 
+            if ((validUnits & UNITS.MassRateDefaultLBpH) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
                     case "lb/h": return 1;  // <CJComment> To be revised when non-metric internal units removed. </CJComment>
                     case "kg/h": return 2.20462;
                     case "g/h": return 0.00220462;
                 }
+            if ((validUnits & UNITS.Speed) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "m/s": return 1.0;
+                    case "mph": return 0.44704;
+                    case "kph": return 0.27778;
+                    case "kmh": return 0.27778;
+                    case "km/h": return 0.27778;
+                }
+            if ((validUnits & UNITS.SpeedDefaultMPH) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0; // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "m/s": return 2.23693629;
+                    case "mph": return 1.0;
+                    case "kph": return 0.621371;
+                    case "km/h": return 0.621371;
+                } 
+            if ((validUnits & UNITS.Frequency) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "hz": return 1;
+                    case "rps": return 1;
+                    case "rpm": return 1 / 60;
+                }
             if ((validUnits & UNITS.Force) > 0)
                 switch (suffix)
                 {
+                    case "": return 1.0;
                     case "n": return 1;
                     case "kn": return 1e3;
                     case "lbf": return 4.44822162;
@@ -777,6 +889,7 @@ namespace MSTS
             if ((validUnits & UNITS.Power) > 0)
                 switch (suffix)
                 {
+                    case "": return 1.0;
                     case "w": return 1;
                     case "kw": return 1e3;
                     case "hp": return 745.7;
@@ -784,87 +897,74 @@ namespace MSTS
             if ((validUnits & UNITS.Stiffness) > 0)
                 switch (suffix)
                 {
+                    case "": return 1.0;
                     case "n/m": return 1;
                 }
             if ((validUnits & UNITS.Resistance) > 0)
                 switch (suffix)
                 {
+                    case "": return 1.0;
                     case "n": return 1;
                     case "n/m/s": return 1;
                     case "/m/s": return 1;
                 }
-            if ((validUnits & UNITS.Pressure) > 0)
+            if ((validUnits & UNITS.PressureDefaultPSI) > 0)
                 switch (suffix)
                 {
-                    case "psi": return 1;  // <CJComment> To be revised when non-metric internal units removed. </CJComment>
+                    case "": return 1.0;
+                    case "psi": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "bar": return 14.5037738;
                     case "inhg": return 0.4911;
                     case "kpa": return 0.145;
                 }
-            if ((validUnits & UNITS.Volume) > 0)
+            if ((validUnits & UNITS.PressureDefaultInHg) > 0)
                 switch (suffix)
                 {
-                    case "*(ft^3)": return 1;  // <CJComment> To be revised when non-metric internal units removed. </CJComment>
-                    case "*(m^3)": return 35.3146667;
-                    case "*(in^3)": return 0.000578703704;
+                    case "": return 0.4911;
+                    case "psi": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "bar": return 14.5037738;
+                    case "inhg": return 0.4911;
+                    case "kpa": return 0.145;
                 }
-            if ((validUnits & UNITS.LiquidVolume) > 0)
+            if ((validUnits & UNITS.PressureRateDefaultPSIpS) > 0)
                 switch (suffix)
                 {
-                    case "l": return 1;
-                    case "gal": return 3.785f;
-                    case "gals": return 3.785f;
-                    case "g-us": return 3.785f;
-                    case "g-uk": return 4.546f;
-                }
-            if ((validUnits & UNITS.Area) > 0)
-                switch (suffix)
-                {
-                    case "*(m^2)": return 1;
-                    case "*(ft^2)": return 0.09290304f;
-                }
-            if ((validUnits & UNITS.EnergyDensity) > 0)
-                switch (suffix)
-                {
-                    case "kj/kg": return 1;
-                    case "j/g": return 1;
-                    case "btu/lb": return 1 / 2.326f;
-                }
-            if ((validUnits & UNITS.PressureRate) > 0)
-                switch (suffix)
-                {
-                    case "psi/s": return 1;  // <CJComment> To be revised when non-metric internal units removed. </CJComment>
+                    case "": return 1.0;
+                    case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "inhg/s": return 0.4911f;
                     case "bar/s": return 14.5037738;
                     case "kpa/s": return 0.145;
                 }
-            if ((validUnits & UNITS.Current) > 0)
+            if ((validUnits & UNITS.PressureRateDefaultInHgpS) > 0)
                 switch (suffix)
                 {
-                    case "amps": return 1;
-                    case "a": return 1;
+                    case "": return 0.4911f;
+                    case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "inhg/s": return 0.4911f;
+                    case "bar/s": return 14.5037738;
+                    case "kpa/s": return 0.145;
                 }
-            if ((validUnits & UNITS.Frequency) > 0)
+            if ((validUnits & UNITS.EnergyDensity) > 0)
                 switch (suffix)
                 {
-                    case "hz": return 1;
-                    case "rps": return 1;
-                    case "rpm": return 1/60;
-                }
-            if ((validUnits & UNITS.Time) > 0)
-                switch (suffix)
-                {
-                    case "s": return 1;
-                    case "m": return 60;    // If validUnits == UNITS.Any then "m" for meters will be returned instead of "m" for minutes.
-                                            // Use of UNITS.Any is not good practice.
-                    case "h": return 3600;
+                    case "": return 1.0;
+                    case "kj/kg": return 1;
+                    case "j/g": return 1;
+                    case "btu/lb": return 1 / 2.326f;
                 }
             if ((validUnits & UNITS.TemperatureDifference) > 0)
                 switch (suffix)
                 {
+                    case "": return 1.0;
                     case "degc": return 1;
                     case "degf": return 100/180;
                 }
+            if ((validUnits & UNITS.RotationalInertia) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                }
+            
             STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");
             return 1;
         }

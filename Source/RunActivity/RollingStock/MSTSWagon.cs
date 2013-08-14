@@ -314,7 +314,7 @@ namespace ORTS
             float c2 = stf.ReadFloat(STFReader.UNITS.Resistance, null);
             float e2 = stf.ReadFloat(STFReader.UNITS.None, null);
             stf.SkipRestOfBlock();
-            if (v2 < 0 || v2 > 4.4407f)
+            if (v2 < 0 || v2 > 4.4407f) // > 10 mph
             {   // not fcalc ignore friction and use default davis equation
                 // Starting Friction 
                 //

@@ -169,16 +169,14 @@ namespace ORTS
             {
                 case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(triplevalveratio": AuxCylVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-            
-                case "wagon(maxreleaserate": MaxReleaseRate = ReleaseRate = stf.ReadFloatBlock(STFReader.UNITS.PressureRate, null); break;
-                case "wagon(maxapplicationrate": MaxApplicationRate = stf.ReadFloatBlock(STFReader.UNITS.PressureRate, null); break;
-                case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRate = stf.ReadFloatBlock(STFReader.UNITS.PressureRate, null); break;
-                case "wagon(emergencyreschargingrate": EmergResChargingRate = stf.ReadFloatBlock(STFReader.UNITS.PressureRate, null); break;
-
+                case "wagon(maxreleaserate": MaxReleaseRate = ReleaseRate = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "wagon(maxapplicationrate": MaxApplicationRate = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "wagon(maxauxilarychargingrate": MaxAuxilaryChargingRate = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "wagon(emergencyreschargingrate": EmergResChargingRate = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(brakepipevolume": BrakePipeVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(brakepipevolume": BrakePipeVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
             }
         }
 
@@ -743,11 +741,13 @@ namespace ORTS
 
     public class VacuumSinglePipe : MSTSBrakeSystem
     {
-        const float OneAtmospherePSIA = 15;
-        const float OneAtmosphereInHg = 30;
+        const float OneAtmosphereKPa = 100;
+        //const float OneAtmospherePSIA = 15;
+        //const float OneAtmosphereInHg = 30;
         float MaxHandbrakeForceN = 0;
         float MaxBrakeForceN = 89e3f;
-        float MaxForcePressurePSI = 21 * OneAtmospherePSIA / OneAtmosphereInHg;// relative pressure difference for max brake force
+        //float MaxForcePressurePSI = 21 * OneAtmospherePSIA / OneAtmosphereInHg;// relative pressure difference for max brake force
+        float MaxForcePressurePSI = KPa.ToPSI(KPa.FromInHg(21));    // relative pressure difference for max brake force
         TrainCar Car;
         float HandbrakePercent = 0;
         float CylPressurePSIA = 0;
@@ -793,12 +793,14 @@ namespace ORTS
         // convert vacuum in inhg to pressure in psia
         float V2P(float v)
         {
-            return OneAtmospherePSIA * (1 - v / OneAtmosphereInHg);
+            //return OneAtmospherePSIA * (1 - v / OneAtmosphereInHg);
+            return KPa.ToPSI(1.0f - (KPa.FromInHg(v) / OneAtmosphereKPa));
         }
         // convert pressure in psia to vacuum in inhg
         float P2V(float p)
         {
-            return OneAtmosphereInHg * (1 - p / OneAtmospherePSIA);
+            //return OneAtmosphereInHg * (1 - p / OneAtmospherePSIA);
+            return KPa.ToInHg(1.0f - (KPa.FromPSI(p) / OneAtmosphereKPa));
         }
         // return vacuum reservior pressure adjusted for piston movement
         float VacResPressureAdjPSIA()
@@ -851,9 +853,9 @@ namespace ORTS
             {
                 case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxForcePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.Pressure, null) * OneAtmospherePSIA / OneAtmosphereInHg; break;
-                case "wagon(maxreleaserate": MaxReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRate, null) * OneAtmospherePSIA / OneAtmosphereInHg; break;
-                case "wagon(maxapplicationrate": ApplyChargingRatePSIpS = MaxApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRate, null) * OneAtmospherePSIA / OneAtmosphereInHg; break;
+                case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxForcePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultInHg, null); break;
+                case "wagon(maxreleaserate": MaxReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
+                case "wagon(maxapplicationrate": ApplyChargingRatePSIpS = MaxApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
                 case "engine(pipetimefactor": PipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(releasetimefactor": ReleaseTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
             }
@@ -885,13 +887,13 @@ namespace ORTS
         public override void Connect()
         {
             if (BrakeLine1PressurePSI < 0)
-                BrakeLine1PressurePSI = OneAtmospherePSIA;
+                BrakeLine1PressurePSI = KPa.ToPSI(OneAtmosphereKPa);
         }
         public override void Disconnect()
         {
             BrakeLine1PressurePSI = -1;
-            CylPressurePSIA = OneAtmospherePSIA;
-            VacResPressurePSIA = OneAtmospherePSIA;
+            CylPressurePSIA = KPa.ToPSI(OneAtmosphereKPa);
+            VacResPressurePSIA = KPa.ToPSI(OneAtmosphereKPa);
         }
         public override void Update(float elapsedClockSeconds)
         {
@@ -996,7 +998,7 @@ namespace ORTS
         {
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
-            Car.Train.BrakeLine1PressurePSI = P2V(OneAtmospherePSIA - MaxForcePressurePSI * (1 - percent / 100));
+            Car.Train.BrakeLine1PressurePSI = P2V(KPa.ToPSI(OneAtmosphereKPa) - MaxForcePressurePSI * (1 - percent / 100));
         }
     }
 }

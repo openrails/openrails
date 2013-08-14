@@ -4986,7 +4986,6 @@ namespace ORTS
 
                 if (switchSet)
                     ProcessManualSwitch(routeDirectionIndex, reqSwitch, direction);
-                //CJ
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Confirm(
                         (direction == Direction.Forward) ? CabControl.SwitchAhead : CabControl.SwitchBehind, 

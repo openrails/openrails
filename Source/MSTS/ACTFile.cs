@@ -274,6 +274,7 @@ using System.Text;
 #if NEW_SIGNALLING
 using System.IO;
 #endif
+using ORTS; // For class S (seconds)
 
 namespace MSTS {
     public enum SeasonType { Spring = 0, Summer, Autumn, Winter }
@@ -338,14 +339,14 @@ namespace MSTS {
         public string Name;					// AE Display Name
         public string Description = " ";
         public string Briefing = " ";
-        public int CompleteActivity = 1;
+        public int CompleteActivity = 1;    // <CJComment> Should be boolean </CJComment>
         public int Type = 0;
         public ActivityMode Mode = ActivityMode.Player;
         public StartTime StartTime = new StartTime(10, 0, 0);
         public SeasonType Season = SeasonType.Summer;
         public WeatherType Weather = WeatherType.Clear;
         public string PathID;
-        public int StartingSpeed = 0;
+        public int StartingSpeed = 0;    // <CJComment> Should be float </CJComment>
         public Duration Duration = new Duration(1, 0);
         public Difficulty Difficulty = Difficulty.Easy;
         public int Animals = 100;		// percent
@@ -393,9 +394,9 @@ namespace MSTS {
 
         public StartTime(STFReader stf) {
             stf.MustMatch("(");
-            Hour = stf.ReadInt(STFReader.UNITS.None, null);
-            Minute = stf.ReadInt(STFReader.UNITS.None, null);
-            Second = stf.ReadInt(STFReader.UNITS.None, null);
+            Hour = stf.ReadInt(STFReader.UNITS.TimeDefaultH, null) / 3600;
+            Minute = stf.ReadInt(STFReader.UNITS.TimeDefaultM, null) / 60;
+            Second = stf.ReadInt(STFReader.UNITS.Time, null);
             stf.MustMatch(")");
         }
 
@@ -415,8 +416,8 @@ namespace MSTS {
 
         public Duration(STFReader stf) {
             stf.MustMatch("(");
-            Hour = stf.ReadInt(STFReader.UNITS.None, null);
-            Minute = stf.ReadInt(STFReader.UNITS.None, null);
+            Hour = stf.ReadInt(STFReader.UNITS.TimeDefaultH, null) / 3600;
+            Minute = stf.ReadInt(STFReader.UNITS.TimeDefaultM, null) / 60;
             stf.MustMatch(")");
         }
 
@@ -483,12 +484,12 @@ namespace MSTS {
             float distanceDownPath = new float();
             int platformStartID = 0;
             stf.MustMatch("(");
-            Time = stf.ReadInt(STFReader.UNITS.None, null);
+            Time = stf.ReadInt(STFReader.UNITS.Time, null);
             // Clumsy parsing. You only get a new Player_Traffic_Item in the list after a PlatformStartId is met.
             // Blame lies with Microsoft for poor design of syntax.
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("arrivaltime", ()=>{ arrivalTime = baseDT.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.None, null)); }),
-                new STFReader.TokenProcessor("departtime", ()=>{ departTime = baseDT.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.None, null)); }),
+                new STFReader.TokenProcessor("arrivaltime", ()=>{ arrivalTime = baseDT.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.Time, null)); }),
+                new STFReader.TokenProcessor("departtime", ()=>{ departTime = baseDT.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.Time, null)); }),
                 new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ distanceDownPath = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(STFReader.UNITS.None, null); 
@@ -524,10 +525,10 @@ namespace MSTS {
         public Service_Definition(STFReader stf) {
             stf.MustMatch("(");
             Name = stf.ReadString();
-            Time = stf.ReadInt(STFReader.UNITS.None, null);
+            Time = stf.ReadInt(STFReader.UNITS.Time, null);
             stf.MustMatch("uid");
             UiD = stf.ReadIntBlock(STFReader.UNITS.None, null);
-            // Clumsy parsing. You only get a new Player_Traffic_Item in the list after a PlatformStartId is met.
+            // Clumsy parsing. You only get a new Service_Item in the list after a PlatformStartId is met.
             // Blame lies with Microsoft for poor design of syntax.
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("efficiency", ()=>{ efficiency = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
@@ -639,10 +640,10 @@ namespace MSTS {
 
             stt.MustMatch("(");
             Service_Definition = stt.ReadString();
-            Time = stt.ReadInt(STFReader.UNITS.None, null);
+            Time = stt.ReadInt(STFReader.UNITS.Time, null);
             stt.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("arrivaltime", ()=>{ arrivalTime = stt.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("departtime", ()=>{ departTime = stt.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("arrivaltime", ()=>{ arrivalTime = stt.ReadIntBlock(STFReader.UNITS.Time, null); }),
+                new STFReader.TokenProcessor("departtime", ()=>{ departTime = stt.ReadIntBlock(STFReader.UNITS.Time, null); }),
                 new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stt.ReadIntBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ distanceDownPath = stt.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stt.ReadIntBlock(STFReader.UNITS.None, null); 
@@ -735,7 +736,7 @@ namespace MSTS {
                     TileZ = stf.ReadInt(STFReader.UNITS.None, null);
                     X = stf.ReadFloat(STFReader.UNITS.None, null);
                     Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                    RadiusM = stf.ReadFloat(STFReader.UNITS.None, null);
+                    RadiusM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.MustMatch(")");
                 }),
             });
@@ -771,9 +772,7 @@ namespace MSTS {
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("wagon_list", ()=>{ WagonList = new WagonList(stf, Type); }),
                 new STFReader.TokenProcessor("sidingitem", ()=>{ SidingId = (uint)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                //new STFReader.TokenProcessor("speed", ()=>{ SpeedMpS = (int)(MilespHourToMeterpSecond * stf.ReadIntBlock(STFReader.UNITS.None, null)); }), ++
-                //new STFReader.TokenProcessor("speed", ()=>{ SpeedMpS = MilespHourToMeterpSecond * stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("speed", ()=>{ SpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("speed", ()=>{ SpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
                 new STFReader.TokenProcessor("reversable_event", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Reversible = true; }),
                 // Also support the correct spelling !
                 new STFReader.TokenProcessor("reversible_event", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Reversible = true; }),
@@ -828,7 +827,7 @@ namespace MSTS {
                 new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ TextToDisplayOnCompletionIfTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
-                new STFReader.TokenProcessor("time", ()=>{ Time = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("time", ()=>{ Time = stf.ReadIntBlock(STFReader.UNITS.Time, null); }),
             });
         }
     }
