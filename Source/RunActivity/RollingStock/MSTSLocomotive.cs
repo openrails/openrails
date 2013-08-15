@@ -333,6 +333,7 @@ namespace ORTS
 
                 case "engine(vigilancemonitor":
                 case "engine(emergencystopmonitor":
+                case "engine(awsmonitor":
                 case "engine(overspeedmonitor": VigilanceMonitor = true; TrainControlSystem.Parse(lowercasetoken, stf); break;
                 case "engine(enginecontrollers(combined_control": HasCombCtrl = true; if (!DynamicBrakeController.IsValid()) DynamicBrakeController = new MSTSNotchController(0, 1, .05f); break;
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
@@ -861,7 +862,7 @@ namespace ORTS
             if (CompressorOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
-            if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
+            if (VigilanceMonitor && Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
                 TrainControlSystem.Update();
 
             PrevMotiveForceN = MotiveForceN;
