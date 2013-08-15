@@ -369,8 +369,29 @@ namespace ORTS
                         stream.HardActivate();
                         // run the initial triggers
                         foreach (ORTSTrigger trigger in stream.Triggers)
+                        {
                             trigger.Initialize();
+                            trigger.TryTrigger();
+                        }
 
+                        var rt = from t in stream.Triggers
+                                 where t.Signaled &&
+                                 (t.SoundCommand is ORTSReleaseLoopRelease || t.SoundCommand is ORTSReleaseLoopReleaseWithJump)
+                                 select t;
+
+                        if (rt.Count() == 0)
+                        {
+                            var qt = from t in stream.Triggers
+                                     where t.Signaled &&
+                                     (t.SoundCommand is ORTSStartLoop || t.SoundCommand is ORTSStartLoopRelease)
+                                     select t;
+                            if (qt.Count() > 0 && !stream.ALSoundSource.isPlaying)
+                                foreach (var t in qt)
+                                    if (t.Enabled)
+                                    {
+                                        t.SoundCommand.Run();
+                                    }
+                        }
                         stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D || !IsExternal);
                     }
                 }
@@ -686,20 +707,7 @@ namespace ORTS
             foreach (ORTSTrigger trigger in Triggers)
                 trigger.TryTrigger();
             
-            var qt = from t in Triggers
-                     where t.Signaled &&
-                     (t.SoundCommand is ORTSStartLoop || t.SoundCommand is ORTSStartLoopRelease)
-                     select t;
-            int stc = qt.Count();
-
-            // Run Initial if no other is Signaled
-            if (stc > 0 && !ALSoundSource.isPlaying)
-                foreach (var t in qt)
-                {
-                    if (t.Enabled)
-                        t.SoundCommand.Run();
-                } 
-            else if (_InitialTrigger != null)
+            if (_InitialTrigger != null)
             {
                 // If no triggers active, Initialize the Initial
                 if (!ALSoundSource.isPlaying)
@@ -720,9 +728,14 @@ namespace ORTS
                     }
                 }
                 // If triggers are active, reset the Initial
-                else if (stc > 1 && _InitialTrigger.Signaled)
+                else
                 {
-                    _InitialTrigger.Signaled = false;
+                    var qt = from t in Triggers
+                             where t.Signaled &&
+                             (t.SoundCommand is ORTSStartLoop || t.SoundCommand is ORTSStartLoopRelease)
+                             select t;
+                    if (qt.Count() > 1 && _InitialTrigger.Signaled) 
+                        _InitialTrigger.Signaled = false;
                 }
             }
 
@@ -1116,7 +1129,7 @@ namespace ORTS
         MSTSWagon car;
         SoundStream SoundStream;
 
-        float? StartValue;
+        float StartValue;
         public bool IsBellow = false;
 
         public ORTSVariableTrigger(SoundStream soundStream, MSTS.Variable_Trigger smsData)
@@ -1130,7 +1143,7 @@ namespace ORTS
 
         public override void  Initialize()
         {
-            // Leave StartValue uninitialized. It isn't known in advance if it should be initialized with 0 or float.MaxValue, so leave it untouched.
+            StartValue = SMS.Event == MSTS.Variable_Trigger.Events.Distance_Dec_Past ? float.MaxValue : 0;
 
             /*if ((new Variable_Trigger.Events[] { Variable_Trigger.Events.Variable1_Dec_Past,
                 Variable_Trigger.Events.Variable1_Inc_Past, Variable_Trigger.Events.Variable2_Dec_Past, 
@@ -1158,7 +1171,7 @@ namespace ORTS
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
-                        if (StartValue == null || SMS.Threshold <= StartValue)
+                        if (SMS.Threshold <= StartValue)
                             triggered = true;
                     }
                     break;
@@ -1170,7 +1183,7 @@ namespace ORTS
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
-                        if (StartValue != null && SMS.Threshold >= StartValue)
+                        if (SMS.Threshold >= StartValue)
                             triggered = true;
                     }
                     break;
