@@ -686,16 +686,21 @@ namespace ORTS
             foreach (ORTSTrigger trigger in Triggers)
                 trigger.TryTrigger();
             
-            // Run Initial if no other is Signaled
             var qt = from t in Triggers
                      where t.Signaled &&
                      (t.SoundCommand is ORTSStartLoop || t.SoundCommand is ORTSStartLoopRelease)
                      select t;
+            int stc = qt.Count();
 
-            // If exists an InitialTrigger at all
-            if (_InitialTrigger != null)
+            // Run Initial if no other is Signaled
+            if (stc > 0 && !ALSoundSource.isPlaying)
+                foreach (var t in qt)
+                {
+                    if (t.Enabled)
+                        t.SoundCommand.Run();
+                } 
+            else if (_InitialTrigger != null)
             {
-                int stc = qt.Count();
                 // If no triggers active, Initialize the Initial
                 if (!ALSoundSource.isPlaying)
                 {
@@ -751,7 +756,7 @@ namespace ORTS
                     {
                         Console.Write("");
                     }
-                    NeedsFrequentUpdate = true;
+                    NeedsFrequentUpdate = x != 0;
                 }
             }
 
