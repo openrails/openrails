@@ -56,7 +56,7 @@
             // buttonTestAll
             // 
             this.buttonTestAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonTestAll.Location = new System.Drawing.Point(12, 397);
+            this.buttonTestAll.Location = new System.Drawing.Point(12, 441);
             this.buttonTestAll.Name = "buttonTestAll";
             this.buttonTestAll.Size = new System.Drawing.Size(75, 23);
             this.buttonTestAll.TabIndex = 1;
@@ -67,7 +67,7 @@
             // buttonTest
             // 
             this.buttonTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonTest.Location = new System.Drawing.Point(93, 397);
+            this.buttonTest.Location = new System.Drawing.Point(93, 441);
             this.buttonTest.Name = "buttonTest";
             this.buttonTest.Size = new System.Drawing.Size(75, 23);
             this.buttonTest.TabIndex = 2;
@@ -78,7 +78,7 @@
             // buttonCancel
             // 
             this.buttonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonCancel.Location = new System.Drawing.Point(174, 397);
+            this.buttonCancel.Location = new System.Drawing.Point(174, 441);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 3;
@@ -89,7 +89,7 @@
             // buttonSummary
             // 
             this.buttonSummary.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonSummary.Location = new System.Drawing.Point(706, 397);
+            this.buttonSummary.Location = new System.Drawing.Point(656, 441);
             this.buttonSummary.Name = "buttonSummary";
             this.buttonSummary.Size = new System.Drawing.Size(75, 23);
             this.buttonSummary.TabIndex = 6;
@@ -138,7 +138,7 @@
             this.gridTestActivities.RowHeadersVisible = false;
             this.gridTestActivities.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.gridTestActivities.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.gridTestActivities.Size = new System.Drawing.Size(850, 379);
+            this.gridTestActivities.Size = new System.Drawing.Size(800, 423);
             this.gridTestActivities.TabIndex = 0;
             // 
             // toTestDataGridViewCheckBoxColumn
@@ -246,7 +246,7 @@
             // buttonDetails
             // 
             this.buttonDetails.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonDetails.Location = new System.Drawing.Point(787, 397);
+            this.buttonDetails.Location = new System.Drawing.Point(737, 441);
             this.buttonDetails.Name = "buttonDetails";
             this.buttonDetails.Size = new System.Drawing.Size(75, 23);
             this.buttonDetails.TabIndex = 7;
@@ -258,9 +258,9 @@
             // 
             this.checkBoxOverride.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkBoxOverride.Location = new System.Drawing.Point(255, 397);
+            this.checkBoxOverride.Location = new System.Drawing.Point(255, 441);
             this.checkBoxOverride.Name = "checkBoxOverride";
-            this.checkBoxOverride.Size = new System.Drawing.Size(364, 23);
+            this.checkBoxOverride.Size = new System.Drawing.Size(314, 23);
             this.checkBoxOverride.TabIndex = 4;
             this.checkBoxOverride.Text = "Override user settings when running tests";
             this.checkBoxOverride.UseVisualStyleBackColor = true;
@@ -268,7 +268,7 @@
             // buttonNoSort
             // 
             this.buttonNoSort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonNoSort.Location = new System.Drawing.Point(625, 397);
+            this.buttonNoSort.Location = new System.Drawing.Point(575, 441);
             this.buttonNoSort.Name = "buttonNoSort";
             this.buttonNoSort.Size = new System.Drawing.Size(75, 23);
             this.buttonNoSort.TabIndex = 5;
@@ -280,7 +280,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(874, 432);
+            this.ClientSize = new System.Drawing.Size(824, 476);
             this.Controls.Add(this.buttonNoSort);
             this.Controls.Add(this.buttonDetails);
             this.Controls.Add(this.buttonSummary);

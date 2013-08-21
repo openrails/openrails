@@ -258,15 +258,12 @@ namespace ORTS
                 }
                 else
                 {
-                    buttonDelete.Enabled 
-                        = buttonResume.Enabled 
-                        = buttonReplayFromStart.Enabled
-                        = buttonReplayFromPreviousSave.Enabled = false;
+                    buttonDelete.Enabled = buttonResume.Enabled = buttonReplayFromStart.Enabled = buttonReplayFromPreviousSave.Enabled = false;
                 }
             }
             else
             {
-                buttonDelete.Enabled = buttonResume.Enabled = false;
+                buttonDelete.Enabled = buttonResume.Enabled = buttonReplayFromStart.Enabled = buttonReplayFromPreviousSave.Enabled = false;
             }
 
             buttonDeleteInvalid.Enabled = Saves.Any(s => !s.Valid);

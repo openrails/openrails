@@ -74,6 +74,9 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.label13 = new System.Windows.Forms.Label();
+            this.numericUpDownPerformanceTunerTarget = new System.Windows.Forms.NumericUpDown();
+            this.checkBoxPerformanceTuner = new System.Windows.Forms.CheckBox();
             this.label9 = new System.Windows.Forms.Label();
             this.numericUpDownLoadingDelay = new System.Windows.Forms.NumericUpDown();
             this.checkDoubleWire = new System.Windows.Forms.CheckBox();
@@ -102,9 +105,6 @@
             this.label17 = new System.Windows.Forms.Label();
             this.checkBoxDataLoggerPhysics = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.label13 = new System.Windows.Forms.Label();
-            this.numericUpDownPerformanceTunerTarget = new System.Windows.Forms.NumericUpDown();
-            this.checkBoxPerformanceTuner = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -120,6 +120,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownAdhesionFilterSize)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPerformanceTunerTarget)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownLoadingDelay)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMLoweringValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).BeginInit();
@@ -127,7 +128,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).BeginInit();
             this.tabPageDataLogger.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPerformanceTunerTarget)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -251,7 +251,7 @@
             this.tabPageGeneral.Controls.Add(this.label4);
             this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
             this.tabPageGeneral.Name = "tabPageGeneral";
-            this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageGeneral.Size = new System.Drawing.Size(444, 403);
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
@@ -266,7 +266,7 @@
             this.tabPageAudio.Controls.Add(this.checkBoxBINSound);
             this.tabPageAudio.Location = new System.Drawing.Point(4, 22);
             this.tabPageAudio.Name = "tabPageAudio";
-            this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageAudio.Size = new System.Drawing.Size(444, 403);
             this.tabPageAudio.TabIndex = 5;
             this.tabPageAudio.Text = "Audio";
@@ -355,7 +355,7 @@
             this.tabPageVideo.Controls.Add(this.checkBoxPrecipitation);
             this.tabPageVideo.Location = new System.Drawing.Point(4, 22);
             this.tabPageVideo.Name = "tabPageVideo";
-            this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageVideo.Size = new System.Drawing.Size(444, 403);
             this.tabPageVideo.TabIndex = 4;
             this.tabPageVideo.Text = "Video";
@@ -573,7 +573,7 @@
             this.tabPageSimulation.Controls.Add(this.checkBoxAdvancedAdhesion);
             this.tabPageSimulation.Location = new System.Drawing.Point(4, 22);
             this.tabPageSimulation.Name = "tabPageSimulation";
-            this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageSimulation.Size = new System.Drawing.Size(444, 403);
             this.tabPageSimulation.TabIndex = 2;
             this.tabPageSimulation.Text = "Simulation";
@@ -592,7 +592,7 @@
             // numericUpDownAdhesionFilterSize
             // 
             this.numericUpDownAdhesionFilterSize.Location = new System.Drawing.Point(25, 28);
-            this.numericUpDownAdhesionFilterSize.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.numericUpDownAdhesionFilterSize.Margin = new System.Windows.Forms.Padding(2);
             this.numericUpDownAdhesionFilterSize.Minimum = new decimal(new int[] {
             1,
             0,
@@ -637,7 +637,7 @@
             this.tabPageKeyboard.Controls.Add(this.panelKeys);
             this.tabPageKeyboard.Location = new System.Drawing.Point(4, 22);
             this.tabPageKeyboard.Name = "tabPageKeyboard";
-            this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageKeyboard.Size = new System.Drawing.Size(444, 403);
             this.tabPageKeyboard.TabIndex = 1;
             this.tabPageKeyboard.Text = "Keyboard";
@@ -727,11 +727,58 @@
             this.tabPageExperimental.Controls.Add(this.ElevationText);
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
-            this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageExperimental.Size = new System.Drawing.Size(444, 403);
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(85, 245);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(88, 13);
+            this.label13.TabIndex = 19;
+            this.label13.Text = "Target frame rate";
+            // 
+            // numericUpDownPerformanceTunerTarget
+            // 
+            this.numericUpDownPerformanceTunerTarget.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.numericUpDownPerformanceTunerTarget.Location = new System.Drawing.Point(26, 243);
+            this.numericUpDownPerformanceTunerTarget.Maximum = new decimal(new int[] {
+            300,
+            0,
+            0,
+            0});
+            this.numericUpDownPerformanceTunerTarget.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericUpDownPerformanceTunerTarget.Name = "numericUpDownPerformanceTunerTarget";
+            this.numericUpDownPerformanceTunerTarget.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownPerformanceTunerTarget.TabIndex = 18;
+            this.toolTip1.SetToolTip(this.numericUpDownPerformanceTunerTarget, "Distance to see mountains");
+            this.numericUpDownPerformanceTunerTarget.Value = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            // 
+            // checkBoxPerformanceTuner
+            // 
+            this.checkBoxPerformanceTuner.AutoSize = true;
+            this.checkBoxPerformanceTuner.Location = new System.Drawing.Point(6, 220);
+            this.checkBoxPerformanceTuner.Name = "checkBoxPerformanceTuner";
+            this.checkBoxPerformanceTuner.Size = new System.Drawing.Size(277, 17);
+            this.checkBoxPerformanceTuner.TabIndex = 17;
+            this.checkBoxPerformanceTuner.Text = "Automatically tune settings to keep performance level";
+            this.checkBoxPerformanceTuner.UseVisualStyleBackColor = true;
             // 
             // label9
             // 
@@ -930,7 +977,7 @@
             this.label5.AutoSize = true;
             this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label5.Location = new System.Drawing.Point(6, 6);
-            this.label5.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label5.Margin = new System.Windows.Forms.Padding(3);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(354, 13);
             this.label5.TabIndex = 0;
@@ -953,7 +1000,7 @@
             // 
             this.ElevationText.AutoSize = true;
             this.ElevationText.Location = new System.Drawing.Point(6, 25);
-            this.ElevationText.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.ElevationText.Margin = new System.Windows.Forms.Padding(3);
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(81, 13);
             this.ElevationText.TabIndex = 1;
@@ -972,7 +1019,7 @@
             this.tabPageDataLogger.Controls.Add(this.checkBoxDataLoggerPhysics);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
-            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageDataLogger.Size = new System.Drawing.Size(444, 403);
             this.tabPageDataLogger.TabIndex = 6;
             this.tabPageDataLogger.Text = "DataLogger";
@@ -988,7 +1035,7 @@
             "mph",
             "kph"});
             this.comboBoxDataLoggerSpeedUnits.Location = new System.Drawing.Point(5, 62);
-            this.comboBoxDataLoggerSpeedUnits.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBoxDataLoggerSpeedUnits.Margin = new System.Windows.Forms.Padding(2);
             this.comboBoxDataLoggerSpeedUnits.Name = "comboBoxDataLoggerSpeedUnits";
             this.comboBoxDataLoggerSpeedUnits.Size = new System.Drawing.Size(121, 21);
             this.comboBoxDataLoggerSpeedUnits.TabIndex = 3;
@@ -1003,7 +1050,7 @@
             "tab",
             "space"});
             this.comboBoxSeparators.Location = new System.Drawing.Point(5, 37);
-            this.comboBoxSeparators.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBoxSeparators.Margin = new System.Windows.Forms.Padding(2);
             this.comboBoxSeparators.Name = "comboBoxSeparators";
             this.comboBoxSeparators.Size = new System.Drawing.Size(121, 21);
             this.comboBoxSeparators.TabIndex = 1;
@@ -1023,7 +1070,7 @@
             this.label18.AutoSize = true;
             this.label18.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label18.Location = new System.Drawing.Point(6, 6);
-            this.label18.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label18.Margin = new System.Windows.Forms.Padding(3);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(368, 26);
             this.label18.TabIndex = 0;
@@ -1080,53 +1127,6 @@
             this.checkBoxDataLoggerPhysics.Text = "Log physics data";
             this.checkBoxDataLoggerPhysics.UseVisualStyleBackColor = true;
             // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(85, 245);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(88, 13);
-            this.label13.TabIndex = 19;
-            this.label13.Text = "Target frame rate";
-            // 
-            // numericUpDownPerformanceTunerTarget
-            // 
-            this.numericUpDownPerformanceTunerTarget.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.numericUpDownPerformanceTunerTarget.Location = new System.Drawing.Point(26, 243);
-            this.numericUpDownPerformanceTunerTarget.Maximum = new decimal(new int[] {
-            300,
-            0,
-            0,
-            0});
-            this.numericUpDownPerformanceTunerTarget.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.numericUpDownPerformanceTunerTarget.Name = "numericUpDownPerformanceTunerTarget";
-            this.numericUpDownPerformanceTunerTarget.Size = new System.Drawing.Size(53, 20);
-            this.numericUpDownPerformanceTunerTarget.TabIndex = 18;
-            this.toolTip1.SetToolTip(this.numericUpDownPerformanceTunerTarget, "Distance to see mountains");
-            this.numericUpDownPerformanceTunerTarget.Value = new decimal(new int[] {
-            60,
-            0,
-            0,
-            0});
-            // 
-            // checkBoxPerformanceTuner
-            // 
-            this.checkBoxPerformanceTuner.AutoSize = true;
-            this.checkBoxPerformanceTuner.Location = new System.Drawing.Point(6, 220);
-            this.checkBoxPerformanceTuner.Name = "checkBoxPerformanceTuner";
-            this.checkBoxPerformanceTuner.Size = new System.Drawing.Size(277, 17);
-            this.checkBoxPerformanceTuner.TabIndex = 17;
-            this.checkBoxPerformanceTuner.Text = "Automatically tune settings to keep performance level";
-            this.checkBoxPerformanceTuner.UseVisualStyleBackColor = true;
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1163,6 +1163,7 @@
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPerformanceTunerTarget)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownLoadingDelay)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMLoweringValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).EndInit();
@@ -1171,7 +1172,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.ElevationAmount)).EndInit();
             this.tabPageDataLogger.ResumeLayout(false);
             this.tabPageDataLogger.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPerformanceTunerTarget)).EndInit();
             this.ResumeLayout(false);
 
         }

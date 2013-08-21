@@ -99,9 +99,9 @@
             this.buttonStart.Enabled = false;
             this.buttonStart.Location = new System.Drawing.Point(6, 19);
             this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(75, 46);
+            this.buttonStart.Size = new System.Drawing.Size(75, 34);
             this.buttonStart.TabIndex = 0;
-            this.buttonStart.Text = "New game";
+            this.buttonStart.Text = "Start";
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
             // 
             // labelLogo1
@@ -175,11 +175,11 @@
             // buttonResume
             // 
             this.buttonResume.Enabled = false;
-            this.buttonResume.Location = new System.Drawing.Point(6, 71);
+            this.buttonResume.Location = new System.Drawing.Point(6, 59);
             this.buttonResume.Name = "buttonResume";
-            this.buttonResume.Size = new System.Drawing.Size(75, 23);
+            this.buttonResume.Size = new System.Drawing.Size(75, 35);
             this.buttonResume.TabIndex = 1;
-            this.buttonResume.Text = "Resume...";
+            this.buttonResume.Text = "Resume/ Replay...";
             this.buttonResume.Click += new System.EventHandler(this.buttonResume_Click);
             // 
             // buttonTesting
