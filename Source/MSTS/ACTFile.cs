@@ -326,7 +326,7 @@ namespace MSTS {
             stf.MustMatch("(");
             stf.ParseBlock(() => headerOnly && (Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("tr_activity_file", ()=>{ Tr_Activity_File = new Tr_Activity_File(stf); }),
-                new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("tr_activity_header", ()=>{ Tr_Activity_Header = new Tr_Activity_Header(stf); }),
             });
             if (!headerOnly && (Tr_Activity_File == null))
@@ -362,21 +362,21 @@ namespace MSTS {
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(Description); }),
                 new STFReader.TokenProcessor("briefing", ()=>{ Briefing = stf.ReadStringBlock(Briefing); }),
-                new STFReader.TokenProcessor("completeactivity", ()=>{ CompleteActivity = stf.ReadIntBlock(STFReader.UNITS.None, CompleteActivity); }),
-                new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadIntBlock(STFReader.UNITS.None, Type); }),
-                new STFReader.TokenProcessor("mode", ()=>{ Mode = (ActivityMode)stf.ReadIntBlock(STFReader.UNITS.None, (int)Mode); }),
+                new STFReader.TokenProcessor("completeactivity", ()=>{ CompleteActivity = stf.ReadIntBlock(CompleteActivity); }),
+                new STFReader.TokenProcessor("type", ()=>{ Type = stf.ReadIntBlock(Type); }),
+                new STFReader.TokenProcessor("mode", ()=>{ Mode = (ActivityMode)stf.ReadIntBlock((int)Mode); }),
                 new STFReader.TokenProcessor("starttime", ()=>{ StartTime = new StartTime(stf); }),
-                new STFReader.TokenProcessor("season", ()=>{ Season = (SeasonType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("weather", ()=>{ Weather = (WeatherType)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("season", ()=>{ Season = (SeasonType)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("weather", ()=>{ Weather = (WeatherType)stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("pathid", ()=>{ PathID = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("startingspeed", ()=>{ StartingSpeed = stf.ReadIntBlock(STFReader.UNITS.Speed, StartingSpeed); }),
+                new STFReader.TokenProcessor("startingspeed", ()=>{ StartingSpeed = (int)stf.ReadFloatBlock(STFReader.UNITS.Speed, (float)StartingSpeed); }),                
                 new STFReader.TokenProcessor("duration", ()=>{ Duration = new Duration(stf); }),
-                new STFReader.TokenProcessor("difficulty", ()=>{ Difficulty = (Difficulty)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("animals", ()=>{ Animals = stf.ReadIntBlock(STFReader.UNITS.None, Animals); }),
-                new STFReader.TokenProcessor("workers", ()=>{ Workers = stf.ReadIntBlock(STFReader.UNITS.None, Workers); }),
-                new STFReader.TokenProcessor("fuelwater", ()=>{ FuelWater = stf.ReadIntBlock(STFReader.UNITS.Any, FuelWater); }),
-                new STFReader.TokenProcessor("fuelcoal", ()=>{ FuelCoal = stf.ReadIntBlock(STFReader.UNITS.Any, FuelCoal); }),
-                new STFReader.TokenProcessor("fueldiesel", ()=>{ FuelDiesel = stf.ReadIntBlock(STFReader.UNITS.Any, FuelDiesel); }),
+                new STFReader.TokenProcessor("difficulty", ()=>{ Difficulty = (Difficulty)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("animals", ()=>{ Animals = stf.ReadIntBlock(Animals); }),
+                new STFReader.TokenProcessor("workers", ()=>{ Workers = stf.ReadIntBlock(Workers); }),
+                new STFReader.TokenProcessor("fuelwater", ()=>{ FuelWater = stf.ReadIntBlock(FuelWater); }),
+                new STFReader.TokenProcessor("fuelcoal", ()=>{ FuelCoal = stf.ReadIntBlock(FuelCoal); }),
+                new STFReader.TokenProcessor("fueldiesel", ()=>{ FuelDiesel = stf.ReadIntBlock(FuelDiesel); }),
             });
         }
     }
@@ -394,9 +394,9 @@ namespace MSTS {
 
         public StartTime(STFReader stf) {
             stf.MustMatch("(");
-            Hour = stf.ReadInt(STFReader.UNITS.TimeDefaultH, null) / 3600;
-            Minute = stf.ReadInt(STFReader.UNITS.TimeDefaultM, null) / 60;
-            Second = stf.ReadInt(STFReader.UNITS.Time, null);
+            Hour = stf.ReadInt(null);
+            Minute = stf.ReadInt(null);
+            Second = stf.ReadInt(null);
             stf.MustMatch(")");
         }
 
@@ -416,8 +416,8 @@ namespace MSTS {
 
         public Duration(STFReader stf) {
             stf.MustMatch("(");
-            Hour = stf.ReadInt(STFReader.UNITS.TimeDefaultH, null) / 3600;
-            Minute = stf.ReadInt(STFReader.UNITS.TimeDefaultM, null) / 60;
+            Hour = stf.ReadInt(null);
+            Minute = stf.ReadInt(null);
             stf.MustMatch(")");
         }
 
@@ -441,8 +441,8 @@ namespace MSTS {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("player_service_definition",()=>{ Player_Service_Definition = new Player_Service_Definition(stf); }),
-                new STFReader.TokenProcessor("nextserviceuid",()=>{ NextServiceUID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("nextactivityobjectuid",()=>{ NextActivityObjectUID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("nextserviceuid",()=>{ NextServiceUID = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("nextactivityobjectuid",()=>{ NextActivityObjectUID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("events",()=>{ Events = new Events(stf); }),
                 new STFReader.TokenProcessor("traffic_definition",()=>{ Traffic_Definition = new Traffic_Definition(stf); }),
                 new STFReader.TokenProcessor("activityobjects",()=>{ ActivityObjects = new ActivityObjects(stf); }),
@@ -484,15 +484,15 @@ namespace MSTS {
             float distanceDownPath = new float();
             int platformStartID = 0;
             stf.MustMatch("(");
-            Time = stf.ReadInt(STFReader.UNITS.Time, null);
+            Time = (int)stf.ReadFloat(STFReader.UNITS.Time, null);
             // Clumsy parsing. You only get a new Player_Traffic_Item in the list after a PlatformStartId is met.
             // Blame lies with Microsoft for poor design of syntax.
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("arrivaltime", ()=>{ arrivalTime = baseDT.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.Time, null)); }),
                 new STFReader.TokenProcessor("departtime", ()=>{ departTime = baseDT.AddSeconds(stf.ReadFloatBlock(STFReader.UNITS.Time, null)); }),
-                new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ distanceDownPath = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(STFReader.UNITS.None, null); 
+                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null); 
                     Player_Traffic_List.Add(new Player_Traffic_Item(arrivalTime, departTime, skipCount, distanceDownPath, platformStartID)); }),
             });
         }
@@ -525,16 +525,16 @@ namespace MSTS {
         public Service_Definition(STFReader stf) {
             stf.MustMatch("(");
             Name = stf.ReadString();
-            Time = stf.ReadInt(STFReader.UNITS.Time, null);
+            Time = (int)stf.ReadFloat(STFReader.UNITS.Time, null);
             stf.MustMatch("uid");
-            UiD = stf.ReadIntBlock(STFReader.UNITS.None, null);
+            UiD = stf.ReadIntBlock(null);
             // Clumsy parsing. You only get a new Service_Item in the list after a PlatformStartId is met.
             // Blame lies with Microsoft for poor design of syntax.
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("efficiency", ()=>{ efficiency = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
-                new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ distanceDownPath = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(STFReader.UNITS.None, null); 
+                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null); 
                     ServiceList.Add(new Service_Item(efficiency, skipCount, distanceDownPath, platformStartID)); }),
             });
         }
@@ -613,7 +613,7 @@ namespace MSTS {
             Name = stt.ReadString();
             Traffic_Service_Definition thisItem;
 
-            new STFReader.TokenProcessor("serial", () => { Serial = stt.ReadIntBlock(STFReader.UNITS.None, Serial); });
+            new STFReader.TokenProcessor("serial", () => { Serial = stt.ReadIntBlock(Serial); });
             stt.ParseBlock(new STFReader.TokenProcessor[] {
 	        new STFReader.TokenProcessor("service_definition", ()=>{ thisItem = new Traffic_Service_Definition(stt);
 	        TrafficItems.Add(thisItem); }), });
@@ -640,23 +640,23 @@ namespace MSTS {
 
             stt.MustMatch("(");
             Service_Definition = stt.ReadString();
-            Time = stt.ReadInt(STFReader.UNITS.Time, null);
+            Time = stt.ReadInt(null);   // Cannot use stt.ReadFloat(STFReader.UNITS.Time, null) as number will be followed by "arrivaltime"
             stt.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("arrivaltime", ()=>{ arrivalTime = stt.ReadIntBlock(STFReader.UNITS.Time, null); }),
-                new STFReader.TokenProcessor("departtime", ()=>{ departTime = stt.ReadIntBlock(STFReader.UNITS.Time, null); }),
-                new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stt.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("arrivaltime", ()=>{ arrivalTime = (int)stt.ReadFloatBlock(STFReader.UNITS.Time, null); }),
+                new STFReader.TokenProcessor("departtime", ()=>{ departTime = (int)stt.ReadFloatBlock(STFReader.UNITS.Time, null); }),
+                new STFReader.TokenProcessor("skipcount", ()=>{ skipCount = stt.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("distancedownpath", ()=>{ distanceDownPath = stt.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stt.ReadIntBlock(STFReader.UNITS.None, null); 
+                new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stt.ReadIntBlock(null); 
                     TrafficDetails.Add(new Traffic_Traffic_Item(arrivalTime, departTime, skipCount, distanceDownPath, platformStartID)); }),
             });
         }
 
-	public Traffic_Service_Definition()
-	{
-		Service_Definition = String.Empty;
-		Time = 0;
-		TrafficDetails = null;
-	}
+	    public Traffic_Service_Definition()
+	    {
+		    Service_Definition = String.Empty;
+		    Time = 0;
+		    TrafficDetails = null;
+	    }
     }
 
     
@@ -675,9 +675,9 @@ namespace MSTS {
             PlatformStartID = platformStartID;
         }
 
-	public Traffic_Traffic_Item()
-	{
-	}
+	    public Traffic_Traffic_Item()
+	    {
+	    }
     }
 
 #endif
@@ -723,8 +723,8 @@ namespace MSTS {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("eventtypelocation", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); }),
-                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ TextToDisplayOnCompletionIfTriggered = stf.ReadStringBlock(null); }),
@@ -732,8 +732,8 @@ namespace MSTS {
                 new STFReader.TokenProcessor("triggeronstop", ()=>{ TriggerOnStop = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("location", ()=>{
                     stf.MustMatch("(");
-                    TileX = stf.ReadInt(STFReader.UNITS.None, null);
-                    TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+                    TileX = stf.ReadInt(null);
+                    TileZ = stf.ReadInt(null);
                     X = stf.ReadFloat(STFReader.UNITS.None, null);
                     Z = stf.ReadFloat(STFReader.UNITS.None, null);
                     RadiusM = stf.ReadFloat(STFReader.UNITS.Distance, null);
@@ -764,14 +764,14 @@ namespace MSTS {
                 new STFReader.TokenProcessor("eventtypepickuppassengers", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Type = EventType.PickUpPassengers; }),
                 new STFReader.TokenProcessor("eventtypepickupwagons", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Type = EventType.PickUpWagons; }),
                 new STFReader.TokenProcessor("eventtypereachspeed", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Type = EventType.ReachSpeed; }),
-                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ TextToDisplayOnCompletionIfTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("wagon_list", ()=>{ WagonList = new WagonList(stf, Type); }),
-                new STFReader.TokenProcessor("sidingitem", ()=>{ SidingId = (uint)stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("sidingitem", ()=>{ SidingId = (uint)stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("speed", ()=>{ SpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
                 new STFReader.TokenProcessor("reversable_event", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Reversible = true; }),
                 // Also support the correct spelling !
@@ -791,8 +791,8 @@ namespace MSTS {
             // "Drop Off" Wagon_List sometimes lacks a Description attribute, so we create the wagon _before_ description
             // is parsed. Bad practice, but not very dangerous as each Description usually repeats the same data.
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("uid", ()=>{ uID = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("sidingitem", ()=>{ sidingId = stf.ReadUIntBlock(STFReader.UNITS.None, null); 
+                new STFReader.TokenProcessor("uid", ()=>{ uID = stf.ReadUIntBlock(null); }),
+                new STFReader.TokenProcessor("sidingitem", ()=>{ sidingId = stf.ReadUIntBlock(null); 
                     WorkOrderWagonList.Add(new WorkOrderWagon(uID.Value, sidingId.Value, description));}),
                 new STFReader.TokenProcessor("description", ()=>{ description = stf.ReadStringBlock(""); }),
             });
@@ -821,13 +821,13 @@ namespace MSTS {
         public EventCategoryTime(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ TextToDisplayOnCompletionIfTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
-                new STFReader.TokenProcessor("time", ()=>{ Time = stf.ReadIntBlock(STFReader.UNITS.Time, null); }),
+                new STFReader.TokenProcessor("time", ()=>{ Time = (int)stf.ReadFloatBlock(STFReader.UNITS.Time, null); }),
             });
         }
     }
@@ -847,10 +847,10 @@ namespace MSTS {
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("activitysuccess", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); ActivitySuccess = true; }),
                 new STFReader.TokenProcessor("activityfail", ()=>{ ActivityFail = stf.ReadStringBlock(""); }),
-                new STFReader.TokenProcessor("activateevent", ()=>{ ActivateList.Add(stf.ReadIntBlock(STFReader.UNITS.None, null)); }),
-                new STFReader.TokenProcessor("restoreactlevel", ()=>{ RestoreActLevelList.Add(stf.ReadIntBlock(STFReader.UNITS.None, null)); }),
-                new STFReader.TokenProcessor("decactlevel", ()=>{ DecActLevelList.Add(stf.ReadIntBlock(STFReader.UNITS.None, null)); }),
-                new STFReader.TokenProcessor("incactlevel", ()=>{ IncActLevelList.Add(stf.ReadIntBlock(STFReader.UNITS.None, null)); }),
+                new STFReader.TokenProcessor("activateevent", ()=>{ ActivateList.Add(stf.ReadIntBlock(null)); }),
+                new STFReader.TokenProcessor("restoreactlevel", ()=>{ RestoreActLevelList.Add(stf.ReadIntBlock(null)); }),
+                new STFReader.TokenProcessor("decactlevel", ()=>{ DecActLevelList.Add(stf.ReadIntBlock(null)); }),
+                new STFReader.TokenProcessor("incactlevel", ()=>{ IncActLevelList.Add(stf.ReadIntBlock(null)); }),
                 new STFReader.TokenProcessor("displaymessage", ()=>{ DisplayMessage = stf.ReadStringBlock(""); }),
             });
         }
@@ -890,12 +890,12 @@ namespace MSTS {
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("objecttype", ()=>{ stf.MustMatch("("); stf.MustMatch("WagonsList"); stf.MustMatch(")"); }),
                 new STFReader.TokenProcessor("train_config", ()=>{ Train_Config = new Train_Config(stf); }),
-                new STFReader.TokenProcessor("direction", ()=>{ Direction = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("direction", ()=>{ Direction = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("tile", ()=>{
                     stf.MustMatch("(");
-                    TileX = stf.ReadInt(STFReader.UNITS.None, null);
-                    TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+                    TileX = stf.ReadInt(null);
+                    TileZ = stf.ReadInt(null);
                     X = stf.ReadFloat(STFReader.UNITS.None, null);
                     Z = stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.MustMatch(")");
@@ -942,9 +942,9 @@ namespace MSTS {
             Name = stf.ReadString();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("serial", ()=>{ Serial = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("maxvelocity", ()=>{ MaxVelocity = new MaxVelocity(stf); }),
-                new STFReader.TokenProcessor("nextwagonuid", ()=>{ NextWagonUID = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("nextwagonuid", ()=>{ NextWagonUID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("durability", ()=>{ Durability = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("wagon", ()=>{ WagonList.Add(new Wagon(stf)); }),
                 new STFReader.TokenProcessor("engine", ()=>{ WagonList.Add(new Wagon(stf)); }),
@@ -962,7 +962,7 @@ namespace MSTS {
         public Wagon(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("uid", ()=>{ UiD = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("uid", ()=>{ UiD = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("flip", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Flip = true; }),
                 new STFReader.TokenProcessor("enginedata", ()=>{ stf.MustMatch("("); Name = stf.ReadString(); Folder = stf.ReadString(); stf.MustMatch(")"); IsEngine = true; }),
                 new STFReader.TokenProcessor("wagondata", ()=>{ stf.MustMatch("("); Name = stf.ReadString(); Folder = stf.ReadString(); stf.MustMatch(")"); }),
@@ -1002,8 +1002,8 @@ namespace MSTS {
 
         public PlatformData(STFReader stf) {
             stf.MustMatch("(");
-            Id = stf.ReadInt(STFReader.UNITS.None, null);
-            PassengerCount = stf.ReadInt(STFReader.UNITS.None, null);
+            Id = stf.ReadInt(null);
+            PassengerCount = stf.ReadInt(null);
             stf.MustMatch(")");
         }
     }
@@ -1013,7 +1013,7 @@ namespace MSTS {
         public ActivityFailedSignals(STFReader stf) {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("activityfailedsignal", ()=>{ FailedSignalList.Add(stf.ReadIntBlock(STFReader.UNITS.None, null)); }),
+                new STFReader.TokenProcessor("activityfailedsignal", ()=>{ FailedSignalList.Add(stf.ReadIntBlock(null)); }),
             });
         }
     }
@@ -1057,8 +1057,8 @@ namespace MSTS {
 
         public Position(STFReader stf) {
             stf.MustMatch("(");
-            TileX = stf.ReadInt(STFReader.UNITS.None, null);
-            TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+            TileX = stf.ReadInt(null);
+            TileZ = stf.ReadInt(null);
             X = stf.ReadFloat(STFReader.UNITS.None, null);
             Z = stf.ReadFloat(STFReader.UNITS.None, null);
             stf.MustMatch(")");

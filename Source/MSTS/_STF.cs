@@ -67,8 +67,8 @@ namespace MSTS
     //     )
     //     root_block_3 ( a b c )
     //  
-    // Numeric {constant_item}s can include a 'unit' suffix, which is handled in the ReadDouble() function.
-    // Within ReadDouble these units are then converted to the standards used throughout OR - meters, newtons, 
+    // Numeric {constant_item}s can include a 'unit' suffix, which is handled in the ReadFloat() function.
+    // Within ReadFloat these units are then converted to the standards used throughout OR - meters, newtons, 
     // kilograms, etc..
     // 
     //     Example:
@@ -112,7 +112,7 @@ namespace MSTS
     //             new STFReader.TokenProcessor("block_single_constant", ()=>{ float bsc = stf.ReadFloatBlock(STFReader.UNITS.None, 0); }),
     //             new STFReader.TokenProcessor("block_fixed_format", ()=>{
     //                 stf.MustMatch("(");
-    //                 int bff1 = stf.ReadInt(STFReader.UNITS.None, 0);
+    //                 int bff1 = stf.ReadInt(0);
     //                 string bff2 = stf.ReadString();
     //                 stf.SkipRestOfBlock();
     //             }),
@@ -134,7 +134,7 @@ namespace MSTS
     //                    case "block_single_constant": float bsc = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
     //                    case "block_fixed_format":
     //                        stf.MustMatch("(");
-    //                        int bff1 = stf.ReadInt(STFReader.UNITS.None, 0);
+    //                        int bff1 = stf.ReadInt(0);
     //                        string bff2 = stf.ReadString();
     //                        stf.SkipRestOfBlock();
     //                        break;
@@ -152,7 +152,7 @@ namespace MSTS
     //                }
 
     /// <exception cref="STFException"><para>
-    /// STF reports errors using the  exception static members</para><para>
+    /// STF reports errors using the exception static members</para><para>
     /// There are three broad categories of error</para><list class="bullet">
     /// <listItem><para>Failure - Something which prevents loading from continuing, this throws an unhandled exception and drops out of Open Rails.</para></listItem>
     /// <listItem><para>Error - The data read does not have logical meaning - STFReader does not generate these errors, this is only appropriate STFReader consumers who understand the context of the data being processed</para></listItem>
@@ -323,9 +323,15 @@ namespace MSTS
                 STFException.TraceWarning(this, "Unexpected end of file instead of " + target);
             else
             {
-                string s = ReadItem();
-                if (!s.Equals(target, StringComparison.OrdinalIgnoreCase))
-                    throw new STFException(this, target + " Not Found - instead found " + s);
+                string s1 = ReadItem();
+                // A single unexpected token leads to a warning; two leads to a fatal error.
+                if (!s1.Equals(target, StringComparison.OrdinalIgnoreCase))
+                {
+                    STFException.TraceWarning(this, target + " Not Found - instead found " + s1);
+                    string s2 = ReadItem();
+                    if (!s2.Equals(target, StringComparison.OrdinalIgnoreCase))
+                        throw new STFException(this, target + " Not Found - instead found " + s1);
+                }
             }
         }
 
@@ -451,11 +457,10 @@ namespace MSTS
         }
         /// <summary>Read an signed integer {constant_item}
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
-        /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public int ReadInt(UNITS validUnits, int? defaultValue)
-		{
+        /// <returns>The next {constant_item} from the STF file.</returns>
+        public int ReadInt(int? defaultValue)
+        {
             string item = ReadItem();
 
             if ((defaultValue.HasValue) && (item == ")"))
@@ -464,23 +469,19 @@ namespace MSTS
                 StepBackOneItem();
                 return defaultValue.Value;
             }
-
             int val;
-            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (int.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (int)(scale * val);
-
+            if (int.TryParse(item, parseNum, parseNFI, out val)) return val;
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
         }
         /// <summary>Read an unsigned integer {constant_item}
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
-        /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public uint ReadUInt(UNITS validUnits, uint? defaultValue)
+        /// <returns>The next {constant_item} from the STF file.</returns>
+        public uint ReadUInt(uint? defaultValue)
 		{
             string item = ReadItem();
 
@@ -492,10 +493,9 @@ namespace MSTS
             }
 
             uint val;
-            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (uint.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (uint)(scale * val);
+            if (uint.TryParse(item, parseNum, parseNFI, out val)) return val;
 
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
@@ -517,23 +517,26 @@ namespace MSTS
                 return defaultValue.Value;
             }
 
+            // <CJComment> Considered reading ahead to accommodate units written with a space such as "60 kph" as well as "60kph".
+            // However, some values (mostly "time" ones) may be followed by text. Therefore that approach cannot be used consistently 
+            // and has been abandoned. </CJComment> 
+            
             float val;
             double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0f;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
             if (float.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
-
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
         }
+
         /// <summary>Read an double precision floating point number {constant_item}
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if an unexpected ')' token is found</param>
-        /// <returns>The next {constant_item} from the STF file, with the suffix normalized to OR units.</returns>
-        public double ReadDouble(UNITS validUnits, double? defaultValue)
-		{
+        /// <returns>The next {constant_item} from the STF file.</returns>
+        public double ReadDouble(double? defaultValue)
+        {
             string item = ReadItem();
 
             if ((defaultValue.HasValue) && (item == ")"))
@@ -544,18 +547,17 @@ namespace MSTS
             }
 
             double val;
-            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            if (double.TryParse(item, parseNum, parseNFI, out val)) return scale * val;
-
+            if (double.TryParse(item, parseNum, parseNFI, out val)) return val;
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
 		}
-        /// <summary>Enumeration limiting which units are valid when parsing a numeric constant.
+
+        /// <summary>Enumeration specifying which units are valid when parsing a numeric constant.
         /// </summary>
-        // Additional entries because MSTS has multiple default units, e.g. some speeds in metres/sec and other in miles/hr
+        // Additional entries because MSTS has multiple default units, e.g. some speeds in metres/sec and others in miles/hr
         [Flags]
         public enum UNITS
         {
@@ -617,91 +619,97 @@ namespace MSTS
             /// </summary>            
             Current = 1 << 9,
 
+            /// <summary>
+            /// Valid Units: v, kv
+            /// <para>Scaled to v.</para>
+            /// </summary>            
+            Voltage = 1 << 10,
+
             /// <summary>Valid Units: lb/h
             /// <para>Scaled to pounds per hour.</para>
             /// </summary>
-            MassRateDefaultLBpH = 1 << 10,
+            MassRateDefaultLBpH = 1 << 11,
 
             /// <summary>Valid Units: m/s, mph, kph, kmh, km/h
             /// <para>Scaled to meters/second.
             /// See also SpeedMPH </para>
             /// </summary>
-            Speed = 1 << 11,
+            Speed = 1 << 12,
 
             /// <summary>Valid Units: m/s, mph, kph, kmh, km/h
             /// <para>Scaled to miles/hour.</para>
             /// Similar to UNITS.Speed except default unit is mph.
             /// </summary>
-            SpeedDefaultMPH = 1 << 12,
+            SpeedDefaultMPH = 1 << 13,
 
             /// <summary>
             /// Valid Units: Hz, rps, rpm
             /// <para>Scaled to Hz.</para>
             /// </summary>            
-            Frequency = 1 << 13,
+            Frequency = 1 << 14,
 
             /// <summary>Valid Units: n, kn, lbf
             /// <para>Scaled to newtons.</para>
             /// </summary>
-            Force = 1 << 14,
+            Force = 1 << 15,
 
             /// <summary>Valid Units: w, kw, hp
             /// <para>Scaled to watts.</para>
             /// </summary>
-            Power = 1 << 15,
+            Power = 1 << 16,
 
             /// <summary>Valid Units: n/m
             /// <para>Scaled to newtons/metre.</para>
             /// </summary>
-            Stiffness = 1 << 16,
+            Stiffness = 1 << 17,
 
             /// <summary>Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
             /// <para>Scaled to newtons/speed(m/s)</para>
             /// </summary>
-            Resistance = 1 << 17,
+            Resistance = 1 << 18,
 
             /// <summary>Valid Units: psi, bar, inhg, kpa
             /// <para>Scaled to pounds per square inch.</para>
             /// </summary>
-            PressureDefaultPSI = 1 << 18,
+            PressureDefaultPSI = 1 << 19,
 
             /// <summary>Valid Units: psi, bar, inhg, kpa
             /// <para>Scaled to pounds per square inch.</para>
             /// Similar to UNITS.Pressure except default unit is inHg.
             /// </summary>
-            PressureDefaultInHg = 1 << 19,
+            PressureDefaultInHg = 1 << 20,
 
             /// <summary>
             /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
             /// <para>Scaled to psi/s.</para>
             /// </summary>            
-            PressureRateDefaultPSIpS = 1 << 20,
+            PressureRateDefaultPSIpS = 1 << 21,
 
             /// <summary>
             /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
             /// <para>Scaled to psi/s.</para>
             /// Similar to UNITS.PressureRate except default unit is inHg/s.
             /// </summary>            
-            PressureRateDefaultInHgpS = 1 << 21,
+            PressureRateDefaultInHgpS = 1 << 22,
 
             /// <summary>Valid Units: kj/kg, j/g, btu/lb
             /// <para>Scaled to kj/kg.</para>
             /// </summary>
-            EnergyDensity = 1 << 22,
+            EnergyDensity = 1 << 23,
 
             /// <summary>
             /// Valid Units: degc, degf
             /// <para>Scaled to Deg Celsius</para>
             /// </summary>            
-            TemperatureDifference = 1 << 23,    // "TemperatureDifference" not "Temperature" as 0'C <> 0'F
+            TemperatureDifference = 1 << 24,    // "TemperatureDifference" not "Temperature" as 0'C <> 0'F
 
             /// <summary>
             /// Valid Units: kgm^2
             /// <para>Scaled to kgm^2.</para>
             /// </summary>            
-            RotationalInertia = 1 << 24,
+            RotationalInertia = 1 << 25,
 
-            // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values
+            // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values.
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
             // "Any" should not be used where the dimensions of a unit are predictable.
             Any = ~Compulsory // All bits set except the Compulsory bit
@@ -766,10 +774,10 @@ namespace MSTS
                 {
                     case "": return 1.0;
                     case "kg": return 1;
-                    case "t": return 1e3;
+                    case "lb": return 0.45359237;
+                    case "t": return 1e3;   // metric tonne
                     case "t-uk": return 1016.05;
                     case "t-us": return 907.18474;
-                    case "lb": return 0.45359237;
                 }
             if ((validUnits & UNITS.Distance) > 0)
                 switch (suffix)
@@ -780,10 +788,9 @@ namespace MSTS
                     case "mm": return 0.001;
                     case "km": return 1e3;
                     case "ft": return 0.3048;
-                    case "'": return 0.3048;
                     case "in": return 0.0254;
-                    case "\"": return 0.0254;
-                    case "in/2": return 0.0127; // This is a strange unit used to measure radius
+                    case "in/2": return 0.0127; // Used to measure wheel radius in half-inches, as sometimes the practice in the tyre industry
+                                                // - see trainset\KIHA31\KIHA31a.eng and others
                 }
             if ((validUnits & UNITS.AreaDefaultFT2) > 0)
                 switch (suffix)
@@ -796,19 +803,33 @@ namespace MSTS
                 switch (suffix)
                 {
                     case "": return 1.0;
+                    case "*(ft^3)": return 28.3168;
+                    case "ft^3": return 28.3168;
+                    case "*(in^3)": return 0.0163871;
+                    case "in^3": return 0.0163871;
+                    case "*(m^3)": return 0.001;
+                    case "m^3": return 0.001;
                     case "l": return 1;
-                    case "gal": return 3.785f;
-                    case "gals": return 3.785f;
-                    case "g-us": return 3.785f;
                     case "g-uk": return 4.546f;
+                    case "g-us": return 3.785f;
+                    case "gal": return 3.785f;  // US gallons
+                    case "gals": return 3.785f; // US gallons
                 }
             if ((validUnits & UNITS.VolumeDefaultFT3) > 0)
                 switch (suffix)
                 {
                     case "": return 1.0;
                     case "*(ft^3)": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
-                    case "*(m^3)": return 35.3146667;
+                    case "ft^3": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "*(in^3)": return 0.000578703704;
+                    case "in^3": return 0.000578703704;
+                    case "*(m^3)": return 35.3146667;
+                    case "m^3": return 35.3146667;
+                    case "l": return 0.0353146667;
+                    case "g-uk": return 0.16054372f;
+                    case "g-us": return 0.133680556f;
+                    case "gal": return 0.133680556f;  // US gallons
+                    case "gals": return 0.133680556f; // US gallons
                 }
             if ((validUnits & UNITS.Time) > 0)
                 switch (suffix)
@@ -841,6 +862,13 @@ namespace MSTS
                     case "": return 1.0;
                     case "amps": return 1;
                     case "a": return 1;
+                }
+            if ((validUnits & UNITS.Voltage) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "v": return 1;
+                    case "kv": return 0.001;
                 } 
             if ((validUnits & UNITS.MassRateDefaultLBpH) > 0)
                 switch (suffix)
@@ -857,7 +885,6 @@ namespace MSTS
                     case "m/s": return 1.0;
                     case "mph": return 0.44704;
                     case "kph": return 0.27778;
-                    case "kmh": return 0.27778;
                     case "km/h": return 0.27778;
                 }
             if ((validUnits & UNITS.SpeedDefaultMPH) > 0)
@@ -904,9 +931,8 @@ namespace MSTS
                 switch (suffix)
                 {
                     case "": return 1.0;
-                    case "n": return 1;
                     case "n/m/s": return 1;
-                    case "/m/s": return 1;
+                    case "ns/m": return 1;
                 }
             if ((validUnits & UNITS.PressureDefaultPSI) > 0)
                 switch (suffix)
@@ -969,7 +995,6 @@ namespace MSTS
             return 1;
         }
 
-
         /// <summary>Read an string constant from the STF format '( {string_constant} ... )'
         /// </summary>
         /// <param name="defaultValue">the default value if the item is not found in the block.</param>
@@ -995,7 +1020,7 @@ namespace MSTS
                     STFException.TraceWarning(this, "Found an empty block ( ) where a string ( \"<string>\" ) was expected.");
                     return (defaultValue != null) ? defaultValue : "";
                 }
-                SkipRestOfBlock();
+                SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 if (result == "#\u00b6")
                 {
                     STFException.TraceWarning(this, "Found a comment when an {constant item} was expected.");
@@ -1006,6 +1031,7 @@ namespace MSTS
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue;
 		}
+
 		/// <summary>Read an hexidecimal encoded number from the STF format '( {int_constant} ... )'
         /// </summary>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
@@ -1026,18 +1052,18 @@ namespace MSTS
             if (s == "(")
             {
                 uint result = ReadHex(defaultValue);
-                SkipRestOfBlock();
+                SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 return result;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue.GetValueOrDefault(0);
         }
+
 		/// <summary>Read an integer constant from the STF format '( {int_constant} ... )'
 		/// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
-		/// <returns>The STF block with the first {item} converted to a integer constant.</returns>
-		public int ReadIntBlock(UNITS validUnits, int? defaultValue)
+		/// <returns>The STF block with the first {item} converted to a integer.</returns>
+        public int ReadIntBlock(int? defaultValue)
 		{
 			if (Eof)
 			{
@@ -1052,19 +1078,19 @@ namespace MSTS
 			}
 			if (s == "(")
 			{
-				int result = ReadInt(validUnits, defaultValue);
-				SkipRestOfBlock();
+                int result = ReadInt(defaultValue);
+                SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
 				return result;
 			}
 			STFException.TraceWarning(this, "Block Not Found - instead found " + s);
 			return defaultValue.GetValueOrDefault(0);
 		}
+
 		/// <summary>Read an unsigned integer constant from the STF format '( {uint_constant} ... )'
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
-        /// <returns>The STF block with the first {item} converted to a unsigned integer constant.</returns>
-        public uint ReadUIntBlock(UNITS validUnits, uint? defaultValue)
+        /// <returns>The STF block with the first {item} converted to a unsigned integer.</returns>
+        public uint ReadUIntBlock(uint? defaultValue)
         {
             if (Eof)
             {
@@ -1079,13 +1105,14 @@ namespace MSTS
             }
             if (s == "(")
             {
-                uint result = ReadUInt(validUnits, defaultValue);
-                SkipRestOfBlock();
+                uint result = ReadUInt(defaultValue);
+                SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 return result;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue.GetValueOrDefault(0);
         }
+
         /// <summary>Read an single precision constant from the STF format '( {float_constant} ... )'
         /// </summary>
         /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
@@ -1107,18 +1134,18 @@ namespace MSTS
             if (s == "(")
             {
                 float result = ReadFloat(validUnits, defaultValue);
-                SkipRestOfBlock();
+                MustMatch(")");
                 return result;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue.GetValueOrDefault(0);
         }
+
         /// <summary>Read an double precision constant from the STF format '( {double_constant} ... )'
         /// </summary>
-        /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">the default value if the constant is not found in the block.</param>
-        /// <returns>The STF block with the first {item} converted to a double precision constant.</returns>
-        public double ReadDoubleBlock(UNITS validUnits, double? defaultValue)
+        /// <returns>The STF block with the first {item} converted to a double precision value.</returns>
+        public double ReadDoubleBlock(double? defaultValue)
 		{
             if (Eof)
             {
@@ -1133,13 +1160,14 @@ namespace MSTS
             }
             if (s == "(")
             {
-                double result = ReadDouble(validUnits, defaultValue);
-                SkipRestOfBlock();
+                double result = ReadDouble(defaultValue);
+                SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 return result;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue.GetValueOrDefault(0);
         }
+
         /// <summary>Reads the first item from a block in the STF format '( {double_constant} ... )' and return true if is not-zero or 'true'
         /// </summary>
         /// <param name="defaultValue">the default value if a item is not found in the block.</param>
@@ -1168,13 +1196,14 @@ namespace MSTS
                     default:
                         int v;
                         if (int.TryParse(s, NumberStyles.Any, parseNFI, out v)) defaultValue = (v != 0);
-                        SkipRestOfBlock();
+                        SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                         return defaultValue;
                 }
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue;
         }
+
         /// <summary>Read a Vector3 object in the STF format '( {X} {Y} {Z} ... )'
         /// </summary>
         /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
@@ -1198,12 +1227,13 @@ namespace MSTS
                 defaultValue.X = ReadFloat(validUnits, defaultValue.X);
                 defaultValue.Y = ReadFloat(validUnits, defaultValue.Y);
                 defaultValue.Z = ReadFloat(validUnits, defaultValue.Z);
-                SkipRestOfBlock();
+                SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 return defaultValue;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
             return defaultValue;
         }
+
         /// <summary>Read a Vector4 object in the STF format '( {X} {Y} {Z} {W} ... )'
         /// </summary>
         /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
@@ -1228,7 +1258,7 @@ namespace MSTS
                 defaultValue.Y = ReadFloat(validUnits, defaultValue.Y);
                 defaultValue.Z = ReadFloat(validUnits, defaultValue.Z);
                 defaultValue.W = ReadFloat(validUnits, defaultValue.W);
-                SkipRestOfBlock();
+                SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
                 return defaultValue;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
@@ -1453,7 +1483,7 @@ namespace MSTS
             #endregion
 
             itemBuilder.Length = 0;
-            #region Handle Open and Close Block markers - parenthisis
+            #region Handle Open and Close Block markers - parentheses
             if (c == '(')
             {
                 return UpdateTreeAndStepBack("(");
@@ -1482,7 +1512,7 @@ namespace MSTS
                 #endregion
                 #region Skip the comment item or block
                 string comment = ReadItem( skip_mode, string_mode);
-                if (comment == ")") { StepBackOneItem(); return "#\u00b6"; }
+                if (comment == ")") return comment;
                 if (comment == "(") SkipRestOfBlock();
                 #endregion
                 string item = ReadItem( skip_mode, string_mode);

@@ -194,7 +194,7 @@ namespace MSTS
         public CabViewControls(STFReader stf, string basepath)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
                 new STFReader.TokenProcessor("gauge", ()=>{ Add(new CVCGauge(stf, basepath)); }),
@@ -251,24 +251,24 @@ namespace MSTS
         protected void ParsePosition(STFReader stf)
         {
             stf.MustMatch("(");
-            PositionX = stf.ReadDouble( STFReader.UNITS.None, null );
-            PositionY = stf.ReadDouble( STFReader.UNITS.None, null );
-            Width = stf.ReadDouble( STFReader.UNITS.None, null );
-            Height = stf.ReadDouble( STFReader.UNITS.None, null );
+            PositionX = stf.ReadDouble(null);
+            PositionY = stf.ReadDouble(null);
+            Width = stf.ReadDouble(null);
+            Height = stf.ReadDouble(null);
 
             // Handling middle values
             while (!stf.EndOfBlock())
             {
                 STFException.TraceWarning(stf, "Ignored additional positional parameters");
                 Width = Height;
-                Height = stf.ReadInt(STFReader.UNITS.None, null);
+                Height = stf.ReadInt(null);
             }
         }
         protected void ParseScaleRange(STFReader stf)
         {
             stf.MustMatch("(");
-            MinValue = stf.ReadDouble(STFReader.UNITS.None, null);
-            MaxValue = stf.ReadDouble(STFReader.UNITS.None, null);
+            MinValue = stf.ReadDouble(null);
+            MaxValue = stf.ReadDouble(null);
             stf.SkipRestOfBlock();
         }
         protected void ParseGraphic(STFReader stf, string basepath)
@@ -318,7 +318,7 @@ namespace MSTS
         protected virtual color ParseControlColor( STFReader stf )
         {
             stf.MustMatch("(");
-            color colour = new color { A = 1, R = stf.ReadInt(STFReader.UNITS.None, 0) / 255f, G = stf.ReadInt(STFReader.UNITS.None, 0) / 255f, B = stf.ReadInt(STFReader.UNITS.None, 0) / 255f };
+            color colour = new color { A = 1, R = stf.ReadInt(0) / 255f, G = stf.ReadInt(0) / 255f, B = stf.ReadInt(0) / 255f };
             stf.SkipRestOfBlock();
             return colour;
         }
@@ -345,7 +345,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
                 new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("scalepos", ()=>{
                     stf.MustMatch("(");
                     FromDegree = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -379,21 +379,21 @@ namespace MSTS
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
 
-                new STFReader.TokenProcessor("zeropos", ()=>{ ZeroPos = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("zeropos", ()=>{ ZeroPos = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("area", ()=>{ 
                     stf.MustMatch("(");
-                    int x = stf.ReadInt(STFReader.UNITS.None, null);
-                    int y = stf.ReadInt(STFReader.UNITS.None, null);
-                    int width = stf.ReadInt(STFReader.UNITS.None, null);
-                    int height = stf.ReadInt(STFReader.UNITS.None, null);
+                    int x = stf.ReadInt(null);
+                    int y = stf.ReadInt(null);
+                    int width = stf.ReadInt(null);
+                    int height = stf.ReadInt(null);
                     Area = new Rectangle(x, y, width, height);
                     stf.SkipRestOfBlock();
                 }),
                 new STFReader.TokenProcessor("positivecolour", ()=>{ 
                     stf.MustMatch("(");
-                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    stf.ReadInt(0);
                     if(stf.EndOfBlock() == false)
                     {
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -402,7 +402,7 @@ namespace MSTS
                 }),
                 new STFReader.TokenProcessor("negativecolour", ()=>{
                     stf.MustMatch("(");
-                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    stf.ReadInt(0);
                     if(stf.EndOfBlock() == false)
                     {
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -411,7 +411,7 @@ namespace MSTS
                 }),
                 new STFReader.TokenProcessor("decreasecolour", ()=>{
                     stf.MustMatch("(");
-                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    stf.ReadInt(0);
                     if(stf.EndOfBlock() == false)
                     {
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -461,7 +461,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("justification", ()=>{ ParseJustification(stf); }),
                 new STFReader.TokenProcessor("positivecolour", ()=>{ 
                     stf.MustMatch("(");
-                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    stf.ReadInt(0);
                     if(stf.EndOfBlock() == false)
                     {
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -470,7 +470,7 @@ namespace MSTS
                 }),
                 new STFReader.TokenProcessor("negativecolour", ()=>{
                     stf.MustMatch("(");
-                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    stf.ReadInt(0);
                     if(stf.EndOfBlock() == false)
                     {
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -479,7 +479,7 @@ namespace MSTS
                 }),
                 new STFReader.TokenProcessor("decreasecolour", ()=>{
                     stf.MustMatch("(");
-                    stf.ReadInt(STFReader.UNITS.None, 0);
+                    stf.ReadInt(0);
                     if(stf.EndOfBlock() == false)
                     {
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -492,28 +492,28 @@ namespace MSTS
         protected virtual void ParseLeadingZeros(STFReader stf)
         {
             stf.MustMatch("(");
-            LeadingZeros = stf.ReadInt(STFReader.UNITS.None, 0);
+            LeadingZeros = stf.ReadInt(0);
             stf.SkipRestOfBlock();
         }
 
         protected virtual void ParseAccuracy(STFReader stf)
         {
             stf.MustMatch("(");
-            Accuracy = stf.ReadDouble(STFReader.UNITS.None, 0);
+            Accuracy = stf.ReadDouble(0);
             stf.SkipRestOfBlock();
         }
 
         protected virtual void ParseAccuracySwitch(STFReader stf)
         {
             stf.MustMatch("(");
-            AccuracySwitch = stf.ReadDouble(STFReader.UNITS.None, 0);
+            AccuracySwitch = stf.ReadDouble(0);
             stf.SkipRestOfBlock();
         }
 
         protected virtual void ParseJustification(STFReader stf)
         {
             stf.MustMatch("(");
-            Justification = stf.ReadInt(STFReader.UNITS.None, 3);
+            Justification = stf.ReadInt(3);
             stf.SkipRestOfBlock();
         }
     }
@@ -576,9 +576,9 @@ namespace MSTS
 
                     new STFReader.TokenProcessor("numframes", ()=>{
                         stf.MustMatch("(");
-                        FramesCount = stf.ReadInt(STFReader.UNITS.None, null);
-                        FramesX = stf.ReadInt(STFReader.UNITS.None, null);
-                        FramesY = stf.ReadInt(STFReader.UNITS.None, null);
+                        FramesCount = stf.ReadInt(null);
+                        FramesX = stf.ReadInt(null);
+                        FramesY = stf.ReadInt(null);
                         stf.SkipRestOfBlock();
                     }),
                     // <CJComment> Would like to revise this, as it is difficult to follow and debug.
@@ -597,13 +597,13 @@ namespace MSTS
                         stf.MustMatch("(");
                         // If Positions are not filled before by Values
                         bool shouldFill = (Positions.Count == 0);
-                        stf.ReadInt(STFReader.UNITS.None, null); // Number of Positions - Ignore it
+                        stf.ReadInt(null); // Number of Positions - Ignore it
 
                         var minPosition = 0;
                         var positionsRead = 0;
                         while (!stf.EndOfBlock())
                         {
-                            int p = stf.ReadInt(STFReader.UNITS.None, null);
+                            int p = stf.ReadInt(null);
 
                             minPosition = positionsRead == 0 ? p : Math.Min(minPosition, p);  // used to get correct offset
                             positionsRead++;
@@ -635,10 +635,10 @@ namespace MSTS
                     }),
                     new STFReader.TokenProcessor("numvalues", ()=>{
                         stf.MustMatch("(");
-                        stf.ReadDouble(STFReader.UNITS.None, null); // Number of Values - ignore it
+                        stf.ReadDouble(null); // Number of Values - ignore it
                         while (!stf.EndOfBlock())
                         {
-                            double v = stf.ReadDouble(STFReader.UNITS.None, null);
+                            double v = stf.ReadDouble(null);
                             // If the Positions are less than expected add new Position(s)
                             while (Positions.Count <= _ValuesRead)
                             {
@@ -790,12 +790,12 @@ namespace MSTS
 
                 new STFReader.TokenProcessor("states", ()=>{
                     stf.MustMatch("(");
-                    FramesCount = stf.ReadInt(STFReader.UNITS.None, null);
-                    FramesX = stf.ReadInt(STFReader.UNITS.None, null);
-                    FramesY = stf.ReadInt(STFReader.UNITS.None, null);
+                    FramesCount = stf.ReadInt(null);
+                    FramesX = stf.ReadInt(null);
+                    FramesY = stf.ReadInt(null);
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("state", ()=>{ stf.MustMatch("("); stf.ParseBlock( new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("switchval", ()=>{ Values.Add(stf.ReadDoubleBlock(STFReader.UNITS.None, null)); }),
+                            new STFReader.TokenProcessor("switchval", ()=>{ Values.Add(stf.ReadFloatBlock(STFReader.UNITS.None, null)); }),
                         });}),
                     });
                     if (Values.Count > 0) MaxValue = Values.Last();

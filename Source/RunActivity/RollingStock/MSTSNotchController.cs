@@ -215,12 +215,12 @@ namespace ORTS
             if (string.Compare(token, "NumNotches", true) != 0) // handle error in gp38.eng where extra parameter provided before NumNotches statement 
                 stf.ReadItem();
             stf.MustMatch("(");
-            stf.ReadInt(STFReader.UNITS.None, null);
+            stf.ReadInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("notch", ()=>{
                     stf.MustMatch("(");
                     float value = stf.ReadFloat(STFReader.UNITS.None, null);
-                    int smooth = stf.ReadInt(STFReader.UNITS.None, null);
+                    int smooth = stf.ReadInt(null);
                     string type = stf.ReadString();
                     Notches.Add(new MSTSNotch(value, smooth, type, stf));
                     if (type != ")") stf.SkipRestOfBlock();

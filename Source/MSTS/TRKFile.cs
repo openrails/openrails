@@ -75,13 +75,13 @@ namespace MSTS
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("filename", ()=>{ FileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("maxlinevoltage", ()=>{ MaxLineVoltage = stf.ReadDoubleBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("maxlinevoltage", ()=>{ MaxLineVoltage = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("routestart", ()=>{ if (RouteStart == null) RouteStart = new RouteStart(stf); }),
                 new STFReader.TokenProcessor("environment", ()=>{ Environment = new TRKEnvironment(stf); }),
                 new STFReader.TokenProcessor("milepostunitskilometers", ()=>{ MilepostUnitsMetric = true; }),
 				new STFReader.TokenProcessor("electrified", ()=>{ Electrified = stf.ReadBoolBlock(false); }),
-                new STFReader.TokenProcessor("overheadwireheight", ()=>{ OverheadWireHeight = stf.ReadDoubleBlock(STFReader.UNITS.None, 6.0);}),
- 				new STFReader.TokenProcessor("speedlimit", ()=>{ SpeedLimit = stf.ReadDoubleBlock(STFReader.UNITS.None, 500.0); }),
+                new STFReader.TokenProcessor("overheadwireheight", ()=>{ OverheadWireHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, 6.0f);}),
+ 				new STFReader.TokenProcessor("speedlimit", ()=>{ SpeedLimit = stf.ReadFloatBlock(STFReader.UNITS.Speed, 500.0f); }),
                 new STFReader.TokenProcessor("defaultcrossingsms", ()=>{ DefaultCrossingSMS = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("defaultcoaltowersms", ()=>{ DefaultCoalTowerSMS = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("defaultdieseltowersms", ()=>{ DefaultDieselTowerSMS = stf.ReadStringBlock(null); }),
@@ -119,10 +119,10 @@ namespace MSTS
         public RouteStart(STFReader stf)
         {
             stf.MustMatch("(");
-            WX = stf.ReadDouble(STFReader.UNITS.None, null);   // tilex
-            WZ = stf.ReadDouble(STFReader.UNITS.None, null);   // tilez
-            X = stf.ReadDouble(STFReader.UNITS.None, null);
-            Z = stf.ReadDouble(STFReader.UNITS.None, null);
+            WX = stf.ReadDouble(null);   // tilex
+            WZ = stf.ReadDouble(null);   // tilez
+            X = stf.ReadDouble(null);
+            Z = stf.ReadDouble(null);
             stf.SkipRestOfBlock();
         }
         public double WX, WZ, X, Z;

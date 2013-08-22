@@ -95,7 +95,7 @@ namespace MSTS
         public ScalabiltyGroup(STFReader stf)
         {
             stf.MustMatch("(");
-            DetailLevel = stf.ReadInt(STFReader.UNITS.None, null);
+            DetailLevel = stf.ReadInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("activation", ()=>{ Activation = new Activation(stf); }),
                 new STFReader.TokenProcessor("deactivation", ()=>{ Deactivation = new Deactivation(stf); }),
@@ -123,7 +123,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("cabcam", ()=>{ CabCam = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("passengercam", ()=>{ PassengerCam = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("distance", ()=>{ Distance = stf.ReadFloatBlock(STFReader.UNITS.Distance, Distance); }),
-                new STFReader.TokenProcessor("tracktype", ()=>{ TrackType = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("tracktype", ()=>{ TrackType = stf.ReadIntBlock(null); }),
             });
         }
     }
@@ -140,7 +140,7 @@ namespace MSTS
         public SMSStreams(STFReader stf, float VolumeOfScGroup)
         {
             stf.MustMatch("(");
-            var count = stf.ReadInt(STFReader.UNITS.None, null);
+            var count = stf.ReadInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("stream", ()=>{
                     if (--count < 0)
@@ -167,7 +167,7 @@ namespace MSTS
             stf.MustMatch("(");
             Volume = VolumeOfScGroup;
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("priority", ()=>{ Priority = stf.ReadIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("priority", ()=>{ Priority = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("triggers", ()=>{ Triggers = new Triggers(stf); }),
                 new STFReader.TokenProcessor("volumecurve", ()=>{ VolumeCurves.Add(new VolumeCurve(stf)); }),
                 new STFReader.TokenProcessor("frequencycurve", ()=>{ FrequencyCurve = new FrequencyCurve(stf); }),
@@ -208,7 +208,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("granularity", ()=>{ Granularity = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("curvepoints", ()=>{
                     stf.MustMatch("(");
-                    int count = stf.ReadInt(STFReader.UNITS.None, null);
+                    int count = stf.ReadInt(null);
                     CurvePoints = new CurvePoint[count];
                     for (int i = 0; i < count; ++i)
                     {
@@ -240,7 +240,7 @@ namespace MSTS
         public Triggers(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("dist_travelled_trigger", ()=>{ Add(new Dist_Travelled_Trigger(stf)); }),
                 new STFReader.TokenProcessor("discrete_trigger", ()=>{ Add(new Discrete_Trigger(stf)); }),
@@ -314,7 +314,7 @@ namespace MSTS
         public Discrete_Trigger(STFReader f)
         {
             f.MustMatch("(");
-            TriggerID = f.ReadInt(STFReader.UNITS.None, null);
+            TriggerID = f.ReadInt(null);
             while (!f.EndOfBlock())
                 ParsePlayCommand(f, f.ReadString().ToLower());
         }
@@ -436,7 +436,7 @@ namespace MSTS
         public DisableTrigger(STFReader f)
         {
             f.MustMatch("(");
-            TriggerID = f.ReadInt(STFReader.UNITS.None, null);
+            TriggerID = f.ReadInt(null);
             f.SkipRestOfBlock();
         }
     }
@@ -479,7 +479,7 @@ namespace MSTS
         public PlayOneShot(STFReader f)
         {
             f.MustMatch("(");
-            int count = f.ReadInt(STFReader.UNITS.None, null);
+            int count = f.ReadInt(null);
             Files = new string[count];
             int iFile = 0;
             while (!f.EndOfBlock())
@@ -490,7 +490,7 @@ namespace MSTS
                         {
                             f.MustMatch("(");
                             Files[iFile++] = f.ReadString();
-                            f.ReadInt(STFReader.UNITS.None, null);
+                            f.ReadInt(null);
                             f.SkipRestOfBlock();
                         }
                         else  // MSTS skips extra files

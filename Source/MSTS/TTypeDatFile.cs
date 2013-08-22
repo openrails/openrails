@@ -33,7 +33,7 @@ namespace MSTS
 		{
             using (STFReader stf = new STFReader(filePath, false))
             {
-                var count = stf.ReadInt(STFReader.UNITS.None, null);
+                var count = stf.ReadInt(null);
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("tracktype", ()=>{
                         if (--count < 0)

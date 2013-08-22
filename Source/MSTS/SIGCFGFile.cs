@@ -67,7 +67,7 @@ namespace MSTS
         static IDictionary<string, LightTexture> ReadLightTextures(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var lightTextures = new Dictionary<string, LightTexture>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("lighttex", ()=>{
@@ -91,7 +91,7 @@ namespace MSTS
         static IDictionary<string, LightTableEntry> ReadLightsTable(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var lightsTable = new Dictionary<string, LightTableEntry>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("lightstabentry", ()=>{
@@ -115,7 +115,7 @@ namespace MSTS
         static IDictionary<string, SignalType> ReadSignalTypes(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var signalTypes = new Dictionary<string, SignalType>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signaltype", ()=>{
@@ -139,7 +139,7 @@ namespace MSTS
         static IDictionary<string, SignalShape> ReadSignalShapes(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var signalShapes = new Dictionary<string, SignalShape>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalshape", ()=>{
@@ -201,10 +201,10 @@ namespace MSTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("colour", ()=>{
 				    stf.MustMatch("(");
-                    a = (byte)stf.ReadUInt(STFReader.UNITS.None, null);
-                    r = (byte)stf.ReadUInt(STFReader.UNITS.None, null);
-                    g = (byte)stf.ReadUInt(STFReader.UNITS.None, null);
-                    b = (byte)stf.ReadUInt(STFReader.UNITS.None, null);
+                    a = (byte)stf.ReadUInt(null);
+                    r = (byte)stf.ReadUInt(null);
+                    g = (byte)stf.ReadUInt(null);
+                    b = (byte)stf.ReadUInt(null);
                     stf.SkipRestOfBlock();
                 }),
             });
@@ -263,7 +263,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("signallights", ()=>{ Lights = ReadLights(stf); }),
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
                 new STFReader.TokenProcessor("signalaspects", ()=>{ Aspects = ReadAspects(stf); }),
-                new STFReader.TokenProcessor("signalnumclearahead", ()=>{ numClearAhead = numClearAhead >= -1 ? numClearAhead : stf.ReadIntBlock(STFReader.UNITS.None, null); numdefs++;}),
+                new STFReader.TokenProcessor("signalnumclearahead", ()=>{ numClearAhead = numClearAhead >= -1 ? numClearAhead : stf.ReadIntBlock(null); numdefs++;}),
                 new STFReader.TokenProcessor("semaphoreinfo", ()=>{ SemaphoreInfo = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("sigflashduration", ()=>{
                     stf.MustMatch("(");
@@ -304,7 +304,7 @@ namespace MSTS
         static IList<SignalLight> ReadLights(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var lights = new List<SignalLight>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signallight", ()=>{
@@ -324,7 +324,7 @@ namespace MSTS
         static IDictionary<string, SignalDrawState> ReadDrawStates(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var drawStates = new Dictionary<string, SignalDrawState>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signaldrawstate", ()=>{
@@ -355,7 +355,7 @@ namespace MSTS
         static IList<SignalAspect> ReadAspects(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var aspects = new List<SignalAspect>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalaspect", ()=>{
@@ -456,7 +456,7 @@ namespace MSTS
         public SignalLight(STFReader stf)
         {
             stf.MustMatch("(");
-            Index = stf.ReadUInt(STFReader.UNITS.None, null);
+            Index = stf.ReadUInt(null);
             Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("radius", ()=>{ Radius = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
@@ -505,7 +505,7 @@ namespace MSTS
         public SignalDrawState(STFReader stf)
         {
             stf.MustMatch("(");
-            Index = stf.ReadInt(STFReader.UNITS.None, null);
+            Index = stf.ReadInt(null);
             Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("drawlights", ()=>{ DrawLights = ReadDrawLights(stf); }),
@@ -516,7 +516,7 @@ namespace MSTS
         static IList<SignalDrawLight> ReadDrawLights(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var drawLights = new List<SignalDrawLight>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("drawlight", ()=>{
@@ -543,7 +543,7 @@ namespace MSTS
 		public SignalDrawLight(STFReader stf)
 		{
             stf.MustMatch("(");
-            LightIndex = stf.ReadUInt(STFReader.UNITS.None, null);
+            LightIndex = stf.ReadUInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalflags", ()=>{
                     stf.MustMatch("(");
@@ -625,7 +625,7 @@ namespace MSTS
         static IList<SignalSubObj> ReadSignalSubObjects(STFReader stf)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, null);
+            int count = stf.ReadInt(null);
             var signalSubObjects = new List<SignalSubObj>(count);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("signalsubobj", ()=>{
@@ -666,7 +666,7 @@ namespace MSTS
             public SignalSubObj(STFReader stf)
             {
                 stf.MustMatch("(");
-                Index = stf.ReadInt(STFReader.UNITS.None, null);
+                Index = stf.ReadInt(null);
                 MatrixName = stf.ReadString().ToUpper();
                 Description = stf.ReadString();
                 stf.ParseBlock(new STFReader.TokenProcessor[] {

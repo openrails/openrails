@@ -97,12 +97,12 @@ namespace ORTS
             TrackNodes = new List<int>();
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("soundregiontracktype", ()=>{ SoundRegionTrackType = stf.ReadIntBlock(STFReader.UNITS.None, -1); }),
+                new STFReader.TokenProcessor("soundregiontracktype", ()=>{ SoundRegionTrackType = stf.ReadIntBlock(-1); }),
                 new STFReader.TokenProcessor("soundregionroty", ()=>{ ROTy = stf.ReadFloatBlock(STFReader.UNITS.None, float.MaxValue); }),
                 new STFReader.TokenProcessor("tritemid", ()=>{
                     stf.MustMatch("(");
-                    int dummy = stf.ReadInt(STFReader.UNITS.None, 0);
-                    dummy = stf.ReadInt(STFReader.UNITS.None, -1);
+                    int dummy = stf.ReadInt(0);
+                    dummy = stf.ReadInt(-1);
                     if (dummy != -1)
                         TrackNodes.Add(dummy);
                     stf.SkipRestOfBlock();

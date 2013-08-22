@@ -239,7 +239,7 @@ namespace ORTS
                         {
                             int? i = defaultValue as int?;
                             _fi.SetValue(setWhom,
-                                stf.ReadIntBlock(STFReader.UNITS.Any, i));
+                                stf.ReadIntBlock(i));
                             break;
                         }
                     case "bool":
@@ -269,7 +269,7 @@ namespace ORTS
                         {
                             double? d = defaultValue as double?;
                             _fi.SetValue(setWhom,
-                                stf.ReadDoubleBlock(STFReader.UNITS.Any, d));
+                                stf.ReadDoubleBlock(d));
                             break;
                         }
                     case "vector3":

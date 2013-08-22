@@ -360,9 +360,9 @@ namespace MSTS
         }
 
         public override uint ReadFlags() { return f.ReadHex(null); }
-        public override int ReadInt() { return f.ReadInt( STFReader.UNITS.None, null); }
-        public override uint ReadUInt() { return f.ReadUInt( STFReader.UNITS.None, null); }
-        public override float ReadFloat() { return (float)f.ReadDouble( STFReader.UNITS.None, null); }
+        public override int ReadInt() { return f.ReadInt(null); }
+        public override uint ReadUInt() { return f.ReadUInt(null); }
+        public override float ReadFloat() { return f.ReadFloat(STFReader.UNITS.None, null); }
         public override string ReadString() { return f.ReadItem(); }
 
         public override string  ErrorMessage(string message)

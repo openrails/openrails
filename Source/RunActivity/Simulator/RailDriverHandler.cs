@@ -288,9 +288,9 @@ namespace ORTS
                     {
                         token = reader.ReadItem();
                         if (token == "Min")
-                            min = reader.ReadInt(STFReader.UNITS.None, -1);
+                            min = reader.ReadInt(-1);
                         else if (token == "Max")
-                            max = reader.ReadInt(STFReader.UNITS.None, -1);
+                            max = reader.ReadInt(-1);
                     }
                     if (min >= 0 && max >= 0)
                     {

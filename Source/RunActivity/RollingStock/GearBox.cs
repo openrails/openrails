@@ -53,8 +53,8 @@ namespace ORTS
             string temp = "";
             switch (lowercasetoken)
             {
-                case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(STFReader.UNITS.None, 1); initLevel++; break;
-                case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(STFReader.UNITS.None, 1); break; // initLevel++; break;
+                case "engine(gearboxnumberofgears": GearBoxNumberOfGears = stf.ReadIntBlock(1); initLevel++; break;
+                case "engine(gearboxdirectdrivegear": GearBoxDirectDriveGear = stf.ReadIntBlock(1); break; // initLevel++; break;
                 case "engine(gearboxoperation":
                     temp = stf.ReadStringBlock("manual");
                     switch (temp)

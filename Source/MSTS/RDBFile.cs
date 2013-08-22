@@ -77,7 +77,7 @@ namespace MSTS
 			stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("tracknodes", ()=>{
                     stf.MustMatch("(");
-                    int count = stf.ReadInt(STFReader.UNITS.None, null);
+                    int count = stf.ReadInt(null);
                     TrackNodes = new TrackNode[count + 1];
                     int idx = 1;
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -86,7 +86,7 @@ namespace MSTS
                 }),
                 new STFReader.TokenProcessor("tritemtable", ()=>{
                     stf.MustMatch("(");
-                    int count = stf.ReadInt(STFReader.UNITS.None, null);
+                    int count = stf.ReadInt(null);
                     TrItemTable = new TrItem[count];
                     int idx = -1;
                     stf.ParseBlock(()=> ++idx == -1, new STFReader.TokenProcessor[] {

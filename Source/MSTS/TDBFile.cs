@@ -75,7 +75,7 @@ namespace MSTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("tracknodes", ()=>{
                     stf.MustMatch("(");
-                    int count = stf.ReadInt(STFReader.UNITS.None, null);
+                    int count = stf.ReadInt(null);
                     TrackNodes = new TrackNode[count + 1];
                     int idx = 1;
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -84,7 +84,7 @@ namespace MSTS
                 }),
                 new STFReader.TokenProcessor("tritemtable", ()=>{
                     stf.MustMatch("(");
-                    int count = stf.ReadInt(STFReader.UNITS.None, null);
+                    int count = stf.ReadInt(null);
                     TrItemTable = new TrItem[count];
                     int idx = -1;
                     stf.ParseBlock(()=> ++idx == -1, new STFReader.TokenProcessor[] {
@@ -121,7 +121,7 @@ namespace MSTS
         public TrackNode(STFReader stf, int idx, int count)
         {
             stf.MustMatch("(");
-            Index = stf.ReadUInt(STFReader.UNITS.None, null);
+            Index = stf.ReadUInt(null);
             Debug.Assert(idx == Index, "TrackNode Index Mismatch");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("uid", ()=>{ UiD = new UiD(stf); }),
@@ -130,8 +130,8 @@ namespace MSTS
                 new STFReader.TokenProcessor("trendnode", ()=>{ TrEndNode = true; stf.SkipBlock(); }),
                 new STFReader.TokenProcessor("trpins", ()=>{
                     stf.MustMatch("(");
-                    Inpins = stf.ReadUInt(STFReader.UNITS.None, null);
-                    Outpins = stf.ReadUInt(STFReader.UNITS.None, null);
+                    Inpins = stf.ReadUInt(null);
+                    Outpins = stf.ReadUInt(null);
                     TrPins = new TrPin[Inpins + Outpins];
                     for (int i = 0; i < Inpins + Outpins; ++i)
                     {
@@ -179,8 +179,8 @@ namespace MSTS
         public TrPin(STFReader stf, int count)
         {
             stf.MustMatch("(");
-            Link = stf.ReadInt(STFReader.UNITS.None, null);
-            Direction = stf.ReadInt(STFReader.UNITS.None, null);
+            Link = stf.ReadInt(null);
+            Direction = stf.ReadInt(null);
             if (Link <= 0 || Link > count)
                 STFException.TraceWarning(stf, String.Format("Track node pin has invalid link {0}", Link));
             stf.SkipRestOfBlock();
@@ -224,12 +224,12 @@ namespace MSTS
         public UiD(STFReader stf)
         {
             stf.MustMatch("(");
-            WorldTileX = stf.ReadInt(STFReader.UNITS.None, null);
-            WorldTileZ = stf.ReadInt(STFReader.UNITS.None, null);
-            WorldID = stf.ReadInt(STFReader.UNITS.None, null);
-            stf.ReadInt(STFReader.UNITS.None, null);
-            TileX = stf.ReadInt(STFReader.UNITS.None, null);
-            TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+            WorldTileX = stf.ReadInt(null);
+            WorldTileZ = stf.ReadInt(null);
+            WorldID = stf.ReadInt(null);
+            stf.ReadInt(null);
+            TileX = stf.ReadInt(null);
+            TileZ = stf.ReadInt(null);
             X = stf.ReadFloat(STFReader.UNITS.None, null);
             Y = stf.ReadFloat(STFReader.UNITS.None, null);
             Z = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -255,7 +255,7 @@ namespace MSTS
             Idx = idx;
             stf.MustMatch("(");
             stf.ReadString();
-            ShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);
+            ShapeIndex = stf.ReadUInt(null);
             stf.SkipRestOfBlock();
         }
         public uint ShapeIndex;
@@ -303,7 +303,7 @@ namespace MSTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("trvectorsections", ()=>{
                     stf.MustMatch("(");
-                    int count = stf.ReadInt(STFReader.UNITS.None, null);
+                    int count = stf.ReadInt(null);
                     TrVectorSections = new TrVectorSection[count];
                     for (int i = 0; i < count; ++i)
                         TrVectorSections[i] = new TrVectorSection(stf);
@@ -311,7 +311,7 @@ namespace MSTS
                 }),
                 new STFReader.TokenProcessor("tritemrefs", ()=>{
                     stf.MustMatch("(");
-                    noItemRefs = stf.ReadInt(STFReader.UNITS.None, null);
+                    noItemRefs = stf.ReadInt(null);
                     TrItemRefs = new int[noItemRefs];
                     int refidx = 0;
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -319,7 +319,7 @@ namespace MSTS
                             if (refidx >= noItemRefs)
                                 STFException.TraceWarning(stf, "Skipped extra TrItemRef");
                             else
-                                TrItemRefs[refidx++] = stf.ReadIntBlock(STFReader.UNITS.None, null);
+                                TrItemRefs[refidx++] = stf.ReadIntBlock(null);
                         }),
                     });
                     if (refidx < noItemRefs)
@@ -345,16 +345,16 @@ namespace MSTS
     {
         public TrVectorSection(STFReader stf)
         {
-            SectionIndex = stf.ReadUInt(STFReader.UNITS.None, null);
-            ShapeIndex = stf.ReadUInt(STFReader.UNITS.None, null);
-            WFNameX = stf.ReadInt(STFReader.UNITS.None, null);// worldfilenamex
-            WFNameZ = stf.ReadInt(STFReader.UNITS.None, null);// worldfilenamez
-            WorldFileUiD = stf.ReadUInt(STFReader.UNITS.None, null); // UID in worldfile
-            flag1 = stf.ReadInt(STFReader.UNITS.None, null); // 0
-            flag2 = stf.ReadInt(STFReader.UNITS.None, null); // 1
+            SectionIndex = stf.ReadUInt(null);
+            ShapeIndex = stf.ReadUInt(null);
+            WFNameX = stf.ReadInt(null);// worldfilenamex
+            WFNameZ = stf.ReadInt(null);// worldfilenamez
+            WorldFileUiD = stf.ReadUInt(null); // UID in worldfile
+            flag1 = stf.ReadInt(null); // 0
+            flag2 = stf.ReadInt(null); // 1
             stf.ReadString(); // 00 
-            TileX = stf.ReadInt(STFReader.UNITS.None, null);
-            TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+            TileX = stf.ReadInt(null);
+            TileZ = stf.ReadInt(null);
             X = stf.ReadFloat(STFReader.UNITS.None, null);
             Y = stf.ReadFloat(STFReader.UNITS.None, null);
             Z = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -412,7 +412,7 @@ namespace MSTS
         protected void TrItemID(STFReader stf, int idx)
         {
             stf.MustMatch("(");
-            TrItemId = stf.ReadUInt(STFReader.UNITS.None, null);
+            TrItemId = stf.ReadUInt(null);
             Debug.Assert(idx == TrItemId, "Index Mismatch");
             stf.SkipRestOfBlock();
         }
@@ -422,8 +422,8 @@ namespace MSTS
             X = stf.ReadFloat(STFReader.UNITS.None, null);
             Y = stf.ReadFloat(STFReader.UNITS.None, null);
             Z = stf.ReadFloat(STFReader.UNITS.None, null);
-            TileX = stf.ReadInt(STFReader.UNITS.None, null);
-            TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+            TileX = stf.ReadInt(null);
+            TileZ = stf.ReadInt(null);
             stf.SkipRestOfBlock();
         }
 
@@ -432,8 +432,8 @@ namespace MSTS
             stf.MustMatch("(");
             PX = stf.ReadFloat(STFReader.UNITS.None, null);
             PZ = stf.ReadFloat(STFReader.UNITS.None, null);
-            TilePX = stf.ReadInt(STFReader.UNITS.None, null);
-            TilePZ = stf.ReadInt(STFReader.UNITS.None, null);
+            TilePX = stf.ReadInt(null);
+            TilePZ = stf.ReadInt(null);
             stf.SkipRestOfBlock();
         }
 
@@ -465,8 +465,8 @@ namespace MSTS
 
                 new STFReader.TokenProcessor("crossovertritemdata", ()=>{
                     stf.MustMatch("(");
-                    TrackNode = stf.ReadUInt(STFReader.UNITS.None, null);
-                    CID1 = stf.ReadUInt(STFReader.UNITS.None, null);
+                    TrackNode = stf.ReadUInt(null);
+                    CID1 = stf.ReadUInt(null);
                     stf.SkipRestOfBlock();
                 }),
             });
@@ -507,7 +507,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("trsignaltype", ()=>{
                     stf.MustMatch("(");
                     Flags1 = stf.ReadString();
-                    Direction = stf.ReadUInt(STFReader.UNITS.None, null);
+                    Direction = stf.ReadUInt(null);
                     SigData1 = stf.ReadFloat(STFReader.UNITS.None, null);
                     SignalType = stf.ReadString().ToLowerInvariant();
                     // To do get index to Sigtypes table corresponding to this sigmal
@@ -515,7 +515,7 @@ namespace MSTS
                 }),
                 new STFReader.TokenProcessor("trsignaldirs", ()=>{
                     stf.MustMatch("(");
-                    noSigDirs = stf.ReadUInt(STFReader.UNITS.None, null);
+                    noSigDirs = stf.ReadUInt(null);
                     TrSignalDirs = new strTrSignalDir[noSigDirs];
                     int sigidx = 0;
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -526,10 +526,10 @@ namespace MSTS
                             {
                                 TrSignalDirs[sigidx]=new strTrSignalDir();
                                 stf.MustMatch("(");
-                                TrSignalDirs[sigidx].TrackNode = stf.ReadUInt(STFReader.UNITS.None, null);
-                                TrSignalDirs[sigidx].sd1 = stf.ReadUInt(STFReader.UNITS.None, null);
-                                TrSignalDirs[sigidx].linkLRPath = stf.ReadUInt(STFReader.UNITS.None, null);
-                                TrSignalDirs[sigidx].sd3 = stf.ReadUInt(STFReader.UNITS.None, null);
+                                TrSignalDirs[sigidx].TrackNode = stf.ReadUInt(null);
+                                TrSignalDirs[sigidx].sd1 = stf.ReadUInt(null);
+                                TrSignalDirs[sigidx].linkLRPath = stf.ReadUInt(null);
+                                TrSignalDirs[sigidx].sd3 = stf.ReadUInt(null);
                                 stf.SkipRestOfBlock();
                                 sigidx++;
                             }
@@ -577,7 +577,7 @@ namespace MSTS
 
                 new STFReader.TokenProcessor("speedposttritemdata", ()=>{
                     stf.MustMatch("(");
-                    Flags = stf.ReadUInt(STFReader.UNITS.None, null);
+                    Flags = stf.ReadUInt(null);
 					if ((Flags & 1) != 0) IsWarning = true;
 					if ((Flags & (1 << 1)) != 0) IsLimit = true;
 					if (!IsWarning && !IsLimit) {
@@ -605,12 +605,12 @@ namespace MSTS
 		    if (!IsResume)
 		    {
                 //SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
-                if (IsMilePost && ((Flags & (1 << 9)) == 0)) SpeedInd = (float)Math.Truncate(stf.ReadDouble(STFReader.UNITS.None, null));
+                if (IsMilePost && ((Flags & (1 << 9)) == 0)) SpeedInd = (float)Math.Truncate(stf.ReadDouble(null));
                 else SpeedInd = stf.ReadFloat(STFReader.UNITS.None, null);
 		    }
     		if (ShowNumber)
 		    {
-			    DisplayNumber = stf.ReadInt(STFReader.UNITS.None, null);
+			    DisplayNumber = stf.ReadInt(null);
 		    }
                     
 			Angle = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -638,8 +638,8 @@ namespace MSTS
 
                 new STFReader.TokenProcessor("tritemsrdata", ()=>{
                     stf.MustMatch("(");
-                    SRData1 = stf.ReadUInt(STFReader.UNITS.None, null);
-                    SRData2 = stf.ReadUInt(STFReader.UNITS.None, null);
+                    SRData1 = stf.ReadUInt(null);
+                    SRData2 = stf.ReadUInt(null);
                     SRData3 = stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                 }),
@@ -693,7 +693,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("sidingtritemdata", ()=> {
                     stf.MustMatch("(");
                     Flags1 = stf.ReadString();
-                    Flags2 = stf.ReadUInt(STFReader.UNITS.None, null);
+                    Flags2 = stf.ReadUInt(null);
                     stf.SkipRestOfBlock();
                 }),
             });
@@ -717,12 +717,12 @@ namespace MSTS
 
                 new STFReader.TokenProcessor("platformname", ()=>{ ItemName = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("station", ()=>{ Station = stf.ReadStringBlock(""); }),
-                new STFReader.TokenProcessor("platformminwaitingtime", ()=>{ PlatformMinWaitingTime = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("platformnumpassengerswaiting", ()=>{ PlatformNumPassengersWaiting = stf.ReadUIntBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("platformminwaitingtime", ()=>{ PlatformMinWaitingTime = stf.ReadUIntBlock(null); }),
+                new STFReader.TokenProcessor("platformnumpassengerswaiting", ()=>{ PlatformNumPassengersWaiting = stf.ReadUIntBlock(null); }),
                 new STFReader.TokenProcessor("platformtritemdata", ()=>{
                     stf.MustMatch("(");
                     Flags1 = stf.ReadString();
-                    LinkedPlatformItemId = stf.ReadUInt(STFReader.UNITS.None, null);
+                    LinkedPlatformItemId = stf.ReadUInt(null);
                     stf.SkipRestOfBlock();
                 }),
             });

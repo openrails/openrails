@@ -149,7 +149,7 @@ namespace MSTS
 						new STFReader.TokenProcessor("trpathend", ()=>{ End = stf.ReadStringBlock(null); }),
                         new STFReader.TokenProcessor("trpathnodes", ()=>{
                             stf.MustMatch("(");
-                            var count = stf.ReadInt(STFReader.UNITS.None, null);
+                            var count = stf.ReadInt(null);
                             stf.ParseBlock(new STFReader.TokenProcessor[] {
                                 new STFReader.TokenProcessor("trpathnode", ()=>{
                                     if (--count < 0)
@@ -182,13 +182,13 @@ namespace MSTS
 		public TrackPDP(STFReader stf)
 		{
             stf.MustMatch("(");
-            TileX = stf.ReadInt(STFReader.UNITS.None, null);
-            TileZ = stf.ReadInt(STFReader.UNITS.None, null);
+            TileX = stf.ReadInt(null);
+            TileZ = stf.ReadInt(null);
             X = stf.ReadFloat(STFReader.UNITS.None, null);
             Y = stf.ReadFloat(STFReader.UNITS.None, null);
             Z = stf.ReadFloat(STFReader.UNITS.None, null);
-            A = stf.ReadInt(STFReader.UNITS.None, null);
-            B = stf.ReadInt(STFReader.UNITS.None, null);
+            A = stf.ReadInt(null);
+            B = stf.ReadInt(null);
             stf.SkipRestOfBlock();
         }
 	}
@@ -201,9 +201,9 @@ namespace MSTS
         {
             stf.MustMatch("(");
             A = stf.ReadHex(0);
-            NextNode = stf.ReadUInt(STFReader.UNITS.None, null);
-            C = stf.ReadUInt(STFReader.UNITS.None, null);
-            FromPDP = stf.ReadUInt(STFReader.UNITS.None, null);
+            NextNode = stf.ReadUInt(null);
+            C = stf.ReadUInt(null);
+            FromPDP = stf.ReadUInt(null);
             stf.SkipRestOfBlock();
         }
     }

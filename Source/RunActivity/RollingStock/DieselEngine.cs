@@ -92,7 +92,7 @@ namespace ORTS
         public void Parse(STFReader stf, MSTSDieselLocomotive loco)
         {
             stf.MustMatch("(");
-            int count = stf.ReadInt(STFReader.UNITS.None, 0);
+            int count = stf.ReadInt(0);
             for (int i = 0; i < count; i++)
             {
                 string setting = stf.ReadString().ToLower();
