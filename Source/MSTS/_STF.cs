@@ -886,6 +886,8 @@ namespace MSTS
                     case "mph": return 0.44704;
                     case "kph": return 0.27778;
                     case "km/h": return 0.27778;
+                    case "kmh": return 0.27778; // Misspelled unit accepted by MSTS, documented in Richter-Realmuto's 
+                    // "Manual for .eng- and .wag-files of the MS Train Simulator 1.0". and used in Bernina
                 }
             if ((validUnits & UNITS.SpeedDefaultMPH) > 0)
                 switch (suffix)
