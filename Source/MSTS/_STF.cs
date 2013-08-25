@@ -276,7 +276,6 @@ namespace MSTS
             return ReadItem(false);
         }
 
-
         /// <summary>This is an internal function in STFReader, it returns the next whitespace delimited {item} from the STF file.
         /// </summary>
         /// <remarks>
@@ -301,6 +300,7 @@ namespace MSTS
 
             return ReadItem(false, string_mode);
         }
+
         /// <summary>Calling this function causes ReadItem() to repeat the last {item} that was read from the STF file
         /// </summary>
         /// <remarks>
@@ -327,14 +327,92 @@ namespace MSTS
                 // A single unexpected token leads to a warning; two leads to a fatal error.
                 if (!s1.Equals(target, StringComparison.OrdinalIgnoreCase))
                 {
-                    STFException.TraceWarning(this, target + " Not Found - instead found " + s1);
+                    STFException.TraceWarning(this, target + " Not Found - instead found \"" + s1 + "\"");
                     string s2 = ReadItem();
                     if (!s2.Equals(target, StringComparison.OrdinalIgnoreCase))
-                        throw new STFException(this, target + " Not Found - instead found " + s1);
+                        throw new STFException(this, target + " Not Found - instead found  \"" + s1 + "\"");
                 }
             }
         }
 
+        /// <summary>Reports a critical error if the next {item} does not match the target.
+        /// Same as MustMatch() but uses ReadItemFromBlock()
+        /// </summary>
+        /// <param name="target">The next {item} contents we are expecting in the STF file.</param>
+        /// <returns>The {item} read from the STF file</returns>
+        private void MustMatchFromBlock(string target)
+        {
+            if (Eof)
+                STFException.TraceWarning(this, "Unexpected end of file instead of " + target);
+            else
+            {
+                string s1 = ReadItemFromBlock();
+                // A single unexpected token leads to a warning; two leads to a fatal error.
+                if (!s1.Equals(target, StringComparison.OrdinalIgnoreCase))
+                {
+                    STFException.TraceWarning(this, target + " Not Found - instead found \"" + s1 + "\"");
+                    string s2 = ReadItemFromBlock();
+                    if (!s2.Equals(target, StringComparison.OrdinalIgnoreCase))
+                        throw new STFException(this, target + " Not Found - instead found  \"" + s1 + "\"");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Shortened version of ReadItem() just to parse rest of block allowing for comment to end of block. 
+        /// E.g.:
+        ///   Sanding ( 20mph #sanding system is switched off when faster than this speed )
+        /// </summary>
+        /// <returns></returns>
+        private string ReadItemFromBlock()
+        {
+            int c;
+            #region Skip past any leading whitespace characters
+            for (; ; )
+            {
+                c = ReadChar();
+                if (IsEof(c)) return UpdateTreeAndStepBack("");
+                if (!IsWhiteSpace(c)) break;
+            }
+            #endregion
+
+            #region Handle # marker
+            if (c == '#')
+            {
+                #region Consume # comment to end of block
+                for ( ; ; )
+                {
+                    c = PeekChar();
+                    if (c == ')') break;
+                    c = ReadChar();
+                    if (IsEof(c))
+                    {
+                        STFException.TraceWarning(this, "Found a # marker immediately followed by an unexpected EOF.");
+                    }
+                }
+                #endregion
+            } 
+            #endregion
+            
+            #region Parse next item
+            string item = "";
+            for (; ; )
+            {
+                item += (char)c;
+                if (c == ')')
+                {
+                    UpdateTreeAndStepBack(")");
+                    break;
+                }
+                c = ReadChar();
+                if (IsEof(c)) break;
+                if (IsWhiteSpace(c)) break;
+            }
+            #endregion
+
+            return item;
+        }
+        
         /// <summary>Returns true if the next character is the end of block, or end of file. Consuming the closing ")" all other values are not consumed.
         /// </summary>
         /// <remarks>
@@ -1136,7 +1214,7 @@ namespace MSTS
             if (s == "(")
             {
                 float result = ReadFloat(validUnits, defaultValue);
-                MustMatch(")");
+                MustMatchFromBlock(")");
                 return result;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
@@ -1454,6 +1532,7 @@ namespace MSTS
         /// <summary>This is really a local variable in the function ReadItem(...) but it is a class member to stop unnecessary memory re-allocations.
         /// </summary>
         private StringBuilder itemBuilder = new StringBuilder(256);
+
         /// <summary>Internal Implementation - This is the main function that reads an item from the STF stream.
         /// </summary>
         /// <param name="skip_mode">True - we are in a skip function, and so we don't want to do any special token processing.</param>
@@ -1570,7 +1649,7 @@ namespace MSTS
                 }
             }
             #endregion
-            #region Build Normal Items - whitespace delimitered
+            #region Build Normal Items - delimitered by whitespace, ( and )
             else if (c != -1)
             {
                 itemBuilder.Append((char)c);
