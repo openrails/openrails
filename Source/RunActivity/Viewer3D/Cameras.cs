@@ -1103,7 +1103,7 @@ namespace ORTS
             attachedLocation.Z = PositionDistance;
             attachedLocation = Vector3.Transform(attachedLocation, Matrix.CreateRotationX(-PositionXRadians));
             attachedLocation = Vector3.Transform(attachedLocation, Matrix.CreateRotationY(PositionYRadians));
-            attachedLocation.Z += attachedCar.Length / 2.0f * (Front ? 1 : -1);
+            attachedLocation.Z += attachedCar.LengthM / 2.0f * (Front ? 1 : -1);
 
             // Update location of camera
             UpdateLocation();
@@ -1189,7 +1189,7 @@ namespace ORTS
         protected override void SetCameraCar(TrainCar car)
         {
             base.SetCameraCar(car);
-            attachedLocation = new Vector3(1.8f, 2.0f, attachedCar.Length / 2 - 0.3f);
+            attachedLocation = new Vector3(1.8f, 2.0f, attachedCar.LengthM / 2 - 0.3f);
             attachedToRear = car.Train.Cars[0] != car;
         }
 

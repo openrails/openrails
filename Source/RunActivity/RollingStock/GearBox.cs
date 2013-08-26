@@ -14,11 +14,11 @@ namespace ORTS
         public int GearBoxDirectDriveGear = 1;
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxEngineBraking GearBoxEngineBraking = GearBoxEngineBraking.None;
-        public List<float> GearBoxMaxSpeedForGears = new List<float>();
-        public List<float> GearBoxMaxTractiveForceForGears = new List<float>();
+        public List<float> GearBoxMaxSpeedForGearsMpS = new List<float>();
+        public List<float> GearBoxMaxTractiveForceForGearsN = new List<float>();
         public float GearBoxOverspeedPercentageForFailure = 150f;
-        public float GearBoxBackLoadForce = 1000;
-        public float GearBoxCoastingForce = 500;
+        public float GearBoxBackLoadForceN = 1000;
+        public float GearBoxCoastingForceN = 500;
         public float GearBoxUpGearProportion = 0.85f;
         public float GearBoxDownGearProportion = 0.35f;
 
@@ -38,11 +38,11 @@ namespace ORTS
             GearBoxDirectDriveGear = copy.GearBoxDirectDriveGear;
             GearBoxOperation = copy.GearBoxOperation;
             GearBoxEngineBraking = copy.GearBoxEngineBraking;
-            GearBoxMaxSpeedForGears = new List<float>(copy.GearBoxMaxSpeedForGears);
-            GearBoxMaxTractiveForceForGears = new List<float>(copy.GearBoxMaxTractiveForceForGears);
+            GearBoxMaxSpeedForGearsMpS = new List<float>(copy.GearBoxMaxSpeedForGearsMpS);
+            GearBoxMaxTractiveForceForGearsN = new List<float>(copy.GearBoxMaxTractiveForceForGearsN);
             GearBoxOverspeedPercentageForFailure = copy.GearBoxOverspeedPercentageForFailure;
-            GearBoxBackLoadForce = copy.GearBoxBackLoadForce;
-            GearBoxCoastingForce = copy.GearBoxCoastingForce;
+            GearBoxBackLoadForceN = copy.GearBoxBackLoadForceN;
+            GearBoxCoastingForceN = copy.GearBoxCoastingForceN;
             GearBoxUpGearProportion = copy.GearBoxUpGearProportion;
             GearBoxDownGearProportion = copy.GearBoxDownGearProportion;
             initLevel = copy.initLevel;
@@ -85,8 +85,8 @@ namespace ORTS
                     {
                         for (int i = 0; i < GearBoxNumberOfGears; i++)
                         {
-                            GearBoxMaxSpeedForGears.Add(stf.ReadFloat(STFReader.UNITS.None, 10.0f));
-                            GearBoxMaxSpeedForGears[i] = MpS.FromMpH(GearBoxMaxSpeedForGears[i]);
+                            GearBoxMaxSpeedForGearsMpS.Add(stf.ReadFloat(STFReader.UNITS.Speed, 10.0f));
+                            GearBoxMaxSpeedForGearsMpS[i] = MpS.FromMpH(GearBoxMaxSpeedForGearsMpS[i]);
                         }
                         stf.SkipRestOfBlock();
                         initLevel++;
@@ -101,14 +101,14 @@ namespace ORTS
                     if (temp == "(")
                     {
                         for (int i = 0; i < GearBoxNumberOfGears; i++)
-                            GearBoxMaxTractiveForceForGears.Add(stf.ReadFloat(STFReader.UNITS.Force, 10000.0f));
+                            GearBoxMaxTractiveForceForGearsN.Add(stf.ReadFloat(STFReader.UNITS.Force, 10000.0f));
                         stf.SkipRestOfBlock();
                         initLevel++;
                     }
                     break;
                 case "engine(gearboxoverspeedpercentageforfailure": GearBoxOverspeedPercentageForFailure = stf.ReadFloatBlock(STFReader.UNITS.None, 150f); break; // initLevel++; break;
-                case "engine(gearboxbackloadforce": GearBoxBackLoadForce = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); break;
-                case "engine(gearboxcoastingforce": GearBoxCoastingForce = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); break;
+                case "engine(gearboxbackloadforce": GearBoxBackLoadForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); break;
+                case "engine(gearboxcoastingforce": GearBoxCoastingForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, 0f); break;
                 case "engine(gearboxupgearproportion": GearBoxUpGearProportion = stf.ReadFloatBlock(STFReader.UNITS.None, 0.85f); break; // initLevel++; break;
                 case "engine(gearboxdowngearproportion": GearBoxDownGearProportion = stf.ReadFloatBlock(STFReader.UNITS.None, 0.25f); break; // initLevel++; break;
                 default: break;
@@ -332,15 +332,15 @@ namespace ORTS
                 for (int i = 0; i < mstsParams.GearBoxNumberOfGears; i++)
                 {
                     Gears.Add(new Gear(this));
-                    Gears[i].BackLoadForceN = mstsParams.GearBoxBackLoadForce;
-                    Gears[i].CoastingForceN = mstsParams.GearBoxCoastingForce;
+                    Gears[i].BackLoadForceN = mstsParams.GearBoxBackLoadForceN;
+                    Gears[i].CoastingForceN = mstsParams.GearBoxCoastingForceN;
                     Gears[i].DownGearProportion = mstsParams.GearBoxDownGearProportion;
                     Gears[i].IsDirectDriveGear = (mstsParams.GearBoxDirectDriveGear == mstsParams.GearBoxNumberOfGears);
-                    Gears[i].MaxSpeedMpS = mstsParams.GearBoxMaxSpeedForGears[i];
-                    Gears[i].MaxTractiveForceN = mstsParams.GearBoxMaxTractiveForceForGears[i];
+                    Gears[i].MaxSpeedMpS = mstsParams.GearBoxMaxSpeedForGearsMpS[i];
+                    Gears[i].MaxTractiveForceN = mstsParams.GearBoxMaxTractiveForceForGearsN[i];
                     Gears[i].OverspeedPercentage = mstsParams.GearBoxOverspeedPercentageForFailure;
                     Gears[i].UpGearProportion = mstsParams.GearBoxUpGearProportion;
-                    Gears[i].Ratio = mstsParams.GearBoxMaxSpeedForGears[i] / DieselEngine.MaxRPM;
+                    Gears[i].Ratio = mstsParams.GearBoxMaxSpeedForGearsMpS[i] / DieselEngine.MaxRPM;
                 }
                 GearBoxOperation = mstsParams.GearBoxOperation;
             }

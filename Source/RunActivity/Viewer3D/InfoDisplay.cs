@@ -555,7 +555,7 @@ namespace ORTS
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            DrawLabel(Car.WorldPosition, Car.Height, Car.CarID);
+            DrawLabel(Car.WorldPosition, Car.HeightM, Car.CarID);
         }
     }
 

@@ -2166,11 +2166,11 @@ namespace ORTS
                 }
                 else
                 {
-                    var bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
+                    var bogieSpacing = car.LengthM * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
                     // traveller is positioned at the front of the car
                     // advance to the first bogie 
-                    traveller.Move((car.Length - bogieSpacing) / 2.0f);
+                    traveller.Move((car.LengthM - bogieSpacing) / 2.0f);
                     var tileX = traveller.TileX;
                     var tileZ = traveller.TileZ;
                     var x = traveller.X;
@@ -2212,14 +2212,14 @@ namespace ORTS
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
 
-                    traveller.Move((car.Length - bogieSpacing) / 2.0f);
+                    traveller.Move((car.LengthM - bogieSpacing) / 2.0f);
                 }
                 if (i < Cars.Count - 1)
                 {
                     traveller.Move(car.CouplerSlackM + car.GetCouplerZeroLengthM());
                     length += car.CouplerSlackM + car.GetCouplerZeroLengthM();
                 }
-                length += car.Length;
+                length += car.LengthM;
             }
 
             traveller.ReverseDirection();
@@ -2277,11 +2277,11 @@ namespace ORTS
                 }
                 else
                 {
-                    var bogieSpacing = car.Length * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
+                    var bogieSpacing = car.LengthM * 0.65f;  // we'll use this approximation since the wagfile doesn't contain info on bogie position
 
                     // traveller is positioned at the back of the car
                     // advance to the first bogie 
-                    traveller.Move((car.Length - bogieSpacing) / 2.0f);
+                    traveller.Move((car.LengthM - bogieSpacing) / 2.0f);
                     var tileX = traveller.TileX;
                     var tileZ = traveller.TileZ;
                     var x = traveller.X;
@@ -2331,9 +2331,9 @@ namespace ORTS
                         car.SuperElevation(SpeedMpS, Program.Simulator.UseSuperElevation, traveller);
                     }
 
-                    traveller.Move((car.Length - bogieSpacing) / 2.0f);  // Move to the front of the car 
+                    traveller.Move((car.LengthM - bogieSpacing) / 2.0f);  // Move to the front of the car 
                 }
-                length += car.Length;
+                length += car.LengthM;
             }
 
             FrontTDBTraveller = traveller;
@@ -2717,7 +2717,7 @@ namespace ORTS
                 {
                     trainLength += car.CouplerSlackM + car.GetCouplerZeroLengthM();
                 }
-                trainLength += car.Length;
+                trainLength += car.LengthM;
             }
 
             // get starting position and route
@@ -11729,7 +11729,7 @@ namespace ORTS
             var staticLength = 0f;
             foreach (var car in Cars)
             {
-                staticLength += car.Length;
+                staticLength += car.LengthM;
             }
             staticLength = (expectedLength - staticLength) / (Cars.Count - 1);
             foreach (var car in Cars)//update slack for each car

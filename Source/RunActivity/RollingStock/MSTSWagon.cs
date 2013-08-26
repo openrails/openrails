@@ -64,7 +64,7 @@ namespace ORTS
         // wag file data
         public string MainShapeFileName = null;
         public string FreightShapeFileName = null;
-        public float FreightAnimHeight = 0;
+        public float FreightAnimHeightM = 0;
         public string InteriorShapeFileName = null; // passenger view shape file name
         public string MainSoundFileName = null;
         public string InteriorSoundFileName = null;
@@ -149,14 +149,14 @@ namespace ORTS
                 case "wagon(freightanim":
                     stf.MustMatch("(");
                     FreightShapeFileName = stf.ReadString();
-                    FreightAnimHeight = stf.ReadFloat(STFReader.UNITS.Distance, null) - stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FreightAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null) - stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(size":
                     stf.MustMatch("(");
                     stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    Height = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    Length = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    HeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    LengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -257,7 +257,7 @@ namespace ORTS
         {
             MainShapeFileName = copy.MainShapeFileName;
             FreightShapeFileName = copy.FreightShapeFileName;
-            FreightAnimHeight = copy.FreightAnimHeight;
+            FreightAnimHeightM = copy.FreightAnimHeightM;
             IsFreight = copy.IsFreight;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             MainSoundFileName = copy.MainSoundFileName;
@@ -268,8 +268,8 @@ namespace ORTS
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
-            Length = copy.Length;
-			Height = copy.Height;
+            LengthM = copy.LengthM;
+			HeightM = copy.HeightM;
             MassKG = copy.MassKG;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
@@ -1120,7 +1120,7 @@ namespace ORTS
             if (FreightShape != null)
             {
                 if (FreightShape.XNAMatrices.Length > 0)
-                    FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimHeight;
+                    FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimHeightM;
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
 

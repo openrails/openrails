@@ -252,14 +252,14 @@ namespace ORTS
         public void SetPantographFirst( bool up)
         {
             if (PantographFirstUp != up)
-                PantographFirstDelay += PowerOnDelay;
+                PantographFirstDelay += PowerOnDelayS;
             PantographFirstUp = up;
         }
 
         public void SetPantographSecond( bool up)
         {
             if (PantographSecondUp != up)
-                PantographSecondDelay += PowerOnDelay;
+                PantographSecondDelay += PowerOnDelayS;
             PantographSecondUp = up;
         }
 

@@ -720,7 +720,7 @@ namespace ORTS
                     // our TDB traveller is always at the back of the last car so it needs to be repositioned
                     TrainCar lastCar = train.LastCar;
                     train.RearTDBTraveller.ReverseDirection();
-                    train.RearTDBTraveller.Move(lastCar.Length / 2f);
+                    train.RearTDBTraveller.Move(lastCar.LengthM / 2f);
                     train.RearTDBTraveller.ReverseDirection();
 
                     train.CalculatePositionOfCars(0);

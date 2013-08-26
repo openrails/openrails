@@ -86,7 +86,7 @@ namespace ORTS
         public bool CompressorOn = false;
         public float AverageForceN = 0;
         public bool PowerOn = false;
-        public float PowerOnDelay = 0.0f;
+        public float PowerOnDelayS = 0.0f;
         public bool CabLightOn = false;
         public bool ShowCab = true;
 
@@ -107,10 +107,10 @@ namespace ORTS
         public float BrakePipeChargingRatePSIpS;
         public Interpolator2D TractiveForceCurves = null;
         public Interpolator2D DynamicBrakeForceCurves = null;
-        public float DynamicBrakeSpeed1 = 3;
-        public float DynamicBrakeSpeed2 = 18;
-        public float DynamicBrakeSpeed3 = 23;
-        public float DynamicBrakeSpeed4 = 35;
+        public float DynamicBrakeSpeed1MpH = 3;
+        public float DynamicBrakeSpeed2MpH = 18;
+        public float DynamicBrakeSpeed3MpH = 23;
+        public float DynamicBrakeSpeed4MpH = 35;
         public float MaxDynamicBrakeForceN = 0;
         public float DynamicBrakeDelayS = 0;
         public bool DynamicBrakeAutoBailOff = false;
@@ -251,10 +251,10 @@ namespace ORTS
                 interp[100] = 0;
                 DynamicBrakeForceCurves[0] = interp;
                 interp = new Interpolator(4);
-                interp[DynamicBrakeSpeed1] = 0;
-                interp[DynamicBrakeSpeed2] = MaxDynamicBrakeForceN;
-                interp[DynamicBrakeSpeed3] = MaxDynamicBrakeForceN;
-                interp[DynamicBrakeSpeed4] = 0;
+                interp[DynamicBrakeSpeed1MpH] = 0;
+                interp[DynamicBrakeSpeed2MpH] = MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed3MpH] = MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed4MpH] = 0;
                 DynamicBrakeForceCurves[1] = interp;
             }
         }
@@ -349,10 +349,10 @@ namespace ORTS
 
                 case "engine(maxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(stf); break;
                 case "engine(dynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(stf); break;
-                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1 = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
-                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2 = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
-                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3 = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
-                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4 = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
@@ -366,7 +366,7 @@ namespace ORTS
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break; 
 
                 case "engine(orts(sanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(orts(powerondelay": PowerOnDelay = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+                case "engine(orts(powerondelay": PowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(orts(emergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
                 case "engine(orts(emergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(orts(emergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
@@ -402,7 +402,7 @@ namespace ORTS
             EffectData = locoCopy.EffectData;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
-            PowerOnDelay = locoCopy.PowerOnDelay;
+            PowerOnDelayS = locoCopy.PowerOnDelayS;
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
 
             EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
@@ -2005,7 +2005,7 @@ namespace ORTS
                         break;
                     }
                 // MultStateDisplay entry in CVF file had Type SANDING. W/O the below entry and another entry at line 3625
-                // the independent sanding light found in some cabs would not work.
+                // the independant sanding light found in some cabs would not work.
                 case CABViewControlTypes.SANDING:
                     {
                         data = Sander ? 1 : 0;

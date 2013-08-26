@@ -1066,7 +1066,7 @@ namespace ORTS
             foreach (TrainCar car in PlayerTrain.Cars)
             {
                 float d = (car.CouplerSlackM + car.GetCouplerZeroLengthM()) / 2;
-                traveller.Move(car.Length + d);
+                traveller.Move(car.LengthM + d);
 
                 Vector3 xnaCenter = Camera.XNALocation(traveller.WorldLocation);
                 float radius = 2f;  // 2 meter click range

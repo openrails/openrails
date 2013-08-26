@@ -44,8 +44,8 @@ namespace ORTS
         public bool IsPartOfActiveTrain = true;
 
         // some properties of this car
-        public float Length = 40;       // derived classes must overwrite these defaults
-        public float Height = 4;        // derived classes must overwrite these defaults
+        public float LengthM = 40;       // derived classes must overwrite these defaults
+        public float HeightM = 4;        // derived classes must overwrite these defaults
         public float MassKG = 10000;
         public bool IsDriveable = false;
 	    public bool IsFreight = false;  // indication freight wagon or passenger car
@@ -401,11 +401,11 @@ namespace ORTS
                         var otherPart = otherCar.Parts.OrderBy(p => -p.OffsetM).FirstOrDefault();
                         if (otherPart == null)
                         {
-                            WheelAxles.Add(new WheelAxle(Length / 2, 0, 0) { Part = Parts[0] });
+                            WheelAxles.Add(new WheelAxle(LengthM / 2, 0, 0) { Part = Parts[0] });
                         }
                         else
                         {
-                            var offset = otherCar.Length / 2 + Length / 2;
+                            var offset = otherCar.LengthM / 2 + LengthM / 2;
                             var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
                             var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex == otherPartIndex);
                             var part = new TrainCarPart(otherPart.OffsetM - offset, 0) { SumWgt = otherPart.SumWgt };
@@ -419,11 +419,11 @@ namespace ORTS
                         var otherPart = otherCar.Parts.OrderBy(p => p.OffsetM).FirstOrDefault();
                         if (otherPart == null)
                         {
-                            WheelAxles.Add(new WheelAxle(-Length / 2, 0, 0) { Part = Parts[0] });
+                            WheelAxles.Add(new WheelAxle(-LengthM / 2, 0, 0) { Part = Parts[0] });
                         }
                         else
                         {
-                            var offset = otherCar.Length / 2 + Length / 2;
+                            var offset = otherCar.LengthM / 2 + LengthM / 2;
                             var otherPartIndex = otherCar.Parts.IndexOf(otherPart);
                             var otherAxles = otherCar.WheelAxles.Where(a => a.BogieIndex == otherPartIndex);
                             var part = new TrainCarPart(otherPart.OffsetM + offset, 0) { SumWgt = otherPart.SumWgt };
@@ -453,7 +453,7 @@ namespace ORTS
             int tileZ = traveler.TileZ;
             if (Flipped == backToFront)
             {
-                float o = -Length / 2;
+                float o = -LengthM / 2;
                 for (int k = 0; k < WheelAxles.Count; k++)
                 {
                     float d = WheelAxles[k].OffsetM - o;
@@ -464,12 +464,12 @@ namespace ORTS
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
                     WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, traveler);
                 }
-                o = Length / 2 - o;
+                o = LengthM / 2 - o;
                 traveler.Move(o);
             }
             else
             {
-                float o = Length / 2;
+                float o = LengthM / 2;
                 for (int k = WheelAxles.Count - 1; k>=0 ; k--)
                 {
                     float d = o - WheelAxles[k].OffsetM;
@@ -480,7 +480,7 @@ namespace ORTS
                     float z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
                     WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z, 0, traveler);
                 }
-                o = Length / 2 + o;
+                o = LengthM / 2 + o;
                 traveler.Move(o);
             }
             TrainCarPart p0= Parts[0];

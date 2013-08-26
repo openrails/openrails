@@ -369,7 +369,7 @@ namespace ORTS.MultiPlayer
 				ids[i] = t.Cars[i].CarID;
 				if (t.Cars[i].Flipped == true) flipped[i] = 1;
 				else flipped[i] = 0;
-				lengths[i] = (int)(t.Cars[i].Length);
+				lengths[i] = (int)(t.Cars[i].LengthM);
 			}
 			if (t.LeadLocomotive != null) leadingID = t.LeadLocomotive.CarID;
 			else leadingID = "NA";
@@ -1031,7 +1031,7 @@ namespace ORTS.MultiPlayer
 			{
 				cars[i] = t.Cars[i].RealWagFilePath;
 				ids[i] = t.Cars[i].CarID;
-				lengths[i] = (int)t.Cars[i].Length;
+				lengths[i] = (int)t.Cars[i].LengthM;
 				if (t.Cars[i].Flipped == true) flipped[i] = 1;
 				else flipped[i] = 0;
 			}
@@ -1070,7 +1070,7 @@ namespace ORTS.MultiPlayer
 				try
 				{
                     car = RollingStock.Load(Program.Simulator, wagonFilePath);
-					car.Length = lengths[i];
+					car.LengthM = lengths[i];
 				}
 				catch (Exception error)
 				{
@@ -1204,7 +1204,7 @@ namespace ORTS.MultiPlayer
 			{
 				cars[i] = t.Cars[i].RealWagFilePath;
 				ids[i] = t.Cars[i].CarID;
-				lengths[i] = (int)t.Cars[i].Length;
+				lengths[i] = (int)t.Cars[i].LengthM;
 				if (t.Cars[i].Flipped == true) flipped[i] = 1;
 				else flipped[i] = 0;
 			}
@@ -1261,7 +1261,7 @@ namespace ORTS.MultiPlayer
 					try
 					{
                         if (car == null) car = RollingStock.Load(Program.Simulator, wagonFilePath);
-						car.Length = lengths[i];
+						car.LengthM = lengths[i];
 					}
 					catch (Exception error)
 					{
@@ -1299,7 +1299,7 @@ namespace ORTS.MultiPlayer
 				try
 				{
                     car = RollingStock.Load(Program.Simulator, wagonFilePath);
-					car.Length = lengths[i];
+					car.LengthM = lengths[i];
 				}
 				catch (Exception error)
 				{
