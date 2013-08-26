@@ -9438,6 +9438,8 @@ namespace ORTS
             SIGASP foundState = SIGASP.CLEAR_2;
             bool foundValid = false;
 
+            // get signal of type 2 (end signal)
+
             if (dumpfile.Length > 1)
                 File.AppendAllText(dumpfile, "DIST_MULTI_SIG_MR for " + sigFN1.ToString() + " + upto " + sigFN2.ToString() + "\n");
 
@@ -9458,6 +9460,12 @@ namespace ORTS
                 File.AppendAllText(dumpfile, "  signal type 2 : " + mainSignal.sigfound[(int)sigFN2].ToString() + "\n");
             SignalObject thisSignal = mainSignal;
 
+            // ensure next signal of type 1 is located correctly
+
+            thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
+
+            // loop through all available signals of type 1
+
             while (thisSignal.sigfound[(int)sigFN1] >= 0)
             {
                 foundValid = true;
@@ -9468,6 +9476,10 @@ namespace ORTS
 
                 if (dumpfile.Length > 1)
                     File.AppendAllText(dumpfile, "  signal type 1 : " + thisSignal.thisRef.ToString() + " = " + thisState.ToString() + "\n");
+
+                // ensure correct next signals are located
+                thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
+                thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
 
                 if (sig2Index >= 0 && thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
                 {

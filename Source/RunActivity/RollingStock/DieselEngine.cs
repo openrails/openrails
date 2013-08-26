@@ -701,15 +701,27 @@ namespace ORTS
             EngineStatus = (Status)inf.ReadInt32();
             RealRPM = inf.ReadSingle();
             OutputPowerW = inf.ReadSingle();
+
+            Boolean gearSaved    = inf.ReadBoolean();  // read boolean which indicates gear data was saved
+            Boolean gearRestored = false;
+
             if (((MSTSDieselLocomotive)locomotive).GearBox != null)
             {
-                if (!((MSTSDieselLocomotive)locomotive).GearBox.IsInitialized)
+                if (!((MSTSDieselLocomotive)locomotive).GearBox.IsInitialized || !gearSaved)
                     GearBox = null;
                 else
                 {
                     GearBox = new GearBox(((MSTSDieselLocomotive)locomotive).GearBox, this);
                     GearBox.Restore(inf);
+                    gearRestored = true;
                 }
+            }
+
+            // if info was saved but not restored - use dummy to load restored info
+            if (gearSaved && !gearRestored)
+            {
+                GearBox dummyGear = new GearBox();
+                dummyGear.Restore(inf);
             }
         }
 
@@ -719,7 +731,14 @@ namespace ORTS
             outf.Write(RealRPM);
             outf.Write(OutputPowerW);
             if (GearBox != null)
+            {
+                outf.Write(true);
                 GearBox.Save(outf);
+            }
+            else
+            {
+                outf.Write(false);
+            }
         }
 
         public void InitFromMSTS(MSTSDieselLocomotive loco)
