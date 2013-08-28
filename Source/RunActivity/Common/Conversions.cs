@@ -127,6 +127,8 @@ namespace ORTS
     /// Power conversions from and to Watts
     /// </summary>
     public class W {
+        public static float FromKw(float k) { return k * 1000f; } // Kw => Watts
+        public static float   ToKw(float w) { return w / 1000f; } // Watts => Kw
         public static float FromHp(float h) { return h * 745.699872f; } // Hp => Watts
         public static float   ToHp(float w) { return w / 745.699872f; } // Watts => Hp
     }
@@ -212,19 +214,21 @@ namespace ORTS
     /// <summary>
     /// Frequency conversions from and to Hz (revolutions/sec)
     /// </summary>
-    public class Hz {
-        public static float FromRpM(float r)    { return r / 60f; }     // rev/min => Hz
-        public static float   ToRpM(float r)    { return r * 60f; }     // Hz => rev/min
+    public class pS {
+        public static float FrompM(float r)    { return r / 60f; }     // rev/min => rev/sec
+        public static float   TopM(float h)    { return h * 60f; }     // rev/sec => rev/min
+        public static float FrompH(float r)    { return r / 3600f; }   // rev/hr => rev/sec
+        public static float   TopH(float h)    { return h * 3600f; }   // rev/sec => rev/hr
     }
 
     /// <summary>
     /// Time conversions from and to Seconds
     /// </summary>
     public class S {
-        public static float FromM(float m)  { return m / 60f; }     // mins => secs
-        public static float   ToM(float s)  { return s * 60f; }     // secs => mins
-        public static float FromH(float h)  { return h / 3600f; }   // hours => secs
-        public static float   ToH(float s)  { return s * 3600f; }   // secs => hours
+        public static float FromM(float m)  { return m * 60f; }     // mins => secs
+        public static float   ToM(float s)  { return s / 60f; }     // secs => mins
+        public static float FromH(float h)  { return h * 3600f; }   // hours => secs
+        public static float   ToH(float s)  { return s / 3600f; }   // secs => hours
     }
 
     /// <summary>

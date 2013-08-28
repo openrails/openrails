@@ -34,6 +34,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
+using Microsoft.Xna.Framework;  // for MathHelper
 
 namespace ORTS
 {
@@ -60,17 +61,24 @@ namespace ORTS
         bool ManualFiring = false;
 
         // state variables
+        public float boilerKW;          // power of boiler
+        public float steamHeat;         // total heat in saturated steam given pressure
+        public float waterTemp;         // temperature of water in boiler
+        public float DamperSimLbpsS;    // Amount of damper ( simulated in lbps)
+        public float burnRate;          // rate of burning fuel
+        public float fuelRate;          // rate of adding fuel
+        public float desiredChange;     // Amount of change to increase fire mass
         public float SteamUsageLBpS;       // steam used in cylinders
         public float BlowerSteamUsageLBpS; // steam used by blower
-        float BoilerHeatBTU;        // total heat in water and steam in boiler
-        float BoilerMassLB;         // total mass of water and steam in boiler
+        public float BoilerHeatBTU;        // total heat in water and steam in boiler
+        public float BoilerMassLB;         // total mass of water and steam in boiler
         public float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
         
-        float WaterFraction;        // fraction of boiler volume occupied by water
+        public float WaterFraction;        // fraction of boiler volume occupied by water
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;
         float FireRatio;
-        float FlueTempK = 1000;
+        public float FlueTempK = 1000;
         public bool SafetyOn = false;
         public readonly SmoothedData Smoke = new SmoothedData(15);
 
@@ -87,12 +95,12 @@ namespace ORTS
         float MaxFiringRateKGpS;
         public float SafetyValveUsageLBpS;
         float SafetyValveDropPSI;
-        float EvaporationAreaSqM;
+        public float EvaporationAreaSqM;
         float FuelCalorificKJpKG = 33400;
         float BlowerMultiplier = 10;//25;
         float ShovelMassKG = 6;
         float BurnRateMultiplier = 1;
-        SmoothedData FuelRate = new SmoothedData(300); // Automatic fireman takes 5 minutes to fully react to changing needs.
+        public SmoothedData FuelRate = new SmoothedData(300); // Automatic fireman takes 5 minutes to fully react to changing needs.
 
         // precomputed values
         float SteamUsageFactor;     // precomputed multiplier for calculating steam used in cylinders
@@ -570,7 +578,7 @@ namespace ORTS
                 MotiveForceN = 0;   // valves assumed to be closed
             // usage calculated as moving average to minimize chance of oscillation
             SteamUsageLBpS = .6f * SteamUsageLBpS + .4f * speed * SteamUsageFactor * (cutoff + .07f) * (CylinderSteamDensity[cylinderPressure] - CylinderSteamDensity[backPressure]);
-            float steamHeat = SteamHeat[BoilerPressurePSI];
+            steamHeat = SteamHeat[BoilerPressurePSI];
             float steamDensity = SteamDensity[BoilerPressurePSI];
             float waterDensity = WaterDensity[BoilerPressurePSI];
             if (ManualFiring)
@@ -595,8 +603,8 @@ namespace ORTS
                 BlowerSteamUsageLBpS = SteamUsageLBpS < BasicSteamUsageLBpS ? (BasicSteamUsageLBpS - SteamUsageLBpS) / BlowerMultiplier : 0; // automatic blower
             // mass assumed constant for automatic firing and injectors
 
-            float burnRate = BurnRate[SteamUsageLBpS + BlowerMultiplier * BlowerSteamUsageLBpS];
-            float fuelRate = burnRate;
+            burnRate = BurnRate[SteamUsageLBpS + BlowerMultiplier * BlowerSteamUsageLBpS];
+            fuelRate = burnRate;
             if (IdealFireMassKG > 0)
             {
                 FireRatio = FireMassKG / IdealFireMassKG;
@@ -613,8 +621,8 @@ namespace ORTS
                 else if (elapsedClockSeconds > 0.001 && MaxFiringRateKGpS > 0.001)
                 {
                     // Automatic fireman, ish.
-                    var desiredChange = ((IdealFireMassKG - FireMassKG) / elapsedClockSeconds + burnRate) / MaxFiringRateKGpS;
-                    FuelRate.Update(elapsedClockSeconds, desiredChange < 0 ? 0 : desiredChange > 1 ? 1 : desiredChange);
+                    desiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) / elapsedClockSeconds + burnRate) / MaxFiringRateKGpS, 0, 1);
+                    FuelRate.Update(elapsedClockSeconds, desiredChange);
                     fuelRate = MaxFiringRateKGpS * FuelRate.SmoothedValue;
                     FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRate.SmoothedValue - burnRate);
                 }
@@ -624,8 +632,8 @@ namespace ORTS
                     FireMassKG = 2 * IdealFireMassKG;
             }
             Smoke.Update(elapsedClockSeconds, fuelRate / burnRate);
-            float waterTemp = Pressure2Temperature[BoilerPressurePSI] / 1.8f + 255.37f;
-            float boilerKW = (FlueTempK - waterTemp) * .045f * EvaporationAreaSqM;
+            waterTemp = Pressure2Temperature[BoilerPressurePSI] / 1.8f + 255.37f;
+            boilerKW = (FlueTempK - waterTemp) * .045f * EvaporationAreaSqM;
             if (FireMassKG < 1)
                 FlueTempK = waterTemp + burnRate * FuelCalorificKJpKG * BoilerEfficiency[SteamUsageLBpS] / (.045f * EvaporationAreaSqM);
             else

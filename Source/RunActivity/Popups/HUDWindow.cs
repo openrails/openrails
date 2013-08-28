@@ -425,6 +425,7 @@ namespace ORTS.Popups
                             {
                                 var parts = line.Split(new[] { " = " }, 2, StringSplitOptions.None);
                                 TableAddLabelValue(table, parts[0], parts.Length > 1 ? parts[1] : "");
+                                //TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);
                             }
                         }
                     }
@@ -432,11 +433,18 @@ namespace ORTS.Popups
                 TableAddLine(table);
             }
 
-
             //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
-            TableAddLine(table, "Electric Locomotives:");
-            TableSetCells(table, 0, "Car", "PowerOn", "Pantos", "Throttle", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
-            TableAddLine(table);
+
+            foreach (TrainCar car in train.Cars)
+            {
+                if (car.GetType() == typeof(MSTSElectricLocomotive))    // Headings only if the player train contains this type of loco
+                {
+                    TableAddLine(table, "Electric Locomotives:");
+                    TableSetCells(table, 0, "Car", "PowerOn", "Pantos", "Throttle", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
+                    TableAddLine(table);
+                    break;
+                }
+            }
 
             int numDispCars = 0;
             foreach(TrainCar car in train.Cars)
@@ -463,10 +471,16 @@ namespace ORTS.Popups
                 
             }
 
-            TableAddLine(table);
-            TableAddLine(table, "Diesel Locomotives:");
-            TableSetCells(table, 0, "Car", "Status", "RPM", "Fuel/h", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
-            TableAddLine(table);
+            foreach (TrainCar car in train.Cars)
+            {
+                if (car.GetType() == typeof(MSTSDieselLocomotive))    // Headings only if the player train contains this type of loco
+                {
+                    TableAddLine(table, "Diesel Locomotives:");
+                    TableSetCells(table, 0, "Car", "Status", "RPM", "Fuel/h", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
+                    TableAddLine(table);
+                    break;
+                }
+            }
             foreach (TrainCar car in train.Cars)
             {
                 if (car.GetType() == typeof(MSTSDieselLocomotive))
@@ -489,6 +503,90 @@ namespace ORTS.Popups
                     TableSetCell(table, 9, car.CouplerOverloaded ? "Coupler overloaded" : "");
                     TableAddLine(table);
                     if (++numDispCars > 10)
+                        break;
+                }
+            }
+
+            bool steamLocoFound = false;
+            foreach (TrainCar car in train.Cars)
+            {
+                if (car.GetType() == typeof(MSTSSteamLocomotive))    // Headings only if the player train contains this type of loco
+                {
+                    steamLocoFound = true;
+                    break;
+                }
+            }
+            if (steamLocoFound)
+            {
+                TableAddLine(table, "Steam Locomotives:");
+            }
+            foreach (TrainCar car in train.Cars)
+            {
+                if (car.GetType() == typeof(MSTSSteamLocomotive))
+                {
+                    var loco = (MSTSSteamLocomotive)car;
+
+                    TableAddLine(table, "Steam Production :");
+                    TableSetCell(table, 0, "Steam Generated");
+                    TableSetCell(table, 2, "{0,8:N0} lb/h", pS.TopH(loco.EvaporationLBpS));
+                    TableAddLine(table);
+                    TableSetCell(table, 0, "Evaporation Area");
+                    TableSetCell(table, 2, "{0,8:N0} ft^2", Me2.ToFt2(loco.EvaporationAreaSqM));
+                    TableSetCell(table, 4, "Boiler power");
+                    TableSetCell(table, 6, "{0,8:N0} hp", W.ToHp(W.FromKw(loco.boilerKW)));
+                    TableSetCell(table, 8, "Steam heat");
+                    TableSetCell(table, 10, "{0,8:N0} btu/lb", loco.steamHeat);
+                    TableAddLine(table);
+                    TableSetCell(table, 0, "Flue Temp");
+                    TableSetCell(table, 2, "{0,8:N0} F", C.ToF(C.FromK(loco.FlueTempK)));
+                    TableSetCell(table, 4, "Water Temp");
+                    TableSetCell(table, 6, "{0,8:N0} F", C.ToF(C.FromK(loco.waterTemp)));
+                    TableAddLine(table);
+                    TableSetCell(table, 0, "Boiler Heat");
+                    TableSetCell(table, 2, "{0,8:N0} BTU", loco.BoilerHeatBTU);
+                    TableSetCell(table, 4, "Boiler Mass");
+                    TableSetCell(table, 6, "{0,8:N0} lb", loco.BoilerMassLB);
+                    TableAddLine(table);
+                    TableAddLine(table);
+
+                    TableAddLine(table, "Steam Usage :");
+                    TableSetCell(table, 0, "Cylinder Usage");
+                    TableSetCell(table, 2, "{0,8:N0} lb/h", pS.TopH(loco.SteamUsageLBpS));
+                    TableSetCell(table, 4, "Blower Usage");
+                    TableSetCell(table, 6, "{0,8:N0} lb/h", pS.TopH(loco.BlowerSteamUsageLBpS));
+                    TableSetCell(table, 8, "Damper Usage");
+                    TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(loco.DamperSimLbpsS));
+                    TableSetCell(table, 12, "Basic Usage");
+                    TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(loco.BasicSteamUsageLBpS));
+                    TableAddLine(table);
+                    TableAddLine(table);
+
+                    TableAddLine(table, "Fireman :");
+                    TableSetCell(table, 0, "Ideal Fire Mass");
+                    TableSetCell(table, 2, "{0,8:N0} lb", Kg.ToLb(loco.IdealFireMassKG));
+                    TableSetCell(table, 4, "Fire Mass");
+                    TableSetCell(table, 6, "{0,8:N0} lb", Kg.ToLb(loco.FireMassKG));
+                    TableSetCell(table, 8, "Fuel Rate");
+                    TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(loco.fuelRate));
+                    TableSetCell(table, 12, "Burn Rate");
+                    TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(loco.burnRate));
+                    TableAddLine(table);
+                    TableSetCell(table, 0, "Water level");
+                    TableSetCell(table, 2, "{0,8:N0} %", loco.WaterFraction * 100);
+                    TableAddLine(table);
+                    TableSetCell(table, 0, "Desired Change");
+                    TableSetCell(table, 2, "{0,8:N2}", loco.desiredChange);
+                    TableSetCell(table, 4, "Fuel Rate Smoothed");
+                    TableSetCell(table, 6, "{0,8:N0} lb/h", pS.TopH(loco.FuelRate.SmoothedValue));
+                    TableAddLine(table);
+                    TableAddLine(table);
+
+                    TableAddLine(table, "Pulling Performance :");
+                    TableSetCell(table, 0, "Pulling Force");
+                    TableSetCell(table, 2, "{0,8:N0} lbf", N.ToLbf(loco.MotiveForceN));
+                    TableSetCell(table, 4, "Pulling Power");
+                    TableSetCell(table, 6, "{0,8:N0} hp", W.ToHp(loco.MotiveForceN * loco.SpeedMpS)); 
+                    if (++numDispCars > 2)
                         break;
                 }
             }
