@@ -119,8 +119,8 @@ namespace ORTS
     /// Force conversions from and to Newtons
     /// </summary>
     public class N {
-        public static float FromLbf(float l)    { return l / 4.44822162f; }    // lbf => Newtons
-        public static float   ToLbf(float n)    { return n * 4.44822162f; }    // Newtons => lbf
+        public static float FromLbf(float l) { return l / 0.224808943871f; }    // lbf => Newtons
+        public static float   ToLbf(float n) { return n * 0.224808943871f; }    // Newtons => lbf
     }
 
     /// <summary>

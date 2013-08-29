@@ -61,24 +61,24 @@ namespace ORTS
         bool ManualFiring = false;
 
         // state variables
-        public float boilerKW;          // power of boiler
-        public float steamHeat;         // total heat in saturated steam given pressure
-        public float waterTemp;         // temperature of water in boiler
-        public float DamperSimLbpsS;    // Amount of damper ( simulated in lbps)
-        public float burnRate;          // rate of burning fuel
-        public float fuelRate;          // rate of adding fuel
-        public float desiredChange;     // Amount of change to increase fire mass
+        float BoilerKW;          // power of boiler
+        float SteamHeatBTU;      // total heat in saturated steam given pressure
+        float WaterTempK;        // temperature of water in boiler
+        float DamperSimLbpsS;    // Amount of damper ( simulated in lbps)
+        float BurnRateLBpS;      // rate of burning fuel
+        float FuelRateLBpS;      // rate of adding fuel
+        float DesiredChange;     // Amount of change to increase fire mass, clamped to range 0.0 - 1.0
         public float SteamUsageLBpS;       // steam used in cylinders
         public float BlowerSteamUsageLBpS; // steam used by blower
-        public float BoilerHeatBTU;        // total heat in water and steam in boiler
-        public float BoilerMassLB;         // total mass of water and steam in boiler
+        float BoilerHeatBTU;        // total heat in water and steam in boiler
+        float BoilerMassLB;         // total mass of water and steam in boiler
         public float BoilerPressurePSI;    // boiler pressure calculated from heat and mass
         
-        public float WaterFraction;        // fraction of boiler volume occupied by water
+        float WaterFraction;        // fraction of boiler volume occupied by water
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;
         float FireRatio;
-        public float FlueTempK = 1000;
+        float FlueTempK = 1000;
         public bool SafetyOn = false;
         public readonly SmoothedData Smoke = new SmoothedData(15);
 
@@ -95,12 +95,12 @@ namespace ORTS
         float MaxFiringRateKGpS;
         public float SafetyValveUsageLBpS;
         float SafetyValveDropPSI;
-        public float EvaporationAreaSqM;
+        float EvaporationAreaSqM;
         float FuelCalorificKJpKG = 33400;
         float BlowerMultiplier = 10;//25;
         float ShovelMassKG = 6;
         float BurnRateMultiplier = 1;
-        public SmoothedData FuelRate = new SmoothedData(300); // Automatic fireman takes 5 minutes to fully react to changing needs.
+        SmoothedData FuelRate = new SmoothedData(300); // Automatic fireman takes 5 minutes to fully react to changing needs.
 
         // precomputed values
         float SteamUsageFactor;     // precomputed multiplier for calculating steam used in cylinders
@@ -120,12 +120,12 @@ namespace ORTS
         Interpolator Pressure2Temperature;
         public Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
 
-        float? reverserTarget;
-        float? injector1Target;
-        float? injector2Target;
-        float? blowerTarget;
-        float? damperTarget;
-        float? firingRateTarget;
+        float? ReverserTarget;
+        float? Injector1Target;
+        float? Injector2Target;
+        float? BlowerTarget;
+        float? DamperTarget;
+        float? FiringRateTarget;
 
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
@@ -578,7 +578,7 @@ namespace ORTS
                 MotiveForceN = 0;   // valves assumed to be closed
             // usage calculated as moving average to minimize chance of oscillation
             SteamUsageLBpS = .6f * SteamUsageLBpS + .4f * speed * SteamUsageFactor * (cutoff + .07f) * (CylinderSteamDensity[cylinderPressure] - CylinderSteamDensity[backPressure]);
-            steamHeat = SteamHeat[BoilerPressurePSI];
+            SteamHeatBTU = SteamHeat[BoilerPressurePSI];
             float steamDensity = SteamDensity[BoilerPressurePSI];
             float waterDensity = WaterDensity[BoilerPressurePSI];
             if (ManualFiring)
@@ -596,60 +596,60 @@ namespace ORTS
                 if (SafetyOn)
                 {
                     BoilerMassLB -= elapsedClockSeconds * SafetyValveUsageLBpS;
-                    BoilerHeatBTU -= elapsedClockSeconds * SafetyValveUsageLBpS * steamHeat / steamDensity;
+                    BoilerHeatBTU -= elapsedClockSeconds * SafetyValveUsageLBpS * SteamHeatBTU / steamDensity;
                 }
             }
             else
                 BlowerSteamUsageLBpS = SteamUsageLBpS < BasicSteamUsageLBpS ? (BasicSteamUsageLBpS - SteamUsageLBpS) / BlowerMultiplier : 0; // automatic blower
             // mass assumed constant for automatic firing and injectors
 
-            burnRate = BurnRate[SteamUsageLBpS + BlowerMultiplier * BlowerSteamUsageLBpS];
-            fuelRate = burnRate;
+            BurnRateLBpS = BurnRate[SteamUsageLBpS + BlowerMultiplier * BlowerSteamUsageLBpS];
+            FuelRateLBpS = BurnRateLBpS;
             if (IdealFireMassKG > 0)
             {
                 FireRatio = FireMassKG / IdealFireMassKG;
                 if (FireRatio < 1)
-                    burnRate *= FireRatio;
+                    BurnRateLBpS *= FireRatio;
                 else if (FireRatio > 1)
-                    burnRate *= 2 - FireRatio;
+                    BurnRateLBpS *= 2 - FireRatio;
                 //burnRate *= 1 - .5f * DamperController.CurrentValue;
                 if (ManualFiring)
                 {
-                    fuelRate = MaxFiringRateKGpS * FiringRateController.CurrentValue;
-                    FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FiringRateController.CurrentValue - burnRate);
+                    FuelRateLBpS = MaxFiringRateKGpS * FiringRateController.CurrentValue;
+                    FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FiringRateController.CurrentValue - BurnRateLBpS);
                 }
                 else if (elapsedClockSeconds > 0.001 && MaxFiringRateKGpS > 0.001)
                 {
                     // Automatic fireman, ish.
-                    desiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) / elapsedClockSeconds + burnRate) / MaxFiringRateKGpS, 0, 1);
-                    FuelRate.Update(elapsedClockSeconds, desiredChange);
-                    fuelRate = MaxFiringRateKGpS * FuelRate.SmoothedValue;
-                    FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRate.SmoothedValue - burnRate);
+                    DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) / elapsedClockSeconds + BurnRateLBpS) / MaxFiringRateKGpS, 0, 1);
+                    FuelRate.Update(elapsedClockSeconds, DesiredChange);
+                    FuelRateLBpS = MaxFiringRateKGpS * FuelRate.SmoothedValue;
+                    FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRate.SmoothedValue - BurnRateLBpS);
                 }
                 if (FireMassKG < 0)
                     FireMassKG = 0;
                 else if (FireMassKG > 2 * IdealFireMassKG)
                     FireMassKG = 2 * IdealFireMassKG;
             }
-            Smoke.Update(elapsedClockSeconds, fuelRate / burnRate);
-            waterTemp = Pressure2Temperature[BoilerPressurePSI] / 1.8f + 255.37f;
-            boilerKW = (FlueTempK - waterTemp) * .045f * EvaporationAreaSqM;
+            Smoke.Update(elapsedClockSeconds, FuelRateLBpS / BurnRateLBpS);
+            WaterTempK = Pressure2Temperature[BoilerPressurePSI] / 1.8f + 255.37f;
+            BoilerKW = (FlueTempK - WaterTempK) * .045f * EvaporationAreaSqM;
             if (FireMassKG < 1)
-                FlueTempK = waterTemp + burnRate * FuelCalorificKJpKG * BoilerEfficiency[SteamUsageLBpS] / (.045f * EvaporationAreaSqM);
+                FlueTempK = WaterTempK + BurnRateLBpS * FuelCalorificKJpKG * BoilerEfficiency[SteamUsageLBpS] / (.045f * EvaporationAreaSqM);
             else
-                FlueTempK += elapsedClockSeconds * (burnRate * FuelCalorificKJpKG * BoilerEfficiency[SteamUsageLBpS] - boilerKW) / (1.26f * FireMassKG);
+                FlueTempK += elapsedClockSeconds * (BurnRateLBpS * FuelCalorificKJpKG * BoilerEfficiency[SteamUsageLBpS] - BoilerKW) / (1.26f * FireMassKG);
             if (FlueTempK < 0)
                 FlueTempK = 0;
             else if (FlueTempK > 10000)
                 FlueTempK = 10000;
-            EvaporationLBpS = boilerKW / (1.055f * steamHeat);
-            BoilerHeatBTU += elapsedClockSeconds * (EvaporationLBpS - SteamUsageLBpS - BasicSteamUsageLBpS - BlowerSteamUsageLBpS) * steamHeat;
+            EvaporationLBpS = BoilerKW / (1.055f * SteamHeatBTU);
+            BoilerHeatBTU += elapsedClockSeconds * (EvaporationLBpS - SteamUsageLBpS - BasicSteamUsageLBpS - BlowerSteamUsageLBpS) * SteamHeatBTU;
             WaterFraction = (BoilerMassLB / BoilerVolumeFT3 - steamDensity) / (waterDensity - steamDensity);
-            float waterHeat = (BoilerHeatBTU / BoilerVolumeFT3 - (1 - WaterFraction) * steamDensity * steamHeat) / (WaterFraction * waterDensity);
+            float waterHeat = (BoilerHeatBTU / BoilerVolumeFT3 - (1 - WaterFraction) * steamDensity * SteamHeatBTU) / (WaterFraction * waterDensity);
             BoilerPressurePSI = Heat2Pressure[waterHeat];
             if (!ManualFiring && BoilerPressurePSI > MaxBoilerPressurePSI)
             {
-                BoilerHeatBTU = ((WaterHeat[MaxBoilerPressurePSI] * WaterFraction * waterDensity) + (1 - WaterFraction) * steamDensity * steamHeat) * BoilerVolumeFT3;
+                BoilerHeatBTU = ((WaterHeat[MaxBoilerPressurePSI] * WaterFraction * waterDensity) + (1 - WaterFraction) * steamDensity * SteamHeatBTU) * BoilerVolumeFT3;
                 BoilerPressurePSI = MaxBoilerPressurePSI;
             }
         }
@@ -710,7 +710,7 @@ namespace ORTS
         }
 
         public void ReverserChangeTo( bool isForward, float? target ) {
-            reverserTarget = target;
+            ReverserTarget = target;
             if( isForward ) {
                 if( target > CutoffController.CurrentValue ) {
                     StartReverseIncrease( target );
@@ -781,7 +781,7 @@ namespace ORTS
         }
 
         public void Injector1ChangeTo( bool increase, float? target ) {
-            injector1Target = target;
+            Injector1Target = target;
             if( increase ) {
                 if( target > Injector1Controller.CurrentValue ) {
                     StartInjector1Increase( target );
@@ -794,7 +794,7 @@ namespace ORTS
         }
 
         public void Injector2ChangeTo( bool increase, float? target ) {
-            injector2Target = target;
+            Injector2Target = target;
             if( increase ) {
                 if( target > Injector2Controller.CurrentValue ) {
                     StartInjector2Increase( target );
@@ -824,7 +824,7 @@ namespace ORTS
         }
 
         public void BlowerChangeTo( bool increase, float? target ) {
-            blowerTarget = target;
+            BlowerTarget = target;
             if( increase ) {
                 if( target > BlowerController.CurrentValue ) {
                     StartBlowerIncrease( target );
@@ -854,7 +854,7 @@ namespace ORTS
         }
 
         public void DamperChangeTo( bool increase, float? target ) {
-            damperTarget = target;
+            DamperTarget = target;
             if( increase ) {
                 if( target > DamperController.CurrentValue ) {
                     StartDamperIncrease( target );
@@ -884,7 +884,7 @@ namespace ORTS
         }
 
         public void FiringRateChangeTo( bool increase, float? target ) {
-            firingRateTarget = target;
+            FiringRateTarget = target;
             if( increase ) {
                 if( target > FiringRateController.CurrentValue ) {
                     StartFiringRateIncrease( target );
@@ -939,6 +939,70 @@ namespace ORTS
 			Injector2Controller.CurrentValue = I2;
 			Injector2Controller.UpdateValue = 0.0f;
 		}
+
+        public void UpdateDebugData(ORTS.Popups.HUDWindow w, ORTS.Popups.HUDWindow.TableData table)
+        {
+            w.TableAddLine(table, "Steam Production :");
+            w.TableSetCell(table, 0, "Steam Generated");
+            w.TableSetCell(table, 2, "{0,8:N0} lb/h", pS.TopH(EvaporationLBpS));
+            w.TableAddLine(table);
+            w.TableSetCell(table, 0, "Evaporation Area");
+            w.TableSetCell(table, 2, "{0,8:N0} ft^2", Me2.ToFt2(EvaporationAreaSqM));
+            w.TableSetCell(table, 4, "Boiler power");
+            w.TableSetCell(table, 6, "{0,8:N0} hp", W.ToHp(W.FromKw(BoilerKW)));
+            w.TableSetCell(table, 8, "Steam heat");
+            w.TableSetCell(table, 10, "{0,8:N0} btu/lb", SteamHeatBTU);
+            w.TableAddLine(table);
+            w.TableSetCell(table, 0, "Flue Temp");
+            w.TableSetCell(table, 2, "{0,8:N0} F", C.ToF(C.FromK(FlueTempK)));
+            w.TableSetCell(table, 4, "Water Temp");
+            w.TableSetCell(table, 6, "{0,8:N0} F", C.ToF(C.FromK(WaterTempK)));
+            w.TableAddLine(table);
+            w.TableSetCell(table, 0, "Boiler Heat");
+            w.TableSetCell(table, 2, "{0,8:N0} BTU", BoilerHeatBTU);
+            w.TableSetCell(table, 4, "Boiler Mass");
+            w.TableSetCell(table, 6, "{0,8:N0} lb", BoilerMassLB);
+            w.TableAddLine(table);
+            w.TableAddLine(table);
+
+            w.TableAddLine(table, "Steam Usage :");
+            w.TableSetCell(table, 0, "Cylinder Usage");
+            w.TableSetCell(table, 2, "{0,8:N0} lb/h", pS.TopH(SteamUsageLBpS));
+            w.TableSetCell(table, 4, "Blower Usage");
+            w.TableSetCell(table, 6, "{0,8:N0} lb/h", pS.TopH(BlowerSteamUsageLBpS));
+            w.TableSetCell(table, 8, "Damper Usage");
+            w.TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(DamperSimLbpsS));
+            w.TableSetCell(table, 12, "Basic Usage");
+            w.TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(BasicSteamUsageLBpS));
+            w.TableAddLine(table);
+            w.TableAddLine(table);
+
+            w.TableAddLine(table, "Fireman :");
+            w.TableSetCell(table, 0, "Ideal Fire Mass");
+            w.TableSetCell(table, 2, "{0,8:N0} lb", Kg.ToLb(IdealFireMassKG));
+            w.TableSetCell(table, 4, "Fire Mass");
+            w.TableSetCell(table, 6, "{0,8:N0} lb", Kg.ToLb(FireMassKG));
+            w.TableSetCell(table, 8, "Fuel Rate");
+            w.TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(FuelRateLBpS));
+            w.TableSetCell(table, 12, "Burn Rate");
+            w.TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(BurnRateLBpS));
+            w.TableAddLine(table);
+            w.TableSetCell(table, 0, "Water level");
+            w.TableSetCell(table, 2, "{0,8:N0} %", WaterFraction * 100);
+            w.TableAddLine(table);
+            w.TableSetCell(table, 0, "Desired Change");
+            w.TableSetCell(table, 2, "{0,8:N2}", DesiredChange);
+            w.TableSetCell(table, 4, "Fuel Rate Smoothed");
+            w.TableSetCell(table, 6, "{0,8:N0} lb/h", pS.TopH(FuelRate.SmoothedValue));
+            w.TableAddLine(table);
+            w.TableAddLine(table);
+
+            w.TableAddLine(table, "Pulling Performance :");
+            w.TableSetCell(table, 0, "Pulling Force");
+            w.TableSetCell(table, 2, "{0,8:N0} lbf", N.ToLbf(MotiveForceN));
+            w.TableSetCell(table, 4, "Pulling Power");
+            w.TableSetCell(table, 6, "{0,8:N0} hp", W.ToHp(MotiveForceN * SpeedMpS));
+        }
     } // class SteamLocomotive
 
     ///////////////////////////////////////////////////

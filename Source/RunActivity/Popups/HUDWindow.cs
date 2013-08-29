@@ -196,15 +196,15 @@ namespace ORTS.Popups
         }
 
         #region Table handling
-        sealed class TableData
-        {
+        public class TableData
+{
             public string[,] Cells;
             public int CurrentRow;
             public int CurrentLabelColumn;
             public int CurrentValueColumn;
         }
 
-        void TableSetCell(TableData table, int cellColumn, string format, params object[] args)
+        public void TableSetCell(TableData table, int cellColumn, string format, params object[] args)
         {
             TableSetCell(table, table.CurrentRow, cellColumn, format, args);
         }
@@ -229,12 +229,12 @@ namespace ORTS.Popups
                 TableSetCell(table, startColumn + i, columns[i]);
         }
 
-        void TableAddLine(TableData table)
+        public void TableAddLine(TableData table)
         {
             table.CurrentRow++;
         }
-
-        void TableAddLine(TableData table, string format, params object[] args)
+        
+        public void TableAddLine(TableData table, string format, params object[] args)
         {
             TableSetCell(table, table.CurrentRow, 0, format, args);
             table.CurrentRow++;
@@ -526,66 +526,8 @@ namespace ORTS.Popups
                 {
                     var loco = (MSTSSteamLocomotive)car;
 
-                    TableAddLine(table, "Steam Production :");
-                    TableSetCell(table, 0, "Steam Generated");
-                    TableSetCell(table, 2, "{0,8:N0} lb/h", pS.TopH(loco.EvaporationLBpS));
-                    TableAddLine(table);
-                    TableSetCell(table, 0, "Evaporation Area");
-                    TableSetCell(table, 2, "{0,8:N0} ft^2", Me2.ToFt2(loco.EvaporationAreaSqM));
-                    TableSetCell(table, 4, "Boiler power");
-                    TableSetCell(table, 6, "{0,8:N0} hp", W.ToHp(W.FromKw(loco.boilerKW)));
-                    TableSetCell(table, 8, "Steam heat");
-                    TableSetCell(table, 10, "{0,8:N0} btu/lb", loco.steamHeat);
-                    TableAddLine(table);
-                    TableSetCell(table, 0, "Flue Temp");
-                    TableSetCell(table, 2, "{0,8:N0} F", C.ToF(C.FromK(loco.FlueTempK)));
-                    TableSetCell(table, 4, "Water Temp");
-                    TableSetCell(table, 6, "{0,8:N0} F", C.ToF(C.FromK(loco.waterTemp)));
-                    TableAddLine(table);
-                    TableSetCell(table, 0, "Boiler Heat");
-                    TableSetCell(table, 2, "{0,8:N0} BTU", loco.BoilerHeatBTU);
-                    TableSetCell(table, 4, "Boiler Mass");
-                    TableSetCell(table, 6, "{0,8:N0} lb", loco.BoilerMassLB);
-                    TableAddLine(table);
-                    TableAddLine(table);
+                    loco.UpdateDebugData(this, table);
 
-                    TableAddLine(table, "Steam Usage :");
-                    TableSetCell(table, 0, "Cylinder Usage");
-                    TableSetCell(table, 2, "{0,8:N0} lb/h", pS.TopH(loco.SteamUsageLBpS));
-                    TableSetCell(table, 4, "Blower Usage");
-                    TableSetCell(table, 6, "{0,8:N0} lb/h", pS.TopH(loco.BlowerSteamUsageLBpS));
-                    TableSetCell(table, 8, "Damper Usage");
-                    TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(loco.DamperSimLbpsS));
-                    TableSetCell(table, 12, "Basic Usage");
-                    TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(loco.BasicSteamUsageLBpS));
-                    TableAddLine(table);
-                    TableAddLine(table);
-
-                    TableAddLine(table, "Fireman :");
-                    TableSetCell(table, 0, "Ideal Fire Mass");
-                    TableSetCell(table, 2, "{0,8:N0} lb", Kg.ToLb(loco.IdealFireMassKG));
-                    TableSetCell(table, 4, "Fire Mass");
-                    TableSetCell(table, 6, "{0,8:N0} lb", Kg.ToLb(loco.FireMassKG));
-                    TableSetCell(table, 8, "Fuel Rate");
-                    TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(loco.fuelRate));
-                    TableSetCell(table, 12, "Burn Rate");
-                    TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(loco.burnRate));
-                    TableAddLine(table);
-                    TableSetCell(table, 0, "Water level");
-                    TableSetCell(table, 2, "{0,8:N0} %", loco.WaterFraction * 100);
-                    TableAddLine(table);
-                    TableSetCell(table, 0, "Desired Change");
-                    TableSetCell(table, 2, "{0,8:N2}", loco.desiredChange);
-                    TableSetCell(table, 4, "Fuel Rate Smoothed");
-                    TableSetCell(table, 6, "{0,8:N0} lb/h", pS.TopH(loco.FuelRate.SmoothedValue));
-                    TableAddLine(table);
-                    TableAddLine(table);
-
-                    TableAddLine(table, "Pulling Performance :");
-                    TableSetCell(table, 0, "Pulling Force");
-                    TableSetCell(table, 2, "{0,8:N0} lbf", N.ToLbf(loco.MotiveForceN));
-                    TableSetCell(table, 4, "Pulling Power");
-                    TableSetCell(table, 6, "{0,8:N0} hp", W.ToHp(loco.MotiveForceN * loco.SpeedMpS)); 
                     if (++numDispCars > 2)
                         break;
                 }
