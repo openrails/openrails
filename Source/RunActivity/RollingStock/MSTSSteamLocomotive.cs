@@ -120,6 +120,9 @@ namespace ORTS
         Interpolator Pressure2Temperature;
         public Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
 
+        float CylinderPressurePSI;
+        float BackPressurePSI;
+
         float? ReverserTarget;
         float? Injector1Target;
         float? Injector2Target;
@@ -554,10 +557,10 @@ namespace ORTS
                 else
                     throttle = 1;
             }
-            float cylinderPressure = throttle * BoilerPressurePSI - CylinderPressureDrop[SteamUsageLBpS];
-            float backPressure = BackPressure[SteamUsageLBpS];
+            CylinderPressurePSI = throttle * BoilerPressurePSI - CylinderPressureDrop[SteamUsageLBpS];
+            BackPressurePSI = BackPressure[SteamUsageLBpS];
             MotiveForceN = (Direction == Direction.Forward ? 1 : -1) *
-                (backPressure * ForceFactor1[cutoff] + cylinderPressure * ForceFactor2[cutoff]);
+                (BackPressurePSI * ForceFactor1[cutoff] + CylinderPressurePSI * ForceFactor2[cutoff]);
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
             switch (this.Train.TrainType)
@@ -577,7 +580,7 @@ namespace ORTS
             if (speed == 0 && cutoff < .5f)
                 MotiveForceN = 0;   // valves assumed to be closed
             // usage calculated as moving average to minimize chance of oscillation
-            SteamUsageLBpS = .6f * SteamUsageLBpS + .4f * speed * SteamUsageFactor * (cutoff + .07f) * (CylinderSteamDensity[cylinderPressure] - CylinderSteamDensity[backPressure]);
+            SteamUsageLBpS = .6f * SteamUsageLBpS + .4f * speed * SteamUsageFactor * (cutoff + .07f) * (CylinderSteamDensity[CylinderPressurePSI] - CylinderSteamDensity[BackPressurePSI]);
             SteamHeatBTU = SteamHeat[BoilerPressurePSI];
             float steamDensity = SteamDensity[BoilerPressurePSI];
             float waterDensity = WaterDensity[BoilerPressurePSI];
@@ -974,6 +977,16 @@ namespace ORTS
             w.TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(DamperSimLbpsS));
             w.TableSetCell(table, 12, "Basic Usage");
             w.TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(BasicSteamUsageLBpS));
+            w.TableAddLine(table);
+            w.TableAddLine(table);
+
+            w.TableAddLine(table, "Steam Pressure :");
+            w.TableSetCell(table, 0, "Boiler");
+            w.TableSetCell(table, 2, "{0,8:N0} psi", BoilerPressurePSI);
+            w.TableSetCell(table, 4, "Valve Chest");
+            w.TableSetCell(table, 6, "{0,8:N0} psi", CylinderPressurePSI);
+            w.TableSetCell(table, 8, "Back Pressure");
+            w.TableSetCell(table, 10, "{0,8:N0} psi", BackPressurePSI);
             w.TableAddLine(table);
             w.TableAddLine(table);
 

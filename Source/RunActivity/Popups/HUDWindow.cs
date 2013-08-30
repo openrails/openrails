@@ -196,7 +196,7 @@ namespace ORTS.Popups
         }
 
         #region Table handling
-        public class TableData
+        public sealed class TableData
 {
             public string[,] Cells;
             public int CurrentRow;
