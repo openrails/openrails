@@ -417,6 +417,7 @@ namespace ORTS
             TrainBrakeController = (MSTSBrakeController)locoCopy.TrainBrakeController.Clone();
             EngineBrakeController = locoCopy.EngineBrakeController != null ? (MSTSBrakeController)locoCopy.EngineBrakeController.Clone() : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
+            TrainControlSystem = locoCopy.TrainControlSystem != null ? locoCopy.TrainControlSystem.Clone() : null;
 
             Initialize();
 
@@ -1756,7 +1757,7 @@ namespace ORTS
         }
 #endif
 
-        TrainControlSystem TrainControlSystem;
+        public TrainControlSystem TrainControlSystem;
 
         public void AlerterReset()
         {

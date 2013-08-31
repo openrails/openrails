@@ -42,10 +42,23 @@ namespace ORTS
         protected MonitoringDevice VigilanceMonitor;
         protected MonitoringDevice OverspeedMonitor;
         protected MonitoringDevice EmergencyStopMonitor;
+        protected MonitoringDevice AWSMonitor;
 
         protected bool AlerterIsActive = false;
 
         public TrainControlSystem() { }
+
+        public TrainControlSystem(TrainControlSystem other)
+        {
+            if (other.MSTSLocomotive != null)
+                MSTSLocomotive = other.MSTSLocomotive;
+            if (other.Simulator != null)
+                Simulator = other.Simulator;
+            VigilanceMonitor = other.VigilanceMonitor;
+            OverspeedMonitor = other.OverspeedMonitor;
+            EmergencyStopMonitor = other.EmergencyStopMonitor;
+            AWSMonitor = other.AWSMonitor;
+        }
 
         public virtual void Parse(string lowercasetoken, STFReader stf)
         {
@@ -54,6 +67,7 @@ namespace ORTS
                 case "engine(vigilancemonitor": VigilanceMonitor = new MonitoringDevice(stf); break;
                 case "engine(overspeedmonitor": OverspeedMonitor = new MonitoringDevice(stf); break;
                 case "engine(emergencystopmonitor": EmergencyStopMonitor = new MonitoringDevice(stf); break;
+                case "engine(awsmonitor": AWSMonitor = new MonitoringDevice(stf); break;
             }
         }
 
@@ -69,6 +83,8 @@ namespace ORTS
         
         // Reset if allowed
         public virtual void TryReset() { }
+
+        public virtual TrainControlSystem Clone() { return this; }
 
         public void SetEmergency()
         {
@@ -149,6 +165,15 @@ namespace ORTS
             Simulator = MSTSLocomotive.Simulator;
         }
 
+        public MSTSTrainControlSystem(MSTSTrainControlSystem other) :
+            base(other)
+        {
+            MonitorTimer = other.MonitorTimer;
+            AlarmTimer = other.AlarmTimer;
+            PenaltyTimer = other.PenaltyTimer;
+            OverspeedTimer = other.OverspeedTimer;
+        }
+
         public override void Startup()
         {
             if (VigilanceMonitor == null)
@@ -187,6 +212,11 @@ namespace ORTS
                 return;
             
             MonitorTimer.Start();
+        }
+
+        public new MSTSTrainControlSystem Clone()
+        {
+            return new MSTSTrainControlSystem(this);
         }
 
         public override void Update()

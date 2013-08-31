@@ -725,6 +725,9 @@ namespace ORTS
             if ((CompressorOn)&&(PowerOn))
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
             
+            if (VigilanceMonitor && Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
+                TrainControlSystem.Update();
+
             PrevMotiveForceN = MotiveForceN;
             base.UpdateParent(elapsedClockSeconds); // Calls the Update() method in the parent class MSTSLocomotive which calls Update() on its parent MSTSWagon which calls ...
         }
