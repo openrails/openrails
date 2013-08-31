@@ -1,0 +1,9 @@
+*.application
+*.cachefile
+*.pdb
+*.suo
+*.user
+*.vshost.*
+*.xml
+bin
+obj
