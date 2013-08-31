@@ -561,6 +561,7 @@ namespace ORTS
             BackPressurePSI = BackPressure[SteamUsageLBpS];
             MotiveForceN = (Direction == Direction.Forward ? 1 : -1) *
                 (BackPressurePSI * ForceFactor1[cutoff] + CylinderPressurePSI * ForceFactor2[cutoff]);
+            MotiveForceSmoothedN.Update(elapsedClockSeconds, MotiveForceN);
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
             switch (this.Train.TrainType)
@@ -1013,8 +1014,12 @@ namespace ORTS
             w.TableAddLine(table, "Pulling Performance :");
             w.TableSetCell(table, 0, "Pulling Force");
             w.TableSetCell(table, 2, "{0,8:N0} lbf", N.ToLbf(MotiveForceN));
-            w.TableSetCell(table, 4, "Pulling Power");
-            w.TableSetCell(table, 6, "{0,8:N0} hp", W.ToHp(MotiveForceN * SpeedMpS));
+            w.TableSetCell(table, 4, "Smoothed");
+            w.TableSetCell(table, 6, "{0,8:N0} lbf", N.ToLbf(MotiveForceSmoothedN.SmoothedValue));
+            w.TableSetCell(table, 8, "Pulling Power");
+            w.TableSetCell(table, 10, "{0,8:N0} hp", W.ToHp(MotiveForceN * SpeedMpS));
+            w.TableSetCell(table, 12, "Smoothed");
+            w.TableSetCell(table, 14, "{0,8:N0} hp", W.ToHp(MotiveForceSmoothedN.SmoothedValue * SpeedMpS));
         }
     } // class SteamLocomotive
 

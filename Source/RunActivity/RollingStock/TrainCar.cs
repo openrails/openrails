@@ -108,6 +108,7 @@ namespace ORTS
 
         // TrainCar.Update() must set these variables
         public float MotiveForceN = 0.0f;   // ie motor power in Newtons  - signed relative to direction of car - 
+        public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
         public float PrevMotiveForceN = 0.0f;
         public float GravityForceN = 0.0f;  // Newtons  - signed relative to direction of car - 
         public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature

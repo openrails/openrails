@@ -430,7 +430,7 @@ namespace ORTS.Popups
                         }
                     }
                 }
-                TableAddLine(table);
+                //TableAddLine(table);
             }
 
             //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
