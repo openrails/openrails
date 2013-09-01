@@ -389,6 +389,8 @@ namespace ORTS
             outf.Write(BoilerPressurePSI);
             outf.Write(WaterFraction);
             outf.Write(EvaporationLBpS);
+            outf.Write(FireMassKG);
+            outf.Write(FlueTempK);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
             ControllerFactory.Save(Injector2Controller, outf);
@@ -410,6 +412,8 @@ namespace ORTS
             BoilerPressurePSI = inf.ReadSingle();
             WaterFraction = inf.ReadSingle();
             EvaporationLBpS = inf.ReadSingle();
+            FireMassKG = inf.ReadSingle();
+            FlueTempK = inf.ReadSingle();
             CutoffController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             Injector1Controller = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             Injector2Controller = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
@@ -646,6 +650,7 @@ namespace ORTS
                 FlueTempK = 0;
             else if (FlueTempK > 10000)
                 FlueTempK = 10000;
+            
             EvaporationLBpS = BoilerKW / (1.055f * SteamHeatBTU);
             BoilerHeatBTU += elapsedClockSeconds * (EvaporationLBpS - SteamUsageLBpS - BasicSteamUsageLBpS - BlowerSteamUsageLBpS) * SteamHeatBTU;
             WaterFraction = (BoilerMassLB / BoilerVolumeFT3 - steamDensity) / (waterDensity - steamDensity);
