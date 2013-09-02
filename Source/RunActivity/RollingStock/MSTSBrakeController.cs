@@ -206,6 +206,19 @@ namespace ORTS
             SetCurrentNotch(MSTSNotchType.Emergency);            
         }        
 
+        public bool GetIsFullBrake()
+        {
+            MSTSNotch notch = this.GetCurrentNotch();
+
+            return notch != null && (notch.Type == MSTSNotchType.FullServ || notch.Type == MSTSNotchType.ContServ);
+        }
+
+        public void SetFullBrake()
+        {
+            SetCurrentNotch(MSTSNotchType.ContServ);
+            SetCurrentNotch(MSTSNotchType.FullServ);
+        }
+
         private void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
         {
             if (pressurePSI < targetPSI)

@@ -133,6 +133,7 @@ namespace ORTS
         public bool EmergencyCausesPowerDown = false;
         public bool EmergencyCausesThrottleDown = false;
         public bool EmergencyEngagesHorn = false;
+        public bool EmergencyButtonPressed = false;
         public bool WheelslipCausesThrottleDown = false;
         public float CabRotationZ { get { return (UsingRearCab==true?-totalRotationZ:totalRotationZ);} }
 
@@ -2000,6 +2001,21 @@ namespace ORTS
                         }
                         break;
                     }
+                case CABViewControlTypes.OVERSPEED:
+                    {
+                        data = TrainControlSystem.OverspeedWarning ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.PENALTY_APP:
+                    {
+                        data = TrainControlSystem.PenaltyApplication ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.EMERGENCY_BRAKE:
+                    {
+                        data = EmergencyButtonPressed ? 1 : 0;
+                        break;
+                    }
                 case CABViewControlTypes.SANDERS:
                     {
                         data = Sander ? 1 : 0;
@@ -2455,7 +2471,8 @@ namespace ORTS
             if( UserInput.IsPressed( UserCommands.ControlRetainersOn ) ) new RetainersCommand( Viewer.Log, true );
             if( UserInput.IsPressed( UserCommands.ControlBrakeHoseConnect ) ) new BrakeHoseConnectCommand( Viewer.Log, true );
             if( UserInput.IsPressed( UserCommands.ControlBrakeHoseDisconnect ) ) new BrakeHoseConnectCommand( Viewer.Log, false );
-            if( UserInput.IsPressed( UserCommands.ControlEmergency ) ) new EmergencyBrakesCommand( Viewer.Log );
+            if (UserInput.IsPressed( UserCommands.ControlEmergency ) ) new EmergencyBrakesCommand( Viewer.Log, true );
+            if (UserInput.IsReleased(UserCommands.ControlEmergency ) ) new EmergencyBrakesCommand( Viewer.Log, false);
 
             // <CJComment> Some inputs calls their method directly, other via a SignalEvent. 
             // Probably because a signal can then be handled more than once, 
@@ -3624,6 +3641,9 @@ namespace ORTS
                 case CABViewControlTypes.DIRECTION_DISPLAY:
                 case CABViewControlTypes.ASPECT_DISPLAY:
                 case CABViewControlTypes.GEARS:
+                case CABViewControlTypes.OVERSPEED:
+                case CABViewControlTypes.PENALTY_APP:
+                case CABViewControlTypes.EMERGENCY_BRAKE:
                     index = (int)data;
                     break;
             }

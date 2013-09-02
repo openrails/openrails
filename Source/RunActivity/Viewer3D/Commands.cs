@@ -331,16 +331,18 @@ namespace ORTS {
     }
 
     [Serializable()]
-    public class EmergencyBrakesCommand : Command {
+    public class EmergencyBrakesCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
-        public EmergencyBrakesCommand( CommandLog log ) 
-            : base( log ) {
+        public EmergencyBrakesCommand( CommandLog log, bool toState ) 
+            : base( log, toState ) {
             Redo();
         }
 
         public override void Redo() {
-            Receiver.SetEmergency();
+            Receiver.EmergencyButtonPressed = ToState;
+            if (ToState)
+                Receiver.SetEmergency();
             // Report();
         }
     }

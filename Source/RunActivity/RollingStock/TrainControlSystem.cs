@@ -33,8 +33,10 @@ namespace ORTS
         public bool VigilanceWarning = false;
         public bool VigilanceAlarm = false;
         public bool AlerterButtonPressed = false;
-
         public bool OverspeedWarning = false;
+        public bool PenaltyApplication = false;
+        
+        public bool OverspeedAlarm = false;
         
         protected MSTSLocomotive MSTSLocomotive;
         protected Simulator Simulator;
@@ -44,7 +46,7 @@ namespace ORTS
         protected MonitoringDevice EmergencyStopMonitor;
         protected MonitoringDevice AWSMonitor;
 
-        protected bool AlerterIsActive = false;
+        protected bool TrainControlSystemIsActive = false;
 
         public TrainControlSystem() { }
 
@@ -88,14 +90,37 @@ namespace ORTS
 
         public void SetEmergency()
         {
-            if (MSTSLocomotive.TrainBrakeController.GetIsEmergency())
-                return;
+            PenaltyApplication = true;
+            if (EmergencyStopMonitor != null && !EmergencyStopMonitor.AppliesEmergencyBrake)
+            {
+                if (MSTSLocomotive.TrainBrakeController.GetIsFullBrake() || MSTSLocomotive.TrainBrakeController.GetIsEmergency())
+                    return;
+                SetFullBrake();
+            }
+            else
+            {
+                if (MSTSLocomotive.TrainBrakeController.GetIsEmergency())
+                    return;
+                SetEmergencyBrake();
+            }
             if (MSTSLocomotive.EmergencyCausesThrottleDown) MSTSLocomotive.ThrottleController.SetValue(0.0f);
-            if (EmergencyStopMonitor.EmergencyCutsPower) { MSTSLocomotive.SignalEvent(Event.Pantograph1Down); MSTSLocomotive.SignalEvent(Event.Pantograph2Down); }
+            if (EmergencyStopMonitor != null && EmergencyStopMonitor.EmergencyCutsPower) { MSTSLocomotive.SignalEvent(Event.Pantograph1Down); MSTSLocomotive.SignalEvent(Event.Pantograph2Down); }
             if (MSTSLocomotive.EmergencyEngagesHorn) MSTSLocomotive.SignalEvent(Event.HornOn);
-            MSTSLocomotive.TrainBrakeController.SetEmergency();
             MSTSLocomotive.SignalEvent(Event.TrainBrakePressureDecrease);
+        }
+
+        public void SetEmergencyBrake()
+        {
+            PenaltyApplication = true;
+            MSTSLocomotive.TrainBrakeController.SetEmergency();
             Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
+        }
+
+        public void SetFullBrake()
+        {
+            PenaltyApplication = true;
+            MSTSLocomotive.TrainBrakeController.SetFullBrake();
+            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.On);
         }
 
         protected class Alerter
@@ -124,14 +149,23 @@ namespace ORTS
         
         protected class MonitoringDevice
         {
-            public float MonitorTimeS = 60;
-            public float AlarmTimeS = 6;
+            public float MonitorTimeS = 0;
+            public float AlarmTimeS = 0;
             public float PenaltyTimeS = 0;
-            public bool EmergencyCutsPower = true;
+            public bool EmergencyCutsPower = false;
+            public bool EmergencyShutsDownEngine = false;
             public bool ResetOnZeroSpeed = true;
-            public float TriggerOnOverspeedMpS = 149;
-            public float CriticalSpeedMpS = 150;
-            public float AlarmTimeBeforeOverspeedS = 5;
+            public float CriticalLevelMpS = 0;
+            public float ResetLevelMpS = 0;
+            public bool AppliesFullBrake = true;
+            public bool AppliesEmergencyBrake = false;
+
+            // Following are for OverspeedMonitor only
+            public bool ResetOnResetButton = false;
+            public float TriggerOnOverspeedMpS = 0;
+            public bool TriggerOnTrackOverspeed = false;
+            public float TriggerOnTrackOverspeedMarginMpS = 0;
+            public float AlarmTimeBeforeOverspeedS = 0;
 
             public MonitoringDevice(STFReader stf)
             {
@@ -141,10 +175,17 @@ namespace ORTS
                     new STFReader.TokenProcessor("monitoringdevicealarmtimelimit", ()=>{ AlarmTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, 6); }),
                     new STFReader.TokenProcessor("monitoringdevicepenaltytimelimit", ()=>{ PenaltyTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0); }),
                     new STFReader.TokenProcessor("monitoringdeviceappliescutspower", ()=>{ EmergencyCutsPower = stf.ReadBoolBlock(false); }),
+                    new STFReader.TokenProcessor("monitoringdeviceappliesshutsdownengine", ()=>{ EmergencyShutsDownEngine = stf.ReadBoolBlock(false); }),
                     new STFReader.TokenProcessor("monitoringdeviceresetonzerospeed", ()=>{ ResetOnZeroSpeed = stf.ReadBoolBlock(true); }),
+                    new STFReader.TokenProcessor("monitoringdeviceresetonresetbutton", ()=>{ ResetOnResetButton = stf.ReadBoolBlock(true); }),
                     new STFReader.TokenProcessor("monitoringdevicetriggeronoverspeed", ()=>{ TriggerOnOverspeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
-                    new STFReader.TokenProcessor("monitoringdevicecriticallevel", ()=>{ CriticalSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
+                    new STFReader.TokenProcessor("monitoringdevicetriggerontrackoverspeed", ()=>{ TriggerOnTrackOverspeed = stf.ReadBoolBlock(false); }),
+                    new STFReader.TokenProcessor("monitoringdevicetriggerontrackoverspeedmargin", ()=>{ TriggerOnTrackOverspeedMarginMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 4); }),
+                    new STFReader.TokenProcessor("monitoringdevicecriticallevel", ()=>{ CriticalLevelMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
+                    new STFReader.TokenProcessor("monitoringdeviceresetlevel", ()=>{ ResetLevelMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
                     new STFReader.TokenProcessor("monitoringdevicealarmtimebeforeoverspeed", ()=>{ AlarmTimeBeforeOverspeedS = stf.ReadFloatBlock(STFReader.UNITS.Time, 5); }),
+                    new STFReader.TokenProcessor("monitoringdeviceappliesfullbrake", ()=>{ AppliesFullBrake = stf.ReadBoolBlock(true); }),
+                    new STFReader.TokenProcessor("monitoringdeviceappliesemergencybrake", ()=>{ AppliesEmergencyBrake = stf.ReadBoolBlock(true); }),
                 });
             }
 
@@ -154,10 +195,11 @@ namespace ORTS
 
     public class MSTSTrainControlSystem : TrainControlSystem
     {
-        Timer MonitorTimer = new Timer();
-        Timer AlarmTimer = new Timer();
-        Timer PenaltyTimer = new Timer();
-        Timer OverspeedTimer = new Timer();
+        Timer VigilanceMonitorTimer = new Timer();
+        Timer VigilanceAlarmTimer = new Timer();
+        Timer VigilancePenaltyTimer = new Timer();
+        Timer OverspeedAlarmTimer = new Timer();
+        Timer OverspeedPenaltyTimer = new Timer();
 
         public MSTSTrainControlSystem(MSTSLocomotive mstsLocomotive)
         {
@@ -168,10 +210,11 @@ namespace ORTS
         public MSTSTrainControlSystem(MSTSTrainControlSystem other) :
             base(other)
         {
-            MonitorTimer = other.MonitorTimer;
-            AlarmTimer = other.AlarmTimer;
-            PenaltyTimer = other.PenaltyTimer;
-            OverspeedTimer = other.OverspeedTimer;
+            VigilanceMonitorTimer = other.VigilanceMonitorTimer;
+            VigilanceAlarmTimer = other.VigilanceAlarmTimer;
+            VigilancePenaltyTimer = other.VigilancePenaltyTimer;
+            OverspeedAlarmTimer = other.OverspeedAlarmTimer;
+            OverspeedPenaltyTimer = other.OverspeedPenaltyTimer;
         }
 
         public override void Startup()
@@ -182,15 +225,18 @@ namespace ORTS
                 OverspeedMonitor = new MonitoringDevice();
             if (EmergencyStopMonitor == null)
                 EmergencyStopMonitor = new MonitoringDevice();
+            if (AWSMonitor == null)
+                AWSMonitor = new MonitoringDevice();
 
-            MonitorTimer.Setup(MSTSLocomotive, VigilanceMonitor.MonitorTimeS);
-            AlarmTimer.Setup(MSTSLocomotive, VigilanceMonitor.AlarmTimeS);
-            PenaltyTimer.Setup(MSTSLocomotive, VigilanceMonitor.PenaltyTimeS);
-            OverspeedTimer.Setup(MSTSLocomotive, OverspeedMonitor.AlarmTimeBeforeOverspeedS);
+            VigilanceMonitorTimer.Setup(MSTSLocomotive, VigilanceMonitor.MonitorTimeS);
+            VigilanceAlarmTimer.Setup(MSTSLocomotive, VigilanceMonitor.AlarmTimeS);
+            VigilancePenaltyTimer.Setup(MSTSLocomotive, VigilanceMonitor.PenaltyTimeS);
+            OverspeedAlarmTimer.Setup(MSTSLocomotive, Math.Max(OverspeedMonitor.AlarmTimeS, OverspeedMonitor.AlarmTimeBeforeOverspeedS));
+            OverspeedPenaltyTimer.Setup(MSTSLocomotive, OverspeedMonitor.PenaltyTimeS);
 
-            MonitorTimer.Start();
+            VigilanceMonitorTimer.Start();
             
-            AlerterIsActive = true;
+            TrainControlSystemIsActive = true;
         }
 
         public override void AlerterReset()
@@ -206,12 +252,16 @@ namespace ORTS
         
         public override void TryReset()
         {
-            if (!AlerterIsActive)
+            if (!TrainControlSystemIsActive || VigilanceAlarm)
                 return;
-            if (VigilanceAlarm)
-                return;
-            
-            MonitorTimer.Start();
+
+            VigilanceMonitorTimer.Start();
+
+            if (MSTSLocomotive.AlerterSnd)
+                MSTSLocomotive.SignalEvent(Event.VigilanceAlarmOff);
+
+            if (OverspeedWarning && OverspeedMonitor.ResetOnResetButton)
+                OverspeedAlarmTimer.Start();
         }
 
         public new MSTSTrainControlSystem Clone()
@@ -221,29 +271,34 @@ namespace ORTS
 
         public override void Update()
         {
-            if (!MSTSLocomotive.Simulator.Settings.Alerter)
+            UpdateVigilance();
+            UpdateSpeedControl();
+
+            if (PenaltyApplication && !MSTSLocomotive.TrainBrakeController.GetIsEmergency() && !MSTSLocomotive.TrainBrakeController.GetIsFullBrake())
+                PenaltyApplication = false;
+        }
+
+        private void UpdateVigilance()
+        {
+            if (!Simulator.Settings.Alerter)
                 return;
 
-            if (VigilanceMonitor.ResetOnZeroSpeed && Math.Abs(MSTSLocomotive.SpeedMpS) < 0.1f)
-                TryReset();
-
-            OverspeedWarning = Math.Abs(MSTSLocomotive.SpeedMpS) > OverspeedMonitor.TriggerOnOverspeedMpS;
-            VigilanceWarning = MonitorTimer.Triggered;
-            VigilanceAlarm = AlarmTimer.Triggered;
-            VigilanceAlarm |= Math.Abs(MSTSLocomotive.SpeedMpS) > OverspeedMonitor.CriticalSpeedMpS;
-            VigilanceAlarm |= OverspeedTimer.Triggered;
+            VigilanceWarning = VigilanceMonitorTimer.Triggered;
+            VigilanceAlarm = VigilanceAlarmTimer.Triggered;
 
             if (VigilanceAlarm)
             {
-                SetEmergency();
+                if (VigilanceMonitor.AppliesEmergencyBrake)
+                    SetEmergency();
+                else if (VigilanceMonitor.AppliesFullBrake)
+                    SetFullBrake();
                 
-                if (!PenaltyTimer.Started)
-                    PenaltyTimer.Start();
-                if (Math.Abs(MSTSLocomotive.SpeedMpS) < 0.1f && PenaltyTimer.Triggered)
+                if (!VigilancePenaltyTimer.Started)
+                    VigilancePenaltyTimer.Start();
+                if (Math.Abs(MSTSLocomotive.SpeedMpS) < 0.1f && VigilancePenaltyTimer.Triggered)
                 {
-                    AlarmTimer.Stop();
-                    PenaltyTimer.Stop();
-                    OverspeedTimer.Stop();
+                    VigilanceAlarmTimer.Stop();
+                    VigilancePenaltyTimer.Stop();
                 }
                 if (MSTSLocomotive.AlerterSnd)
                     MSTSLocomotive.SignalEvent(Event.VigilanceAlarmOff);
@@ -252,32 +307,68 @@ namespace ORTS
 
             if (VigilanceWarning)
             {
-                if (Simulator.Confirmer.Viewer.Camera.Style != Camera.Styles.Cab) // Auto-clear alerter when not in cabview
+                if (Simulator.Confirmer.Viewer.Camera.Style != Camera.Styles.Cab // Auto-clear alerter when not in cabview
+                    || VigilanceMonitor.ResetOnZeroSpeed && Math.Abs(MSTSLocomotive.SpeedMpS) < 0.1f
+                    || Math.Abs(MSTSLocomotive.SpeedMpS) <= VigilanceMonitor.ResetLevelMpS)
                 {
                     TryReset();
+                    VigilanceWarning = VigilanceMonitorTimer.Triggered;
                     return;
                 }
-                if (!AlarmTimer.Started)
-                    AlarmTimer.Start();
+                if (!VigilanceAlarmTimer.Started)
+                    VigilanceAlarmTimer.Start();
                 if (!MSTSLocomotive.AlerterSnd)
                     MSTSLocomotive.SignalEvent(Event.VigilanceAlarmOn);
             }
             else
             {
-                AlarmTimer.Stop();
-                if (MSTSLocomotive.AlerterSnd)
-                    MSTSLocomotive.SignalEvent(Event.VigilanceAlarmOff);
-                if (PenaltyTimer.Started && PenaltyTimer.Triggered)
-                    PenaltyTimer.Stop();
+                VigilanceAlarmTimer.Stop();
+                if (VigilancePenaltyTimer.Triggered)
+                    VigilancePenaltyTimer.Stop();
             }
+        }
 
+        private void UpdateSpeedControl()
+        {
+            OverspeedWarning = false;
+
+            // Not sure about the difference of the following two. Seems both of them are used.
+            if (OverspeedMonitor.TriggerOnOverspeedMpS > 0)
+                OverspeedWarning |= Math.Abs(MSTSLocomotive.SpeedMpS) > OverspeedMonitor.TriggerOnOverspeedMpS;
+            if (OverspeedMonitor.CriticalLevelMpS > 0)
+                OverspeedWarning |= Math.Abs(MSTSLocomotive.SpeedMpS) > OverspeedMonitor.CriticalLevelMpS;
+            if (OverspeedMonitor.TriggerOnTrackOverspeed)
+                OverspeedWarning |= Math.Abs(MSTSLocomotive.SpeedMpS) > MSTSLocomotive.Train.AllowedMaxSpeedMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
+
+            OverspeedAlarm = OverspeedAlarmTimer.Triggered;
+
+            if (OverspeedAlarm && Simulator.Settings.Alerter)
+            {
+                if (OverspeedMonitor.AppliesEmergencyBrake)
+                    SetEmergency();
+                else if (OverspeedMonitor.AppliesFullBrake)
+                    SetFullBrake();
+
+                if (!OverspeedPenaltyTimer.Started)
+                    OverspeedPenaltyTimer.Start();
+                if (Math.Abs(MSTSLocomotive.SpeedMpS) < 0.1f && OverspeedPenaltyTimer.Triggered)
+                {
+                    OverspeedAlarmTimer.Stop();
+                    OverspeedPenaltyTimer.Stop();
+                }
+                return;
+            }
             if (OverspeedWarning)
             {
-                if (!OverspeedTimer.Started)
-                    OverspeedTimer.Start();
+                if (!OverspeedAlarmTimer.Started)
+                    OverspeedAlarmTimer.Start();
             }
             else
-                OverspeedTimer.Stop();
+            {
+                OverspeedAlarmTimer.Stop();
+                if (OverspeedPenaltyTimer.Triggered)
+                    OverspeedPenaltyTimer.Stop();
+            }
         }
 
         public override void Parse(string lowercasetoken, STFReader stf)
