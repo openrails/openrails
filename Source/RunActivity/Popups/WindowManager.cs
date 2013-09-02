@@ -90,9 +90,11 @@ namespace ORTS.Popups
                 FlushTexture.SetData(new[] { Color.TransparentBlack });
             }
             if (ScrollbarTexture == null)
-                ScrollbarTexture = Viewer.RenderProcess.Content.Load<Texture2D>("WindowScrollbar");
+                // TODO: This should happen on the loader thread.
+                ScrollbarTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowScrollbar.png"));
             if (LabelShadowTexture == null)
-                LabelShadowTexture = Viewer.RenderProcess.Content.Load<Texture2D>("WindowLabelShadow");
+                // TODO: This should happen on the loader thread.
+                LabelShadowTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowLabelShadow.png"));
             if (PauseTexture == null)
             {
                 var size = 256;

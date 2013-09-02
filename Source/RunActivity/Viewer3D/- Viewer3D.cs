@@ -65,6 +65,7 @@ namespace ORTS
         // Access to the XNA Game class
         public GraphicsDeviceManager GDM;
         public GraphicsDevice GraphicsDevice;
+        public readonly string ContentPath;
         public SharedTextureManager TextureManager;
         public SharedMaterialManager MaterialManager;
         public SharedShapeManager ShapeManager;
@@ -219,6 +220,7 @@ namespace ORTS
             WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
             WellKnownCameras.Add(new FreeRoamCamera( this, FrontCamera ) ); // Any existing camera will suffice to satisfy .Save() and .Restore()
 
+            ContentPath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
             SharedMaterialManager.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
 
             Trace.Write(" ENV");

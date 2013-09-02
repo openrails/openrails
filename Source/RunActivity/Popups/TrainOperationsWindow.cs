@@ -38,8 +38,9 @@ namespace ORTS.Popups {
 
         protected internal override void Initialize() {
             base.Initialize();
-            if( CouplerTexture == null )
-                CouplerTexture = Owner.Viewer.RenderProcess.Content.Load<Texture2D>( "TrainOperationsCoupler" );
+            if (CouplerTexture == null)
+                // TODO: This should happen on the loader thread.
+                CouplerTexture = Texture2D.FromFile(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsCoupler.png"));
         }
 
         protected override ControlLayout Layout( ControlLayout layout ) {

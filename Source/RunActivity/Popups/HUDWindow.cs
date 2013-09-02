@@ -870,7 +870,7 @@ namespace ORTS.Popups
     }
 
     [CallOnThread("Render")]
-    public class HUDDebugShader : Effect
+    public class HUDDebugShader : Shader
     {
         readonly EffectParameter screenSize;
         readonly EffectParameter graphPos;
@@ -882,8 +882,8 @@ namespace ORTS.Popups
 
         public Vector2 GraphSample { set { graphSample.SetValue(value); } }
 
-        public HUDDebugShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("DebugShader"))
+        public HUDDebugShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "DebugShader")
         {
             screenSize = Parameters["ScreenSize"];
             graphPos = Parameters["GraphPos"];

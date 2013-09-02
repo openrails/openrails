@@ -278,9 +278,11 @@ namespace ORTS.Popups
             : base(0, 0, width, height)
         {
             if (SignalAspects == null)
-                SignalAspects = owner.Viewer.RenderProcess.Content.Load<Texture2D>("SignalAspects");
+                // TODO: This should happen on the loader thread.
+                SignalAspects = Texture2D.FromFile(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "SignalAspects.png"));
             if (TrackMonitorImages == null)
-                TrackMonitorImages = owner.Viewer.RenderProcess.Content.Load<Texture2D>("TrackMonitorImages");
+                // TODO: This should happen on the loader thread.
+                TrackMonitorImages = Texture2D.FromFile(owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(owner.Viewer.ContentPath, "TrackMonitorImages.png"));
 
             metric = owner.Viewer.MilepostUnitsMetric;
 

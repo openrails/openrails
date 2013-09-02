@@ -131,12 +131,13 @@ namespace ORTS
         public SharedMaterialManager(Viewer3D viewer)
         {
             Viewer = viewer;
-            LightConeShader = new LightConeShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
-            LightGlowShader = new LightGlowShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
-            ParticleEmitterShader = new ParticleEmitterShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
-            PopupWindowShader = new PopupWindowShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
-            PrecipShader = new PrecipShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
-            SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            // TODO: Move to Loader process.
+            LightConeShader = new LightConeShader(viewer.RenderProcess.GraphicsDevice);
+            LightGlowShader = new LightGlowShader(viewer.RenderProcess.GraphicsDevice);
+            ParticleEmitterShader = new ParticleEmitterShader(viewer.RenderProcess.GraphicsDevice);
+            PopupWindowShader = new PopupWindowShader(viewer, viewer.RenderProcess.GraphicsDevice);
+            PrecipShader = new PrecipShader(viewer.RenderProcess.GraphicsDevice);
+            SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice);
             var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace";
             if (File.Exists(microtexPath))
             {
@@ -153,12 +154,12 @@ namespace ORTS
                     Trace.WriteLine(new FileLoadException(microtexPath, error));
                 }
             }
-            ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
-            SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
-            DebugShader = new HUDDebugShader(viewer.RenderProcess.GraphicsDevice, viewer.RenderProcess.Content);
+            ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice);
+            SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice);
+            DebugShader = new HUDDebugShader(viewer.RenderProcess.GraphicsDevice);
 
-            // MUST only call XNA Content from main (Render) thread!
-            MissingTexture = viewer.RenderProcess.Content.Load<Texture2D>("blank");
+            // TODO: This should happen on the loader thread.
+            MissingTexture = Texture2D.FromFile(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
         }
 
         public Material Load(string materialName)
@@ -823,12 +824,13 @@ namespace ORTS
             : base(viewer, null)
         {
             SkyShader = Viewer.MaterialManager.SkyShader;
-            SkyTexture = Viewer.RenderProcess.Content.Load<Texture2D>("SkyDome1");
-            StarTextureN = Viewer.RenderProcess.Content.Load<Texture2D>("Starmap_N");
-            StarTextureS = Viewer.RenderProcess.Content.Load<Texture2D>("Starmap_S");
-            MoonTexture = Viewer.RenderProcess.Content.Load<Texture2D>("MoonMap");
-            MoonMask = Viewer.RenderProcess.Content.Load<Texture2D>("MoonMask");
-            CloudTexture = Viewer.RenderProcess.Content.Load<Texture2D>("Clouds01");
+            // TODO: This should happen on the loader thread.
+            SkyTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png"));
+            StarTextureN = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
+            StarTextureS = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_S.png"));
+            MoonTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.tga"));
+            MoonMask = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMask.png"));
+            CloudTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Clouds01.tga"));
 
             ShaderPassesSky = SkyShader.Techniques["Sky"].Passes.GetEnumerator();
             ShaderPassesMoon = SkyShader.Techniques["Moon"].Passes.GetEnumerator();
@@ -1080,8 +1082,9 @@ namespace ORTS
         public PrecipMaterial(Viewer3D viewer)
             : base(viewer, null)
         {
-            RainTexture = Viewer.RenderProcess.Content.Load<Texture2D>("Raindrop");
-            SnowTexture = Viewer.RenderProcess.Content.Load<Texture2D>("Snowflake");
+            // TODO: This should happen on the loader thread.
+            RainTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Raindrop.png"));
+            SnowTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Snowflake.png"));
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1234,7 +1237,8 @@ namespace ORTS
         public LightGlowMaterial(Viewer3D viewer)
             : base(viewer, null)
         {
-            LightGlowTexture = Viewer.RenderProcess.Content.Load<Texture2D>("Lightglow");
+            // TODO: This should happen on the loader thread.
+            LightGlowTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Lightglow.png"));
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

@@ -2959,7 +2959,7 @@ namespace ORTS
             // Use same shader for both front-facing and rear-facing cabs.
             if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
             {
-                _Shader = new CabShader( viewer.GraphicsDevice, viewer.RenderProcess.Content,
+                _Shader = new CabShader( viewer.GraphicsDevice,
                     _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
                     _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
                     _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),

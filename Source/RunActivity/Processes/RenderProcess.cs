@@ -99,8 +99,6 @@ namespace ORTS
             Form = Control.FromHandle(this.Window.Handle).FindForm();
             GraphicsDeviceManager = Viewer.GDM = new GraphicsDeviceManager(this);
 
-            Content.RootDirectory = "Content";
-
             var windowSizeParts = Viewer.Settings.WindowSize.Split(new[] { 'x' }, 2);
             WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
             WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);

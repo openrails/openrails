@@ -54,7 +54,8 @@ namespace ORTS.Popups
         {
             base.Initialize();
             if (SwitchStates == null)
-                SwitchStates = Owner.Viewer.RenderProcess.Content.Load<Texture2D>("SwitchStates");
+                // TODO: This should happen on the loader thread.
+                SwitchStates = Texture2D.FromFile(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "SwitchStates.png"));
         }
 
 #if !NEW_SIGNALLING

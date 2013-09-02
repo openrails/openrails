@@ -28,8 +28,26 @@ using Microsoft.Xna.Framework.Storage;
 
 namespace ORTS
 {
+    public abstract class Shader : Effect
+    {
+        public Shader(GraphicsDevice graphicsDevice, string filename)
+            : base(graphicsDevice, GetEffectCode(filename), CompilerOptions.None, null)
+        {
+        }
+
+        static byte[] GetEffectCode(string filename)
+        {
+            var basePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
+            var effectFileName = System.IO.Path.Combine(basePath, filename + ".fx");
+            var compiledEffect = Effect.CompileEffectFromFile(effectFileName, null, null, CompilerOptions.None, TargetPlatform.Windows);
+            if (!compiledEffect.Success)
+                throw new InvalidOperationException(compiledEffect.ErrorsAndWarnings);
+            return compiledEffect.GetEffectCode();
+        }
+    }
+
     [CallOnThread("Render")]
-    public class SceneryShader : Effect
+    public class SceneryShader : Shader
     {
         readonly EffectParameter world;
         readonly EffectParameter worldViewProjection;
@@ -145,8 +163,8 @@ namespace ORTS
 
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
-        public SceneryShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("SceneryShader"))
+        public SceneryShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "SceneryShader")
         {
             world = Parameters["World"];
             worldViewProjection = Parameters["WorldViewProjection"];
@@ -179,7 +197,7 @@ namespace ORTS
     }
 
     [CallOnThread("Render")]
-    public class ShadowMapShader : Effect
+    public class ShadowMapShader : Shader
     {
         readonly EffectParameter worldViewProjection;
         readonly EffectParameter sideVector;
@@ -208,8 +226,8 @@ namespace ORTS
             imageBlurStep.SetValue(texture != null ? 1f / texture.Width : 0);
         }
 
-        public ShadowMapShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("ShadowMap"))
+        public ShadowMapShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "ShadowMap")
         {
             worldViewProjection = Parameters["WorldViewProjection"];
             sideVector = Parameters["SideVector"];
@@ -219,7 +237,7 @@ namespace ORTS
     }
 
     [CallOnThread("Render")]
-    public class SkyShader : Effect
+    public class SkyShader : Shader
     {
         readonly EffectParameter worldViewProjection;
         readonly EffectParameter lightVector;
@@ -328,8 +346,8 @@ namespace ORTS
             worldViewProjection.SetValueTranspose(wvp);
         }
 
-        public SkyShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("SkyShader"))
+        public SkyShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "SkyShader")
         {
             worldViewProjection = Parameters["WorldViewProjection"];
             lightVector = Parameters["LightVector"];
@@ -370,7 +388,7 @@ namespace ORTS
     }
 
     [CallOnThread("Render")]
-    public class ParticleEmitterShader : Effect
+    public class ParticleEmitterShader : Shader
     {
         EffectParameter emitDirection = null;
         EffectParameter emitSize = null;
@@ -411,8 +429,8 @@ namespace ORTS
             set { lightVector.SetValue(value); }
         }
 
-        public ParticleEmitterShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("ParticleEmitterShader"))
+        public ParticleEmitterShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "ParticleEmitterShader")
         {
             emitDirection = Parameters["emitDirection"];
             emitSize = Parameters["emitSize"];
@@ -432,7 +450,7 @@ namespace ORTS
     }
 
     [CallOnThread("Render")]
-    public class PrecipShader : Effect
+    public class PrecipShader : Shader
     {
         EffectParameter mProjection = null;
         EffectParameter mView = null;
@@ -468,8 +486,8 @@ namespace ORTS
             set { precip_Tex.SetValue(value); }
         }
 
-        public PrecipShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("PrecipShader"))
+        public PrecipShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "PrecipShader")
         {
             mProjection = Parameters["mProjection"];
             mView = Parameters["mView"];
@@ -490,7 +508,7 @@ namespace ORTS
     }
 
     [CallOnThread("Render")]
-    public class LightGlowShader : Effect
+    public class LightGlowShader : Shader
     {
         readonly EffectParameter worldViewProjection;
         readonly EffectParameter fade;
@@ -508,8 +526,8 @@ namespace ORTS
             fade.SetValue(fadeValues);
         }
 
-        public LightGlowShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("LightGlowShader"))
+        public LightGlowShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "LightGlowShader")
         {
             worldViewProjection = Parameters["WorldViewProjection"];
             fade = Parameters["Fade"];
@@ -518,13 +536,13 @@ namespace ORTS
     }
 
     [CallOnThread("Render")]
-    public class LightConeShader : Effect
+    public class LightConeShader : Shader
     {
         EffectParameter worldViewProjection = null;
         EffectParameter fade = null;
 
-        public LightConeShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("LightConeShader"))
+        public LightConeShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "LightConeShader")
         {
             worldViewProjection = Parameters["WorldViewProjection"];
             fade = Parameters["Fade"];
@@ -542,7 +560,7 @@ namespace ORTS
     }
 
     [CallOnThread("Render")]
-    public class PopupWindowShader : Effect
+    public class PopupWindowShader : Shader
     {
         readonly EffectParameter world;
         readonly EffectParameter worldViewProjection;
@@ -570,20 +588,21 @@ namespace ORTS
             worldViewProjection.SetValue(wvp);
         }
 
-        public PopupWindowShader(GraphicsDevice graphicsDevice, ContentManager content)
-            : base(graphicsDevice, content.Load<Effect>("PopupWindow"))
+        public PopupWindowShader(Viewer3D viewer, GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "PopupWindow")
         {
             world = Parameters["World"];
             worldViewProjection = Parameters["WorldViewProjection"];
             glassColor = Parameters["GlassColor"];
             screenSize = Parameters["ScreenSize"];
             screenTexture = Parameters["ScreenTexture"];
-            Parameters["WindowTexture"].SetValue(content.Load<Texture2D>("Window"));
+            // TODO: This should happen on the loader thread.
+            Parameters["WindowTexture"].SetValue(Texture2D.FromFile(graphicsDevice, System.IO.Path.Combine(viewer.ContentPath, "Window.png")));
         }
     }
 
     [CallOnThread("Render")]
-    public class CabShader : Effect
+    public class CabShader : Shader
     {
         readonly EffectParameter nightColorModifier;
         readonly EffectParameter lightOn;
@@ -613,8 +632,8 @@ namespace ORTS
             lightOn.SetValue(isDashLight);
         }
 
-        public CabShader(GraphicsDevice graphicsDevice, ContentManager content, Vector4 light1Position, Vector4 light2Position, Vector3 light1Color, Vector3 light2Color)
-            : base(graphicsDevice, content.Load<Effect>("CabShader"))
+        public CabShader(GraphicsDevice graphicsDevice, Vector4 light1Position, Vector4 light2Position, Vector3 light1Color, Vector3 light2Color)
+            : base(graphicsDevice, "CabShader")
         {
             nightColorModifier = Parameters["NightColorModifier"];
             lightOn = Parameters["LightOn"];
