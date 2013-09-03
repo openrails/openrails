@@ -5,14 +5,10 @@
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
     <AssemblyName>OpenRails</AssemblyName>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <FileAlignment>512</FileAlignment>
     <OutputType>WinExe</OutputType>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
     <ProjectGuid>{7027354D-7C20-4514-BCEB-177CD7D58952}</ProjectGuid>
     <RootNamespace>ORTS</RootNamespace>
-    <SchemaVersion>2.0</SchemaVersion>
-    <TargetFrameworkSubset></TargetFrameworkSubset>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

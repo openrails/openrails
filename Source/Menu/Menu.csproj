@@ -3,61 +3,32 @@
   <PropertyGroup>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <AssemblyName>Menu</AssemblyName>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <MapFileExtensions>true</MapFileExtensions>
     <OutputType>WinExe</OutputType>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{5EA53243-5C52-4F9C-A730-C35F6C68FB74}</ProjectGuid>
-    <ProjectTypeGuids>{6D335F3A-9D43-41b4-9D22-F6F17C4BE596};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PublishUrl>publish\</PublishUrl>
     <RootNamespace>ORTS</RootNamespace>
-    <StartupObject>
-    </StartupObject>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <Thumbnail>
-    </Thumbnail>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <XnaCrossPlatformGroupID>febf3a29-6caa-4e79-a908-69147a74b75a</XnaCrossPlatformGroupID>
-    <XnaFrameworkVersion>v3.1</XnaFrameworkVersion>
-    <XnaPlatform>Windows</XnaPlatform>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <NoStdLib>true</NoStdLib>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
     <WarningLevel>4</WarningLevel>
-    <XnaCompressContent>false</XnaCompressContent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
     <DefineConstants>TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <NoStdLib>true</NoStdLib>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
     <WarningLevel>4</WarningLevel>
-    <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86">
@@ -66,7 +37,6 @@
     <Reference Include="Microsoft.Xna.Framework.Game, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=MSIL">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
-    <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
