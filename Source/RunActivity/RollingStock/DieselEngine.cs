@@ -248,7 +248,7 @@ namespace ORTS
                 foreach (DieselEngine de in DEList)
                 {
                     if(de.GearBox != null)
-                        temp += de.GearBox.MotiveForceN;
+                        temp += (de.DemandedThrottlePercent * 0.01f * de.GearBox.MotiveForceN);
                 }
                 return temp;
             }

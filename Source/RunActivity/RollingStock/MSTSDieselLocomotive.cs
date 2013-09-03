@@ -353,6 +353,9 @@ namespace ORTS
             float currentSpeedMpS = Math.Abs(SpeedMpS);
             float currentWheelSpeedMpS = Math.Abs(WheelSpeedMpS);
 
+            if (!this.Simulator.UseAdvancedAdhesion)
+                currentWheelSpeedMpS = currentSpeedMpS;
+
             foreach (DieselEngine de in DieselEngines)
             {
                 if (de.EngineStatus == DieselEngine.Status.Running)
@@ -435,7 +438,8 @@ namespace ORTS
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = MaxForceN * t;
+                    float maxForceN = Math.Min(t * MaxForceN, currentWheelSpeedMpS == 0.0f ? ( t * MaxForceN ) : ( t * DieselEngines.MaxOutputPowerW / currentWheelSpeedMpS));
+                    //float maxForceN = MaxForceN * t;
                     float maxPowerW = 0.98f * DieselEngines.MaxOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
                     if (DieselEngines.HasGearBox)
@@ -444,8 +448,7 @@ namespace ORTS
                     }
                     else
                     {
-                        if (!this.Simulator.UseAdvancedAdhesion)
-                            currentWheelSpeedMpS = currentSpeedMpS;
+                        
                         if (maxForceN * currentWheelSpeedMpS > maxPowerW)
                             maxForceN = maxPowerW / currentWheelSpeedMpS;
 

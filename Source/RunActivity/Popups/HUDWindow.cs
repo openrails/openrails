@@ -60,6 +60,11 @@ namespace ORTS.Popups
         HUDGraphMesh ForceGraphDynamicForce;
         HUDGraphMesh ForceGraphNumOfSubsteps;
 
+        HUDGraphSet LocomotiveGraphs;
+        HUDGraphMesh LocomotiveGraphsThrottle;
+        HUDGraphMesh LocomotiveGraphsInputPower;
+        HUDGraphMesh LocomotiveGraphsOutputPower;
+
         HUDGraphSet DebugGraphs;
         HUDGraphMesh DebugGraphMemory;
         HUDGraphMesh DebugGraphGCs;
@@ -94,9 +99,15 @@ namespace ORTS.Popups
             var graphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
 
             ForceGraphs = new HUDGraphSet(Viewer, graphMaterial);
-            ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "0%", "100%", Color.Green, 100);
-            ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 100);
+            ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "0%", "100%", Color.Green, 75);
+            ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
             ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "0", "300", Color.Blue, 25);
+
+
+            LocomotiveGraphs = new HUDGraphSet(Viewer, graphMaterial);
+            LocomotiveGraphsThrottle = LocomotiveGraphs.Add("Throttle", "0", "100%", Color.Blue, 50);
+            LocomotiveGraphsInputPower = LocomotiveGraphs.Add("Power In/Out", "0", "100%", Color.Yellow, 50);
+            LocomotiveGraphsOutputPower = LocomotiveGraphs.AddOverlapped(Color.Green, 50);
 
             DebugGraphs = new HUDGraphSet(Viewer, graphMaterial);
             DebugGraphMemory = DebugGraphs.Add("Memory", "0GB", "2GB", Color.Orange, 50);
@@ -147,7 +158,32 @@ namespace ORTS.Popups
                 ForceGraphMotiveForce.AddSample(loco.MotiveForceN / loco.MaxForceN);
                 ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
                 ForceGraphNumOfSubsteps.AddSample((float)loco.LocomotiveAxle.AxleRevolutionsInt.NumOfSubstepsPS / (float)loco.LocomotiveAxle.AxleRevolutionsInt.MaxSubsteps);
+
                 ForceGraphs.PrepareFrame(frame);
+            }
+
+            if (Visible && TextPages[TextPage] == TextPageLocoInfo)
+            {
+                var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
+                LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
+                if (loco.GetType() == typeof(MSTSDieselLocomotive))
+                {
+                    LocomotiveGraphsInputPower.AddSample(((MSTSDieselLocomotive)loco).DieselEngines.MaxOutputPowerW / ((MSTSDieselLocomotive)loco).DieselEngines.MaxPowerW);
+                    LocomotiveGraphsOutputPower.AddSample(((MSTSDieselLocomotive)loco).DieselEngines.PowerW / ((MSTSDieselLocomotive)loco).DieselEngines.MaxPowerW);
+                }
+                if (loco.GetType() == typeof(MSTSElectricLocomotive))
+                {
+                    LocomotiveGraphsInputPower.AddSample( loco.ThrottlePercent * 0.01f );
+                    LocomotiveGraphsOutputPower.AddSample((loco.MotiveForceN / loco.MaxPowerW) * loco.SpeedMpS);
+                }
+                //TODO: plot correct values
+                if (loco.GetType() == typeof(MSTSSteamLocomotive))
+                {
+                    LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
+                    LocomotiveGraphsOutputPower.AddSample((loco.MotiveForceN / loco.MaxPowerW) * loco.SpeedMpS);
+                }
+
+                LocomotiveGraphs.PrepareFrame(frame);
             }
 #endif
             if (Visible && TextPages[TextPage] == TextPageDebugInfo)
@@ -190,6 +226,8 @@ namespace ORTS.Popups
 #if SHOW_PHYSICS_GRAPHS
             if (Visible && TextPages[TextPage] == TextPageForceInfo)
                 ForceGraphs.Draw(spriteBatch);
+            if (Visible && TextPages[TextPage] == TextPageLocoInfo)
+                LocomotiveGraphs.Draw(spriteBatch);
 #endif
             if (Visible && TextPages[TextPage] == TextPageDebugInfo)
                 DebugGraphs.Draw(spriteBatch);
@@ -320,9 +358,9 @@ namespace ORTS.Popups
                         TableAddLine(table, line);
             }
 #endif
-            if (Viewer.PlayerLocomotive.WheelSlip)
+            if (Viewer.PlayerTrain.IsWheelSlip)
                 TableAddLine(table, "Wheel slip");
-            else if ((mstsLocomotive != null) && mstsLocomotive.LocomotiveAxle.IsWheelSlipWarning)
+            else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
                 TableAddLine(table, "Wheel slip warning");
             if (Viewer.PlayerLocomotive.GetSanderOn())
                 TableAddLine(table, "Sander on");
@@ -383,7 +421,7 @@ namespace ORTS.Popups
 
             //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
 
-            TableSetCells(table, 0, "Car", "Total", "Motive", "Friction", "Gravity", "Coupler", "Mass", "Notes");
+            TableSetCells(table, 0, "Car", "Total", "Motive", "Friction", "Gravity", "Coupler", "Mass", "Elev", "Notes");
             TableAddLine(table);
 
             var n = Math.Min(10, train.Cars.Count);
@@ -398,8 +436,9 @@ namespace ORTS.Popups
                 TableSetCell(table, 4, "{0:F0}", car.GravityForceN);
                 TableSetCell(table, 5, "{0:F0}", car.CouplerForceU);
                 TableSetCell(table, 6, "{0:F0}", car.MassKG);
-                TableSetCell(table, 7, car.Flipped ? "Flipped" : "");
-                TableSetCell(table, 8, car.CouplerOverloaded ? "Coupler overloaded" : "");
+                TableSetCell(table, 7, "{0:F2}", -car.CurrentElevationPercent);
+                TableSetCell(table, 8, car.Flipped ? "Flipped" : "");
+                TableSetCell(table, 9, car.CouplerOverloaded ? "Coupler overloaded" : "");
                 TableAddLine(table);
             }
         }

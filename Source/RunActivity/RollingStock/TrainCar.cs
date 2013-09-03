@@ -68,6 +68,7 @@ namespace ORTS
         public float CouplerSlackM = 0f;// extra distance between cars (calculated based on relative speeds)
         public float CouplerSlack2M = 0f;// slack calculated using draft gear force
         public bool WheelSlip = false;// true if locomotive wheels slipping
+        public bool WheelSlipWarning = false;
         public float _AccelerationMpSS = 0.0f;
         private float Stiffness = 3.0f; //used by vibrating cars
         private float MaxVibSpeed = 15.0f;//the speed when max shaking happens
@@ -115,6 +116,8 @@ namespace ORTS
         public float BrakeForceN = 0.0f;    // brake force in Newtons
         public float TotalForceN; // sum of all the forces active on car relative train direction
 
+        public float CurrentElevationPercent = 0;
+
         // temporary values used to compute coupler forces
         public float CouplerForceA; // left hand side value below diagonal
         public float CouplerForceB; // left hand side value on diagonal
@@ -141,6 +144,7 @@ namespace ORTS
         {
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * 9.8f * WorldPosition.XNAMatrix.M32;
+            CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
             // acceleration
             if (elapsedClockSeconds > 0.0f)
             {

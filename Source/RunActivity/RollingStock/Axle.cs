@@ -706,7 +706,7 @@ namespace ORTS
                     adhesionK = (adhesionK <= 0.7f) ? 0.7f : (adhesionK - 0.005f);
             }
 
-            axleForceN = FilterMovingAverage.Update(axleForceN);
+            axleForceN = FilterMovingAverage.Update(Math.Abs(axleForceN) > Math.Abs(driveForceN) ? driveForceN : axleForceN);
         }
 
         /// <summary>

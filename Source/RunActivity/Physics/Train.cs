@@ -100,6 +100,9 @@ namespace ORTS
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
 
+        public bool IsWheelSlipWarninq = false;
+        public bool IsWheelSlip = false;
+
         public enum TRAINTYPE
         {
             PLAYER,
@@ -1116,6 +1119,9 @@ namespace ORTS
 
             PropagateBrakePressure(elapsedClockSeconds);
 
+            bool whlslp = false;
+            bool whlslpwrn = false;
+
             foreach (TrainCar car in Cars)
             {
                 car.MotiveForceN = 0;
@@ -1127,7 +1133,14 @@ namespace ORTS
                     car.TotalForceN = -car.TotalForceN;
                     car.SpeedMpS = -car.SpeedMpS;
                 }
+
+                if (car.WheelSlip)
+                    whlslp = true;
+                if (car.WheelSlipWarning)
+                    whlslpwrn = true;
             }
+            IsWheelSlip = whlslp;
+            IsWheelSlipWarninq = whlslpwrn;
 
             AddCouplerImpuseForces();
             ComputeCouplerForces();

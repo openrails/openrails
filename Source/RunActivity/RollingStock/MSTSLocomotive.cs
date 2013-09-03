@@ -1064,6 +1064,7 @@ namespace ORTS
                 
                 MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
                 WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
+                WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning;
                 WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS;
             }
             else
