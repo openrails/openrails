@@ -31,6 +31,7 @@ namespace ORTS
         Release,        //TrainBrakesControllerReleaseStart 
         FullQuickRelease,      //TrainBrakesControllerFullQuickReleaseStart
         Running,        //TrainBrakesControllerRunningStart 
+        Neutral,        //TrainBrakesControllerNeutralhandleOffStart
         SelfLap,        //TrainBrakesControllerSelfLapStart 
         Lap,            
         Apply,          //TrainBrakesControllerApplyStart 
@@ -67,6 +68,7 @@ namespace ORTS
                 case "selflapstart": Type = MSTSNotchType.SelfLap; break;
                 case "holdstart": Type = MSTSNotchType.Lap; break;
                 case "holdlappedstart": Type = MSTSNotchType.Lap; break;
+                case "neutralhandleoffstart": Type = MSTSNotchType.Neutral; break;
                 case "graduatedselflaplimitedstart": Type = MSTSNotchType.GSelfLap; break;
                 case "graduatedselflaplimitedholdingstart": Type = MSTSNotchType.GSelfLapH; break;
                 case "applystart": Type = MSTSNotchType.Apply; break;
@@ -116,6 +118,7 @@ namespace ORTS
                 case MSTSNotchType.Release: return "Release";
                 case MSTSNotchType.FullQuickRelease: return "Quick Release";
                 case MSTSNotchType.Running: return "Running";
+                case MSTSNotchType.Neutral: return "Neutral";
                 case MSTSNotchType.Apply: return "Apply";
                 case MSTSNotchType.EPApply: return "EPApply";
                 case MSTSNotchType.Emergency: return "Emergency";
