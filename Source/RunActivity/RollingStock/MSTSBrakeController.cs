@@ -33,6 +33,7 @@ namespace ORTS
         // brake controller values
         private float MaxPressurePSI = 90;
         private float ReleaseRatePSIpS = 5;
+        private float QuickReleaseRatePSIpS = 10;
         private float ApplyRatePSIpS = 2;
         private float EmergencyRatePSIpS = 10;
         private float FullServReductionPSI = 26;
@@ -48,6 +49,7 @@ namespace ORTS
         {
             MaxPressurePSI = controller.MaxPressurePSI;
             ReleaseRatePSIpS = controller.ReleaseRatePSIpS;
+            QuickReleaseRatePSIpS = controller.QuickReleaseRatePSIpS;
             ApplyRatePSIpS = controller.ApplyRatePSIpS;
             EmergencyRatePSIpS = controller.EmergencyRatePSIpS;
             FullServReductionPSI = controller.FullServReductionPSI;
@@ -92,6 +94,10 @@ namespace ORTS
                     case MSTSNotchType.Release:
                         pressurePSI += x * ReleaseRatePSIpS * elapsedClockSeconds;
                         epPressurePSI -= x * ReleaseRatePSIpS * elapsedClockSeconds;
+                        break;
+                    case MSTSNotchType.FullQuickRelease:
+                        pressurePSI += x * 5.0f * ReleaseRatePSIpS * elapsedClockSeconds;
+                        epPressurePSI -= x * 5.0f *ReleaseRatePSIpS * elapsedClockSeconds;
                         break;
                     case MSTSNotchType.Running:
                         if (notch.Smooth)
@@ -187,6 +193,7 @@ namespace ORTS
             {
                 case "maxsystempressure": MaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "maxreleaserate": ReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "maxquickreleaserate": QuickReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "maxapplicationrate": ApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "emergencyapplicationrate": EmergencyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "fullservicepressuredrop": FullServReductionPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -252,6 +259,7 @@ namespace ORTS
             
             outf.Write(MaxPressurePSI);
             outf.Write(ReleaseRatePSIpS);
+            outf.Write(QuickReleaseRatePSIpS);
             outf.Write(ApplyRatePSIpS);
             outf.Write(EmergencyRatePSIpS);
             outf.Write(FullServReductionPSI);
@@ -262,6 +270,7 @@ namespace ORTS
         {
             MaxPressurePSI = inf.ReadSingle();
             ReleaseRatePSIpS = inf.ReadSingle();
+            QuickReleaseRatePSIpS = inf.ReadSingle();
             ApplyRatePSIpS = inf.ReadSingle();
             EmergencyRatePSIpS = inf.ReadSingle();
             FullServReductionPSI = inf.ReadSingle();

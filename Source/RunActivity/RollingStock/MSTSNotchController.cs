@@ -25,7 +25,23 @@ using System.Diagnostics;   // needed for Debug
 
 namespace ORTS
 {
-    public enum MSTSNotchType { Dummy, Release, Running, SelfLap, Lap, Apply, EPApply, GSelfLap, GSelfLapH, Suppression, ContServ, FullServ, Emergency };
+    public enum MSTSNotchType 
+    { 
+        Dummy,
+        Release,        //TrainBrakesControllerReleaseStart 
+        FullQuickRelease,      //TrainBrakesControllerFullQuickReleaseStart
+        Running,        //TrainBrakesControllerRunningStart 
+        SelfLap,        //TrainBrakesControllerSelfLapStart 
+        Lap,            
+        Apply,          //TrainBrakesControllerApplyStart 
+        EPApply,        //TrainBrakesControllerEPApplyStart 
+        GSelfLap, 
+        GSelfLapH,
+        Suppression,    //TrainBrakesControllerSuppressionStart 
+        ContServ,       //TrainBrakesControllerContinuousServiceStart 
+        FullServ,       //TrainBrakesControllerFullServiceStart 
+        Emergency       //TrainBrakesControllerEmergencyStart
+    };
 
     public class MSTSNotch {
         public float Value;
@@ -46,7 +62,7 @@ namespace ORTS
                 case "dummy": break;
                 case ")": break;
                 case "releasestart": Type = MSTSNotchType.Release; break;
-                case "fullquickreleasestart": Type = MSTSNotchType.Release; break;
+                case "fullquickreleasestart": Type = MSTSNotchType.FullQuickRelease; break;
                 case "runningstart": Type = MSTSNotchType.Running; break;
                 case "selflapstart": Type = MSTSNotchType.SelfLap; break;
                 case "holdstart": Type = MSTSNotchType.Lap; break;
@@ -98,6 +114,7 @@ namespace ORTS
             {
                 case MSTSNotchType.Dummy: return "";
                 case MSTSNotchType.Release: return "Release";
+                case MSTSNotchType.FullQuickRelease: return "Quick Release";
                 case MSTSNotchType.Running: return "Running";
                 case MSTSNotchType.Apply: return "Apply";
                 case MSTSNotchType.EPApply: return "EPApply";
