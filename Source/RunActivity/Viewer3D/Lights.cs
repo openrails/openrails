@@ -62,6 +62,17 @@ namespace ORTS
                 new STFReader.TokenProcessor("angle", ()=>{ Angle = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
             });
         }
+        public LightState(LightState state)
+        {
+            Duration = state.Duration;
+            Color = state.Color;
+            Position = new Vector3(state.Position.X, state.Position.Y, state.Position.Z);
+            Radius = state.Radius;
+            Azimuth = new Vector3(state.Azimuth.X, state.Azimuth.Y, state.Azimuth.Z);
+            Elevation = new Vector3(state.Elevation.X, state.Elevation.Y, state.Elevation.Z);
+            Transition = state.Transition;
+            Angle = state.Angle;
+        }
     }
 
     #region Light enums
@@ -194,6 +205,40 @@ namespace ORTS
                 }),
             });
         }
+        public Light(int index, Light light)
+        {
+            Index = index;
+            Type = light.Type;
+            Headlight = light.Headlight;
+            Unit = light.Unit;
+            Penalty = light.Penalty;
+            Control = light.Control;
+            Service = light.Service;
+            TimeOfDay = light.TimeOfDay;
+            Weather = light.Weather;
+            Coupling = light.Coupling;
+            Cycle = light.Cycle;
+            FadeIn = light.FadeIn;
+            FadeOut = light.FadeOut;
+            foreach (LightState state in light.States)
+            {
+                States.Add(new LightState(state));
+            }
+        }
+        public void Reverse()
+        {
+            foreach (LightState state in States)
+            {
+                state.Azimuth.X += 180;
+                state.Azimuth.X %= 360;
+                state.Azimuth.Y += 180;
+                state.Azimuth.Y %= 360;
+                state.Azimuth.Z += 180;
+                state.Azimuth.Z %= 360;
+                state.Position.X *= -1;
+                state.Position.Z *= -1;
+            }
+        }
     }
 
     /// <summary>
@@ -250,6 +295,9 @@ namespace ORTS
         public float LightConeMinDotProduct;
         public Vector4 LightConeColor;
 
+        List<Light> Lights;
+        Light newCone;
+
         public LightDrawer(Viewer3D viewer, TrainCar car)
         {
             Viewer = viewer;
@@ -260,6 +308,23 @@ namespace ORTS
             UpdateState();
             if (Car.Lights != null)
             {
+                //creating a reversed cone too, because msts bin did so
+                //later this could be checked against an user defined reverse facing cone in the eng first
+                Lights = new List<Light>(Car.Lights.Lights);
+                foreach (Light light in Lights)
+                {
+                    if (light.Type == LightType.Cone)
+                    {
+                        newCone = new Light(Car.Lights.Lights.Count, light);
+                        newCone.Reverse();
+                        if (newCone.Unit == LightUnitCondition.First)
+                            newCone.Unit = LightUnitCondition.FirstRev;
+                        else if(newCone.Unit == LightUnitCondition.Last)
+                            newCone.Unit = LightUnitCondition.LastRev;
+                        Car.Lights.Lights.Add(newCone);
+                    }
+                }
+
                 foreach (var light in Car.Lights.Lights)
                 {
                     switch (light.Type)
@@ -397,7 +462,7 @@ namespace ORTS
             // Unit
             var locoIsFlipped = Car.Train == Viewer.PlayerTrain && Viewer.PlayerLocomotive.Flipped;
             if (Car.Train != null && Car.Train.LeadLocomotive != null && Car.Train != Viewer.PlayerTrain) locoIsFlipped = Car.Train.LeadLocomotive.Flipped;
-			var newCarIsReversed = Car.Flipped ^ locoIsFlipped;
+            var newCarIsReversed = (Car.Flipped ^ locoIsFlipped) || ((MSTSLocomotive)Car.Train.LeadLocomotive).UsingRearCab;
             var newCarIsFirst = Car.Train == null || (locoIsFlipped ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
             var newCarIsLast = Car.Train == null || (locoIsFlipped ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
             // Penalty
