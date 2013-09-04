@@ -485,11 +485,26 @@ namespace ORTS
 
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
-                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentWheelSpeedMpS);
                 if (f > 0)
+                {
                     MotiveForceN -= (SpeedMpS > 0 ? 1 : -1) * f;
-                if (Flipped)
-                    MotiveForceN *= -1f;
+                    switch (Direction)
+                    {
+                        case Direction.Forward:
+                            //MotiveForceN *= 1;     //Not necessary
+                            break;
+                        case Direction.Reverse:
+                            MotiveForceN *= -1;
+                            break;
+                        case Direction.N:
+                        default:
+                            MotiveForceN *= 0;
+                            break;
+                    }
+                }
+                //if (Flipped)
+                //    MotiveForceN *= -1f;
             }
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0)
