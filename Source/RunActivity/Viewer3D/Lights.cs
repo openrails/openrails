@@ -462,7 +462,7 @@ namespace ORTS
             // Unit
             var locoIsFlipped = Car.Train == Viewer.PlayerTrain && Viewer.PlayerLocomotive.Flipped;
             if (Car.Train != null && Car.Train.LeadLocomotive != null && Car.Train != Viewer.PlayerTrain) locoIsFlipped = Car.Train.LeadLocomotive.Flipped;
-            var newCarIsReversed = (Car.Flipped ^ locoIsFlipped) || ((MSTSLocomotive)Car.Train.LeadLocomotive).UsingRearCab;
+            var newCarIsReversed = (Car.Flipped ^ locoIsFlipped) || Car.Train.LeadLocomotive != null && ((MSTSLocomotive)Car.Train.LeadLocomotive).UsingRearCab;
             var newCarIsFirst = Car.Train == null || (locoIsFlipped ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
             var newCarIsLast = Car.Train == null || (locoIsFlipped ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
             // Penalty
