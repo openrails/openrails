@@ -651,4 +651,33 @@ namespace ORTS
             light2Col.SetValue(light2Color);
         }
     }
+
+    [CallOnThread("Render")]
+    public class DebugShader : Shader
+    {
+        readonly EffectParameter worldViewProjection;
+        readonly EffectParameter screenSize;
+        readonly EffectParameter graphPos;
+        readonly EffectParameter graphSample;
+
+        public Vector2 ScreenSize { set { screenSize.SetValue(value); } }
+
+        public Vector4 GraphPos { set { graphPos.SetValue(value); } }
+
+        public Vector2 GraphSample { set { graphSample.SetValue(value); } }
+
+        public DebugShader(GraphicsDevice graphicsDevice)
+            : base(graphicsDevice, "DebugShader")
+        {
+            worldViewProjection = Parameters["WorldViewProjection"];
+            screenSize = Parameters["ScreenSize"];
+            graphPos = Parameters["GraphPos"];
+            graphSample = Parameters["GraphSample"];
+        }
+
+        public void SetMatrix(ref Matrix matrix, ref Matrix viewproj)
+        {
+            worldViewProjection.SetValue(matrix * viewproj);
+        }
+    }
 }

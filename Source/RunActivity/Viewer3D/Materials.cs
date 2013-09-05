@@ -123,7 +123,7 @@ namespace ORTS
         public readonly SceneryShader SceneryShader;
         public readonly ShadowMapShader ShadowMapShader;
         public readonly SkyShader SkyShader;
-        public readonly HUDDebugShader DebugShader;
+        public readonly DebugShader DebugShader;
 
         public static Texture2D MissingTexture;
 
@@ -156,7 +156,7 @@ namespace ORTS
             }
             ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice);
             SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice);
-            DebugShader = new HUDDebugShader(viewer.RenderProcess.GraphicsDevice);
+            DebugShader = new DebugShader(viewer.RenderProcess.GraphicsDevice);
 
             // TODO: This should happen on the loader thread.
             MissingTexture = Texture2D.FromFile(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
@@ -190,6 +190,9 @@ namespace ORTS
                 {
                     case "Debug":
                         Materials[materialKey] = new HUDGraphMaterial(Viewer);
+                        break;
+                    case "DebugNormals":
+                        Materials[materialKey] = new DebugNormalMaterial(Viewer);
                         break;
                     case "Forest":
                         Materials[materialKey] = new ForestMaterial(Viewer, textureName);
@@ -1716,6 +1719,51 @@ namespace ORTS
             // And we're done.
             TextBoxes.Add(textBox);
             return new Point(textBox.X + 5, textBox.Y + 2);
+        }
+    }
+
+    public class DebugNormalMaterial : Material
+    {
+        IEnumerator<EffectPass> ShaderPassesGraph;
+
+        public DebugNormalMaterial(Viewer3D viewer)
+            : base(viewer, null)
+        {
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            var shader = Viewer.MaterialManager.DebugShader;
+            shader.CurrentTechnique = shader.Techniques["Normal"];
+            if (ShaderPassesGraph == null) ShaderPassesGraph = shader.Techniques["Normal"].Passes.GetEnumerator();
+
+            var rs = graphicsDevice.RenderState;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            var shader = Viewer.MaterialManager.DebugShader;
+            var viewproj = XNAViewMatrix * XNAProjectionMatrix;
+
+            shader.Begin();
+            ShaderPassesGraph.Reset();
+            while (ShaderPassesGraph.MoveNext())
+            {
+                ShaderPassesGraph.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    shader.SetMatrix(ref item.XNAMatrix, ref viewproj);
+                    shader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPassesGraph.Current.End();
+            }
+            shader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            var rs = graphicsDevice.RenderState;
         }
     }
 }

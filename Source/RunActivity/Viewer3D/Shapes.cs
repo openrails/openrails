@@ -24,6 +24,9 @@
 // Prints out lots of diagnostic information about the construction of shapes, with regards their sub-objects and hierarchies.
 //#define DEBUG_SHAPE_HIERARCHY
 
+// Adds bright green arrows to all normal shapes indicating the direction of their normals.
+//#define DEBUG_SHAPE_NORMALS
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -638,17 +641,17 @@ namespace ORTS
 
     public class ShapePrimitive : RenderPrimitive
     {
-        public Material Material { get; private set; }
-        public int[] Hierarchy { get; private set; } // the hierarchy from the sub_object
-        public int HierarchyIndex { get; private set; } // index into the hiearchy array which provides pose for this primitive
+        public Material Material { get; protected set; }
+        public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
+        public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
 
-        VertexBuffer VertexBuffer;
-        VertexDeclaration VertexDeclaration;
-        int VertexBufferStride;
-        IndexBuffer IndexBuffer;
-        int MinVertexIndex;
-        int NumVerticies;
-        int PrimitiveCount;
+        protected VertexBuffer VertexBuffer;
+        protected VertexDeclaration VertexDeclaration;
+        protected int VertexBufferStride;
+        protected IndexBuffer IndexBuffer;
+        protected int MinVertexIndex;
+        protected int NumVerticies;
+        protected int PrimitiveCount;
 
         public ShapePrimitive()
         {
@@ -666,6 +669,13 @@ namespace ORTS
             PrimitiveCount = primitiveCount;
             Hierarchy = hierarchy;
             HierarchyIndex = hierarchyIndex;
+        }
+
+        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, List<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
+            : this(material, vertexBufferSet, null, indexData.Min(), indexData.Max() - indexData.Min() + 1, indexData.Count / 3, hierarchy, hierarchyIndex)
+        {
+            IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
+            IndexBuffer.SetData(indexData.ToArray());
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -686,6 +696,47 @@ namespace ORTS
             Material.Mark();
         }
     }
+
+#if DEBUG_SHAPE_NORMALS
+    public class ShapeDebugNormalsPrimitive : ShapePrimitive
+    {
+        public ShapeDebugNormalsPrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, List<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
+        {
+            Material = material;
+            VertexBuffer = vertexBufferSet.DebugNormalsBuffer;
+            VertexDeclaration = vertexBufferSet.DebugNormalsDeclaration;
+            VertexBufferStride = vertexBufferSet.DebugNormalsDeclaration.GetVertexStrideSize(0);
+            var debugNormalsIndexBuffer = new List<ushort>(indexData.Count * SharedShape.VertexBufferSet.DebugNormalsVertexPerVertex);
+            for (var i = 0; i < indexData.Count; i++)
+                for (var j = 0; j < SharedShape.VertexBufferSet.DebugNormalsVertexPerVertex; j++)
+                    debugNormalsIndexBuffer.Add((ushort)(indexData[i] * SharedShape.VertexBufferSet.DebugNormalsVertexPerVertex + j));
+            IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), debugNormalsIndexBuffer.Count, BufferUsage.WriteOnly);
+            IndexBuffer.SetData(debugNormalsIndexBuffer.ToArray());
+            MinVertexIndex = indexData.Min() * SharedShape.VertexBufferSet.DebugNormalsVertexPerVertex;
+            NumVerticies = (indexData.Max() - indexData.Min() + 1) * SharedShape.VertexBufferSet.DebugNormalsVertexPerVertex;
+            PrimitiveCount = indexData.Count / 3 * SharedShape.VertexBufferSet.DebugNormalsVertexPerVertex;
+            Hierarchy = hierarchy;
+            HierarchyIndex = hierarchyIndex;
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            if (PrimitiveCount > 0)
+            {
+                graphicsDevice.VertexDeclaration = VertexDeclaration;
+                graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexBufferStride);
+                graphicsDevice.Indices = IndexBuffer;
+                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount);
+            }
+        }
+
+        [CallOnThread("Loader")]
+        public virtual void Mark()
+        {
+            Material.Mark();
+        }
+    }
+#endif
 
     public class SharedShape
     {
@@ -871,13 +922,19 @@ namespace ORTS
                 Console.WriteLine("      Sub object {0}:", index);
 #endif
                 var vertexBufferSet = new VertexBufferSet(sub_object, sFile, sharedShape.Viewer.GraphicsDevice);
-
+#if DEBUG_SHAPE_NORMALS
+                var debugNormalsMaterial = sharedShape.Viewer.MaterialManager.Load("DebugNormals");
+#endif
 
 #if OPTIMIZE_SHAPES_ON_LOAD
                 var primitiveMaterials = sub_object.primitives.Cast<primitive>().Select((primitive) =>
 #else
                 var primitiveIndex = 0;
+#if DEBUG_SHAPE_NORMALS
+                ShapePrimitives = new ShapePrimitive[sub_object.primitives.Count * 2];
+#else
                 ShapePrimitives = new ShapePrimitive[sub_object.primitives.Count];
+#endif
                 foreach (primitive primitive in sub_object.primitives)
 #endif
                 {
@@ -978,11 +1035,14 @@ namespace ORTS
                         foreach (var index in new[] { vertex_idx.a, vertex_idx.b, vertex_idx.c })
                             indexData.Add((ushort)index);
 
-                    var indexBuffer = new IndexBuffer(sharedShape.Viewer.GraphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
-                    indexBuffer.SetData(indexData.ToArray());
-                    ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexBuffer, indexData.Min(), indexData.Max() - indexData.Min() + 1, indexData.Count / 3, hierarchy, vertexState.imatrix);
+                    ShapePrimitives[primitiveIndex] = new ShapePrimitive(material, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
                     ShapePrimitives[primitiveIndex].SortIndex = ++totalPrimitiveIndex;
                     ++primitiveIndex;
+#if DEBUG_SHAPE_NORMALS
+                    ShapePrimitives[primitiveIndex] = new ShapeDebugNormalsPrimitive(debugNormalsMaterial, vertexBufferSet, indexData, sharedShape.Viewer.GraphicsDevice, hierarchy, vertexState.imatrix);
+                    ShapePrimitives[primitiveIndex].SortIndex = totalPrimitiveIndex;
+                    ++primitiveIndex;
+#endif
                 }
 #endif
 
@@ -1044,24 +1104,46 @@ namespace ORTS
             public VertexDeclaration Declaration;
             public int VertexCount;
 
+#if DEBUG_SHAPE_NORMALS
+            public VertexBuffer DebugNormalsBuffer;
+            public VertexDeclaration DebugNormalsDeclaration;
+            public int DebugNormalsVertexCount;
+            public const int DebugNormalsVertexPerVertex = 3 * 4;
+#endif
+
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
             {
                 VertexCount = vertexData.Length;
                 Declaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                Buffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * VertexCount, BufferUsage.WriteOnly);
+                Buffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), VertexCount, BufferUsage.WriteOnly);
                 Buffer.SetData(vertexData);
             }
 
+#if DEBUG_SHAPE_NORMALS
+            public VertexBufferSet(VertexPositionNormalTexture[] vertexData, VertexPositionColor[] debugNormalsVertexData, GraphicsDevice graphicsDevice)
+                :this(vertexData, graphicsDevice)
+            {
+                DebugNormalsVertexCount = debugNormalsVertexData.Length;
+                DebugNormalsDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionColor.VertexElements);
+                DebugNormalsBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionColor), DebugNormalsVertexCount, BufferUsage.WriteOnly);
+                DebugNormalsBuffer.SetData(debugNormalsVertexData);
+            }
+#endif
+
             public VertexBufferSet(sub_object sub_object, SFile sFile, GraphicsDevice graphicsDevice)
-                : this(CreateVertexData(sub_object, sFile), graphicsDevice)
+#if DEBUG_SHAPE_NORMALS
+                : this(CreateVertexData(sub_object, sFile.shape), CreateDebugNormalsVertexData(sub_object, sFile.shape), graphicsDevice)
+#else
+                : this(CreateVertexData(sub_object, sFile.shape), graphicsDevice)
+#endif
             {
             }
 
-            static VertexPositionNormalTexture[] CreateVertexData(sub_object sub_object, SFile sFile)
+            static VertexPositionNormalTexture[] CreateVertexData(sub_object sub_object, shape shape)
             {
                 // TODO - deal with vertex sets that have various numbers of texture coordinates - ie 0, 1, 2 etc
                 return (from vertex vertex in sub_object.vertices
-                        select XNAVertexPositionNormalTextureFromMSTS(vertex, sFile.shape)).ToArray();
+                        select XNAVertexPositionNormalTextureFromMSTS(vertex, shape)).ToArray();
             }
 
             static VertexPositionNormalTexture XNAVertexPositionNormalTextureFromMSTS(vertex vertex, shape shape)
@@ -1078,6 +1160,35 @@ namespace ORTS
                     TextureCoordinate = new Vector2(texcoord.U, texcoord.V),
                 };
             }
+
+#if DEBUG_SHAPE_NORMALS
+            static VertexPositionColor[] CreateDebugNormalsVertexData(sub_object sub_object, shape shape)
+            {
+                var vertexData = new List<VertexPositionColor>();
+                foreach (vertex vertex in sub_object.vertices)
+                {
+                    var position = new Vector3(shape.points[vertex.ipoint].X, shape.points[vertex.ipoint].Y, -shape.points[vertex.ipoint].Z);
+                    var normal = new Vector3(shape.normals[vertex.inormal].X, shape.normals[vertex.inormal].Y, -shape.normals[vertex.inormal].Z);
+                    var right = Vector3.Cross(normal, Math.Abs(normal.Y) > 0.5 ? Vector3.Left : Vector3.Up);
+                    var up = Vector3.Cross(normal, right);
+                    right /= 50;
+                    up /= 50;
+                    vertexData.Add(new VertexPositionColor(position + right, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position + normal, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position + up, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position + up, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position + normal, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position - right, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position - right, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position + normal, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position - up, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position - up, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position + normal, Color.LightGreen));
+                    vertexData.Add(new VertexPositionColor(position + right, Color.LightGreen));
+                }
+                return vertexData.ToArray();
+            }
+#endif
         }
 
         Matrix XNAMatrixFromMSTS(matrix MSTSMatrix)

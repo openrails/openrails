@@ -908,26 +908,4 @@ namespace ORTS.Popups
             rs.DepthBufferEnable = true;
         }
     }
-
-    [CallOnThread("Render")]
-    public class HUDDebugShader : Shader
-    {
-        readonly EffectParameter screenSize;
-        readonly EffectParameter graphPos;
-        readonly EffectParameter graphSample;
-
-        public Vector2 ScreenSize { set { screenSize.SetValue(value); } }
-
-        public Vector4 GraphPos { set { graphPos.SetValue(value); } }
-
-        public Vector2 GraphSample { set { graphSample.SetValue(value); } }
-
-        public HUDDebugShader(GraphicsDevice graphicsDevice)
-            : base(graphicsDevice, "DebugShader")
-        {
-            screenSize = Parameters["ScreenSize"];
-            graphPos = Parameters["GraphPos"];
-            graphSample = Parameters["GraphSample"];
-        }
-    }
 }

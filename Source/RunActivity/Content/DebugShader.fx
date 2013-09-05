@@ -23,6 +23,8 @@
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
+float4x4 WorldViewProjection;  // model -> world -> view -> projection
+
 float2 ScreenSize;
 float4 GraphPos; // xy = xy position, zw = width/height
 float2 GraphSample; // x = index, y = count
@@ -63,9 +65,24 @@ VERTEX_OUTPUT VSGraph(in VERTEX_INPUT In)
 	return Out;
 }
 
+VERTEX_OUTPUT VSNormal(in VERTEX_INPUT In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	
+	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.Color = In.Color;
+	
+	return Out;
+}
+
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
 float4 PSGraph(in VERTEX_OUTPUT In) : COLOR0
+{
+	return In.Color;
+}
+
+float4 PSNormal(in VERTEX_OUTPUT In) : COLOR0
 {
 	return In.Color;
 }
@@ -82,5 +99,12 @@ technique Graph {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSGraph();
 		PixelShader = compile ps_2_0 PSGraph();
+	}
+}
+
+technique Normal {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSNormal();
+		PixelShader = compile ps_2_0 PSNormal();
 	}
 }
