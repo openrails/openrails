@@ -794,13 +794,15 @@ namespace ORTS
         float V2P(float v)
         {
             //return OneAtmospherePSIA * (1 - v / OneAtmosphereInHg);
-            return KPa.ToPSI(1.0f - (KPa.FromInHg(v) / OneAtmosphereKPa));
+            //return KPa.ToPSI(1.0f - (KPa.FromInHg(v) / OneAtmosphereKPa));
+            return KPa.ToPSI(OneAtmosphereKPa - KPa.FromInHg(v));
         }
         // convert pressure in psia to vacuum in inhg
         float P2V(float p)
         {
             //return OneAtmosphereInHg * (1 - p / OneAtmospherePSIA);
-            return KPa.ToInHg(1.0f - (KPa.FromPSI(p) / OneAtmosphereKPa));
+            //return KPa.ToInHg(1.0f - (KPa.FromPSI(p) / OneAtmosphereKPa));
+            return KPa.ToInHg(OneAtmosphereKPa - KPa.FromPSI(p));
         }
         // return vacuum reservior pressure adjusted for piston movement
         float VacResPressureAdjPSIA()
