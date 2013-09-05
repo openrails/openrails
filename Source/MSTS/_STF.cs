@@ -327,10 +327,10 @@ namespace MSTS
                 // A single unexpected token leads to a warning; two leads to a fatal error.
                 if (!s1.Equals(target, StringComparison.OrdinalIgnoreCase))
                 {
-                    STFException.TraceWarning(this, target + " Not Found - instead found \"" + s1 + "\"");
+                    STFException.TraceWarning(this, "\"" + target + "\" not found - instead found \"" + s1 + "\"");
                     string s2 = ReadItem();
                     if (!s2.Equals(target, StringComparison.OrdinalIgnoreCase))
-                        throw new STFException(this, target + " Not Found - instead found  \"" + s1 + "\"");
+                        throw new STFException(this, "\"" + target + "\" not found - instead found \"" + s1 + "\"");
                 }
             }
         }
@@ -343,17 +343,17 @@ namespace MSTS
         private void MustMatchFromBlock(string target)
         {
             if (Eof)
-                STFException.TraceWarning(this, "Unexpected end of file instead of " + target);
+                STFException.TraceWarning(this, "Unexpected end of file instead of \"" + target + "\"");
             else
             {
                 string s1 = ReadItemFromBlock();
                 // A single unexpected token leads to a warning; two leads to a fatal error.
                 if (!s1.Equals(target, StringComparison.OrdinalIgnoreCase))
                 {
-                    STFException.TraceWarning(this, target + " Not Found - instead found \"" + s1 + "\"");
+                    STFException.TraceWarning(this, "\"" + target + "\" not found - instead found \"" + s1 + "\"");
                     string s2 = ReadItemFromBlock();
                     if (!s2.Equals(target, StringComparison.OrdinalIgnoreCase))
-                        throw new STFException(this, target + " Not Found - instead found  \"" + s1 + "\"");
+                        throw new STFException(this, "\"" + target + "\" not found - instead found \"" + s1 + "\"");
                 }
             }
         }
@@ -835,10 +835,15 @@ namespace MSTS
                 int suffixLength = constant.Length - suffixStart;
 
                 // Check for an embedded comment in the unit suffix string, ( ie "220kN#est" used in acela.eng ) 
+                // This style of comment doesn't work across spaces, so
+                //  MaxReleaseRate( 20#Passenger Service )
+                // will lead to a warning: 
+                //  ")" not found - "Service" found instead. 
+                // Should re-write the comment with a space as
+                //  MaxReleaseRate( 20 #Passenger Service )
                 int commentStart = constant.IndexOf('#', suffixStart);
                 if (commentStart != -1)
                     suffixLength = commentStart - suffixStart;
-
                 // Extract the unit suffix
                 suffix = constant.Substring(suffixStart, suffixLength).ToLowerInvariant();
                 suffix = suffix.Trim();
@@ -1214,7 +1219,18 @@ namespace MSTS
             if (s == "(")
             {
                 float result = ReadFloat(validUnits, defaultValue);
-                MustMatchFromBlock(")");
+                if (validUnits == UNITS.None)
+                {
+                    SkipRestOfBlock(); // e.g. to ignore everything after the "30" in
+                    // SignalAspect ( APPROACH_1 "Approach" SpeedMPH ( 30 SignalFlags ( ASAP ) ) )
+                }
+                else
+                {
+                    MustMatchFromBlock(")");    // Gives warning for lines with units like
+                                                //  Speed ( 60 kph )
+                                                // instead of
+                                                //  Speed ( 60kph )
+                }
                 return result;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
