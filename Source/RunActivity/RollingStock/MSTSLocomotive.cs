@@ -1926,7 +1926,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.EQ_RES:
                     {
-                        data = ConvertFromPSI(cvc, this.Train.BrakeLine1PressurePSI);
+                        data = ConvertFromPSI(cvc, this.Train.BrakeLine1PressurePSIorInHg);
                         break;
                     }
                 case CABViewControlTypes.BRAKE_CYL:

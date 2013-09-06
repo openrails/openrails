@@ -3013,7 +3013,7 @@ namespace ORTS
         {
             float maxPressurePSI = 90;
             BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
-            BrakeLine1PressurePSI = BrakeLine2PressurePSI = maxPressurePSI;
+            BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = maxPressurePSI;
             foreach (TrainCar car in Cars)
             {
                 car.BrakeSystem.Initialize(false, maxPressurePSI, true);

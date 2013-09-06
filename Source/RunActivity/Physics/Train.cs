@@ -93,7 +93,9 @@ namespace ORTS
         public int MUGearboxGearIndex = 0;               // set by player locomotive to control MU'd locomotives
         public float MUReverserPercent = 100;            // steam engine direction/cutoff control for MU'd locomotives
         public float MUDynamicBrakePercent = -1;         // dynamic brake control for MU'd locomotives, <0 for off
-        public float BrakeLine1PressurePSI = 90;         // set by player locomotive to control entire train brakes
+        public float BrakeLine1PressurePSIorInHg = 90;   // set by player locomotive to control entire train brakes
+                                                         // Class AirSinglePipe etc. use this property for pressure in PSI, 
+                                                         // but Class VacuumSinglePipe uses it for vacuum in InHg.
         public float BrakeLine2PressurePSI = 0;          // extra line for dual line systems, main reservoir
         public float BrakeLine3PressurePSI = 0;          // extra line just in case, engine brake pressure
         public float BrakeLine4PressurePSI = 0;          // extra line just in case, ep brake control line
@@ -415,7 +417,7 @@ namespace ORTS
             MUThrottlePercent = inf.ReadSingle();
             MUGearboxGearIndex = inf.ReadInt32();
             MUDynamicBrakePercent = inf.ReadSingle();
-            BrakeLine1PressurePSI = inf.ReadSingle();
+            BrakeLine1PressurePSIorInHg = inf.ReadSingle();
             BrakeLine2PressurePSI = inf.ReadSingle();
             BrakeLine3PressurePSI = inf.ReadSingle();
             BrakeLine4PressurePSI = inf.ReadSingle();
@@ -666,7 +668,7 @@ namespace ORTS
             outf.Write(MUThrottlePercent);
             outf.Write(MUGearboxGearIndex);
             outf.Write(MUDynamicBrakePercent);
-            outf.Write(BrakeLine1PressurePSI);
+            outf.Write(BrakeLine1PressurePSIorInHg);
             outf.Write(BrakeLine2PressurePSI);
             outf.Write(BrakeLine3PressurePSI);
             outf.Write(BrakeLine4PressurePSI);
@@ -1993,10 +1995,10 @@ namespace ORTS
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                 {
-                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, 1000, ref BrakeLine4PressurePSI);
+                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSIorInHg, 1000, ref BrakeLine4PressurePSI);
                     maxPressurePSI = lead.TrainBrakeController.GetMaxPressurePSI();
-                    BrakeLine1PressurePSI =
-                            MathHelper.Max(BrakeLine1PressurePSI, maxPressurePSI - lead.TrainBrakeController.GetFullServReductionPSI());
+                    BrakeLine1PressurePSIorInHg =
+                            MathHelper.Max(BrakeLine1PressurePSIorInHg, maxPressurePSI - lead.TrainBrakeController.GetFullServReductionPSI());
                 }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
@@ -2009,7 +2011,7 @@ namespace ORTS
             }
             else
             {
-                BrakeLine1PressurePSI = BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
+                BrakeLine1PressurePSIorInHg = BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
             }
             BrakeLine2PressurePSI = maxPressurePSI;
             foreach (TrainCar car in Cars)
@@ -2140,7 +2142,7 @@ namespace ORTS
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
-                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSI, elapsedClockSeconds, ref BrakeLine4PressurePSI);
+                    lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSIorInHg, elapsedClockSeconds, ref BrakeLine4PressurePSI);
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
                 lead.BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
@@ -2151,7 +2153,7 @@ namespace ORTS
                 {
                     if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
                         continue;
-                    car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSI;
+                    car.BrakeSystem.BrakeLine1PressurePSI = BrakeLine1PressurePSIorInHg;
                     car.BrakeSystem.BrakeLine2PressurePSI = BrakeLine2PressurePSI;
                     car.BrakeSystem.BrakeLine3PressurePSI = 0;
                 }

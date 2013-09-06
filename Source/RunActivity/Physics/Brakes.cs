@@ -132,7 +132,7 @@ namespace ORTS
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem)
         {
-            string s= string.Format(" EQ {0:F0} psi", Car.Train.BrakeLine1PressurePSI);
+            string s= string.Format(" EQ {0:F0} psi", Car.Train.BrakeLine1PressurePSIorInHg);
             if (BrakeLine1PressurePSI >= 0)
                 s+= string.Format(" BC {0:F0} BP {1:F0}", CylPressurePSI, BrakeLine1PressurePSI);
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
@@ -212,7 +212,7 @@ namespace ORTS
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, bool immediateRelease)
         {
-            BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSI;
+            BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
             AuxResPressurePSI = BrakeLine1PressurePSI;
@@ -360,7 +360,7 @@ namespace ORTS
             {
                 if (car.BrakeSystem.BrakeLine1PressurePSI < 0)
                     continue;
-                car.BrakeSystem.BrakeLine1PressurePSI = train.BrakeLine1PressurePSI;
+                car.BrakeSystem.BrakeLine1PressurePSI = train.BrakeLine1PressurePSIorInHg;
                 car.BrakeSystem.BrakeLine2PressurePSI = train.BrakeLine2PressurePSI;
                 car.BrakeSystem.BrakeLine3PressurePSI = 0;
             }
@@ -372,7 +372,7 @@ namespace ORTS
             {   // pressure gradiant disabled
                 foreach (TrainCar car in train.Cars)
                     if (car.BrakeSystem.BrakeLine1PressurePSI >= 0)
-                        car.BrakeSystem.BrakeLine1PressurePSI = train.BrakeLine1PressurePSI;
+                        car.BrakeSystem.BrakeLine1PressurePSI = train.BrakeLine1PressurePSIorInHg;
             }
             else
             {   // approximate pressure gradiant in line1
@@ -383,11 +383,11 @@ namespace ORTS
                 float dt = elapsedClockSeconds / nSteps;
                 for (int i = 0; i < nSteps; i++)
                 {
-                    if (lead.BrakeSystem.BrakeLine1PressurePSI < train.BrakeLine1PressurePSI)
+                    if (lead.BrakeSystem.BrakeLine1PressurePSI < train.BrakeLine1PressurePSIorInHg)
                     {
                         float dp = dt * lead.BrakePipeChargingRatePSIpS;
-                        if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > train.BrakeLine1PressurePSI)
-                            dp = train.BrakeLine1PressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
+                        if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > train.BrakeLine1PressurePSIorInHg)
+                            dp = train.BrakeLine1PressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
                         if (lead.BrakeSystem.BrakeLine1PressurePSI + dp > lead.MainResPressurePSI)
                             dp = lead.MainResPressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
                         if (dp < 0)
@@ -395,7 +395,7 @@ namespace ORTS
                         lead.BrakeSystem.BrakeLine1PressurePSI += dp;
                         lead.MainResPressurePSI -= dp * lead.BrakeSystem.BrakePipeVolumeFT3 / lead.MainResVolumeFT3;
                     }
-                    else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.BrakeLine1PressurePSI)
+                    else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.BrakeLine1PressurePSIorInHg)
                         lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - dt / serviceTimeFactor);
                     TrainCar car0 = Car.Train.Cars[0];
                     float p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
@@ -532,7 +532,7 @@ namespace ORTS
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
             BrakePercent = percent;
-            Car.Train.BrakeLine1PressurePSI = 90 - 26 * BrakePercent / 100;
+            Car.Train.BrakeLine1PressurePSIorInHg = 90 - 26 * BrakePercent / 100;
         }
     }
     public class AirTwinPipe : AirSinglePipe
@@ -614,7 +614,7 @@ namespace ORTS
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem)
         {
-            string s = string.Format(" EQ {0:F0} psi", Car.Train.BrakeLine1PressurePSI);
+            string s = string.Format(" EQ {0:F0} psi", Car.Train.BrakeLine1PressurePSIorInHg);
             if (BrakeLine1PressurePSI >= 0)
                 s += string.Format(" BC {0:F0} BP {1:F0}", CylPressurePSI, BrakeLine1PressurePSI);
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
@@ -794,14 +794,12 @@ namespace ORTS
         float V2P(float v)
         {
             //return OneAtmospherePSIA * (1 - v / OneAtmosphereInHg);
-            //return KPa.ToPSI(1.0f - (KPa.FromInHg(v) / OneAtmosphereKPa));
             return KPa.ToPSI(OneAtmosphereKPa - KPa.FromInHg(v));
         }
         // convert pressure in psia to vacuum in inhg
         float P2V(float p)
         {
             //return OneAtmosphereInHg * (1 - p / OneAtmospherePSIA);
-            //return KPa.ToInHg(1.0f - (KPa.FromPSI(p) / OneAtmosphereKPa));
             return KPa.ToInHg(OneAtmosphereKPa - KPa.FromPSI(p));
         }
         // return vacuum reservior pressure adjusted for piston movement
@@ -822,7 +820,7 @@ namespace ORTS
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem)
         {
-            string s = string.Format(" V {0:F0} inHg", Car.Train.BrakeLine1PressurePSI);
+            string s = string.Format(" V {0:F0} inHg", Car.Train.BrakeLine1PressurePSIorInHg);
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += " EOT " + lastCarBrakeSystem.GetStatus();
             if (HandbrakePercent > 0)
@@ -883,7 +881,7 @@ namespace ORTS
 
         public override void Initialize(bool handbrakeOn, float maxVacuumInHg, bool immediateRelease)
         {
-            CylPressurePSIA = BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSI);
+            CylPressurePSIA = BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
             VacResPressurePSIA = V2P(maxVacuumInHg);
         }
         public override void Connect()
@@ -951,7 +949,7 @@ namespace ORTS
         {
             Train train = Car.Train;
             // train.BrakeLine1PressurePSI is really vacuum in inHg
-            float psia = V2P(train.BrakeLine1PressurePSI);
+            float psia = V2P(train.BrakeLine1PressurePSIorInHg);
             int nSteps = (int)(elapsedClockSeconds * 2 / PipeTimeFactorS + 1);
             float dt = elapsedClockSeconds / nSteps;
             for (int i = 0; i < nSteps; i++)
@@ -1000,7 +998,7 @@ namespace ORTS
         {
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
-            Car.Train.BrakeLine1PressurePSI = P2V(KPa.ToPSI(OneAtmosphereKPa) - MaxForcePressurePSI * (1 - percent / 100));
+            Car.Train.BrakeLine1PressurePSIorInHg = P2V(KPa.ToPSI(OneAtmosphereKPa) - MaxForcePressurePSI * (1 - percent / 100));
         }
     }
 }
