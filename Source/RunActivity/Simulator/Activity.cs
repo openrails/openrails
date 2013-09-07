@@ -533,8 +533,10 @@ namespace ORTS {
                     // Figure out the boarding time
                     double plannedBoardingS = (SchDepart - SchArrive).TotalSeconds;
                     double punctualBoardingS = (SchDepart - ActArrive).Value.TotalSeconds;
+                    double expectedBoardingS = plannedBoardingS > 0 ? plannedBoardingS : PlatformEnd1.PlatformMinWaitingTime;
                     BoardingS = punctualBoardingS;                                     // default is leave on time
-                    if( punctualBoardingS < plannedBoardingS ) {                       // if arriving late
+                    if (punctualBoardingS < expectedBoardingS)                         // if not enough time for boarding
+                    {
                         if( plannedBoardingS > 0 && plannedBoardingS < PlatformEnd1.PlatformMinWaitingTime ) { // and tight schedule
                             BoardingS = plannedBoardingS;                              // leave late with no recovery of time
                         } else {                                                       // generous schedule

@@ -1208,10 +1208,16 @@ namespace ORTS
                 else if (nextActionInfo != null &&
                  nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP &&
                  StationStops[0].SubrouteIndex == TCRoute.activeSubpath &&
-                 ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, PresentPosition[0].RouteListIndex) >= PresentPosition[0].RouteListIndex)
+                 ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, PresentPosition[0].RouteListIndex) <= PresentPosition[0].RouteListIndex)
                 // assume to be in station
                 {
                     MovementState = AI_MOVEMENT_STATE.STATION_STOP;
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number + " assumed to be in station : " +
+                            StationStops[0].PlatformItem.Name + "( present section = " + PresentPosition[0].TCSectionIndex +
+                            " ; station section = " + StationStops[0].TCSectionIndex + " )\n");
+                    }
                 }
                 else if (nextActionInfo == null || nextActionInfo.NextAction != AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
                 {
@@ -1223,6 +1229,12 @@ namespace ORTS
                                 FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
 #endif
 
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
+                                Number.ToString() + " , forced to BRAKING from invalid stop (now at " +
+                                FormatStrings.FormatDistance(PresentPosition[0].DistanceTravelledM, true) + ")\n");
+                    }
                 }
             }
         }
