@@ -1993,9 +1993,9 @@ namespace ORTS
                     {
                         if( Simulator.Settings.Alerter )
                         {
-                            if (TrainControlSystem.VigilanceWarning)
+                            if (TrainControlSystem.VigilanceAlarm)
                                 data = 1;
-                            else if (TrainControlSystem.VigilanceAlarm)
+                            else if (TrainControlSystem.VigilanceEmergency)
                                 data = 2;
                             else
                                 data = 0;

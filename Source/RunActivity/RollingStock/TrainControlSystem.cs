@@ -30,8 +30,8 @@ namespace ORTS
     public abstract class TrainControlSystem
     {
         // Following values are queried by CabView:
-        public bool VigilanceWarning = false;
         public bool VigilanceAlarm = false;
+        public bool VigilanceEmergency = false;
         public bool AlerterButtonPressed = false;
         public bool OverspeedWarning = false;
         public bool PenaltyApplication = false;
@@ -149,8 +149,8 @@ namespace ORTS
         
         protected class MonitoringDevice
         {
-            public float MonitorTimeS = 0;
-            public float AlarmTimeS = 0;
+            public float MonitorTimeS = 66;
+            public float AlarmTimeS = 60;
             public float PenaltyTimeS = 0;
             public bool EmergencyCutsPower = false;
             public bool EmergencyShutsDownEngine = false;
@@ -171,8 +171,8 @@ namespace ORTS
             {
                 stf.MustMatch("(");
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("monitoringdevicemonitortimelimit", ()=>{ MonitorTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, 60); }),
-                    new STFReader.TokenProcessor("monitoringdevicealarmtimelimit", ()=>{ AlarmTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, 6); }),
+                    new STFReader.TokenProcessor("monitoringdevicemonitortimelimit", ()=>{ MonitorTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, 66); }),
+                    new STFReader.TokenProcessor("monitoringdevicealarmtimelimit", ()=>{ AlarmTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, 60); }),
                     new STFReader.TokenProcessor("monitoringdevicepenaltytimelimit", ()=>{ PenaltyTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0); }),
                     new STFReader.TokenProcessor("monitoringdeviceappliescutspower", ()=>{ EmergencyCutsPower = stf.ReadBoolBlock(false); }),
                     new STFReader.TokenProcessor("monitoringdeviceappliesshutsdownengine", ()=>{ EmergencyShutsDownEngine = stf.ReadBoolBlock(false); }),
@@ -195,11 +195,13 @@ namespace ORTS
 
     public class MSTSTrainControlSystem : TrainControlSystem
     {
-        Timer VigilanceMonitorTimer = new Timer();
         Timer VigilanceAlarmTimer = new Timer();
+        Timer VigilanceEmergencyTimer = new Timer();
         Timer VigilancePenaltyTimer = new Timer();
         Timer OverspeedAlarmTimer = new Timer();
         Timer OverspeedPenaltyTimer = new Timer();
+
+        float VigilanceAlarmTimeoutS = 0;
 
         public MSTSTrainControlSystem(MSTSLocomotive mstsLocomotive)
         {
@@ -210,8 +212,8 @@ namespace ORTS
         public MSTSTrainControlSystem(MSTSTrainControlSystem other) :
             base(other)
         {
-            VigilanceMonitorTimer = other.VigilanceMonitorTimer;
             VigilanceAlarmTimer = other.VigilanceAlarmTimer;
+            VigilanceEmergencyTimer = other.VigilanceEmergencyTimer;
             VigilancePenaltyTimer = other.VigilancePenaltyTimer;
             OverspeedAlarmTimer = other.OverspeedAlarmTimer;
             OverspeedPenaltyTimer = other.OverspeedPenaltyTimer;
@@ -228,13 +230,16 @@ namespace ORTS
             if (AWSMonitor == null)
                 AWSMonitor = new MonitoringDevice();
 
-            VigilanceMonitorTimer.Setup(MSTSLocomotive, VigilanceMonitor.MonitorTimeS);
+            if (VigilanceMonitor.MonitorTimeS > VigilanceMonitor.AlarmTimeS)
+                VigilanceAlarmTimeoutS = VigilanceMonitor.MonitorTimeS - VigilanceMonitor.AlarmTimeS;
+
             VigilanceAlarmTimer.Setup(MSTSLocomotive, VigilanceMonitor.AlarmTimeS);
+            VigilanceEmergencyTimer.Setup(MSTSLocomotive, VigilanceAlarmTimeoutS);
             VigilancePenaltyTimer.Setup(MSTSLocomotive, VigilanceMonitor.PenaltyTimeS);
             OverspeedAlarmTimer.Setup(MSTSLocomotive, Math.Max(OverspeedMonitor.AlarmTimeS, OverspeedMonitor.AlarmTimeBeforeOverspeedS));
             OverspeedPenaltyTimer.Setup(MSTSLocomotive, OverspeedMonitor.PenaltyTimeS);
 
-            VigilanceMonitorTimer.Start();
+            VigilanceAlarmTimer.Start();
             
             TrainControlSystemIsActive = true;
         }
@@ -252,10 +257,11 @@ namespace ORTS
         
         public override void TryReset()
         {
-            if (!TrainControlSystemIsActive || VigilanceAlarm)
+            if (!TrainControlSystemIsActive || VigilanceEmergency)
                 return;
 
-            VigilanceMonitorTimer.Start();
+            VigilanceAlarmTimer.Start();
+            VigilanceAlarm = VigilanceAlarmTimer.Triggered;
 
             if (MSTSLocomotive.AlerterSnd)
                 MSTSLocomotive.SignalEvent(Event.VigilanceAlarmOff);
@@ -283,10 +289,10 @@ namespace ORTS
             if (!Simulator.Settings.Alerter)
                 return;
 
-            VigilanceWarning = VigilanceMonitorTimer.Triggered;
             VigilanceAlarm = VigilanceAlarmTimer.Triggered;
+            VigilanceEmergency = VigilanceEmergencyTimer.Triggered;
 
-            if (VigilanceAlarm)
+            if (VigilanceEmergency)
             {
                 if (VigilanceMonitor.AppliesEmergencyBrake)
                     SetEmergency();
@@ -297,7 +303,7 @@ namespace ORTS
                     VigilancePenaltyTimer.Start();
                 if (Math.Abs(MSTSLocomotive.SpeedMpS) < 0.1f && VigilancePenaltyTimer.Triggered)
                 {
-                    VigilanceAlarmTimer.Stop();
+                    VigilanceEmergencyTimer.Stop();
                     VigilancePenaltyTimer.Stop();
                 }
                 if (MSTSLocomotive.AlerterSnd)
@@ -305,24 +311,23 @@ namespace ORTS
                 return;
             }
 
-            if (VigilanceWarning)
+            if (VigilanceAlarm)
             {
                 if (Simulator.Confirmer.Viewer.Camera.Style != Camera.Styles.Cab // Auto-clear alerter when not in cabview
                     || VigilanceMonitor.ResetOnZeroSpeed && Math.Abs(MSTSLocomotive.SpeedMpS) < 0.1f
                     || Math.Abs(MSTSLocomotive.SpeedMpS) <= VigilanceMonitor.ResetLevelMpS)
                 {
                     TryReset();
-                    VigilanceWarning = VigilanceMonitorTimer.Triggered;
                     return;
                 }
-                if (!VigilanceAlarmTimer.Started)
-                    VigilanceAlarmTimer.Start();
+                if (!VigilanceEmergencyTimer.Started)
+                    VigilanceEmergencyTimer.Start();
                 if (!MSTSLocomotive.AlerterSnd)
                     MSTSLocomotive.SignalEvent(Event.VigilanceAlarmOn);
             }
             else
             {
-                VigilanceAlarmTimer.Stop();
+                VigilanceEmergencyTimer.Stop();
                 if (VigilancePenaltyTimer.Triggered)
                     VigilancePenaltyTimer.Stop();
             }
