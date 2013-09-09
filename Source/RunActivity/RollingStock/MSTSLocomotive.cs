@@ -2017,6 +2017,11 @@ namespace ORTS
                         data = EmergencyButtonPressed ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.DOORS_DISPLAY:
+                    {
+                        data = DoorLeftOpen | DoorRightOpen ? 1 : 0;
+                        break;
+                    }
                 case CABViewControlTypes.SANDERS:
                     {
                         data = Sander ? 1 : 0;
@@ -3645,6 +3650,7 @@ namespace ORTS
                 case CABViewControlTypes.OVERSPEED:
                 case CABViewControlTypes.PENALTY_APP:
                 case CABViewControlTypes.EMERGENCY_BRAKE:
+                case CABViewControlTypes.DOORS_DISPLAY:
                     index = (int)data;
                     break;
             }
