@@ -412,18 +412,16 @@ namespace ORTS
                 //Increasing, check if the notch has changed
                 if ((direction > 0) && (CurrentNotch < Notches.Count - 1) && (IntermediateValue >= Notches[CurrentNotch + 1].Value))
                 {
-                    //update notch
-                    CurrentNotch++;
+                    // Prevent TrainBrake to continuously switch to emergency
+                    if (Notches[CurrentNotch + 1].Type == MSTSNotchType.Emergency)
+                        IntermediateValue = Notches[CurrentNotch + 1].Value - StepSize;
+                    else
+                        CurrentNotch++;
                 }
                 //decreasing, again check if the current notch has changed
                 else if((direction < 0) && (CurrentNotch > 0) && (IntermediateValue < Notches[CurrentNotch].Value))
                 {
-                    if (Notches[CurrentNotch].Smooth && !Notches[CurrentNotch - 1].Smooth)
-                        IntermediateValue = Notches[CurrentNotch].Value;
-                    else
-                    {
-                        CurrentNotch--;
-                    }
+                    CurrentNotch--;
                 }
 
                 //If the notch is smooth, we use intermediate value that is being update smooth thought the frames
