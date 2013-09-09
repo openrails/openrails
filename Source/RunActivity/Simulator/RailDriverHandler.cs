@@ -403,7 +403,7 @@ namespace ORTS
             //Commands[(int)UserCommands. gear shift] = new RailDriverUserCommand(4, 0x04);
             //Commands[(int)UserCommands. gear shift] = new RailDriverUserCommand(4, 0x08);
             //Commands[(int)UserCommands.ControlEmergency] = new RailDriverUserCommand(4, 0x30); handled elsewhere
-            //Commands[(int)UserCommands. alerter] = new RailDriverUserCommand(4, 0x40);
+            Commands[(int)UserCommands. ControlAlerter] = new RailDriverUserCommand(4, 0x40);
             Commands[(int)UserCommands.ControlSander] = new RailDriverUserCommand(4, 0x80);
             Commands[(int)UserCommands.ControlPantograph1] = new RailDriverUserCommand(5, 0x01);
             Commands[(int)UserCommands.ControlBell] = new RailDriverUserCommand(5, 0x02);
