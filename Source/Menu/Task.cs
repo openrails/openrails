@@ -117,8 +117,12 @@ namespace ORTS
 
 #if TASK_CATCH_EXCEPTIONS_AND_THREADED
             // If the control we've been passed is still setting itself up, we must wait before invoking the callbacks.
-            while (!Control.IsHandleCreated)
+            while (!Control.IsHandleCreated && !Control.IsDisposed)
                 Thread.Sleep(100);
+
+            // The control we were meant to be informing has gone away entirely, so we must give up here.
+            if (Control.IsDisposed)
+                return;
 #endif
 
 #if TASK_CATCH_EXCEPTIONS_AND_THREADED
