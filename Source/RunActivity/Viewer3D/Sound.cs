@@ -516,7 +516,8 @@ namespace ORTS
             {
                 if (WorldLocation != null)
                 {
-                    if (DistanceSquared < ActivationConditions.Distance * ActivationConditions.Distance &&
+                    // (ActivationConditions.Distance == 0) means distance checking disabled
+                    if ((ActivationConditions.Distance == 0 || DistanceSquared < ActivationConditions.Distance * ActivationConditions.Distance) &&
                         DistanceSquared < CUTOFFDISTANCE)
                         return true;
                 }
