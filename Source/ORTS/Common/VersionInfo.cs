@@ -16,12 +16,10 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.IO;
-using System.Text;
-using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace ORTS.Common
 {
@@ -30,6 +28,7 @@ namespace ORTS.Common
     /// </summary>
     public static class VersionInfo
     {
+        static readonly string ApplicationPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
         static readonly string Revision = GetRevision("Revision.txt");
         public static readonly string Version = GetVersion("Version.txt");
         public static readonly string Build = GetBuild("OpenRails.exe", "Menu.exe", "RunActivity.exe");
@@ -38,7 +37,7 @@ namespace ORTS.Common
         {
             try
             {
-                using (var f = new StreamReader(fileName))
+                using (var f = new StreamReader(Path.Combine(ApplicationPath, fileName)))
                 {
                     var revision = f.ReadLine().Trim();
                     if (revision.StartsWith("$Revision:") && revision.EndsWith("$") && !revision.Contains(" 000 "))
@@ -55,7 +54,7 @@ namespace ORTS.Common
         {
             try
             {
-                using (var f = new StreamReader(fileName))
+                using (var f = new StreamReader(Path.Combine(ApplicationPath, fileName)))
                 {
                     var version = f.ReadLine();
                     if (!String.IsNullOrEmpty(Revision))
@@ -75,7 +74,7 @@ namespace ORTS.Common
             {
                 try
                 {
-                    var version = FileVersionInfo.GetVersionInfo(fileName);
+                    var version = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationPath, fileName));
                     builds.Add(new TimeSpan(version.ProductBuildPart, 0, 0, version.ProductPrivatePart * 2), version.ProductVersion);
                 }
                 catch
