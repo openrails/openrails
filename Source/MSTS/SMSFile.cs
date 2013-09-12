@@ -99,7 +99,7 @@ namespace MSTS
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("activation", ()=>{ Activation = new Activation(stf); }),
                 new STFReader.TokenProcessor("deactivation", ()=>{ Deactivation = new Deactivation(stf); }),
-                new STFReader.TokenProcessor("streams", ()=>{ Streams = new SMSStreams(stf, Volume); }),
+                new STFReader.TokenProcessor("streams", ()=>{ Streams = new SMSStreams(stf); }),
                 new STFReader.TokenProcessor("volume", ()=>{ Volume = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("stereo", ()=>{ Stereo = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("ignore3d", ()=>{ Ignore3D = stf.ReadBoolBlock(true); }),
@@ -137,7 +137,7 @@ namespace MSTS
 
     public class SMSStreams : List<SMSStream>
     {
-        public SMSStreams(STFReader stf, float VolumeOfScGroup)
+        public SMSStreams(STFReader stf)
         {
             stf.MustMatch("(");
             var count = stf.ReadInt(null);
@@ -146,7 +146,7 @@ namespace MSTS
                     if (--count < 0)
                         STFException.TraceWarning(stf, "Skipped extra Stream");
                     else
-                        Add(new SMSStream(stf, VolumeOfScGroup));
+                        Add(new SMSStream(stf));
                 }),
             });
             if (count > 0)
@@ -162,10 +162,9 @@ namespace MSTS
         public List<VolumeCurve> VolumeCurves = new List<VolumeCurve>();
         public FrequencyCurve FrequencyCurve = null;
 
-        public SMSStream(STFReader stf, float VolumeOfScGroup)
+        public SMSStream(STFReader stf)
         {
             stf.MustMatch("(");
-            Volume = VolumeOfScGroup;
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("priority", ()=>{ Priority = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("triggers", ()=>{ Triggers = new Triggers(stf); }),

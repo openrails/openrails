@@ -766,10 +766,6 @@ namespace ORTS
                     float y = Interpolate(x, MSTSStream.FrequencyCurve);
 
                     ALSoundSource.PlaybackSpeed = y / ALSoundSource.SampleRate;
-                    if (y > 16000)
-                    {
-                        Console.Write("");
-                    }
                     NeedsFrequentUpdate = x != 0;
                 }
             }
@@ -789,9 +785,6 @@ namespace ORTS
 
                     volume *= Interpolate(x, MSTSStream.VolumeCurves[i]);
                 }
-
-            if (SoundSource.IsntThisCabView)
-                volume *= 0.75f;
 
             if (SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External)
                 volume *= 0.5f;
