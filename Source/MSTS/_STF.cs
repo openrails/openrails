@@ -224,6 +224,8 @@ namespace MSTS
                     STFException.TraceWarning(this, "Some of this STF file was not parsed.");
 #endif
                 streamSTF.Close(); streamSTF = null;
+                if (includeReader != null)
+                    includeReader.Dispose();
                 itemBuilder.Length = 0;
                 itemBuilder.Capacity = 0;
             }

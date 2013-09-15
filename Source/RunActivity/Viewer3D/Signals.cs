@@ -220,7 +220,11 @@ namespace ORTS
 
             public void Dispose()
             {
-                if (Sound != null) Viewer.SoundProcess.RemoveSoundSource(Sound);
+                if (Sound != null)
+                {
+                    Viewer.SoundProcess.RemoveSoundSource(Sound);
+                    Sound.Dispose();
+                }
             }
 
             #endregion

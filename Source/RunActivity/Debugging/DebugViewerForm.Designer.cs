@@ -15,7 +15,17 @@
       {
          if (disposing && (components != null))
          {
-            components.Dispose();
+             components.Dispose();
+             grayPen.Dispose();
+             greenPen.Dispose();
+             orangePen.Dispose();
+             redPen.Dispose();
+             pathPen.Dispose();
+             trainPen.Dispose();
+             trainBrush.Dispose();
+             trainFont.Dispose();
+             sidingBrush.Dispose();
+             sidingFont.Dispose();
          }
          base.Dispose(disposing);
       }
