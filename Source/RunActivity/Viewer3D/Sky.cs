@@ -18,17 +18,8 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 
 namespace ORTS
 {
@@ -187,23 +178,22 @@ namespace ORTS
 
 			if (UserInput.IsDown(UserCommands.DebugOvercastIncrease) && !MultiPlayer.MPManager.IsClient())
 			{
-                fogCoeff /= 1.02f;
-                if (fogCoeff < 0.002f) fogCoeff = 0.002f;
+                fogCoeff = MathHelper.Clamp(fogCoeff / 1.02f, 0.002f, 1);
                 overcast = MathHelper.Clamp(overcast + 0.005f, 0, 1);
 			}
             if (UserInput.IsDown(UserCommands.DebugFogIncrease) && !MultiPlayer.MPManager.IsClient())
             {
-                fogCoeff /= 1.05f;
+                fogCoeff = MathHelper.Clamp(fogCoeff / 1.05f, 0.002f, 1);
                 if (fogCoeff < 0.002f) fogCoeff = 0.002f;
             }
             if (UserInput.IsDown(UserCommands.DebugFogDecrease) && !MultiPlayer.MPManager.IsClient())
             {
-                fogCoeff *= 1.05f;
+                fogCoeff = MathHelper.Clamp(fogCoeff * 1.05f, 0.002f, 1);
             }
             if (UserInput.IsDown(UserCommands.DebugOvercastDecrease) && !MultiPlayer.MPManager.IsClient())
 			{
-				overcast = MathHelper.Clamp(overcast - 0.005f, 0, 1);
-                fogCoeff *= 1.02f;
+                fogCoeff = MathHelper.Clamp(fogCoeff * 1.02f, 0.002f, 1);
+                overcast = MathHelper.Clamp(overcast - 0.005f, 0, 1);
 			}
 			if (UserInput.IsDown(UserCommands.DebugClockForwards) && !MultiPlayer.MPManager.IsMultiPlayer()) //dosen't make sense in MP mode
 			{

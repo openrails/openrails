@@ -293,11 +293,7 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            if (primitive is TerrainPatch && objectRadius > 5000)//this is for LOTiles, as they are large. 
-                                    //It has been checked by FOV in Tiles prepare frame function, and also they will not cast shadows
-                AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
-
-            else if (RenderProcess.Viewer.Camera.InRange(mstsLocation, objectRadius, objectViewingDistance))
+            if (float.IsPositiveInfinity(objectViewingDistance) || RenderProcess.Viewer.Camera.InRange(mstsLocation, objectRadius, objectViewingDistance))
             {
                 if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, objectRadius))
                     AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
@@ -585,20 +581,24 @@ namespace ORTS
         /// <param name="logging"></param>
         void DrawSimple(GraphicsDevice graphicsDevice, bool logging)
         {
-            if (logging) Console.WriteLine("  DrawSimple {");
             if (RenderProcess.Viewer.Settings.DistantMountains)
             {
+                if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
                 graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
-                DrawSequencesDM(graphicsDevice);
+                DrawSequencesDistantMountains(graphicsDevice, logging);
+                if (logging) Console.WriteLine("  }");
+                if (logging) Console.WriteLine("  DrawSimple {");
                 graphicsDevice.Clear(ClearOptions.DepthBuffer, SharedMaterialManager.FogColor, 1, 0);
                 DrawSequences(graphicsDevice, logging);
+                if (logging) Console.WriteLine("  }");
             }
             else
             {
+                if (logging) Console.WriteLine("  DrawSimple {");
                 graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
                 DrawSequences(graphicsDevice, logging);
+                if (logging) Console.WriteLine("  }");
             }
-            if (logging) Console.WriteLine("  }");
         }
 
         void DrawSequences(GraphicsDevice graphicsDevice, bool logging)
@@ -657,15 +657,8 @@ namespace ORTS
                     }
                     else
                     {
-                        if (RenderProcess.Viewer.Settings.DistantMountains)
-                        {
-                            if (sequenceMaterial.Key is TerrainMaterial || sequenceMaterial.Key is TerrainSharedMaterial)
-                            {
-                                var tm = sequenceMaterial.Key as TerrainMaterial;
-                                if (tm.DM) continue;
-                            }
-                            else if (sequenceMaterial.Key is SkyMaterial) continue;
-                        }
+                        if (RenderProcess.Viewer.Settings.DistantMountains && (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial))
+                            continue;
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
                         if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
@@ -680,33 +673,29 @@ namespace ORTS
             }
         }
 
-        void DrawSequencesDM(GraphicsDevice graphicsDevice)
+        void DrawSequencesDistantMountains(GraphicsDevice graphicsDevice, bool logging)
         {
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
             {
+                if (logging) Console.WriteLine("    {0} {{", (RenderPrimitiveSequence)i);
                 var sequence = RenderItems[i];
                 foreach (var sequenceMaterial in sequence)
                 {
                     if (sequenceMaterial.Value.Count == 0)
                         continue;
-                    if (sequenceMaterial.Key == DummyBlendedMaterial)
+                    if (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial)
                     {
-                    }
-                    else
-                    {
-                        if (sequenceMaterial.Key is TerrainMaterial || sequenceMaterial.Key is TerrainSharedMaterial || sequenceMaterial.Key is SkyMaterial)
-                        {
-                            var tm = sequenceMaterial.Key as TerrainMaterial;
-                            if (tm == null || tm.DM)
-                            {
-                                // Opaque: single material, render in one go.
-                                sequenceMaterial.Key.SetState(graphicsDevice, null);
-                                sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref Camera.XNADMProjection);
-                                sequenceMaterial.Key.ResetState(graphicsDevice);
-                            }
-                        }
+                        // Opaque: single material, render in one go.
+                        sequenceMaterial.Key.SetState(graphicsDevice, null);
+                        if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
+                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref Camera.XNADMProjection);
+                        sequenceMaterial.Key.ResetState(graphicsDevice);
+#if DEBUG_RENDER_STATE
+						DebugRenderState(graphicsDevice.RenderState, sequenceMaterial.Key.ToString());
+#endif
                     }
                 }
+                if (logging) Console.WriteLine("    }");
             }
         }
 

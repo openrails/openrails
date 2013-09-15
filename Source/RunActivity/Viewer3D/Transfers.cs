@@ -52,10 +52,8 @@ namespace ORTS
             var dTileX = Location.TileX - Viewer.Camera.TileX;
             var dTileZ = Location.TileZ - Viewer.Camera.TileZ;
             var mstsLocation = Location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
-            var xnaTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-            Matrix.Multiply(ref Location.XNAMatrix, ref xnaTileTranslation, out xnaTileTranslation);
-
-            frame.AddAutoPrimitive(mstsLocation, Radius, Viewer.Settings.ViewingDistance, Material, Primitive, RenderPrimitiveGroup.World, ref xnaTileTranslation, Flags);
+            var xnaMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
+            frame.AddAutoPrimitive(mstsLocation, Radius, float.MaxValue, Material, Primitive, RenderPrimitiveGroup.World, ref xnaMatrix, Flags);
         }
 
         internal override void Mark()
@@ -70,6 +68,8 @@ namespace ORTS
         readonly VertexDeclaration VertexDeclaration;
         readonly VertexBuffer VertexBuffer;
         readonly IndexBuffer IndexBuffer;
+        readonly int VertexCount;
+        readonly int PrimitiveCount;
 
         public TransferMesh(Viewer3D viewer, float width, float height, WorldPosition position)
         {
@@ -90,7 +90,7 @@ namespace ORTS
                 {
                     var i = x * (maxZ - minZ + 1) + z;
                     verticies[i].Position.X = (x + minX) * 8 - center.X;
-                    verticies[i].Position.Y = viewer.Tiles.GetElevation(position.TileX, position.TileZ, 128 + x + minX, 128 - z - minZ) - center.Y;
+                    verticies[i].Position.Y = viewer.Tiles.GetElevation(position.TileX, position.TileZ, (x + minX) * 8, (z + minZ) * 8) - center.Y;
                     verticies[i].Position.Z = -(z + minZ) * 8 + center.Z;
 
                     var tc = new Vector3(verticies[i].Position.X, 0, verticies[i].Position.Z);
@@ -106,7 +106,7 @@ namespace ORTS
                 for (var z = 0; z < maxZ - minZ; z++)
                 {
                     // Condition must match TerrainPatch.GetIndexBuffer's condition.
-                    if ((((x + minX) & 1) == ((z + minZ) & 1)))
+                    if (((x + minX) & 1) == ((z + minZ) & 1))
                     {
                         indicies[(x * (maxZ - minZ) + z) * 6 + 0] = (short)((x + 0) * (maxZ - minZ + 1) + (z + 0));
                         indicies[(x * (maxZ - minZ) + z) * 6 + 1] = (short)((x + 1) * (maxZ - minZ + 1) + (z + 1));
@@ -128,10 +128,13 @@ namespace ORTS
             }
 
             VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionTexture.VertexElements);
-            VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, VertexPositionTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
+            VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionTexture), verticies.Length, BufferUsage.WriteOnly);
             VertexBuffer.SetData(verticies);
+            VertexCount = verticies.Length;
+
             IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short), indicies.Length, BufferUsage.WriteOnly);
             IndexBuffer.SetData(indicies);
+            PrimitiveCount = indicies.Length / 3;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -139,7 +142,7 @@ namespace ORTS
             graphicsDevice.VertexDeclaration = VertexDeclaration;
             graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionTexture.SizeInBytes);
             graphicsDevice.Indices = IndexBuffer;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, VertexBuffer.SizeInBytes / VertexPositionTexture.SizeInBytes, 0, IndexBuffer.SizeInBytes / sizeof(short) / 3);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, VertexCount, 0, PrimitiveCount);
         }
     }
 

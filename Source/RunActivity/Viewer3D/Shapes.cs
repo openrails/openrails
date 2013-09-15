@@ -1245,10 +1245,8 @@ namespace ORTS
                 var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
 
                 // If set, extend the outer LOD to the max. viewing distance
-                if (Viewer.Settings.LODViewingExtention)
-                {
-                    if (chosenDistanceLevelIndex == lodControl.DistanceLevels.Length - 1) chosenDistanceLevel.ViewingDistance = Viewer.Settings.ViewingDistance;
-                }
+                if (Viewer.Settings.LODViewingExtention && chosenDistanceLevelIndex == lodControl.DistanceLevels.Length - 1)
+                    chosenDistanceLevel.ViewingDistance = float.MaxValue;
 
                 // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
                 foreach (var subObject in chosenDistanceLevel.SubObjects.Where((so, i) => (subObjVisible == null || subObjVisible[i]) && (i != 1 || !HasNightSubObj || Viewer.MaterialManager.sunDirection.Y < 0)))
@@ -1266,8 +1264,7 @@ namespace ORTS
 
                         // TODO make shadows depend on shape overrides
 
-                        frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance,
-                            shapePrimitive.Material, shapePrimitive, RenderPrimitiveGroup.World, ref xnaMatrix, flags);
+                        frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance, shapePrimitive.Material, shapePrimitive, RenderPrimitiveGroup.World, ref xnaMatrix, flags);
                     }
                 }
             }

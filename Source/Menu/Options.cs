@@ -95,8 +95,7 @@ namespace ORTS
             MinLengthChoice.Value = Settings.SuperElevationMinLen;
             SuperElevationGauge.Value = Settings.SuperElevationGauge;
             distanceMountain.Checked = settings.DistantMountains;
-            DMDistance.Value = settings.DistantMountainsViewingTiles * 2;
-            DMLoweringValue.Value = settings.DistantMountainsLoweringValue;
+            DMDistance.Value = settings.DistantMountainsViewingDistance / 1000;
             NormalViewingDistance.Value = settings.ViewingDistance;
             LODExtention.Checked = settings.LODViewingExtention;
             checkBoxPerformanceTuner.Checked = settings.PerformanceTuner;
@@ -321,8 +320,7 @@ namespace ORTS
             Settings.SuperElevationMinLen = (int)MinLengthChoice.Value;
             Settings.SuperElevationGauge = (int)SuperElevationGauge.Value;
             Settings.DistantMountains = distanceMountain.Checked;
-            Settings.DistantMountainsViewingTiles = (int) DMDistance.Value / 2;
-            Settings.DistantMountainsLoweringValue = (int)DMLoweringValue.Value;
+            Settings.DistantMountainsViewingDistance = (int)DMDistance.Value * 1000;
             Settings.ViewingDistance = (int)NormalViewingDistance.Value;
             Settings.LODViewingExtention = LODExtention.Checked;
             Settings.PerformanceTuner = checkBoxPerformanceTuner.Checked;

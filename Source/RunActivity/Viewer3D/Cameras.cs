@@ -18,8 +18,8 @@
 // This file is the responsibility of the 3D & Environment Team.
 
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -154,7 +154,7 @@ namespace ORTS
             var farPlaneDistance = SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
             var fovWidthRadians = MathHelper.ToRadians(Viewer.Settings.ViewingFOV);
             if (Viewer.Settings.DistantMountains)
-                XNADMProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, Viewer.Settings.ViewingDistance, 2048 * Viewer.Settings.DistantMountainsViewingTiles);
+                XNADMProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, 1, Viewer.Settings.DistantMountainsViewingDistance);
             xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, Viewer.Settings.ViewingDistance);
             XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, farPlaneDistance);    // TODO remove? 
             frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // Precompute the right edge of the view frustrum.

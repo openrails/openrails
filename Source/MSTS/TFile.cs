@@ -15,29 +15,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// Contributors
-//     2009-12-06  Rob Lane
-
-using System;
 using System.IO;
-using System.Diagnostics;
-using System.Collections;
 using System.Text;
-using System.Collections.Generic;
-
 
 namespace MSTS
 {
+    public class terrain_water_height_offset
+    {
+        public readonly float SW;
+        public readonly float SE;
+        public readonly float NE;
+        public readonly float NW;
 
-
-	public class terrain_water_height_offset
-	{
-		public float SW = 0;
-		public float SE = 0;
-		public float NE = 0;
-		public float NW = 0;
-
-        public terrain_water_height_offset( SBR block )
+        public terrain_water_height_offset(SBR block)
         {
             block.VerifyID(TokenID.terrain_water_height_offset);
             if (!block.EndOfBlock()) SW = block.ReadFloat();
@@ -45,23 +35,23 @@ namespace MSTS
             if (!block.EndOfBlock()) NE = block.ReadFloat();
             if (!block.EndOfBlock()) NW = block.ReadFloat();
         }
-	} //class terrain_water_height_offset
+    }
 
-	public class terrain
-	{
-		public float terrain_errthreshold_scale = 1.0f;
-		public terrain_water_height_offset terrain_water_height_offset = null;
-		public float terrain_alwaysselect_maxdist = 0.0f;
-		public terrain_samples terrain_samples = null;
-		public ArrayList terrain_shaders = null;
-		public terrain_patchset[] terrain_patchsets = null;
+    public class terrain
+    {
+        public readonly float terrain_errthreshold_scale = 1;
+        public readonly terrain_water_height_offset terrain_water_height_offset;
+        public readonly float terrain_alwaysselect_maxdist;
+        public readonly terrain_samples terrain_samples;
+        public readonly terrain_shader[] terrain_shaders;
+        public readonly terrain_patchset[] terrain_patchsets;
 
         public terrain(SBR block)
         {
             block.VerifyID(TokenID.terrain);
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -78,57 +68,49 @@ namespace MSTS
                             terrain_samples = new terrain_samples(subBlock);
                             break;
                         case TokenID.terrain_shaders:
-                            {
-                                uint count = subBlock.ReadUInt();
-                                terrain_shaders = new ArrayList((int)count);
-                                for (int i = 0; i < count; ++i) 
-                                    using( SBR terrain_shadersBlock = subBlock.ReadSubBlock() )
-                                        terrain_shaders.Add(new terrain_shader(terrain_shadersBlock));
-                                if (!subBlock.EndOfBlock()) subBlock.Skip();
-                                break;
-                            }
+                            terrain_shaders = new terrain_shader[subBlock.ReadInt()];
+                            for (var i = 0; i < terrain_shaders.Length; ++i)
+                                using (var terrain_shadersBlock = subBlock.ReadSubBlock())
+                                    terrain_shaders[i] = new terrain_shader(terrain_shadersBlock);
+                            if (!subBlock.EndOfBlock())
+                                subBlock.Skip();
+                            break;
                         case TokenID.terrain_patches:
+                            using (var patch_sets_Block = subBlock.ReadSubBlock())
                             {
-                                using( SBR patch_sets_Block = subBlock.ReadSubBlock() )
-                                {
-                                    uint patch_sets_count = patch_sets_Block.ReadUInt();
-                                    terrain_patchsets = new terrain_patchset[patch_sets_count];
-                                    for (int i = 0; i < patch_sets_count; ++i) 
-                                        using( SBR terrain_patchsetBlock = patch_sets_Block.ReadSubBlock() )
-                                            terrain_patchsets[i] = new terrain_patchset(terrain_patchsetBlock);
-                                    if (!subBlock.EndOfBlock()) subBlock.Skip();
-                                }
-                                break;
+                                terrain_patchsets = new terrain_patchset[patch_sets_Block.ReadInt()];
+                                for (var i = 0; i < terrain_patchsets.Length; ++i)
+                                    using (var terrain_patchsetBlock = patch_sets_Block.ReadSubBlock())
+                                        terrain_patchsets[i] = new terrain_patchset(terrain_patchsetBlock);
+                                if (!subBlock.EndOfBlock())
+                                    subBlock.Skip();
                             }
+                            break;
                     }
                 }
             }
-        } 
+        }
+    }
 
-    } //class terrain
+    // TODO fails on = "c:\\program files\\microsoft games\\train simulator\\ROUTES\\EUROPE1\\Tiles\\-11cc0604.t") Line 330 + 0x18 bytes	C#
 
-// TODO fails on = "c:\\program files\\microsoft games\\train simulator\\ROUTES\\EUROPE1\\Tiles\\-11cc0604.t") Line 330 + 0x18 bytes	C#
-
-
-	public class terrain_samples
-	{
-		public int terrain_nsamples;
-		public float terrain_sample_rotation;
-		public float terrain_sample_floor;
-		public float terrain_sample_scale;
-		public float terrain_sample_size;
-		public string terrain_sample_ybuffer = null;
-		public string terrain_sample_ebuffer = null;
-		public string terrain_sample_nbuffer = null;
-		public byte[] terrain_sample_asbuffer = null; // don't know what these do
-		public byte[] terrain_sample_fbuffer = null;  // don't know what these do
+    public class terrain_samples
+    {
+        public readonly int terrain_nsamples;
+        public readonly float terrain_sample_rotation;
+        public readonly float terrain_sample_floor;
+        public readonly float terrain_sample_scale;
+        public readonly float terrain_sample_size;
+        public readonly string terrain_sample_ybuffer;
+        public readonly string terrain_sample_ebuffer;
+        public readonly string terrain_sample_nbuffer;
 
         public terrain_samples(SBR block)
         {
             block.VerifyID(TokenID.terrain_samples);
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -147,12 +129,6 @@ namespace MSTS
                         case TokenID.terrain_sample_size:
                             terrain_sample_size = subBlock.ReadFloat();
                             break;
-                        case TokenID.terrain_sample_asbuffer:
-                            subBlock.Skip(); // TODO parse this
-                            break;
-                        case TokenID.terrain_sample_fbuffer:
-                            subBlock.Skip(); // TODO parse this
-                            break;
                         case TokenID.terrain_sample_ybuffer:
                             terrain_sample_ybuffer = subBlock.ReadString();
                             break;
@@ -162,7 +138,13 @@ namespace MSTS
                         case TokenID.terrain_sample_nbuffer:
                             terrain_sample_nbuffer = subBlock.ReadString();
                             break;
-                        case (TokenID)282:  // TODO, figure out what this is and handle it
+                        case TokenID.terrain_sample_asbuffer:
+                            subBlock.Skip(); // TODO parse this
+                            break;
+                        case TokenID.terrain_sample_fbuffer:
+                            subBlock.Skip(); // TODO parse this
+                            break;
+                        case (TokenID)282:  // TODO figure out what this is and handle it
                             subBlock.Skip();
                             break;
                         default:
@@ -170,18 +152,16 @@ namespace MSTS
                     }
                 }
             }
-
         }
+    }
 
-	} //class terrain_samples
+    public class terrain_texslot
+    {
+        public readonly string Filename;
+        public readonly int A;
+        public readonly int B;
 
-	public class terrain_texslot
-	{
-		public string Filename;
-		public int A;
-		public int B;
-
-        public terrain_texslot( SBR block)
+        public terrain_texslot(SBR block)
         {
             block.VerifyID(TokenID.terrain_texslot);
             Filename = block.ReadString();
@@ -189,17 +169,16 @@ namespace MSTS
             B = block.ReadInt();
             block.Skip();
         }
+    }
 
-  	} // class terrain_texslot
-	
-	public class terrain_uvcalc
-	{
-		public int A;
-		public int B;
-		public int C;
-		public int D;
+    public class terrain_uvcalc
+    {
+        public readonly int A;
+        public readonly int B;
+        public readonly int C;
+        public readonly int D;
 
-        public terrain_uvcalc( SBR block)
+        public terrain_uvcalc(SBR block)
         {
             block.VerifyID(TokenID.terrain_uvcalc);
             A = block.ReadInt();
@@ -207,64 +186,54 @@ namespace MSTS
             C = block.ReadInt();
             D = block.ReadInt();
         }
-	} //public class terrain_uvcalc
+    }
 
-	public class terrain_patchset_patch
-	{
-		public uint Flags;               // 1 = don't draw
-										 // 10000C0  = draw water
-		public float CenterX, CenterZ;
-		public float AverageY, RangeY, FactorY; // don't really know the purpose of tese
-		public int iShader;
-		public float ErrorBias;
-		public float X,Y,W,H,B,C;        // texture coordinates
-		public float K;
+    public class terrain_patchset_patch
+    {
+        public readonly uint Flags;  // 1 = don't draw, C0 = draw water
+        public readonly float CenterX, CenterZ;
+        public readonly float AverageY, RangeY, FactorY;  // don't really know the purpose of these
+        public readonly int ShaderIndex;
+        public readonly float ErrorBias;
+        public readonly float X, Y, W, H, B, C;  // texture coordinates
+        public readonly float RadiusM;
 
-        public bool WaterEnabled { get { return (Flags & 0xc0) != 0; } }
+        public bool WaterEnabled { get { return (Flags & 0xC0) != 0; } }
         public bool DrawingEnabled { get { return (Flags & 1) == 0; } }
 
-		public terrain_patchset_patch( SBR block)
-		{
-            iShader = 0;
-
-            block.VerifyID(TokenID.terrain_patchset_patch);
-			Flags = block.ReadUInt();   
-			CenterX = block.ReadFloat();   // 64
-			AverageY = block.ReadFloat();   // 299.9991
-			CenterZ = block.ReadFloat();   // -64
-			FactorY = block.ReadFloat();   // 99.48125
-			RangeY = block.ReadFloat();   // 0
-			K = block.ReadFloat();   // 64
-			iShader = block.ReadInt();   // 0 , 14, 6 etc  TODO, I think there is something wrong here
-			X = block.ReadFloat();   // 0.001953 or 0.998 or 0.001
-			Y = block.ReadFloat();   // 0.001953 or 0.998 or 0.001
-			W = block.ReadFloat();	 // 0.06225586 0 -0.06225586  
-			B = block.ReadFloat();	 // 0.06225586 0 -0.06225586  
-			C = block.ReadFloat();   // 0.06225586 0 -0.06225586  
-			H = block.ReadFloat();   // 0.06225586 0 -0.06225586  
-			ErrorBias = block.ReadFloat();   // 0 - 1
-		}
-
-	} //public class terrain_patchset_patch
-
-	public class terrain_patchset
-	{
-		public int terrain_patchset_distance;
-		public int terrain_patchset_npatches;
-		public terrain_patchset_patch[] terrain_patchset_patches;
-        public int xdim = 16;
-        public terrain_patchset_patch GetPatch(int x, int z)
+        public terrain_patchset_patch(SBR block)
         {
-            terrain_patchset_patch patch = terrain_patchset_patches[z * xdim + x];
-            return patch;
+            block.VerifyID(TokenID.terrain_patchset_patch);
+            Flags = block.ReadUInt();
+            CenterX = block.ReadFloat();    // 64
+            AverageY = block.ReadFloat();   // 299.9991
+            CenterZ = block.ReadFloat();    // -64
+            FactorY = block.ReadFloat();    // 99.48125
+            RangeY = block.ReadFloat();     // 0
+            RadiusM = block.ReadFloat();    // 64
+            ShaderIndex = block.ReadInt();  // 0 , 14, 6 etc  TODO, I think there is something wrong here
+            X = block.ReadFloat();   // 0.001953 or 0.998 or 0.001
+            Y = block.ReadFloat();   // 0.001953 or 0.998 or 0.001
+            W = block.ReadFloat();	 // 0.06225586 0 -0.06225586  
+            B = block.ReadFloat();	 // 0.06225586 0 -0.06225586  
+            C = block.ReadFloat();   // 0.06225586 0 -0.06225586  
+            H = block.ReadFloat();   // 0.06225586 0 -0.06225586  
+            ErrorBias = block.ReadFloat();  // 0 - 1
         }
+    }
 
-		public terrain_patchset( SBR block )
-		{
+    public class terrain_patchset
+    {
+        public readonly int terrain_patchset_distance;
+        public readonly int terrain_patchset_npatches;
+        public readonly terrain_patchset_patch[] terrain_patchset_patches;
+
+        public terrain_patchset(SBR block)
+        {
             block.VerifyID(TokenID.terrain_patchset);
-			while( !block.EndOfBlock() )
-			{
-                using (SBR subBlock = block.ReadSubBlock())
+            while (!block.EndOfBlock())
+            {
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -276,239 +245,115 @@ namespace MSTS
                             break;
                         case TokenID.terrain_patchset_patches:
                             terrain_patchset_patches = new terrain_patchset_patch[terrain_patchset_npatches * terrain_patchset_npatches];
-                            for (int i = 0; i < terrain_patchset_patches.Length; ++i)
+                            for (var i = 0; i < terrain_patchset_patches.Length; ++i)
                                 terrain_patchset_patches[i] = new terrain_patchset_patch(subBlock.ReadSubBlock());
                             break;
                     }
                 }
-			}
-            xdim = (int)Math.Sqrt(terrain_patchset_patches.Length);
-
-		}
-
-	} //class terrain_patchset
-
-	public class terrain_shader
-	{
-		public string Label;  // TODO, replace this with an enum
-		public terrain_texslot[] terrain_texslots;
-		public terrain_uvcalc[] terrain_uvcalcs;
-
-		public terrain_shader( SBR block )
-		{
-            block.VerifyID(TokenID.terrain_shader);
-            
-            Label = block.ReadString();  // todo, this is wastefull, its either DetailTerrain or AlphaTerrain
-            
-			while( !block.EndOfBlock() )
-			{
-				using( SBR subBlock = block.ReadSubBlock() )
-                {
-				    switch( subBlock.ID )
-				    {
-					    case TokenID.terrain_texslots: 
-					    {
-						    uint count = subBlock.ReadUInt();
-						    terrain_texslots = new terrain_texslot[ count ];
-						    for( int i = 0; i < count; ++i )
-							    terrain_texslots[i] = new terrain_texslot( subBlock.ReadSubBlock() );
-						    break;
-					    }
-					    case TokenID.terrain_uvcalcs:
-					    {
-						    uint count = subBlock.ReadUInt();
-						    terrain_uvcalcs = new terrain_uvcalc[ count ];
-						    for( int i = 0; i < count; ++i )
-							    terrain_uvcalcs[i] = new terrain_uvcalc( subBlock.ReadSubBlock() );
-						    break;
-					    }
-					    default:
-						    break;
-				    }
-                }
-			}
-		}
-	} // terrain_shader
-
-	public class TFile
-	{
-		public float Floor{ get{ return terrain.terrain_samples.terrain_sample_floor;}}		  // in meters
-		public float Resolution{ get{ return terrain.terrain_samples.terrain_sample_scale; }}  // in meters per( number in Y-file )
-		public float WaterNE { get { return terrain.terrain_water_height_offset.NE != 0 ? terrain.terrain_water_height_offset.NE : terrain.terrain_water_height_offset.SW; } } // in meters
-		public float WaterNW { get { return terrain.terrain_water_height_offset.NW != 0 ? terrain.terrain_water_height_offset.NW : terrain.terrain_water_height_offset.SW; } }
-		public float WaterSE { get { return terrain.terrain_water_height_offset.SE != 0 ? terrain.terrain_water_height_offset.SE : terrain.terrain_water_height_offset.SW; } }
-		public float WaterSW { get { return terrain.terrain_water_height_offset.SW != 0 ? terrain.terrain_water_height_offset.SW : terrain.terrain_water_height_offset.SW; } }
-		string FileName;
-		public bool OK() { return terrain.terrain_samples != null; }
-		public float MaxElevation {	get	{	return Floor + (ushort.MaxValue-1) * Resolution;}	}
-
-        public bool ContainsWater { 
-            get 
-            {
-                if (terrain.terrain_water_height_offset != null)
-                    foreach (terrain_patchset patchset in terrain.terrain_patchsets)
-                        foreach (terrain_patchset_patch patch in patchset.terrain_patchset_patches)
-                            if (patch.WaterEnabled)
-                                return true;
-                return false;
             }
         }
 
-        public terrain terrain;
+        public terrain_patchset_patch GetPatch(int x, int z)
+        {
+            return terrain_patchset_patches[z * terrain_patchset_npatches + x];
+        }
+    }
 
-        public TFile(string filename)
-		{
-            FileName = filename;
+    public class terrain_shader
+    {
+        public readonly string ShaderName;
+        public readonly terrain_texslot[] terrain_texslots;
+        public readonly terrain_uvcalc[] terrain_uvcalcs;
 
-            using (SBR sbr = SBR.Open(filename))
+        public terrain_shader(SBR block)
+        {
+            block.VerifyID(TokenID.terrain_shader);
+            ShaderName = block.ReadString();
+            while (!block.EndOfBlock())
             {
-                using (SBR block = sbr.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
-                    terrain = new terrain(block);
+                    switch (subBlock.ID)
+                    {
+                        case TokenID.terrain_texslots:
+                            terrain_texslots = new terrain_texslot[subBlock.ReadUInt()];
+                            for (var i = 0; i < terrain_texslots.Length; ++i)
+                                terrain_texslots[i] = new terrain_texslot(subBlock.ReadSubBlock());
+                            break;
+                        case TokenID.terrain_uvcalcs:
+                            terrain_uvcalcs = new terrain_uvcalc[subBlock.ReadUInt()];
+                            for (var i = 0; i < terrain_uvcalcs.Length; ++i)
+                                terrain_uvcalcs[i] = new terrain_uvcalc(subBlock.ReadSubBlock());
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
-		}
+        }
+    }
 
-	} // class TFile
-
-    public class TileNameConversion
+    public class TFile
     {
+        public readonly terrain terrain;
 
-        /////////////////////////////////////////////
-        /// The following code was derived from MSTSConverter
-        /// Written by: West L. Card
-        /// which was derived from code by  John Stanford 
-        /// //////////////////////////////////////////////
+        public TFile(string filename)
+        {
+            using (var sbr = SBR.Open(filename))
+            using (var block = sbr.ReadSubBlock())
+                terrain = new terrain(block);
+        }
+    }
 
-        // TODO this method is not reentrant - rewrite.
-
-        // world tile max and min
-        static int wt_ew_min = -16384;
-        static int wt_ew_max = 16384;
-        static int wt_ns_min = -16384;
-        static int wt_ns_max = 16384;
-
-
-        static int[,] Direction = new int[2, 2];
-
-        // for convenience
-        const int NE = 1;
-        const int SE = 2;
-        const int SW = 3;
-        const int NW = 0;
+    public static class TileName
+    {
+        public enum Zoom
+        {
+            DMLarge = 11, // 32KM^2
+            DMSmall = 12, // 16KM^2
+            // 13 = 8KM^2
+            Large = 14, // 4KM^2
+            Small = 15, // 2KM^2
+        }
 
         const string Hex = "0123456789ABCDEF";
 
-
-        // lets cache these names to speed up access to them
-        private static Dictionary<long, string> TileNameCache = new Dictionary<long, string>();
-
-        public static string GetTileNameFromTileXZ(int wt_ew, int wt_ns)
+        public static string FromTileXZ(int tileX, int tileZ, Zoom zoom)
         {
-            long key = wt_ew * 100000L + wt_ns;
-            string filename;
-
-            if (TileNameCache.TryGetValue(key, out filename))
-                return filename;  // we found it in the cache
-
-            // otherwise compute it, add it to the cache and return it
-            filename = ComputeTileNameFromTileXZ(wt_ew, wt_ns);
-            TileNameCache.Add(key, filename);
-            return filename;  
-        }
-
-        /// <summary>
-        /// ie Returns "-04e9a288"
-        /// </summary>
-        /// <param name="wt_ew"></param>
-        /// <param name="wt_ns"></param>
-        /// <returns></returns>
-        public static string ComputeTileNameFromTileXZ(int wt_ew, int wt_ns)
-        {
-
-            char prefix = '-';
-            byte append_char=0;
-            byte add_value;
-
-            StringBuilder TileFileName  = new StringBuilder("", 8);
-
-            wt_ew_min = -16384;
-            wt_ew_max = 16384;
-            wt_ns_min = -16384;
-            wt_ns_max = 16384;
-
-            Direction[0, 0] = SW;
-            Direction[0, 1] = NW;
-            Direction[1, 1] = NE;
-            Direction[1, 0] = SE;
-
-            while (  TileFileName.Length < 8 )
+            var rectX = -16384;
+            var rectZ = -16384;
+            var rectW = 16384;
+            var rectH = 16384;
+            var name = new StringBuilder((int)zoom % 2 == 1 ? "-" : "_");
+            var partial = 0;
+            for (var z = 0; z < (int)zoom; z++)
             {
-                int quad = UpdatePosition(wt_ew, wt_ns);
-
-                if (prefix == '-')
+                var east = tileX >= rectX + rectW;
+                var north = tileZ >= rectZ + rectH;
+                partial <<= 2;
+                partial += (north ? 0 : 2) + (east ^ north ? 0 : 1);
+                if (z % 2 == 1)
                 {
-                    prefix = '_';
-                    if (quad == NE)
-                        append_char = 4;
-                    else if (quad == SE)
-                        append_char = 8;
-                    else if (quad == SW)
-                        append_char = 12; //C
-                    else // quad = NW
-                        append_char = 0;
+                    name.Append(Hex[partial]);
+                    partial = 0;
                 }
-                else
-                {
-                    prefix = '-';
-                    if (TileFileName.Length == 7)
-                        add_value = 0;
-                    else if (quad == NE)
-                        add_value = 1;
-                    else if (quad == SE)
-                        add_value = 2;
-                    else if (quad == SW)
-                        add_value = 3;
-                    else // quad = NW
-                        add_value = 0;
-                    TileFileName.Append( Hex[append_char + add_value] );
-                }
+                if (east) rectX += rectW;
+                if (north) rectZ += rectH;
+                rectW /= 2;
+                rectH /= 2;
             }
-
-            return prefix + TileFileName.ToString().ToLower();
+            if ((int)zoom % 2 == 1)
+                name.Append(Hex[partial << 2]);
+            return name.ToString();
         }
 
-        private static int UpdatePosition(int wt_ew_tgt, int wt_ns_tgt)
+        public static void Snap(ref int tileX, ref int tileZ, Zoom zoom)
         {
-            int idx1, idx2;
-
-            int wt_ew_avg = (wt_ew_max + wt_ew_min) / 2;
-            if (wt_ew_tgt >= wt_ew_avg)  // very left side
-            {
-                idx1 = 1;
-                wt_ew_min = wt_ew_avg;
-            }
-            else
-            {
-                idx1 = 0;
-                wt_ew_max = wt_ew_avg;
-            }
-
-            int wt_ns_avg = (wt_ns_max + wt_ns_min ) / 2;
-            if (wt_ns_tgt >= wt_ns_avg)
-            {
-                idx2 = 1;
-                wt_ns_min = wt_ns_avg;
-            }
-            else
-            {
-                idx2 = 0;
-                wt_ns_max = wt_ns_avg;
-            }
-
-            return Direction[idx1, idx2];
+            var step = 15 - (int)zoom;
+            tileX >>= step;
+            tileX <<= step;
+            tileZ >>= step;
+            tileZ <<= step;
         }
-    } // class TileNameConversion
-
-}// namespace 
-
+    }
+}

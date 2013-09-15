@@ -95,7 +95,7 @@ namespace ORTS
 		public ComposeMessage ComposeMessageWindow; // Control-Alt-F11 window
 		// Route Information
         public TileManager Tiles;
-        public TileManager LOTiles;
+        public TileManager LoTiles;
         public ENVFile ENVFile;
         public SIGCFGFile SIGCFG;
         public TTypeDatFile TTypeDatFile;
@@ -221,8 +221,6 @@ namespace ORTS
             WellKnownCameras.Add(new FreeRoamCamera( this, FrontCamera ) ); // Any existing camera will suffice to satisfy .Save() and .Restore()
 
             ContentPath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
-            SharedMaterialManager.ViewingDistance = Settings.ViewingDistance = (int)Math.Min(Simulator.TRK.ORTRKData.MaxViewingDistance, Settings.ViewingDistance);
-
             Trace.Write(" ENV");
             ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
 
@@ -232,8 +230,8 @@ namespace ORTS
             Trace.Write(" TTYPE");
             TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
 
-            Tiles = new TileManager(Simulator.RoutePath + @"\TILES\");
-            LOTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\");
+            Tiles = new TileManager(Simulator.RoutePath + @"\TILES\", false);
+            LoTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\", true);
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
         }
 

@@ -45,6 +45,7 @@ namespace MSTS
             }
         }
         public Tr_RouteFile Tr_RouteFile;
+        // FIXME: Customisation of MSTS file formats is not allowed: please remove.
         public ORTRKData ORTRKData;
     }
 

@@ -81,8 +81,6 @@
             this.numericUpDownLoadingDelay = new System.Windows.Forms.NumericUpDown();
             this.checkDoubleWire = new System.Windows.Forms.CheckBox();
             this.LODExtention = new System.Windows.Forms.CheckBox();
-            this.label16 = new System.Windows.Forms.Label();
-            this.DMLoweringValue = new System.Windows.Forms.NumericUpDown();
             this.label11 = new System.Windows.Forms.Label();
             this.DMDistance = new System.Windows.Forms.NumericUpDown();
             this.distanceMountain = new System.Windows.Forms.CheckBox();
@@ -122,7 +120,6 @@
             this.tabPageExperimental.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPerformanceTunerTarget)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownLoadingDelay)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.DMLoweringValue)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).BeginInit();
@@ -712,8 +709,6 @@
             this.tabPageExperimental.Controls.Add(this.numericUpDownLoadingDelay);
             this.tabPageExperimental.Controls.Add(this.checkDoubleWire);
             this.tabPageExperimental.Controls.Add(this.LODExtention);
-            this.tabPageExperimental.Controls.Add(this.label16);
-            this.tabPageExperimental.Controls.Add(this.DMLoweringValue);
             this.tabPageExperimental.Controls.Add(this.label11);
             this.tabPageExperimental.Controls.Add(this.DMDistance);
             this.tabPageExperimental.Controls.Add(this.distanceMountain);
@@ -736,7 +731,7 @@
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(85, 245);
+            this.label13.Location = new System.Drawing.Point(85, 219);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(88, 13);
             this.label13.TabIndex = 19;
@@ -749,7 +744,7 @@
             0,
             0,
             0});
-            this.numericUpDownPerformanceTunerTarget.Location = new System.Drawing.Point(26, 243);
+            this.numericUpDownPerformanceTunerTarget.Location = new System.Drawing.Point(26, 217);
             this.numericUpDownPerformanceTunerTarget.Maximum = new decimal(new int[] {
             300,
             0,
@@ -773,7 +768,7 @@
             // checkBoxPerformanceTuner
             // 
             this.checkBoxPerformanceTuner.AutoSize = true;
-            this.checkBoxPerformanceTuner.Location = new System.Drawing.Point(6, 220);
+            this.checkBoxPerformanceTuner.Location = new System.Drawing.Point(6, 194);
             this.checkBoxPerformanceTuner.Name = "checkBoxPerformanceTuner";
             this.checkBoxPerformanceTuner.Size = new System.Drawing.Size(277, 17);
             this.checkBoxPerformanceTuner.TabIndex = 17;
@@ -783,7 +778,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(65, 294);
+            this.label9.Location = new System.Drawing.Point(65, 268);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(95, 13);
             this.label9.TabIndex = 16;
@@ -796,7 +791,7 @@
             0,
             0,
             0});
-            this.numericUpDownLoadingDelay.Location = new System.Drawing.Point(6, 292);
+            this.numericUpDownLoadingDelay.Location = new System.Drawing.Point(6, 266);
             this.numericUpDownLoadingDelay.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -809,7 +804,7 @@
             // checkDoubleWire
             // 
             this.checkDoubleWire.AutoSize = true;
-            this.checkDoubleWire.Location = new System.Drawing.Point(6, 269);
+            this.checkDoubleWire.Location = new System.Drawing.Point(6, 243);
             this.checkDoubleWire.Name = "checkDoubleWire";
             this.checkDoubleWire.Size = new System.Drawing.Size(135, 17);
             this.checkDoubleWire.TabIndex = 14;
@@ -819,34 +814,12 @@
             // LODExtention
             // 
             this.LODExtention.AutoSize = true;
-            this.LODExtention.Location = new System.Drawing.Point(6, 197);
+            this.LODExtention.Location = new System.Drawing.Point(6, 171);
             this.LODExtention.Name = "LODExtention";
             this.LODExtention.Size = new System.Drawing.Size(244, 17);
             this.LODExtention.TabIndex = 13;
             this.LODExtention.Text = "Set highest LOD to maximum viewing distance";
             this.LODExtention.UseVisualStyleBackColor = true;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(85, 173);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(168, 13);
-            this.label16.TabIndex = 12;
-            this.label16.Text = "Lower distant mountaint terrain (m)";
-            // 
-            // DMLoweringValue
-            // 
-            this.DMLoweringValue.Location = new System.Drawing.Point(26, 171);
-            this.DMLoweringValue.Name = "DMLoweringValue";
-            this.DMLoweringValue.Size = new System.Drawing.Size(53, 20);
-            this.DMLoweringValue.TabIndex = 11;
-            this.toolTip1.SetToolTip(this.DMLoweringValue, "Lower DMs to avoid track dissappearing");
-            this.DMLoweringValue.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             // 
             // label11
             // 
@@ -865,6 +838,11 @@
             0,
             0});
             this.DMDistance.Location = new System.Drawing.Point(26, 145);
+            this.DMDistance.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
             this.DMDistance.Minimum = new decimal(new int[] {
             10,
             0,
@@ -1165,7 +1143,6 @@
             this.tabPageExperimental.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPerformanceTunerTarget)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownLoadingDelay)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.DMLoweringValue)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DMDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.MinLengthChoice)).EndInit();
@@ -1233,8 +1210,6 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.NumericUpDown DMDistance;
         private System.Windows.Forms.CheckBox distanceMountain;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.NumericUpDown DMLoweringValue;
         private System.Windows.Forms.CheckBox LODExtention;
         private System.Windows.Forms.CheckBox checkDoubleWire;
         private System.Windows.Forms.TabPage tabPageDataLogger;

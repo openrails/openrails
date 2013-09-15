@@ -19,71 +19,37 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
-
 namespace MSTS
 {
+    public class YFile
+    {
+        readonly ushort[,] Elevation;
 
-	public class YFile
-	{
-        int xdim = 256, zdim = 256;
-		public ushort GetElevationIndex( int X, int Z )
-		{
-			// What is the elevation at the tile coordinates x, z
-			// 0,0 is the north west corner of the tile
-			// 255,255 is the south east corner
-			return A[Z,X];
-		}
-
-		public YFile( string filename )
-		{
-			Filename = filename;
-            xdim = zdim = 256;
-            A =  new ushort[zdim,xdim];
-			// Open the file
-			BinaryReader reader = new BinaryReader( new FileStream( Filename, FileMode.Open, FileAccess.Read ) );
-            try
-            {
-                // read it in
-                for (int y = 0; y < xdim; ++y)
-                    for (int x = 0; x < zdim; ++x)
-                        A[y, x] = reader.ReadUInt16();
-            }
-            catch (Exception error)
-            {
-                Trace.WriteLine(new FileLoadException(filename, error));
-            }
-			finally
-			{
-				reader.Close( );
-			}
-		}
-
-        public YFile(string filename, int dim)
+        public YFile(string fileName, int sampleCount)
         {
-            Filename = filename;
-            xdim = zdim = dim;
-            A = new ushort[zdim, xdim];
-            // Open the file
-            BinaryReader reader = new BinaryReader(new FileStream(Filename, FileMode.Open, FileAccess.Read));
+            Elevation = new ushort[sampleCount, sampleCount];
             try
             {
-                // read it in
-                for (int y = 0; y < zdim; ++y)
-                    for (int x = 0; x < xdim; ++x)
-                        A[y, x] = reader.ReadUInt16();
+                using (var reader = new BinaryReader(File.OpenRead(fileName)))
+                    for (var z = 0; z < sampleCount; z++)
+                        for (var x = 0; x < sampleCount; x++)
+                            Elevation[x, z] = reader.ReadUInt16();
             }
             catch (Exception error)
             {
-                Trace.WriteLine(new FileLoadException(filename, error));
-            }
-            finally
-            {
-                reader.Close();
+                Trace.WriteLine(new FileLoadException(fileName, error));
             }
         }
-        
-        private string Filename;
-		private ushort[,] A;
-	}
 
+        /// <summary>
+        /// Returns the elevation at a specific sample point.
+        /// </summary>
+        /// <param name="x">X coordinate; starts at west side, increases easterly.</param>
+        /// <param name="z">Z coordinate; starts at north side, increases southerly.</param>
+        /// <returns>Elevation relative to the tile's floor and scaled by resolution.</returns>
+        public ushort GetElevation(int x, int z)
+        {
+            return Elevation[x, z];
+        }
+    }
 }

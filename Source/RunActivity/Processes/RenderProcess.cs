@@ -172,6 +172,8 @@ namespace ORTS
             var fov = MathHelper.ToRadians(viewer.Settings.ViewingFOV);
             var n = (float)0.5;
             var f = (float)viewer.Settings.ShadowMapDistance;
+            if (f == 0)
+                f = viewer.Settings.ViewingDistance / 2;
 
             var m = (float)ShadowMapCount;
             var LastC = n;

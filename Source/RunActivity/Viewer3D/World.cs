@@ -107,16 +107,10 @@ namespace ORTS
                 // Now we adjust the viewing distance to try and balance out the FPS.
                 var oldViewingDistance = Viewer.Settings.ViewingDistance;
                 if (target > 2.5)
-                {
-                    if (Viewer.Settings.ViewingDistance > 250)
-                        Viewer.Settings.ViewingDistance -= (int)(target - 1.5);
-                }
+                    Viewer.Settings.ViewingDistance -= (int)(target - 1.5);
                 else if (target < -2.5)
-                {
-                    if (Viewer.Settings.ViewingDistance < 5000)
-                        Viewer.Settings.ViewingDistance += (int)(-target - 1.5);
-                }
-                Viewer.Settings.ViewingDistance = (int)MathHelper.Clamp(Viewer.Settings.ViewingDistance, 250, 5000);
+                    Viewer.Settings.ViewingDistance += (int)(-target - 1.5);
+                Viewer.Settings.ViewingDistance = (int)MathHelper.Clamp(Viewer.Settings.ViewingDistance, 500, 10000);
 
                 // If we've changed the viewing distance, we need to update the camera matricies.
                 if (oldViewingDistance != Viewer.Settings.ViewingDistance)

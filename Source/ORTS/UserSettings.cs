@@ -139,10 +139,8 @@ namespace ORTS
         // Experimental settings for distant mountains:
         [Default(false)]
         public bool DistantMountains { get; set; }
-        [Default(20)]
-        public int DistantMountainsViewingTiles { get; set; }
-        [Default(5)]
-        public int DistantMountainsLoweringValue { get; set; }
+        [Default(40000)]
+        public int DistantMountainsViewingDistance { get; set; }
 
         // Experimental settings for LOD extension:
         [Default(false)]

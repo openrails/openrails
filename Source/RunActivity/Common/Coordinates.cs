@@ -50,8 +50,7 @@ using Microsoft.Xna.Framework;
 namespace ORTS
 {
     /// <summary>
-    /// Represents the position and orientation of an object
-    /// including what tile, and the matrix within the tile
+    /// Represents the position and orientation of an object within a tile in XNA coordinates.
     /// </summary>
     public class WorldPosition
     {
@@ -134,6 +133,9 @@ namespace ORTS
         }
     }
 
+    /// <summary>
+    /// Represents the position of an object within a tile in MSTS coordinates.
+    /// </summary>
     public class WorldLocation
     {
         public int TileX;
@@ -172,9 +174,9 @@ namespace ORTS
         /// </summary>
         public void Normalize()
         {
-            while (Location.X > 1024) { Location.X -= 2048; TileX++; }
+            while (Location.X >= 1024) { Location.X -= 2048; TileX++; }
             while (Location.X < -1024) { Location.X += 2048; TileX--; }
-            while (Location.Z > 1024) { Location.Z -= 2048; TileZ++; }
+            while (Location.Z >= 1024) { Location.Z -= 2048; TileZ++; }
             while (Location.Z < -1024) { Location.Z += 2048; TileZ--; }
         }
 

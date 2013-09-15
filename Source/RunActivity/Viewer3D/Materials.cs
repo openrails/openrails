@@ -236,6 +236,9 @@ namespace ORTS
                     case "TerrainShared":
                         Materials[materialKey] = new TerrainSharedMaterial(Viewer, textureName);
                         break;
+                    case "TerrainSharedDistantMountain":
+                        Materials[materialKey] = new TerrainSharedDistantMountain(Viewer, textureName);
+                        break;
                     case "Transfer":
                         Materials[materialKey] = new TransferMaterial(Viewer, textureName);
                         break;
@@ -278,7 +281,6 @@ namespace ORTS
 
         public static Color FogColor = new Color(110, 110, 110, 255);
         public static float FogCoeff = 0.75f;
-        public static float ViewingDistance = 3000;  // TODO, this is awkward, viewer must set this to control fog
 
         internal Vector3 sunDirection;
         bool lastLightState;
@@ -330,11 +332,9 @@ namespace ORTS
             SceneryShader.ViewerPos = Viewer.Camera.XNALocation(Viewer.Camera.CameraWorldLocation);
 
             if (Viewer.Settings.DistantMountains)
-            {
-                SceneryShader.SetFog(ViewingDistance * 4 * FogCoeff, ref SharedMaterialManager.FogColor);
-            }
+                SceneryShader.SetFog(Viewer.Settings.ViewingDistance * FogCoeff * 4, ref SharedMaterialManager.FogColor);
             else
-                SceneryShader.SetFog(ViewingDistance * 0.5f * FogCoeff, ref SharedMaterialManager.FogColor);
+                SceneryShader.SetFog(Viewer.Settings.ViewingDistance * FogCoeff / 2, ref SharedMaterialManager.FogColor);
         }
     }
 
@@ -738,7 +738,6 @@ namespace ORTS
         readonly Texture2D PatchTexture;
         readonly Texture2D PatchTextureOverlay;
         IEnumerator<EffectPass> ShaderPasses;
-        public bool DM = false;
 
         public TerrainMaterial(Viewer3D viewer, string terrainTexture)
             : base(viewer, terrainTexture)
@@ -746,7 +745,6 @@ namespace ORTS
             var textures = terrainTexture.Split('\0');
             PatchTexture = Viewer.TextureManager.Get(textures[0]);
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
-            if (textures.Length == 3) DM = true;
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -806,6 +804,14 @@ namespace ORTS
         {
             base.SetState(graphicsDevice, previousMaterial);
             graphicsDevice.Indices = TerrainPatch.SharedPatchIndexBuffer;
+        }
+    }
+
+    public class TerrainSharedDistantMountain : TerrainSharedMaterial
+    {
+        public TerrainSharedDistantMountain(Viewer3D viewer, string terrainTexture)
+            : base(viewer, terrainTexture)
+        {
         }
     }
 
@@ -1679,9 +1685,7 @@ namespace ORTS
         {
             Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
             Texture.SetData(new[] { Color.White });
-            //LineSpacing = 16; // FIXME!!
-            //if (LineSpacing < 10) LineSpacing = 10; //if spacing between text lines is too small
-            Font = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1); // FIXME: Bold needed?
+            Font = Viewer.WindowManager.TextManager.Get("Arial", 12, System.Drawing.FontStyle.Bold, 1);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
