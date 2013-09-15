@@ -219,13 +219,13 @@ namespace ORTS
                         cabView = BuildCabView(WagFilePath, reverseCVFFileName, CabViewType.Rear);
                         if (cabView != null)
                             CabViewList.Add(cabView);
-						}
 					}
+				}
                 else
                 {
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
-					}
-                }
+				}
+            }
 
             IsDriveable = true;
             if (!TrainBrakeController.IsValid())
@@ -362,7 +362,10 @@ namespace ORTS
                 case "engine(numwheels": NumWheelsAdhesionFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (NumWheelsAdhesionFactor < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
-                case "engine(headout": HeadOutViewpoints.Add(new ViewPoint() { Location = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero) }); break;
+                case "engine(headout":
+                    HeadOutViewpoints.Add(new ViewPoint(stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero)));
+                    HeadOutViewpoints.Add(new ViewPoint(HeadOutViewpoints[0], true));
+                    break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break; 
 

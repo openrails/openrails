@@ -1231,6 +1231,8 @@ namespace ORTS
     {
         protected readonly bool Forwards;
         public enum HeadDirection { Forward, Backward }
+        protected int CurrentViewpointIndex;
+        protected bool PrevCabWasRear = false;
 
         // Head-out camera is only possible on the player train.
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
@@ -1241,6 +1243,7 @@ namespace ORTS
         {
             Forwards = headDirection == HeadDirection.Forward;
             RotationYRadians = Forwards ? 0 : -MathHelper.Pi;
+            CurrentViewpointIndex = 0;
         }
 
         protected override List<TrainCar> GetCameraCars()
@@ -1252,9 +1255,20 @@ namespace ORTS
         protected override void SetCameraCar(TrainCar car)
         {
             base.SetCameraCar(car);
-            attachedLocation = attachedCar.HeadOutViewpoints[0].Location;
+            if (attachedCar.HeadOutViewpoints.Count > 0)
+                attachedLocation = attachedCar.HeadOutViewpoints[CurrentViewpointIndex].Location;
+
             if (!Forwards)
                 attachedLocation.X *= -1;
+        }
+
+        public void ChangeCab(TrainCar newAttach)
+        {
+            if (PrevCabWasRear != ((MSTSLocomotive)newAttach).UsingRearCab)
+                RotationYRadians += MathHelper.Pi;
+            CurrentViewpointIndex = ((MSTSLocomotive)newAttach).UsingRearCab ? 1 : 0;
+            PrevCabWasRear = ((MSTSLocomotive)newAttach).UsingRearCab;
+            SetCameraCar(newAttach);
         }
     }
 

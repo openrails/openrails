@@ -976,6 +976,8 @@ namespace ORTS
             PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
             Camera.Activate(); // If you need anything else here the cameras should check for it.
             SetCommandReceivers();
+            HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
+            HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
             if (MPManager.IsMultiPlayer()) 
                 MPManager.LocoChange(Simulator.PlayerLocomotive.Train, Simulator.PlayerLocomotive);
             Simulator.Confirmer.Confirm(CabControl.ChangeCab, CabSetting.On);
