@@ -138,7 +138,10 @@ namespace MSTS
         GEARS,
         DOORS_DISPLAY,
         SPEED_PROJECTED,
-        SPEEDLIMIT
+        SPEEDLIMIT,
+        PANTOGRAPHS_4,
+        PANTOGRAPHS_4C,
+        PANTOGRAPHS_5,
     }
 
     public enum CABViewControlStyles

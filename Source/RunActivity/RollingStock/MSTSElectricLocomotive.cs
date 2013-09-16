@@ -288,6 +288,36 @@ namespace ORTS
                         data = Pan ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.PANTOGRAPH2:
+                    {
+                        data = Pan2Up ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.PANTOGRAPHS_4:
+                case CABViewControlTypes.PANTOGRAPHS_4C:
+                    {
+                        if (Pan1Up && Pan2Up)
+                            data = 2;
+                        else if (Pan1Up)
+                            data = 1;
+                        else if (Pan2Up)
+                            data = 3;
+                        else
+                            data = 0;
+                        break;
+                    }
+                case CABViewControlTypes.PANTOGRAPHS_5:
+                    {
+                        if (Pan1Up && Pan2Up)
+                            data = 0; // TODO: Should be 0 if the previous state was Pan2Up, and 4 if that was Pan1Up
+                        else if (Pan2Up)
+                            data = 1;
+                        else if (Pan1Up)
+                            data = 3;
+                        else
+                            data = 2;
+                        break;
+                    }
                 default:
                     {
                         data = base.GetDataOf(cvc);

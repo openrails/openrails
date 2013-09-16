@@ -3645,6 +3645,10 @@ namespace ORTS
                 case CABViewControlTypes.WHEELSLIP:
                 case CABViewControlTypes.FRONT_HLIGHT:
                 case CABViewControlTypes.PANTOGRAPH:
+                case CABViewControlTypes.PANTOGRAPH2:
+                case CABViewControlTypes.PANTOGRAPHS_4:
+                case CABViewControlTypes.PANTOGRAPHS_4C:
+                case CABViewControlTypes.PANTOGRAPHS_5:
                 case CABViewControlTypes.PANTO_DISPLAY:
                 case CABViewControlTypes.DIRECTION:
                 case CABViewControlTypes.DIRECTION_DISPLAY:
