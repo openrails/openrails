@@ -875,6 +875,9 @@ namespace ORTS
             SkyShader.WindDirection = Viewer.World.Sky.windDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 
             // Sky dome
+            var rs = graphicsDevice.RenderState;
+            rs.DepthBufferWriteEnable = false;
+
             SkyShader.CurrentTechnique = SkyShader.Techniques["Sky"];
             Viewer.World.Sky.SkyMesh.drawIndex = 1;
 
@@ -901,7 +904,6 @@ namespace ORTS
             SkyShader.CurrentTechnique = SkyShader.Techniques["Moon"];
             Viewer.World.Sky.SkyMesh.drawIndex = 2;
 
-            var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;
             rs.CullMode = CullMode.CullClockwiseFace;
             rs.DestinationBlend = Blend.InverseSourceAlpha;
@@ -956,6 +958,7 @@ namespace ORTS
         {
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
+            rs.DepthBufferWriteEnable = true;
             rs.DestinationBlend = Blend.Zero;
             rs.SourceBlend = Blend.One;
         }

@@ -39,6 +39,7 @@ namespace ORTS
     public enum RenderPrimitiveSequence
     {
         CabOpaque,
+        Sky,
         WorldOpaque,
         WorldBlended,
         Lights, // TODO: May not be needed once alpha sorting works.
@@ -54,6 +55,7 @@ namespace ORTS
     public enum RenderPrimitiveGroup
     {
         Cab,
+        Sky,
         World,
         Lights, // TODO: May not be needed once alpha sorting works.
         Precipitation, // TODO: May not be needed once alpha sorting works.
@@ -65,6 +67,7 @@ namespace ORTS
     {
         public static readonly RenderPrimitiveSequence[] SequenceForBlended = new[] {
 			RenderPrimitiveSequence.CabBlended,
+            RenderPrimitiveSequence.Sky,
 			RenderPrimitiveSequence.WorldBlended,
 			RenderPrimitiveSequence.Lights,
 			RenderPrimitiveSequence.Precipitation,
@@ -73,6 +76,7 @@ namespace ORTS
 		};
         public static readonly RenderPrimitiveSequence[] SequenceForOpaque = new[] {
 			RenderPrimitiveSequence.CabOpaque,
+            RenderPrimitiveSequence.Sky,
 			RenderPrimitiveSequence.WorldOpaque,
 			RenderPrimitiveSequence.Lights,
 			RenderPrimitiveSequence.Precipitation,

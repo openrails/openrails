@@ -258,7 +258,7 @@ namespace ORTS
             lunarDirection.Y = MathHelper.Lerp(lunarPosArray[step1].Y, lunarPosArray[step2].Y, diff);
             lunarDirection.Z = MathHelper.Lerp(lunarPosArray[step1].Z, lunarPosArray[step2].Z, diff);
 
-            frame.AddPrimitive(skyMaterial, SkyMesh, RenderPrimitiveGroup.World, ref XNASkyWorldLocation);
+            frame.AddPrimitive(skyMaterial, SkyMesh, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
         }
 
         [CallOnThread("Loader")]
