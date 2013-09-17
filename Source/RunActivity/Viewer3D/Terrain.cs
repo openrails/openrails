@@ -139,7 +139,7 @@ namespace ORTS
 
         public TerrainTile(Viewer3D viewer, TileManager tileManager, Tile tile)
         {
-            Trace.Write("T");
+            Trace.Write(tile.Size > 2 ? "L" : "T");
             TileX = tile.TileX;
             TileZ = tile.TileZ;
             Size = tile.Size;
