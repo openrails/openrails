@@ -134,7 +134,7 @@ namespace ORTS
         public void UpdateTType()
         {
             if (_prevTType == -1)
-                return;
+                InitInitials();
 
             if (Car != null && Car.Train != null)
             {
