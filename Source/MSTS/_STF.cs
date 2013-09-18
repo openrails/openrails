@@ -1221,18 +1221,8 @@ namespace MSTS
             if (s == "(")
             {
                 float result = ReadFloat(validUnits, defaultValue);
-                if (validUnits == UNITS.None)
-                {
-                    SkipRestOfBlock(); // e.g. to ignore everything after the "30" in
-                    // SignalAspect ( APPROACH_1 "Approach" SpeedMPH ( 30 SignalFlags ( ASAP ) ) )
-                }
-                else
-                {
-                    MustMatchFromBlock(")");    // Gives warning for lines with units like
-                                                //  Speed ( 60 kph )
-                                                // instead of
-                                                //  Speed ( 60kph )
-                }
+                SkipRestOfBlock(); // e.g. to ignore everything after the "30" in
+                // SignalAspect ( APPROACH_1 "Approach" SpeedMPH ( 30 SignalFlags ( ASAP ) ) )
                 return result;
             }
             STFException.TraceWarning(this, "Block Not Found - instead found " + s);
