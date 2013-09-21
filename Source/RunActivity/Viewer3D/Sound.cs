@@ -79,7 +79,6 @@ namespace ORTS
         private SoundSource _activeOutSource = null;
         private List<SoundSource> _inSources;
         private List<SoundSource> _outSources;
-        private TDBObjects _tdbObjs = null;
 
         public TrackSoundSource(MSTSWagon car, Viewer3D viewer)
         {
@@ -87,8 +86,6 @@ namespace ORTS
             Viewer = viewer;
             _inSources = new List<SoundSource>();
             _outSources = new List<SoundSource>();
-
-            _tdbObjs = new TDBObjects(Car, Viewer);
 
             foreach (MSTS.TTypeDatFile.TrackType ttdf in viewer.TTypeDatFile)
             {
@@ -954,7 +951,7 @@ namespace ORTS
                 SoundCommand.Run();
                 SoundStream.LastTriggered = this;
 #if DEBUGSCR
-                Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", SoundStream.Index, (int)eventID, SoundCommand.FileName);
+                Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", SoundStream.Index, TriggerID, SoundCommand.FileName);
 #endif
             }
             // If the SoundSource is not active, should deactivate the SoundStream also
@@ -1066,7 +1063,6 @@ namespace ORTS
     {
         Simulator Simulator;
         MSTS.Random_Trigger SMS;
-        double StartSeconds = 0.0;
         double triggerAtSeconds;
         SoundStream SoundStream;
 
@@ -1081,7 +1077,6 @@ namespace ORTS
 
         public override void  Initialize()
         {
-            StartSeconds = Simulator.ClockTime;
             UpdateTriggerAtSeconds();
         }
 
@@ -1276,11 +1271,9 @@ namespace ORTS
     /// </summary>
     public class ORTSStartLoop : ORTSSoundPlayCommand
     {
-        SoundStream _SoundStream;
         public ORTSStartLoop( SoundStream ortsStream, MSTS.SoundPlayCommand mstsSoundPlayCommand )
             : base( ortsStream, mstsSoundPlayCommand )
         {
-            _SoundStream = ortsStream;
         }
         public override void  Run( )
         {
@@ -1318,12 +1311,9 @@ namespace ORTS
     /// </summary>
     public class ORTSStartLoopRelease : ORTSSoundPlayCommand
     {
-        SoundStream _SoundStream;
-
         public ORTSStartLoopRelease(SoundStream ortsStream, MSTS.PlayOneShot mstsStartLoopRelease)
             : base(ortsStream, mstsStartLoopRelease)
         {
-            _SoundStream = ortsStream;
         }
 
         // Support for Loop functions - by GeorgeS
@@ -1549,7 +1539,6 @@ namespace ORTS
 
     public class WorldSounds
     {
-        List<WSFile> Files = new List<WSFile>();
         Dictionary<string, List<WorldSoundRegion>> SoundRegions = new Dictionary<string, List<WorldSoundRegion>>();
         private Viewer3D Viewer;
         private SoundSource ss;

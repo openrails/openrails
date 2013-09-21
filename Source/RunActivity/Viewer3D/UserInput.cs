@@ -54,7 +54,7 @@ namespace ORTS
         public static RailDriverState RDState = null;
 
         [DllImport("user32.dll")]
-        static extern int GetAsyncKeyState(Keys key);
+        static extern short GetAsyncKeyState(Keys key);
 
         public static void Update(Viewer3D viewer)
         {

@@ -1045,8 +1045,6 @@ namespace ORTS.MultiPlayer
 			mDirection = (int)t.MUDirection;
 		}
 
-		private object lockObj = new object();
-
 		public override void HandleMsg() //only client will get message, thus will set states
 		{
 			if (MPManager.IsServer()) return; //server will ignore it
@@ -2595,7 +2593,6 @@ namespace ORTS.MultiPlayer
 		static SortedList<long, SignalHead> signals;
 		public bool OKtoSend = false;
 		static byte[] signalsStates;
-		int readed;
 		//constructor to create a message from signal data
 		public MSGSignalStatus()
 		{
@@ -2678,7 +2675,7 @@ namespace ORTS.MultiPlayer
 				memoryStream.Position = 0;
 				using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
 				{
-					readed = gZipStream.Read(signalsStates, 0, signalsStates.Length);
+					gZipStream.Read(signalsStates, 0, signalsStates.Length);
 				}
 			}
 		}

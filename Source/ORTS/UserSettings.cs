@@ -26,7 +26,8 @@ using Microsoft.Win32;
 
 namespace ORTS
 {
-    public class DefaultAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class DefaultAttribute : Attribute
     {
         public readonly object Value;
         public DefaultAttribute(object value)
@@ -35,7 +36,8 @@ namespace ORTS
         }
     }
 
-    public class DoNotSaveAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class DoNotSaveAttribute : Attribute
     {
     }
 

@@ -88,11 +88,13 @@ namespace ORTS
                 cameraLocation = previousCamera.CameraWorldLocation;
         }
 
+        [CallOnThread("Updater")]
         protected internal virtual void Save(BinaryWriter outf)
         {
             cameraLocation.Save(outf);
         }
 
+        [CallOnThread("Render")]
         protected internal virtual void Restore(BinaryReader inf)
         {
             cameraLocation.Restore(inf);
@@ -1262,13 +1264,14 @@ namespace ORTS
                 attachedLocation.X *= -1;
         }
 
-        public void ChangeCab(TrainCar newAttach)
+        public void ChangeCab(TrainCar newCar)
         {
-            if (PrevCabWasRear != ((MSTSLocomotive)newAttach).UsingRearCab)
+            var mstsLocomotive = newCar as MSTSLocomotive;
+            if (PrevCabWasRear != mstsLocomotive.UsingRearCab)
                 RotationYRadians += MathHelper.Pi;
-            CurrentViewpointIndex = ((MSTSLocomotive)newAttach).UsingRearCab ? 1 : 0;
-            PrevCabWasRear = ((MSTSLocomotive)newAttach).UsingRearCab;
-            SetCameraCar(newAttach);
+            CurrentViewpointIndex = mstsLocomotive.UsingRearCab ? 1 : 0;
+            PrevCabWasRear = mstsLocomotive.UsingRearCab;
+            SetCameraCar(newCar);
         }
     }
 

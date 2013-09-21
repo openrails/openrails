@@ -235,6 +235,7 @@ namespace ORTS
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
         }
 
+        [CallOnThread("Updater")]
         public void Save(BinaryWriter outf, string fileStem)
         {
             outf.Write(Simulator.Trains.IndexOf(PlayerTrain));
@@ -254,6 +255,7 @@ namespace ORTS
             SaveActivityThumbnail = true;
         }
 
+        [CallOnThread("Render")]
         public void Restore(BinaryReader inf)
         {
             Train playerTrain = Simulator.Trains[inf.ReadInt32()];

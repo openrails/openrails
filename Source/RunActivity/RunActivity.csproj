@@ -179,7 +179,6 @@
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />
     <Compile Include="AI\AITrain.cs" />
-    <Compile Include="Common\BrakeCurves.cs" />
     <Compile Include="Common\Conversions.cs" />
     <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\DataLogger.cs" />
@@ -196,7 +195,6 @@
     <Compile Include="Common\SmoothedData.cs" />
     <Compile Include="Common\SteamTable.cs" />
     <Compile Include="Common\SunMoonPos.cs" />
-    <Compile Include="Common\TextHelper.cs" />
     <Compile Include="Common\WorldLatLon.cs" />
     <Compile Include="Debugging\DebugViewerForm.cs">
       <SubType>Form</SubType>

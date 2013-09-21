@@ -407,7 +407,6 @@ namespace ORTS {
     [Serializable()]
     public class BrakeHoseConnectCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
-        private bool apply;
 
         public BrakeHoseConnectCommand( CommandLog log, bool toState ) 
             : base( log, toState ) {

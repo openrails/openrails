@@ -484,9 +484,15 @@ namespace ORTS
         // but guess that some trains have pantographs on non-motorised cars </CJComment>
         public void ToggleFirstPantograph() {
     		Pan1Up = !Pan1Up;
-            if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train
-                foreach( TrainCar car in Train.Cars )
-                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).Pan1Up = Pan1Up;
+            if (Simulator.PlayerLocomotive == this) //inform everyone else in the train
+            {
+                foreach (var car in Train.Cars)
+                {
+                    var mstsWagon = car as MSTSWagon;
+                    if (car != this && mstsWagon != null)
+                        mstsWagon.Pan1Up = Pan1Up;
+                }
+            }
             if( Pan1Up ) {
                 SignalEvent(Event.Pantograph1Up);
             } else {
@@ -496,9 +502,15 @@ namespace ORTS
 
         public void ToggleSecondPantograph() {
             Pan2Up = !Pan2Up;
-            if( Simulator.PlayerLocomotive == this ) //inform everyone else in the train
-                foreach( TrainCar car in Train.Cars )
-                    if( car != this && car is MSTSWagon ) ((MSTSWagon)car).Pan2Up = Pan2Up;
+            if (Simulator.PlayerLocomotive == this) //inform everyone else in the train
+            {
+                foreach (var car in Train.Cars)
+                {
+                    var mstsWagon = car as MSTSWagon;
+                    if (car != this && mstsWagon != null)
+                        mstsWagon.Pan2Up = Pan2Up;
+                }
+            }
             if( Pan2Up ) {
                 SignalEvent(Event.Pantograph2Up);
             } else {
@@ -509,12 +521,13 @@ namespace ORTS
         public void ToggleDoorsLeft() {
             DoorLeftOpen = !DoorLeftOpen;
             if( Simulator.PlayerLocomotive == this ) {//inform everyone else in the train
-                foreach( TrainCar car in Train.Cars ) {
-                    if (car != this && car is MSTSWagon)
+                foreach (var car in Train.Cars)
+                {
+                    var mstsWagon = car as MSTSWagon;
+                    if (car != this && mstsWagon != null)
                     {
-                        ((MSTSWagon)car).DoorLeftOpen = DoorLeftOpen;
-                        if (DoorLeftOpen) ((MSTSWagon)car).SignalEvent(Event.DoorOpen); // hook for sound trigger
-                        else ((MSTSWagon)car).SignalEvent(Event.DoorClose);
+                        mstsWagon.DoorLeftOpen = DoorLeftOpen;
+                        mstsWagon.SignalEvent(DoorLeftOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
                     }
                 }
                 if (DoorLeftOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger
@@ -526,12 +539,13 @@ namespace ORTS
         public void ToggleDoorsRight() {
             DoorRightOpen = !DoorRightOpen;
             if( Simulator.PlayerLocomotive == this ) { //inform everyone else in the train
-                foreach( TrainCar car in Train.Cars ) {
-                    if (car != this && car is MSTSWagon)
+                foreach (TrainCar car in Train.Cars)
+                {
+                    var mstsWagon = car as MSTSWagon;
+                    if (car != this && mstsWagon != null)
                     {
-                        ((MSTSWagon)car).DoorRightOpen = DoorRightOpen;
-                        if (DoorRightOpen) ((MSTSWagon)car).SignalEvent(Event.DoorOpen); // hook for sound trigger
-                        else ((MSTSWagon)car).SignalEvent(Event.DoorClose);
+                        mstsWagon.DoorRightOpen = DoorRightOpen;
+                        mstsWagon.SignalEvent(DoorRightOpen ? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
                     }
                 }
                 if (DoorRightOpen) SignalEvent(Event.DoorOpen); // hook for sound trigger

@@ -864,12 +864,12 @@ namespace ORTS
                 else
                     ViewSphereRadius = 100;
 
+                var index = 0;
 #if DEBUG_SHAPE_HIERARCHY
-                var index = 0;
+                var subObjectIndex = 0;
                 SubObjects = (from sub_object obj in MSTSdistance_level.sub_objects
-                              select new SubObject(obj, MSTSdistance_level.distance_level_header.hierarchy, textureFlags, index++, sFile, sharedShape)).ToArray();
+                              select new SubObject(obj, ref index, MSTSdistance_level.distance_level_header.hierarchy, textureFlags, subObjectIndex++, sFile, sharedShape)).ToArray();
 #else
-                var index = 0;
                 SubObjects = (from sub_object obj in MSTSdistance_level.sub_objects
                               select new SubObject(obj, ref index, MSTSdistance_level.distance_level_header.hierarchy, textureFlags, sFile, sharedShape)).ToArray();
 #endif
@@ -917,13 +917,13 @@ namespace ORTS
             public ShapePrimitive[] ShapePrimitives;
 
 #if DEBUG_SHAPE_HIERARCHY
-            public SubObject(sub_object sub_object, int[] hierarchy, Helpers.TextureFlags textureFlags, int index, SFile sFile, SharedShape sharedShape)
+            public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, int subObjectIndex, SFile sFile, SharedShape sharedShape)
 #else
             public SubObject(sub_object sub_object, ref int totalPrimitiveIndex, int[] hierarchy, Helpers.TextureFlags textureFlags, SFile sFile, SharedShape sharedShape)
 #endif
             {
 #if DEBUG_SHAPE_HIERARCHY
-                Console.WriteLine("      Sub object {0}:", index);
+                Console.WriteLine("      Sub object {0}:", subObjectIndex);
 #endif
                 var vertexBufferSet = new VertexBufferSet(sub_object, sFile, sharedShape.Viewer.GraphicsDevice);
 #if DEBUG_SHAPE_NORMALS

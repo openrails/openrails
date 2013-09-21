@@ -73,7 +73,6 @@ namespace ORTS
         public Color ExhaustColor = Color.Gray;
         Color ExhaustSteadyColor = Color.Gray;
         Color ExhaustTransientColor = Color.Black;
-        Color ExhaustDecelColor = Color.TransparentWhite;
 
         public DieselEngines DieselEngines = new DieselEngines();
 
@@ -858,35 +857,36 @@ namespace ORTS
             }
             if (UserInput.IsPressed(UserCommands.ControlDieselHelper))
             {
-                bool powerOn = false;
-                int helperLocos = 0;
-                
-                foreach( TrainCar traincar in DieselLocomotive.Train.Cars )
+                var powerOn = false;
+                var helperLocos = 0;
+
+                foreach (var car in DieselLocomotive.Train.Cars)
                 {
-                    if( traincar.GetType() == typeof( MSTSDieselLocomotive ) )
+                    var mstsDieselLocomotive = car as MSTSDieselLocomotive;
+                    if (mstsDieselLocomotive != null)
                     {
-                        if (((MSTSDieselLocomotive)traincar).DieselEngines.Count > 0)
+                        if (mstsDieselLocomotive.DieselEngines.Count > 0)
                         {
-                            if ((traincar == Program.Simulator.PlayerLocomotive))
+                            if ((car == Program.Simulator.PlayerLocomotive))
                             {
-                                if ((((MSTSDieselLocomotive)traincar).DieselEngines.Count > 1))
+                                if ((mstsDieselLocomotive.DieselEngines.Count > 1))
                                 {
-                                    for (int i = 1; i < ((MSTSDieselLocomotive)traincar).DieselEngines.Count; i++)
+                                    for (int i = 1; i < mstsDieselLocomotive.DieselEngines.Count; i++)
                                     {
-                                        if (((MSTSDieselLocomotive)traincar).DieselEngines[i].EngineStatus == DieselEngine.Status.Stopped)
+                                        if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Stopped)
                                         {
-                                            ((MSTSDieselLocomotive)traincar).DieselEngines[i].Start();
+                                            mstsDieselLocomotive.DieselEngines[i].Start();
                                         }
-                                        if (((MSTSDieselLocomotive)traincar).DieselEngines[i].EngineStatus == DieselEngine.Status.Running)
+                                        if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Running)
                                         {
-                                            ((MSTSDieselLocomotive)traincar).DieselEngines[i].Stop();
+                                            mstsDieselLocomotive.DieselEngines[i].Stop();
                                         }
                                     }
                                 }
                             }
                             else
                             {
-                                foreach (DieselEngine de in ((MSTSDieselLocomotive)traincar).DieselEngines)
+                                foreach (DieselEngine de in mstsDieselLocomotive.DieselEngines)
                                 {
                                     if (de.EngineStatus == DieselEngine.Status.Stopped)
                                     {
@@ -899,15 +899,15 @@ namespace ORTS
                                 }
                             }
                         }
-                        //((MSTSDieselLocomotive)traincar).StartStopDiesel();
-                        powerOn = ((MSTSDieselLocomotive)traincar).DieselEngines.PowerOn;
-                        if ((traincar != Program.Simulator.PlayerLocomotive))
+                        //mstsDieselLocomotive.StartStopDiesel();
+                        powerOn = mstsDieselLocomotive.DieselEngines.PowerOn;
+                        if ((car != Program.Simulator.PlayerLocomotive))
                         {
-                            if ((((MSTSDieselLocomotive)traincar).DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped)||
-                                (((MSTSDieselLocomotive)traincar).DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping))
-                                ((MSTSDieselLocomotive)traincar).SignalEvent(Event.EnginePowerOff);
+                            if ((mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped) ||
+                                (mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping))
+                                mstsDieselLocomotive.SignalEvent(Event.EnginePowerOff);
                             else
-                                ((MSTSDieselLocomotive)traincar).SignalEvent(Event.EnginePowerOn);
+                                mstsDieselLocomotive.SignalEvent(Event.EnginePowerOn);
                         }
                         helperLocos++;
                     }

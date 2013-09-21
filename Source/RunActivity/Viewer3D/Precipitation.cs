@@ -42,7 +42,6 @@ namespace ORTS
         #region Class variables
         // Precipitation parameters
         // Some of these are candidates for external access in the future
-        private Vector2 windDir;
         private float windStrength;
         public float intensity; // Particles per second
         #endregion
@@ -61,7 +60,7 @@ namespace ORTS
             // Set default values and pass to PrecipMesh as applicable
             // TODO: Obtain from route files (wind params are future)
             // Sync with Sky.cs wind direction
-            precipMesh.windDir = windDir = new Vector2(1, 0); // Westerly.
+            precipMesh.windDir = new Vector2(1, 0); // Westerly.
             windStrength = 2.0f;
             precipMesh.windStrength = windStrength;
 
@@ -256,22 +255,6 @@ namespace ORTS
             public float pointSize;
             public float time;
             public Vector2 wind;
-
-            /// <summary>
-            /// Precipitaiton vertex constructor.
-            /// </summary>
-            /// <param name="position">particle position</param>
-            /// <param name="pointSize">particle size</param>
-            /// <param name="time">time of particle initialization</param>
-            /// <param name="wind">wind direction</param>
-            //public VertexPointSprite(Vector3 position, float pointSize, float time, Vector3 random, Vector2 wind)
-            public VertexPointSprite(Vector3 position, float pointSize, float time, Vector2 wind)
-            {
-                this.position = position;
-                this.pointSize = pointSize;
-                this.time = time;
-                this.wind = wind;
-            }
 
             // Vertex elements definition
             public static readonly VertexElement[] VertexElements = 

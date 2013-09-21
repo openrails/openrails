@@ -25,7 +25,7 @@ using System.IO;
 
 namespace ORTS
 {
-    class ORTSPaths
+    static class ORTSPaths
     {
         //<CJComment> Cleaner to use GetFileFromFolders() instead, but not sure how to test this. </CJComment>
         public static string FindTrainCarPlugin( string initialFolder, string filename )

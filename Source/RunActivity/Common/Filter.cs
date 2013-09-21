@@ -484,8 +484,6 @@ namespace ORTS
                           set { if(value > 0) size = value; else size = 1; Initialize(); }
                         }
 
-        float currentValue;
-
         public void Initialize(float value)
         {
             Buffer.Clear();
@@ -506,7 +504,7 @@ namespace ORTS
                 Buffer.Enqueue(value);
                 Buffer.Dequeue();
             }
-            return currentValue = Buffer.Average();
+            return Buffer.Average();
         }
     }
 }

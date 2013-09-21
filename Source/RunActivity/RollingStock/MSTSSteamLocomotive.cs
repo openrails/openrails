@@ -123,13 +123,6 @@ namespace ORTS
         float CylinderPressurePSI;
         float BackPressurePSI;
 
-        float? ReverserTarget;
-        float? Injector1Target;
-        float? Injector2Target;
-        float? BlowerTarget;
-        float? DamperTarget;
-        float? FiringRateTarget;
-
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
         {
@@ -719,7 +712,6 @@ namespace ORTS
         }
 
         public void ReverserChangeTo( bool isForward, float? target ) {
-            ReverserTarget = target;
             if( isForward ) {
                 if( target > CutoffController.CurrentValue ) {
                     StartReverseIncrease( target );
@@ -790,7 +782,6 @@ namespace ORTS
         }
 
         public void Injector1ChangeTo( bool increase, float? target ) {
-            Injector1Target = target;
             if( increase ) {
                 if( target > Injector1Controller.CurrentValue ) {
                     StartInjector1Increase( target );
@@ -803,7 +794,6 @@ namespace ORTS
         }
 
         public void Injector2ChangeTo( bool increase, float? target ) {
-            Injector2Target = target;
             if( increase ) {
                 if( target > Injector2Controller.CurrentValue ) {
                     StartInjector2Increase( target );
@@ -833,7 +823,6 @@ namespace ORTS
         }
 
         public void BlowerChangeTo( bool increase, float? target ) {
-            BlowerTarget = target;
             if( increase ) {
                 if( target > BlowerController.CurrentValue ) {
                     StartBlowerIncrease( target );
@@ -863,7 +852,6 @@ namespace ORTS
         }
 
         public void DamperChangeTo( bool increase, float? target ) {
-            DamperTarget = target;
             if( increase ) {
                 if( target > DamperController.CurrentValue ) {
                     StartDamperIncrease( target );
@@ -893,7 +881,6 @@ namespace ORTS
         }
 
         public void FiringRateChangeTo( bool increase, float? target ) {
-            FiringRateTarget = target;
             if( increase ) {
                 if( target > FiringRateController.CurrentValue ) {
                     StartFiringRateIncrease( target );

@@ -188,15 +188,15 @@ namespace ORTS
     /// <summary>
     /// WAVEFILEHEADER binary structure
     /// </summary>
-    [StructLayout(LayoutKind.Explicit, Pack=1)]
+    [StructLayout(LayoutKind.Explicit, Pack = 1)]
     public struct WAVEFILEHEADER
     {
         [FieldOffset(0), MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public char[] szRIFF;
         [FieldOffset(4), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
         public uint ulRIFFSize;
-        [FieldOffset(8), MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
-        public char[] szWAVE;
+        [FieldOffset(8), MarshalAs(UnmanagedType.U4, SizeConst = 4)]
+        public uint padding;
     }
 
     /// <summary>

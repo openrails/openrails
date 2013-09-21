@@ -149,7 +149,7 @@ namespace ORTS.Popups
                 window.Save(outf);
         }
 
-        [CallOnThread("Updater")]
+        [CallOnThread("Render")]
         public void Restore(BinaryReader inf)
         {
             foreach (var window in Windows)
@@ -196,7 +196,8 @@ namespace ORTS.Popups
             frame.AddPrimitive(WindowManagerMaterial, this, RenderPrimitiveGroup.Overlay, ref Identity);
         }
 
-		public override void Draw(GraphicsDevice graphicsDevice)
+        [CallOnThread("Render")]
+        public override void Draw(GraphicsDevice graphicsDevice)
 		{
 			// Nothing visible? Nothing more to do!
 			if (!VisibleWindows.Any())

@@ -545,7 +545,7 @@ namespace ORTS.Popups
         }
     }
 
-    class NativeStructs
+    static class NativeStructs
     {
         [DebuggerDisplay("{First} + {Second} = {Amount}")]
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -566,7 +566,7 @@ namespace ORTS.Popups
         }
     }
 
-    class NativeMethods
+    static class NativeMethods
     {
         [DllImport("gdi32.dll", SetLastError = true)]
         public static extern IntPtr CreateCompatibleDC(IntPtr hdc);
@@ -587,13 +587,7 @@ namespace ORTS.Popups
         [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern uint GetGlyphIndices(IntPtr hdc, string text, int textLength, [Out] short[] indices, GgiFlags flags);
 
-        [DllImport("gdi32.dll", SetLastError = true)]
-        public static extern uint GetKerningPairs(IntPtr hdc, int kerningPairsLength, [Out] NativeStructs.KerningPair[] kerningPairs);
-
-        [DllImport("gdi32.dll", SetLastError = true)]
-        public static extern uint GetKerningPairs(IntPtr hdc, int kerningPairsLength, IntPtr kerningPairs);
-
         [DllImport("gdi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool GetCharABCWidthsFloat(IntPtr hdc, char firstChar, char lastChar, out NativeStructs.AbcFloatWidth abcFloatWidths);
+        public static extern bool GetCharABCWidthsFloat(IntPtr hdc, uint firstChar, uint lastChar, out NativeStructs.AbcFloatWidth abcFloatWidths);
     }
 }

@@ -703,6 +703,7 @@ namespace ORTS
             }
         }
 
+#if DEBUG_RENDER_STATE
         static void DebugRenderState(RenderState renderState, string location)
         {
             if (renderState.AlphaBlendEnable != false) throw new InvalidOperationException(String.Format("RenderState.AlphaBlendEnable is {0}; expected {1} in {2}.", renderState.AlphaBlendEnable, false, location));
@@ -764,5 +765,6 @@ namespace ORTS
             if (renderState.StencilWriteMask != -1) throw new InvalidOperationException(String.Format("RenderState.StencilWriteMask is {0}; expected {1} in {2}.", renderState.StencilWriteMask, -1, location));
             if (renderState.TwoSidedStencilMode != false) throw new InvalidOperationException(String.Format("RenderState.TwoSidedStencilMode is {0}; expected {1} in {2}.", renderState.TwoSidedStencilMode, false, location));
         }
+#endif
     }
 }

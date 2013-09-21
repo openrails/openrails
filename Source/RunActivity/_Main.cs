@@ -57,7 +57,6 @@ namespace ORTS
 		public static ClientComm Client;
 		public static string UserName;
 		public static string Code;
-		public static int NumOfTrains = 0;
 
         static Viewer3D Viewer;
         static ORTraceListener ORTraceListener;
@@ -70,7 +69,6 @@ namespace ORTS
         }
 
         public static Debugging.DispatchViewer DebugViewer;
-        public static bool DebugViewerEnabled = false;
 
         /// <summary>
         /// The main entry point for the application.
@@ -246,6 +244,7 @@ namespace ORTS
         /// or
         /// e.g. "C:\Users\Wayne\AppData\Roaming\ORTS\<route folder name> <date_and_time>.save"
         /// </summary>
+        [CallOnThread("Updater")]
         public static void Save()
         {
             if (MPManager.IsMultiPlayer()) return; //no save for multiplayer sessions yet
@@ -753,16 +752,6 @@ namespace ORTS
             return file.FullName;
         }
         
-        private static string GetMostRecentReplay() {
-            var directory = new DirectoryInfo( UserDataFolder );
-            var file = directory.GetFiles( "*.replay" )
-             .OrderByDescending( f => f.LastWriteTime )
-             .First();
-            if( file == null ) throw new FileNotFoundException( String.Format(
-                "Activity Replay file '*.replay' found in folder {0}", directory ) );
-            return file.FullName;
-        }
-
         private static savedValues GetSavedValues( BinaryReader inf ) {
             savedValues values = default( savedValues );
             // Skip the heading data used in Menu.exe

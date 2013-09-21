@@ -26,6 +26,7 @@ using MSTS;
 
 namespace ORTS
 {
+    [CallOnThread("Loader")]
     public class ForestDrawer
     {
         readonly Viewer3D Viewer;
@@ -41,6 +42,7 @@ namespace ORTS
             Mesh = new ForestMesh(Viewer, forest, position);
         }
 
+        [CallOnThread("Updater")]
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var dTileX = Position.TileX - Viewer.Camera.TileX;
@@ -57,6 +59,7 @@ namespace ORTS
         }
     }
 
+    [CallOnThread("Loader")]
     public class ForestMesh : RenderPrimitive
     {
         readonly Viewer3D Viewer;

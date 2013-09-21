@@ -24,7 +24,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace ORTS
 {
     #region SkyConstants
-    class SkyConstants
+    static class SkyConstants
     {
         // Sky dome constants
         public const int skyRadius = 6000;

@@ -318,7 +318,7 @@ namespace ORTS
             
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
-            Console.WriteLine("  length {0,10:F4}", Length);
+            Console.WriteLine("  length {0,10:F4}", LengthM);
             foreach (var w in WheelAxles)
                 Console.WriteLine("  axle:  bogie  {1,5:F0}  offset {0,10:F4}", w.OffsetM, w.BogieIndex);
             foreach (var p in Parts)
@@ -394,7 +394,7 @@ namespace ORTS
                                                                                  
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
-            Console.WriteLine("  length {0,10:F4}", Length);
+            Console.WriteLine("  length {0,10:F4}", LengthM);
             Console.WriteLine("  articulated {0}/{1}", articulatedFront, articulatedRear);
             foreach (var w in WheelAxles)
                 Console.WriteLine("  axle:  bogie  {1,5:F0}  offset {0,10:F4}", w.OffsetM, w.BogieIndex);
@@ -464,7 +464,7 @@ namespace ORTS
            
 #if DEBUG_WHEELS
             Console.WriteLine(WagFilePath);
-            Console.WriteLine("  length {0,10:F4}", Length);
+            Console.WriteLine("  length {0,10:F4}", LengthM);
             Console.WriteLine("  articulated {0}/{1}", articulatedFront, articulatedRear);
             foreach (var w in WheelAxles)
                 Console.WriteLine("  axle:  bogie  {1,5:F0}  offset {0,10:F4}", w.OffsetM, w.BogieIndex);

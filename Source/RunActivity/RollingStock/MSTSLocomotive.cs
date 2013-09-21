@@ -155,10 +155,6 @@ namespace ORTS
         public float FilteredMotiveForceN = 0.0f;
 
         public double CommandStartTime;
-        float? trainBrakeTarget;
-        float? engineBrakeTarget;
-        float? dynamicBrakeTarget;
-        float? throttleTarget;
 
         public MSTSLocomotive(Simulator simulator, string wagPath)
             : base(simulator, wagPath)
@@ -473,41 +469,6 @@ namespace ORTS
             AdhesionFilter.Reset(0.5f);
             
             base.Restore(inf);
-        }
-
-        private void ParseCombData(string lowercasetoken, STFReader stf)
-        {
-            HasCombCtrl = true;
-
-            stf.MustMatch("(");
-            string comboBrakeType = "train";
-            string s;
-            int i = 0;
-            float value = 0.5f;
-
-            while ((s = stf.ReadItem()) != ")")
-            {
-                if (i == 1)
-                {
-                    value = stf.ReadFloat(STFReader.UNITS.Any, null);
-                    ComboCtrlCrossOver = (int)(value * 10);
-                }
-                if (comboBrakeType == s)
-                    HasCombThrottleTrainBrake = true;
-                i++;
-            }
-
-            // need to test for Dynamic brake problem on 3DTS and SLI
-            if (DynamicBrakeController.IsValid())
-            {
-                if (DynamicBrakeController.NotchCount() <= 3)
-                {
-                    // cancel smooth dynamic control, keyboard hud display only
-                    //HasDefectiveComboDynamicBreak = true;
-                    HasSmoothStruc = true;
-                    // Trace.TraceInformation("Smooth Dynamic Brake may have inaccurate display");
-                }
-            }
         }
 
         public bool IsLeadLocomotive()
@@ -1369,7 +1330,6 @@ namespace ORTS
         /// <param name="increase"></param>
         /// <param name="target"></param>
         public void ThrottleChangeTo( bool increase, float? target ) {
-            throttleTarget = target;
             if( increase ) {
                 if( target > ThrottleController.CurrentValue ) {
                     StartThrottleIncrease( target );
@@ -1411,14 +1371,15 @@ namespace ORTS
                 AlerterReset();
             }
 
-            if (this.GetType() == typeof(MSTSDieselLocomotive))
+            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+            if (mstsDieselLocomotive != null)
             {
-                if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox != null)
+                if (mstsDieselLocomotive.DieselEngines[0].GearBox != null)
                 {
-                    if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                    if (mstsDieselLocomotive.DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
                     {
-                        ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.AutoGearUp();
-                        GearBoxController.SetValue((float)((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.NextGearIndex);
+                        mstsDieselLocomotive.DieselEngines[0].GearBox.AutoGearUp();
+                        GearBoxController.SetValue((float)mstsDieselLocomotive.DieselEngines[0].GearBox.NextGearIndex);
                     }
                 }
             }
@@ -1441,14 +1402,15 @@ namespace ORTS
                 AlerterReset();
             }
 
-            if (this.GetType() == typeof(MSTSDieselLocomotive))
+            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+            if (mstsDieselLocomotive != null)
             {
-                if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox != null)
+                if (mstsDieselLocomotive.DieselEngines[0].GearBox != null)
                 {
-                    if (((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
+                    if (mstsDieselLocomotive.DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
                     {
-                        ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.AutoGearDown();
-                        GearBoxController.SetValue((float)((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.NextGearIndex);
+                        mstsDieselLocomotive.DieselEngines[0].GearBox.AutoGearDown();
+                        GearBoxController.SetValue((float)mstsDieselLocomotive.DieselEngines[0].GearBox.NextGearIndex);
                     }
                 }
             }
@@ -1494,7 +1456,6 @@ namespace ORTS
         /// <param name="increase"></param>
         /// <param name="target"></param>
         public void TrainBrakeChangeTo( bool increase, float? target ) {  // Need a better way to express brake as a single number?
-            trainBrakeTarget = target;
             if( increase ) {
                 if( target > TrainBrakeController.CurrentValue ) {
                     StartTrainBrakeIncrease( target );
@@ -1507,7 +1468,6 @@ namespace ORTS
         }
 
         public void EngineBrakeChangeTo( bool increase, float? target ) {  // Need a better way to express brake as a single number.
-            engineBrakeTarget = target;
             if( increase ) {
                 if( target > EngineBrakeController.CurrentValue ) {
                     StartEngineBrakeIncrease( target );
@@ -1520,7 +1480,6 @@ namespace ORTS
         }
 
         public void DynamicBrakeChangeTo( bool increase, float? target ) {  // Need a better way to express brake as a single number.
-            dynamicBrakeTarget = target;
             if( increase ) {
                 if( target > DynamicBrakeController.CurrentValue ) {
                     StartDynamicBrakeIncrease( target );
@@ -1783,35 +1742,13 @@ namespace ORTS
                 case Event.BellOn: { Bell = true; if (Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
                 case Event.BellOff: { Bell = false; Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
                 case Event.HornOn:
-                    {
-                        Horn = true;
-                        if (DoesHornTriggerBell)
-                            SignalEvent(Event.BellOn);
-                        if (this != Program.Simulator.PlayerLocomotive) break;
-                        if (this is MSTSSteamLocomotive)
-                        {
-                            Simulator.Confirmer.Confirm(CabControl.Whistle, CabSetting.On);
-                        }
-                        else
-                        {
-                            Simulator.Confirmer.Confirm(CabControl.Horn, CabSetting.On);
-                        }
-                        break;
-                    }
                 case Event.HornOff:
-                    {
-                        Horn = false;
-                        if (this != Program.Simulator.PlayerLocomotive) break;
-                        if (this is MSTSSteamLocomotive)
-                        {
-                            Simulator.Confirmer.Confirm(CabControl.Whistle, CabSetting.Off);
-                        }
-                        else
-                        {
-                            Simulator.Confirmer.Confirm(CabControl.Horn, CabSetting.Off);
-                        }
-                        break;
-                    }
+                    Horn = evt == Event.HornOn;
+                    if (DoesHornTriggerBell && Horn)
+                        SignalEvent(Event.BellOn);
+                    if (this == Program.Simulator.PlayerLocomotive)
+                        Simulator.Confirmer.Confirm(this is MSTSSteamLocomotive ? CabControl.Whistle : CabControl.Horn, Horn ? CabSetting.On : CabSetting.Off);
+                    break;
                 case Event.SanderOn: { Sander = true; if (this.IsLeadLocomotive() && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.On); break; }
                 case Event.SanderOff: { Sander = false; if (this.IsLeadLocomotive()) Simulator.Confirmer.Confirm(CabControl.Sander, CabSetting.Off); break; }
                 case Event.WiperOn: { Wiper = true; if (this == Program.Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Wipers, CabSetting.On); break; }
@@ -1939,8 +1876,9 @@ namespace ORTS
                     }
                 case CABViewControlTypes.RPM:
                     {
-                        if (((MSTSDieselLocomotive)this).DieselEngines[0] != null)
-                            data = ((MSTSDieselLocomotive)this).DieselEngines[0].RealRPM;
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
                         break;
                     }
                 case CABViewControlTypes.THROTTLE:
@@ -2143,11 +2081,9 @@ namespace ORTS
                 // For gearbox engines
                 case CABViewControlTypes.GEARS:
                     {
-                        if (this.GetType() == typeof(MSTSDieselLocomotive))
-                        {
-                            if (((MSTSDieselLocomotive)this).DieselEngines.HasGearBox)
-                                data = ((MSTSDieselLocomotive)this).DieselEngines[0].GearBox.CurrentGearIndex + 1;
-                        }
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive != null && mstsDieselLocomotive.DieselEngines.HasGearBox)
+                            data = mstsDieselLocomotive.DieselEngines[0].GearBox.CurrentGearIndex + 1;
                         break;
                     }
                 default:

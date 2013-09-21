@@ -251,7 +251,6 @@ namespace ORTS
                 primitive.PrepareFrame(labels, Viewport, Owner.Viewer.Camera);
         }
 
-        [CallOnThread("Render")]
         public override void Draw(SpriteBatch spriteBatch)
         {
             base.Draw(spriteBatch);

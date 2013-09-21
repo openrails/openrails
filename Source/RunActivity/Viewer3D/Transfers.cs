@@ -148,14 +148,12 @@ namespace ORTS
 
     public class TransferMaterial : Material
     {
-        readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
         IEnumerator<EffectPass> ShaderPasses;
 
         public TransferMaterial(Viewer3D viewer, string textureName)
             : base(viewer, textureName)
         {
-            SceneryShader = Viewer.MaterialManager.SceneryShader;
             Texture = Viewer.TextureManager.Get(textureName);
         }
 

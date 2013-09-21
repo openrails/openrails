@@ -47,11 +47,8 @@ namespace ORTS.Popups
         readonly Action<TableData>[] TextPages;
         readonly WindowTextFont TextFont;
 
-        Matrix Identity = Matrix.Identity;
         int TextPage = 0;
         TableData TextTable = new TableData() { Cells = new string[0, 0] };
-
-        HUDGraphMaterial GraphMaterial;
 
         HUDGraphSet ForceGraphs;
         HUDGraphMesh ForceGraphMotiveForce;
@@ -100,7 +97,6 @@ namespace ORTS.Popups
             ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
             ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "0", "300", Color.Blue, 25);
-
 
             LocomotiveGraphs = new HUDGraphSet(Viewer, graphMaterial);
             LocomotiveGraphsThrottle = LocomotiveGraphs.Add("Throttle", "0", "100%", Color.Blue, 50);
@@ -163,19 +159,22 @@ namespace ORTS.Popups
             if (Visible && TextPages[TextPage] == TextPageLocoInfo)
             {
                 var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
+                var locoD = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
+                var locoE = Viewer.PlayerLocomotive as MSTSElectricLocomotive;
+                var locoS = Viewer.PlayerLocomotive as MSTSSteamLocomotive;
                 LocomotiveGraphsThrottle.AddSample(loco.ThrottlePercent * 0.01f);
-                if (loco.GetType() == typeof(MSTSDieselLocomotive))
+                if (locoD != null)
                 {
-                    LocomotiveGraphsInputPower.AddSample(((MSTSDieselLocomotive)loco).DieselEngines.MaxOutputPowerW / ((MSTSDieselLocomotive)loco).DieselEngines.MaxPowerW);
-                    LocomotiveGraphsOutputPower.AddSample(((MSTSDieselLocomotive)loco).DieselEngines.PowerW / ((MSTSDieselLocomotive)loco).DieselEngines.MaxPowerW);
+                    LocomotiveGraphsInputPower.AddSample(locoD.DieselEngines.MaxOutputPowerW / locoD.DieselEngines.MaxPowerW);
+                    LocomotiveGraphsOutputPower.AddSample(locoD.DieselEngines.PowerW / locoD.DieselEngines.MaxPowerW);
                 }
-                if (loco.GetType() == typeof(MSTSElectricLocomotive))
+                if (locoE != null)
                 {
-                    LocomotiveGraphsInputPower.AddSample( loco.ThrottlePercent * 0.01f );
+                    LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
                     LocomotiveGraphsOutputPower.AddSample((loco.MotiveForceN / loco.MaxPowerW) * loco.SpeedMpS);
                 }
                 //TODO: plot correct values
-                if (loco.GetType() == typeof(MSTSSteamLocomotive))
+                if (locoS != null)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
                     LocomotiveGraphsOutputPower.AddSample((loco.MotiveForceN / loco.MaxPowerW) * loco.SpeedMpS);
@@ -446,6 +445,7 @@ namespace ORTS.Popups
         {
             TextPageHeading(table, "LOCOMOTIVE INFORMATION");
 
+            // FIXME: Rewrite all the casting operations in here!
             var train = Viewer.PlayerLocomotive.Train;
             var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
 

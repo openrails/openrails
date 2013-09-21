@@ -34,7 +34,6 @@ namespace ORTS
     public class SignalShape : PoseableShape
     {
         readonly uint UID;
-        readonly SignalObject SignalObject;
         readonly bool[] SubObjVisible;
         readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
@@ -103,7 +102,6 @@ namespace ORTS
                     Trace.TraceWarning("Skipped {0} signal {1} unit {2} with invalid SubObj {3}", Location.ToString(), mstsSignal.UID, i, mstsSignal.SignalUnits.Units[i].SubObj);
                     continue;
                 }
-                SignalObject = signalAndHead.Value.Key;
                 var mstsSignalItem = (MSTS.SignalItem)(viewer.Simulator.TDB.TrackDB.TrItemTable[mstsSignal.SignalUnits.Units[i].TrItem]);
                 try
                 {

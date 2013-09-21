@@ -1304,17 +1304,6 @@ namespace ORTS.Debugging
       }
 
 	  /// <summary>
-	  /// Generates a rectangle representing a rectangle being drawn.
-	  /// </summary>
-	  /// <param name="p">Center point of the rec, in pixels.</param>
-	  /// <param name="sizeX">Size of the rec's X, in pixels</param>
-	  /// <param name="sizeY">Size of the rec's Y, in pixels</param>
-	  /// <returns></returns>
-	  private RectangleF GetRect(PointF p, float sizeX, float sizeY)
-	  {
-		  return new RectangleF(p.X - sizeX / 2f, p.Y - sizeY / 2f, sizeX, sizeY);
-	  }
-	  /// <summary>
       /// Generates line segments from an array of TrVectorSection. Also computes 
       /// the bounds of the entire route being drawn.
       /// </summary>
@@ -1403,26 +1392,6 @@ namespace ORTS.Debugging
 		  followTrain = false;
 		  firstShow = true;
          GenerateView();
-      }
-
-      private void leftButton_Click(object sender, EventArgs e)
-      {
-         ShiftViewLeft();
-      }
-
-      private void rightButton_Click(object sender, EventArgs e)
-      {
-         ShiftViewRight();
-      }
-
-      private void upButton_Click(object sender, EventArgs e)
-      {
-         ShiftViewUp();
-      }
-
-      private void downButton_Click(object sender, EventArgs e)
-      {
-         ShiftViewDown();
       }
 
       private void ShiftViewUp()
@@ -1782,81 +1751,6 @@ namespace ORTS.Debugging
 		  return true;
 	  }
 
-      private void leftButton_MouseDown(object sender, MouseEventArgs e)
-      {
-         LeftButtonDown = true;
-      }
-
-      private void leftButton_MouseLeave(object sender, EventArgs e)
-      {
-         LeftButtonDown = false;
-      }
-
-      private void leftButton_MouseUp(object sender, MouseEventArgs e)
-      {
-         LeftButtonDown = false;
-      }
-
-      private void rightButton_MouseUp(object sender, MouseEventArgs e)
-      {
-         RightButtonDown = false;
-      }
-
-      private void rightButton_MouseDown(object sender, MouseEventArgs e)
-      {
-         RightButtonDown = true;
-      }
-
-      private void rightButton_MouseLeave(object sender, EventArgs e)
-      {
-         RightButtonDown = false;
-      }
-
-      private void upButton_MouseUp(object sender, MouseEventArgs e)
-      {
-         UpButtonDown = false;
-      }
-
-      private void upButton_MouseDown(object sender, MouseEventArgs e)
-      {
-         UpButtonDown = true;
-      }
-
-      private void upButton_MouseLeave(object sender, EventArgs e)
-      {
-         UpButtonDown = false;
-      }
-
-      private void downButton_MouseUp(object sender, MouseEventArgs e)
-      {
-         DownButtonDown = false;
-      }
-
-      private void downButton_MouseDown(object sender, MouseEventArgs e)
-      {
-         DownButtonDown = true;
-      }
-
-      private void downButton_MouseLeave(object sender, EventArgs e)
-      {
-         DownButtonDown = false;
-      }
-
-      private void showSwitches_CheckedChanged(object sender, EventArgs e)
-      {
-         GenerateView();
-      }
-
-      private void showBuffers_CheckedChanged(object sender, EventArgs e)
-      {
-         GenerateView();
-      }
-
-      private void showSignals_CheckedChanged(object sender, EventArgs e)
-      {
-         GenerateView();
-      }
-
 	  private void chkAllowUserSwitch_CheckedChanged(object sender, EventArgs e)
 	  {
 		  MultiPlayer.MPManager.AllowedManualSwitch = chkAllowUserSwitch.Checked;
@@ -1875,17 +1769,6 @@ namespace ORTS.Debugging
 		  catch { }
 	  }
 	  
-	   private void highlightTrackShapes_CheckedChanged(object sender, EventArgs e)
-      {
-         GenerateView();
-      }
-
-      private void trackShapes_SelectedIndexChanged(object sender, EventArgs e)
-      {
-         GenerateView();
-      }
-
-
 	  private const int CP_NOCLOSE_BUTTON = 0x200;
 	  protected override CreateParams CreateParams
 	  {

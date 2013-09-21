@@ -431,7 +431,6 @@ namespace ORTS
         private const int QUEUELENGHT = 16;
 
         int SoundSourceID = -1;
-        bool _isEnv = false;
         bool _isSlowRolloff = false;
         bool _isLooping = false;
         float _distanceFactor = 10;
@@ -487,7 +486,6 @@ namespace ORTS
             Initialize();
             SoundSourceID = -1;
             SoundQueue[QueueTail].PlayState = PlayState.NOP;
-            _isEnv = isEnv;
             _isSlowRolloff = isSlowRolloff;
             _distanceFactor = 1 / (distanceFactor / 350);
         }

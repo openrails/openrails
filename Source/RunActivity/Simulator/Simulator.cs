@@ -606,10 +606,10 @@ namespace ORTS
                     else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
                     train.Cars.Add(car);
                     car.Train = train;
-                    if ((Activity != null) && (car.GetType() == typeof(MSTSDieselLocomotive)))
-                    {
-                        ((MSTSDieselLocomotive)car).DieselLevelL = ((MSTSDieselLocomotive)car).MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
-                    }
+
+                    var mstsDieselLocomotive = car as MSTSDieselLocomotive;
+                    if (Activity != null && mstsDieselLocomotive != null)
+                        mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
                 }
                 catch (Exception error)
                 {

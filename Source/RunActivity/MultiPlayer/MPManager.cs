@@ -55,7 +55,6 @@ namespace ORTS.MultiPlayer
 		private List<Train> uncoupledTrains;
 
 		public bool weatherChanged = false;
-		public bool weatherChangHandled = false;
 		public int newWeather = -1;
         public float newFog = -1f;
         public float overCast = -1f;
@@ -74,7 +73,6 @@ namespace ORTS.MultiPlayer
 		public static DispatchViewer DispatcherWindow;
 		public bool CheckSpad = true;
 		public static bool PreferGreen = true;
-		Simulator Simulator;
 		Viewer3D Viewer;
 		public string MD5Check = "";
 
@@ -91,21 +89,6 @@ namespace ORTS.MultiPlayer
 			lock (uncoupledTrains)
 			{
 				uncoupledTrains.Remove(t);
-			}
-		}
-
-		public void MoveUncoupledTrains(MSGMove move)
-		{
-			if (uncoupledTrains != null && uncoupledTrains.Count > 0)
-			{
-				foreach (Train t in uncoupledTrains)
-				{
-					if (t != null)
-					{
-						if (Math.Abs(t.SpeedMpS) > 0.001) move.AddNewItem("0xUC" + t.Number, t);
-						else if (Math.Abs(t.LastReportedSpeed) > 0) move.AddNewItem("0xUC" + t.Number, t);
-					}
-				}
 			}
 		}
 
@@ -162,26 +145,7 @@ namespace ORTS.MultiPlayer
 			{ }
 		}
 
-
-		public void RequestSignalReset()
-		{
-			try
-			{
-				if (IsServer())
-				{
-					return;
-				}
-				else //client, send request
-				{
-					MSGResetSignal msgctl = new MSGResetSignal(GetUserName());
-					SendToServer(msgctl.ToString());
-				}
-			}
-			catch (Exception)
-			{ }
-		}
-
-		double previousSpeed = 0;
+        double previousSpeed = 0;
 		double begineZeroTime = 0;
 		/// <summary>
 		/// Update. Determines what messages to send every some seconds
@@ -382,9 +346,6 @@ namespace ORTS.MultiPlayer
 		{
 			if (m!= null && Program.Client != null) Program.Client.Send(m);
 		}
-		static public void BroadcastSignal()
-		{
-		}
 
 #if !NEW_SIGNALLING
 		static public void BroadcastSignal(Signal s)
@@ -395,13 +356,11 @@ namespace ORTS.MultiPlayer
 
 		public static void StopDispatcher()
 		{
-			if (DispatcherWindow != null) { if (MPManager.Instance().Viewer != null) MPManager.Instance().Viewer.DebugViewerEnabled = false; Stopped = true; DispatcherWindow.Visible = false; }
+			if (DispatcherWindow != null) { if (MPManager.Instance().Viewer != null) MPManager.Instance().Viewer.DebugViewerEnabled = false; DispatcherWindow.Visible = false; }
 		}
-		public static bool Stopped = false;
 		//nicely shutdown listening threads, and notify the server/other player
 		static public void Stop()
 		{
-			Stopped = true;
 			StopDispatcher();
 			if (Program.Client != null && Program.Server == null)
 			{
@@ -773,35 +732,6 @@ namespace ORTS.MultiPlayer
 
 		}
 
-		public void HandleDispatcherWindow(Simulator simulator, Viewer3D viewer)
-		{
-			Simulator = simulator;
-			Viewer = viewer;
-			Thread t = new Thread(StartDispatcher);
-			t.Start();
-		}
-
-		void StartDispatcher()
-		{
-			DispatcherWindow = new DispatchViewer(Simulator, Viewer);
-			Program.DebugViewer = DispatcherWindow;
-			DispatcherWindow.Show();
-			DispatcherWindow.Hide();
-			while (MPManager.Stopped != true)
-			{
-				if (Viewer.DebugViewerEnabled == true)
-				{
-					if (DispatcherWindow.Visible != true) DispatcherWindow.ShowDialog();
-					DispatcherWindow.Visible = true;
-				}
-				else
-				{
-					DispatcherWindow.Hide();
-				}
-				Thread.Sleep(100);
-			}
-			DispatcherWindow.Dispose();
-		}
         public TrainCar SubCar(string wagonFilePath, int length)
 		{
 			System.Console.WriteLine("Will substitute with your existing stocks\n.");

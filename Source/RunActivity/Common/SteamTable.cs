@@ -22,7 +22,7 @@ using System.Text;
 
 namespace ORTS
 {
-    class SteamTable
+    static class SteamTable
     {
         // gauge pressures that match other tables (pounds per square inch)
         static float[] PressureTable = new float[]

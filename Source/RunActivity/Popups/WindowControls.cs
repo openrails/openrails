@@ -382,17 +382,8 @@ namespace ORTS.Popups {
     }
 
     public class ControlLayoutOffset : ControlLayout {
-        readonly int PadLeft;
-        readonly int PadTop;
-        readonly int PadRight;
-        readonly int PadBottom;
-
         internal ControlLayoutOffset(int width, int height, int left, int top, int right, int bottom)
             : base(left, top, width - left - right, height - top - bottom) {
-            PadLeft = left;
-            PadTop = top;
-            PadRight = right;
-            PadBottom = bottom;
         }
     }
 

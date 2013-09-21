@@ -425,7 +425,6 @@ namespace ORTS
     {
         #region Class Variables
         RenderProcess RenderProcess;
-        string RoutePath;
 
         public string Name; // e.g., "Default track profile"
         public int ReplicationPitch; //TBD: Replication pitch alternative
@@ -493,7 +492,6 @@ namespace ORTS
         {
             // Default TrProfile constructor
             RenderProcess = renderProcess;
-            RoutePath = renderProcess.Viewer.Simulator.RoutePath;
 
             Name = "Default Dynatrack profile";
             LODMethod = LODMethods.ComponentAdditive;
@@ -717,7 +715,6 @@ namespace ORTS
         {
             // Default TrProfile constructor
             RenderProcess = renderProcess;
-            RoutePath = renderProcess.Viewer.Simulator.RoutePath;
             Name = "Default Dynatrack profile";
         } // end TrProfile() constructor for inherited class
 

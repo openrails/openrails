@@ -655,12 +655,12 @@ namespace ORTS
 
     public class SuperElevationMesh : DynatrackMesh
     {
-        float StartElev = 0f, MaxElev = 0f, EndElv = 0f, Dir = 0f;
+        float StartElev = 0f, MaxElev = 0f, EndElv = 0f;
         public SuperElevationMesh(RenderProcess renderProcess, WorldPosition worldPosition,
         WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir)
             : base()
         {
-            StartElev = s; EndElv = e; MaxElev = m; Dir = dir;
+            StartElev = s; EndElv = e; MaxElev = m;
             // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
             // serve as the beginning of the next subsection.
@@ -732,7 +732,6 @@ namespace ORTS
 
 
         int offSet = 0;
-        int elevationLevel = 0;
         int whichCase = 0;
         float elevated = 0f;
         /// <summary>
@@ -746,7 +745,6 @@ namespace ORTS
         /// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
         public new ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
         {
-            elevationLevel = viewer.Simulator.UseSuperElevation;
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();
             else CircArcGen();

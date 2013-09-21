@@ -179,7 +179,6 @@ namespace ORTS
         float particlesToEmit;
 
         Random rng = new Random();
-        RenderProcess renderProcess;
         ParticleVertex[] vertices;
 
         VertexDeclaration vd;
@@ -200,7 +199,6 @@ namespace ORTS
         {
             ParticleColor = Color.White;
             EmitterData = data;
-            this.renderProcess = renderProcess;
             maxParticles = (int)(EmitterData.MaxParticlesPerSecond * data.ParticleDuration);
             vd = new VertexDeclaration(renderProcess.GraphicsDevice, ParticleVertex.VertexElements);
             InitVB(renderProcess.GraphicsDevice);

@@ -66,7 +66,6 @@ namespace ORTS
 
         public Vector2 WindowSize = new Vector2(1024, 768);
 
-        System.Windows.Forms.Form Form;    // the 3D view is drawn on this form
         public GraphicsDeviceManager GraphicsDeviceManager;
 
         RenderFrame CurrentFrame;   // a frame contains a list of primitives to draw at a specified time
@@ -96,7 +95,6 @@ namespace ORTS
             Profiler.SetThread();
 
             Window.Title = "Open Rails";
-            Form = Control.FromHandle(this.Window.Handle).FindForm();
             GraphicsDeviceManager = Viewer.GDM = new GraphicsDeviceManager(this);
 
             var windowSizeParts = Viewer.Settings.WindowSize.Split(new[] { 'x' }, 2);

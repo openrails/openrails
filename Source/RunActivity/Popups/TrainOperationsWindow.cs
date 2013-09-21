@@ -77,13 +77,11 @@ namespace ORTS.Popups {
 
     class TrainOperationsCoupler : Image {
         readonly Viewer3D Viewer;
-        readonly TrainCar Car;
         readonly int CarPosition;
 
         public TrainOperationsCoupler( int x, int y, Viewer3D viewer, TrainCar car, int carPosition )
             : base( x, y, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize ) {
             Viewer = viewer;
-            Car = car;
             CarPosition = carPosition;
             Texture = TrainOperationsWindow.CouplerTexture;
             Source = new Rectangle( 0, 0, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize );

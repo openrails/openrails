@@ -82,7 +82,6 @@ namespace ORTS
             }
         }
 
-        [CallOnThread("Render")]
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.Indices = IndexBuffer;

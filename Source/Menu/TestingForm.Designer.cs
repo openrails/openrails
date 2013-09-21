@@ -46,7 +46,6 @@
             this.blankDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.testBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.buttonDetails = new System.Windows.Forms.Button();
-            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.checkBoxOverride = new System.Windows.Forms.CheckBox();
             this.buttonNoSort = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.gridTestActivities)).BeginInit();
@@ -310,7 +309,6 @@
         private System.Windows.Forms.DataGridView gridTestActivities;
         private System.Windows.Forms.BindingSource testBindingSource;
         private System.Windows.Forms.Button buttonDetails;
-        private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.CheckBox checkBoxOverride;
         private System.Windows.Forms.Button buttonNoSort;
         private System.Windows.Forms.DataGridViewCheckBoxColumn toTestDataGridViewCheckBoxColumn;

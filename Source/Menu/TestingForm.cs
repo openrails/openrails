@@ -54,7 +54,6 @@ namespace ORTS
             }
         }
 
-        SortableBindingList<TestActivity> TestActivities = new SortableBindingList<TestActivity>();
         Task<SortableBindingList<TestActivity>> TestActivityLoader;
 
         Task<int> TestActivitiesRunner;

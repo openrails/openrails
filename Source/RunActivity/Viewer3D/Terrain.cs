@@ -30,6 +30,7 @@ using MSTS;
 namespace ORTS
 {
     [DebuggerDisplay("Count = {TerrainTiles.Count}")]
+    [CallOnThread("Loader")]
     public class TerrainDrawer
     {
         readonly Viewer3D Viewer;
@@ -43,12 +44,12 @@ namespace ORTS
         int VisibleTileX;
         int VisibleTileZ;
 
+        [CallOnThread("Render")]
         public TerrainDrawer(Viewer3D viewer)
         {
             Viewer = viewer;
         }
 
-        [CallOnThread("Loader")]
         public void Load()
         {
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
@@ -114,7 +115,6 @@ namespace ORTS
                 tile.PrepareFrame(frame, elapsedTime);
         }
 
-        [CallOnThread("Loader")]
         internal void Mark()
         {
             var tiles = TerrainTiles;
@@ -130,6 +130,7 @@ namespace ORTS
     }
 
     [DebuggerDisplay("TileX = {TileX}, TileZ = {TileZ}, Size = {Size}")]
+    [CallOnThread("Loader")]
     public class TerrainTile
     {
         public readonly int TileX, TileZ, Size, PatchCount;
@@ -160,6 +161,7 @@ namespace ORTS
                 WaterTile = new WaterTile(viewer, tile);
         }
 
+        [CallOnThread("Updater")]
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (WaterTile != null)
@@ -185,6 +187,7 @@ namespace ORTS
     }
 
     [DebuggerDisplay("TileX = {TileX}, TileZ = {TileZ}, Size = {Size}, PatchX = {PatchX}, PatchZ = {PatchZ}")]
+    [CallOnThread("Loader")]
     public class TerrainPatch : RenderPrimitive
     {
         readonly Viewer3D Viewer;
@@ -242,6 +245,7 @@ namespace ORTS
             Patch = null;
         }
 
+        [CallOnThread("Updater")]
         public void PrepareFrame(RenderFrame frame)
         {
             var dTileX = TileX - Viewer.Camera.TileX;

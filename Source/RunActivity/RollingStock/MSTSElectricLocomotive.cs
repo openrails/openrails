@@ -239,10 +239,13 @@ namespace ORTS
         /// </summary>
         /// <param name="raise"></param>
         public void SetPantographs( int item, bool raise ) {
-            foreach( TrainCar traincar in Train.Cars ) {
-                if( traincar.GetType() == typeof( MSTSElectricLocomotive ) ) {
-                    if( item == 1 ) ((MSTSElectricLocomotive)traincar).SetPantographFirst( raise );
-                    if( item == 2 ) ((MSTSElectricLocomotive)traincar).SetPantographSecond( raise );
+            foreach (var car in Train.Cars)
+            {
+                var mstsElectricLocomotive = car as MSTSElectricLocomotive;
+                if (mstsElectricLocomotive != null)
+                {
+                    if (item == 1) mstsElectricLocomotive.SetPantographFirst(raise);
+                    if (item == 2) mstsElectricLocomotive.SetPantographSecond(raise);
                 }
             }
             if( item == 1 ) this.Simulator.Confirmer.Confirm( CabControl.Pantograph1, raise == true ? CabSetting.On : CabSetting.Off );

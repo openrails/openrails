@@ -333,8 +333,9 @@ namespace ORTS.Popups
 
         bool GetStoppedAt(ActivityTask task)
         {
-            if (task is ActivityTaskPassengerStopAt)
-                return ((ActivityTaskPassengerStopAt)task).ActArrive != null;
+            var stopAtTask = task as ActivityTaskPassengerStopAt;
+            if (stopAtTask != null)
+                return stopAtTask.ActArrive != null;
             return false;
         }
     }
