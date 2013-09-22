@@ -47,7 +47,7 @@ namespace ORTS
         public StartTrains StartList = new StartTrains();
         private double clockTime; // clock time : local time before activity start, common time from simulator after start
         private bool localTime;  // if true : clockTime is local time
-        public bool PreUpdate = false; // if true : running in pre-update phase
+        public bool PreUpdate; // if true : running in pre-update phase
         public List<AITrain> TrainsToRemove = new List<AITrain>();
 
         /// <summary>
@@ -254,7 +254,6 @@ namespace ORTS
                 train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, conFile.Train.TrainCfg.MaxVelocity.A);
             
             // add wagons
-            TrainCar previousCar = null;
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
 
@@ -271,7 +270,6 @@ namespace ORTS
                     train.Cars.Add(car);
                     car.Train = train;
                     car.SignalEvent(Event.Pantograph1Up);
-                    previousCar = car;
                 }
                 catch (Exception error)
                 {

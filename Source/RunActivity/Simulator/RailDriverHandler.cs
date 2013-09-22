@@ -32,11 +32,11 @@ namespace ORTS
     /// </summary>
     public class RailDriverHandler : PIEDataHandler, PIEErrorHandler
     {
-        PIEDevice Device = null;            // Our RailDriver
-        byte[] WriteBuffer = null;          // Buffer for sending data to RailDriver
-        bool Active = false;                // True when RailDriver values are used to control player loco
-        RailDriverState State = null;       // Interpreted data from RailDriver passed to UserInput
-        bool FullRangeThrottle = false;     // True if full range throttle and no dynamic brake, no way to set this at the moment
+        PIEDevice Device;                   // Our RailDriver
+        byte[] WriteBuffer;                 // Buffer for sending data to RailDriver
+        bool Active;                        // True when RailDriver values are used to control player loco
+        RailDriverState State;              // Interpreted data from RailDriver passed to UserInput
+        bool FullRangeThrottle;             // True if full range throttle and no dynamic brake, no way to set this at the moment
 
         // calibration values, defaults for the developer's RailDriver
         float FullReversed = 225;
@@ -167,7 +167,7 @@ namespace ORTS
             Trace.TraceWarning("RailDriver Error: {0}", error);
         }
 
-        float Percentage(float x, float x0, float x100)
+        static float Percentage(float x, float x0, float x100)
         {
             float p= 100 * (x - x0) / (x100 - x0);
             if (p < 5)
@@ -176,7 +176,8 @@ namespace ORTS
                 return 100;
             return p;
         }
-        float Percentage(float x, float xminus100, float x0, float xplus100)
+        
+        static float Percentage(float x, float xminus100, float x0, float xplus100)
         {
             float p = 100 * (x - x0) / (xplus100 - x0);
             if (p < 0)
@@ -339,7 +340,7 @@ namespace ORTS
     /// </summary>
     public class RailDriverState
     {
-        public bool Changed = false;        // true when data has been changed but not processed by HandleUserInput
+        public bool Changed;                // true when data has been changed but not processed by HandleUserInput
         public float DirectionPercent;      // -100 (reverse) to 100 (forward)
         public float ThrottlePercent;       // 0 to 100
         public float DynamicBrakePercent;   // 0 to 100 if active otherwise less than 0
@@ -349,9 +350,9 @@ namespace ORTS
         public bool Emergency;              // true when train brake handle in emergency or E-stop button pressed
         public int Wipers;                  // wiper rotary, 1 off, 2 slow, 3 full
         public int Lights;                  // lights rotary, 1 off, 2 dim, 3 full
-        byte[] ButtonData = null;           // latest button data, one bit per button
-        byte[] PreviousButtonData = null;
-        RailDriverUserCommand[] Commands = null;
+        byte[] ButtonData;                  // latest button data, one bit per button
+        byte[] PreviousButtonData;
+        RailDriverUserCommand[] Commands;
 
         public RailDriverState()
         {

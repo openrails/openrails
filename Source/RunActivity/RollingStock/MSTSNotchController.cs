@@ -150,19 +150,19 @@ namespace ORTS
      */
     public class MSTSNotchController: IController
     {
-        public float CurrentValue = 0;
-        public float IntermediateValue = 0;
-        public float MinimumValue = 0;
+        public float CurrentValue;
+        public float IntermediateValue;
+        public float MinimumValue;
         public float MaximumValue = 1;
-        public float StepSize = 0;
+        public float StepSize;
         private List<MSTSNotch> Notches = new List<MSTSNotch>();
-        public int CurrentNotch = 0;
+        public int CurrentNotch;
 
         protected Simulator Simulator;
 
         //Does not need to persist
         //this indicates if the controller is increasing or decreasing, 0 no changes
-        public float UpdateValue = 0;
+        public float UpdateValue;
         private float? controllerTarget;
         public double CommandStartTime;
 
@@ -254,7 +254,7 @@ namespace ORTS
             return Notches.Count;
         }
 
-        private float GetNotchBoost()
+        static float GetNotchBoost()
         {            
             return 5;
         }

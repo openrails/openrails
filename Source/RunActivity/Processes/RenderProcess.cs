@@ -71,9 +71,9 @@ namespace ORTS
         RenderFrame CurrentFrame;   // a frame contains a list of primitives to draw at a specified time
         RenderFrame NextFrame;      // we prepare the next frame in the background while the current one is rendering,
 
-        public bool Stopped = false;  // use for shutdown
+        public bool Stopped;        // use for shutdown
 
-        public new bool IsMouseVisible = false;  // handles cross thread issues by signalling RenderProcess of a change
+        public new bool IsMouseVisible;  // handles cross thread issues by signalling RenderProcess of a change
 
         // Diagnostic information
         public readonly SmoothedData FrameRate = new SmoothedData();
@@ -319,7 +319,7 @@ namespace ORTS
             }
         }
 
-        void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)
+        static void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)
         {
             RenderFrame temp = frame1;
             frame1 = frame2;

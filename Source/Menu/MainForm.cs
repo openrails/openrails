@@ -310,7 +310,7 @@ namespace ORTS
             DialogResult = DialogResult.OK;
         }
 
-        void CleanupPre021()
+        static void CleanupPre021()
         {
             // Handle cleanup from pre version 0021
             using (var RK = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
@@ -397,7 +397,7 @@ namespace ORTS
             Folders.Clear();
             ShowFolderList();
 
-            var folderLoader = new Task<List<Folder>>(this, () => Folder.GetFolders().OrderBy(f => f.Name).ToList(), (folders) =>
+            new Task<List<Folder>>(this, () => Folder.GetFolders().OrderBy(f => f.Name).ToList(), (folders) =>
             {
                 Folders = folders;
                 if (Folders.Count == 0)

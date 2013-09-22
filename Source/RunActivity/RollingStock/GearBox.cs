@@ -22,7 +22,7 @@ namespace ORTS
         public float GearBoxUpGearProportion = 0.85f;
         public float GearBoxDownGearProportion = 0.35f;
 
-        int initLevel = 0;
+        int initLevel;
 
         public bool IsInitialized { get { return initLevel >= 5; } }
         public bool AtLeastOneParamFound { get { return initLevel >= 1; } }
@@ -173,8 +173,8 @@ namespace ORTS
 
         public int NextGearIndex { get { return nextGearIndex; } }
 
-        private bool gearedUp = false;
-        private bool gearedDown = false;
+        private bool gearedUp;
+        private bool gearedDown;
         public bool GearedUp { get { return gearedUp; } }
         public bool GearedDown { get { return gearedDown; } }
 
@@ -218,7 +218,7 @@ namespace ORTS
             gearedDown = false;
         }
 
-        public bool clutchOn = false;
+        public bool clutchOn;
         public bool IsClutchOn
         {
             get
@@ -280,7 +280,7 @@ namespace ORTS
             }
         }
 
-        float clutch = 0;
+        float clutch;
         public float ClutchPercent { set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; } get { return clutch * 100f; } }
 
         public bool AutoClutch = true;
@@ -354,7 +354,7 @@ namespace ORTS
             mstsParams.Parse(lowercasetoken, stf);
         }
 
-        public bool IsRestored = false;
+        public bool IsRestored;
 
         public void Restore(BinaryReader inf)
         {
@@ -462,18 +462,18 @@ namespace ORTS
 
     public class Gear
     {
-        public bool IsDirectDriveGear = false;
-        public float MaxSpeedMpS = 0;
-        public float MaxTractiveForceN = 0;
-        public float OverspeedPercentage = 0;
-        public float BackLoadForceN = 0;
-        public float CoastingForceN = 0;
-        public float UpGearProportion = 0;
-        public float DownGearProportion = 0;
+        public bool IsDirectDriveGear;
+        public float MaxSpeedMpS;
+        public float MaxTractiveForceN;
+        public float OverspeedPercentage;
+        public float BackLoadForceN;
+        public float CoastingForceN;
+        public float UpGearProportion;
+        public float DownGearProportion;
 
         public float Ratio = 1f;
 
-        public GearBox GearBox = null;
+        public GearBox GearBox;
 
         public Gear(GearBox gb) { GearBox = gb; }
     }

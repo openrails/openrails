@@ -648,7 +648,7 @@ namespace ORTS
         //
         //================================================================================================//
 
-        public scrReadInfo scrReadLine(StreamReader scrStream, int lastline)
+        public static scrReadInfo scrReadLine(StreamReader scrStream, int lastline)
         {
             string readLine;
             string procLine = String.Empty;
@@ -1481,7 +1481,6 @@ namespace ORTS
                     // match open and close brackets - when matched, that is end of condition
 
                     int actbracks = 1;
-                    int actpos = openarray[0].Index;
 
                     int actopen = 1;
                     int openpos = actopen < openarray.Length ? openarray[actopen].Index : presentstring.Length + 1;
@@ -3153,7 +3152,7 @@ namespace ORTS
         //
         //================================================================================================//
 
-        public int SH_termvalue(SignalHead thisHead, SCRScripts.SCRParameterType thisParameter,
+        public static int SH_termvalue(SignalHead thisHead, SCRScripts.SCRParameterType thisParameter,
                     int[] localFloats, SIGSCRfile sigscr)
         {
 

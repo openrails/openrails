@@ -102,8 +102,8 @@ namespace MSTS
         public string Description;
         public RouteStart RouteStart;
         public TRKEnvironment Environment;
-		public bool MilepostUnitsMetric = false;
-        public double MaxLineVoltage = 0;
+        public bool MilepostUnitsMetric;
+        public double MaxLineVoltage;
 		public bool Electrified = true;
 		public double OverheadWireHeight = 6.0;
 		public double SpeedLimit = 500.0f; //global speed limit m/s.

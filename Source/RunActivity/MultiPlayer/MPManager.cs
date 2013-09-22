@@ -41,13 +41,13 @@ namespace ORTS.MultiPlayer
 	class MPManager
 	{
 		public int version = 15;
-		double lastMoveTime = 0.0f;
-		public double lastSwitchTime = 0.0f;
-		double lastSendTime = 0.0f;
+        double lastMoveTime;
+        public double lastSwitchTime;
+        double lastSendTime;
 		string metric = "";
 		double metricbase = 1.0f;
 		public static OnlineTrains OnlineTrains = new OnlineTrains();
-		private static MPManager localUser = null;
+        private static MPManager localUser;
 
 		public List<Train> removedTrains;
 		private List<Train> addedTrains;
@@ -59,7 +59,7 @@ namespace ORTS.MultiPlayer
         public float newFog = -1f;
         public float overCast = -1f;
 
-		public double lastPlayerAddedTime = 0.0f;
+        public double lastPlayerAddedTime;
 		public int MPUpdateInterval = 10;
 		static public bool AllowedManualSwitch = true;
 		public bool TrySwitch = true;
@@ -119,7 +119,7 @@ namespace ORTS.MultiPlayer
 			return localUser;
 		}
 
-		public void RequestControl()
+		public static void RequestControl()
 		{
 			try
 			{
@@ -145,8 +145,8 @@ namespace ORTS.MultiPlayer
 			{ }
 		}
 
-        double previousSpeed = 0;
-		double begineZeroTime = 0;
+        double previousSpeed;
+        double begineZeroTime;
 		/// <summary>
 		/// Update. Determines what messages to send every some seconds
 		/// 1. every one second will send train location
@@ -378,7 +378,7 @@ namespace ORTS.MultiPlayer
 		}
 
 		//when two player trains connected, require decouple at speed 0.
-		public bool TrainOK2Decouple(Train t)
+		public static bool TrainOK2Decouple(Train t)
 		{
 			if (t == null) return false;
 			if (Math.Abs(t.SpeedMpS) < 0.001) return true;
@@ -421,7 +421,7 @@ namespace ORTS.MultiPlayer
 				foreach (Train t in Program.Simulator.Trains)
 				{
 					if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
-					if (MPManager.Instance().FindPlayerTrain(t)) continue;
+					if (MPManager.FindPlayerTrain(t)) continue;
 					if (removedTrains.Contains(t)) continue;//this train is going to be removed, should avoid it.
 					MPManager.BroadCast((new MSGTrain(t, t.Number)).ToString());
 				}
@@ -447,7 +447,7 @@ namespace ORTS.MultiPlayer
         }
 
         //this will be used in the server, in Simulator.cs
-		public bool TrainOK2Couple(Train t1, Train t2)
+		public static bool TrainOK2Couple(Train t1, Train t2)
 		{
 			//if (Math.Abs(t1.SpeedMpS) > 10 || Math.Abs(t2.SpeedMpS) > 10) return false; //we do not like high speed punch in MP, will mess up a lot.
 
@@ -676,12 +676,12 @@ namespace ORTS.MultiPlayer
 			}
 		}
 
-		public Train FindPlayerTrain(string user)
+		public static Train FindPlayerTrain(string user)
 		{
 			return OnlineTrains.findTrain(user);
 		}
 
-		public bool FindPlayerTrain(Train t)
+		public static bool FindPlayerTrain(Train t)
 		{
 			return OnlineTrains.findTrain(t);
 		}
@@ -691,15 +691,14 @@ namespace ORTS.MultiPlayer
 			Notify((new MSGLocoChange(GetUserName(), lead.CarID, t)).ToString());
 		}
 		//count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
-		int PantoSecondCount = 0;
-		int PantoFirstCount = 0;
-		int BellCount = 0;
-		int WiperCount = 0;
-		int HeadLightCount = 0;
+        int PantoSecondCount;
+        int PantoFirstCount;
+        int BellCount;
+        int WiperCount;
+        int HeadLightCount;
 
 		public void handleUserInput()
 		{
-			TrainCar Locomotive = Program.Simulator.PlayerLocomotive;
 			//In Multiplayer, I maybe the helper, but I can request to be the controller
 			if (UserInput.IsPressed(UserCommands.GameRequestControl))
 			{
@@ -735,7 +734,7 @@ namespace ORTS.MultiPlayer
         public TrainCar SubCar(string wagonFilePath, int length)
 		{
 			System.Console.WriteLine("Will substitute with your existing stocks\n.");
-			TrainCar car = null;
+            TrainCar car;
 			try
 			{
 				char type = 'w';
@@ -754,8 +753,8 @@ namespace ORTS.MultiPlayer
 			}
 			return car;
 		}
-		SortedList<double, string> coachList = null;
-		SortedList<double, string> engList = null;
+        SortedList<double, string> coachList;
+        SortedList<double, string> engList;
 
 		public string SubMissingCar(int length, char type)
 		{
@@ -785,7 +784,7 @@ namespace ORTS.MultiPlayer
 
 		}
 
-		SortedList<double, string> GetList(char type)
+		static SortedList<double, string> GetList(char type)
 		{
 			string ending = "*.eng";
 			if (type == 'w') ending = "*.wag";
@@ -808,7 +807,7 @@ namespace ORTS.MultiPlayer
 					using (STFReader stf = new STFReader(Program.Simulator.BasePath + "\\trains\\trainset\\" + name, true))
 						while (!stf.Eof)
 						{
-							string token = stf.ReadItem();
+							stf.ReadItem();
 							if (stf.Tree.ToLower() == "wagon(size")
 							{
 								stf.MustMatch("(");

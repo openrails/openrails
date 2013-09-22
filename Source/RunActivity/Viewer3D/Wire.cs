@@ -111,7 +111,6 @@ namespace ORTS
                         else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
                         Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
 
-                        Matrix rot2 = Matrix.CreateRotationY(-(90 - section.SectionCurve.Angle) * 3.14f / 180); // Heading change (rotation about O)
                         displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
                                                 worldMatrix.XNAMatrix, out localProjectedV);
 
@@ -204,7 +203,6 @@ namespace ORTS
                     else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
                     Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
 
-                    Matrix rot2 = Matrix.CreateRotationY(-(90 - section.SectionCurve.Angle) * 3.14f / 180); // Heading change (rotation about O)
                     displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
                                             worldMatrix.XNAMatrix, out localProjectedV);
 
@@ -250,9 +248,6 @@ namespace ORTS
 
             WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Make a copy so it will not be messed
 
-            float realRun; // Actual run for subsection based on path
-
-
             WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
             Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
             worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
@@ -286,7 +281,6 @@ namespace ORTS
                     localProjectedV = localV + length * heading;
                     displacement = Traveller.MSTSInterpolateAlongStraight(localV, heading, length,
                                                             worldMatrix.XNAMatrix, out localProjectedV);
-                    realRun = length;
                 }
                 else // Curved section
                 {   // Both heading and translation change 
@@ -302,7 +296,6 @@ namespace ORTS
 
                     heading = Vector3.Transform(heading, rot); // Heading change
                     nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
-                    realRun = radius * ((length > 0) ? length : -length); // Actual run (meters)
                 }
 
                 // Update nextRoot with new translation component
@@ -341,8 +334,8 @@ namespace ORTS
     public class LODItemWire : LODItem
     {
         // NumVertices and NumSegments used for sizing vertex and index buffers
-        public uint VerticalNumVertices = 0;                     // Total independent vertices in LOD
-        public uint VerticalNumSegments = 0;                     // Total line segment count in LOD
+        public uint VerticalNumVertices;                     // Total independent vertices in LOD
+        public uint VerticalNumSegments;                     // Total line segment count in LOD
         public ArrayList VerticalPolylines = new ArrayList();  // Array of arrays of vertices 
 
         /// <summary>
@@ -398,7 +391,7 @@ namespace ORTS
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
-            lodItem.LoadMaterial(RenderProcess, lodItem);
+            LODItem.LoadMaterial(RenderProcess, lodItem);
 
             float topHeight = (float)RenderProcess.Viewer.Simulator.TRK.Tr_RouteFile.OverheadWireHeight;
 

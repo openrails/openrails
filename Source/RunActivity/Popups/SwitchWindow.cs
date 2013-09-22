@@ -98,7 +98,7 @@ namespace ORTS.Popups
 #if !NEW_SIGNALLING
             if( Owner.Viewer.Simulator.SwitchTrackAhead(Owner.Viewer.PlayerTrain) )
 #else
-            if (Owner.Viewer.Simulator.Signals.RequestSetSwitch(Owner.Viewer.PlayerTrain, Direction.Forward) )
+            if (Signals.RequestSetSwitch(Owner.Viewer.PlayerTrain, Direction.Forward) )
 #endif
             {
                 new ToggleSwitchAheadCommand(Owner.Viewer.Log);
@@ -110,7 +110,7 @@ namespace ORTS.Popups
 #if !NEW_SIGNALLING
             if( Owner.Viewer.Simulator.SwitchTrackBehind(Owner.Viewer.PlayerTrain) )
 #else
-            if ( Owner.Viewer.Simulator.Signals.RequestSetSwitch(Owner.Viewer.PlayerTrain, Direction.Reverse) )
+            if ( Signals.RequestSetSwitch(Owner.Viewer.PlayerTrain, Direction.Reverse) )
 #endif
             {
                 new ToggleSwitchBehindCommand(Owner.Viewer.Log);
@@ -185,7 +185,7 @@ namespace ORTS.Popups
 		}
 
 #if NEW_SIGNALLING
-        void UpdateDirection(Image image, Train train)
+        static void UpdateDirection(Image image, Train train)
         {
             image.Source = new Rectangle(0, 0, SwitchImageSize, SwitchImageSize);
             image.Source.Y = 4 * SwitchImageSize;
@@ -193,7 +193,7 @@ namespace ORTS.Popups
                 (train.MUDirection == Direction.Reverse ? 1 * SwitchImageSize : 0);
         }
 
-        void UpdateEye(Image image, Train train, bool front)
+        static void UpdateEye(Image image, Train train, bool front)
         {
             image.Source = new Rectangle(0, 0, SwitchImageSize, SwitchImageSize / 2);
             image.Source.Y = (int)(4.25 * SwitchImageSize);

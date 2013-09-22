@@ -114,7 +114,7 @@ namespace ORTS
         /// <summary>
         /// Axle drive represented by a motor, covered by ElectricMotor interface
         /// </summary>
-        ElectricMotor motor = null;
+        ElectricMotor motor;
         /// <summary>
         /// Read/Write Motor drive parameter.
         /// With setting a value the totalInertiaKgm2 is updated
@@ -502,7 +502,6 @@ namespace ORTS
         /// </summary>
         public Axle()
         {
-            motor = null;
             transmitionEfficiency = 0.99f;
             SlipWarningTresholdPercent = 70.0f;
             driveType = AxleDriveType.ForceDriven;

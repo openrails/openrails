@@ -49,14 +49,14 @@ namespace ORTS
     public class MSTSElectricLocomotive: MSTSLocomotive
     {
 
-        public bool PantographFirstUp = false;
-        public bool PantographSecondUp = false;
-        public float PantographFirstDelay = 0.0f;
-        public float PantographSecondDelay = 0.0f;
+        public bool PantographFirstUp;
+        public bool PantographSecondUp;
+        public float PantographFirstDelay;
+        public float PantographSecondDelay;
         
 
         public IIRFilter VoltageFilter;
-        public float VoltageV = 0.0f;
+        public float VoltageV;
 
         public MSTSElectricLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)

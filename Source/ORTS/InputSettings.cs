@@ -323,7 +323,6 @@ namespace ORTS
                     drawRow(new Rectangle(0, y, keyboardLine.Length, 1));
 
                 var x = keyboardLine.IndexOf('[');
-                var lastIndex = -1;
                 while (x != -1)
                 {
                     var x2 = keyboardLine.IndexOf(']', x);
@@ -339,7 +338,6 @@ namespace ORTS
                     if (drawKey != null)
                         drawKey(new Rectangle(x, y, x2 - x + 1, 1), keyScanCode, keyName);
 
-                    lastIndex = x2;
                     x = keyboardLine.IndexOf('[', x2);
                 }
             }
@@ -383,7 +381,6 @@ namespace ORTS
                         keyColor.G += (byte)((255 - keyColor.G) * 2 / 3);
                         keyColor.B += (byte)((255 - keyColor.B) * 2 / 3);
                     }
-                    var w = g.MeasureString(keyName, keyFontLabel).Width;
 
                     Scale(ref keyBox, keyWidth, keyHeight);
                     keyBox.Inflate(-keySpacing, -keySpacing);
@@ -817,7 +814,7 @@ namespace ORTS
         {
         }
 
-        protected bool IsModifiersMatching(KeyboardState keyboardState, bool shift, bool control, bool alt)
+        protected static bool IsModifiersMatching(KeyboardState keyboardState, bool shift, bool control, bool alt)
         {
             return (!shift || keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift)) &&
                 (!control || keyboardState.IsKeyDown(Keys.LeftControl) || keyboardState.IsKeyDown(Keys.RightControl)) &&
@@ -950,12 +947,12 @@ namespace ORTS
             }
         }
 
-        protected bool IsKeyMatching(KeyboardState keyboardState, Keys key)
+        protected static bool IsKeyMatching(KeyboardState keyboardState, Keys key)
         {
             return keyboardState.IsKeyDown(key);
         }
 
-        protected bool IsModifiersMatching(KeyboardState keyboardState, bool shift, bool control, bool alt)
+        protected static bool IsModifiersMatching(KeyboardState keyboardState, bool shift, bool control, bool alt)
         {
             return ((keyboardState.IsKeyDown(Keys.LeftShift) || keyboardState.IsKeyDown(Keys.RightShift)) == shift) &&
                 ((keyboardState.IsKeyDown(Keys.LeftControl) || keyboardState.IsKeyDown(Keys.RightControl)) == control) &&

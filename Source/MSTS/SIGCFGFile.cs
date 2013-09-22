@@ -658,10 +658,10 @@ namespace MSTS
 			public readonly string Description;      // 
 			public int SignalSubType = -1;  // Signal sub type: -1 if not specified;
 			public string SignalSubSignalType;
-			public bool Optional = false;
-			public bool Default = false;
-			public bool BackFacing = false;
-			public bool JunctionLink = false;
+            public bool Optional;
+            public bool Default;
+            public bool BackFacing;
+            public bool JunctionLink;
 
             public SignalSubObj(STFReader stf)
             {

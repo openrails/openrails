@@ -168,7 +168,7 @@ namespace ORTS {
             }
         }
 
-        public void ReportReplayCommands( List<ICommand> list ) {
+        public static void ReportReplayCommands( List<ICommand> list ) {
             Trace.WriteLine( "\nList of commands to replay:" );
             foreach( var c in list ) { c.Report(); }
         }

@@ -85,10 +85,10 @@ namespace MSTS
     public partial class ScalabiltyGroup
     {
         public int DetailLevel;
-        public SMSStreams Streams = null;
+        public SMSStreams Streams;
         public float Volume = 1.0f;
-        public bool Stereo = false;
-        public bool Ignore3D = false;
+        public bool Stereo;
+        public bool Ignore3D;
         public Activation Activation;
         public Deactivation Deactivation;
 
@@ -109,9 +109,9 @@ namespace MSTS
 
     public class Activation
     {
-        public bool ExternalCam = false;
-        public bool CabCam = false;
-        public bool PassengerCam = false;
+        public bool ExternalCam;
+        public bool CabCam;
+        public bool PassengerCam;
         public float Distance = 1000;  // by default we are 'in range' to hear this
         public int TrackType = -1;
 
@@ -156,11 +156,11 @@ namespace MSTS
 
     public class SMSStream
     {
-        public int Priority = 0;
+        public int Priority;
         public Triggers Triggers;
         public float Volume = 1.0f;
         public List<VolumeCurve> VolumeCurves = new List<VolumeCurve>();
-        public FrequencyCurve FrequencyCurve = null;
+        public FrequencyCurve FrequencyCurve;
 
         public SMSStream(STFReader stf)
         {
@@ -255,9 +255,9 @@ namespace MSTS
 
     public class Trigger
     {
-        public SoundCommand SoundCommand = null;
+        public SoundCommand SoundCommand;
 
-        int playcommandcount = 0;
+        int playcommandcount;
 
         protected void ParsePlayCommand(STFReader f, string lowertoken)
         {

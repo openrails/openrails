@@ -51,12 +51,12 @@ namespace ORTS
         /// Monotonically increasing time value (in seconds) for the simulation. Starts at 0 and only ever increases, at <see cref="GameSpeed"/>.
         /// Does not change if game is <see cref="Paused"/>.
         /// </summary>
-        public double GameTime = 0;
+        public double GameTime;
         /// <summary>
         /// "Time of day" clock value (in seconds) for the simulation. Starts at activity start time and may increase, at <see cref="GameSpeed"/>,
         /// or jump forwards or jump backwards.
         /// </summary>
-        public double ClockTime = 0;
+        public double ClockTime;
         // while Simulator.Update() is running, objects are adjusted to this target time 
         // after Simulator.Update() is complete, the simulator state matches this time
 
@@ -110,7 +110,7 @@ namespace ORTS
         /// managing signalling and interlocking.
         /// </summary>
 
-        public TrainCar PlayerLocomotive = null;    // Set by the Viewer - TODO there could be more than one player so eliminate this.
+        public TrainCar PlayerLocomotive;    // Set by the Viewer - TODO there could be more than one player so eliminate this.
 
         // <CJComment> Works but not entirely happy about this arrangement. 
         // Confirmer should be part of the Viewer, rather than the Simulator, as it is part of the user interface.
@@ -201,9 +201,7 @@ namespace ORTS
             Train playerTrain = InitializeTrains();
             AI = new AI(this, ClockTime);
             if (playerTrain != null)
-            {
-                bool valid_position = playerTrain.PostInit();  // place player train after pre-running of AI trains
-            }
+                playerTrain.PostInit();  // place player train after pre-running of AI trains
             MPManager.Instance().RememberOriginalSwitchState();
 
         }
@@ -384,7 +382,7 @@ namespace ORTS
             drivenTrain.UpdateTrackActionsCoupling(couple_to_front);
         }
 
-        private void UpdateUncoupled(Train drivenTrain, Train train, float d1, float d2, bool rear)
+        static void UpdateUncoupled(Train drivenTrain, Train train, float d1, float d2, bool rear)
         {
             if (train == drivenTrain.UncoupledFrom && d1 > .5 && d2 > .5)
             {
@@ -411,7 +409,7 @@ namespace ORTS
                     if (train != drivenTrain)
                     {
                         //avoid coupling of player train with other players train
-                        if (MPManager.IsMultiPlayer() && !MPManager.Instance().TrainOK2Couple(drivenTrain, train)) continue;
+                        if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Couple(drivenTrain, train)) continue;
 
                         float d1 = drivenTrain.RearTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, true);
                         if (d1 < 0)
@@ -470,7 +468,7 @@ namespace ORTS
                     if (train != drivenTrain)
                     {
                         //avoid coupling of player train with other players train if it is too short alived (e.g, when a train is just spawned, it may overlap with another train)
-                        if (MPManager.IsMultiPlayer() && !MPManager.Instance().TrainOK2Couple(drivenTrain, train)) continue;
+                        if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Couple(drivenTrain, train)) continue;
                         //	{
                         //		if ((MPManager.Instance().FindPlayerTrain(train) && drivenTrain == PlayerLocomotive.Train) || (MPManager.Instance().FindPlayerTrain(drivenTrain) && train == PlayerLocomotive.Train)) continue;
                         //		if ((MPManager.Instance().FindPlayerTrain(train) && MPManager.Instance().FindPlayerTrain(drivenTrain))) continue; //if both are player-controlled trains
@@ -830,7 +828,7 @@ namespace ORTS
         {
             Train train = car.Train;
 
-            if (MPManager.IsMultiPlayer() && !MPManager.Instance().TrainOK2Decouple(train)) return;
+            if (MPManager.IsMultiPlayer() && !MPManager.TrainOK2Decouple(train)) return;
             int i = 0;
             while (train.Cars[i] != car) ++i;  // it can't happen that car isn't in car.Train
             if (i == train.Cars.Count - 1) return;  // can't uncouple behind last car

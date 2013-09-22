@@ -108,7 +108,7 @@ namespace ORTS
                 textBoxSavePacks.Text += "\r\n    " + Path.GetFileNameWithoutExtension(s);
         }
 
-        void AddFileToZip(string zipFilename, string fileToAdd)
+        static void AddFileToZip(string zipFilename, string fileToAdd)
         {
             using (var zip = Package.Open(zipFilename, FileMode.OpenOrCreate))
             {
@@ -130,7 +130,7 @@ namespace ORTS
         }
 
 
-        void ExtractFilesFromZip(string zipFilename, string path)
+        static void ExtractFilesFromZip(string zipFilename, string path)
         {
             using (var zip = Package.Open(zipFilename, FileMode.Open, FileAccess.Read))
             {

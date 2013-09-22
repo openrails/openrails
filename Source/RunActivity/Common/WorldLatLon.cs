@@ -270,7 +270,7 @@ namespace ORTS
         /// <summary>
         /// Returns the sign of a value
         /// </summary>        
-        private int Sign(double value)
+        static int Sign(double value)
         {
             if (value < 0)
                 return -1;
@@ -281,7 +281,7 @@ namespace ORTS
         /// <summary>
         /// Checks for Pi overshoot
         /// </summary>        
-        private double Adjust_Lon(double value)
+        static double Adjust_Lon(double value)
         {
             if (Math.Abs(value) > MathHelper.Pi)
                 return value - (Sign(value) * MathHelper.TwoPi);

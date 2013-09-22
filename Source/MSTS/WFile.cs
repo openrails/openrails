@@ -294,7 +294,7 @@ namespace MSTS
         public uint SectionIdx;
         public float Elevation;
         public uint CollideFlags;
-        public JNodePosn JNodePosn = null;
+        public JNodePosn JNodePosn;
 
         public TrackObj(SBR block, int detailLevel)
         {
@@ -965,8 +965,8 @@ namespace MSTS
         public STFPositionItem Position;
         public STFQDirectionItem QDirection;
         public Matrix3x3 Matrix3x3;
-        public int StaticDetailLevel = 0;
-        public uint StaticFlags = 0;
+        public int StaticDetailLevel;
+        public uint StaticFlags;
         public uint VDbId;
     }
 

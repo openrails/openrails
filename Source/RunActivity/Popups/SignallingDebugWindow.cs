@@ -343,7 +343,7 @@ namespace ORTS
             return TrackMonitorSignalAspect.Stop;
         }
 #else
-        DebugWindowSignalAspect GetAspect(SignalObject signal)
+        static DebugWindowSignalAspect GetAspect(SignalObject signal)
         {
             var aspect = signal.this_sig_lr(SignalHead.SIGFN.NORMAL);
 
@@ -398,17 +398,17 @@ namespace ORTS
     [CallOnThread("Updater")]
     public abstract class DispatcherPrimitive
     {
-        protected Vector3 Normalize(WorldLocation location, Camera camera)
+        protected static Vector3 Normalize(WorldLocation location, Camera camera)
         {
             return new Vector3(location.Location.X + (location.TileX - camera.TileX) * 2048, location.Location.Y, -location.Location.Z - (location.TileZ - camera.TileZ) * 2048);
         }
 
-        protected Vector3 Project3D(Vector3 position, Viewport viewport, Camera camera)
+        protected static Vector3 Project3D(Vector3 position, Viewport viewport, Camera camera)
         {
             return viewport.Project(position, camera.XNAProjection, camera.XNAView, Matrix.Identity);
         }
 
-        protected Vector2 Flatten(Vector3 position)
+        protected static Vector2 Flatten(Vector3 position)
         {
             return new Vector2(position.X, position.Y);
         }

@@ -226,7 +226,7 @@ namespace ORTS
             SetCurrentNotch(MSTSNotchType.FullServ);
         }
 
-        private void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
+        static void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
         {
             if (pressurePSI < targetPSI)
             {
@@ -236,7 +236,7 @@ namespace ORTS
             }
         }
 
-        private void DecreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
+        static void DecreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
         {
             if (pressurePSI > targetPSI)
             {

@@ -34,7 +34,7 @@ namespace MSTS
         public List<string> TwoDViews = new List<string>();     // 2D CAB Views - by GeorgeS
         public List<string> NightViews = new List<string>();    // Night CAB Views - by GeorgeS
         public List<string> LightViews = new List<string>();    // Light CAB Views - by GeorgeS
-        public CabViewControls CabViewControls = null;     // Controls in CAB - by GeorgeS
+        public CabViewControls CabViewControls;                 // Controls in CAB - by GeorgeS
 
         public CVFFile(string filePath, string basePath)
 		{
@@ -224,14 +224,14 @@ namespace MSTS
     #region CabViewControl
     public class CabViewControl
     {
-        public double PositionX = 0;
-        public double PositionY = 0;
-        public double Width = 0;
-        public double Height = 0;
+        public double PositionX;
+        public double PositionY;
+        public double Width;
+        public double Height;
 
-        public double MinValue = 0;
-        public double MaxValue = 0;
-        public double OldValue = 0;
+        public double MinValue;
+        public double MaxValue;
+        public double OldValue;
         public string ACEFile = "";
 
         public CABViewControlTypes ControlType = CABViewControlTypes.NONE;
@@ -334,10 +334,10 @@ namespace MSTS
     #region Dial controls
     public class CVCDial : CabViewControl
     {
-        public float FromDegree = 0;
-        public float ToDegree = 0;
-        public float Center = 0;
-        public int Direction = 0;
+        public float FromDegree;
+        public float ToDegree;
+        public float Center;
+        public int Direction;
         
         public CVCDial(STFReader stf, string basepath)
         {
@@ -367,9 +367,9 @@ namespace MSTS
     public class CVCGauge : CabViewControl
     {
         public Rectangle Area = new Rectangle();
-        public int ZeroPos = 0;
-        public int Orientation = 0;
-        public int Direction = 0;
+        public int ZeroPos;
+        public int Orientation;
+        public int Direction;
         public color PositiveColor { get; set; }
         public color NegativeColor { get; set; }
         public color DecreaseColor { get; set; }
@@ -565,7 +565,7 @@ namespace MSTS
     {
         public List<int> Positions = new List<int>();
 
-        private int _ValuesRead = 0;
+        private int _ValuesRead;
 
         public CVCDiscrete(STFReader stf, string basepath)
         {

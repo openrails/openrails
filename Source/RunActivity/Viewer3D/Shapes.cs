@@ -294,7 +294,7 @@ namespace ORTS
     /// </summary>
     public class AnimatedShape : PoseableShape
     {
-        protected float AnimationKey = 0.0f;  // advances with time
+        protected float AnimationKey;  // advances with time
 
         /// <summary>
         /// Construct and initialize the class
@@ -328,7 +328,7 @@ namespace ORTS
 
     public class SwitchTrackShape : PoseableShape
     {
-        protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
+        protected float AnimationKey;  // tracks position of points as they move left and right
 
         TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
         uint MainRoute;                  // 0 or 1 - which route is considered the main route
@@ -371,7 +371,7 @@ namespace ORTS
         int NumIndices;
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
 
-        protected float AnimationKey = 0.0f;  // tracks position of points as they move left and right
+        protected float AnimationKey;  // tracks position of points as they move left and right
         ShapePrimitive shapePrimitive;
         public SpeedPostShape(Viewer3D viewer, string path, WorldPosition position, SpeedPostObj spo)
             : base(viewer, path, position)
@@ -499,7 +499,7 @@ namespace ORTS
 
         }
 
-        float GetTextureCoordX(char c)
+        static float GetTextureCoordX(char c)
         {
             float x = (c - '0') % 4 * 0.25f;
             if (c == '.') x = 0;
@@ -510,7 +510,7 @@ namespace ORTS
             return x;
         }
 
-        float GetTextureCoordY(char c)
+        static float GetTextureCoordY(char c)
         {
             if (c == '0' || c == '1' || c == '2' || c == '3') return 0.25f;
             if (c == '4' || c == '5' || c == '6' || c == '7') return 0.5f;
@@ -554,7 +554,7 @@ namespace ORTS
 
         readonly int AnimationFrames;
         bool Opening = true;
-        float AnimationKey = 0;
+        float AnimationKey;
 
         public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
             : base(viewer, path, position, shapeFlags)
@@ -1195,7 +1195,7 @@ namespace ORTS
 #endif
         }
 
-        Matrix XNAMatrixFromMSTS(matrix MSTSMatrix)
+        static Matrix XNAMatrixFromMSTS(matrix MSTSMatrix)
         {
             var XNAMatrix = Matrix.Identity;
 

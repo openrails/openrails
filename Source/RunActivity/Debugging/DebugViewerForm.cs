@@ -62,7 +62,7 @@ namespace ORTS.Debugging
 	  /// <summary>
 	  /// True when the user is dragging the route view
 	  /// </summary>
-	  private bool Dragging = false;
+      private bool Dragging;
 	  private WorldPosition worldPos;
       float xScale = 1; 
       float yScale = 1; 
@@ -71,15 +71,15 @@ namespace ORTS.Debugging
 	  List<SwitchWidget> switchItemsDrawn;
 	  List<SignalWidget> signalItemsDrawn;
 
-	  public SwitchWidget switchPickedItem = null;
-	  public SignalWidget signalPickedItem = null;
-	  public bool switchPickedItemHandled = false;
-	  public double switchPickedTime = 0.0f;
-	  public bool signalPickedItemHandled = false;
-	  public double signalPickedTime = 0.0f;
+      public SwitchWidget switchPickedItem;
+      public SignalWidget signalPickedItem;
+      public bool switchPickedItemHandled;
+      public double switchPickedTime;
+      public bool signalPickedItemHandled;
+      public double signalPickedTime;
 	  public bool DrawPath = true; //draw train path
-	  ImageList imageList1 = null;
-	  public List<Train> selectedTrainList = null;
+      ImageList imageList1;
+      public List<Train> selectedTrainList;
 	  /// <summary>
 	  /// contains the last position of the mouse
 	  /// </summary>
@@ -96,22 +96,22 @@ namespace ORTS.Debugging
       /// <summary>
       /// True when the user has the "Move left" pressed.
       /// </summary>
-      private bool LeftButtonDown = false;
+    private bool LeftButtonDown;
 
       /// <summary>
       /// True when the user has the "Move right" pressed.
       /// </summary>
-      private bool RightButtonDown = false;
+    private bool RightButtonDown;
 
       /// <summary>
       /// True when the user has the "Move up" pressed.
       /// </summary>
-      private bool UpButtonDown = false;
+    private bool UpButtonDown;
 
       /// <summary>
       /// True when the user has the "Move down" pressed.
       /// </summary>
-      private bool DownButtonDown = false;
+    private bool DownButtonDown;
 
 
        /// <summary>
@@ -125,7 +125,7 @@ namespace ORTS.Debugging
       /// </summary>
       private Timer UITimer;
 
-      bool loaded = false;
+      bool loaded;
 	  TrackNode[] nodes;
 	  float minX = float.MaxValue;
 	  float minY = float.MaxValue;
@@ -199,12 +199,12 @@ namespace ORTS.Debugging
       }
 
 
-      public int RedrawCount = 0;
+      public int RedrawCount;
 	  private Font trainFont;
 	  private Font sidingFont;
 	  private SolidBrush trainBrush;
 	  private SolidBrush sidingBrush;
-	  private double lastUpdateTime = 0;
+      private double lastUpdateTime;
 
       /// <summary>
       /// When the user holds down the  "L", "R", "U", "D" buttons,
@@ -351,16 +351,13 @@ namespace ORTS.Debugging
 			  }
 			  if (item.ItemType == TrItem.trItemType.trSIDING || item.ItemType == TrItem.trItemType.trPLATFORM)
 			  {
-				  SidingItem s = item as SidingItem;
-
 				  sidings.Add(new SidingWidget(item));
-
 			  }
 		  }
           return;
 	  }
 
-	  bool Inited = false;
+      bool Inited;
 	  List<LineSegment> segments = new List<LineSegment>();
 	  List<SwitchWidget> switches;
 	  //List<PointF> buffers = new List<PointF>();
@@ -391,7 +388,7 @@ namespace ORTS.Debugging
 	  #endregion
 
 	  #region avatar
-	  Dictionary<string, Image> avatarList = null;
+      Dictionary<string, Image> avatarList;
 	  public void AddAvatar(string name, string url)
 	  {
 		  if (avatarList == null) avatarList = new Dictionary<string, Image>();
@@ -553,10 +550,10 @@ namespace ORTS.Debugging
 
 	  #region Draw
 	  public bool firstShow = true;
-	  public bool followTrain = false;
+      public bool followTrain;
 	  float subX, subY;
-      float oldWidth = 0;
-      float oldHeight = 0;
+      float oldWidth;
+      float oldHeight;
        //determine locations of buttons and boxes
       void DetermineLocations()
       {
@@ -662,11 +659,7 @@ namespace ORTS.Debugging
          {
 			 subX = minX + ViewWindow.X; subY = minY + ViewWindow.Y;
             g.Clear(Color.White);
-
-            // this is the total size of the entire viewable route (xRange == width, yRange == height in metres)
-            float xRange = maxX - minX;
-            float yRange = maxY - minY;
-
+            
             xScale = pictureBox1.Width / ViewWindow.Width;
             yScale = pictureBox1.Height/ ViewWindow.Height;
 
@@ -1031,7 +1024,8 @@ namespace ORTS.Debugging
 		  }
 		  return position * spacing;
 	  }
-	  private string GetTrainName(string ID)
+	  
+	  static string GetTrainName(string ID)
 	  {
 		  int location = ID.LastIndexOf('-');
 		  if (location < 0) return ID;
@@ -1171,7 +1165,6 @@ namespace ORTS.Debugging
 						continue;
 
 					var switchObj = obj as SignallingDebugWindow.TrackSectionSwitch;
-					var signalObj = obj as SignallingDebugWindow.TrackSectionSignal;
 					if (switchObj != null)
 					{
 						for (var pin = switchObj.TrackNode.Inpins; pin < switchObj.TrackNode.Inpins + switchObj.TrackNode.Outpins; pin++)
@@ -1253,10 +1246,7 @@ namespace ORTS.Debugging
 					if (objDistance < initialNodeOffset || objDistance > initialNodeOffset + DisplayDistance)
 						continue;
 
-					var eolObj = obj as SignallingDebugWindow.TrackSectionEndOfLine;
 					var switchObj = obj as SignallingDebugWindow.TrackSectionSwitch;
-					var signalObj = obj as SignallingDebugWindow.TrackSectionSignal;
-
 					if (switchObj != null)
 					{
 						for (var pin = switchObj.TrackNode.Inpins; pin < switchObj.TrackNode.Inpins + switchObj.TrackNode.Outpins; pin++)
@@ -1298,7 +1288,7 @@ namespace ORTS.Debugging
       /// <param name="p">Center point of the dot, in pixels.</param>
       /// <param name="size">Size of the dot's diameter, in pixels</param>
       /// <returns></returns>
-      private RectangleF GetRect(PointF p, float size)
+      static RectangleF GetRect(PointF p, float size)
       {
          return new RectangleF(p.X - size / 2f, p.Y - size / 2f, size, size);
       }
@@ -1474,9 +1464,9 @@ namespace ORTS.Debugging
 		  windowSizeUpDown.Value = tempValue;
 	  }
 
-	  private bool Zooming = false;
-	  private bool LeftClick = false;
-	  private bool RightClick = false;
+      private bool Zooming;
+      private bool LeftClick;
+      private bool RightClick;
 
 	  private void pictureBoxMouseDown(object sender, MouseEventArgs e)
 	  {
@@ -2183,7 +2173,7 @@ namespace ORTS.Debugging
 
 	  }
 
-	   public bool ClickedTrain = false;
+      public bool ClickedTrain;
 	  private void btnSeeInGameClick(object sender, EventArgs e)
 	  {
 		  if (PickedTrain != null) ClickedTrain = true;
@@ -2213,7 +2203,7 @@ namespace ORTS.Debugging
 	   public SignalObject Signal;
 
 	   public PointF Dir;
-	   public bool hasDir = false;
+       public bool hasDir;
 	   /// <summary>
 	   /// For now, returns true if any of the signal heads shows any "clear" aspect.
 	   /// This obviously needs some refinement.
@@ -2284,7 +2274,7 @@ namespace ORTS.Debugging
 	   public TrackNode Item;
 	   public uint main;
 #if false
-	   public dVector mainEnd = null;
+	   public dVector mainEnd;
 #endif
 	   /// <summary>
 	   /// 
@@ -2391,8 +2381,8 @@ namespace ORTS.Debugging
 	   public dVector A;
 	   public dVector B;
 	   public dVector C;
-	   //public float radius = 0.0f;
-	   public bool isCurved = false;
+	   //public float radius;
+       public bool isCurved;
 
 	   public float angle1, angle2;
 	   //public SectionCurve curve = null;

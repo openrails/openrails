@@ -44,9 +44,9 @@ namespace ORTS
         float[] previousStep = new float[100];
         float initialCondition;
 
-        float derivation = 0f;
+        float derivation;
 
-        float prevDerivation = 0f;
+        float prevDerivation;
 
         public IntegratorMethods Method;
 
@@ -101,7 +101,7 @@ namespace ORTS
         public float MinStep { set; get; }
         public bool IsStepDividing { set; get; }
         int numOfSubstepsPS = 1;
-        int waitBeforeSpeedingUp = 0;
+        int waitBeforeSpeedingUp;
         public int NumOfSubstepsPS { get { return numOfSubstepsPS; } }
 
         /// <summary>

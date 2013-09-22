@@ -182,7 +182,7 @@ namespace ORTS.Popups
             }
         }
 
-        private string FindAuthorityInfo(List<Train.TrainObjectItem> ObjectInfo, string ControlText)
+        static string FindAuthorityInfo(List<Train.TrainObjectItem> ObjectInfo, string ControlText)
         {
             bool authorityFound = false;
             foreach (Train.TrainObjectItem thisInfo in ObjectInfo)
@@ -209,7 +209,7 @@ namespace ORTS.Popups
 
         bool metric;
 
-        Train.TrainInfo validInfo = null;
+        Train.TrainInfo validInfo;
 
         // position constants
         readonly int addInfoOffset = 21; // vertical offset on window for additional out-of-range info at top and bottom
@@ -329,7 +329,7 @@ namespace ORTS.Popups
         }
 
         // draw track lines
-        private void drawTrack(SpriteBatch spriteBatch, Point offset, float speedMpS, float allowedSpeedMpS)
+        static void drawTrack(SpriteBatch spriteBatch, Point offset, float speedMpS, float allowedSpeedMpS)
         {
             float absspeedMpS = Math.Abs(speedMpS);
             var lineColor = (absspeedMpS < allowedSpeedMpS - 1.0f) ? Color.Green :
@@ -569,7 +569,6 @@ namespace ORTS.Popups
 
                 for (int ipos = 1; ipos <= noMarkers; ipos++)
                 {
-                    float actDistanceD = markerIntervalD * ipos;
                     float actDistanceM = markerIntervalM * ipos;
                     if (actDistanceM < maxDistance)
                     {
@@ -635,7 +634,6 @@ namespace ORTS.Popups
         {
             Rectangle displayItem = new Rectangle(0, 0, 0, 0);
             bool displayRequired = false;
-            int newLabelPosition = lastLabelPosition;
             int itemOffset = 2 * startObjectArea; // default is out of range
             int[] offsetArray = endAuthorityPosition;
 

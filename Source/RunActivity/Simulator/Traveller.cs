@@ -54,12 +54,12 @@ namespace ORTS
         TrackSection trackSection;
 
         // Location and directionVector are only valid if locationSet == true.
-        bool locationSet = false;
+        bool locationSet;
         WorldLocation location = new WorldLocation();
         Vector3 directionVector;
 
         // Length and offset only valid if lengthSet = true.
-        bool lengthSet = false;
+        bool lengthSet;
         float trackNodeLength;
         float trackNodeOffset;
 
@@ -799,7 +799,6 @@ namespace ORTS
             if (tn.TrVectorNode == null) return 0f;
             var tvs = trackVectorSection;
             var ts = trackSection;
-            var to = trackOffset;
             var desiredZ = 0f;
             if (tvs == null)
             {
@@ -807,7 +806,7 @@ namespace ORTS
             }
             else if (ts.SectionCurve != null)
             {
-                float startv = tvs.StartElev, endv = tvs.EndElev, maxv = tvs.MaxElev;
+                float maxv = tvs.MaxElev;
                 maxv = 0.14f * speed / 40f;//max 8 degree
                 //maxv *= speed / 40f;
                 //if (maxv.AlmostEqual(0f, 0.001f)) maxv = 0.02f; //short curve, add some effect anyway

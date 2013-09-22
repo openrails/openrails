@@ -92,7 +92,7 @@ namespace ORTS
         public readonly TextWriter Writer;
         public readonly bool OnlyErrors;
         public readonly int[] Counts = new int[5];
-        bool LastWrittenFormatted = false;
+        bool LastWrittenFormatted;
 
         public ORTraceListener(TextWriter writer)
             : this(writer, false)

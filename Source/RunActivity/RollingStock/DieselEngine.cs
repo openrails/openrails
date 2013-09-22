@@ -364,7 +364,7 @@ namespace ORTS
             locomotive = loco;
         }
 
-        float dRPM = 0;
+        float dRPM;
         public float EngineRPMchangeRPMpS { get { return dRPM; } }
 
         public float RealRPM;
@@ -373,11 +373,11 @@ namespace ORTS
 
         public float StartingConfirmationRPM;
 
-        public GearBox GearBox = null;
+        public GearBox GearBox;
 
-        public MSTSLocomotive locomotive = null;
+        public MSTSLocomotive locomotive;
 
-        int initLevel = 0;
+        int initLevel;
         public bool IsInitialized { get { return initLevel >= 17; } }
 
         public Status EngineStatus = Status.Stopped;
@@ -400,12 +400,12 @@ namespace ORTS
 
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
         public float DieselUsedPerHourAtIdleL = 1.0f;
-        public float DieselFlowLps = 0.0f;
+        public float DieselFlowLps;
 
-        public Interpolator DieselPowerTab = null;
-        public Interpolator DieselConsumptionTab = null;
-        public Interpolator ThrottleRPMTab = null;
-        public Interpolator DieselTorqueTab = null;
+        public Interpolator DieselPowerTab;
+        public Interpolator DieselConsumptionTab;
+        public Interpolator ThrottleRPMTab;
+        public Interpolator DieselTorqueTab;
 
         public float ExhaustParticles = 10.0f;
         public Color ExhaustColor = Color.Gray;
@@ -413,7 +413,7 @@ namespace ORTS
         public Color ExhaustTransientColor = Color.Black;
         public Color ExhaustDecelColor = Color.TransparentWhite;
 
-        public float InitialExhaust = 0.0f;
+        public float InitialExhaust;
         public float ExhaustDynamics = 1.5f;
         public float ExhaustMagnitude = 4.0f;
         public float MaxExhaust = 50.0f;

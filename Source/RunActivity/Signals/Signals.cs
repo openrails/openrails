@@ -61,10 +61,10 @@ namespace ORTS
         private Dictionary<uint, SignalObject> SignalHeadList;
         public static SIGSCRfile scrfile;
 
-        public int noSignals = 0;
-        private int foundSignals = 0;
+        public int noSignals;
+        private int foundSignals;
 
-        private static int updatecount = 0;
+        private static int updatecount;
 
         public List<TrackCircuitSection> TrackCircuitList;
         private Dictionary<int, CrossOverItem> CrossOverList = new Dictionary<int, CrossOverItem>();
@@ -383,7 +383,6 @@ namespace ORTS
                 string[] fparts = fileName.Split('.');
                 if (fparts.Length < 2)
                     continue;
-                string[] fparts2 = fparts[fparts.Length - 2].Split('\\');
 
                 // check if valid file
 
@@ -419,11 +418,7 @@ namespace ORTS
                             {
                                 int thisSignalCount = SignalWorldList.Count() - 1;    // Index starts at 0
                                 SignalRefObject thisRefObject = new SignalRefObject(thisSignalCount, thisref.Value);
-                                if (SignalRefList.ContainsKey(thisref.Key))
-                                {
-                                    SignalRefObject DoubleObject = SignalRefList[thisref.Key];
-                                }
-                                else
+                                if (!SignalRefList.ContainsKey(thisref.Key))
                                 {
                                     SignalRefList.Add(thisref.Key, thisRefObject);
                                 }
@@ -842,11 +837,6 @@ namespace ORTS
                             SignalItem sigItem = (SignalItem)TrItems[TDBRef];
                             sigItem.sigObj = foundSignals;
 
-                            if (sigItem.noSigDirs > 0)
-                            {
-                                SignalItem.strTrSignalDir sigTrSignalDirs = sigItem.TrSignalDirs[0];
-                            }
-
                             bool validSignal = true;
                             lastSignal = AddSignal(index, i, sigItem, lastSignal,
                                                     TrItems, trackNodes, TDBRef, tsectiondat, tdbfile, ref validSignal);
@@ -1125,11 +1115,8 @@ namespace ORTS
             foreach (var signal in signalObjects)
                 if (signal != null)
                     foreach (var head in signal.SignalHeads)
-                    {
-                        int tempint = SignalObject.trackNodes[signal.trackNode].TrVectorNode.TrItemRefs[head.trItemIndex];
                         if (SignalObject.trackNodes[signal.trackNode].TrVectorNode.TrItemRefs[head.trItemIndex] == (int)trItem)
                             return new KeyValuePair<SignalObject, SignalHead>(signal, head);
-                    }
             return null;
         }//FindByTrItem
 
@@ -1324,9 +1311,6 @@ namespace ORTS
             float signalDistance = -1f;
             float speedpostDistance = -1f;
 
-            int sigObjRef = 0;
-            int speedObjRef = 0;
-
             if (req_type == ObjectItemInfo.ObjectItemType.ANY ||
                 req_type == ObjectItemInfo.ObjectItemType.SIGNAL)
             {
@@ -1380,7 +1364,6 @@ namespace ORTS
             {
                 signalDistance = nextSignal.SignalLocation;
                 SignalObject foundSignal = nextSignal.SignalRef;
-                sigObjRef = foundSignal.thisRef;
                 if (foundSignal.this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.STOP)
                 {
                     signalState = ObjectItemInfo.ObjectItemFindState.PASSED_DANGER;
@@ -1405,7 +1388,6 @@ namespace ORTS
                 {
                     speedpostDistance = nextSpeedpost.SignalLocation;
                     SignalObject foundSignal = nextSpeedpost.SignalRef;
-                    speedObjRef = foundSignal.thisRef;
                 }
 
 
@@ -1596,7 +1578,7 @@ namespace ORTS
         //
 
 
-        private void PrintTCBase(TrackNode[] trackNodes)
+        void PrintTCBase(TrackNode[] trackNodes)
         {
 
             //
@@ -2217,10 +2199,6 @@ namespace ORTS
             int sectionIndex = CrossOver.SectionIndex[Index];
             float position = CrossOver.Position[Index];
             TrackCircuitSection section = TrackCircuitList[sectionIndex];
-
-            // to overcome tdb errors, check if still in original tracknode
-            int firstSectionOriginalIndex = section.OriginalIndex;
-            int firstSectionIndex = sectionIndex;
 
             while (position > 0 && position > section.Length)
             // while (position > 0 && position > section.Length && section.OriginalIndex == firstSectionOriginalIndex)
@@ -4233,7 +4211,7 @@ namespace ORTS
         // Find train in list using number, to restore reference after restore
         //
 
-        public Train FindTrain(int number, List<Train> trains)
+        public static Train FindTrain(int number, List<Train> trains)
         {
             foreach (Train thisTrain in trains)
             {
@@ -4252,7 +4230,7 @@ namespace ORTS
         // Manual request to set switch, either from train or direct from node
         //
 
-        public bool RequestSetSwitch(Train thisTrain, Direction direction)
+        public static bool RequestSetSwitch(Train thisTrain, Direction direction)
         {
             if (thisTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
             {
@@ -4311,7 +4289,6 @@ namespace ORTS
         public bool RequestSetSwitch(TrackNode switchNode, int desiredState)
         {
             TrackCircuitSection switchSection = TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
-            Train thisTrain = switchSection.CircuitState.TrainReserved == null ? null : switchSection.CircuitState.TrainReserved.Train;
             bool switchReserved = (switchSection.CircuitState.SignalReserved >= 0 || switchSection.CircuitState.TrainClaimed.Count > 0);
             bool switchSet = false;
 
@@ -5367,7 +5344,7 @@ namespace ORTS
         // Remove specified train from queue
         //
 
-        private TrainQueue removeFromQueue(TrainQueue thisQueue, Train.TrainRouted thisTrain)
+        static TrainQueue removeFromQueue(TrainQueue thisQueue, Train.TrainRouted thisTrain)
         {
             List<Train.TrainRouted> tempList = new List<Train.TrainRouted>();
             TrainQueue newQueue = new TrainQueue();
@@ -5500,8 +5477,6 @@ namespace ORTS
 
             TrackCircuitState thisState = CircuitState;
 
-            bool checkTrailingJunction = false;
-
             // track occupied - check speed and direction - only for normal sections
 
             if (thisTrain != null && thisState.TrainOccupy.ContainsTrain(thisTrain))
@@ -5594,10 +5569,6 @@ namespace ORTS
                     }
                     else
                     localBlockstate = SignalObject.INTERNAL_BLOCKSTATE.RESERVED_OTHER;
-
-                    // if end is trailing junction, set to check junction
-
-                    checkTrailingJunction = EndIsTrailingJunction[direction];
                 }
             }
 
@@ -6327,7 +6298,7 @@ namespace ORTS
                 int number = trainKey[0];
                 int routeIndex = trainKey[1];
                 int direction = thisTemp.Value;
-                Train thisTrain = signalRef.FindTrain(number, trains);
+                Train thisTrain = Signals.FindTrain(number, trains);
                 if (thisTrain != null)
                 {
                     Train.TrainRouted thisTrainRouted = routeIndex == 0 ? thisTrain.routedForward : thisTrain.routedBackward;
@@ -6340,7 +6311,7 @@ namespace ORTS
             if (TrainReserved != null)
             {
                 int number = TrainReserved.Train.Number;
-                Train reservedTrain = signalRef.FindTrain(number, trains);
+                Train reservedTrain = Signals.FindTrain(number, trains);
                 if (reservedTrain != null)
                 {
                     int reservedDirection = TrainReserved.TrainRouteDirectionIndex;
@@ -6364,7 +6335,7 @@ namespace ORTS
             TrainPreReserved.Clear();
             foreach (Train.TrainRouted thisTrainRouted in tempQueue)
             {
-                Train thisTrain = signalRef.FindTrain(thisTrainRouted.Train.Number, trains);
+                Train thisTrain = Signals.FindTrain(thisTrainRouted.Train.Number, trains);
                 int routeIndex = thisTrainRouted.TrainRouteDirectionIndex;
                 if (thisTrain != null)
                 {
@@ -6384,7 +6355,7 @@ namespace ORTS
             TrainClaimed.Clear();
             foreach (Train.TrainRouted thisTrainRouted in tempQueue)
             {
-                Train thisTrain = signalRef.FindTrain(thisTrainRouted.Train.Number, trains);
+                Train thisTrain = Signals.FindTrain(thisTrainRouted.Train.Number, trains);
                 int routeIndex = thisTrainRouted.TrainRouteDirectionIndex;
                 if (thisTrain != null)
                 {
@@ -6781,7 +6752,7 @@ namespace ORTS
 
         public int draw_state;                  // actual signal state
 
-        public Train.TrainRouted enabledTrain = null; // full train structure for which signal is enabled
+        public Train.TrainRouted enabledTrain;  // full train structure for which signal is enabled
 
         private INTERNAL_BLOCKSTATE internalBlockState = INTERNAL_BLOCKSTATE.OPEN;    // internal blockstate
         public PERMISSION hasPermission = PERMISSION.DENIED;  // Permission to pass red signal
@@ -6985,9 +6956,8 @@ namespace ORTS
             if (enabledTrain != null)
             {
                 int number = enabledTrain.Train.Number;
-                int routeIndex = enabledTrain.TrainRouteDirectionIndex;
 
-                Train foundTrain = signalRef.FindTrain(number, trains);
+                Train foundTrain = Signals.FindTrain(number, trains);
 
                 // check if this signal is next signal forward for this train
 
@@ -7272,9 +7242,6 @@ namespace ORTS
 
         public SignalHead.SIGASP next_sig_mr(SignalHead.SIGFN fn_type)
         {
-
-            SignalHead.SIGFN[] fn_type_array = new SignalHead.SIGFN[1];
-
             int nextSignal = sigfound[(int)fn_type];
             if (nextSignal < 0)
             {
@@ -7300,8 +7267,6 @@ namespace ORTS
 
         public SignalHead.SIGASP next_sig_lr(SignalHead.SIGFN fn_type)
         {
-            SignalHead.SIGFN[] fn_type_array = new SignalHead.SIGFN[1];
-
             int nextSignal = sigfound[(int)fn_type];
             if (nextSignal < 0)
             {
@@ -8008,7 +7973,6 @@ namespace ORTS
 
         public float ObjectDistance(SignalObject nextObject)
         {
-            int trItem = trackNodes[trackNode].TrVectorNode.TrItemRefs[trRefIndex];
             int nextTrItem = trackNodes[nextObject.trackNode].TrVectorNode.TrItemRefs[nextObject.trRefIndex];
             return this.tdbtraveller.DistanceTo(
                                     trItems[nextTrItem].TileX, trItems[nextTrItem].TileZ,
@@ -8971,8 +8935,6 @@ namespace ORTS
 
             INTERNAL_BLOCKSTATE blockstate = INTERNAL_BLOCKSTATE.RESERVED;  // preset to lowest possible state //
 
-            int lastSectionIndex = -1;
-
             // check all elements in original route
 
             foreach (Train.TCRouteElement thisElement in thisRoute)
@@ -8982,7 +8944,6 @@ namespace ORTS
                 blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute);
                 if (blockstate > INTERNAL_BLOCKSTATE.RESERVABLE)
                     break;           // break on first non-reservable section //
-                lastSectionIndex = thisSection.Index;
             }
 
             // check all additional elements upto signal, junction or end-of-track
@@ -9245,7 +9206,7 @@ namespace ORTS
             UNKNOWN
         }
 
-        public SignalType signalType = null;    // from sigcfg file
+        public SignalType signalType;           // from sigcfg file
         public SIGASP state = SIGASP.STOP;
         public int draw_state;
         public int trItemIndex;                 // Index to trItem   

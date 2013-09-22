@@ -99,7 +99,7 @@ namespace ORTS
                     try
                     {
                         // Read in validation data.
-                        var version = inf.ReadString().Replace("\0", "");
+                        inf.ReadString();    // Version
                         var build = inf.ReadString().Replace("\0", "");
 
                         // Read in route/activity/path/player data.

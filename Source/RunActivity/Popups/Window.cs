@@ -32,7 +32,7 @@ namespace ORTS.Popups
 		public static readonly Point DecorationSize = new Point(4 + 4, 4 + 16 + 5 + 4);
 		public Matrix XNAWorld;
 		protected WindowManager Owner;
-		bool visible = false;
+        bool visible;
         Rectangle location;
 		readonly string Caption;
         readonly PropertyInfo SettingsProperty;

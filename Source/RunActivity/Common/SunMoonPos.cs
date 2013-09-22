@@ -43,7 +43,7 @@ namespace ORTS
         /// <param name="longitude">longitude</param>
         /// <param name="clockTime">wall clock time since start of activity, days</param>
         /// <param name="date">structure made up of day, month, year and ordinal date</param>
-        public Vector3 SolarAngle(double latitude, double longitude, float clockTime, SkyDrawer.Date date)
+        public static Vector3 SolarAngle(double latitude, double longitude, float clockTime, SkyDrawer.Date date)
         {
             Vector3 sunDirection;
 
@@ -111,7 +111,7 @@ namespace ORTS
         /// <param name="longitude">longitude</param>
         /// <param name="clockTime">wall clock time since start of activity</param>
         /// <param name="date">structure made up of day, month, year and ordinal date</param>
-        public Vector3 LunarAngle(double latitude, double longitude, float clockTime, SkyDrawer.Date date)
+        public static Vector3 LunarAngle(double latitude, double longitude, float clockTime, SkyDrawer.Date date)
         {
             Vector3 moonDirection;
 
@@ -138,8 +138,6 @@ namespace ORTS
                 + 0.000166 * Math.Cos(Normalize(4.5238 - 7214.06 * Ftime, MathHelper.TwoPi))
                 + 0.000136 * Math.Cos(Normalize(4.1137 + 15542.75 * Ftime, MathHelper.TwoPi))
                 + 0.000489 * Math.Cos(Normalize(4.7106 + 16657.38 * Ftime, MathHelper.TwoPi));
-            // Angular diameter, radians
-            double angularDiam = 0.2725 * Parallax;
             // Geocentric distance, dimensionless
             double GeoDist = 1 / Math.Sin(Parallax);
             // Geocentric vector coordinates, dimensionless
@@ -197,7 +195,7 @@ namespace ORTS
         /// </summary>
         /// <param name="input">the raw number</param>
         /// <param name="divisor">the number, or its multiples, we want to remove</param> 
-        private double Normalize(double input, double divisor)
+        static double Normalize(double input, double divisor)
         {
             double output = input - divisor * Math.Floor(input / divisor);
             return output;

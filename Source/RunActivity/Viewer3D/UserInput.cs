@@ -42,8 +42,8 @@ namespace ORTS
 {
     public static class UserInput
     {
-        public static bool Changed = false;  // flag UpdaterProcess that its time to handle keyboard input
-        public static bool ComposingMessage = false;
+        public static bool Changed;  // flag UpdaterProcess that its time to handle keyboard input
+        public static bool ComposingMessage;
         public static KeyboardState KeyboardState;
         public static MouseState MouseState;
         static KeyboardState LastKeyboardState;
@@ -51,7 +51,7 @@ namespace ORTS
         public static Vector3 NearPoint;
         public static Vector3 FarPoint;
 
-        public static RailDriverState RDState = null;
+        public static RailDriverState RDState;
 
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys key);

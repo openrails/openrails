@@ -70,29 +70,29 @@ namespace ORTS
         public float LengthM = 40;       // derived classes must overwrite these defaults
         public float HeightM = 4;        // derived classes must overwrite these defaults
         public float MassKG = 10000;
-        public bool IsDriveable = false;
-	    public bool IsFreight = false;  // indication freight wagon or passenger car
+        public bool IsDriveable;
+        public bool IsFreight;           // indication freight wagon or passenger car
 
-        public LightCollection Lights = null;
-        public int Headlight = 0;
+        public LightCollection Lights;
+        public int Headlight;
 
         // instance variables set by train physics when it creates the traincar
-        public Train Train = null;  // the car is connected to this train
-        public bool Flipped = false; // the car is reversed in the consist
+        public Train Train;  // the car is connected to this train
+        public bool Flipped; // the car is reversed in the consist
         public int UiD;
         public string CarID = "AI"; //CarID = "0 - UID" if player train, "ActivityID - UID" if loose consist, "AI" if AI train
 
         // status of the traincar - set by the train physics after it calls TrainCar.Update()
         public WorldPosition WorldPosition = new WorldPosition();  // current position of the car
         public Matrix RealXNAMatrix = Matrix.Identity;
-        public float DistanceM = 0.0f;  // running total of distance travelled - always positive, updated by train physics
-        public float _SpeedMpS = 0.0f; // meters per second; updated by train physics, relative to direction of car  50mph = 22MpS
-        public float _PrevSpeedMpS = 0.0f;
-        public float CouplerSlackM = 0f;// extra distance between cars (calculated based on relative speeds)
-        public float CouplerSlack2M = 0f;// slack calculated using draft gear force
-        public bool WheelSlip = false;// true if locomotive wheels slipping
-        public bool WheelSlipWarning = false;
-        public float _AccelerationMpSS = 0.0f;
+        public float DistanceM;  // running total of distance travelled - always positive, updated by train physics
+        public float _SpeedMpS; // meters per second; updated by train physics, relative to direction of car  50mph = 22MpS
+        public float _PrevSpeedMpS;
+        public float CouplerSlackM;  // extra distance between cars (calculated based on relative speeds)
+        public float CouplerSlack2M;  // slack calculated using draft gear force
+        public bool WheelSlip;  // true if locomotive wheels slipping
+        public bool WheelSlipWarning;
+        public float _AccelerationMpSS;
         private float Stiffness = 3.0f; //used by vibrating cars
         private float MaxVibSpeed = 15.0f;//the speed when max shaking happens
         private IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
@@ -128,18 +128,18 @@ namespace ORTS
         { 
             get { return Flipped ? DirectionControl.Flip(Train.MUDirection) : Train.MUDirection; } 
             set { Train.MUDirection = Flipped ? DirectionControl.Flip( value ) : value; } }
-        public BrakeSystem BrakeSystem = null;
+        public BrakeSystem BrakeSystem;
 
         // TrainCar.Update() must set these variables
-        public float MotiveForceN = 0.0f;   // ie motor power in Newtons  - signed relative to direction of car - 
+        public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car - 
         public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
-        public float PrevMotiveForceN = 0.0f;
-        public float GravityForceN = 0.0f;  // Newtons  - signed relative to direction of car - 
-        public float FrictionForceN = 0.0f; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
-        public float BrakeForceN = 0.0f;    // brake force in Newtons
+        public float PrevMotiveForceN;
+        public float GravityForceN;  // Newtons  - signed relative to direction of car - 
+        public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
+        public float BrakeForceN;    // brake force in Newtons
         public float TotalForceN; // sum of all the forces active on car relative train direction
 
-        public float CurrentElevationPercent = 0;
+        public float CurrentElevationPercent;
 
         // temporary values used to compute coupler forces
         public float CouplerForceA; // left hand side value below diagonal
@@ -152,7 +152,7 @@ namespace ORTS
 
         // set when model is loaded
         public List<WheelAxle> WheelAxles = new List<WheelAxle>();
-        public bool WheelAxlesLoaded = false;
+        public bool WheelAxlesLoaded;
         public List<TrainCarPart> Parts = new List<TrainCarPart>();
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
@@ -582,8 +582,8 @@ namespace ORTS
         public float sx=0.0f, sy=0.0f, sz=0.0f, prevElev=-100f, prevTilted;//time series from 0-3.14
         public float currentStiffness = 1.0f;
         public double lastTime = -1.0;
-        public float totalRotationZ = 0.0f;
-        public float totalRotationX = 0.0f;
+        public float totalRotationZ;
+        public float totalRotationX;
         public float prevY2 = -1000f;
         public float prevY = -1000f;
         public void SuperElevation(float speed, int superEV, Traveller traveler)
@@ -621,7 +621,6 @@ namespace ORTS
                 z = traveler.SuperElevationValue(speed, timeInterval, true);
                 if (this.Flipped) z *= -1f;
 
-                var diffz = Math.Abs(z - prevElev)-0.01;
                 if (prevElev < -10f) prevElev = z;//initial, will jump to the desired value
                 //else if (Math.Abs(z) > 0.0001 && Math.Sign(prevElev) >0.0001 && Math.Sign(z) != Math.Sign(prevElev)) { z = prevElev; }//changing signs indicating something wrong
                 else
@@ -640,7 +639,7 @@ namespace ORTS
 
             max = ComputeMaxXZ(timeInterval, max, tz);//add a damping, also based on accelaration
             //small vibration (rotation to add on x,y,z axis)
-            var sx1 = (float)Math.Sin(sx) * max; var sy1 = (float)Math.Sin(sy) * max; var sz1 = (float)Math.Sin(sz) * max;
+            var sx1 = (float)Math.Sin(sx) * max; var sz1 = (float)Math.Sin(sz) * max;
 
             //check for tilted train, add more to the body
             if (this.Train != null && this.Train.tilted == true)
@@ -719,7 +718,7 @@ namespace ORTS
         public float[] SumXOffset= new float[4];
         public float[] A= new float[4];
         public float[] B= new float[4];
-        public bool bogie = false;
+        public bool bogie;
         public TrainCarPart(float offset, int i)
         {
             OffsetM = offset;
@@ -784,7 +783,7 @@ namespace ORTS
     {
          // TODO add view location and limits
         public TrainCar Car;
-        public LightDrawer lightDrawer = null;
+        public LightDrawer lightDrawer;
 
         protected Viewer3D Viewer;
 

@@ -34,7 +34,7 @@ namespace MSTS
     {
 
         //TODO - make all msts classes use this.
-        public static string DefaultLocation = null;   // MSTS default path.
+        public static string DefaultLocation;   // MSTS default path.
 
         /// <summary>
         /// Returns the base path of the MSTS installation

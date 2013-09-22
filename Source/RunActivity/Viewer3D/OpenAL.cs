@@ -718,7 +718,7 @@ namespace ORTS
         /// <param name="ToMono">Indicates if the wave must be converted to mono</param>
         /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
         /// <returns>True if success</returns>
-        public bool OpenWavFile(string Name, ref int[] BufferIDs, ref int[] BufferLens, bool ToMono, bool isReleasedWithJump)
+        public static bool OpenWavFile(string Name, ref int[] BufferIDs, ref int[] BufferLens, bool ToMono, bool isReleasedWithJump)
         {
             WaveFileData wfi = new WaveFileData();
             int fmt = -1;
@@ -835,7 +835,7 @@ namespace ORTS
         /// <param name="offset">Offset from copy</param>
         /// <param name="len">Number of bytes to copy</param>
         /// <returns>New buffer with the extracted data</returns>
-        private byte[] GetFromArray(byte[] buffer, int offset, int len)
+        static byte[] GetFromArray(byte[] buffer, int offset, int len)
         {
             byte[] retval = new byte[len];
             Buffer.BlockCopy(buffer, offset, retval, 0, len);
@@ -850,7 +850,7 @@ namespace ORTS
         /// <param name="retval">The filled structure</param>
         /// <param name="len">The bytes to read, -1 if the structure size must be filled</param>
         /// <returns>True if success</returns>
-        public bool GetNextStructureValue<T>(FileStream fs, out T retval, int len)
+        public static bool GetNextStructureValue<T>(FileStream fs, out T retval, int len)
         {
             byte[] buffer;
             retval = default(T);

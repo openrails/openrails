@@ -30,13 +30,13 @@ namespace ORTS
     public abstract class TrainControlSystem
     {
         // Following values are queried by CabView:
-        public bool VigilanceAlarm = false;
-        public bool VigilanceEmergency = false;
-        public bool AlerterButtonPressed = false;
-        public bool OverspeedWarning = false;
-        public bool PenaltyApplication = false;
-        
-        public bool OverspeedAlarm = false;
+        public bool VigilanceAlarm;
+        public bool VigilanceEmergency;
+        public bool AlerterButtonPressed;
+        public bool OverspeedWarning;
+        public bool PenaltyApplication;
+
+        public bool OverspeedAlarm;
         
         protected MSTSLocomotive MSTSLocomotive;
         protected Simulator Simulator;
@@ -46,7 +46,7 @@ namespace ORTS
         protected MonitoringDevice EmergencyStopMonitor;
         protected MonitoringDevice AWSMonitor;
 
-        protected bool TrainControlSystemIsActive = false;
+        protected bool TrainControlSystemIsActive;
 
         public TrainControlSystem() { }
 
@@ -126,7 +126,7 @@ namespace ORTS
             protected float EndValue;
             protected float AlarmValue;
             protected MSTSLocomotive MSTSLocomotive;
-            public bool Started = false;
+            public bool Started;
 
             protected virtual float CurrentValue { get; set; }
             public void Setup(MSTSLocomotive mstsLocomotive, float alarmValue) { MSTSLocomotive = mstsLocomotive; AlarmValue = alarmValue; }
@@ -149,19 +149,19 @@ namespace ORTS
         {
             public float MonitorTimeS = 66; // Time from alerter reset to applying emergency brake
             public float AlarmTimeS = 60; // Time from alerter reset to audible and visible alarm
-            public float PenaltyTimeS = 0;
-            public bool EmergencyCutsPower = false;
-            public bool EmergencyShutsDownEngine = false;
+            public float PenaltyTimeS;
+            public bool EmergencyCutsPower;
+            public bool EmergencyShutsDownEngine;
             public bool ResetOnZeroSpeed = true;
-            public float CriticalLevelMpS = 0;
-            public float ResetLevelMpS = 0;
+            public float CriticalLevelMpS;
+            public float ResetLevelMpS;
             public bool AppliesFullBrake = true;
-            public bool AppliesEmergencyBrake = false;
+            public bool AppliesEmergencyBrake;
 
             // Following are for OverspeedMonitor only
-            public bool ResetOnResetButton = false;
-            public float TriggerOnOverspeedMpS = 0;
-            public bool TriggerOnTrackOverspeed = false;
+            public bool ResetOnResetButton;
+            public float TriggerOnOverspeedMpS;
+            public bool TriggerOnTrackOverspeed;
             public float TriggerOnTrackOverspeedMarginMpS = 4;
             public float AlarmTimeBeforeOverspeedS = 5;
 
@@ -199,7 +199,7 @@ namespace ORTS
         Timer OverspeedAlarmTimer = new Timer();
         Timer OverspeedPenaltyTimer = new Timer();
 
-        float VigilanceAlarmTimeoutS = 0;
+        float VigilanceAlarmTimeoutS;
 
         public MSTSTrainControlSystem(MSTSLocomotive mstsLocomotive)
         {

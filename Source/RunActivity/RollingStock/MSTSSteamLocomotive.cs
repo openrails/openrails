@@ -55,10 +55,10 @@ namespace ORTS
         public MSTSNotchController BlowerController = new MSTSNotchController( 0, 1, 0.1f );
         public MSTSNotchController DamperController = new MSTSNotchController( 0, 1, 0.1f );
         public MSTSNotchController FiringRateController = new MSTSNotchController( 0, 1, 0.1f );
-        bool Injector1On = false;
-        bool Injector2On = false;
-        public bool CylinderCocksOpen = false;
-        bool ManualFiring = false;
+        bool Injector1On;
+        bool Injector2On;
+        public bool CylinderCocksOpen;
+        bool ManualFiring;
 
         // state variables
         float BoilerKW;          // power of boiler
@@ -79,7 +79,7 @@ namespace ORTS
         public float FireMassKG;
         float FireRatio;
         float FlueTempK = 1000;
-        public bool SafetyOn = false;
+        public bool SafetyOn;
         public readonly SmoothedData Smoke = new SmoothedData(15);
 
         // eng file configuration parameters
@@ -268,7 +268,8 @@ namespace ORTS
                 MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
             //Trace.WriteLine(string.Format("burn rate 2 {0} {1} {2}", BurnRate[1] * (1 - .82f) / .35f / .82f, baseTempK, BurnRate[1]));
         }
-        public bool ZeroError(float v, string name, string wagFile)
+        
+        public static bool ZeroError(float v, string name, string wagFile)
         {
             if (v > 0)
                 return false;
@@ -1105,10 +1106,8 @@ namespace ORTS
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var car = Car as MSTSSteamLocomotive;
-            var steamGenerationLBpS = car.EvaporationLBpS;
             var steamUsageLBpS = car.SteamUsageLBpS + car.BlowerSteamUsageLBpS + car.BasicSteamUsageLBpS + (car.SafetyOn ? car.SafetyValveUsageLBpS : 0);
             var steamVolumeM3pS = steamUsageLBpS * LBToKG * SteamVaporDensityAt100DegC1BarM3pKG * 10; // The 10 is a fiddle factor that makes things look a lot better in tested locomotives.
-            var fireMassPCT = (car.IdealFireMassKG > 0 ? car.FireMassKG / car.IdealFireMassKG - 1 : 0) * 10;
 
             foreach (var drawer in Cylinders)
                 drawer.SetEmissionRate(car.CylinderCocksOpen ? steamVolumeM3pS / 10 : 0);

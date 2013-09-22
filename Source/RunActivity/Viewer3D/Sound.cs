@@ -62,11 +62,11 @@ namespace ORTS
         public abstract void InitInitials();
         public abstract bool Update();
 
-        public MSTSWagon Car = null;          // the sound may be from a train car
+        public MSTSWagon Car;                   // the sound may be from a train car
         public Viewer3D Viewer;                 // the listener is connected to this viewer
         public float Volume = 1;                // Volume of the ScalabiltyGroup
 
-        public bool NeedsFrequentUpdate = false;
+        public bool NeedsFrequentUpdate;
 
         public abstract void Dispose();
     }
@@ -75,8 +75,8 @@ namespace ORTS
     {
         private int _prevTType = -1;
         private int _curTType = -1;
-        private SoundSource _activeInSource = null;
-        private SoundSource _activeOutSource = null;
+        private SoundSource _activeInSource;
+        private SoundSource _activeOutSource;
         private List<SoundSource> _inSources;
         private List<SoundSource> _outSources;
 
@@ -271,16 +271,16 @@ namespace ORTS
 
         public string SMSFolder;              // the wave files will be relative to this folder
         public string SMSFileName;
-        public bool Active = false;
+        public bool Active;
         private MSTS.Activation ActivationConditions;
         private MSTS.Deactivation DeactivationConditions;
-        public bool IsEnvSound = false;
+        public bool IsEnvSound;
         public bool IsExternal = true;
-        public bool Ignore3D = false;
+        public bool Ignore3D;
 
         public float DistanceSquared = CUTOFFDISTANCE + 1;
         private bool WasOutOfDistance = true;
-        private bool _isSlowRolloff = false;
+        private bool _isSlowRolloff;
 
         public List<SoundStream> SoundStreams = new List<SoundStream>();
 
@@ -616,24 +616,24 @@ namespace ORTS
     public class SoundStream : IDisposable
     {
         public SoundSource SoundSource;
-        public int Index = 0;
+        public int Index;
         
         public float Volume;
 
         public List<ORTSTrigger> Triggers = new List<ORTSTrigger>();
 
         public ALSoundSource ALSoundSource { get; private set; }
-        
-        private int DiscreteTriggers = 0;
+
+        private int DiscreteTriggers;
 
         protected MSTS.SMSStream MSTSStream;
 
-        private ORTSInitialTrigger _InitialTrigger = null;
+        private ORTSInitialTrigger _InitialTrigger;
 
-        public bool NeedsFrequentUpdate = false;
-        public bool IsReleasedWithJump = false;
+        public bool NeedsFrequentUpdate;
+        public bool IsReleasedWithJump;
         public ORTSTrigger LastTriggered = new ORTSTrigger();
-        public bool RepeatedTrigger = false;
+        public bool RepeatedTrigger;
 
         public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, int index, bool isSlowRolloff, float factor)
         {
@@ -796,7 +796,7 @@ namespace ORTS
         /// <param name="x"></param>
         /// <param name="Curve"></param>
         /// <returns></returns>
-        private float Interpolate(float x, MSTS.VolumeCurve Curve)
+        static float Interpolate(float x, MSTS.VolumeCurve Curve)
         {
             MSTS.CurvePoint[] curvePoints = Curve.CurvePoints;
 
@@ -906,7 +906,7 @@ namespace ORTS
     public class ORTSTrigger
     {
         public bool Enabled = true;  // set by the DisableTrigger, EnableTrigger sound commands
-        public bool Signaled = false;
+        public bool Signaled;
 
         // SoundCommand moved here from all descendants in order to support loops - by GeorgeS
         public ORTSSoundCommand SoundCommand;
@@ -1119,7 +1119,7 @@ namespace ORTS
         SoundStream SoundStream;
 
         float StartValue;
-        public bool IsBellow = false;
+        public bool IsBellow;
 
         public ORTSVariableTrigger(SoundStream soundStream, MSTS.Variable_Trigger smsData)
         {
@@ -1495,7 +1495,7 @@ namespace ORTS
     {
         protected String[] Files;
         protected MSTS.SoundCommand.SelectionMethods SelectionMethod;
-        protected int iFile = 0;
+        protected int iFile;
 
         public ORTSSoundPlayCommand(SoundStream ortsStream, MSTS.SoundPlayCommand mstsSoundPlayCommand)
             : base(ortsStream)
@@ -1525,6 +1525,8 @@ namespace ORTS
                                      Program.Simulator.BasePath + @"\SOUND"};
             var fullPath = ORTSPaths.GetFileFromFolders(pathArray, Files[iFile]);
             return (fullPath != null) ? fullPath : "";
+#else
+            return "";
 #endif
         }
 
@@ -1547,11 +1549,6 @@ namespace ORTS
         public WorldSounds(Viewer3D viewer)
         {
             Viewer = viewer;
-        }
-
-        public void Update(ElapsedTime elapsedTime)
-        {
-            return;
         }
 
         public int GetTType(TDBObjects tdbObjs)
@@ -1778,7 +1775,7 @@ namespace ORTS
         /// Returns the string representation of a coordinate
         /// eg "+014482"
         /// </summary>
-        private string FormatTileCoordinate(int tileCoord)
+        static string FormatTileCoordinate(int tileCoord)
         {
             string sign = "+";
             if (tileCoord < 0)
@@ -1798,7 +1795,7 @@ namespace ORTS
 #endif
         TrackNode[] trackNodes;
         TrItem[] trItems;
-        private AIPath _aiPath = null;
+        private AIPath _aiPath;
 #if !NEW_SIGNALLING
         private TrackAuthority _ta;
 #endif

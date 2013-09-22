@@ -43,18 +43,18 @@ namespace ORTS
         readonly DataLogger Logger = new DataLogger();
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
-        bool DrawCarNumber = false;
+        bool DrawCarNumber;
         // F6 reveals labels for both sidings and platforms.
         // Booleans for both so they can also be used independently.
-        bool DrawSiding = false;
-        bool DrawPlatform = false;
+        bool DrawSiding;
+        bool DrawPlatform;
 
         SpriteBatchMaterial TextMaterial;
         Label3DMaterial DrawInforMaterial;
 
         Matrix Identity = Matrix.Identity;
-        int FrameNumber = 0;
-        double LastUpdateRealTime = 0;   // update text message only 10 times per second
+        int FrameNumber;
+        double LastUpdateRealTime;   // update text message only 10 times per second
 
         [StructLayout(LayoutKind.Sequential, Size = 40)]
         struct PROCESS_MEMORY_COUNTERS

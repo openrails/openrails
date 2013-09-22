@@ -24,7 +24,7 @@ namespace ORTS
 {
     public class WSFile
     {
-        public TR_WorldSoundFile TR_WorldSoundFile = null;
+        public TR_WorldSoundFile TR_WorldSoundFile;
 
         public WSFile(string wsfilename)
         {

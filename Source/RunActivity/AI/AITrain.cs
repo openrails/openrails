@@ -43,9 +43,9 @@ namespace ORTS
     {
         public int UiD;
         public string Name;
-        public AIPath Path = null;
+        public AIPath Path;
 
-        public bool CoupleOnNextStop = false;            // true if cars at next stop to couple onto
+        public bool CoupleOnNextStop;                    // true if cars at next stop to couple onto
         public float MaxDecelMpSSP = 1.0f;               // maximum decelleration
         public float MaxAccelMpSSP = 1.0f;               // maximum accelleration
         public float MaxDecelMpSSF = 0.8f;               // maximum decelleration
@@ -56,9 +56,9 @@ namespace ORTS
         public float LastSpeedMpS;                       // previous speed
         public int Alpha10 = 10;                         // 10*alpha
 
-        public bool PreUpdate = false;                   // pre update state
-        public AIActionItem nextActionInfo = null;       // no next action
-        public float NextStopDistanceM = 0;              // distance to next stop node
+        public bool PreUpdate;                           // pre update state
+        public AIActionItem nextActionInfo;              // no next action
+        public float NextStopDistanceM;                  // distance to next stop node
         public int StartTime;                            // starting time
 
         public enum AI_MOVEMENT_STATE
@@ -130,7 +130,6 @@ namespace ORTS
             else
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
-                float offset = PresentPosition[1].TCOffset;
 
                 ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset,
                             PresentPosition[1].TCDirection, Length, false, true, true);
@@ -155,7 +154,6 @@ namespace ORTS
             else if (usePosition)
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
-                float offset = PresentPosition[1].TCOffset;
 
                 ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset,
                             PresentPosition[1].TCDirection, Length, false, true, true);
@@ -181,7 +179,6 @@ namespace ORTS
 
             MovementState = (AI_MOVEMENT_STATE)inf.ReadInt32();
 
-            nextActionInfo = null;
             if (TrainType != TRAINTYPE.AI_NOTSTARTED)
             {
                 ResetActions(true);
@@ -399,12 +396,6 @@ namespace ORTS
             PreUpdate = preUpdate;   // flag for pre-update phase
 
             // Check if at stop point and stopped
-
-            float actClearance = clearingDistanceM;
-            if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
-            {
-                actClearance = 0f;
-            }
 
             //          if ((NextStopDistanceM < actClearance) || (SpeedMpS <= 0 && MovementState == AI_MOVEMENT_STATE.STOPPED))
             if (MovementState == AI_MOVEMENT_STATE.STOPPED || MovementState == AI_MOVEMENT_STATE.STATION_STOP)
@@ -2690,7 +2681,6 @@ namespace ORTS
 
         public void AdjustControlsBrakeMore(float reqDecelMpSS, float timeS, int stepSize)
         {
-            float thisds = 0.0f;
             if (AITrainThrottlePercent > 0)
             {
                 AITrainThrottlePercent = 0;
@@ -2705,7 +2695,6 @@ namespace ORTS
             else
             {
                 float ds = timeS * (reqDecelMpSS);
-                thisds = ds;
                 SpeedMpS = Math.Max(SpeedMpS - ds, 0); // avoid negative speeds
                 foreach (TrainCar car in Cars)
                 {
@@ -3801,8 +3790,6 @@ namespace ORTS
                 if (nextActionInfo != null)
                 {
                     bool earlier = false;
-                    float thisDistanceToTrainM = thisItem.ActivateDistanceM - DistanceTravelledM;
-                    float nextDistanceToTrainM = nextActionInfo.ActivateDistanceM - DistanceTravelledM;
 
                     if (thisItem.ActivateDistanceM < nextActionInfo.ActivateDistanceM)
                     {
@@ -4121,10 +4108,10 @@ namespace ORTS
 
     public class AIActionItem : Train.DistanceTravelledItem
     {
-        public float RequiredSpeedMpS = 0;
-        public float ActivateDistanceM = 0;
-        public float InsertedDistanceM = 0;
-        public ObjectItemInfo ActiveItem = null;
+        public float RequiredSpeedMpS;
+        public float ActivateDistanceM;
+        public float InsertedDistanceM;
+        public ObjectItemInfo ActiveItem;
 
         public enum AI_ACTION_TYPE
         {
@@ -4172,7 +4159,6 @@ namespace ORTS
             InsertedDistanceM = inf.ReadSingle();
 
             bool validActiveItem = inf.ReadBoolean();
-            ActiveItem = null;
 
             if (validActiveItem)
             {
@@ -4182,7 +4168,7 @@ namespace ORTS
             NextAction = (AI_ACTION_TYPE)inf.ReadInt32();
         }
 
-        public ObjectItemInfo RestoreActiveItem(BinaryReader inf, Signals signalRef)
+        public static ObjectItemInfo RestoreActiveItem(BinaryReader inf, Signals signalRef)
         {
 
             ObjectItemInfo thisInfo = new ObjectItemInfo(ObjectItemInfo.ObjectItemFindState.NONE_FOUND);
@@ -4237,7 +4223,7 @@ namespace ORTS
             outf.Write((int)NextAction);
         }
 
-        public void SaveActiveItem(BinaryWriter outf, ObjectItemInfo ActiveItem)
+        public static void SaveActiveItem(BinaryWriter outf, ObjectItemInfo ActiveItem)
         {
             outf.Write((int)ActiveItem.ObjectType);
             outf.Write((int)ActiveItem.ObjectState);

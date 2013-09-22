@@ -340,7 +340,7 @@ namespace ORTS
             GC.SuppressFinalize(true);
         }
 
-        void DisposeAndClearList<T>(ref List<T> objects)
+        static void DisposeAndClearList<T>(ref List<T> objects)
         {
             foreach (var obj in objects)
                 if (obj is IDisposable)
@@ -383,7 +383,7 @@ namespace ORTS
         /// MSTS WFiles represent some location with a position, quaternion and tile coordinates
         /// This converts it to the ORTS WorldPosition representation
         /// </summary>
-        WorldPosition WorldPositionFromMSTSLocation(int tileX, int tileZ, STFPositionItem MSTSPosition, STFQDirectionItem MSTSQuaternion)
+        static WorldPosition WorldPositionFromMSTSLocation(int tileX, int tileZ, STFPositionItem MSTSPosition, STFQDirectionItem MSTSQuaternion)
         {
             var XNAQuaternion = new Quaternion((float)MSTSQuaternion.A, (float)MSTSQuaternion.B, -(float)MSTSQuaternion.C, (float)MSTSQuaternion.D);
             var XNAPosition = new Vector3((float)MSTSPosition.X, (float)MSTSPosition.Y, -(float)MSTSPosition.Z);
@@ -402,7 +402,7 @@ namespace ORTS
         /// MSTS WFiles represent some location with a position, 3x3 matrix and tile coordinates
         /// This converts it to the ORTS WorldPosition representation
         /// </summary>
-        WorldPosition WorldPositionFromMSTSLocation(int tileX, int tileZ, STFPositionItem MSTSPosition, Matrix3x3 MSTSMatrix)
+        static WorldPosition WorldPositionFromMSTSLocation(int tileX, int tileZ, STFPositionItem MSTSPosition, Matrix3x3 MSTSMatrix)
         {
             var XNAPosition = new Vector3((float)MSTSPosition.X, (float)MSTSPosition.Y, -(float)MSTSPosition.Z);
             var XNAMatrix = Matrix.Identity;
@@ -436,7 +436,7 @@ namespace ORTS
         /// Build a w filename from tile X and Z coordinates.
         /// Returns a string eg "w-011283+014482.w"
         /// </summary>
-        string WorldFileNameFromTileCoordinates(int tileX, int tileZ)
+        static string WorldFileNameFromTileCoordinates(int tileX, int tileZ)
         {
             var filename = "w" + FormatTileCoordinate(tileX) + FormatTileCoordinate(tileZ) + ".w";
             return filename;
@@ -447,7 +447,7 @@ namespace ORTS
         /// Returns the string representation of a coordinate
         /// eg "+014482"
         /// </summary>
-        string FormatTileCoordinate(int tileCoord)
+        static string FormatTileCoordinate(int tileCoord)
         {
             var sign = "+";
             if (tileCoord < 0)

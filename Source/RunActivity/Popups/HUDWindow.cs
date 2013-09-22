@@ -48,7 +48,7 @@ namespace ORTS.Popups
         readonly Action<TableData>[] TextPages;
         readonly WindowTextFont TextFont;
 
-        int TextPage = 0;
+        int TextPage;
         TableData TextTable = new TableData() { Cells = new string[0, 0] };
 
         HUDGraphSet ForceGraphs;
@@ -233,20 +233,20 @@ namespace ORTS.Popups
         }
 
         #region Table handling
-        public sealed class TableData
-{
+        sealed class TableData
+        {
             public string[,] Cells;
             public int CurrentRow;
             public int CurrentLabelColumn;
             public int CurrentValueColumn;
         }
 
-        public void TableSetCell(TableData table, int cellColumn, string format, params object[] args)
+        static void TableSetCell(TableData table, int cellColumn, string format, params object[] args)
         {
             TableSetCell(table, table.CurrentRow, cellColumn, format, args);
         }
 
-        void TableSetCell(TableData table, int cellRow, int cellColumn, string format, params object[] args)
+        static void TableSetCell(TableData table, int cellRow, int cellColumn, string format, params object[] args)
         {
             if (cellRow > table.Cells.GetUpperBound(0) || cellColumn > table.Cells.GetUpperBound(1))
             {
@@ -260,24 +260,24 @@ namespace ORTS.Popups
             table.Cells[cellRow, cellColumn] = args.Length > 0 ? String.Format(format, args) : format;
         }
 
-        void TableSetCells(TableData table, int startColumn, params string[] columns)
+        static void TableSetCells(TableData table, int startColumn, params string[] columns)
         {
             for (var i = 0; i < columns.Length; i++)
                 TableSetCell(table, startColumn + i, columns[i]);
         }
 
-        public void TableAddLine(TableData table)
+        static void TableAddLine(TableData table)
         {
             table.CurrentRow++;
         }
         
-        public void TableAddLine(TableData table, string format, params object[] args)
+        static void TableAddLine(TableData table, string format, params object[] args)
         {
             TableSetCell(table, table.CurrentRow, 0, format, args);
             table.CurrentRow++;
         }
 
-        void TableAddLines(TableData table, string lines)
+        static void TableAddLines(TableData table, string lines)
         {
             if (lines == null)
                 return;
@@ -291,13 +291,13 @@ namespace ORTS.Popups
             }
         }
 
-        void TableSetLabelValueColumns(TableData table, int labelColumn, int valueColumn)
+        static void TableSetLabelValueColumns(TableData table, int labelColumn, int valueColumn)
         {
             table.CurrentLabelColumn = labelColumn;
             table.CurrentValueColumn = valueColumn;
         }
 
-        void TableAddLabelValue(TableData table, string label, string format, params object[] args)
+        static void TableAddLabelValue(TableData table, string label, string format, params object[] args)
         {
             TableSetCell(table, table.CurrentRow, table.CurrentLabelColumn, label);
             TableSetCell(table, table.CurrentRow, table.CurrentValueColumn, format, args);
@@ -307,7 +307,6 @@ namespace ORTS.Popups
 
         void TextPageCommon(TableData table)
         {
-            var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
             var playerTrain = Viewer.PlayerLocomotive.Train;
             var showMUReverser = Math.Abs(playerTrain.MUReverserPercent) != 100;
             var showRetainers = playerTrain.RetainerSetting != RetainerSetting.Exhaust;
@@ -582,7 +581,7 @@ namespace ORTS.Popups
             TableAddLine(table);
         }
 
-        void TextPageHeading(TableData table, string name)
+        static void TextPageHeading(TableData table, string name)
         {
             TableAddLine(table);
             TableAddLine(table, name);

@@ -38,7 +38,7 @@ namespace ORTS
     {
         public static List<List<TrVectorSection>> allCurves;
         public static Dictionary<int, List<TrVectorSection>> SectionMapTiles;
-        public static bool HasCheckedElevation = false;
+        public static bool HasCheckedElevation;
         /// <summary>
         /// Decompose and add a SuperElevation on top of MSTS track section
         /// </summary>
@@ -268,7 +268,7 @@ namespace ORTS
             return null;
         }
 
-        static float MaxAllowElev = 0.0f;
+        static float MaxAllowElev;
 
         //check TDB for long curves and determine each section's position/elev in the curve
         public static void CheckElevation(Simulator simulator)
@@ -278,7 +278,6 @@ namespace ORTS
 
             MaxAllowElev = 0.07f + simulator.UseSuperElevation / 100f;//max allowed elevation controlled by user setting
 
-            var tSection = simulator.TSectionDat.TrackSections;
             var SectionList = new List<TrVectorSection>();
             foreach (var node in simulator.TDB.TrackDB.TrackNodes)
             {
@@ -487,7 +486,6 @@ namespace ORTS
                     else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
                     Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
 
-                    Matrix rot2 = Matrix.CreateRotationY(-(90 - section.SectionCurve.Angle) * 3.14f / 180); // Heading change (rotation about O)
                     displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
                                             worldMatrix.XNAMatrix, out localProjectedV);
 
@@ -538,9 +536,6 @@ namespace ORTS
 
             WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Make a copy so it will not be messed
 
-            float realRun; // Actual run for subsection based on path
-
-
             WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
             Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
             worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
@@ -576,7 +571,6 @@ namespace ORTS
                     localProjectedV = localV + length * heading;
                     displacement = Traveller.MSTSInterpolateAlongStraight(localV, heading, length,
                                                             worldMatrix.XNAMatrix, out localProjectedV);
-                    realRun = length;
                 }
                 else // Curved section
                 {   // Both heading and translation change 
@@ -592,7 +586,6 @@ namespace ORTS
 
                     heading = Vector3.Transform(heading, rot); // Heading change
                     nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
-                    realRun = radius * ((length > 0) ? length : -length); // Actual run (meters)
                 }
 
                 // Update nextRoot with new translation component
@@ -614,7 +607,7 @@ namespace ORTS
             bool withCurves = false;
             for (int iTkSection = 0; iTkSection < dTrackObj.trackSections.Count; iTkSection++)
             {
-                float length = 0, radius = -1;
+                float length = 0;
 
                 length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
                 if (length == 0.0) continue; // Consider zero-length subsections vacuous
@@ -628,7 +621,6 @@ namespace ORTS
                 }
                 else // Curved section
                 {   // Both heading and translation change 
-                    radius = subsection.trackSections[0].param2; // meters
                     //if (Math.Abs(radius * length) < Program.Simulator.SuperElevationMinLen) return false;
                     withCurves = true;
                 }
@@ -655,7 +647,7 @@ namespace ORTS
 
     public class SuperElevationMesh : DynatrackMesh
     {
-        float StartElev = 0f, MaxElev = 0f, EndElv = 0f;
+        float StartElev, MaxElev, EndElv;
         public SuperElevationMesh(RenderProcess renderProcess, WorldPosition worldPosition,
         WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir)
             : base()
@@ -733,7 +725,7 @@ namespace ORTS
 
         int offSet = 0;
         int whichCase = 0;
-        float elevated = 0f;
+        float elevated;
         /// <summary>
         /// Builds a SuperElevation LOD to SuperElevationProfile specifications as one vertex buffer and one index buffer.
         /// The order in which the buffers are built reflects the nesting in the TrProfile.  The nesting order is:
@@ -957,13 +949,11 @@ namespace ORTS
             VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
         }
 
-        public float prevRotation = 0f;
-        public float currentRotation = 0f;
+        public float prevRotation;
+        public float currentRotation;
         public float determineRotation(float Angle)
         {
-            var sign = -Math.Sign(Angle);
             float desiredZ = 1f;
-            float rAngle = (float)Math.Abs(Angle); // 0.0174=3.14/180
             float to = (offSet + 1f) / NumSections;
 
             float maxv = MaxElev;

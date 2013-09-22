@@ -71,30 +71,30 @@ namespace ORTS
     public partial class MSTSLocomotive : MSTSWagon
     {
         // simulation parameters
-        public bool Horn = false;
-        public bool AlerterSnd = false;
-        public bool VigilanceMonitor = false;
-        public bool Bell = false;
-        public bool Sander = false;  
-        public bool Wiper = false;
-        public bool BailOff = false;
-        public bool DynamicBrake = false;
+        public bool Horn;
+        public bool AlerterSnd;
+        public bool VigilanceMonitor;
+        public bool Bell;
+        public bool Sander;
+        public bool Wiper;
+        public bool BailOff;
+        public bool DynamicBrake;
         public float MaxPowerW;
         public float MaxForceN;
         public float MaxSpeedMpS = 1e3f;
         public float MainResPressurePSI = 130;
-        public bool CompressorOn = false;
-        public float AverageForceN = 0;
-        public bool PowerOn = false;
-        public float PowerOnDelayS = 0.0f;
-        public bool CabLightOn = false;
+        public bool CompressorOn;
+        public float AverageForceN;
+        public bool PowerOn;
+        public float PowerOnDelayS;
+        public bool CabLightOn;
         public bool ShowCab = true;
 
-        bool DoesHornTriggerBell = false;
+        bool DoesHornTriggerBell;
 
         // wag file data
-        public string CabSoundFileName = null;
-        public string CVFFileName = null;
+        public string CabSoundFileName;
+        public string CVFFileName;
         public float MaxMainResPressurePSI = 130;
         public float MainResVolumeFT3 = 10;
         public float CompressorRestartPressurePSI = 110;
@@ -105,36 +105,36 @@ namespace ORTS
         public float BrakeServiceTimeFactorS = 1.009f;
         public float BrakeEmergencyTimeFactorS = .1f;
         public float BrakePipeChargingRatePSIpS;
-        public Interpolator2D TractiveForceCurves = null;
-        public Interpolator2D DynamicBrakeForceCurves = null;
+        public Interpolator2D TractiveForceCurves;
+        public Interpolator2D DynamicBrakeForceCurves;
         public float DynamicBrakeSpeed1MpH = 3;
         public float DynamicBrakeSpeed2MpH = 18;
         public float DynamicBrakeSpeed3MpH = 23;
         public float DynamicBrakeSpeed4MpH = 35;
-        public float MaxDynamicBrakeForceN = 0;
-        public float DynamicBrakeDelayS = 0;
-        public bool DynamicBrakeAutoBailOff = false;
-        public bool UsingRearCab = false;
+        public float MaxDynamicBrakeForceN;
+        public float DynamicBrakeDelayS;
+        public bool DynamicBrakeAutoBailOff;
+        public bool UsingRearCab;
 
-        public bool HasCombCtrl = false;
-        public bool HasCombThrottleTrainBrake = false;
-        public bool HasDefectiveComboDynamicBreak = false;
-        public bool HasSmoothStruc = false;
+        public bool HasCombCtrl;
+        public bool HasCombThrottleTrainBrake;
+        public bool HasDefectiveComboDynamicBreak;
+        public bool HasSmoothStruc;
         public int  ComboCtrlCrossOver = 5;
 
         public float MaxContinuousForceN;
         public float ContinuousForceTimeFactor = 1800;
         public float NumWheelsAdhesionFactor = 4;   // MSTS adhesion factor loosely based on the number of driven axles
-        public bool AntiSlip = false;
-        public float SanderSpeedEffectUpToMpS = 0.0f;
+        public bool AntiSlip;
+        public float SanderSpeedEffectUpToMpS;
         public float SanderSpeedOfMpS = 30.0f;
         public string EngineOperatingProcedures;
 
-        public bool EmergencyCausesPowerDown = false;
-        public bool EmergencyCausesThrottleDown = false;
-        public bool EmergencyEngagesHorn = false;
-        public bool EmergencyButtonPressed = false;
-        public bool WheelslipCausesThrottleDown = false;
+        public bool EmergencyCausesPowerDown;
+        public bool EmergencyCausesThrottleDown;
+        public bool EmergencyEngagesHorn;
+        public bool EmergencyButtonPressed;
+        public bool WheelslipCausesThrottleDown;
         public float CabRotationZ { get { return (UsingRearCab==true?-totalRotationZ:totalRotationZ);} }
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
@@ -146,13 +146,13 @@ namespace ORTS
         public MSTSBrakeController  EngineBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController  DynamicBrakeController;
-        public MSTSNotchController GearBoxController = null;
+        public MSTSNotchController GearBoxController;
         
         public Axle LocomotiveAxle;
         public IIRFilter CurrentFilter;
         public IIRFilter AdhesionFilter;
-        
-        public float FilteredMotiveForceN = 0.0f;
+
+        public float FilteredMotiveForceN;
 
         public double CommandStartTime;
 
@@ -282,7 +282,6 @@ namespace ORTS
                 viewPointList.Add(viewPoint);
             }
 
-            var y = cvfFile.Directions[0].Y; // abbreviation
             if (!(this is MSTSSteamLocomotive))
             {
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
@@ -502,8 +501,8 @@ namespace ORTS
                 EngineBrakeController.SetValue(0);
         }
 
-		public bool controlUpdated = false;
-		public bool notificationReceived = false;
+        public bool controlUpdated;
+        public bool notificationReceived;
 
         /// <summary>
         /// Called just after the InitializeFromWagFile
@@ -917,7 +916,6 @@ namespace ORTS
 
             //Curtius-Kniffler computation for the basic model
             float max0 = 1.0f;  //Adhesion conditions [N]
-            float max1 = MassKG * 9.81f * Adhesion2;
 
             if ((Simulator.UseAdvancedAdhesion)&&(!Simulator.Paused)&&(!AntiSlip))
             {
@@ -2133,7 +2131,7 @@ namespace ORTS
         /// </summary>
         /// <param name="displaySize">Current screen resolution</param>
         /// <returns>Translated vectors</returns>
-        public Vector4 TranslatedPosition(Vector4 Position, Point displaySize)
+        public static Vector4 TranslatedPosition(Vector4 Position, Point displaySize)
         {
             return new Vector4(Position.X / 640 * displaySize.X,
                 Position.Y / 480 * displaySize.Y,
@@ -2144,7 +2142,7 @@ namespace ORTS
         /// <summary>
         /// Used by the shader
         /// </summary>
-        public Vector3 TranslatedColor(Color Color)
+        public static Vector3 TranslatedColor(Color Color)
         {
             return new Vector3((float)Color.R / 255, (float)Color.G / 255, (float)Color.B / 255);
         }
@@ -2178,8 +2176,8 @@ namespace ORTS
 
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
-        private bool _hasCabRenderer = false;
-        private CabRenderer _CabRenderer = null;
+        private bool _hasCabRenderer;
+        private CabRenderer _CabRenderer;
 
         public MSTSLocomotiveViewer(Viewer3D viewer, MSTSLocomotive car)
             : base(viewer, car)
@@ -2905,10 +2903,10 @@ namespace ORTS
             if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
             {
                 _Shader = new CabShader( viewer.GraphicsDevice,
-                    _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
-                    _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
-                    _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
-                    _Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
+                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
+                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
             }
     
             _PrevScreenSize = DisplaySize;
@@ -3017,8 +3015,8 @@ namespace ORTS
             {
                 _PrevScreenSize = _Viewer.DisplaySize;
                 _Shader.SetLightPositions(
-                    _Locomotive.CabViewList[i].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[i].ExtendedCVF.Light1Position, _Viewer.DisplaySize),
-                    _Locomotive.CabViewList[i].ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[i].ExtendedCVF.Light2Position, _Viewer.DisplaySize));
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[i].ExtendedCVF.Light1Position, _Viewer.DisplaySize),
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[i].ExtendedCVF.Light2Position, _Viewer.DisplaySize));
             }
 
             frame.AddPrimitive(_Sprite2DCabView, this, RenderPrimitiveGroup.Cab, ref _Scale);
@@ -3178,7 +3176,7 @@ namespace ORTS
         readonly Vector2 Origin;
         readonly float Scale = 1;
 
-        float Rotation = 0;   // 0' is 12 o'clock, 90' is 3 0'clock
+        float Rotation;   // 0' is 12 o'clock, 90' is 3 0'clock
         float ScaleToScreen = 1;
 
         public CabViewDialRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CVCDial control, CabShader shader)
@@ -3644,7 +3642,7 @@ namespace ORTS
             1.0f
         };
 
-        int DummyDynamicToIndex(float percent)
+        static int DummyDynamicToIndex(float percent)
         {
             var index = 0;
 

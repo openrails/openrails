@@ -49,32 +49,32 @@ namespace ORTS
     
     public class MSTSWagon: TrainCar
     {
-		public bool Pan = false;     // false = down; some wagon has pantograph
-		public bool Pan1Up = false; // if the forwards pantograph is up
-        public bool Pan2Up = false; // if the backwards pantograph is up
-        public bool DoorLeftOpen = false;
-		public bool DoorRightOpen = false;
-		public bool MirrorOpen = false;
+        public bool Pan;     // false = down; some wagon has pantograph
+        public bool Pan1Up;  // if the forwards pantograph is up
+        public bool Pan2Up;  // if the backwards pantograph is up
+        public bool DoorLeftOpen;
+        public bool DoorRightOpen;
+        public bool MirrorOpen;
 
         // simulation parameters
-        public float Variable1 = 0.0f;  // used to convey status to soundsource
-        public float Variable2 = 0.0f;
-        public float Variable3 = 0.0f;
+        public float Variable1;  // used to convey status to soundsource
+        public float Variable2;
+        public float Variable3;
 
         // wag file data
-        public string MainShapeFileName = null;
-        public string FreightShapeFileName = null;
-        public float FreightAnimHeightM = 0;
-        public string InteriorShapeFileName = null; // passenger view shape file name
-        public string MainSoundFileName = null;
-        public string InteriorSoundFileName = null;
+        public string MainShapeFileName;
+        public string FreightShapeFileName;
+        public float FreightAnimHeightM;
+        public string InteriorShapeFileName; // passenger view shape file name
+        public string MainSoundFileName;
+        public string InteriorSoundFileName;
         public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
         public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case i'ts missing from the wag
-        public float Friction0N = 0;    // static friction
+        public float Friction0N;        // static friction
         public bool IsStandStill = true;
-        public float DavisAN = 0;       // davis equation constant
-        public float DavisBNSpM = 0;    // davis equation constant for speed
-        public float DavisCNSSpMM = 0;  // davis equation constant for speed squared
+        public float DavisAN;           // davis equation constant
+        public float DavisBNSpM;        // davis equation constant for speed
+        public float DavisCNSSpMM;      // davis equation constant for speed squared
         public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
         public float Adhesion1 = .27f;   // 1st MSTS adhesion value
         public float Adhesion2 = .49f;   // 2nd MSTS adhesion value
@@ -84,8 +84,8 @@ namespace ORTS
         public float Curtius_KnifflerC = 0.161f;             //                                      speedMpS * 3.6 + B
         public float AdhesionK = 0.7f;   //slip characteristics slope
         //public AntislipControl AntislipControl = AntislipControl.None;
-        public float AxleInertiaKgm2 = 0;   //axle inertia
-        public float WheelSpeedMpS = 0;
+        public float AxleInertiaKgm2;    //axle inertia
+        public float WheelSpeedMpS;
         public float SlipWarningThresholdPercent = 70;
         public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
 
@@ -119,7 +119,7 @@ namespace ORTS
             using (STFReader stf = new STFReader(wagFilePath, true))
                 while (!stf.Eof)
                 {
-                    string token = stf.ReadItem();
+                    stf.ReadItem();
                     Parse(stf.Tree.ToLower(), stf);
                 }
              if (BrakeSystem == null)
@@ -131,7 +131,7 @@ namespace ORTS
         {
         }
 
-        string brakeSystemType = null;
+        string brakeSystemType;
 
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
@@ -370,7 +370,8 @@ namespace ORTS
                     Friction0N *= (float)Math.Pow(.0025 * .44704, e1);
             }
         }
-        public float ParseFloat(string token)
+        
+        public static float ParseFloat(string token)
         {   // is there a better way to ignore any suffix?
             while (token.Length > 0)
             {
@@ -613,8 +614,8 @@ namespace ORTS
 
     public class MSTSCoupling
     {
-        public bool Rigid = false;
-        public float R0 = 0;
+        public bool Rigid;
+        public float R0;
         public float R0Diff = .012f;
         public float Stiffness1NpM = 1e7f;
         public float Stiffness2NpM = 2e7f;
@@ -700,10 +701,10 @@ namespace ORTS
         readonly PoseableShape PoseableShape;
 
         // Number of animation key-frames that are used by this part. This is calculated from the matrices provided.
-        int FrameCount = 0;
+        int FrameCount;
 
         // Current frame of the animation.
-        float AnimationKey = 0;
+        float AnimationKey;
 
         // List of the matrices we're animating for this part.
         List<int> MatrixIndexes = new List<int>();
@@ -878,7 +879,7 @@ namespace ORTS
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
         protected Viewer3D _Viewer3D;
 
-        bool HasFirstPanto = false;
+        bool HasFirstPanto;
         public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car)
             : base(viewer, car)
         {

@@ -62,9 +62,6 @@ namespace ORTS
             Vector3 displacement;  // Local displacement (from y=0 plane)
             Vector3 heading = Vector3.Forward; // Local heading (unit vector)
 
-            float realRun; // Actual run for subsection based on path
-
-
             WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
             Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
             worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
@@ -98,7 +95,6 @@ namespace ORTS
                     localProjectedV = localV + length * heading;
                     displacement = Traveller.MSTSInterpolateAlongStraight(localV, heading, length,
                                                             worldMatrix.XNAMatrix, out localProjectedV);
-                    realRun = length;
                 }
                 else // Curved section
                 {   // Both heading and translation change 
@@ -114,28 +110,10 @@ namespace ORTS
 
                     heading = Vector3.Transform(heading, rot); // Heading change
                     nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
-                    realRun = radius * ((length > 0) ? length : -length); // Actual run (meters)
                 }
 
                 // Update nextRoot with new translation component
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
-
-                // THE FOLLOWING COMMENTED OUT CODE IS NOT COMPATIBLE WITH THE NEW MESH GENERATION METHOD.
-                // IF deltaY IS STORED AS ANYTHING OTHER THAN 0, THE VALUE WILL GET USED FOR MESH GENERATION,
-                // AND BOTH THE TRANSFORMATION AND THE ELEVATION CHANGE WILL GET USED, IN ESSENCE DOUBLE COUNTING.
-                /*
-                // Update subsection ancillary data
-                subsection.trackSections[0].realRun = realRun;
-                if (iTkSection == 0)
-                {
-                    subsection.trackSections[0].deltaY = displacement.Y;
-                }
-                else
-                {
-                    // Increment-to-increment change in elevation
-                    subsection.trackSections[0].deltaY = nextRoot.XNAMatrix.Translation.Y - root.XNAMatrix.Translation.Y;
-                }
-                */
 
                 // Create a new DynatrackDrawer for the subsection
                 dTrackList.Add(new DynatrackDrawer(viewer, subsection, root, nextRoot));
@@ -516,7 +494,7 @@ namespace ORTS
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
-            lodItem.LoadMaterial(RenderProcess, lodItem);
+            LODItem.LoadMaterial(RenderProcess, lodItem);
             var gauge = renderProcess.Viewer.Simulator.SuperElevationGauge;
             var inner = gauge / 2f;
             var outer = inner + 0.15f * gauge / 1.435f;
@@ -563,7 +541,7 @@ namespace ORTS
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
-            lodItem.LoadMaterial(RenderProcess, lodItem);
+            LODItem.LoadMaterial(RenderProcess, lodItem);
 
             pl = new Polyline(this, "right", 2);
             pl.DeltaTexCoord = new Vector2(.0744726f, 0f);
@@ -593,7 +571,7 @@ namespace ORTS
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 1;
             lodItem.MipMapLevelOfDetailBias = -1f;
-            lodItem.LoadMaterial(RenderProcess, lodItem);
+            LODItem.LoadMaterial(RenderProcess, lodItem);
 
             pl = new Polyline(this, "ballast", 2);
             pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
@@ -676,7 +654,7 @@ namespace ORTS
                             lodItem.ESD_Alternative_Texture = int.Parse(reader.GetAttribute("ESD_Alternative_Texture"));
                             lodItem.MipMapLevelOfDetailBias = float.Parse(reader.GetAttribute("MipMapLevelOfDetailBias"));
 
-                            lodItem.LoadMaterial(renderProcess, lodItem);
+                            LODItem.LoadMaterial(renderProcess, lodItem);
                             lod.LODItems.Add(lodItem);
                             break;
                         case "Polyline":
@@ -726,7 +704,7 @@ namespace ORTS
         /// </summary>
         /// <param name="sLODMethod">String that identifies desired LODMethod.</param>
         /// <returns>LODMethod</returns>
-        public LODMethods GetLODMethod(string sLODMethod)
+        public static LODMethods GetLODMethod(string sLODMethod)
         {
             string s = sLODMethod.ToLower();
             switch (s)
@@ -748,7 +726,7 @@ namespace ORTS
         /// </summary>
         /// <param name="sPitchControl">String that identifies desired PitchControl.</param>
         /// <returns></returns>
-        public PitchControls GetPitchControl(string sPitchControl)
+        public static PitchControls GetPitchControl(string sPitchControl)
         {
             string s = sPitchControl.ToLower();
             switch (s)
@@ -777,8 +755,8 @@ namespace ORTS
     {
         public float CutoffRadius; // Distance beyond which LODItem is not seen
         public ArrayList LODItems = new ArrayList(); // Array of arrays of LODItems
-        public int PrimIndexStart = 0; // Start index of ShapePrimitive block for this LOD
-        public int PrimIndexStop = 0;
+        public int PrimIndexStart; // Start index of ShapePrimitive block for this LOD
+        public int PrimIndexStop;
 
         /// <summary>
         /// LOD class constructor
@@ -832,8 +810,8 @@ namespace ORTS
         public Material LODMaterial; // SceneryMaterial reference
 
         // NumVertices and NumSegments used for sizing vertex and index buffers
-        public uint NumVertices = 0;                     // Total independent vertices in LOD
-        public uint NumSegments = 0;                     // Total line segment count in LOD
+        public uint NumVertices;                     // Total independent vertices in LOD
+        public uint NumSegments;                     // Total line segment count in LOD
 
         #endregion
 
@@ -889,7 +867,7 @@ namespace ORTS
             NumSegments += (uint)count - 1;
         } // end Accum
 
-        public void LoadMaterial(RenderProcess renderProcess, LODItem lod)
+        public static void LoadMaterial(RenderProcess renderProcess, LODItem lod)
         {
             var options = Helpers.EncodeMaterialOptions(lod);
             lod.LODMaterial = renderProcess.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(renderProcess.Viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), (int)options, lod.MipMapLevelOfDetailBias);
@@ -1027,8 +1005,8 @@ namespace ORTS
 
         public VertexPositionNormalTexture[] VertexList; // Array of vertices
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
-        public uint VertexIndex = 0;       // Index of current position in VertexList
-        public uint IndexIndex = 0;        // Index of current position in TriangleListIndices
+        public uint VertexIndex;           // Index of current position in VertexList
+        public uint IndexIndex;            // Index of current position in TriangleListIndices
         public int NumVertices;            // Number of vertices in the track profile
         public short NumIndices;           // Number of triangle indices
 

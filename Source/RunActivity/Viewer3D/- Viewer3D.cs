@@ -76,9 +76,9 @@ namespace ORTS
         /// <summary>
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
-        public double RealTime = 0;
+        public double RealTime;
         InfoDisplay InfoDisplay;
-        public WindowManager WindowManager = null;
+        public WindowManager WindowManager;
         public QuitWindow QuitWindow; // Escape window
         public MessagesWindow MessagesWindow; // Game message window (special, always visible)
         public PauseWindow PauseWindow; // Game paused window (special)
@@ -120,7 +120,7 @@ namespace ORTS
         }
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
 
-        public TrainCarViewer PlayerLocomotiveViewer = null;  // we are controlling this loco, or null if we aren't controlling any
+        public TrainCarViewer PlayerLocomotiveViewer;  // we are controlling this loco, or null if we aren't controlling any
         private MouseState originalMouseState;      // Current mouse coordinates.
 
         // This is the train we are controlling
@@ -138,16 +138,16 @@ namespace ORTS
         }
 
         // Mouse visibility by timer - GeorgeS
-        private bool isMouseShouldVisible = false;
-        private bool isMouseTimerVisible = false;
-        private double MouseShownAtRealTime = 0;
+        private bool isMouseShouldVisible;
+        private bool isMouseTimerVisible;
+        private double MouseShownAtRealTime;
 
         public bool SaveScreenshot;
         public bool SaveActivityThumbnail;
         public string SaveActivityFileStem;
         private BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
 
-		public bool DebugViewerEnabled = false;
+        public bool DebugViewerEnabled;
 
         // MSTS cab views are images with aspect ratio 4:3.
         // OR can use cab views with other aspect ratios where these are available.
@@ -161,7 +161,7 @@ namespace ORTS
         public int CabYOffsetPixels; // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
 
         public CommandLog Log { get; set; }
-        public List<ICommand> ReplayCommandList = null;
+        public List<ICommand> ReplayCommandList;
         public bool CameraReplaySuspended { get; set; }
         public Camera SuspendedCamera { get; set; }
 
@@ -466,7 +466,7 @@ namespace ORTS
         string adapterDescription;
         public string AdapterDescription { get { return adapterDescription; } }
 
-        uint adapterMemory = 0;
+        uint adapterMemory;
         public uint AdapterMemory { get { return adapterMemory; } }
 
         [CallOnThread("Updater")]
@@ -595,7 +595,7 @@ namespace ORTS
 
             WindowManager.PrepareFrame(frame, elapsedTime);
         }
-        double LastLoadRealTime = 0;
+        double LastLoadRealTime;
 
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
@@ -850,7 +850,7 @@ namespace ORTS
 			{
 				if (Program.DebugViewer != null && Program.DebugViewer.Enabled && (Program.DebugViewer.switchPickedItem != null || Program.DebugViewer.signalPickedItem != null))
 				{
-					WorldLocation wos = null;
+                    WorldLocation wos;
 					try
 					{
 						if (Program.DebugViewer.switchPickedItem != null)
@@ -881,7 +881,6 @@ namespace ORTS
 			if (Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true)
 			{
 				Program.DebugViewer.ClickedTrain = false;
-				Train old = SelectedTrain;
 				if (SelectedTrain != Program.DebugViewer.PickedTrain)
 				{
 					SelectedTrain = Program.DebugViewer.PickedTrain;
@@ -939,7 +938,7 @@ namespace ORTS
             originalMouseState = currentMouseState;
         }
        
-        private bool IsReverserInNeutral(TrainCar car)
+        static bool IsReverserInNeutral(TrainCar car)
         {
             // Diesel and electric locos have a Reverser lever and,
             // in the neutral position, direction == N
@@ -1022,10 +1021,9 @@ namespace ORTS
             return false;
         }
 
-		private int trainCount = 0;
+        private int trainCount;
 		void RandomSelectTrain()
 		{
-			Train old = SelectedTrain;
 			try
 			{
 				SortedList<double, Train> users = new SortedList<double, Train>();
@@ -1051,7 +1049,7 @@ namespace ORTS
 			}
             CameraActivate();
 		}
-        bool isFullScreen = false;
+        bool isFullScreen;
 
         /// <summary>
         /// The user has left-clicked with U pressed.   

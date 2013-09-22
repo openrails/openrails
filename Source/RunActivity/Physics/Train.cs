@@ -71,39 +71,39 @@ namespace ORTS
         public Traveller RearTDBTraveller;               // positioned at the back of the last car in the train
         public Traveller FrontTDBTraveller;              // positioned at the front of the train by CalculatePositionOfCars
         public float Length;                             // length of train from FrontTDBTraveller to RearTDBTraveller
-        public float SpeedMpS = 0.0f;                    // meters per second +ve forward, -ve when backing
+        public float SpeedMpS;                           // meters per second +ve forward, -ve when backing
         float LastSpeedMpS;                              // variable to remember last speed used for projected speed
         SmoothedData AccelerationMpSpS = new SmoothedData(); // smoothed acceleration data
         public float ProjectedSpeedMpS;                  // projected speed
         public float LastReportedSpeed;
 
-        public Train UncoupledFrom = null;               // train not to coupled back onto
-        public float TotalCouplerSlackM = 0;
-        public float MaximumCouplerForceN = 0;
-        public int NPull = 0;
-        public int NPush = 0;
+        public Train UncoupledFrom;                      // train not to coupled back onto
+        public float TotalCouplerSlackM;
+        public float MaximumCouplerForceN;
+        public int NPull;
+        public int NPush;
         public int LeadLocomotiveIndex = -1;
-        public bool IsFreight = false;
-        public float SlipperySpotDistanceM = 0;          // distance to extra slippery part of track
-        public float SlipperySpotLengthM = 0;
+        public bool IsFreight;
+        public float SlipperySpotDistanceM;              // distance to extra slippery part of track
+        public float SlipperySpotLengthM;
 
         // These signals pass through to all cars and locomotives on the train
         public Direction MUDirection = Direction.N;      // set by player locomotive to control MU'd locomotives
-        public float MUThrottlePercent = 0;              // set by player locomotive to control MU'd locomotives
-        public int MUGearboxGearIndex = 0;               // set by player locomotive to control MU'd locomotives
+        public float MUThrottlePercent;                  // set by player locomotive to control MU'd locomotives
+        public int MUGearboxGearIndex;                   // set by player locomotive to control MU'd locomotives
         public float MUReverserPercent = 100;            // steam engine direction/cutoff control for MU'd locomotives
         public float MUDynamicBrakePercent = -1;         // dynamic brake control for MU'd locomotives, <0 for off
         public float BrakeLine1PressurePSIorInHg = 90;   // set by player locomotive to control entire train brakes
                                                          // Class AirSinglePipe etc. use this property for pressure in PSI, 
                                                          // but Class VacuumSinglePipe uses it for vacuum in InHg.
-        public float BrakeLine2PressurePSI = 0;          // extra line for dual line systems, main reservoir
-        public float BrakeLine3PressurePSI = 0;          // extra line just in case, engine brake pressure
-        public float BrakeLine4PressurePSI = 0;          // extra line just in case, ep brake control line
+        public float BrakeLine2PressurePSI;              // extra line for dual line systems, main reservoir
+        public float BrakeLine3PressurePSI;              // extra line just in case, engine brake pressure
+        public float BrakeLine4PressurePSI;              // extra line just in case, ep brake control line
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
 
-        public bool IsWheelSlipWarninq = false;
-        public bool IsWheelSlip = false;
+        public bool IsWheelSlipWarninq;
+        public bool IsWheelSlip;
 
         public enum TRAINTYPE
         {
@@ -126,10 +126,10 @@ namespace ORTS
 
         public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
 
-        public float TrainMaxSpeedMpS = 0;               // Max speed as set by route (default value)
-        public float AllowedMaxSpeedMpS = 0;             // Max speed as allowed
-        public float allowedMaxSpeedSignalMpS = 0;       // Max speed as set by signal
-        public float allowedMaxSpeedLimitMpS = 0;        // Max speed as set by limit
+        public float TrainMaxSpeedMpS;                   // Max speed as set by route (default value)
+        public float AllowedMaxSpeedMpS;                 // Max speed as allowed
+        public float allowedMaxSpeedSignalMpS;           // Max speed as set by signal
+        public float allowedMaxSpeedLimitMpS;            // Max speed as set by limit
         public float maxTimeS = 120;                     // check ahead for distance covered in 2 mins.
         public float minCheckDistanceM = 5000;           // minimum distance to check ahead
         public float minCheckDistanceManualM = 3000;     // minimum distance to check ahead in manual mode
@@ -141,25 +141,25 @@ namespace ORTS
         private float backwardThreshold = 20;            // counter threshold to detect backward move
 
         protected Signals signalRef;                     // reference to main Signals class
-        public TCRoutePath TCRoute = null;               // train path converted to TC base
+        public TCRoutePath TCRoute;                      // train path converted to TC base
         public TCSubpathRoute[] ValidRoute = new TCSubpathRoute[2] { null, null };  // actual valid path
-        public TCSubpathRoute TrainRoute = null;         // partial route under train for Manual mode
-        public bool ClaimState = false;                  // train is allowed to perform claim on sections
-        public float actualWaitTimeS = 0.0f;             // actual time waiting for signal
-        public int movedBackward = 0;                    // counter to detect backward move
+        public TCSubpathRoute TrainRoute;                // partial route under train for Manual mode
+        public bool ClaimState;                          // train is allowed to perform claim on sections
+        public float actualWaitTimeS;                    // actual time waiting for signal
+        public int movedBackward;                        // counter to detect backward move
         public float waitingPointWaitTimeS = -1.0f;      // time due at waiting point (PLAYER train only, valid in >= 0)
 
         public List<TrackCircuitSection> OccupiedTrack = new List<TrackCircuitSection>();
         public List<int> HoldingSignals = new List<int>();// list of signals which must not be cleared (eg station stops)
         public List<StationStop> StationStops = new List<StationStop>();  //list of station stop details
-        public Traffic_Service_Definition TrafficService = null;
+        public Traffic_Service_Definition TrafficService;
         public int[] MisalignedSwitch = new int[2] { -1, -1 };  // misaligned switch indication :
         // cell 0 : index of switch, cell 1 : required linked section; -1 if not valid
         public Dictionary<int, float> PassedSignalSpeeds = new Dictionary<int, float>();  // list of signals and related speeds pending processing (manual and explorer mode)
         public int[] LastPassedSignal = new int[2] { -1, -1 };  // index of last signal which set speed limit per direction (manual and explorer mode)
 
-        public TrainRouted routedForward = null;          // routed train class for forward moves (used in signalling)
-        public TrainRouted routedBackward = null;         // routed train class for backward moves (used in signalling)
+        public TrainRouted routedForward;                 // routed train class for forward moves (used in signalling)
+        public TrainRouted routedBackward;                // routed train class for backward moves (used in signalling)
 
         public enum TRAIN_CONTROL
         {
@@ -191,14 +191,14 @@ namespace ORTS
         public TCPosition[] PresentPosition = new TCPosition[2] { new TCPosition(), new TCPosition() };         // present position : 0 = front, 1 = rear
         public TCPosition[] PreviousPosition = new TCPosition[2] { new TCPosition(), new TCPosition() };        // previous train position
 
-        public float DistanceTravelledM = 0;                             // actual distance travelled
+        public float DistanceTravelledM;                                 // actual distance travelled
 
-        public float travelled = 0;                                      // distance travelled, but not exactly
+        public float travelled;                                          // distance travelled, but not exactly
         public DistanceTravelledActions requiredActions = new DistanceTravelledActions(); // distance travelled action list
 
         public float ClearanceAtRearM = -1;              // save distance behind train (when moving backward)
-        public SignalObject RearSignalObject = null;     // direct reference to signal at rear (when moving backward)
-        public bool tilted = false;
+        public SignalObject RearSignalObject;            // direct reference to signal at rear (when moving backward)
+        public bool tilted;
 
         public enum END_AUTHORITY
         {
@@ -226,7 +226,7 @@ namespace ORTS
             new Dictionary<int, List<Dictionary<int, int>>>();
 
 
-        public bool CheckTrain = false;                  // debug print required
+        public bool CheckTrain;                          // debug print required
 
         protected Simulator Simulator;                   // reference to the simulator
 
@@ -245,7 +245,7 @@ namespace ORTS
                     car.BrakeSystem.AISetPercent(aiBrakePercent);
             }
         }
-        private float aiBrakePercent = 0;
+        private float aiBrakePercent;
         public float AITrainThrottlePercent
         {
             get
@@ -595,7 +595,7 @@ namespace ORTS
                 Cars.Add(RollingStock.Restore(simulator, inf, this));
         }
 
-        private Traffic_Service_Definition RestoreTrafficSDefinition(BinaryReader inf)
+        static Traffic_Service_Definition RestoreTrafficSDefinition(BinaryReader inf)
         {
             Traffic_Service_Definition thisDefinition = new Traffic_Service_Definition();
             thisDefinition.Time = inf.ReadInt32();
@@ -612,7 +612,7 @@ namespace ORTS
             return (thisDefinition);
         }
 
-        private Traffic_Traffic_Item RestoreTrafficItem(BinaryReader inf)
+        static Traffic_Traffic_Item RestoreTrafficItem(BinaryReader inf)
         {
             Traffic_Traffic_Item thisTraffic = new Traffic_Traffic_Item();
             thisTraffic.ArrivalTime = inf.ReadInt32();
@@ -786,7 +786,7 @@ namespace ORTS
                 RollingStock.Save(outf, car);
         }
 
-        private void SaveTrafficSDefinition(BinaryWriter outf, Traffic_Service_Definition thisTSD)
+        static void SaveTrafficSDefinition(BinaryWriter outf, Traffic_Service_Definition thisTSD)
         {
             outf.Write(thisTSD.Time);
             outf.Write(thisTSD.TrafficDetails.Count);
@@ -796,7 +796,7 @@ namespace ORTS
             }
         }
 
-        private void SaveTrafficItem(BinaryWriter outf, Traffic_Traffic_Item thisTI)
+        static void SaveTrafficItem(BinaryWriter outf, Traffic_Traffic_Item thisTI)
         {
             outf.Write(thisTI.ArrivalTime);
             outf.Write(thisTI.DepartTime);
@@ -1732,8 +1732,6 @@ namespace ORTS
                     {
                         signalFound = true;
                         nextAspect = nextObject.signal_state;
-
-                        SignalObject nextSignal = nextObject.ObjectDetails;
                     }
                 }
 
@@ -1873,8 +1871,6 @@ namespace ORTS
                 {
                     distanceToSignal = SignalObjectItems[IndexNextSignal].distance_to_train;
                     thisState = SignalObjectItems[IndexNextSignal].signal_state;
-
-                    SignalObject thisSignal = SignalObjectItems[IndexNextSignal].ObjectDetails;
                 }
                 else if (NextSignalObject[0] != null)
                 {
@@ -2268,7 +2264,6 @@ namespace ORTS
         {
             if (float.IsNaN(distance)) distance = 0;//sanity check
 
-            var tn = RearTDBTraveller.TN;
             RearTDBTraveller.Move(distance);
 
             // TODO : check if train moved back into previous section
@@ -2457,7 +2452,7 @@ namespace ORTS
         /// changes the coupler force equation for car to make the corresponding force equal to forceN
         /// <\summary>
 
-        void SetCouplerForce(TrainCar car, float forceN)
+        static void SetCouplerForce(TrainCar car, float forceN)
         {
             car.CouplerForceA = car.CouplerForceC = 0;
             car.CouplerForceB = 1;
@@ -2970,8 +2965,6 @@ namespace ORTS
 
         public void UpdateTrainPosition()
         {
-            List<int> sectionsPassed = new List<int>();
-
             // update positions
 
             PresentPosition[0].CopyTo(ref PreviousPosition[0]);
@@ -3059,9 +3052,7 @@ namespace ORTS
             List<int> sectionList = new List<int>();
 
             int lastIndex = PreviousPosition[0].RouteListIndex;
-            float lastOffset = PreviousPosition[0].TCOffset;
             int presentIndex = PresentPosition[0].RouteListIndex;
-            float presentOffset = PresentPosition[0].TCOffset;
 
             // don't bother with update if train out of control - all will be reset when train is stopped
 
@@ -3086,7 +3077,6 @@ namespace ORTS
                 {
                     int sectionIndex;
                     TrackCircuitSection thisSection;
-                    float offset = PreviousPosition[0].TCOffset;
 
                     for (int iIndex = lastIndex; iIndex > presentIndex; iIndex--)
                     {
@@ -3150,7 +3140,6 @@ namespace ORTS
             if (NextSignalObject[direction] != null)
             {
 
-                TrackCircuitSection nextSection = signalRef.TrackCircuitList[NextSignalObject[direction].TCNextTC];
                 while (NextSignalObject[direction] != null && !ValidRoute[direction].SignalIsAheadOfTrain(NextSignalObject[direction], trainPosition)) // signal not in front //
                 {
                     // check if train really went passed signal in correct direction
@@ -3223,7 +3212,6 @@ namespace ORTS
                     if (nextSignalIndex >= 0)
                     {
                         NextSignalObject[direction] = signalRef.SignalObjects[nextSignalIndex];
-                        nextSection = signalRef.TrackCircuitList[NextSignalObject[direction].TCNextTC];
                     }
                     else
                     {
@@ -3313,7 +3301,7 @@ namespace ORTS
                     overlapPosition.TCDirection = overlapPosition.TCDirection == 0 ? 1 : 0; // looking backwards, so reverse direction
 
                     TrackCircuitSection rearSection = signalRef.TrackCircuitList[RearSignalObject.TCNextTC];
-                    if (!ValidRoute[0].IsAheadOfTrain(rearSection, 0.0f, overlapPosition))
+                    if (!TCSubpathRoute.IsAheadOfTrain(rearSection, 0.0f, overlapPosition))
                     {
                         if (RearSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.STOP)
                         {
@@ -3837,8 +3825,6 @@ namespace ORTS
 
                 // perform any remaining actions of type clear section (except sections now occupied)
 
-                ClearSectionItem dummyItem = new ClearSectionItem(0.0f, 0);
-
 #if DEBUG_REPORTS
                 int nextSubpath = TCRoute.activeSubpath + 1;
                 File.AppendAllText(@"C:\temp\printproc.txt",
@@ -3869,7 +3855,6 @@ namespace ORTS
 
                 }
                 int rearIndex = PresentPosition[1].RouteListIndex;
-                int frontIndex = PresentPosition[0].RouteListIndex;
 
                 if (rearIndex < 0) // end of train not on new route
                 {
@@ -7543,7 +7528,7 @@ namespace ORTS
         // Get end of common section
         //
 
-        private int EndCommonSection(int thisIndex, TCSubpathRoute thisRoute, TCSubpathRoute otherRoute)
+        static int EndCommonSection(int thisIndex, TCSubpathRoute thisRoute, TCSubpathRoute otherRoute)
         {
             int firstSection = thisRoute[thisIndex].TCSectionIndex;
 
@@ -10124,7 +10109,7 @@ namespace ORTS
             // Convert waiting point to section no.
             //
 
-            private int ConvertWaitingPoint(AIPathNode stopPathNode, TrackDB TrackDB, TSectionDatFile TSectionDat, int direction)
+            static int ConvertWaitingPoint(AIPathNode stopPathNode, TrackDB TrackDB, TSectionDatFile TSectionDat, int direction)
             {
                 TrackNode waitingNode = TrackDB.TrackNodes[stopPathNode.NextMainTVNIndex];
                 TrVectorSection firstSection = waitingNode.TrVectorNode.TrVectorSections[0];
@@ -10178,8 +10163,8 @@ namespace ORTS
             public int TCSectionIndex;
             public int Direction;
             public int[] OutPin = new int[2];
-            public int[] StartAlternativePath = null;  // if used : index 0 = index of alternative path, index 1 = TC end index
-            public int[] EndAlternativePath = null;  // if used : index 0 = index of alternative path, index 1 = TC start index
+            public int[] StartAlternativePath;  // if used : index 0 = index of alternative path, index 1 = TC end index
+            public int[] EndAlternativePath;  // if used : index 0 = index of alternative path, index 1 = TC start index
 
             //================================================================================================//
             /// <summary>
@@ -10503,7 +10488,7 @@ namespace ORTS
             /// <\summary>
 
             // without offset
-            public bool IsAheadOfTrain(TrackCircuitSection thisSection, TCPosition trainPosition)
+            public static bool IsAheadOfTrain(TrackCircuitSection thisSection, TCPosition trainPosition)
             {
                 float distanceAhead = thisSection.GetDistanceBetweenObjects(
                     trainPosition.TCSectionIndex, trainPosition.TCOffset, trainPosition.TCDirection,
@@ -10512,7 +10497,7 @@ namespace ORTS
             }
 
             // with offset
-            public bool IsAheadOfTrain(TrackCircuitSection thisSection, float offset, TCPosition trainPosition)
+            public static bool IsAheadOfTrain(TrackCircuitSection thisSection, float offset, TCPosition trainPosition)
             {
                 float distanceAhead = thisSection.GetDistanceBetweenObjects(
                     trainPosition.TCSectionIndex, trainPosition.TCOffset, trainPosition.TCDirection,
@@ -11721,7 +11706,7 @@ namespace ORTS
         //used by remote train to update location based on message received
         public int expectedTileX, expectedTileZ, expectedTracIndex, expectedDIr, expectedTDir;
         public float expectedX, expectedZ, expectedTravelled, expectedLength;
-        public bool updateMSGReceived = false;
+        public bool updateMSGReceived;
 
         public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir, int tDir, float len)
         {
@@ -11758,8 +11743,6 @@ namespace ORTS
             if (updateMSGReceived)
             {
                 updateMSGReceived = false;
-                float move = 0.0f;
-                var requestedSpeed = SpeedMpS;
                 try
                 {
                     UpdateCarSlack(expectedLength);//update car slack first
@@ -11797,7 +11780,6 @@ namespace ORTS
                 }
                 catch (Exception)
                 {
-                    move = expectedTravelled - travelled;
                 }
                 /*if (Math.Abs(requestedSpeed) < 0.00001 && Math.Abs(SpeedMpS) > 0.01) updateMSGReceived = true; //if requested is stop, but the current speed is still moving
                 else*/

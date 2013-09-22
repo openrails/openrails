@@ -141,7 +141,7 @@ namespace MSTS
             this[section.SectionIndex] = section;
         }
 
-        public static int MissingTrackSectionWarnings = 0;
+        public static int MissingTrackSectionWarnings;
 
 		public TrackSection Get( uint targetSectionIndex )
 		{
@@ -209,12 +209,12 @@ namespace MSTS
 		}
 		public uint ShapeIndex;
 		public string FileName;
-		public uint NumPaths = 0;
-		public uint MainRoute = 0;
+        public uint NumPaths;
+        public uint MainRoute;
 		public double ClearanceDistance = 0.0;
 		public SectionIdx[] SectionIdxs;
-		public bool TunnelShape = false;
-		public bool RoadShape = false;
+        public bool TunnelShape;
+        public bool RoadShape;
 
 	}
 	
@@ -249,7 +249,7 @@ namespace MSTS
       /// <returns>The requested TrackShape.</returns>
 		public TrackShape Get(uint targetShapeIndex )
 		{
-         TrackShape returnValue = null;
+            TrackShape returnValue;
 
          if (ContainsKey(targetShapeIndex))
          {

@@ -31,7 +31,6 @@ namespace ORTS.Menu
         {
             if (Directory.Exists(path))
             {
-                var trkFilePath = MSTSPath.GetTRKFileName(path);
                 try
                 {
                     var trkFile = new TRKFile(MSTSPath.GetTRKFileName(path));

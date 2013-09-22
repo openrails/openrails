@@ -40,7 +40,7 @@ namespace ORTS
 
         // Classes reqiring instantiation
         public SkyMesh SkyMesh;
-        WorldLatLon worldLoc = null; // Access to latitude and longitude calcs (MSTS routes only)
+        WorldLatLon worldLoc; // Access to latitude and longitude calcs (MSTS routes only)
         SunMoonPos skyVectors;
 
 		int seasonType; //still need to remember it as MP now can change it.
@@ -137,8 +137,8 @@ namespace ORTS
                 // Fill in the sun- and moon-position lookup tables
                 for (int i = 0; i < maxSteps; i++)
                 {
-                    solarPosArray[i] = skyVectors.SolarAngle(latitude, longitude, ((float)i / maxSteps), date);
-                    lunarPosArray[i] = skyVectors.LunarAngle(latitude, longitude, ((float)i / maxSteps), date);
+                    solarPosArray[i] = SunMoonPos.SolarAngle(latitude, longitude, ((float)i / maxSteps), date);
+                    lunarPosArray[i] = SunMoonPos.LunarAngle(latitude, longitude, ((float)i / maxSteps), date);
                 }
                 // Phase of the moon is generated at random
                 Random random = new Random();
@@ -273,8 +273,8 @@ namespace ORTS
     public class SkyMesh: RenderPrimitive 
     {
         private VertexBuffer SkyVertexBuffer;
-        private static VertexDeclaration SkyVertexDeclaration = null;
-        private static IndexBuffer SkyIndexBuffer = null;
+        private static VertexDeclaration SkyVertexDeclaration;
+        private static IndexBuffer SkyIndexBuffer;
         private static int SkyVertexStride;  // in bytes
         public int drawIndex;
 
@@ -398,7 +398,7 @@ namespace ORTS
         /// </summary>
         /// <param name="index">The starting triangle index number</param>
         /// <param name="pass">A multiplier used to arrive at the starting vertex number</param>
-        private void DomeTriangleList(short index, short pass)
+        static void DomeTriangleList(short index, short pass)
         {
             // ----------------------------------------------------------------------
             // 24-sided sky dome mesh is built like this:        48 49 50

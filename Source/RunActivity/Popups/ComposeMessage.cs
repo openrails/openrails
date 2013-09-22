@@ -33,7 +33,7 @@ namespace ORTS.Popups
 		{
 		}
 
-		bool EnterReceived = false;
+        bool EnterReceived;
 
 		public bool InitMessage()
 		{

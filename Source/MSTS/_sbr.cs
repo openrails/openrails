@@ -33,7 +33,7 @@ namespace MSTS
     public abstract class SBR: IDisposable
     {
         public TokenID ID;
-        public string Label = null;  // First data item may be a label ( usually a 0 byte )
+        public string Label;  // First data item may be a label ( usually a 0 byte )
 
         public static SBR Open(string filename)
         {
@@ -168,7 +168,7 @@ namespace MSTS
     /// </summary>
     public class UnicodeFileReader : UnicodeBlockReader
     {
-        bool isClosed = false;
+        bool isClosed;
 
         public UnicodeFileReader(Stream inputStream, string filename, Encoding encoding)
         {
@@ -229,7 +229,7 @@ namespace MSTS
     public class UnicodeBlockReader : SBR
     {
         protected STFReader f;
-        protected bool atEndOfBlock = false;
+        protected bool atEndOfBlock;
 
         public override SBR ReadSubBlock()
         {
@@ -269,7 +269,7 @@ namespace MSTS
         /// <summary>
         /// Used to convert token string to their equivalent enum TokenID
         /// </summary>
-        private static Dictionary<string, TokenID> TokenTable = null;
+        private static Dictionary<string, TokenID> TokenTable;
 
         private static void InitTokenTable()
         {

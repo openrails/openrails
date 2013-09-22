@@ -148,7 +148,7 @@ namespace ORTS
             }
             WriteNode(outf, LastVisitedNode);
         }
-        public void WriteNode(BinaryWriter outf, AIPathNode node)
+        public static void WriteNode(BinaryWriter outf, AIPathNode node)
         {
             if (node == null)
                 outf.Write((int)-1);
@@ -173,7 +173,7 @@ namespace ORTS
         /// <summary>
         /// finds the first path node after start that refers to the specified track node.
         /// </summary>
-        public AIPathNode FindTrackNode(AIPathNode start, int trackNodeIndex)
+        public static AIPathNode FindTrackNode(AIPathNode start, int trackNodeIndex)
         {
             for (AIPathNode node = start; node != null; node = node.NextMainNode)
             {
@@ -226,18 +226,18 @@ namespace ORTS
         public int ID;
         public int Index;
         public AIPathNodeType Type = AIPathNodeType.Other;
-        public int WaitTimeS = 0;   // number of seconds to wait after stopping at this node
-        public int WaitUntil = 0;   // clock time to wait until if not zero
-        public int NCars = 0;       // number of cars to uncouple, negative means keep rear
-        public AIPathNode NextMainNode = null;      // next path node on main path
-        public AIPathNode NextSidingNode = null;    // next path node on siding path
+        public int WaitTimeS;               // number of seconds to wait after stopping at this node
+        public int WaitUntil;               // clock time to wait until if not zero
+        public int NCars;                   // number of cars to uncouple, negative means keep rear
+        public AIPathNode NextMainNode;     // next path node on main path
+        public AIPathNode NextSidingNode;   // next path node on siding path
         public int NextMainTVNIndex = -1;   // index of main vector node leaving this path node
         public int NextSidingTVNIndex = -1; // index of siding vector node leaving this path node
         public WorldLocation Location;      // coordinates for this path node
         public int JunctionIndex = -1;      // index of junction node, -1 if none
-        public bool IsFacingPoint = false;// true if this node entered from the facing point end
-        public bool IsLastSwitchUse = false;//true if this node is last to touch a switch
-        public bool IsVisited = false;     // true if the train has visited this node
+        public bool IsFacingPoint;          // true if this node entered from the facing point end
+        public bool IsLastSwitchUse;        //true if this node is last to touch a switch
+        public bool IsVisited;              // true if the train has visited this node
 
         /// <summary>
         /// Creates a single AIPathNode and initializes everything that do not depend on other nodes.
@@ -395,7 +395,8 @@ namespace ORTS
             }
             return -1;
         }
-        public int FindEndIndex(WorldLocation location, TDBFile TDB, TSectionDatFile tsectiondat)
+        
+        public static int FindEndIndex(WorldLocation location, TDBFile TDB, TSectionDatFile tsectiondat)
         {
             int bestIndex = -1;
             float best = 1e10f;

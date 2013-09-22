@@ -56,7 +56,7 @@ namespace MSTS
         public vtx_states vtx_states;
         public prim_states prim_states;
         public lod_controls lod_controls;
-        public animations animations = null;
+        public animations animations;
 
 
         public shape(SBR block)
@@ -662,7 +662,7 @@ namespace MSTS
         public int iImage;
         public int FilterMode;
         public float MipMapLODBias;
-        public UInt32 BorderColor = 0;
+        public UInt32 BorderColor;
 
         public texture(SBR block)
         {
@@ -861,11 +861,11 @@ namespace MSTS
     {
         // eg	vtx_state ( 00000000 0 -5 0 00000002 )
         // dword,flags :uint,MatrixIdx :sint,LightMatIdx :uint,LightCfgIdx :dword,LightFlags [:sint,matrix2] .
-        public UInt32 flags = 0;
-        public int imatrix = 0;
+        public UInt32 flags;
+        public int imatrix;
         public int LightMatIdx = -5;
         public int lighting { get { return LightMatIdx; } }
-        public int LightCfgIdx = 0;
+        public int LightCfgIdx;
         public UInt32 LightFlags = 2;
         public int Matrix2 = -1;
 
@@ -940,7 +940,7 @@ namespace MSTS
 						tex_idxs ( 1 0 ) 0 0 0 0 1
 					)*/
 
-        public string Name = null;
+        public string Name;
         public UInt32 flags;
         public int ishader;
         public int[] tex_idxs;

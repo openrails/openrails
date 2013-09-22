@@ -284,7 +284,7 @@ namespace ORTS
 
         internal Vector3 sunDirection;
         bool lastLightState;
-        double fadeStartTimer = 0;
+        double fadeStartTimer;
         float fadeDuration = -1;
         internal void UpdateShaders()
         {
@@ -472,11 +472,11 @@ namespace ORTS
 
     public class SceneryMaterial : Material
     {
-        readonly SceneryMaterialOptions Options = 0;
-        readonly float MipMapBias = 0;
+        readonly SceneryMaterialOptions Options;
+        readonly float MipMapBias;
         readonly Texture2D Texture;
         readonly Texture2D NightTexture;
-        byte AceAlphaBits = 0;   // the number of bits in the ace file's alpha channel 
+        byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
         IEnumerator<EffectPass> ShaderPassesDarkShade;
         IEnumerator<EffectPass> ShaderPassesFullBright;
         IEnumerator<EffectPass> ShaderPassesHalfBright;
@@ -981,7 +981,7 @@ namespace ORTS
         /// </summary>
         /// <param name="sunHeight">The Y value of the sunlight vector</param>
         /// <param name="overcast">The amount of overcast</param>
-        private void FogDay2Night(float sunHeight, float overcast)
+        static void FogDay2Night(float sunHeight, float overcast)
         {
             Vector3 floatColor;
 
@@ -1620,7 +1620,7 @@ namespace ORTS
 
     public class YellowMaterial : Material
     {
-        static BasicEffect basicEffect = null;
+        static BasicEffect basicEffect;
 
         public YellowMaterial(Viewer3D viewer)
             : base(viewer, null)
@@ -1743,8 +1743,6 @@ namespace ORTS
             var shader = Viewer.MaterialManager.DebugShader;
             shader.CurrentTechnique = shader.Techniques["Normal"];
             if (ShaderPassesGraph == null) ShaderPassesGraph = shader.Techniques["Normal"].Passes.GetEnumerator();
-
-            var rs = graphicsDevice.RenderState;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1766,11 +1764,6 @@ namespace ORTS
                 ShaderPassesGraph.Current.End();
             }
             shader.End();
-        }
-
-        public override void ResetState(GraphicsDevice graphicsDevice)
-        {
-            var rs = graphicsDevice.RenderState;
         }
     }
 }

@@ -100,10 +100,13 @@ namespace ORTS
                 result = Work();
 #if TASK_CATCH_EXCEPTIONS_AND_THREADED
             }
+#if DEBUG_BACKGROUND_TASKS
             catch (Exception error)
             {
-#if DEBUG_BACKGROUND_TASKS
                 Trace.TraceInformation("Task<{0}> work error: {1}", typeName, error.ToString());
+#else
+            catch (Exception)
+            {
 #endif
             }
 #endif
@@ -172,10 +175,13 @@ namespace ORTS
 #endif
 #if TASK_CATCH_EXCEPTIONS_AND_THREADED
             }
+#if DEBUG_BACKGROUND_TASKS
             catch (Exception error)
             {
-#if DEBUG_BACKGROUND_TASKS
                 Trace.TraceInformation("Task<{0}> invoke error: {1}", typeName, error.ToString());
+#else
+            catch (Exception)
+            {
 #endif
             }
 #endif

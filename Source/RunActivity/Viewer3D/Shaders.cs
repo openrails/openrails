@@ -368,7 +368,7 @@ namespace ORTS
         }
         
         // This function dims the lighting at night, with a transition period as the sun rises or sets
-        float Day2Night(float startNightTrans, float finishNightTrans, float minDarknessCoeff, float sunDirectionY)
+        static float Day2Night(float startNightTrans, float finishNightTrans, float minDarknessCoeff, float sunDirectionY)
         {
             // The following two are used to interpoate between day and night lighting (y = mx + b)
             var slope = (1.0f - minDarknessCoeff) / (startNightTrans - finishNightTrans); // "m"
@@ -390,14 +390,14 @@ namespace ORTS
     [CallOnThread("Render")]
     public class ParticleEmitterShader : Shader
     {
-        EffectParameter emitDirection = null;
-        EffectParameter emitSize = null;
-        EffectParameter tileXY = null;
-        EffectParameter currentTime = null;
-        EffectParameter wvp = null;
-        EffectParameter invView = null;
-        EffectParameter texture = null;
-        EffectParameter lightVector = null;
+        EffectParameter emitDirection;
+        EffectParameter emitSize;
+        EffectParameter tileXY;
+        EffectParameter currentTime;
+        EffectParameter wvp;
+        EffectParameter invView;
+        EffectParameter texture;
+        EffectParameter lightVector;
 
         public float CurrentTime
         {
@@ -452,14 +452,14 @@ namespace ORTS
     [CallOnThread("Render")]
     public class PrecipShader : Shader
     {
-        EffectParameter mProjection = null;
-        EffectParameter mView = null;
-        EffectParameter mWorld = null;
-        EffectParameter sunDirection = null;
-        EffectParameter viewportHeight = null;
-        EffectParameter currentTime = null;
-        EffectParameter precip_Tex = null;
-        EffectParameter weatherType = null;
+        EffectParameter mProjection;
+        EffectParameter mView;
+        EffectParameter mWorld;
+        EffectParameter sunDirection;
+        EffectParameter viewportHeight;
+        EffectParameter currentTime;
+        EffectParameter precip_Tex;
+        EffectParameter weatherType;
 
         public Vector3 SunDirection
         {
@@ -538,8 +538,8 @@ namespace ORTS
     [CallOnThread("Render")]
     public class LightConeShader : Shader
     {
-        EffectParameter worldViewProjection = null;
-        EffectParameter fade = null;
+        EffectParameter worldViewProjection;
+        EffectParameter fade;
 
         public LightConeShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "LightConeShader")

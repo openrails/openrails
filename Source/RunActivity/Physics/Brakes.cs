@@ -28,8 +28,8 @@ namespace ORTS
     public abstract class BrakeSystem
     {
         public float BrakeLine1PressurePSI = 90;    // main trainline pressure at this car
-        public float BrakeLine2PressurePSI = 0;     // main reservoir equalization pipe pressure
-        public float BrakeLine3PressurePSI = 0;     // engine brake cylinder equalization pipe pressure
+        public float BrakeLine2PressurePSI;         // main reservoir equalization pipe pressure
+        public float BrakeLine3PressurePSI;         // engine brake cylinder equalization pipe pressure
         public float BrakePipeVolumeFT3 = .5f;      // volume of a single brake line
 
         public abstract void AISetPercent(float percent);
@@ -78,11 +78,11 @@ namespace ORTS
 
     public class AirSinglePipe : MSTSBrakeSystem
     {
-        protected float MaxHandbrakeForceN = 0;
+        protected float MaxHandbrakeForceN;
         protected float MaxBrakeForceN = 89e3f;
-        float BrakePercent = 0;  // simplistic system
+        float BrakePercent;  // simplistic system
         protected TrainCar Car;
-        protected float HandbrakePercent = 0;
+        protected float HandbrakePercent;
         protected float CylPressurePSI = 64;
         protected float AutoCylPressurePSI = 64;
         protected float AuxResPressurePSI = 64;
@@ -90,7 +90,7 @@ namespace ORTS
         protected float MaxCylPressurePSI = 64;
         protected float AuxCylVolumeRatio = 2.5f;
         protected float AuxBrakeLineVolumeRatio = 3.1f;
-        protected float RetainerPressureThresholdPSI = 0;
+        protected float RetainerPressureThresholdPSI;
         protected float ReleaseRatePSIpS = 1.86f;
         protected float MaxReleaseRatePSIpS = 1.86f;
         protected float MaxApplicationRatePSIpS = .9f;
@@ -744,14 +744,14 @@ namespace ORTS
         const float OneAtmosphereKPa = 100;
         //const float OneAtmospherePSIA = 15;
         //const float OneAtmosphereInHg = 30;
-        float MaxHandbrakeForceN = 0;
+        float MaxHandbrakeForceN;
         float MaxBrakeForceN = 89e3f;
         //float MaxForcePressurePSI = 21 * OneAtmospherePSIA / OneAtmosphereInHg;// relative pressure difference for max brake force
         float MaxForcePressurePSI = KPa.ToPSI(KPa.FromInHg(21));    // relative pressure difference for max brake force
         TrainCar Car;
-        float HandbrakePercent = 0;
-        float CylPressurePSIA = 0;
-        float VacResPressurePSIA = 0; // vacuum reservior pressure with piston in released position
+        float HandbrakePercent;
+        float CylPressurePSIA;
+        float VacResPressurePSIA;  // vacuum reservior pressure with piston in released position
         // defaults based on information in http://www.lmsca.org.uk/lms-coaches/LMSRAVB.pdf
         int NumCylinders = 2;
         // brake cylinder volume with piston in applied position
@@ -791,13 +791,13 @@ namespace ORTS
         }
 
         // convert vacuum in inhg to pressure in psia
-        float V2P(float v)
+        static float V2P(float v)
         {
             //return OneAtmospherePSIA * (1 - v / OneAtmosphereInHg);
             return KPa.ToPSI(OneAtmosphereKPa - KPa.FromInHg(v));
         }
         // convert pressure in psia to vacuum in inhg
-        float P2V(float p)
+        static float P2V(float p)
         {
             //return OneAtmosphereInHg * (1 - p / OneAtmospherePSIA);
             return KPa.ToInHg(OneAtmosphereKPa - KPa.FromPSI(p));

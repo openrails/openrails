@@ -166,7 +166,7 @@ namespace MSTS
 		public uint Index;
 
 #if NEW_SIGNALLING
-        public ORTS.TrackCircuitXRefList TCCrossReference = null;  // Cross reference with TC sections
+        public ORTS.TrackCircuitXRefList TCCrossReference;  // Cross reference with TC sections
 #else
         public InterlockingTrack InterlockingTrack { get; set; }
 #endif
@@ -244,7 +244,7 @@ namespace MSTS
     [DebuggerDisplay("\\{MSTS.TrJunctionNode\\} SelectedRoute={SelectedRoute}, ShapeIndex={ShapeIndex}")]
     public class TrJunctionNode
     {
-        public int SelectedRoute = 0;
+        public int SelectedRoute;
         
 		public TrackNode TN;
 
@@ -261,7 +261,7 @@ namespace MSTS
         public uint ShapeIndex;
 
 		public double angle = -1;
-		public bool AngleComputed = false; //the angle has been set through section file
+        public bool AngleComputed; //the angle has been set through section file
 
 		public double GetAngle(TSectionDatFile TSectionDat) //get the angle from sections
 		{
@@ -373,7 +373,7 @@ namespace MSTS
         public float AX, AY, AZ;
         public uint WorldFileUiD;
         public int WFNameX, WFNameZ;
-        public float StartElev = 0f, EndElev = 0f, MaxElev = 0f;
+        public float StartElev, EndElev, MaxElev;
         public override string ToString()
         {
             return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4} UiD:{5} Section:{6} Shape:{7}}}", WFNameX, WFNameZ, X, Y, Z, WorldFileUiD, SectionIndex, ShapeIndex);
@@ -545,15 +545,15 @@ namespace MSTS
     public class SpeedPostItem : TrItem
     {
         public uint Flags;
-		public bool IsMilePost = false; //true to be milepost
-		public bool IsWarning = false; //speed warning
-		public bool IsLimit = false; //speed limit
+        public bool IsMilePost; //true to be milepost
+        public bool IsWarning; //speed warning
+        public bool IsLimit; //speed limit
 		public bool IsResume= false; // speed resume sign (has no speed defined!)
-		public bool IsPassenger = false; //is passender speed limit
-		public bool IsFreight = false; //is freight speed limit
-		public bool IsMPH = false;//is the digit in MPH or KPH
-		public bool ShowNumber = false; //show numbers instead of KPH, like 5 means 50KMH
-		public bool ShowDot = false; //if ShowNumber is true and this is set, will show 1.5 as for 15KMH
+        public bool IsPassenger; //is passender speed limit
+        public bool IsFreight; //is freight speed limit
+        public bool IsMPH;//is the digit in MPH or KPH
+        public bool ShowNumber; //show numbers instead of KPH, like 5 means 50KMH
+        public bool ShowDot; //if ShowNumber is true and this is set, will show 1.5 as for 15KMH
         public float SpeedInd;      // Or distance if mile post.
 	public int sigObj = -1;	    // index to Signal Object Table
 	public float Angle;         // speedpost (normalized) angle

@@ -133,7 +133,7 @@ namespace ORTS
             return carViewer;
         }
 
-        float ApproximateDistance(WorldLocation a, WorldLocation b)
+        static float ApproximateDistance(WorldLocation a, WorldLocation b)
         {
             var dx = a.Location.X - b.Location.X;
             var dz = a.Location.Z - b.Location.Z;

@@ -75,7 +75,7 @@ namespace ORTS.Menu
             return consists;
         }
 
-        Locomotive GetLocomotive(CONFile conFile, Folder folder)
+        static Locomotive GetLocomotive(CONFile conFile, Folder folder)
         {
             foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
             {

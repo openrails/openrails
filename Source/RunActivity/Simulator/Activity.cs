@@ -44,7 +44,7 @@ namespace ORTS {
         // Passenger tasks
         public DateTime StartTime;
         public List<ActivityTask> Tasks = new List<ActivityTask>();
-        public ActivityTask Current = null;
+        public ActivityTask Current;
         double prevTrainSpeed = -1;
 
         // Freight events
@@ -312,7 +312,7 @@ namespace ORTS {
             ReopenActivityWindow = IsActivityWindowOpen;
         }
 
-        private ActivityTask GetTask( BinaryReader inf ) {
+        static ActivityTask GetTask( BinaryReader inf ) {
             Int32 rdval;
             rdval = inf.ReadInt32();
             if( rdval == 1 )
@@ -400,16 +400,16 @@ namespace ORTS {
     public class ActivityTaskPassengerStopAt : ActivityTask {
         public DateTime SchArrive;
         public DateTime SchDepart;
-        public DateTime? ActArrive = null;
-        public DateTime? ActDepart = null;
+        public DateTime? ActArrive;
+        public DateTime? ActDepart;
         public PlatformItem PlatformEnd1;
         public PlatformItem PlatformEnd2;
 
         private double BoardingS;   // MSTS calls this the Load/Unload time. Cargo gets loaded, but passengers board the train.
-        private double BoardingEndS = 0; 
-        int TimerChk = 0;
-        bool arrived = false;
-        bool maydepart = false;
+        private double BoardingEndS;
+        int TimerChk;
+        bool arrived;
+        bool maydepart;
 
         public ActivityTaskPassengerStopAt( ActivityTask prev, DateTime Arrive, DateTime Depart, PlatformItem Platformend1, PlatformItem Platformend2 ) {
             SchArrive = Arrive;
@@ -651,8 +651,8 @@ namespace ORTS {
     public abstract class EventWrapper {
         public MSTS.Event ParsedObject;     // Points to object parsed from file *.act
         public int OriginalActivationLevel; // Needed to reset .ActivationLevel
-        public int TimesTriggered = 0;      // Needed for evaluation after activity ends
-        public Boolean IsDisabled = false;  // Used for a reversible event to prevent it firing again until after it has been reset.
+        public int TimesTriggered;          // Needed for evaluation after activity ends
+        public Boolean IsDisabled;          // Used for a reversible event to prevent it firing again until after it has been reset.
         protected Simulator Simulator;
 
         public EventWrapper( MSTS.Event @event, Simulator simulator ) {
@@ -734,9 +734,9 @@ namespace ORTS {
     }
 
     public class EventCategoryActionWrapper : EventWrapper {
-        SidingItem SidingEnd1 = null;
-        SidingItem SidingEnd2 = null;
-        List<string> ChangeWagonIdList = null;   // Wagons to be assembled, picked up or dropped off.
+        SidingItem SidingEnd1;
+        SidingItem SidingEnd2;
+        List<string> ChangeWagonIdList;   // Wagons to be assembled, picked up or dropped off.
 
         public EventCategoryActionWrapper( MSTS.Event @event, Simulator simulator )
             : base( @event, simulator ) {
@@ -841,7 +841,7 @@ namespace ORTS {
         /// <param name="train"></param>
         /// <param name="wagonIdList"></param>
         /// <returns>True if all listed wagons are part of the given train.</returns>
-        private Boolean includesWagons( Train train, List<string> wagonIdList ) {
+        static bool includesWagons( Train train, List<string> wagonIdList ) {
             foreach( var item in wagonIdList ) {
                 if( train.Cars.Find( car => car.CarID == item ) == null ) return false;
             }
@@ -856,7 +856,7 @@ namespace ORTS {
         /// <param name="sidingEnd1"></param>
         /// <param name="sidingEnd2"></param>
         /// <returns>true if both ends of train within siding</returns>
-        private Boolean atSiding( Traveller frontPosition, Traveller rearPosition, SidingItem sidingEnd1, SidingItem sidingEnd2 ) {
+        static bool atSiding( Traveller frontPosition, Traveller rearPosition, SidingItem sidingEnd1, SidingItem sidingEnd2 ) {
             if( sidingEnd1 == null || sidingEnd2 == null ) {
                 return true;
             }

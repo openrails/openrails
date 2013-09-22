@@ -47,28 +47,28 @@ namespace ORTS
     /// </summary>
     public class MSTSDieselLocomotive : MSTSLocomotive
     {
-        public float IdleRPM = 0;
-        public float MaxRPM = 0;
-        public float MaxRPMChangeRate = 0;
+        public float IdleRPM;
+        public float MaxRPM;
+        public float MaxRPMChangeRate;
         public float PercentChangePerSec = .2f;
-        public float IdleExhaust = 0.0f;
-        public float InitialExhaust = 0.0f;
+        public float IdleExhaust;
+        public float InitialExhaust;
         public float ExhaustMagnitude = 4.0f;
         public float MaxExhaust = 50.0f;
         public float ExhaustDynamics = 4.0f;
-        public float EngineRPMderivation = 0.0f;
-        float EngineRPMold = 0.0f;
-        float EngineRPMRatio = 0.0f; // used to compute Variable1 and Variable2
+        public float EngineRPMderivation;
+        float EngineRPMold;
+        float EngineRPMRatio; // used to compute Variable1 and Variable2
 
         public float MaxDieselLevelL = 5000.0f;
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
         public float DieselUsedPerHourAtIdleL = 1.0f;
         public float DieselLevelL = 5000.0f;
-        public float DieselFlowLps = 0.0f;
+        public float DieselFlowLps;
         float DieselWeightKgpL = 0.8f; //per liter
         float InitialMassKg = 100000.0f;
 
-        public float EngineRPM = 0.0f;
+        public float EngineRPM;
         public float ExhaustParticles = 10.0f;
         public Color ExhaustColor = Color.Gray;
         Color ExhaustSteadyColor = Color.Gray;

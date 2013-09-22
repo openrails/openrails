@@ -340,17 +340,17 @@ namespace MSTS {
         public string Description = " ";
         public string Briefing = " ";
         public int CompleteActivity = 1;    // <CJComment> Should be boolean </CJComment>
-        public int Type = 0;
+        public int Type;
         public ActivityMode Mode = ActivityMode.Player;
         public StartTime StartTime = new StartTime(10, 0, 0);
         public SeasonType Season = SeasonType.Summer;
         public WeatherType Weather = WeatherType.Clear;
         public string PathID;
-        public int StartingSpeed = 0;    // <CJComment> Should be float </CJComment>
+        public int StartingSpeed;       // <CJComment> Should be float </CJComment>
         public Duration Duration = new Duration(1, 0);
         public Difficulty Difficulty = Difficulty.Easy;
         public int Animals = 100;		// percent
-        public int Workers = 0;			// percent
+        public int Workers; 			// percent
         public int FuelWater = 100;		// percent
         public int FuelCoal = 100;		// percent
         public int FuelDiesel = 100;	// percent
@@ -427,15 +427,15 @@ namespace MSTS {
     }
 
     public class Tr_Activity_File {
-        public Player_Service_Definition Player_Service_Definition = null;
+        public Player_Service_Definition Player_Service_Definition;
         public int NextServiceUID = 1;
         public int NextActivityObjectUID = 32786;
-        public ActivityObjects ActivityObjects = null;
-        public ActivityFailedSignals ActivityFailedSignals = null;
-        public Events Events = null;
-        public Traffic_Definition Traffic_Definition = null;
-        public PlatformNumPassengersWaiting PlatformNumPassengersWaiting = null;
-        public ActivityRestrictedSpeedZones ActivityRestrictedSpeedZones = null;
+        public ActivityObjects ActivityObjects;
+        public ActivityFailedSignals ActivityFailedSignals;
+        public Events Events;
+        public Traffic_Definition Traffic_Definition;
+        public PlatformNumPassengersWaiting PlatformNumPassengersWaiting;
+        public ActivityRestrictedSpeedZones ActivityRestrictedSpeedZones;
 
         public Tr_Activity_File(STFReader stf) {
             stf.MustMatch("(");
@@ -502,7 +502,7 @@ namespace MSTS {
         public DateTime ArrivalTime;
         public DateTime DepartTime;
         public float DistanceDownPath;
-        public int PlatformStartID = 0;
+        public int PlatformStartID;
 
         public Player_Traffic_Item(DateTime arrivalTime, DateTime departTime, int skipCount, float distanceDownPath, int platformStartID) {
             ArrivalTime = arrivalTime;
@@ -518,9 +518,9 @@ namespace MSTS {
         public int UiD;
         public List<Service_Item> ServiceList = new List<Service_Item>();
         float efficiency;
-        int skipCount = 0;
+        int skipCount;
         float distanceDownPath = new float();
-        int platformStartID = 0;
+        int platformStartID;
 
         public Service_Definition(STFReader stf) {
             stf.MustMatch("(");
@@ -542,9 +542,9 @@ namespace MSTS {
 
     public class Service_Item {
         public float Efficiency = new float();
-        public int SkipCount = 0;
+        public int SkipCount;
         public float DistanceDownPath = new float();
-        public int PlatformStartID = 0;
+        public int PlatformStartID;
 
         public Service_Item(float efficiency, int skipCount, float distanceDownPath, int platformStartID) {
             Efficiency = efficiency;
@@ -665,7 +665,7 @@ namespace MSTS {
         public int ArrivalTime;
         public int DepartTime;
         public float DistanceDownPath;
-        public int PlatformStartID = 0;
+        public int PlatformStartID;
 
         public Traffic_Traffic_Item(int arrivalTime, int departTime, int skipCount, float distanceDownPath, int platformStartID)
         {
@@ -704,15 +704,15 @@ namespace MSTS {
     public abstract class Event {
         public int ID;
         public string Name;
-        public int Activation_Level = 0;
-        public Outcomes Outcomes = null;
+        public int Activation_Level;
+        public Outcomes Outcomes;
         public string TextToDisplayOnCompletionIfTriggered = "";
         public string TextToDisplayOnCompletionIfNotTriggered = "";
-        public Boolean Reversible = false;
+        public Boolean Reversible;
     }
 
     public class EventCategoryLocation : Event {
-        public bool TriggerOnStop = false;  // Value assumed if property not found.
+        public bool TriggerOnStop;  // Value assumed if property not found.
         public int TileX;
         public int TileZ;
         public float X;
@@ -833,8 +833,8 @@ namespace MSTS {
     }
 
     public class Outcomes {
-        public bool ActivitySuccess = false;
-        public string ActivityFail = null;
+        public bool ActivitySuccess;
+        public string ActivityFail;
         // MSTS Activity Editor limits model to 4 outcomes of any type. We use lists so there is no restriction.
         public List<int> ActivateList = new List<int>();
         public List<int> RestoreActLevelList = new List<int>();
@@ -877,7 +877,7 @@ namespace MSTS {
     }
 
     public class ActivityObject {
-        public Train_Config Train_Config = null;
+        public Train_Config Train_Config;
         public int Direction;
         public int ID;
         public int TileX;
@@ -917,7 +917,7 @@ namespace MSTS {
 
 
     public class MaxVelocity {
-        public float A = 0;
+        public float A;
         public float B = 0.001f;
 
         public MaxVelocity(STFReader stf) {
@@ -931,8 +931,8 @@ namespace MSTS {
     public class TrainCfg {
         public string Name = "Loose consist.";
         int Serial = 1;
-        public MaxVelocity MaxVelocity = null;
-        int NextWagonUID = 0;
+        public MaxVelocity MaxVelocity;
+        int NextWagonUID;
         float Durability = 1.0f;   // Value assumed if attribute not found.
 
         public List<Wagon> WagonList = new List<Wagon>();
@@ -956,8 +956,8 @@ namespace MSTS {
         public string Folder;
         public string Name;
         public int UiD;
-        public bool IsEngine = false;
-        public bool Flip = false;
+        public bool IsEngine;
+        public bool Flip;
 
         public Wagon(STFReader stf) {
             stf.MustMatch("(");
@@ -1030,8 +1030,8 @@ namespace MSTS {
     }
 
     public class ActivityRestrictedSpeedZone {
-        public Position StartPosition = null;
-        public Position EndPosition = null;
+        public Position StartPosition;
+        public Position EndPosition;
 
         public ActivityRestrictedSpeedZone(STFReader stf) {
             stf.MustMatch("(");

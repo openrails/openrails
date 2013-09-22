@@ -36,7 +36,7 @@ namespace ORTS
     {
         readonly UserSettings Settings;
         UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
-        bool SetAllDefaults = false;
+        bool SetAllDefaults;
 
         public OptionsForm(UserSettings settings)
         {
@@ -111,7 +111,7 @@ namespace ORTS
             numericUpDownAdhesionFilterSize.Value = settings.AdhesionMovingAverageFilterSize;
         }
 
-        string ParseCategoryFrom(string name)
+        static string ParseCategoryFrom(string name)
         {
             var len = name.IndexOf(' ');
             if (len == -1)
@@ -121,7 +121,7 @@ namespace ORTS
         }
 
 
-        string ParseDescriptorFrom(string name)
+        static string ParseDescriptorFrom(string name)
         {
             var len = name.IndexOf(' ');
             if (len == -1)
@@ -201,7 +201,7 @@ namespace ORTS
         // This function sets the 'ignore' keys according to the modifiers used by the command.
         // For example, if the user changed the CameraMoveFast key from ALT to CTRL, then all camera movement commands must ignore CTRL
         // If the modifier key conflicts with the assigned keys, proceed anyway, it will be caught by InputSettings.CheckForErrors()
-        void FixModifiableKey(UserCommands eCommand, UserCommands[] eModifiers)
+        static void FixModifiableKey(UserCommands eCommand, UserCommands[] eModifiers)
         {
             var command = (UserCommandModifiableKeyInput)InputSettings.Commands[(int)eCommand];
             command.IgnoreControl = false;
@@ -217,7 +217,7 @@ namespace ORTS
             }
         }
 
-        void FixModifiableKeys()
+        static void FixModifiableKeys()
         {
             // for now this is a manual fixup process
 

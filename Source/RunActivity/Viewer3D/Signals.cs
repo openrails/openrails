@@ -33,7 +33,9 @@ namespace ORTS
 {
     public class SignalShape : PoseableShape
     {
+#if DEBUG_SIGNAL_SHAPES
         readonly uint UID;
+#endif
         readonly bool[] SubObjVisible;
         readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
@@ -42,8 +44,8 @@ namespace ORTS
         {
 #if DEBUG_SIGNAL_SHAPES
             Console.WriteLine("{0} signal {1}:", Location.ToString(), mstsSignal.UID);
-#endif
             UID = mstsSignal.UID;
+#endif
             var signalShape = Path.GetFileName(path).ToUpper();
             if (!viewer.SIGCFG.SignalShapes.ContainsKey(signalShape))
             {
@@ -123,7 +125,6 @@ namespace ORTS
             // Locate relative to the camera
             var dTileX = Location.TileX - Viewer.Camera.TileX;
             var dTileZ = Location.TileZ - Viewer.Camera.TileZ;
-            var mstsLocation = Location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
             var xnaTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
             Matrix.Multiply(ref Location.XNAMatrix, ref xnaTileTranslation, out xnaTileTranslation);
 
@@ -146,7 +147,9 @@ namespace ORTS
 
             readonly Viewer3D Viewer;
             readonly SignalShape SignalShape;
+#if DEBUG_SIGNAL_SHAPES
             readonly int Index;
+#endif
             readonly SignalHead SignalHead;
             readonly int MatrixIndex;
             readonly SignalTypeData SignalTypeData;
@@ -164,7 +167,9 @@ namespace ORTS
             {
                 Viewer = viewer;
                 SignalShape = signalShape;
+#if DEBUG_SIGNAL_SHAPES
                 Index = index;
+#endif
                 SignalHead = signalHead;
                 MatrixIndex = signalShape.SharedShape.MatrixNames.IndexOf(mstsSignalSubObj.MatrixName);
 
@@ -310,7 +315,9 @@ namespace ORTS
         class SignalTypeData
         {
             public readonly Material Material;
+#if DEBUG_SIGNAL_SHAPES
             public readonly SignalTypeDataType Type;
+#endif
             public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
             public readonly List<bool> LightsSemaphoreChange = new List<bool>();
             public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
@@ -324,7 +331,9 @@ namespace ORTS
                 {
                     Trace.TraceWarning("Skipped invalid light texture {1} for signal type {0}", mstsSignalType.Name, mstsSignalType.LightTextureName);
                     Material = viewer.MaterialManager.Load("missing-signal-light");
+#if DEBUG_SIGNAL_SHAPES
                     Type = SignalTypeDataType.Normal;
+#endif
                     FlashTimeOn = 1;
                     FlashTimeTotal = 2;
                 }
@@ -332,7 +341,9 @@ namespace ORTS
                 {
                     var mstsLightTexture = viewer.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
                     Material = viewer.MaterialManager.Load("SignalLight", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
+#if DEBUG_SIGNAL_SHAPES
                     Type = (SignalTypeDataType)mstsSignalType.FnType;
+#endif
                     if (mstsSignalType.Lights != null)
                     {
                         foreach (var mstsSignalLight in mstsSignalType.Lights)

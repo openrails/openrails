@@ -102,13 +102,11 @@ namespace ORTS
         {
             FieldInfo[] fields = this.GetType().GetFields();
             object[] attrs;
-            ORTSPhysicsAttribute attr;
             foreach (FieldInfo fi in fields)
             {
                 attrs = fi.GetCustomAttributes(typeof(ORTSPhysicsAttribute), false);
                 if (attrs.Length > 0)
                 {
-                    attr = attrs[0] as ORTSPhysicsAttribute;
                     fi.SetValue(this, fi.GetValue(locoFrom));
                 }
             }

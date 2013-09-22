@@ -196,7 +196,7 @@ namespace ORTS.MultiPlayer
 				}
 				else
 				{
-					Train t = MPManager.Instance().FindPlayerTrain(m.user);
+					Train t = MPManager.FindPlayerTrain(m.user);
 					if (t != null)
 					{
 							found = true;
@@ -240,7 +240,7 @@ namespace ORTS.MultiPlayer
 		public int[] flipped; //if a wagon is engine
 		public int[] lengths; //if a wagon is engine
 		public string url;
-		public int version = 0;
+        public int version;
 		public string MD5 = "";
 		public MSGPlayer() { }
 		public MSGPlayer(string m)
@@ -429,7 +429,7 @@ namespace ORTS.MultiPlayer
 				//if someone with the same name is there, will throw a fatal error
 				lock (lockObjPlayer)
 				{
-					if (MPManager.Instance().FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
+					if (MPManager.FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
 					{
 						MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
 						throw new Exception("Same name");
@@ -439,7 +439,7 @@ namespace ORTS.MultiPlayer
 			lock (lockObjPlayer)
 			{
 
-				if (MPManager.Instance().FindPlayerTrain(user) != null) return; //already added the player, ignore
+				if (MPManager.FindPlayerTrain(user) != null) return; //already added the player, ignore
 				//if the client comes back after disconnected withing 1 minute
 				if (MPManager.IsServer() && MPManager.Instance().lostPlayer != null && MPManager.Instance().lostPlayer.ContainsKey(user))
 				{
@@ -520,7 +520,7 @@ namespace ORTS.MultiPlayer
 
 			//check if other players with the same name is online
 				//if someone with the same name is there, will throw a fatal error
-			if (MPManager.Instance().FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
+			if (MPManager.FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
 			{
 				MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
 				throw new MultiPlayerError();
@@ -580,7 +580,7 @@ namespace ORTS.MultiPlayer
 			foreach (Train t in trains)
 			{
 				if (Program.Simulator.PlayerLocomotive != null && t == Program.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
-				if (MPManager.Instance().FindPlayerTrain(t)) continue;
+				if (MPManager.FindPlayerTrain(t)) continue;
 				if (MPManager.Instance().removedTrains.Contains(t)) continue;//this train is going to be removed, should avoid it.
 				p.Send((new MSGTrain(t, t.Number)).ToString());
 			}
@@ -679,7 +679,7 @@ namespace ORTS.MultiPlayer
 			}
 		}
 
-        public void SetSwitch(TrackNode switchNode, int desiredState)
+        public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
             TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
             Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
@@ -714,7 +714,7 @@ namespace ORTS.MultiPlayer
 			{
 				try
 				{
-					var t = MPManager.Instance().FindPlayerTrain(user);
+					var t = MPManager.FindPlayerTrain(user);
                     if (t != null) t.RequestSignalPermission(Direction.Forward);
 					MultiPlayer.MPManager.BroadCast((new MSGSignalStatus()).ToString());
 				}
@@ -789,7 +789,7 @@ namespace ORTS.MultiPlayer
 
 		}
 
-        public void SetSwitch(TrackNode switchNode, int desiredState)
+        public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
             TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
             Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
@@ -876,7 +876,7 @@ namespace ORTS.MultiPlayer
 			byte[] gZipBuffer = Convert.FromBase64String(m);
 			using (var memoryStream = new MemoryStream())
 			{
-				int dataLength = BitConverter.ToInt32(gZipBuffer, 0);
+				BitConverter.ToInt32(gZipBuffer, 0);
 				memoryStream.Write(gZipBuffer, 4, gZipBuffer.Length - 4);
 
 				memoryStream.Position = 0;
@@ -910,14 +910,14 @@ namespace ORTS.MultiPlayer
 
 		}
 
-        public void SetSwitch(TrackNode switchNode, int desiredState)
+        public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
             TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
             Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
         }
 
-		private bool SwitchOccupiedByPlayerTrain(TrJunctionNode junctionNode)
+		static bool SwitchOccupiedByPlayerTrain(TrJunctionNode junctionNode)
 		{
 			if (Program.Simulator.PlayerLocomotive == null) return false;
 			Train train = Program.Simulator.PlayerLocomotive.Train;
@@ -1055,7 +1055,6 @@ namespace ORTS.MultiPlayer
 			train.Number = this.TrainNum;
 
 			train.TrainType = Train.TRAINTYPE.REMOTE;
-			int consistDirection = direction;
 			train.travelled = Travelled;
 			train.MUDirection = (Direction)this.mDirection;
 			train.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
@@ -1216,7 +1215,7 @@ namespace ORTS.MultiPlayer
 			mDirection = (int) t.MUDirection;
 		}
 
-		TrainCar findCar(Train t, string name)
+		static TrainCar findCar(Train t, string name)
 		{
 			foreach (TrainCar car in t.Cars)
 			{
@@ -1287,7 +1286,6 @@ namespace ORTS.MultiPlayer
 				return;
 			}
 			train1.TrainType = Train.TRAINTYPE.REMOTE;
-			int consistDirection = direction;
 			train1.travelled = Travelled;
 			train1.RearTDBTraveller = new Traveller(Program.Simulator.TSectionDat, Program.Simulator.TDB.TrackDB.TrackNodes, TileX, TileZ, X, Z, direction == 1 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward);
 			for (var i = 0; i < cars.Length; i++)// cars.Length-1; i >= 0; i--) {
@@ -1759,7 +1757,7 @@ namespace ORTS.MultiPlayer
 		public override void HandleMsg()
 		{
 			if (user == MPManager.GetUserName()) return; //avoid myself
-			Train t = MPManager.Instance().FindPlayerTrain(user);
+			Train t = MPManager.FindPlayerTrain(user);
 			if (t == null) return;
 
 			if (EventName == "HORN")
@@ -1951,7 +1949,7 @@ namespace ORTS.MultiPlayer
 		int[] flipped1;
 		int[] flipped2;
 
-		TrainCar FindCar(List<TrainCar> list, string id)
+		static TrainCar FindCar(List<TrainCar> list, string id)
 		{
 			foreach (TrainCar car in list) if (car.CarID == id) return car;
 			return null;
@@ -2002,7 +2000,6 @@ namespace ORTS.MultiPlayer
 		public MSGUncouple(Train t, Train newT, string u, string ID, TrainCar car)
 		{
 			if (t.Cars.Count == 0 || newT.Cars.Count == 0) { user = ""; return; }//no cars in one of the train, not sure how to handle, so just return;
-			TrainCar oldLead = t.LeadLocomotive;
 			Train temp = null; int tmpNum;
 			if (!t.Cars.Contains(Program.Simulator.PlayerLocomotive))
 			{//the old train should have the player, otherwise, 
@@ -2487,7 +2484,7 @@ namespace ORTS.MultiPlayer
 			return "" + tmp.Length + ": " + tmp;
 		}
 
-		private TrainCar FindCar(Train t1, Train t2, string carID)
+		static TrainCar FindCar(Train t1, Train t2, string carID)
 		{
 			foreach (TrainCar c in t1.Cars) if (c.CarID == carID) return c;
 			foreach (TrainCar c in t2.Cars) if (c.CarID == carID) return c;
@@ -2496,9 +2493,6 @@ namespace ORTS.MultiPlayer
 		public override void HandleMsg()
 		{
 			if (MPManager.IsServer()) return;//server will not receive this from client
-			string PlayerTrainID;
-			if (Program.Simulator.PlayerLocomotive != null) PlayerTrainID = Program.Simulator.PlayerLocomotive.CarID;
-			else PlayerTrainID = "NULL";
 			Train train = null, train2 = null;
 
 			foreach (Train t in Program.Simulator.Trains)
@@ -2552,7 +2546,7 @@ namespace ORTS.MultiPlayer
 				train.TrainType = Train.TRAINTYPE.REMOTE; //make the train remote controlled
 			}
 
-			if (MPManager.Instance().FindPlayerTrain(train2))
+			if (MPManager.FindPlayerTrain(train2))
 			{
 				int count = 0;
 				while (count < 3)
@@ -2570,7 +2564,7 @@ namespace ORTS.MultiPlayer
 			}
 
 			//update the remote user's train
-			if (MPManager.Instance().FindPlayerTrain(whoControls) != null) MPManager.OnlineTrains.Players[whoControls].Train = train;
+			if (MPManager.FindPlayerTrain(whoControls) != null) MPManager.OnlineTrains.Players[whoControls].Train = train;
 			if (train.Cars.Contains(Program.Simulator.PlayerLocomotive)) Program.Simulator.PlayerLocomotive.Train = train;
 
 			MPManager.Instance().AddOrRemoveTrain(train2, false);
@@ -2669,7 +2663,7 @@ namespace ORTS.MultiPlayer
 			byte[] gZipBuffer = Convert.FromBase64String(m);
 			using (var memoryStream = new MemoryStream())
 			{
-				int dataLength = BitConverter.ToInt32(gZipBuffer, 0);
+				BitConverter.ToInt32(gZipBuffer, 0);
 				memoryStream.Write(gZipBuffer, 4, gZipBuffer.Length - 4);
 
 				memoryStream.Position = 0;

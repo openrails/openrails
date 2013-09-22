@@ -62,11 +62,11 @@ namespace ORTS
             InitializeComponent();
         }
 
-        public int ScanCode = 0;
+        public int ScanCode;
         public XNA.Keys XNAKey = XNA.Keys.None;
-        public bool Control = false;
-        public bool Alt = false;
-        public bool Shift = false;
+        public bool Control;
+        public bool Alt;
+        public bool Shift;
 
         public static Color EditColor { get { return System.Drawing.Color.DarkKhaki; } }
 
@@ -234,7 +234,7 @@ namespace ORTS
             }
         }
 
-        public void UnhookKeyboard()
+        public static void UnhookKeyboard()
         {
             if (keyboardHookId != IntPtr.Zero) 
             {

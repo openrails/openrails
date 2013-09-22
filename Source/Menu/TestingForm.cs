@@ -231,7 +231,7 @@ namespace ORTS
             UpdateButtons();
         }
 
-        void ShowGridRow(DataGridView grid, int rowIndex)
+        static void ShowGridRow(DataGridView grid, int rowIndex)
         {
             var displayedRowCount = grid.DisplayedRowCount(false);
             if (grid.FirstDisplayedScrollingRowIndex > rowIndex)

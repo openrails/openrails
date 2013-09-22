@@ -343,8 +343,8 @@ namespace ORTS
             // First use the .save file to check the validity and extract the route and activity.
             string saveFile = GetSaveFile( args );
             using( BinaryReader inf = new BinaryReader( new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) ) {
-                var revision = inf.ReadString();
-                var build = inf.ReadString();
+                inf.ReadString();    // Revision
+                inf.ReadString();    // Build
                 savedValues values = GetSavedValues( inf );
                 InitSimulator( settings, values.args, "Replay" );
                 Simulator.Start();
@@ -360,7 +360,7 @@ namespace ORTS
                 Viewer.ReplayCommandList.Add( c );
             }
             Viewer.Log.CommandList.Clear();
-            Viewer.Log.ReportReplayCommands( Viewer.ReplayCommandList );
+            CommandLog.ReportReplayCommands( Viewer.ReplayCommandList );
 
             Viewer.Run( null );
             Simulator.Stop();
@@ -432,7 +432,7 @@ namespace ORTS
             // Now Simulator exists, link the viewer to it
             Viewer.Log.Simulator = Simulator;
             Viewer.ReplayCommandList = replayCommandList;
-            Viewer.Log.ReportReplayCommands( Viewer.ReplayCommandList );
+            CommandLog.ReportReplayCommands( Viewer.ReplayCommandList );
 
             Viewer.Run( inf );
             Simulator.Stop();
@@ -755,20 +755,19 @@ namespace ORTS
         private static savedValues GetSavedValues( BinaryReader inf ) {
             savedValues values = default( savedValues );
             // Skip the heading data used in Menu.exe
-            string temp = inf.ReadString();         // Route name
-            temp = inf.ReadString();                // Path name
-            int tempInt = inf.ReadInt32();          // Time elapsed in game (secs)
-            Int64 tempInt64 = inf.ReadInt64();      // Date and time in real world
-            float tempFloat = inf.ReadSingle();     // Current location of player train TileX
-            tempFloat = inf.ReadSingle();           // Current location of player train TileZ
+            inf.ReadString();    // Route name
+            inf.ReadString();    // Path name
+            inf.ReadInt32();     // Time elapsed in game (secs)
+            inf.ReadInt64();     // Date and time in real world
+            inf.ReadSingle();    // Current location of player train TileX
+            inf.ReadSingle();    // Current location of player train TileZ
 
             // Read initial position and pass to Simulator so it can be written out if another save is made.
             values.initialTileX = inf.ReadSingle();  // Initial location of player train TileX
             values.initialTileZ = inf.ReadSingle();  // Initial location of player train TileZ
 
             // Read in the real data...
-            tempInt = inf.ReadInt32();
-            var savedArgs = new string[tempInt];
+            var savedArgs = new string[inf.ReadInt32()];
             for( var i = 0; i < savedArgs.Length; i++ )
                 savedArgs[i] = inf.ReadString();
             values.args = savedArgs;

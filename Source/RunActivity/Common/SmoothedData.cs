@@ -68,7 +68,7 @@ namespace ORTS
         const float HistoryStepSize = 1; // each unit = 1 second
 
         List<float>[] history = new List<float>[HistoryStepCount];
-        float position = 0;
+        float position;
         float smoothedP50 = float.NaN;
         float smoothedP95 = float.NaN;
         float smoothedP99 = float.NaN;

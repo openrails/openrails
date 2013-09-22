@@ -31,7 +31,7 @@ namespace ORTS.Popups
 	{
         const int TextHeight = 16;
 
-		public bool ActivityUpdated = false;
+        public bool ActivityUpdated;
 
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
@@ -152,7 +152,6 @@ namespace ORTS.Popups
                                         line.Add(new Label(colWidth * 4, line.RemainingHeight, "Pick Up"));
                                         break;
                                 }
-								Activity act = Owner.Viewer.Simulator.ActivityRun;
                                 if (eventAction.WagonList != null) {
                                     var location = "";
                                     var locationShown = false;
@@ -331,7 +330,7 @@ namespace ORTS.Popups
 			//UpdateActivityStatus();
         }
 
-        bool GetStoppedAt(ActivityTask task)
+        static bool GetStoppedAt(ActivityTask task)
         {
             var stopAtTask = task as ActivityTaskPassengerStopAt;
             if (stopAtTask != null)

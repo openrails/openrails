@@ -285,7 +285,6 @@ namespace ORTS
             RetireActiveParticles((float)currentTime);
             FreeRetiredParticles();
 
-            var timeLastFrame = (float)currentTime - elapsedTime.ClockSeconds;
             var time = (float)currentTime;
 
             particlesToEmit += (elapsedTime.ClockSeconds * ParticlesPerSecond);
@@ -303,7 +302,6 @@ namespace ORTS
                 var nextFreeParticle = (firstFreeParticle + 1) % maxParticles;
                 var newParticleVertexIndex = nextFreeParticle * VERTICES_PER_PARTICLE;
                 var particleOffset = Vector3.Transform(EmitterData.XNAOffset, rotation);
-                var particlePosition = WorldPosition.Location + particleOffset;
                 var timeOfEmission = timeParticlesLastEmitted + intervalPerParticle;
                 var positionTime = new Vector4(WorldPosition.XNAMatrix.Translation + particleOffset, timeOfEmission);
                 var randomTextureOffset = (float)rng.Next(16); //Randomizes emissions.

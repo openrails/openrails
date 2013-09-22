@@ -66,12 +66,12 @@ namespace MSTS
                 // TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
                 //if (ESD_Bounding_Box == null) throw new STFException(stf, "Missing ESD_Bound_Box statement");
             }
-            public int ESD_Detail_Level = 0;
-            public int ESD_Alternative_Texture = 0;
-            public ESD_Bounding_Box ESD_Bounding_Box = null;
-            public bool ESD_No_Visual_Obstruction = false;
-            public bool ESD_Snapable = false;
-            public bool ESD_SubObj = false;
+            public int ESD_Detail_Level;
+            public int ESD_Alternative_Texture;
+            public ESD_Bounding_Box ESD_Bounding_Box;
+            public bool ESD_No_Visual_Obstruction;
+            public bool ESD_Snapable;
+            public bool ESD_SubObj;
         }
 
         public class ESD_Bounding_Box
@@ -99,8 +99,8 @@ namespace MSTS
                 // JP2indirt.sd has extra parameters
                 stf.SkipRestOfBlock();
             }
-            public TWorldPosition A = null;
-            public TWorldPosition B = null;
+            public TWorldPosition A;
+            public TWorldPosition B;
         }
     }
 }

@@ -65,7 +65,7 @@ namespace ORTS
         private bool _isSingle;
         private int _length;
 
-        public int NextBuffer = 0;
+        public int NextBuffer;
 
         /// <summary>
         /// Constructs a Sound Piece
@@ -78,8 +78,7 @@ namespace ORTS
             Name = name;
             IsExternal = isExternal;
             IsReleasedWithJump = isReleasedWithJump;
-            WaveFileData wfd = new WaveFileData();
-            if (!wfd.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal, isReleasedWithJump))
+            if (!WaveFileData.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal, isReleasedWithJump))
             {
                 BufferIDs = new int[1];
                 BufferIDs[0] = 0;
@@ -427,19 +426,19 @@ namespace ORTS
     /// </summary>
     public class ALSoundSource : IDisposable
     {
-        private static int refCount = 0;
+        private static int refCount;
         private const int QUEUELENGHT = 16;
 
         int SoundSourceID = -1;
-        bool _isSlowRolloff = false;
-        bool _isLooping = false;
+        bool _isSlowRolloff;
+        bool _isLooping;
         float _distanceFactor = 10;
 
         private SoundItem[] SoundQueue = new SoundItem[QUEUELENGHT];
-        private int QueueHeader = 0;
-        private int QueueTail = 0;
+        private int QueueHeader;
+        private int QueueTail;
 
-        public bool NeedsFrequentUpdate = false;
+        public bool NeedsFrequentUpdate;
 
         private static void Initialize()
         {
@@ -490,10 +489,10 @@ namespace ORTS
             _distanceFactor = 1 / (distanceFactor / 350);
         }
 
-        private bool _nxtUpdate = false;
-        private bool _MustActivate = false;
+        private bool _nxtUpdate;
+        private bool _MustActivate;
 
-        public static int _ActiveCount = 0;
+        public static int _ActiveCount;
         private static bool _MustWarn = true;
         private void TryActivate()
         {
@@ -595,7 +594,7 @@ namespace ORTS
             }
         }
 
-        private bool _Active = false;
+        private bool _Active;
         public bool Active
         {
             get
@@ -689,7 +688,7 @@ namespace ORTS
                 OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFERS_PROCESSED, out p);
                 while (p > 0)
                 {
-                    int rb = OpenAL.alSourceUnqueueBuffer(SoundSourceID);
+                    OpenAL.alSourceUnqueueBuffer(SoundSourceID);
                     p--;
                 }
 
@@ -1024,7 +1023,7 @@ namespace ORTS
             _isLooping = false;
         }
 
-        private static bool _Muted = false;
+        private static bool _Muted;
         public static void UnMuteAll()
         {
             if (refCount == 0)

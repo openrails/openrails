@@ -116,8 +116,8 @@ namespace ORTS
         public class GenericWAGFile
         {
             public bool IsEngine { get { return Engine != null; } }
-            public EngineClass Engine = null;
-            public OpenRailsData OpenRails = null;
+            public EngineClass Engine;
+            public OpenRailsData OpenRails;
 
             public GenericWAGFile(string filenamewithpath)
             {
@@ -135,7 +135,7 @@ namespace ORTS
 
             public class EngineClass
             {
-                public string Type = null;
+                public string Type;
 
                 public EngineClass(STFReader stf)
                 {
@@ -149,7 +149,7 @@ namespace ORTS
 
             public class OpenRailsData
             {
-                public string DLL = null;
+                public string DLL;
 
                 public OpenRailsData(STFReader stf)
                 {

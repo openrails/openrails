@@ -31,7 +31,7 @@ namespace ORTS.MultiPlayer
 		{
 			Players = new Dictionary<string, OnlinePlayer>();
 		}
-		public void Update()
+		public static void Update()
 		{
 
 		}
@@ -96,7 +96,7 @@ namespace ORTS.MultiPlayer
 			return tmp;
 		}
 
-		public string MoveAllTrain(MSGMove move)
+		public static string MoveAllTrain(MSGMove move)
 		{
 			string tmp = "";
 			if (move == null) move = new MSGMove();

@@ -33,9 +33,9 @@ namespace ORTS
     {
         float[] X;  // must be in increasing order
         float[] Y;
-        float[] Y2 = null;
-        int Size = 0;       // number of values populated
-        int PrevIndex = 0;  // used to speed up repeated evaluations with similar x values
+        float[] Y2;
+        int Size;       // number of values populated
+        int PrevIndex;  // used to speed up repeated evaluations with similar x values
         public Interpolator(int n)
         {
             X = new float[n];
@@ -240,8 +240,8 @@ namespace ORTS
     {
         float[] X;  // must be in increasing order
         Interpolator[] Y;
-        int Size = 0;       // number of values populated
-        int PrevIndex = 0;  // used to speed up repeated evaluations with similar x values
+        int Size;       // number of values populated
+        int PrevIndex;  // used to speed up repeated evaluations with similar x values
         public Interpolator2D(int n)
         {
             X = new float[n];

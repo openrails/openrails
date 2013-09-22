@@ -41,7 +41,7 @@ namespace ORTS
         public int TileZ { get { return cameraLocation.TileZ; } }
         public Vector3 Location { get { return cameraLocation.Location; } }
         public WorldLocation CameraWorldLocation { get { return cameraLocation; } }
-        protected int MouseScrollValue = 0;
+        protected int MouseScrollValue;
 
         protected Matrix xnaView;
         public Matrix XNAView { get { return xnaView; } }
@@ -234,7 +234,7 @@ namespace ORTS
             return CanSee(mstsLocation, objectRadius, objectViewingDistance);
         }
 
-        protected float GetSpeed(ElapsedTime elapsedTime)
+        protected static float GetSpeed(ElapsedTime elapsedTime)
         {
             var speed = 5 * elapsedTime.RealSeconds;
             if (UserInput.IsDown(UserCommands.CameraMoveFast))
@@ -318,8 +318,8 @@ namespace ORTS
     public abstract class RotatingCamera : Camera
     {
         // Current camera values
-        protected float RotationXRadians = 0;
-        protected float RotationYRadians = 0;
+        protected float RotationXRadians;
+        protected float RotationYRadians;
         protected float XRadians;
         protected float YRadians;
         protected float ZRadians;
@@ -381,7 +381,7 @@ namespace ORTS
             return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
         }
 
-        protected float GetMouseDelta(int mouseMovementPixels)
+        protected static float GetMouseDelta(int mouseMovementPixels)
         {
             // Ignore CameraMoveFast as that is too fast to be useful
             var delta = 0.01f;
@@ -520,7 +520,7 @@ namespace ORTS
         /// <param name="target"></param>
         /// <param name="increment"></param>
         /// <returns></returns>
-        protected bool IsCloseEnough(float current, float? target, float increment)
+        protected static bool IsCloseEnough(float current, float? target, float increment)
         {
             Trace.Assert(target != null, "Camera target position must not be null");
             // If a pause interrupts a camera movement, then the increment will become zero.
@@ -715,7 +715,7 @@ namespace ORTS
     {
         protected TrainCar attachedCar;
         public override TrainCar AttachedCar { get { return attachedCar; } }
-        public bool tiltingLand = false;
+        public bool tiltingLand;
         protected Vector3 attachedLocation;
 
         protected AttachedCamera(Viewer3D viewer)
@@ -1234,7 +1234,7 @@ namespace ORTS
         protected readonly bool Forwards;
         public enum HeadDirection { Forward, Backward }
         protected int CurrentViewpointIndex;
-        protected bool PrevCabWasRear = false;
+        protected bool PrevCabWasRear;
 
         // Head-out camera is only possible on the player train.
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
@@ -1245,7 +1245,6 @@ namespace ORTS
         {
             Forwards = headDirection == HeadDirection.Forward;
             RotationYRadians = Forwards ? 0 : -MathHelper.Pi;
-            CurrentViewpointIndex = 0;
         }
 
         protected override List<TrainCar> GetCameraCars()
@@ -1277,7 +1276,7 @@ namespace ORTS
 
     public class CabCamera : NonTrackingCamera
     {
-        protected int sideLocation = 0;
+        protected int sideLocation;
         public int SideLocation { get { return sideLocation; } }
 
         public override Styles Style { get { return Styles.Cab; } }
@@ -1469,7 +1468,7 @@ namespace ORTS
         protected TrainCar LastCheckCar;
         protected readonly Random Random;
         protected WorldLocation TrackCameraLocation;
-        protected float CameraAltitudeOffset = 0;
+        protected float CameraAltitudeOffset;
 
         public override bool IsUnderground
         {
