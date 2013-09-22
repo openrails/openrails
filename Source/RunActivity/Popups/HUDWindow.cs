@@ -24,6 +24,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
@@ -82,9 +83,10 @@ namespace ORTS.Popups
 
             TextPages = new Action<TableData>[] {
                 TextPageCommon,
+                TextPageConsistInfo,
+                TextPageLocomotiveInfo,
                 TextPageBrakeInfo,
 				TextPageForceInfo,
-                TextPageLocoInfo,
                 TextPageDispatcherInfo,
 				TextPageDebugInfo,
             };
@@ -93,15 +95,15 @@ namespace ORTS.Popups
 
             var graphMaterial = (HUDGraphMaterial)Viewer.MaterialManager.Load("Debug");
 
-            ForceGraphs = new HUDGraphSet(Viewer, graphMaterial);
-            ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "0%", "100%", Color.Green, 75);
-            ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
-            ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "0", "300", Color.Blue, 25);
-
             LocomotiveGraphs = new HUDGraphSet(Viewer, graphMaterial);
             LocomotiveGraphsThrottle = LocomotiveGraphs.Add("Throttle", "0", "100%", Color.Blue, 50);
             LocomotiveGraphsInputPower = LocomotiveGraphs.Add("Power In/Out", "0", "100%", Color.Yellow, 50);
             LocomotiveGraphsOutputPower = LocomotiveGraphs.AddOverlapped(Color.Green, 50);
+
+            ForceGraphs = new HUDGraphSet(Viewer, graphMaterial);
+            ForceGraphMotiveForce = ForceGraphs.Add("Motive force", "0%", "100%", Color.Green, 75);
+            ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
+            ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "0", "300", Color.Blue, 25);
 
             DebugGraphs = new HUDGraphSet(Viewer, graphMaterial);
             DebugGraphMemory = DebugGraphs.Add("Memory", "0GB", "2GB", Color.Orange, 50);
@@ -156,7 +158,7 @@ namespace ORTS.Popups
                 ForceGraphs.PrepareFrame(frame);
             }
 
-            if (Visible && TextPages[TextPage] == TextPageLocoInfo)
+            if (Visible && TextPages[TextPage] == TextPageLocomotiveInfo)
             {
                 var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
                 var locoD = Viewer.PlayerLocomotive as MSTSDieselLocomotive;
@@ -218,12 +220,12 @@ namespace ORTS.Popups
             for (var row = 0; row < TextTable.Cells.GetLength(0); row++)
                 for (var column = 0; column < TextTable.Cells.GetLength(1); column++)
                     if (TextTable.Cells[row, column] != null)
-                        TextFont.Draw(spriteBatch, Rectangle.Empty, new Point(TextOffset + column * ColumnWidth, TextOffset + row * TextFont.Height), TextTable.Cells[row, column], LabelAlignment.Left, Color.White);
+                        TextFont.Draw(spriteBatch, new Rectangle(TextOffset + column * ColumnWidth, TextOffset + row * TextFont.Height, ColumnWidth, TextFont.Height), Point.Zero, TextTable.Cells[row, column], TextTable.Cells[row, column].StartsWith(" ") ? LabelAlignment.Right : LabelAlignment.Left, Color.White);
 
 #if SHOW_PHYSICS_GRAPHS
             if (Visible && TextPages[TextPage] == TextPageForceInfo)
                 ForceGraphs.Draw(spriteBatch);
-            if (Visible && TextPages[TextPage] == TextPageLocoInfo)
+            if (Visible && TextPages[TextPage] == TextPageLocomotiveInfo)
                 LocomotiveGraphs.Draw(spriteBatch);
 #endif
             if (Visible && TextPages[TextPage] == TextPageDebugInfo)
@@ -273,6 +275,20 @@ namespace ORTS.Popups
         {
             TableSetCell(table, table.CurrentRow, 0, format, args);
             table.CurrentRow++;
+        }
+
+        void TableAddLines(TableData table, string lines)
+        {
+            if (lines == null)
+                return;
+
+            foreach (var line in lines.Split('\n'))
+            {
+                var column = 0;
+                foreach (var cell in line.Split('\t'))
+                    TableSetCell(table, column++, "{0}", cell);
+                table.CurrentRow++;
+            }
         }
 
         void TableSetLabelValueColumns(TableData table, int labelColumn, int valueColumn)
@@ -371,6 +387,61 @@ namespace ORTS.Popups
             }
         }
 
+        void TextPageConsistInfo(TableData table)
+        {
+            TextPageHeading(table, "CONSIST INFORMATION");
+
+            var locomotive = Viewer.PlayerLocomotive;
+            var mstsLocomotive = locomotive as MSTSLocomotive;
+            var train = locomotive.Train;
+
+            TableSetCells(table, 0, "Player", "Tilted", "Type", "Length", "Control Mode", "", "Out of Control", "", "Cab Aspect");
+            TableAddLine(table);
+            TableSetCells(table, 0, locomotive.UiD + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? "R" : "F"), train.tilted.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(train.Length, true), train.ControlMode.ToString(), "", train.OutOfControlReason.ToString(), "", train.CABAspect.ToString());
+            TableAddLine(table);
+            TableAddLine(table);
+            TableSetCells(table, 0, "Car", "Flipped", "Type", "Length", "Drv/Cabs", "Wheels");
+            TableAddLine(table);
+            foreach (var car in train.Cars.Take(20))
+            {
+                TableSetCells(table, 0, car.UiD.ToString(), car.Flipped.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(car.LengthM, true), (car.IsDriveable ? "D" : "") + (car.HasFrontCab ? "F" : "") + (car.HasRearCab ? "R" : ""), GetCarWhyteLikeNotation(car));
+                TableAddLine(table);
+            }
+        }
+
+        static string GetCarWhyteLikeNotation(TrainCar car)
+        {
+            var whyte = new List<string>();
+            var currentCount = 0;
+            var currentBogie = car.WheelAxles[0].BogieIndex;
+            foreach (var axle in car.WheelAxles)
+            {
+                if (currentBogie != axle.BogieIndex)
+                {
+                    whyte.Add(currentCount.ToString());
+                    currentBogie = axle.BogieIndex;
+                    currentCount = 0;
+                }
+                currentCount += 2;
+            }
+            whyte.Add(currentCount.ToString());
+            return String.Join("-", whyte.ToArray());
+        }
+
+        void TextPageLocomotiveInfo(TableData table)
+        {
+            TextPageHeading(table, "LOCOMOTIVE INFORMATION");
+
+            var locomotive = Viewer.PlayerLocomotive;
+            var train = locomotive.Train;
+
+            TableAddLines(table, String.Format("Direction\t{0}\tReverser\t{1:F0}%\tThrottle\t{2:F0}%\tD-brake\t{3:F0}%", train.MUDirection, train.MUReverserPercent, train.MUThrottlePercent, train.MUDynamicBrakePercent));
+            TableAddLine(table);
+            foreach (var car in train.Cars)
+                if (car is MSTSLocomotive)
+                    TableAddLines(table, car.GetDebugStatus());
+        }
+
         void TextPageBrakeInfo(TableData table)
         {
             TextPageHeading(table, "BRAKE INFORMATION");
@@ -438,137 +509,6 @@ namespace ORTS.Popups
                 TableSetCell(table, 9, car.Flipped ? "Flipped" : "");
                 TableSetCell(table, 10, car.CouplerOverloaded ? "Coupler overloaded" : "");
                 TableAddLine(table);
-            }
-        }
-
-        void TextPageLocoInfo(TableData table)
-        {
-            TextPageHeading(table, "LOCOMOTIVE INFORMATION");
-
-            // FIXME: Rewrite all the casting operations in here!
-            var train = Viewer.PlayerLocomotive.Train;
-            var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
-
-            if (mstsLocomotive != null)
-            {
-                if (mstsLocomotive.GetType() == typeof(MSTSDieselLocomotive))
-                {
-                    var locomotiveStatus = ((MSTSDieselLocomotive)mstsLocomotive).GetSpecialInfoStatus();
-                    if (locomotiveStatus != null)
-                    {
-                        var lines = locomotiveStatus.Split('\n');
-                        foreach (var line in lines)
-                        {
-                            if (line.Length > 0)
-                            {
-                                var parts = line.Split(new[] { " = " }, 2, StringSplitOptions.None);
-                                TableAddLabelValue(table, parts[0], parts.Length > 1 ? parts[1] : "");
-                                //TableAddLabelValue(table, "Axle drive force", "{0:F0} N", mstsLocomotive.LocomotiveAxle.DriveForceN);
-                            }
-                        }
-                    }
-                }
-                //TableAddLine(table);
-            }
-
-            //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
-
-            foreach (TrainCar car in train.Cars)
-            {
-                if (car.GetType() == typeof(MSTSElectricLocomotive))    // Headings only if the player train contains this type of loco
-                {
-                    TableAddLine(table, "Electric Locomotives:");
-                    TableSetCells(table, 0, "Car", "PowerOn", "Pantos", "Throttle", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
-                    TableAddLine(table);
-                    break;
-                }
-            }
-
-            int numDispCars = 0;
-            foreach(TrainCar car in train.Cars)
-            {
-                if (car.GetType() == typeof(MSTSElectricLocomotive))
-                {
-                    TableSetCell(table, 0, "{0}", numDispCars);
-                    TableSetCell(table, 1, "{0}", ((MSTSElectricLocomotive)car).PowerOn ? "On" : "Off");
-                    TableSetCell(table, 1, "{0} {1}", ((MSTSElectricLocomotive)car).Pan1Up ? "Up" : "Dn", ((MSTSElectricLocomotive)car).Pan2Up ? "Up" : "Dn");
-                    TableSetCell(table, 2, "{0:F0}", ((MSTSElectricLocomotive)car).ThrottlePercent);
-                    TableSetCell(table, 3, "{0:F0}", ((MSTSElectricLocomotive)car).MotiveForceN * car.SpeedMpS);
-                    TableSetCell(table, 4, "{0:F0}", ((MSTSElectricLocomotive)car).MotiveForceN);
-                    if ((car.Simulator.UseAdvancedAdhesion) && (!((MSTSLocomotive)car).AntiSlip))
-                        TableSetCell(table, 5, "{0:F0}", ((MSTSLocomotive)car).LocomotiveAxle.SlipSpeedPercent);
-                    else
-                        TableSetCell(table, 5, "{0}", car.WheelSlip ? "WhlSlp!" : "-");
-                    TableSetCell(table, 6, "{0:F0}", car.Flipped ? "Flipped" : "");
-                    TableSetCell(table, 7, "{0:F0}", "");
-                    TableSetCell(table, 8, car.CouplerOverloaded ? "Coupler overloaded" : "");
-                    TableAddLine(table);
-                    if (++numDispCars > 10)
-                        break;
-                }
-                
-            }
-
-            foreach (TrainCar car in train.Cars)
-            {
-                if (car.GetType() == typeof(MSTSDieselLocomotive))    // Headings only if the player train contains this type of loco
-                {
-                    TableAddLine(table, "Diesel Locomotives:");
-                    TableSetCells(table, 0, "Car", "Status", "RPM", "Fuel/h", "Power", "Ft[N]", "WhlSlip", "Flipped", "AuxPwr", "Notes");
-                    TableAddLine(table);
-                    break;
-                }
-            }
-            foreach (TrainCar car in train.Cars)
-            {
-                if (car.GetType() == typeof(MSTSDieselLocomotive))
-                {
-                    TableSetCell(table, 0, "{0}", numDispCars);
-                    TableSetCell(table, 1, "{0}", ((MSTSDieselLocomotive)car).DieselEngines[0].EngineStatus.ToString());
-                    if (((MSTSDieselLocomotive)car).DieselEngines.HasGearBox)
-                        TableSetCell(table, 2, "{0:F0}({1})", ((MSTSDieselLocomotive)car).DieselEngines[0].RealRPM, ((MSTSDieselLocomotive)car).DieselEngines[0].GearBox.CurrentGearIndex < 0 ? "N" : (((MSTSDieselLocomotive)car).DieselEngines[0].GearBox.CurrentGearIndex + 1).ToString()); 
-                    else
-                        TableSetCell(table, 2, "{0:F0}", ((MSTSDieselLocomotive)car).DieselEngines[0].RealRPM);
-                    TableSetCell(table, 3, "{0:F0}", ((MSTSDieselLocomotive)car).DieselEngines.DieselFlowLps * 3600.0f);
-                    TableSetCell(table, 4, "{0:F0}", ((MSTSDieselLocomotive)car).MotiveForceN * car.SpeedMpS);
-                    TableSetCell(table, 5, "{0:F0}", ((MSTSDieselLocomotive)car).MotiveForceN);
-                    if((car.Simulator.UseAdvancedAdhesion)&&(!((MSTSLocomotive)car).AntiSlip))
-                        TableSetCell(table, 6, "{0:F0}", ((MSTSDieselLocomotive)car).LocomotiveAxle.SlipSpeedPercent);
-                    else
-                        TableSetCell(table, 6, "{0}", car.WheelSlip ? "WhlSlp!" : "-");
-                    TableSetCell(table, 7, "{0:F0}", car.Flipped ? "Flipped" : "");
-                    TableSetCell(table, 8, "{0:F0}", "");
-                    TableSetCell(table, 9, car.CouplerOverloaded ? "Coupler overloaded" : "");
-                    TableAddLine(table);
-                    if (++numDispCars > 10)
-                        break;
-                }
-            }
-
-            bool steamLocoFound = false;
-            foreach (TrainCar car in train.Cars)
-            {
-                if (car.GetType() == typeof(MSTSSteamLocomotive))    // Headings only if the player train contains this type of loco
-                {
-                    steamLocoFound = true;
-                    break;
-                }
-            }
-            if (steamLocoFound)
-            {
-                TableAddLine(table, "Steam Locomotives:");
-            }
-            foreach (TrainCar car in train.Cars)
-            {
-                if (car.GetType() == typeof(MSTSSteamLocomotive))
-                {
-                    var loco = (MSTSSteamLocomotive)car;
-
-                    loco.UpdateDebugData(this, table);
-
-                    if (++numDispCars > 2)
-                        break;
-                }
             }
         }
 

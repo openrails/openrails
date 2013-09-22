@@ -763,23 +763,12 @@ namespace ORTS
             return result.ToString();
         }
 
-        public string GetSpecialInfoStatus()
+        public override string GetDebugStatus()
         {
-            var result = new StringBuilder();
-            int count = 0;
-            foreach (DieselEngine de in DieselEngines)
-            {
-                if (DieselEngines.Count > 1)
-                    result.AppendLine("ENGINE #" + (++count).ToString());
-                result.Append(de.GetStatus());
-            }
-            result.AppendFormat("Diesel level = {0:F0} L ({1:F0} gal)\n", DieselLevelL, DieselLevelL / 3.785f);
-
-            //result.AppendFormat("Diesel engine = {0}\n", PowerOn ? "On" : "Off");
-            //result.AppendFormat("Diesel RPM = {0:F0}\n", EngineRPM);
-            //result.AppendFormat("Diesel level = {0:F0} L ({1:F0} gal)\n", DieselLevelL, DieselLevelL / 3.785f);
-            //result.AppendFormat("Diesel flow = {0:F1} L/h ({1:F1} gal/h)", DieselFlowLps * 3600.0f, DieselFlowLps * 3600.0f / 3.785f);
-            return result.ToString();
+            var status = new StringBuilder();
+            status.AppendFormat("Car {0}\t{2} {1}\t{3:F0}%\t{4:F0}m/s\t{5:F0}kW\t{6:F0}kN\t{7}\t{8}\n", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "");
+            status.AppendFormat("Engine\t{0}\t{1:F0}RPM\tGear {2}\t Fuel \t{3:F0}L\t{4:F0}L/h\n", DieselEngines[0].EngineStatus, DieselEngines[0].RealRPM, DieselEngines.HasGearBox ? DieselEngines[0].GearBox.CurrentGearIndex : 0, DieselLevelL, DieselFlowLps * 3600.0f);
+            return status.ToString();
         }
 
         /// <summary>

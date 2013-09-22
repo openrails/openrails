@@ -691,6 +691,18 @@ namespace ORTS
             return result.ToString();
         }
 
+        public override string GetDebugStatus()
+        {
+            var status = new StringBuilder();
+            status.AppendFormat("Car {0}\t{2} {1}\t{3:F0}%\t{4:F0}m/s\t{5:F0}kW\t{6:F0}kN\t{7}\t{8}\n", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "");
+            status.AppendFormat("Steam Production\t\t{0:N0}lb/h\t Evap \t{1:N0}ft^2\t Boiler \t{2:N0}hp\t{3:N0}lb\t{4:N0}btu\t\t Steam \t{5:N0}btu/lb\t Flue \t{6:N0}F\t Water \t{7:N0}F\n", pS.TopH(EvaporationLBpS), Me2.ToFt2(EvaporationAreaSqM), W.ToHp(W.FromKw(BoilerKW)), BoilerMassLB, BoilerHeatBTU, SteamHeatBTU, C.ToF(C.FromK(FlueTempK)), C.ToF(C.FromK(WaterTempK)));
+            status.AppendFormat("Steam Usage\t\t{0:N0}lb/h\t Cylinder \t{1:N0}lb/h\t Blower \t{2:N0}lb/h\t Damper \t{3:N0}lb/h\t Basic \t{4:N0}lb/h\n", pS.TopH(SteamUsageLBpS + BlowerSteamUsageLBpS + DamperSimLbpsS + BasicSteamUsageLBpS), pS.TopH(SteamUsageLBpS), pS.TopH(BlowerSteamUsageLBpS), pS.TopH(DamperSimLbpsS), pS.TopH(BasicSteamUsageLBpS));
+            status.AppendFormat("Pressure\t Boiler \t{0:N0}psi\t Chest \t{1:N0}psi\t Back \t{2:N0}psi\n", BoilerPressurePSI, CylinderPressurePSI, BackPressurePSI);
+            status.AppendFormat("Fireman\t Ideal \t{0:N0}lb\t Fire \t{1:N0}lb\t Desired \t{2:N2}\t Fuel \t{3:N0}lb/h\t({4:N0}lb/h)\t Burn \t{5:N0}lb/h\t Water \t{6:N0}%\n", Kg.ToLb(IdealFireMassKG), Kg.ToLb(FireMassKG), DesiredChange, pS.TopH(FuelRateLBpS), pS.TopH(FuelRate.SmoothedValue), pS.TopH(BurnRateLBpS), WaterFraction * 100);
+            status.AppendFormat("Pulling power\t\t{0:N0}lbf\t({1:N0}lbf)\t{2:N0}hp\t({3:N0}hp)\n", N.ToLbf(MotiveForceN), N.ToLbf(MotiveForceSmoothedN.SmoothedValue), W.ToHp(MotiveForceN * SpeedMpS), W.ToHp(MotiveForceSmoothedN.SmoothedValue * SpeedMpS));
+            return status.ToString();
+        }
+
         public override void StartReverseIncrease( float? target ) {
             CutoffController.StartIncrease( target );
             CutoffController.CommandStartTime = Simulator.ClockTime;
@@ -935,84 +947,6 @@ namespace ORTS
 			Injector2Controller.CurrentValue = I2;
 			Injector2Controller.UpdateValue = 0.0f;
 		}
-
-        public void UpdateDebugData(ORTS.Popups.HUDWindow w, ORTS.Popups.HUDWindow.TableData table)
-        {
-            w.TableAddLine(table, "Steam Production :");
-            w.TableSetCell(table, 0, "Steam Generated");
-            w.TableSetCell(table, 2, "{0,8:N0} lb/h", pS.TopH(EvaporationLBpS));
-            w.TableAddLine(table);
-            w.TableSetCell(table, 0, "Evaporation Area");
-            w.TableSetCell(table, 2, "{0,8:N0} ft^2", Me2.ToFt2(EvaporationAreaSqM));
-            w.TableSetCell(table, 4, "Boiler power");
-            w.TableSetCell(table, 6, "{0,8:N0} hp", W.ToHp(W.FromKw(BoilerKW)));
-            w.TableSetCell(table, 8, "Steam heat");
-            w.TableSetCell(table, 10, "{0,8:N0} btu/lb", SteamHeatBTU);
-            w.TableAddLine(table);
-            w.TableSetCell(table, 0, "Flue Temp");
-            w.TableSetCell(table, 2, "{0,8:N0} F", C.ToF(C.FromK(FlueTempK)));
-            w.TableSetCell(table, 4, "Water Temp");
-            w.TableSetCell(table, 6, "{0,8:N0} F", C.ToF(C.FromK(WaterTempK)));
-            w.TableAddLine(table);
-            w.TableSetCell(table, 0, "Boiler Heat");
-            w.TableSetCell(table, 2, "{0,8:N0} BTU", BoilerHeatBTU);
-            w.TableSetCell(table, 4, "Boiler Mass");
-            w.TableSetCell(table, 6, "{0,8:N0} lb", BoilerMassLB);
-            w.TableAddLine(table);
-            w.TableAddLine(table);
-
-            w.TableAddLine(table, "Steam Usage :");
-            w.TableSetCell(table, 0, "Cylinder Usage");
-            w.TableSetCell(table, 2, "{0,8:N0} lb/h", pS.TopH(SteamUsageLBpS));
-            w.TableSetCell(table, 4, "Blower Usage");
-            w.TableSetCell(table, 6, "{0,8:N0} lb/h", pS.TopH(BlowerSteamUsageLBpS));
-            w.TableSetCell(table, 8, "Damper Usage");
-            w.TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(DamperSimLbpsS));
-            w.TableSetCell(table, 12, "Basic Usage");
-            w.TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(BasicSteamUsageLBpS));
-            w.TableAddLine(table);
-            w.TableAddLine(table);
-
-            w.TableAddLine(table, "Steam Pressure :");
-            w.TableSetCell(table, 0, "Boiler");
-            w.TableSetCell(table, 2, "{0,8:N0} psi", BoilerPressurePSI);
-            w.TableSetCell(table, 4, "Valve Chest");
-            w.TableSetCell(table, 6, "{0,8:N0} psi", CylinderPressurePSI);
-            w.TableSetCell(table, 8, "Back Pressure");
-            w.TableSetCell(table, 10, "{0,8:N0} psi", BackPressurePSI);
-            w.TableAddLine(table);
-            w.TableAddLine(table);
-
-            w.TableAddLine(table, "Fireman :");
-            w.TableSetCell(table, 0, "Ideal Fire Mass");
-            w.TableSetCell(table, 2, "{0,8:N0} lb", Kg.ToLb(IdealFireMassKG));
-            w.TableSetCell(table, 4, "Fire Mass");
-            w.TableSetCell(table, 6, "{0,8:N0} lb", Kg.ToLb(FireMassKG));
-            w.TableSetCell(table, 8, "Fuel Rate");
-            w.TableSetCell(table, 10, "{0,8:N0} lb/h", pS.TopH(FuelRateLBpS));
-            w.TableSetCell(table, 12, "Burn Rate");
-            w.TableSetCell(table, 14, "{0,8:N0} lb/h", pS.TopH(BurnRateLBpS));
-            w.TableAddLine(table);
-            w.TableSetCell(table, 0, "Water level");
-            w.TableSetCell(table, 2, "{0,8:N0} %", WaterFraction * 100);
-            w.TableAddLine(table);
-            w.TableSetCell(table, 0, "Desired Change");
-            w.TableSetCell(table, 2, "{0,8:N2}", DesiredChange);
-            w.TableSetCell(table, 4, "Fuel Rate Smoothed");
-            w.TableSetCell(table, 6, "{0,8:N0} lb/h", pS.TopH(FuelRate.SmoothedValue));
-            w.TableAddLine(table);
-            w.TableAddLine(table);
-
-            w.TableAddLine(table, "Pulling Performance :");
-            w.TableSetCell(table, 0, "Pulling Force");
-            w.TableSetCell(table, 2, "{0,8:N0} lbf", N.ToLbf(MotiveForceN));
-            w.TableSetCell(table, 4, "Smoothed");
-            w.TableSetCell(table, 6, "{0,8:N0} lbf", N.ToLbf(MotiveForceSmoothedN.SmoothedValue));
-            w.TableSetCell(table, 8, "Pulling Power");
-            w.TableSetCell(table, 10, "{0,8:N0} hp", W.ToHp(MotiveForceN * SpeedMpS));
-            w.TableSetCell(table, 12, "Smoothed");
-            w.TableSetCell(table, 14, "{0,8:N0} hp", W.ToHp(MotiveForceSmoothedN.SmoothedValue * SpeedMpS));
-        }
     } // class SteamLocomotive
 
     ///////////////////////////////////////////////////

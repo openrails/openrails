@@ -266,21 +266,6 @@ namespace ORTS
             }
         }
 
-        /// <summary>
-        /// Gets status of each auxiliary on the list
-        /// </summary>
-        /// <returns>string formated as one line for one auxiliary</returns>
-        public string GetStatus()
-        {
-            var result = new StringBuilder();
-            result.AppendLine("Diesel Engines:");
-            foreach (DieselEngine de in DEList)
-            {
-                result.AppendLine(de.GetStatus());
-            }
-            return result.ToString();
-        }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
             return (IEnumerator)GetEnumerator();
@@ -669,6 +654,7 @@ namespace ORTS
             return EngineStatus;
         }
 
+        // TODO: This is not called by anything.
         public string GetStatus()
         {
             var result = new StringBuilder();

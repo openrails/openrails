@@ -187,6 +187,7 @@ namespace ORTS
         public virtual void SignalEvent(Event evt) { }
 
         public virtual string GetStatus() { return null; }
+        public virtual string GetDebugStatus() { return null; }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
