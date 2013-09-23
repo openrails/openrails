@@ -77,7 +77,7 @@ namespace ORTS
         float WaterFraction;        // fraction of boiler volume occupied by water
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;
-        float FireRatio;
+        public float FireRatio;
         float FlueTempK = 1000;
         public bool SafetyOn;
         public readonly SmoothedData Smoke = new SmoothedData(15);
@@ -85,9 +85,9 @@ namespace ORTS
         // eng file configuration parameters
         float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
         float BoilerVolumeFT3;      // total space in boiler that can hold water and steam
-        int NumCylinders = 2;       // number of cylinders
-        float CylinderStrokeM;      // stroke of piston
-        float CylinderDiameterM;    // diameter of piston
+        public int NumCylinders = 2;       // number of cylinders
+        public float CylinderStrokeM;      // stroke of piston
+        public float CylinderDiameterM;    // diameter of piston
         float MaxBoilerOutputLBpH;  // maximum boiler steam generation rate
         float ExhaustLimitLBpH;     // steam usage rate that causing increased back pressure
         public float BasicSteamUsageLBpS;  // steam used for auxiliary stuff
@@ -1107,10 +1107,10 @@ namespace ORTS
         {
             var car = Car as MSTSSteamLocomotive;
             var steamUsageLBpS = car.SteamUsageLBpS + car.BlowerSteamUsageLBpS + car.BasicSteamUsageLBpS + (car.SafetyOn ? car.SafetyValveUsageLBpS : 0);
-            var steamVolumeM3pS = steamUsageLBpS * LBToKG * SteamVaporDensityAt100DegC1BarM3pKG * 10; // The 10 is a fiddle factor that makes things look a lot better in tested locomotives.
+            var steamVolumeM3pS = steamUsageLBpS * LBToKG * SteamVaporDensityAt100DegC1BarM3pKG; 
 
             foreach (var drawer in Cylinders)
-                drawer.SetEmissionRate(car.CylinderCocksOpen ? steamVolumeM3pS / 10 : 0);
+                drawer.SetEmissionRate(car.CylinderCocksOpen ? steamVolumeM3pS : 0);
 
             foreach (var drawer in Drainpipe)
                 drawer.SetEmissionRate(0);
@@ -1118,11 +1118,28 @@ namespace ORTS
             foreach (var drawer in SafetyValue)
                 drawer.SetEmissionRate(car.SafetyOn ? 1 : 0);
 
+
+            
             foreach (var drawer in Stack)
             {
-                drawer.SetEmissionRate(steamVolumeM3pS);
-                // TODO: The alpha value here is ingored by the particle emitter.
-                drawer.SetEmissionColor(new Color(car.Smoke.SmoothedValue / 2, car.Smoke.SmoothedValue / 2, car.Smoke.SmoothedValue / 2));
+                float Throttlepercent;
+                float Burn_Rate;
+                float Steam_Rate;
+                float Color_Value;
+
+                Throttlepercent = Math.Max ( car.ThrottlePercent / 10f, 1f );
+
+                Burn_Rate = car.FireRatio;
+
+                Steam_Rate = steamVolumeM3pS;
+
+                Color_Value =  ( steamVolumeM3pS * .10f )  +  ( car.Smoke.SmoothedValue / 2 ) / 256 * 100f ;
+
+                    drawer.SetEmissionRate( Steam_Rate + Burn_Rate );
+                    drawer.SetParticleDuration ( Throttlepercent );
+                    //drawer.SetEmissionColor( Color.TransparentWhite );
+                    drawer.SetEmissionColor( new Color ( Color_Value, Color_Value, Color_Value )); 
+               
             }
 
             foreach (var drawer in Whistle)
@@ -1130,7 +1147,7 @@ namespace ORTS
 
             base.PrepareFrame(frame, elapsedTime);
         }
-
+         
         /// <summary>
         /// This doesn't function yet.
         /// </summary>
