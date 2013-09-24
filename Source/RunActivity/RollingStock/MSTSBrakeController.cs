@@ -96,8 +96,8 @@ namespace ORTS
                         epPressurePSI -= x * ReleaseRatePSIpS * elapsedClockSeconds;
                         break;
                     case MSTSNotchType.FullQuickRelease:
-                        pressurePSI += x * 5.0f * ReleaseRatePSIpS * elapsedClockSeconds;
-                        epPressurePSI -= x * 5.0f *ReleaseRatePSIpS * elapsedClockSeconds;
+                        pressurePSI += x * QuickReleaseRatePSIpS * elapsedClockSeconds;
+                        epPressurePSI -= x * QuickReleaseRatePSIpS * elapsedClockSeconds;
                         break;
                     case MSTSNotchType.Running:
                         if (notch.Smooth)

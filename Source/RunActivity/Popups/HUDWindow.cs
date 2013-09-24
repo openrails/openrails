@@ -394,16 +394,16 @@ namespace ORTS.Popups
             var mstsLocomotive = locomotive as MSTSLocomotive;
             var train = locomotive.Train;
 
-            TableSetCells(table, 0, "Player", "Tilted", "Type", "Length", "Control Mode", "", "Out of Control", "", "Cab Aspect");
+            TableSetCells(table, 0, "Player", "Tilted", "Type", "Length", "Weight", "Control Mode", "", "Out of Control", "", "Cab Aspect");
             TableAddLine(table);
-            TableSetCells(table, 0, locomotive.UiD + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? "R" : "F"), train.tilted.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(train.Length, true), train.ControlMode.ToString(), "", train.OutOfControlReason.ToString(), "", train.CABAspect.ToString());
+            TableSetCells(table, 0, locomotive.UiD + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? "R" : "F"), train.tilted.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(train.Length, true), FormatStrings.FormatMass(train.MassKg, true) , train.ControlMode.ToString(), "", train.OutOfControlReason.ToString(), "", train.CABAspect.ToString());
             TableAddLine(table);
             TableAddLine(table);
-            TableSetCells(table, 0, "Car", "Flipped", "Type", "Length", "Drv/Cabs", "Wheels");
+            TableSetCells(table, 0, "Car", "Flipped", "Type", "Length", "Weight", "Drv/Cabs", "Wheels");
             TableAddLine(table);
             foreach (var car in train.Cars.Take(20))
             {
-                TableSetCells(table, 0, car.UiD.ToString(), car.Flipped.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(car.LengthM, true), (car.IsDriveable ? "D" : "") + (car.HasFrontCab ? "F" : "") + (car.HasRearCab ? "R" : ""), GetCarWhyteLikeNotation(car));
+                TableSetCells(table, 0, car.UiD.ToString(), car.Flipped.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(car.LengthM, true), FormatStrings.FormatMass(car.MassKG, true), (car.IsDriveable ? "D" : "") + (car.HasFrontCab ? "F" : "") + (car.HasRearCab ? "R" : ""), GetCarWhyteLikeNotation(car));
                 TableAddLine(table);
             }
         }

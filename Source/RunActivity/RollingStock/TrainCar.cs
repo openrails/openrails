@@ -260,6 +260,7 @@ namespace ORTS
         }
 #endif
 
+
         public virtual float GetCouplerZeroLengthM()
         {
             return 0;

@@ -71,6 +71,7 @@ namespace ORTS
         public Traveller RearTDBTraveller;               // positioned at the back of the last car in the train
         public Traveller FrontTDBTraveller;              // positioned at the front of the train by CalculatePositionOfCars
         public float Length;                             // length of train from FrontTDBTraveller to RearTDBTraveller
+        public float MassKg;                             // weight of the train
         public float SpeedMpS;                           // meters per second +ve forward, -ve when backing
         float LastSpeedMpS;                              // variable to remember last speed used for projected speed
         SmoothedData AccelerationMpSpS = new SmoothedData(); // smoothed acceleration data
@@ -104,6 +105,10 @@ namespace ORTS
 
         public bool IsWheelSlipWarninq;
         public bool IsWheelSlip;
+
+        //To investigate coupler breaks on route
+        public int NumOfCouplerBreaks = 0;
+        private bool numOfCouplerBreaksNoted = false;
 
         public enum TRAINTYPE
         {
@@ -1124,11 +1129,15 @@ namespace ORTS
             bool whlslp = false;
             bool whlslpwrn = false;
 
+            TrainCar uncoupleBehindCar = null;
+
+            float massKg = 0f;
             foreach (TrainCar car in Cars)
             {
                 car.MotiveForceN = 0;
                 car.Update(elapsedClockSeconds);
                 car.TotalForceN = car.MotiveForceN + car.GravityForceN;
+                massKg += car.MassKG;
 
                 if (car.Flipped)
                 {
@@ -1140,9 +1149,43 @@ namespace ORTS
                     whlslp = true;
                 if (car.WheelSlipWarning)
                     whlslpwrn = true;
+
+                if (car.CouplerOverloaded)
+                    uncoupleBehindCar = car;
             }
+            MassKg = massKg;
+
             IsWheelSlip = whlslp;
             IsWheelSlipWarninq = whlslpwrn;
+
+             // Coupler breaker
+            if (uncoupleBehindCar != null)
+            {
+                if (uncoupleBehindCar.CouplerOverloaded)
+                {
+                    if (!numOfCouplerBreaksNoted)
+                    {
+                        NumOfCouplerBreaks++;
+                        Trace.WriteLine(String.Format("Num of coupler breaks: {0}", NumOfCouplerBreaks));
+                        numOfCouplerBreaksNoted = true;
+
+                        if (Simulator.BreakCouplers)
+                        {
+                            Simulator.UncoupleBehind(uncoupleBehindCar);
+                            uncoupleBehindCar.CouplerOverloaded = false;
+                            Simulator.Confirmer.Warning("Coupler broken!");
+                        }
+                        else
+                            Simulator.Confirmer.Warning("Coupler overloaded!");
+                    }
+                }
+                else
+                    numOfCouplerBreaksNoted = false;
+
+                uncoupleBehindCar = null;
+            }
+            else
+                numOfCouplerBreaksNoted = false;
 
             AddCouplerImpuseForces();
             ComputeCouplerForces();

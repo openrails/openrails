@@ -100,6 +100,18 @@ namespace ORTS
                 return String.Format("{0:N0}yd", Me.ToYd(distance));
             return String.Format("{0:F1}mi", Me.ToMi(distance));
         }
+
+        public static string FormatMass(float mass, bool isMetric)
+        {
+            if (isMetric)
+            {
+                // <0.1 tons, show kilograms.
+                if (Math.Abs(mass) > 1000)
+                    return String.Format("{0:N0}t", mass / 1000.0);
+                return String.Format("{0:F1}kg", mass);
+            }
+            return String.Format("{0:F1}Lb", Kg.ToLb(mass));
+        }
 	}
 #endif		
 
