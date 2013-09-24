@@ -222,7 +222,6 @@
     <Compile Include="MultiPlayer\MPManager.cs" />
     <Compile Include="MultiPlayer\OnlinePlayer.cs" />
     <Compile Include="MultiPlayer\OnlineTrains.cs" />
-    <Compile Include="MultiPlayer\RemoteTrain.cs" />
     <Compile Include="MultiPlayer\Server.cs" />
     <Compile Include="MultiPlayer\ServerComm.cs" />
     <Compile Include="Physics\Brakes.cs" />

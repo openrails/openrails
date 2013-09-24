@@ -5277,7 +5277,8 @@ namespace ORTS
                             allowedMaxSpeedSignalMpS = PassedSignalSpeeds[thisObject.thisRef];
                             AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, allowedMaxSpeedSignalMpS);
 
-                            remainingSignals.Add(thisObject.thisRef, allowedMaxSpeedSignalMpS);
+							if (!remainingSignals.ContainsKey(thisObject.thisRef))
+								remainingSignals.Add(thisObject.thisRef, allowedMaxSpeedSignalMpS);
                         }
                     }
                     else
@@ -5303,7 +5304,8 @@ namespace ORTS
             PassedSignalSpeeds.Clear();
             foreach (KeyValuePair<int, float> thisPair in remainingSignals)
             {
-                PassedSignalSpeeds.Add(thisPair.Key, thisPair.Value);
+				if (!PassedSignalSpeeds.ContainsKey(thisPair.Key))
+					PassedSignalSpeeds.Add(thisPair.Key, thisPair.Value);
             }
 
             // check if signal passed posed a speed limit lower than present limit
@@ -5316,7 +5318,7 @@ namespace ORTS
                 if (thisSpeedInfo != null)
                 {
                     float thisSpeedMpS = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
-                    if (thisSpeedMpS > 0)
+                    if (thisSpeedMpS > 0 && !PassedSignalSpeeds.ContainsKey(passedSignal.thisRef))
                     {
                         allowedMaxSpeedSignalMpS = allowedMaxSpeedSignalMpS > 0 ? Math.Min(allowedMaxSpeedSignalMpS, thisSpeedMpS) : thisSpeedMpS;
                         AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, allowedMaxSpeedSignalMpS);

@@ -110,7 +110,7 @@ namespace ORTS
         void buttonOK_Click(object sender, EventArgs e)
         {
             // Retain settings for convenience
-			Settings.Multiplayer_UpdateInterval = (int)double.Parse(textMPUpdate.Text);
+			Settings.Multiplayer_UpdateInterval = (int)double.Parse(textMPUpdate.Text, System.Globalization.CultureInfo.InvariantCulture);
 			Settings.Multiplayer_User = textBoxUser.Text;
 			Settings.Multiplayer_Host = textBoxHost.Text;
 			Settings.Multiplayer_Port = (int)numericPort.Value;

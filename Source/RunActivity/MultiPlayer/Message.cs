@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.IO.Compression;
@@ -81,7 +82,9 @@ namespace ORTS.MultiPlayer
 			}
 			public override string ToString()
 			{
-				return user + " " + speed + " " + travelled + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + trackNodeIndex + " " + count + " " + direction + " " + tdbDir + " " + Length;
+				return user + " " + speed.ToString(CultureInfo.InvariantCulture) + " " + travelled.ToString(CultureInfo.InvariantCulture) + " " + num + " " +
+					TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture) + " " + trackNodeIndex + " " +
+					count + " " + direction + " " + tdbDir + " " + Length.ToString(CultureInfo.InvariantCulture);
 			}
 		}
 		List<MSGMoveItem> items;
@@ -98,7 +101,9 @@ namespace ORTS.MultiPlayer
 				int i = 0;
 				items = new List<MSGMoveItem>();
                 for (i = 0; i < areas.Length / 13; i++)
-                    items.Add(new MSGMoveItem(areas[13 * i], float.Parse(areas[13 * i + 1]), float.Parse(areas[13 * i + 2]), int.Parse(areas[13 * i + 3]), int.Parse(areas[13 * i + 4]), int.Parse(areas[13 * i + 5]), float.Parse(areas[13 * i + 6]), float.Parse(areas[13 * i + 7]), int.Parse(areas[13 * i + 8]), int.Parse(areas[13 * i + 9]), int.Parse(areas[13 * i + 10]), int.Parse(areas[13 * i + 11]), float.Parse(areas[13 * i + 12])));
+					items.Add(new MSGMoveItem(areas[13 * i], float.Parse(areas[13 * i + 1], CultureInfo.InvariantCulture), float.Parse(areas[13 * i + 2], CultureInfo.InvariantCulture), int.Parse(areas[13 * i + 3]),
+						int.Parse(areas[13 * i + 4]), int.Parse(areas[13 * i + 5]), float.Parse(areas[13 * i + 6], CultureInfo.InvariantCulture), float.Parse(areas[13 * i + 7], CultureInfo.InvariantCulture),
+						int.Parse(areas[13 * i + 8]), int.Parse(areas[13 * i + 9]), int.Parse(areas[13 * i + 10]), int.Parse(areas[13 * i + 11]), float.Parse(areas[13 * i + 12], CultureInfo.InvariantCulture)));
 			}
 			catch (Exception e)
 			{
@@ -264,10 +269,10 @@ namespace ORTS.MultiPlayer
 				num = int.Parse(data[2]);
 				TileX = int.Parse(data[3]);
 				TileZ = int.Parse(data[4]);
-				X = float.Parse(data[5]);
-				Z = float.Parse(data[6]);
-				Travelled = float.Parse(data[7]);
-				seconds = double.Parse(data[8]);
+				X = float.Parse(data[5], CultureInfo.InvariantCulture);
+				Z = float.Parse(data[6], CultureInfo.InvariantCulture);
+				Travelled = float.Parse(data[7], CultureInfo.InvariantCulture);
+				seconds = double.Parse(data[8], CultureInfo.InvariantCulture);
 				season = int.Parse(data[9]);
 				weather = int.Parse(data[10]);
 				pantofirst = int.Parse(data[11]);
@@ -381,7 +386,9 @@ namespace ORTS.MultiPlayer
 		}
 		public override string ToString()
 		{
-			string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + seconds + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " \r" + leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
+			string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture)
+				+ " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " \r" + 
+				leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
 			for (var i = 0; i < cars.Length; i++)
 			{
 				var c = cars[i];
@@ -988,13 +995,13 @@ namespace ORTS.MultiPlayer
 			TileZ = int.Parse(m.Substring(0, index + 1));
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			X = float.Parse(m.Substring(0, index + 1));
+			X = float.Parse(m.Substring(0, index + 1),CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			Z = float.Parse(m.Substring(0, index + 1));
+			Z = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			Travelled = float.Parse(m.Substring(0, index + 1));
+			Travelled = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
 			mDirection = int.Parse(m.Substring(0, index + 1));
@@ -1105,7 +1112,7 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "TRAIN " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + mDirection + " ";
+			string tmp = "TRAIN " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture) + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + mDirection + " ";
 			for(var i = 0; i < cars.Length; i++) 
 			{
 				var c = cars[i];
@@ -1497,9 +1504,9 @@ namespace ORTS.MultiPlayer
 			direction = int.Parse(areas[2]);
 			TileX = int.Parse(areas[3]);
 			TileZ = int.Parse(areas[4]);
-			X = float.Parse(areas[5]);
-			Z = float.Parse(areas[6]);
-			Travelled = float.Parse(areas[7]);
+			X = float.Parse(areas[5],CultureInfo.InvariantCulture);
+			Z = float.Parse(areas[6], CultureInfo.InvariantCulture);
+			Travelled = float.Parse(areas[7], CultureInfo.InvariantCulture);
 		}
 		public MSGTrainMerge(Train t1, Train t2)
 		{
@@ -1521,7 +1528,7 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "TRAINMERGE " + TrainNumRetain + " " + TrainNumRemoved + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled;
+			string tmp = "TRAINMERGE " + TrainNumRetain + " " + TrainNumRemoved + " " + direction + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture) + " " + Travelled.ToString(CultureInfo.InvariantCulture);
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}
@@ -1967,7 +1974,7 @@ namespace ORTS.MultiPlayer
 
 			string[] tmp = areas[4].Split(' ');
 			TileX1 = int.Parse(tmp[0]); TileZ1 = int.Parse(tmp[1]);
-			X1 = float.Parse(tmp[2]); Z1 = float.Parse(tmp[3]); Travelled1 = float.Parse(tmp[4]); Speed1 = float.Parse(tmp[5]); trainDirection = int.Parse(tmp[6]);
+			X1 = float.Parse(tmp[2], CultureInfo.InvariantCulture); Z1 = float.Parse(tmp[3], CultureInfo.InvariantCulture); Travelled1 = float.Parse(tmp[4], CultureInfo.InvariantCulture); Speed1 = float.Parse(tmp[5], CultureInfo.InvariantCulture); trainDirection = int.Parse(tmp[6]);
 			oldTrainNumber = int.Parse(tmp[7]);
 			mDirection1 = int.Parse(tmp[8]);
 			tmp = areas[5].Split('\n');
@@ -1982,7 +1989,7 @@ namespace ORTS.MultiPlayer
 
 			tmp = areas[6].Split(' ');
 			TileX2 = int.Parse(tmp[0]); TileZ2 = int.Parse(tmp[1]);
-			X2 = float.Parse(tmp[2]); Z2 = float.Parse(tmp[3]); Travelled2 = float.Parse(tmp[4]); Speed2 = float.Parse(tmp[5]); train2Direction = int.Parse(tmp[6]);
+			X2 = float.Parse(tmp[2], CultureInfo.InvariantCulture); Z2 = float.Parse(tmp[3], CultureInfo.InvariantCulture); Travelled2 = float.Parse(tmp[4], CultureInfo.InvariantCulture); Speed2 = float.Parse(tmp[5], CultureInfo.InvariantCulture); train2Direction = int.Parse(tmp[6]);
 			newTrainNumber = int.Parse(tmp[7]);
 			mDirection2 = int.Parse(tmp[8]);
 
@@ -2125,9 +2132,9 @@ namespace ORTS.MultiPlayer
 		{
 			if (user == "") return "5: ALIVE"; //wrong, so just return an ALIVE string
 			string tmp = "UNCOUPLE " + user + "\t" + whichIsPlayer + "\t" + firstCarIDOld + "\t" + firstCarIDNew
-				+ "\t" + TileX1 + " " + TileZ1 + " " + X1 + " " + Z1 + " " + Travelled1 + " " + Speed1 + " " + trainDirection + " " + oldTrainNumber + " " + mDirection1 + "\t"
+				+ "\t" + TileX1 + " " + TileZ1 + " " + X1.ToString(CultureInfo.InvariantCulture) + " " + Z1.ToString(CultureInfo.InvariantCulture) + " " + Travelled1.ToString(CultureInfo.InvariantCulture) + " " + Speed1.ToString(CultureInfo.InvariantCulture) + " " + trainDirection + " " + oldTrainNumber + " " + mDirection1 + "\t"
 				+ FillInString(1)
-				+ "\t" + TileX2 + " " + TileZ2 + " " + X2 + " " + Z2 + " " + Travelled2 + " " + Speed2 + " " + train2Direction + " " + newTrainNumber + " " + mDirection2 + "\t"
+				+ "\t" + TileX2 + " " + TileZ2 + " " + X2.ToString(CultureInfo.InvariantCulture) + " " + Z2.ToString(CultureInfo.InvariantCulture) + " " + Travelled2.ToString(CultureInfo.InvariantCulture) + " " + Speed2.ToString(CultureInfo.InvariantCulture) + " " + train2Direction + " " + newTrainNumber + " " + mDirection2 + "\t"
 				+ FillInString(2);
 			return "" + tmp.Length + ": " + tmp;
 		}
@@ -2381,13 +2388,13 @@ namespace ORTS.MultiPlayer
 			TileZ = int.Parse(m.Substring(0, index + 1));
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			X = float.Parse(m.Substring(0, index + 1));
+			X = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			Z = float.Parse(m.Substring(0, index + 1));
+			Z = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			Travelled = float.Parse(m.Substring(0, index + 1));
+			Travelled = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
 			Lead = int.Parse(m.Substring(0, index + 1));
@@ -2469,7 +2476,7 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "COUPLE " + TrainNum + " " + RemovedTrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " +Lead + " " + whoControls + " " + mDirection + " ";
+			string tmp = "COUPLE " + TrainNum + " " + RemovedTrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture) + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + Lead + " " + whoControls + " " + mDirection + " ";
 			for (var i = 0; i < cars.Length; i++)
 			{
 				var c = cars[i];
@@ -2757,16 +2764,16 @@ namespace ORTS.MultiPlayer
 			string[] tmp = m.Split('\t');
 			user = tmp[0].Trim();
 			tnum = int.Parse(tmp[1]);
-			EB = float.Parse(tmp[2]);
-			DB = float.Parse(tmp[3]);
-			TT = float.Parse(tmp[4]);
-			VL = float.Parse(tmp[5]);
-			CC = float.Parse(tmp[6]);
-			BC = float.Parse(tmp[7]);
-			DC = float.Parse(tmp[8]);
-			FC = float.Parse(tmp[9]);
-			I1 = float.Parse(tmp[10]);
-			I2 = float.Parse(tmp[11]);
+			EB = float.Parse(tmp[2], CultureInfo.InvariantCulture);
+			DB = float.Parse(tmp[3], CultureInfo.InvariantCulture);
+			TT = float.Parse(tmp[4], CultureInfo.InvariantCulture);
+			VL = float.Parse(tmp[5], CultureInfo.InvariantCulture);
+			CC = float.Parse(tmp[6], CultureInfo.InvariantCulture);
+			BC = float.Parse(tmp[7], CultureInfo.InvariantCulture);
+			DC = float.Parse(tmp[8], CultureInfo.InvariantCulture);
+			FC = float.Parse(tmp[9], CultureInfo.InvariantCulture);
+			I1 = float.Parse(tmp[10], CultureInfo.InvariantCulture);
+			I2 = float.Parse(tmp[11], CultureInfo.InvariantCulture);
 		}
 
 		//how to handle the message?
@@ -2815,7 +2822,10 @@ namespace ORTS.MultiPlayer
 		}
 		public override string ToString()
 		{
-			string tmp = "LOCOINFO " + user + "\t" + tnum + "\t" + EB + "\t" + DB + "\t" + TT + "\t" + VL + "\t" + CC + "\t" + BC + "\t" + DC + "\t" + FC + "\t" + I1 + "\t" + I2; // fill in the message body here
+			string tmp = "LOCOINFO " + user + "\t" + tnum + "\t" + EB.ToString(CultureInfo.InvariantCulture) + "\t" + DB.ToString(CultureInfo.InvariantCulture) + "\t" +
+				TT.ToString(CultureInfo.InvariantCulture) + "\t" + VL.ToString(CultureInfo.InvariantCulture) + "\t" + CC.ToString(CultureInfo.InvariantCulture) + "\t" +
+				BC.ToString(CultureInfo.InvariantCulture) + "\t" + DC.ToString(CultureInfo.InvariantCulture) + "\t" + FC.ToString(CultureInfo.InvariantCulture) + "\t" +
+				I1.ToString(CultureInfo.InvariantCulture) + "\t" + I2.ToString(CultureInfo.InvariantCulture); // fill in the message body here
 			return "" + tmp.Length + ": " + tmp;
 		}
 	}
@@ -2936,8 +2946,8 @@ namespace ORTS.MultiPlayer
             weather = -1; overcast = fog = -1f;
 			var tmp = m.Split(' ');
 			weather = int.Parse(tmp[0]);
-			overcast = float.Parse(tmp[1]);
-            fog = float.Parse(tmp[2]);
+			overcast = float.Parse(tmp[1], CultureInfo.InvariantCulture);
+            fog = float.Parse(tmp[2], CultureInfo.InvariantCulture);
 		}
 
 		public MSGWeather(int w, float o, float f)
@@ -2951,7 +2961,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 
-			string tmp = "WEATHER " + weather + " " + overcast + " " + fog;
+			string tmp = "WEATHER " + weather + " " + overcast.ToString(CultureInfo.InvariantCulture) + " " + fog.ToString(CultureInfo.InvariantCulture);
 			return "" + tmp.Length + ": " + tmp;
 		}
 
