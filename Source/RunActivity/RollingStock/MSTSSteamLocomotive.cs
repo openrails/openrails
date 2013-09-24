@@ -141,10 +141,12 @@ namespace ORTS
             if (ZeroError(ExhaustLimitLBpH, "ExhaustLimit", wagFile))
                 ExhaustLimitLBpH = MaxBoilerOutputLBpH;
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume", wagFile))
-                BoilerVolumeFT3 = 1;
+                BoilerVolumeFT3 = 1; 
 
-            SteamUsageFactor = 2 * NumCylinders * 3.281f * CylinderDiameterM / 2 * 3.281f * CylinderDiameterM / 2 *
-                3.281f * CylinderStrokeM / (2 * DriverWheelRadiusM);
+            const float PI = (float)Math.PI;
+
+            SteamUsageFactor = 4 * ( NumCylinders * ( PI * (Me.ToFt(CylinderDiameterM) / 2 ) * ( Me.ToFt(CylinderDiameterM) / 2)) *
+                ( Me.ToFt(CylinderStrokeM) ) ) / ( Me.ToFt(DriverWheelRadiusM));
             SteamDensity = SteamTable.SteamDensityInterpolator();
             WaterDensity = SteamTable.WaterDensityInterpolator();
             SteamHeat = SteamTable.SteamHeatInterpolator();
