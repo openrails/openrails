@@ -2185,6 +2185,8 @@ namespace ORTS.Debugging
           int diffX = x -pictureBox1.Width/2;
           int diffY = y -pictureBox1.Height/2;
           ViewWindow.Offset(diffX / xScale, -diffY/yScale);
+          if (scale < windowSizeUpDown.Minimum) scale = windowSizeUpDown.Minimum;
+          if (scale > windowSizeUpDown.Maximum) scale = windowSizeUpDown.Maximum;
           windowSizeUpDown.Value = scale;
           GenerateView();
       }
@@ -2395,7 +2397,6 @@ namespace ORTS.Debugging
 		   isCurved = false; 
 		   if (Section == null) return;
            //MySection = Section;
-		   
 		   uint k = Section.SectionIndex;
 		   TrackSection ts = Program.Simulator.TSectionDat.TrackSections.Get(k);
 		   if (ts != null)

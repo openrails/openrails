@@ -890,8 +890,11 @@ namespace ORTS
             TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
 
             if (car.FreightShapeFileName != null)
-                FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
+            {
+                car.HasFreightAnim = true;
+                FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
 
+            }
             if (car.InteriorShapeFileName != null)
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition);
 
@@ -1134,6 +1137,13 @@ namespace ORTS
 
             if (FreightShape != null)
             {
+                if (Viewer.Camera == Viewer.CabCamera && Car == Viewer.CabCamera.AttachedCar)
+                {
+                    Car.totalRotationZ = 0;
+                    FreightShape.Location.XNAMatrix = Car.GetXNAMatrix();
+                }
+                else FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
+                FreightShape.Location.TileX = Car.WorldPosition.TileX; FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
                 if (FreightShape.XNAMatrices.Length > 0)
                     FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimHeightM;
                 FreightShape.PrepareFrame(frame, elapsedTime);

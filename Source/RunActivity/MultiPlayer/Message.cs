@@ -1166,13 +1166,13 @@ namespace ORTS.MultiPlayer
 			TileZ = int.Parse(m.Substring(0, index + 1));
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			X = float.Parse(m.Substring(0, index + 1));
+			X = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			Z = float.Parse(m.Substring(0, index + 1));
+            Z = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
-			Travelled = float.Parse(m.Substring(0, index + 1));
+            Travelled = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
 			m = m.Remove(0, index + 1);
 			index = m.IndexOf(' ');
 			mDirection = int.Parse(m.Substring(0, index + 1));
@@ -1340,7 +1340,8 @@ namespace ORTS.MultiPlayer
 
 		public override string ToString()
 		{
-			string tmp = "UPDATETRAIN " + user + " " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X + " " + Z + " " + Travelled + " " + mDirection + " ";
+			string tmp = "UPDATETRAIN " + user + " " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture)
+                + " " + Z.ToString(CultureInfo.InvariantCulture) + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + mDirection + " ";
 			for (var i = 0; i < cars.Length; i++)
 			{
 				var c = cars[i];

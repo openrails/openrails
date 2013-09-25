@@ -136,7 +136,7 @@ namespace ORTS
         public bool EmergencyEngagesHorn;
         public bool EmergencyButtonPressed;
         public bool WheelslipCausesThrottleDown;
-        public float CabRotationZ { get { return (UsingRearCab==true?-totalRotationZ:totalRotationZ);} }
+        public float CabRotationZ { get { return HasFreightAnim ? 0:  (UsingRearCab == true ? -totalRotationZ : totalRotationZ); } }
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
 
