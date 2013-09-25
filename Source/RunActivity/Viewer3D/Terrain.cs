@@ -253,7 +253,8 @@ namespace ORTS
             var mstsLocation = new Vector3(PatchLocation.X + dTileX * 2048, PatchLocation.Y, PatchLocation.Z + dTileZ * 2048);
             var xnaPatchMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             mstsLocation.Y += AverageElevation; // Try to keep testing point somewhere useful within the patch's altitude.
-            frame.AddAutoPrimitive(mstsLocation, PatchSize * 0.7071F, float.PositiveInfinity, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, Size <= 2 ? ShapeFlags.ShadowCaster : ShapeFlags.None);
+            // Low-resolution terrain (Size > 2) should always be drawn (PositiveInfinity), while high-resolution terrain should only be drawn within the viewing distance (MaxValue).
+            frame.AddAutoPrimitive(mstsLocation, PatchSize * 0.7071F, Size > 2 ? float.PositiveInfinity : float.MaxValue, PatchMaterial, this, RenderPrimitiveGroup.World, ref xnaPatchMatrix, Size <= 2 ? ShapeFlags.ShadowCaster : ShapeFlags.None);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)

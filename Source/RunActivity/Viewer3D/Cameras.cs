@@ -203,6 +203,7 @@ namespace ORTS
             mstsObjectCenter.X -= cameraLocation.Location.X;
             mstsObjectCenter.Z -= cameraLocation.Location.Z;
 
+            // An object cannot be visible further away than the viewing distance.
             if (objectViewingDistance > Viewer.Settings.ViewingDistance)
                 objectViewingDistance = Viewer.Settings.ViewingDistance;
 

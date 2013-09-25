@@ -62,16 +62,29 @@ namespace ORTS
                 new STFReader.TokenProcessor("angle", ()=>{ Angle = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
             });
         }
-        public LightState(LightState state)
+
+        public LightState(LightState state, bool reverse)
         {
             Duration = state.Duration;
             Color = state.Color;
-            Position = new Vector3(state.Position.X, state.Position.Y, state.Position.Z);
+            Position = state.Position;
             Radius = state.Radius;
-            Azimuth = new Vector3(state.Azimuth.X, state.Azimuth.Y, state.Azimuth.Z);
-            Elevation = new Vector3(state.Elevation.X, state.Elevation.Y, state.Elevation.Z);
+            Azimuth = state.Azimuth;
+            Elevation = state.Elevation;
             Transition = state.Transition;
             Angle = state.Angle;
+
+            if (reverse)
+            {
+                Azimuth.X += 180;
+                Azimuth.X %= 360;
+                Azimuth.Y += 180;
+                Azimuth.Y %= 360;
+                Azimuth.Z += 180;
+                Azimuth.Z %= 360;
+                Position.X *= -1;
+                Position.Z *= -1;
+            }
         }
     }
 
@@ -205,9 +218,10 @@ namespace ORTS
                 }),
             });
         }
-        public Light(int index, Light light)
+
+        public Light(Light light, bool reverse)
         {
-            Index = index;
+            Index = light.Index;
             Type = light.Type;
             Headlight = light.Headlight;
             Unit = light.Unit;
@@ -220,23 +234,15 @@ namespace ORTS
             Cycle = light.Cycle;
             FadeIn = light.FadeIn;
             FadeOut = light.FadeOut;
-            foreach (LightState state in light.States)
+            foreach (var state in light.States)
+                States.Add(new LightState(state, reverse));
+
+            if (reverse)
             {
-                States.Add(new LightState(state));
-            }
-        }
-        public void Reverse()
-        {
-            foreach (LightState state in States)
-            {
-                state.Azimuth.X += 180;
-                state.Azimuth.X %= 360;
-                state.Azimuth.Y += 180;
-                state.Azimuth.Y %= 360;
-                state.Azimuth.Z += 180;
-                state.Azimuth.Z %= 360;
-                state.Position.X *= -1;
-                state.Position.Z *= -1;
+                if (Unit == LightUnitCondition.First)
+                    Unit = LightUnitCondition.FirstRev;
+                else if (Unit == LightUnitCondition.Last)
+                    Unit = LightUnitCondition.LastRev;
             }
         }
     }
@@ -260,6 +266,11 @@ namespace ORTS
             });
             if (Lights.Count == 0)
                 throw new InvalidDataException("lights with no lights");
+
+            // MSTSBin created reverse headlight cones automatically, so we shall do so too.
+            foreach (var light in Lights)
+                if (light.Type == LightType.Cone)
+                    Lights.Add(new Light(light, true));
         }
     }
 
@@ -295,9 +306,6 @@ namespace ORTS
         public float LightConeMinDotProduct;
         public Vector4 LightConeColor;
 
-        List<Light> Lights;
-        Light newCone;
-
         public LightDrawer(Viewer3D viewer, TrainCar car)
         {
             Viewer = viewer;
@@ -308,23 +316,6 @@ namespace ORTS
             UpdateState();
             if (Car.Lights != null)
             {
-                //creating a reversed cone too, because msts bin did so
-                //later this could be checked against an user defined reverse facing cone in the eng first
-                Lights = new List<Light>(Car.Lights.Lights);
-                foreach (Light light in Lights)
-                {
-                    if (light.Type == LightType.Cone)
-                    {
-                        newCone = new Light(Car.Lights.Lights.Count, light);
-                        newCone.Reverse();
-                        if (newCone.Unit == LightUnitCondition.First)
-                            newCone.Unit = LightUnitCondition.FirstRev;
-                        else if(newCone.Unit == LightUnitCondition.Last)
-                            newCone.Unit = LightUnitCondition.LastRev;
-                        Car.Lights.Lights.Add(newCone);
-                    }
-                }
-
                 foreach (var light in Car.Lights.Lights)
                 {
                     switch (light.Type)
