@@ -120,6 +120,7 @@ namespace ORTS
         public bool HasCombThrottleTrainBrake;
         public bool HasDefectiveComboDynamicBreak;
         public bool HasSmoothStruc;
+        private bool HasTrainBrake = false;
         public int  ComboCtrlCrossOver = 5;
 
         public float MaxContinuousForceN;
@@ -323,8 +324,13 @@ namespace ORTS
 
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
-                case "engine(enginecontrollers(brake_train": TrainBrakeController.Parse(stf); break;
-                case "engine(enginecontrollers(brake_engine": EngineBrakeController.Parse(stf); break;
+                case "engine(enginecontrollers(brake_train":
+                    HasTrainBrake = true;
+                    TrainBrakeController.Parse(stf);
+                    break;
+                case "engine(enginecontrollers(brake_engine":
+                    EngineBrakeController.Parse(stf);
+                    break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
 
                 case "engine(vigilancemonitor":
@@ -1491,7 +1497,10 @@ namespace ORTS
 
         public void SetTrainBrakePercent(float percent)
         {
-            TrainBrakeController.SetRDPercent(percent);
+            // Insure we have TrainBrakeController ; some vehicles do not
+            // such as Hy-rail truck
+            if (HasTrainBrake)
+                TrainBrakeController.SetRDPercent(percent);
         }
 
         public void SetEmergency()

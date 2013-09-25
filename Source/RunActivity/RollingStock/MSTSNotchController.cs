@@ -285,7 +285,7 @@ namespace ORTS
             if (v < MinimumValue)
                 v = MinimumValue;
             CurrentValue = v;
-            if (CurrentNotch > 0)
+            if (CurrentNotch >= 0)
             {
                 if (Notches[Notches.Count - 1].Type == MSTSNotchType.Emergency)
                     v = Notches[Notches.Count - 1].Value * percent / 100;
