@@ -2466,6 +2466,8 @@ namespace ORTS
                 }
                 if (UserInput.RDState.Changed)
                 {
+                    Locomotive.AlerterReset();
+
                     Locomotive.SetThrottlePercent(UserInput.RDState.ThrottlePercent);
                     Locomotive.SetTrainBrakePercent(UserInput.RDState.TrainBrakePercent);
                     Locomotive.SetEngineBrakePercent(UserInput.RDState.EngineBrakePercent);
