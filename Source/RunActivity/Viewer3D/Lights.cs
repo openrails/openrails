@@ -268,7 +268,7 @@ namespace ORTS
                 throw new InvalidDataException("lights with no lights");
 
             // MSTSBin created reverse headlight cones automatically, so we shall do so too.
-            foreach (var light in Lights)
+            foreach (var light in Lights.ToArray())
                 if (light.Type == LightType.Cone)
                     Lights.Add(new Light(light, true));
         }

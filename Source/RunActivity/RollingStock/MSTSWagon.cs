@@ -230,10 +230,7 @@ namespace ORTS
                     break;
                 case "wagon(lights":
                     if (Simulator.Settings.TrainLights)
-                    {
-                        try { Lights = new LightCollection(stf); }
-                        catch { Lights = null; }
-                    }
+                        Lights = new LightCollection(stf);
                     else
                         stf.SkipBlock();
                     break;
