@@ -304,16 +304,16 @@ namespace ORTS
                 return;
             //some old stocks have only two wheels, but defined to have four, two share the same offset, thus all computing of rotations will have problem
             //will check, if so, make the offset different a bit. 
-            bool tooClose = false;
-            foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.01f)) { tooClose = true; break; }
-            if (tooClose) WheelAxles.Add(new WheelAxle(offset+0.1f, bogie, parentMatrix));
-            else WheelAxles.Add(new WheelAxle(offset, bogie, parentMatrix));
+            foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.1f; break; }
+            WheelAxles.Add(new WheelAxle(offset, bogie, parentMatrix));
         }
 
         public void AddBogie(float offset, int matrix, int id)
         {
             if (WheelAxlesLoaded)
                 return;
+            //make sure two bogies are not defined too close
+            foreach (var p in Parts) if (p.bogie && offset.AlmostEqual(p.OffsetM, 0.05f)) { offset = p.OffsetM + 0.1f; break; }
             while (Parts.Count <= id)
                 Parts.Add(new TrainCarPart(0, 0));
             Parts[id].OffsetM = offset;
