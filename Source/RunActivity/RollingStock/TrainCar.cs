@@ -302,7 +302,12 @@ namespace ORTS
         {
             if (WheelAxlesLoaded)
                 return;
-            WheelAxles.Add(new WheelAxle(offset, bogie, parentMatrix));
+            //some old stocks have only two wheels, but defined to have four, two share the same offset, thus all computing of rotations will have problem
+            //will check, if so, make the offset different a bit. 
+            bool tooClose = false;
+            foreach (var axles in WheelAxles) if (offset.AlmostEqual(axles.OffsetM, 0.01f)) { tooClose = true; break; }
+            if (tooClose) WheelAxles.Add(new WheelAxle(offset+0.1f, bogie, parentMatrix));
+            else WheelAxles.Add(new WheelAxle(offset, bogie, parentMatrix));
         }
 
         public void AddBogie(float offset, int matrix, int id)
@@ -568,8 +573,13 @@ namespace ORTS
                     p.FindCenterLine();
                 }
                 Vector3 fwd1 = new Vector3(p.B[0], p.B[1], -p.B[2]);
-                fwd1.Normalize();
-                p.Cos = Vector3.Dot(fwd, fwd1);
+                if (fwd1.X != 0 && fwd1.Y != 0 && fwd1.Z != 0)//fwd1 can be (0, 0, 0), force cos to be 1
+                {
+                    fwd1.Normalize();
+                    p.Cos = Vector3.Dot(fwd, fwd1);
+                }
+                else p.Cos = 1;
+
                 if (p.Cos >= .99999f)
                     p.Sin = 0;
                 else
