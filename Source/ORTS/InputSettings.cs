@@ -722,13 +722,14 @@ namespace ORTS
             var xnaName = Enum.GetName(typeof(Keys), GetScanCodeKeys(scanCode));
             var keyName = new String('\0', 32);
             var keyNameLength = GetKeyNameText(scanCode << 16, keyName, keyName.Length);
-
             keyName = keyName.Substring(0, keyNameLength);
+
             if (keyName.Length > 0)
             {
-                // Pause is mapped to "Right Control" and GetKeyNameText prefers "NUM 9" to "PAGE UP" too so pick the
-                // XNA key name in these cases.
-                if ((scanCode == 0x11D) || keyName.StartsWith("NUM ", StringComparison.OrdinalIgnoreCase) || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase))
+                // Pick the XNA key name because:
+                //   Pause (0x11D) is mapped to "Right Control".
+                //   GetKeyNameText prefers "NUM 9" to "PAGE UP".
+                if (!String.IsNullOrEmpty(xnaName) && ((scanCode == 0x11D) || keyName.StartsWith("NUM ", StringComparison.OrdinalIgnoreCase) || keyName.StartsWith(xnaName, StringComparison.OrdinalIgnoreCase) || xnaName.StartsWith(keyName, StringComparison.OrdinalIgnoreCase)))
                     return xnaName;
 
                 return keyName;
