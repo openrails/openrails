@@ -136,7 +136,9 @@ namespace MSTS
                     for (int i = 0; i < Inpins + Outpins; ++i)
                     {
                         stf.MustMatch("TrPin");
-                        TrPins[i] = new TrPin(stf, count);
+                        TrPins[i] = new TrPin(stf);
+                        if (TrPins[i].Link <= 0 || TrPins[i].Link > count)
+                            STFException.TraceWarning(stf, String.Format("Track node {0} pin {1} has invalid link to track node {2}", Index, i, TrPins[i].Link));
                     }
                     stf.SkipRestOfBlock();
                 }),
@@ -176,13 +178,11 @@ namespace MSTS
     [DebuggerDisplay("\\{MSTS.TrPin\\} Link={Link}, Dir={Direction}")]
     public class TrPin
     {
-        public TrPin(STFReader stf, int count)
+        public TrPin(STFReader stf)
         {
             stf.MustMatch("(");
             Link = stf.ReadInt(null);
             Direction = stf.ReadInt(null);
-            if (Link <= 0 || Link > count)
-                STFException.TraceWarning(stf, String.Format("Track node pin has invalid link {0}", Link));
             stf.SkipRestOfBlock();
         }
         public int Link;

@@ -26,14 +26,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Security.Cryptography;
+using System.Diagnostics;
 using System.IO;
-using ORTS;
-using ORTS.Debugging;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using MSTS;
+using ORTS.Debugging;
 
 namespace ORTS.MultiPlayer
 {
@@ -848,7 +847,7 @@ namespace ORTS.MultiPlayer
 			}
 			catch
 			{
-				System.Console.WriteLine("Cannot get MD5 check of TDB file, server may not connect you");
+				Trace.TraceWarning("Cannot get MD5 check of TDB file, server may not connect you");
 				MD5Check = "";
 			}
 		}

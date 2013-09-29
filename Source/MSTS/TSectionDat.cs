@@ -134,10 +134,11 @@ namespace MSTS
                 new STFReader.TokenProcessor("tracksection", ()=>{ AddSection(stf, new RouteTrackSection(stf)); }),
             });
 		}
-        private void AddSection(STFReader stf, TrackSection section)
+
+        void AddSection(STFReader stf, TrackSection section)
         {
             if (ContainsKey(section.SectionIndex))
-                STFException.TraceWarning(stf, "Replaced duplicate TrackSection " + section.SectionIndex);
+                STFException.TraceWarning(stf, "Replaced existing TrackSection " + section.SectionIndex);
             this[section.SectionIndex] = section;
         }
 
@@ -154,6 +155,7 @@ namespace MSTS
 		}
 		public uint MaxSectionIndex;
 	}
+
 	public class SectionIdx
 	{
 		public SectionIdx(STFReader stf)
@@ -284,6 +286,7 @@ namespace MSTS
                 });
             }
 		}
+
         public TSectionDatFile(string filePath)
         {
             using (STFReader stf = new STFReader(filePath, false))

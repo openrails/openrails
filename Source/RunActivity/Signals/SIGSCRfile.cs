@@ -234,7 +234,7 @@ namespace ORTS
 #if DEBUG_PRINT_IN
                         File.AppendAllText(din_fileLoc + @"sigscr.txt", "Reading file : " + fullName + "\n\n");
 #endif
-                        sigscrRead(scrStream, SignalTypes);
+                        sigscrRead(fullName, scrStream, SignalTypes);
                         scrStream.Close();
                     }
                 }
@@ -261,7 +261,7 @@ namespace ORTS
         //
         //================================================================================================//
 
-        public void sigscrRead(StreamReader scrStream, IDictionary<string, SignalType> SignalTypes)
+        public void sigscrRead(string scrFileName, StreamReader scrStream, IDictionary<string, SignalType> SignalTypes)
         {
             scrReadInfo readInfo;
             string readLine;
@@ -323,7 +323,7 @@ namespace ORTS
                         {
                             if (Scripts.ContainsKey(thisType))
                             {
-                                Trace.TraceWarning("sigscr-file line {1} : Multiple definition of signaltype {0}", scriptname, scriptline.ToString());
+                                Trace.TraceWarning("Ignored duplicate SignalType script {2} in {0}:line {1}", scrFileName, readnumber, scriptname);
                             }
                             else
                             {
@@ -358,7 +358,7 @@ namespace ORTS
                         {
                             if (Scripts.ContainsKey(thisType))
                             {
-                                Trace.TraceWarning("sigscr-file line {1} : Multiple definition of signaltype {0}", scriptname, scriptline.ToString());
+                                Trace.TraceWarning("Ignored duplicate SignalType script {2} in {0}:line {1}", scrFileName, readnumber, scriptname);
                             }
                             else
                             {
@@ -367,7 +367,7 @@ namespace ORTS
                         }
                         else
                         {
-                            Trace.TraceWarning("sigscr-file line {1} : Unknown signal type : {0}", scriptname, scriptline.ToString());
+                            Trace.TraceWarning("Ignored unknown SignalType script {2} in {0}:line {1}", scrFileName, readnumber, scriptname);
                         }
 
                         while (!readLine.StartsWith("SCRIPT ") && readLine != null)
@@ -408,7 +408,7 @@ namespace ORTS
                 {
                     if (Scripts.ContainsKey(thisType))
                     {
-                        Trace.TraceWarning("sigscr-file line {1} : Multiple definition of signaltype {0}", scriptname, scriptline.ToString());
+                        Trace.TraceWarning("Ignored duplicate SignalType script {2} in {0}:line {1}", scrFileName, readnumber, scriptname);
                     }
                     else
                     {
@@ -417,7 +417,7 @@ namespace ORTS
                 }
                 else
                 {
-                    Trace.TraceWarning("sigscr-file line {1} : Unknown signal type : {0}", scriptname, scriptline.ToString());
+                    Trace.TraceWarning("Ignored unknown SignalType script {2} in {0}:line {1}", scrFileName, readnumber, scriptname);
                 }
             }
 

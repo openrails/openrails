@@ -219,10 +219,8 @@ namespace MSTS
         {
             if (disposing)
             {
-#if DEBUG
                 if (!IsEof(PeekPastWhitespace()))
-                    STFException.TraceWarning(this, "Some of this STF file was not parsed.");
-#endif
+                    STFException.TraceWarning(this, "Expected end of file");
                 streamSTF.Close(); streamSTF = null;
                 if (includeReader != null)
                     includeReader.Dispose();
@@ -1104,7 +1102,7 @@ namespace MSTS
                 string result = ReadString();
                 if (result == ")")
                 {
-                    STFException.TraceWarning(this, "Found an empty block ( ) where a string ( \"<string>\" ) was expected.");
+                    STFException.TraceWarning(this, "Expected string block; got empty block");
                     return (defaultValue != null) ? defaultValue : "";
                 }
                 SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  

@@ -78,8 +78,6 @@ namespace ORTS
 
                 clockTime = firstAITime - 1.0f;
                 localTime = true;
-
-                Trace.Write("\nRunning AI trains ...   ");
                 PreUpdate = true;
 
                 for (double runTime = firstAITime; runTime < Simulator.ClockTime; runTime += 5.0) // update with 5 secs interval

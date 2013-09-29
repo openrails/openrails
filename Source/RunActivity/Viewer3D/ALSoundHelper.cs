@@ -457,9 +457,7 @@ namespace ORTS
                 IntPtr context = OpenAL.alcCreateContext(device, attribs);
                 OpenAL.alcMakeContextCurrent(context);
 
-                Trace.TraceInformation("OpenAL " + OpenAL.alGetString(OpenAL.AL_VERSION) 
-                    + ", device " + OpenAL.alGetString(OpenAL.AL_RENDERER)
-                    + " by " + OpenAL.alGetString(OpenAL.AL_VENDOR));
+                Trace.TraceInformation("Initialized OpenAL {0}; device '{1}' by '{2}'", OpenAL.alGetString(OpenAL.AL_VERSION), OpenAL.alGetString(OpenAL.AL_RENDERER), OpenAL.alGetString(OpenAL.AL_VENDOR));
             }
 
             refCount++;

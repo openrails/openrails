@@ -27,10 +27,11 @@ using System.Text;
 using System.IO;
 using Microsoft.Xna.Framework;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using System.Diagnostics;
 
 namespace MSTS
 {
-    public abstract class SBR: IDisposable
+    public abstract class SBR : IDisposable
     {
         public TokenID ID;
         public string Label;  // First data item may be a label ( usually a 0 byte )
@@ -45,7 +46,7 @@ namespace MSTS
             bool unicode = (buffer[0] == 0xFF && buffer[1] == 0xFE);  // unicode header
 
             string headerString;
-            if (unicode) 
+            if (unicode)
             {
                 fb.Read(buffer, 0, 32);
                 headerString = System.Text.Encoding.Unicode.GetString(buffer, 0, 16);
@@ -58,7 +59,7 @@ namespace MSTS
 
             // SIMISA@F  means compressed
             // SIMISA@@  means uncompressed
-            if ( headerString.StartsWith("SIMISA@F" ) )
+            if (headerString.StartsWith("SIMISA@F"))
             {
                 fb = new InflaterInputStream(fb);
             }
@@ -89,7 +90,7 @@ namespace MSTS
             // Select for binary vs text content
             if (subHeader[7] == 't')
             {
-                return new UnicodeFileReader(fb, filename, unicode ? Encoding.Unicode : Encoding.ASCII );
+                return new UnicodeFileReader(fb, filename, unicode ? Encoding.Unicode : Encoding.ASCII);
             }
             else if (subHeader[7] != 'b')
             {
@@ -97,7 +98,7 @@ namespace MSTS
             }
 
             // And for binary types, select where their tokens will appear in our TokenID enum
-            if(subHeader[5] == 'w' )  // and [7] must be 'b'
+            if (subHeader[5] == 'w')  // and [7] must be 'b'
             {
                 return new BinaryFileReader(fb, filename, 300);
             }
@@ -105,7 +106,6 @@ namespace MSTS
             {
                 return new BinaryFileReader(fb, filename, 0);
             }
-
         }
 
         public abstract SBR ReadSubBlock();
@@ -133,8 +133,8 @@ namespace MSTS
 
         public void VerifyID(TokenID desiredID)
         {
-           if (this.ID != desiredID)
-               Console.Error.WriteLine(ErrorMessage("Unexpected block: " + this.ID));
+           if (ID != desiredID)
+               TraceInformation("Expected block " + desiredID + "; got " + ID);
         }
 
         /// <summary>
@@ -149,13 +149,14 @@ namespace MSTS
             }
             else
             {
-                Console.Error.WriteLine(ErrorMessage("Unexpected token: " + ID.ToString()));
+                TraceInformation("Expected block comment; got " + ID);
                 Skip();
             }
         }
 
-        public abstract string ErrorMessage( string message );  // adds filename and position to the error message
-        public abstract System.Exception Exception(string message);
+        public abstract void TraceInformation(string message);
+        public abstract void TraceWarning(string message);
+        public abstract void ThrowException(string message);
 
         public void Dispose()
         {
@@ -191,14 +192,14 @@ namespace MSTS
 
             string s = f.ReadItem();
             string extraData = s;
-            if (s != "" )
+            if (s != "")
             {
                 // we have extra data at the end of the file
                 while (s != "")
                 {
                     if (s != ")")  // we'll ignore extra )'s since the files are full of misformed brackets
                     {
-                        Console.Error.WriteLine(ErrorMessage("Data ignored after end of block: " + s));
+                        TraceWarning("Expected end of file; got '" + s + "'");
                         f.Dispose();
                         isClosed = true;
                         return;
@@ -219,9 +220,7 @@ namespace MSTS
         {
             return isClosed || atEndOfBlock || f.PeekPastWhitespace() == -1;
         }
-
     }
-
 
     /// <summary>
     /// Structured unicode text file reader
@@ -250,7 +249,7 @@ namespace MSTS
 
             if (token == ")")
             {
-                Console.Error.WriteLine("Extra bracket )");
+                TraceWarning("Ignored extra close bracket");
                 return block;
             }
 
@@ -296,11 +295,10 @@ namespace MSTS
                 return TokenID.comment;
             else
             {
-                Console.Error.WriteLine(ErrorMessage("Unknown token " + token));
+                TraceWarning("Skipped unknown token " + token);
                 return TokenID.comment;
             }
         }
-
 
         /// <summary>
         /// Skip to the end of this block
@@ -309,7 +307,7 @@ namespace MSTS
         public override void Skip()
         {
             if (atEndOfBlock) return;  // already there
-            
+
             // We are inside a pair of brackets, skip the entire hierarchy to past the end bracket
             int depth = 1;
             while (depth > 0)
@@ -317,7 +315,7 @@ namespace MSTS
                 string token = f.ReadItem();
                 if (token == "")
                 {
-                    Console.Error.WriteLine(ErrorMessage("Unexpected end of file"));
+                    TraceWarning("Unexpected end of file");
                     atEndOfBlock = true;
                     return;
                 }
@@ -339,24 +337,23 @@ namespace MSTS
             return atEndOfBlock || f.PeekPastWhitespace() == ')' || f.EOF();
         }
 
-
         public override void VerifyEndOfBlock()
         {
-           if (!atEndOfBlock) 
-           {
-               string s = f.ReadItem();
-               if (s.StartsWith("#") || 0 == string.Compare(s, "comment", true))
-               {
-                   // allow comments at end of block ie
-                   // MaxReleaseRate( 1.4074  #For train position 31-45  use (1.86 - ( 0.0146 * 31 ))	)
-                   Skip();
-                   return;
-               }
-               if (s != ")")
-                   Console.Error.WriteLine(ErrorMessage("Extra data at end of block " + s));
+            if (!atEndOfBlock)
+            {
+                string s = f.ReadItem();
+                if (s.StartsWith("#") || 0 == string.Compare(s, "comment", true))
+                {
+                    // allow comments at end of block ie
+                    // MaxReleaseRate( 1.4074  #For train position 31-45  use (1.86 - ( 0.0146 * 31 ))	)
+                    Skip();
+                    return;
+                }
+                if (s != ")")
+                    TraceWarning("Expected end of block; got '" + s + "'");
 
-               atEndOfBlock = true;
-           }
+                atEndOfBlock = true;
+            }
         }
 
         public override uint ReadFlags() { return f.ReadHex(null); }
@@ -365,16 +362,20 @@ namespace MSTS
         public override float ReadFloat() { return f.ReadFloat(STFReader.UNITS.None, null); }
         public override string ReadString() { return f.ReadItem(); }
 
-        public override string  ErrorMessage(string message)
+        public override void TraceInformation(string message)
         {
-            return "STF Error in " + f.FileName + "\r\n   Line " + f.LineNumber.ToString() + ": " + message;
+            STFException.TraceInformation(f, message);
         }
 
-        public override Exception Exception(string message)
+        public override void TraceWarning(string message)
         {
-            return new STFException(f, message);
+            STFException.TraceWarning(f, message);
         }
 
+        public override void ThrowException(string message)
+        {
+            throw new STFException(f, message);
+        }
     }
 
     /// <summary>
@@ -390,7 +391,7 @@ namespace MSTS
         /// will be offset into the TokenID table by the specified tokenOffset.
         /// </summary>
         /// <param name="fb"></param>
-        public BinaryFileReader(Stream inputStream, string filename, int tokenOffset )
+        public BinaryFileReader(Stream inputStream, string filename, int tokenOffset)
         {
             Filename = filename;
             InputStream = new BinaryReader(inputStream);
@@ -405,19 +406,16 @@ namespace MSTS
 
         public override bool EndOfBlock()
         {
-            return InputStream.PeekChar() == -1; 
+            return InputStream.PeekChar() == -1;
         }
-
 
         public override void VerifyEndOfBlock()
         {
             if (!EndOfBlock())
-                Console.Error.WriteLine(ErrorMessage("Data after end of last block"));
+                TraceWarning("Expected end of file; got more data");
             InputStream.Close();
         }
-
     }
-
 
     /// <summary>
     /// Structured kuju binary file reader
@@ -444,7 +442,7 @@ namespace MSTS
             block.RemainingBytes = InputStream.ReadUInt32(); // record length
 
             uint blockSize = block.RemainingBytes + 8; //for the header
-            RemainingBytes -= blockSize; 
+            RemainingBytes -= blockSize;
 
             int labelLength = InputStream.ReadByte();
             block.RemainingBytes -= 1;
@@ -472,16 +470,16 @@ namespace MSTS
 
         public override void VerifyEndOfBlock()
         {
-            if ( !EndOfBlock() )
+            if (!EndOfBlock())
             {
-                Console.Error.WriteLine(ErrorMessage("Extra tokens found at end of block " + this.ID.ToString()));
+                TraceWarning("Expected end of block " + ID + "; got more data");
                 Skip();
             }
         }
 
         public override uint ReadFlags() { RemainingBytes -= 4; return InputStream.ReadUInt32(); }
-        public override int ReadInt() { RemainingBytes -= 4;  return InputStream.ReadInt32(); }
-        public override uint ReadUInt() { RemainingBytes -= 4;  return InputStream.ReadUInt32(); }
+        public override int ReadInt() { RemainingBytes -= 4; return InputStream.ReadInt32(); }
+        public override uint ReadUInt() { RemainingBytes -= 4; return InputStream.ReadUInt32(); }
         public override float ReadFloat() { RemainingBytes -= 4; return InputStream.ReadSingle(); }
         public override string ReadString()
         {
@@ -499,16 +497,37 @@ namespace MSTS
             }
         }
 
-        public override String ErrorMessage( string message )
+        public override void TraceInformation(string message)
         {
-            return "Error in " + Filename + "\r\n\r\n" + message;
-        }
-        
-        public override Exception Exception(string message)
-        {
-            return new System.Exception( ErrorMessage( message ) );
+            SBRException.TraceInformation(this, message);
         }
 
+        public override void TraceWarning(string message)
+        {
+            SBRException.TraceWarning(this, message);
+        }
+
+        public override void ThrowException(string message)
+        {
+            throw new SBRException(this, message);
+        }
     }
 
+    public class SBRException : Exception
+    {
+        public static void TraceWarning(BinaryBlockReader sbr, string message)
+        {
+            Trace.TraceWarning("{2} in {0}:byte {1}", sbr.Filename, sbr.InputStream.BaseStream.Position, message);
+        }
+
+        public static void TraceInformation(BinaryBlockReader sbr, string message)
+        {
+            Trace.TraceInformation("{2} in {0}:byte {1}", sbr.Filename, sbr.InputStream.BaseStream.Position, message);
+        }
+
+        public SBRException(BinaryBlockReader sbr, string message)
+            : base(String.Format("{2} in {0}:byte {1}\n", sbr.Filename, sbr.InputStream.BaseStream.Position, message))
+        {
+        }
+    }
 }

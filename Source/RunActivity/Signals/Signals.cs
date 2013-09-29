@@ -2523,8 +2523,7 @@ namespace ORTS
 
                         if (!linkfound)
                         {
-                            Trace.TraceWarning("Invalid link in section {0} : Pin [{1},{2}] : section {3}",
-                                thisNode, iDirection, iPin, linkedNode);
+                            Trace.TraceWarning("Ignored invalid track node {0} pin [{1},{2}] link to track node {3}", thisNode, iDirection, iPin, linkedNode);
                             int endNode = nextNode;
                             nextNode++;
                             insertEndNode(thisNode, iDirection, iPin, endNode);
@@ -2532,8 +2531,7 @@ namespace ORTS
 
                         if (doublelink)
                         {
-                            Trace.TraceWarning("Section {0}, Pin [{1},{2}] links to section {3} already linked by {4}",
-                                    thisNode, iDirection, iPin, linkedNode, doublenode);
+                            Trace.TraceWarning("Ignored invalid track node {0} pin [{1},{2}] link to track node {3}; already linked to track node {4}", thisNode, iDirection, iPin, linkedNode, doublenode);
                             int endNode = nextNode;
                             nextNode++;
                             insertEndNode(thisNode, iDirection, iPin, endNode);
@@ -2541,8 +2539,7 @@ namespace ORTS
                     }
                     else if (linkedNode == 0)
                     {
-                        Trace.TraceWarning("Section {0}, Pin [{1},{2}] is 0 reference",
-                            thisNode, iDirection, iPin);
+                        Trace.TraceWarning("Ignored invalid track node {0} pin [{1},{2}] link to track node {3}", thisNode, iDirection, iPin, linkedNode);
                         int endNode = nextNode;
                         nextNode++;
                         insertEndNode(thisNode, iDirection, iPin, endNode);
