@@ -296,13 +296,9 @@ namespace ORTS
             // find correct ScalabiltyGroup
             int iSG = 0;
             while ( iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count)
-                {
-            
+            {
                 if (smsFile.Tr_SMS.ScalabiltyGroups[iSG].DetailLevel <= Viewer.Settings.SoundDetailLevel)
-                {
                     break;
-                }
-
                 ++iSG;
             }
             if (iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count && smsFile.Tr_SMS.ScalabiltyGroups[iSG].Streams != null)  // else we want less sound so don't provide any
@@ -312,12 +308,8 @@ namespace ORTS
                 ActivationConditions = mstsScalabiltyGroup.Activation;
                 DeactivationConditions = mstsScalabiltyGroup.Deactivation;
                 Volume = mstsScalabiltyGroup.Volume;
-                Ignore3D = mstsScalabiltyGroup.Ignore3D;
-
-                if (ActivationConditions.ExternalCam)
-                    IsExternal = true;
-                else
-                    IsExternal = false;
+                Ignore3D = mstsScalabiltyGroup.Ignore3D | mstsScalabiltyGroup.Stereo;
+                IsExternal = ActivationConditions.ExternalCam;
                 
                 int cou = 1;
                 foreach (MSTS.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
