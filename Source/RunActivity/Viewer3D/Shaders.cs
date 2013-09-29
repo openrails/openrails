@@ -18,13 +18,9 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Collections.Generic;
+using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Storage;
 
 namespace ORTS
 {
@@ -39,10 +35,15 @@ namespace ORTS
         {
             var basePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
             var effectFileName = System.IO.Path.Combine(basePath, filename + ".fx");
-            var compiledEffect = Effect.CompileEffectFromFile(effectFileName, null, null, CompilerOptions.None, TargetPlatform.Windows);
-            if (!compiledEffect.Success)
-                throw new InvalidOperationException(compiledEffect.ErrorsAndWarnings);
-            return compiledEffect.GetEffectCode();
+            // We have to use a file stream instead of passing the file name directly because the latter method just botches up non-ASCII paths. :(
+            using (var effectFileStream = File.OpenRead(effectFileName))
+            {
+                // NOTE: We may need to implement a CompilerIncludeHandler here if we ever use #include in our shaders.
+                var compiledEffect = Effect.CompileEffectFromFile(effectFileStream, null, null, CompilerOptions.None, TargetPlatform.Windows);
+                if (!compiledEffect.Success)
+                    throw new InvalidOperationException(compiledEffect.ErrorsAndWarnings);
+                return compiledEffect.GetEffectCode();
+            }
         }
     }
 
