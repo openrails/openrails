@@ -87,9 +87,10 @@
             this.checkBoxWindowed.AutoSize = true;
             this.checkBoxWindowed.Checked = true;
             this.checkBoxWindowed.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWindowed.Location = new System.Drawing.Point(3, 71);
+            this.checkBoxWindowed.Location = new System.Drawing.Point(4, 87);
+            this.checkBoxWindowed.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.checkBoxWindowed.Name = "checkBoxWindowed";
-            this.checkBoxWindowed.Size = new System.Drawing.Size(77, 17);
+            this.checkBoxWindowed.Size = new System.Drawing.Size(95, 21);
             this.checkBoxWindowed.TabIndex = 28;
             this.checkBoxWindowed.Text = "Windowed";
             this.checkBoxWindowed.UseVisualStyleBackColor = true;
@@ -97,9 +98,10 @@
             // buttonStart
             // 
             this.buttonStart.Enabled = false;
-            this.buttonStart.Location = new System.Drawing.Point(6, 19);
+            this.buttonStart.Location = new System.Drawing.Point(8, 23);
+            this.buttonStart.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(75, 34);
+            this.buttonStart.Size = new System.Drawing.Size(100, 42);
             this.buttonStart.TabIndex = 0;
             this.buttonStart.Text = "Start";
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
@@ -110,9 +112,10 @@
             this.labelLogo1.AutoSize = true;
             this.labelLogo1.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelLogo1.ForeColor = System.Drawing.Color.Gray;
-            this.labelLogo1.Location = new System.Drawing.Point(148, 458);
+            this.labelLogo1.Location = new System.Drawing.Point(197, 564);
+            this.labelLogo1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelLogo1.Name = "labelLogo1";
-            this.labelLogo1.Size = new System.Drawing.Size(71, 29);
+            this.labelLogo1.Size = new System.Drawing.Size(86, 35);
             this.labelLogo1.TabIndex = 24;
             this.labelLogo1.Text = "open";
             // 
@@ -122,17 +125,19 @@
             this.labelLogo2.AutoSize = true;
             this.labelLogo2.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelLogo2.ForeColor = System.Drawing.Color.Gray;
-            this.labelLogo2.Location = new System.Drawing.Point(187, 483);
+            this.labelLogo2.Location = new System.Drawing.Point(249, 594);
+            this.labelLogo2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelLogo2.Name = "labelLogo2";
-            this.labelLogo2.Size = new System.Drawing.Size(62, 29);
+            this.labelLogo2.Size = new System.Drawing.Size(77, 35);
             this.labelLogo2.TabIndex = 25;
             this.labelLogo2.Text = "rails";
             // 
             // buttonFolderAdd
             // 
-            this.buttonFolderAdd.Location = new System.Drawing.Point(299, 29);
+            this.buttonFolderAdd.Location = new System.Drawing.Point(399, 36);
+            this.buttonFolderAdd.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonFolderAdd.Name = "buttonFolderAdd";
-            this.buttonFolderAdd.Size = new System.Drawing.Size(75, 23);
+            this.buttonFolderAdd.Size = new System.Drawing.Size(100, 28);
             this.buttonFolderAdd.TabIndex = 31;
             this.buttonFolderAdd.Text = "Add...";
             this.buttonFolderAdd.Click += new System.EventHandler(this.buttonFolderAdd_Click);
@@ -144,9 +149,10 @@
             // 
             // buttonFolderRemove
             // 
-            this.buttonFolderRemove.Location = new System.Drawing.Point(461, 29);
+            this.buttonFolderRemove.Location = new System.Drawing.Point(615, 36);
+            this.buttonFolderRemove.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonFolderRemove.Name = "buttonFolderRemove";
-            this.buttonFolderRemove.Size = new System.Drawing.Size(75, 23);
+            this.buttonFolderRemove.Size = new System.Drawing.Size(100, 28);
             this.buttonFolderRemove.TabIndex = 33;
             this.buttonFolderRemove.Text = "Remove";
             this.buttonFolderRemove.Click += new System.EventHandler(this.buttonFolderRemove_Click);
@@ -156,18 +162,20 @@
             this.checkBoxWarnings.AutoSize = true;
             this.checkBoxWarnings.Checked = true;
             this.checkBoxWarnings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWarnings.Location = new System.Drawing.Point(3, 48);
+            this.checkBoxWarnings.Location = new System.Drawing.Point(4, 59);
+            this.checkBoxWarnings.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.checkBoxWarnings.Name = "checkBoxWarnings";
-            this.checkBoxWarnings.Size = new System.Drawing.Size(64, 17);
+            this.checkBoxWarnings.Size = new System.Drawing.Size(81, 21);
             this.checkBoxWarnings.TabIndex = 27;
             this.checkBoxWarnings.Text = "Logging";
             this.checkBoxWarnings.UseVisualStyleBackColor = true;
             // 
             // buttonOptions
             // 
-            this.buttonOptions.Location = new System.Drawing.Point(3, 19);
+            this.buttonOptions.Location = new System.Drawing.Point(4, 23);
+            this.buttonOptions.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonOptions.Name = "buttonOptions";
-            this.buttonOptions.Size = new System.Drawing.Size(75, 23);
+            this.buttonOptions.Size = new System.Drawing.Size(100, 28);
             this.buttonOptions.TabIndex = 26;
             this.buttonOptions.Text = "Options";
             this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
@@ -175,18 +183,20 @@
             // buttonResume
             // 
             this.buttonResume.Enabled = false;
-            this.buttonResume.Location = new System.Drawing.Point(6, 59);
+            this.buttonResume.Location = new System.Drawing.Point(8, 73);
+            this.buttonResume.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonResume.Name = "buttonResume";
-            this.buttonResume.Size = new System.Drawing.Size(75, 35);
+            this.buttonResume.Size = new System.Drawing.Size(100, 43);
             this.buttonResume.TabIndex = 1;
             this.buttonResume.Text = "Resume/ Replay...";
             this.buttonResume.Click += new System.EventHandler(this.buttonResume_Click);
             // 
             // buttonTesting
             // 
-            this.buttonTesting.Location = new System.Drawing.Point(542, 29);
+            this.buttonTesting.Location = new System.Drawing.Point(723, 36);
+            this.buttonTesting.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonTesting.Name = "buttonTesting";
-            this.buttonTesting.Size = new System.Drawing.Size(75, 23);
+            this.buttonTesting.Size = new System.Drawing.Size(100, 28);
             this.buttonTesting.TabIndex = 34;
             this.buttonTesting.Text = "Testing";
             this.buttonTesting.Click += new System.EventHandler(this.buttonTesting_Click);
@@ -197,9 +207,10 @@
             this.comboBoxFolder.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxFolder.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxFolder.FormattingEnabled = true;
-            this.comboBoxFolder.Location = new System.Drawing.Point(12, 31);
+            this.comboBoxFolder.Location = new System.Drawing.Point(16, 38);
+            this.comboBoxFolder.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxFolder.Name = "comboBoxFolder";
-            this.comboBoxFolder.Size = new System.Drawing.Size(281, 21);
+            this.comboBoxFolder.Size = new System.Drawing.Size(373, 24);
             this.comboBoxFolder.TabIndex = 1;
             this.comboBoxFolder.SelectedIndexChanged += new System.EventHandler(this.comboBoxFolder_SelectedIndexChanged);
             // 
@@ -209,9 +220,10 @@
             this.comboBoxRoute.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxRoute.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxRoute.FormattingEnabled = true;
-            this.comboBoxRoute.Location = new System.Drawing.Point(12, 77);
+            this.comboBoxRoute.Location = new System.Drawing.Point(16, 95);
+            this.comboBoxRoute.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxRoute.Name = "comboBoxRoute";
-            this.comboBoxRoute.Size = new System.Drawing.Size(281, 21);
+            this.comboBoxRoute.Size = new System.Drawing.Size(373, 24);
             this.comboBoxRoute.TabIndex = 3;
             this.comboBoxRoute.SelectedIndexChanged += new System.EventHandler(this.comboBoxRoute_SelectedIndexChanged);
             // 
@@ -221,9 +233,10 @@
             this.comboBoxActivity.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxActivity.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxActivity.FormattingEnabled = true;
-            this.comboBoxActivity.Location = new System.Drawing.Point(12, 123);
+            this.comboBoxActivity.Location = new System.Drawing.Point(16, 151);
+            this.comboBoxActivity.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxActivity.Name = "comboBoxActivity";
-            this.comboBoxActivity.Size = new System.Drawing.Size(281, 21);
+            this.comboBoxActivity.Size = new System.Drawing.Size(373, 24);
             this.comboBoxActivity.TabIndex = 5;
             this.comboBoxActivity.SelectedIndexChanged += new System.EventHandler(this.comboBoxActivity_SelectedIndexChanged);
             // 
@@ -234,9 +247,10 @@
             this.comboBoxLocomotive.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLocomotive.Enabled = false;
             this.comboBoxLocomotive.FormattingEnabled = true;
-            this.comboBoxLocomotive.Location = new System.Drawing.Point(12, 169);
+            this.comboBoxLocomotive.Location = new System.Drawing.Point(16, 208);
+            this.comboBoxLocomotive.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxLocomotive.Name = "comboBoxLocomotive";
-            this.comboBoxLocomotive.Size = new System.Drawing.Size(281, 21);
+            this.comboBoxLocomotive.Size = new System.Drawing.Size(373, 24);
             this.comboBoxLocomotive.TabIndex = 7;
             this.comboBoxLocomotive.SelectedIndexChanged += new System.EventHandler(this.comboBoxLocomotive_SelectedIndexChanged);
             // 
@@ -247,9 +261,10 @@
             this.comboBoxConsist.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxConsist.Enabled = false;
             this.comboBoxConsist.FormattingEnabled = true;
-            this.comboBoxConsist.Location = new System.Drawing.Point(12, 215);
+            this.comboBoxConsist.Location = new System.Drawing.Point(16, 265);
+            this.comboBoxConsist.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxConsist.Name = "comboBoxConsist";
-            this.comboBoxConsist.Size = new System.Drawing.Size(281, 21);
+            this.comboBoxConsist.Size = new System.Drawing.Size(373, 24);
             this.comboBoxConsist.TabIndex = 9;
             this.comboBoxConsist.SelectedIndexChanged += new System.EventHandler(this.comboBoxConsist_SelectedIndexChanged);
             // 
@@ -260,9 +275,10 @@
             this.comboBoxStartAt.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxStartAt.Enabled = false;
             this.comboBoxStartAt.FormattingEnabled = true;
-            this.comboBoxStartAt.Location = new System.Drawing.Point(12, 261);
+            this.comboBoxStartAt.Location = new System.Drawing.Point(16, 321);
+            this.comboBoxStartAt.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxStartAt.Name = "comboBoxStartAt";
-            this.comboBoxStartAt.Size = new System.Drawing.Size(281, 21);
+            this.comboBoxStartAt.Size = new System.Drawing.Size(373, 24);
             this.comboBoxStartAt.TabIndex = 11;
             this.comboBoxStartAt.SelectedIndexChanged += new System.EventHandler(this.comboBoxStartAt_SelectedIndexChanged);
             // 
@@ -273,19 +289,20 @@
             this.comboBoxHeadTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxHeadTo.Enabled = false;
             this.comboBoxHeadTo.FormattingEnabled = true;
-            this.comboBoxHeadTo.Location = new System.Drawing.Point(12, 307);
+            this.comboBoxHeadTo.Location = new System.Drawing.Point(16, 378);
+            this.comboBoxHeadTo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxHeadTo.Name = "comboBoxHeadTo";
-            this.comboBoxHeadTo.Size = new System.Drawing.Size(281, 21);
+            this.comboBoxHeadTo.Size = new System.Drawing.Size(373, 24);
             this.comboBoxHeadTo.TabIndex = 13;
             this.comboBoxHeadTo.SelectedIndexChanged += new System.EventHandler(this.comboBoxHeadTo_SelectedIndexChanged);
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 58);
-            this.label2.Margin = new System.Windows.Forms.Padding(3);
+            this.label2.Location = new System.Drawing.Point(16, 71);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(39, 13);
+            this.label2.Size = new System.Drawing.Size(50, 17);
             this.label2.TabIndex = 2;
             this.label2.Text = "Route:";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -293,10 +310,10 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 104);
-            this.label3.Margin = new System.Windows.Forms.Padding(3);
+            this.label3.Location = new System.Drawing.Point(16, 128);
+            this.label3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(44, 13);
+            this.label3.Size = new System.Drawing.Size(56, 17);
             this.label3.TabIndex = 4;
             this.label3.Text = "Activity:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -304,10 +321,10 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 150);
-            this.label4.Margin = new System.Windows.Forms.Padding(3);
+            this.label4.Location = new System.Drawing.Point(16, 185);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(65, 13);
+            this.label4.Size = new System.Drawing.Size(84, 17);
             this.label4.TabIndex = 6;
             this.label4.Text = "Locomotive:";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -315,10 +332,10 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(12, 196);
-            this.label5.Margin = new System.Windows.Forms.Padding(3);
+            this.label5.Location = new System.Drawing.Point(16, 241);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(44, 13);
+            this.label5.Size = new System.Drawing.Size(58, 17);
             this.label5.TabIndex = 8;
             this.label5.Text = "Consist:";
             this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -326,10 +343,10 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 242);
-            this.label6.Margin = new System.Windows.Forms.Padding(3);
+            this.label6.Location = new System.Drawing.Point(16, 298);
+            this.label6.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(58, 13);
+            this.label6.Size = new System.Drawing.Size(77, 17);
             this.label6.TabIndex = 10;
             this.label6.Text = "Starting at:";
             this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -337,40 +354,41 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 288);
-            this.label7.Margin = new System.Windows.Forms.Padding(3);
+            this.label7.Location = new System.Drawing.Point(16, 354);
+            this.label7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(62, 13);
+            this.label7.Size = new System.Drawing.Size(81, 17);
             this.label7.TabIndex = 12;
             this.label7.Text = "Heading to:";
             this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBoxMPHost
             // 
-            this.textBoxMPHost.Location = new System.Drawing.Point(83, 45);
+            this.textBoxMPHost.Location = new System.Drawing.Point(111, 55);
+            this.textBoxMPHost.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textBoxMPHost.Name = "textBoxMPHost";
-            this.textBoxMPHost.Size = new System.Drawing.Size(156, 20);
+            this.textBoxMPHost.Size = new System.Drawing.Size(207, 22);
             this.textBoxMPHost.TabIndex = 3;
             this.textBoxMPHost.TextChanged += new System.EventHandler(this.textBoxMPUser_TextChanged);
             // 
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(6, 48);
-            this.label14.Margin = new System.Windows.Forms.Padding(3);
+            this.label14.Location = new System.Drawing.Point(8, 59);
+            this.label14.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(55, 13);
+            this.label14.Size = new System.Drawing.Size(82, 17);
             this.label14.TabIndex = 2;
-            this.label14.Text = "Host/port:";
+            this.label14.Text = "Host IP:port";
             this.label14.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(6, 22);
-            this.label13.Margin = new System.Windows.Forms.Padding(3);
+            this.label13.Location = new System.Drawing.Point(8, 27);
+            this.label13.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(61, 13);
+            this.label13.Size = new System.Drawing.Size(81, 17);
             this.label13.TabIndex = 0;
             this.label13.Text = "User name:";
             this.label13.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -378,9 +396,10 @@
             // buttonMPClient
             // 
             this.buttonMPClient.Enabled = false;
-            this.buttonMPClient.Location = new System.Drawing.Point(164, 71);
+            this.buttonMPClient.Location = new System.Drawing.Point(219, 87);
+            this.buttonMPClient.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonMPClient.Name = "buttonMPClient";
-            this.buttonMPClient.Size = new System.Drawing.Size(75, 23);
+            this.buttonMPClient.Size = new System.Drawing.Size(100, 28);
             this.buttonMPClient.TabIndex = 5;
             this.buttonMPClient.Text = "Client";
             this.buttonMPClient.Click += new System.EventHandler(this.buttonMPClient_Click);
@@ -388,9 +407,10 @@
             // buttonMPServer
             // 
             this.buttonMPServer.Enabled = false;
-            this.buttonMPServer.Location = new System.Drawing.Point(83, 71);
+            this.buttonMPServer.Location = new System.Drawing.Point(111, 87);
+            this.buttonMPServer.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonMPServer.Name = "buttonMPServer";
-            this.buttonMPServer.Size = new System.Drawing.Size(75, 23);
+            this.buttonMPServer.Size = new System.Drawing.Size(100, 28);
             this.buttonMPServer.TabIndex = 4;
             this.buttonMPServer.Text = "Server";
             this.buttonMPServer.Click += new System.EventHandler(this.buttonMPServer_Click);
@@ -402,9 +422,10 @@
             this.comboBoxDuration.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDuration.Enabled = false;
             this.comboBoxDuration.FormattingEnabled = true;
-            this.comboBoxDuration.Location = new System.Drawing.Point(220, 353);
+            this.comboBoxDuration.Location = new System.Drawing.Point(293, 434);
+            this.comboBoxDuration.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxDuration.Name = "comboBoxDuration";
-            this.comboBoxDuration.Size = new System.Drawing.Size(73, 21);
+            this.comboBoxDuration.Size = new System.Drawing.Size(96, 24);
             this.comboBoxDuration.TabIndex = 21;
             // 
             // comboBoxStartTime
@@ -414,9 +435,10 @@
             this.comboBoxStartTime.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxStartTime.Enabled = false;
             this.comboBoxStartTime.FormattingEnabled = true;
-            this.comboBoxStartTime.Location = new System.Drawing.Point(69, 353);
+            this.comboBoxStartTime.Location = new System.Drawing.Point(92, 434);
+            this.comboBoxStartTime.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxStartTime.Name = "comboBoxStartTime";
-            this.comboBoxStartTime.Size = new System.Drawing.Size(73, 21);
+            this.comboBoxStartTime.Size = new System.Drawing.Size(96, 24);
             this.comboBoxStartTime.TabIndex = 15;
             this.comboBoxStartTime.TextChanged += new System.EventHandler(this.comboBoxStartTime_TextChanged);
             // 
@@ -432,9 +454,10 @@
             "Summer",
             "Autumn",
             "Winter"});
-            this.comboBoxStartSeason.Location = new System.Drawing.Point(69, 380);
+            this.comboBoxStartSeason.Location = new System.Drawing.Point(92, 468);
+            this.comboBoxStartSeason.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxStartSeason.Name = "comboBoxStartSeason";
-            this.comboBoxStartSeason.Size = new System.Drawing.Size(73, 21);
+            this.comboBoxStartSeason.Size = new System.Drawing.Size(96, 24);
             this.comboBoxStartSeason.TabIndex = 17;
             this.comboBoxStartSeason.SelectedIndexChanged += new System.EventHandler(this.comboBoxStartSeason_SelectedIndexChanged);
             // 
@@ -450,9 +473,10 @@
             "Medium",
             "Hard",
             ""});
-            this.comboBoxDifficulty.Location = new System.Drawing.Point(220, 380);
+            this.comboBoxDifficulty.Location = new System.Drawing.Point(293, 468);
+            this.comboBoxDifficulty.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxDifficulty.Name = "comboBoxDifficulty";
-            this.comboBoxDifficulty.Size = new System.Drawing.Size(73, 21);
+            this.comboBoxDifficulty.Size = new System.Drawing.Size(96, 24);
             this.comboBoxDifficulty.TabIndex = 23;
             // 
             // comboBoxStartWeather
@@ -466,19 +490,20 @@
             "Clear",
             "Snow",
             "Rain"});
-            this.comboBoxStartWeather.Location = new System.Drawing.Point(69, 407);
+            this.comboBoxStartWeather.Location = new System.Drawing.Point(92, 501);
+            this.comboBoxStartWeather.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.comboBoxStartWeather.Name = "comboBoxStartWeather";
-            this.comboBoxStartWeather.Size = new System.Drawing.Size(73, 21);
+            this.comboBoxStartWeather.Size = new System.Drawing.Size(96, 24);
             this.comboBoxStartWeather.TabIndex = 19;
             this.comboBoxStartWeather.SelectedIndexChanged += new System.EventHandler(this.comboBoxStartWeather_SelectedIndexChanged);
             // 
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(12, 410);
-            this.label12.Margin = new System.Windows.Forms.Padding(3);
+            this.label12.Location = new System.Drawing.Point(16, 505);
+            this.label12.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(51, 13);
+            this.label12.Size = new System.Drawing.Size(66, 17);
             this.label12.TabIndex = 18;
             this.label12.Text = "Weather:";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -486,10 +511,10 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(152, 356);
-            this.label11.Margin = new System.Windows.Forms.Padding(3);
+            this.label11.Location = new System.Drawing.Point(203, 438);
+            this.label11.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(50, 13);
+            this.label11.Size = new System.Drawing.Size(66, 17);
             this.label11.TabIndex = 20;
             this.label11.Text = "Duration:";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -497,10 +522,10 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(152, 383);
-            this.label10.Margin = new System.Windows.Forms.Padding(3);
+            this.label10.Location = new System.Drawing.Point(203, 471);
+            this.label10.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(50, 13);
+            this.label10.Size = new System.Drawing.Size(65, 17);
             this.label10.TabIndex = 22;
             this.label10.Text = "Difficulty:";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -508,10 +533,10 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(12, 356);
-            this.label9.Margin = new System.Windows.Forms.Padding(3);
+            this.label9.Location = new System.Drawing.Point(16, 438);
+            this.label9.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(33, 13);
+            this.label9.Size = new System.Drawing.Size(43, 17);
             this.label9.TabIndex = 14;
             this.label9.Text = "Time:";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -519,19 +544,20 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(12, 383);
-            this.label8.Margin = new System.Windows.Forms.Padding(3);
+            this.label8.Location = new System.Drawing.Point(16, 471);
+            this.label8.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(46, 13);
+            this.label8.Size = new System.Drawing.Size(60, 17);
             this.label8.TabIndex = 16;
             this.label8.Text = "Season:";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // textBoxMPUser
             // 
-            this.textBoxMPUser.Location = new System.Drawing.Point(83, 19);
+            this.textBoxMPUser.Location = new System.Drawing.Point(111, 23);
+            this.textBoxMPUser.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.textBoxMPUser.Name = "textBoxMPUser";
-            this.textBoxMPUser.Size = new System.Drawing.Size(156, 20);
+            this.textBoxMPUser.Size = new System.Drawing.Size(207, 22);
             this.textBoxMPUser.TabIndex = 1;
             this.textBoxMPUser.TextChanged += new System.EventHandler(this.textBoxMPUser_TextChanged);
             // 
@@ -544,9 +570,11 @@
             this.groupBox1.Controls.Add(this.buttonMPClient);
             this.groupBox1.Controls.Add(this.label14);
             this.groupBox1.Controls.Add(this.buttonMPServer);
-            this.groupBox1.Location = new System.Drawing.Point(597, 434);
+            this.groupBox1.Location = new System.Drawing.Point(796, 534);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(245, 100);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Size = new System.Drawing.Size(327, 123);
             this.groupBox1.TabIndex = 30;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Multiplayer";
@@ -556,9 +584,11 @@
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.buttonResume);
             this.groupBox3.Controls.Add(this.buttonStart);
-            this.groupBox3.Location = new System.Drawing.Point(504, 434);
+            this.groupBox3.Location = new System.Drawing.Point(672, 534);
+            this.groupBox3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(87, 100);
+            this.groupBox3.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox3.Size = new System.Drawing.Size(116, 123);
             this.groupBox3.TabIndex = 29;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Singleplayer";
@@ -566,10 +596,10 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 12);
-            this.label1.Margin = new System.Windows.Forms.Padding(3);
+            this.label1.Location = new System.Drawing.Point(16, 15);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(91, 13);
+            this.label1.Size = new System.Drawing.Size(122, 17);
             this.label1.TabIndex = 0;
             this.label1.Text = "Installation profile:";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -582,26 +612,29 @@
             this.panelDetails.AutoScroll = true;
             this.panelDetails.BackColor = System.Drawing.SystemColors.Window;
             this.panelDetails.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelDetails.Location = new System.Drawing.Point(299, 58);
+            this.panelDetails.Location = new System.Drawing.Point(399, 71);
+            this.panelDetails.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.panelDetails.Name = "panelDetails";
-            this.panelDetails.Size = new System.Drawing.Size(543, 370);
+            this.panelDetails.Size = new System.Drawing.Size(723, 455);
             this.panelDetails.TabIndex = 35;
             // 
             // pictureBoxLogo
             // 
             this.pictureBoxLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.pictureBoxLogo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.Image")));
-            this.pictureBoxLogo.Location = new System.Drawing.Point(75, 453);
+            this.pictureBoxLogo.Location = new System.Drawing.Point(100, 558);
+            this.pictureBoxLogo.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.pictureBoxLogo.Name = "pictureBoxLogo";
-            this.pictureBoxLogo.Size = new System.Drawing.Size(67, 68);
+            this.pictureBoxLogo.Size = new System.Drawing.Size(89, 84);
             this.pictureBoxLogo.TabIndex = 5;
             this.pictureBoxLogo.TabStop = false;
             // 
             // buttonFolderEdit
             // 
-            this.buttonFolderEdit.Location = new System.Drawing.Point(380, 29);
+            this.buttonFolderEdit.Location = new System.Drawing.Point(507, 36);
+            this.buttonFolderEdit.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.buttonFolderEdit.Name = "buttonFolderEdit";
-            this.buttonFolderEdit.Size = new System.Drawing.Size(75, 23);
+            this.buttonFolderEdit.Size = new System.Drawing.Size(100, 28);
             this.buttonFolderEdit.TabIndex = 32;
             this.buttonFolderEdit.Text = "Edit";
             this.buttonFolderEdit.Click += new System.EventHandler(this.buttonFolderEdit_Click);
@@ -612,16 +645,17 @@
             this.panel1.Controls.Add(this.buttonOptions);
             this.panel1.Controls.Add(this.checkBoxWarnings);
             this.panel1.Controls.Add(this.checkBoxWindowed);
-            this.panel1.Location = new System.Drawing.Point(411, 434);
+            this.panel1.Location = new System.Drawing.Point(548, 534);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(87, 100);
+            this.panel1.Size = new System.Drawing.Size(116, 123);
             this.panel1.TabIndex = 36;
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(854, 546);
+            this.ClientSize = new System.Drawing.Size(1139, 672);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.buttonFolderEdit);
             this.Controls.Add(this.panelDetails);
@@ -659,6 +693,7 @@
             this.Controls.Add(this.comboBoxLocomotive);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

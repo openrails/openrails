@@ -43,6 +43,7 @@ namespace ORTS.MultiPlayer
 		public int version = 15;
         double lastMoveTime;
         public double lastSwitchTime;
+        public double lastSyncTime = 0;
         double lastSendTime;
 		string metric = "";
 		double metricbase = 1.0f;
@@ -58,6 +59,7 @@ namespace ORTS.MultiPlayer
 		public int newWeather = -1;
         public float newFog = -1f;
         public float overCast = -1f;
+        public double serverTimeDifference = 0;
 
         public double lastPlayerAddedTime;
 		public int MPUpdateInterval = 10;
@@ -164,8 +166,9 @@ namespace ORTS.MultiPlayer
 			}
 			else if (NotServer == false && Program.Server == null) //I am declared the server
 			{
+                /*
 				Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
-				if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
+				if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;*/
 			}
 			//get key strokes and determine if some messages should be sent
 			handleUserInput();
@@ -248,7 +251,13 @@ namespace ORTS.MultiPlayer
 			}
 
 			//some players are removed
-			RemovePlayer();
+            //need to send a keep-alive message if have not sent one to the server for the last 30 seconds
+            if (IsServer() && newtime - lastSyncTime >= 60f)
+            {
+                Notify((new MSGMessage("All", "TimeCheck", Program.Simulator.ClockTime.ToString(System.Globalization.CultureInfo.InvariantCulture))).ToString());
+                lastSyncTime = newtime;
+            }
+            RemovePlayer();
 
 			//some players are disconnected more than 1 minute ago, will not care if they come back later
 			CleanLostPlayers();
@@ -533,7 +542,7 @@ namespace ORTS.MultiPlayer
 				List<string> removeLost = null;
 				foreach (var x in lostPlayer)
 				{
-					if (Program.Simulator.GameTime - x.Value.quitTime > 60)
+					if (Program.Simulator.GameTime - x.Value.quitTime > 180) //lost within 3 minutes will be held
 					{
 						if (removeLost == null) removeLost = new List<string>();
 						removeLost.Add(x.Key);

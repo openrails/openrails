@@ -318,7 +318,11 @@ namespace ORTS.Popups
 
             TableSetLabelValueColumns(table, 0, 2);
             TableAddLabelValue(table, "Version", VersionInfo.Version.Length > 0 ? VersionInfo.Version : VersionInfo.Build);
-            TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
+
+            if (MultiPlayer.MPManager.IsClient()) //client and server may have time difference
+                TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime + MultiPlayer.MPManager.Instance().serverTimeDifference));
+            else TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime));
+
             if (Viewer.IsReplaying)
             {
                 TableAddLabelValue(table, "Replay", InfoDisplay.FormattedTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));

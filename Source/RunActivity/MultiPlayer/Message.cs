@@ -1204,6 +1204,7 @@ namespace ORTS.MultiPlayer
 			cars = new string[t.Cars.Count];
 			ids = new string[t.Cars.Count];
 			flipped = new int[t.Cars.Count];
+            lengths = new int[t.Cars.Count];
 			for (var i = 0; i < t.Cars.Count; i++)
 			{
 				cars[i] = t.Cars[i].RealWagFilePath;
@@ -1325,7 +1326,7 @@ namespace ORTS.MultiPlayer
 			//train1.InitializeSignals(false);
 			train1.CheckFreight();
 			bool canPlace = true;
-			Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
+			Train.TCSubpathRoute tempRoute = train1.CalculateInitialTrainPosition(ref canPlace);
 
 			train1.SetInitialTrainRoute(tempRoute);
 			train1.CalculatePositionOfCars(0);
@@ -1447,7 +1448,9 @@ namespace ORTS.MultiPlayer
 			{
 				if (Program.Server != null) return; //already a server, not need to worry
 				Program.Client.Connected = true;
-				MPManager.Instance().NotServer = false;
+                MPManager.Instance().NotServer = false;
+                Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
+                if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
 				MPManager.Instance().RememberOriginalSwitchState();
 				System.Console.WriteLine("You are the new dispatcher, enjoy");
 				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("You are the new dispatcher, enjoy");
@@ -1591,6 +1594,12 @@ namespace ORTS.MultiPlayer
 					MPManager.Instance().CheckSpad = true;
 					return;
 				}
+                else if (level == "TimeCheck" && !MPManager.IsServer())
+                {
+                    var t = double.Parse(msgx, CultureInfo.InvariantCulture);
+                    MPManager.Instance().serverTimeDifference = t - Program.Simulator.ClockTime;
+                    return;
+                }
 
 			}
 		}
