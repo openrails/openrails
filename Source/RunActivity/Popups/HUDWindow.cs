@@ -410,6 +410,9 @@ namespace ORTS.Popups
 
         static string GetCarWhyteLikeNotation(TrainCar car)
         {
+            if (car.WheelAxles.Count == 0)
+                return "";
+
             var whyte = new List<string>();
             var currentCount = 0;
             var currentBogie = car.WheelAxles[0].BogieIndex;
