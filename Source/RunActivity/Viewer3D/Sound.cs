@@ -928,7 +928,7 @@ namespace ORTS
 
         public void HandleEvent(Event eventID)
         {
-            if (Enabled && eventID == TriggerID)
+            if (eventID == TriggerID)
             {
                 Triggered = true;
             }
@@ -936,6 +936,7 @@ namespace ORTS
 
         public override void TryTrigger()
         {
+            Triggered &= Enabled;
             if (Triggered)
             {
                 Triggered = false;
