@@ -911,8 +911,10 @@ namespace ORTS
             // TODO which event should we fire
             //car.CreateEvent(62);  these are listed as alternate events
             //car.CreateEvent(63);
-            if (MPManager.IsMultiPlayer())
-                MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
+			if (MPManager.IsMultiPlayer())
+			{
+				MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
+			}
             if (Confirmer.Viewer.IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
         }
 

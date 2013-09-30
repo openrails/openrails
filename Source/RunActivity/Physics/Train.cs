@@ -290,7 +290,7 @@ namespace ORTS
         {
             get
             {
-                return LeadLocomotiveIndex >= 0 ? Cars[LeadLocomotiveIndex] : null;
+                return LeadLocomotiveIndex >= 0 && LeadLocomotiveIndex < Cars.Count ? Cars[LeadLocomotiveIndex] : null;
             }
             set
             {

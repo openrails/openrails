@@ -2040,6 +2040,8 @@ namespace ORTS.MultiPlayer
 			}
 			if (!newT.Cars.Contains(Program.Simulator.PlayerLocomotive)) //if newT does not have player locomotive, it may be controlled remotely
 			{
+				if (newT.LeadLocomotive == null) { newT.LeadLocomotiveIndex = -1; newT.LeadNextLocomotive(); }
+
 				foreach (TrainCar car1 in newT.Cars)
 				{
 					car1.Train = newT;
@@ -2057,6 +2059,8 @@ namespace ORTS.MultiPlayer
 
 			if (!t.Cars.Contains(Program.Simulator.PlayerLocomotive)) //if t (old train) does not have player locomotive, it may be controlled remotely
 			{
+				if (t.LeadLocomotive == null) { t.LeadLocomotiveIndex = -1; t.LeadNextLocomotive(); }
+
 				foreach (TrainCar car1 in t.Cars)
 				{
 					car1.Train = t;
