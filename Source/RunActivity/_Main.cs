@@ -611,7 +611,7 @@ namespace ORTS
 
         static void CopyLog( string toFile ) {
 			if (logFileName.Length == 0) return;
-			File.Copy(logFileName, toFile);
+			File.Copy(logFileName, toFile, true);
         }
 
         static void InitSimulator(UserSettings settings, string[] args)
