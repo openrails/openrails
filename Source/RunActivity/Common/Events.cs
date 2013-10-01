@@ -43,7 +43,7 @@ namespace ORTS
         Derail3, // NOTE: Currently not used in Open Rails.
         DoorClose,
         DoorOpen,
-        DynamicBrakeChange, // NOTE: Currently not used in Open Rails.
+        DynamicBrakeChange,
         DynamicBrakeIncrease, // NOTE: Currently not used in Open Rails.
         DynamicBrakeOff, // NOTE: Currently not used in Open Rails.
         EngineBrakeChange, // NOTE: Currently not used in Open Rails.
@@ -77,7 +77,7 @@ namespace ORTS
         ReverserToNeutral,
         SanderOff,
         SanderOn,
-        SemaphoreArm, // NOTE: Currently not used in Open Rails.
+        SemaphoreArm,
         SteamEjector1Off, // NOTE: Currently not used in Open Rails.
         SteamEjector1On, // NOTE: Currently not used in Open Rails.
         SteamEjector2Off, // NOTE: Currently not used in Open Rails.
@@ -94,7 +94,7 @@ namespace ORTS
         UncoupleC, // NOTE: Currently not used in Open Rails.
         VigilanceAlarmOff,
         VigilanceAlarmOn,
-        VigilanceAlarmReset, // NOTE: Currently not used in Open Rails.
+        VigilanceAlarmReset,
         WaterScoopDown, // NOTE: Currently not used in Open Rails.
         WaterScoopUp, // NOTE: Currently not used in Open Rails.
         WiperOff,

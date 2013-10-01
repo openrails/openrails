@@ -456,6 +456,7 @@ namespace ORTS {
         }
 
         public override void Redo() {
+            if (ToState) Receiver.SignalEvent(Event.VigilanceAlarmReset); // There is no Event.VigilanceAlarmResetReleased
             Receiver.AlerterPressed(ToState);
             // Report();
         }

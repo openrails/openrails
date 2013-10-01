@@ -711,7 +711,7 @@ namespace ORTS
                         var vtqb = from ORTSVariableTrigger t in vtq
                                    where t.IsBellow
                                    select t;
-                        if (vtqb.Count() == vtq.Count)
+                        if (vtqb.Count() == vtq.Count && _InitialTrigger.SoundCommand is ORTSSoundPlayCommand)
                         {
                             _InitialTrigger.Initialize();
                         }
