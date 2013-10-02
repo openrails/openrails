@@ -845,10 +845,10 @@ namespace ORTS.MultiPlayer
 
 				MD5Check = Encoding.Unicode.GetString(retVal, 0, retVal.Length);
 			}
-			catch
+			catch (Exception e)
 			{
-				Trace.TraceWarning("Cannot get MD5 check of TDB file, server may not connect you");
-				MD5Check = "";
+				Trace.TraceWarning("{0} Cannot get MD5 check of TDB file, use NA instead but server may not connect you.", e.Message);
+				MD5Check = "NA";
 			}
 		}
 	}

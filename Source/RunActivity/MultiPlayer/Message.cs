@@ -422,9 +422,9 @@ namespace ORTS.MultiPlayer
 					throw new MultiPlayerError();//client, close the connection
 				}
 			}
-			if (MPManager.IsServer())
+            if (MPManager.IsServer() && MPManager.Instance().MD5Check!= "NA")//I am the server and have MD5 check values, client should have matching MD5, if file is accessible
 			{
-				if ((MD5 != "" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != Program.Simulator.RoutePathName.ToLower())
+				if ((MD5 != "NA" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != Program.Simulator.RoutePathName.ToLower())
 				{
 					MPManager.BroadCast((new MSGMessage(this.user, "Error", "Wrong route dir or TDB file, the dispatcher uses a different route")).ToString());//server will broadcast this error
 					throw new Exception("Player has wrong version of route");//ignore this player message
@@ -519,11 +519,11 @@ namespace ORTS.MultiPlayer
 				MPManager.BroadCast((new MSGMessage(this.user, "Error", reason)).ToString());
 				throw new Exception("Wrong version of protocol");
 			}
-			if ((MD5 != "" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != Program.Simulator.RoutePathName.ToLower())
-			{
-				MPManager.BroadCast((new MSGMessage(this.user, "Error", "Wrong route dir or TDB file, the dispatcher uses a different route")).ToString());//server will broadcast this error
-				throw new Exception("Player has wrong version of route");//ignore this player message
-			}
+            if ((MPManager.Instance().MD5Check != "NA" && MD5 != "NA" && MD5 != MPManager.Instance().MD5Check) || route.ToLower() != Program.Simulator.RoutePathName.ToLower())
+            {
+                MPManager.BroadCast((new MSGMessage(this.user, "Error", "Wrong route dir or TDB file, the dispatcher uses a different route")).ToString());//server will broadcast this error
+                throw new Exception("Player has wrong version of route");//ignore this player message
+            }
 
 			//check if other players with the same name is online
 				//if someone with the same name is there, will throw a fatal error
