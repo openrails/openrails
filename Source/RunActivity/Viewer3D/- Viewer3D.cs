@@ -690,6 +690,11 @@ namespace ORTS
                 Settings.Save("CarVibratingLevel");
             }
 
+            if (UserInput.IsPressed(UserCommands.CameraCabRotate))
+            {
+                Simulator.CabRotating = !Simulator.CabRotating;
+                if (Simulator.Confirmer != null) Simulator.Confirmer.Message(ConfirmLevel.Information, "Rotating Camera " + Simulator.CabRotating);
+            }
             //hit 9 key, get back to player train
             if( UserInput.IsPressed( UserCommands.CameraJumpBackPlayer ) ) {
                 SelectedTrain = PlayerTrain;

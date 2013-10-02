@@ -885,6 +885,7 @@ namespace ORTS
         public float Move(float distanceToGo)
         {
             // TODO - must remove the trig from these calculations
+            if (float.IsNaN(distanceToGo)) distanceToGo = 0f;
             var distanceSign = Math.Sign(distanceToGo);
             distanceToGo = Math.Abs(distanceToGo);
             if (distanceSign < 0)

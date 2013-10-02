@@ -159,7 +159,7 @@ namespace ORTS
                     LengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (MassKG < 0.1f) MassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
@@ -1136,7 +1136,6 @@ namespace ORTS
             {
                 if (Viewer.Camera == Viewer.CabCamera && Car == Viewer.CabCamera.AttachedCar)
                 {
-                    Car.totalRotationZ = 0;
                     FreightShape.Location.XNAMatrix = Car.GetXNAMatrix();
                 }
                 else FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;

@@ -800,6 +800,7 @@ namespace ORTS
             {
                 var sdFile = new SDFile(FilePath + "d");
                 textureFlags = (Helpers.TextureFlags)sdFile.shape.ESD_Alternative_Texture;
+                if (FilePath != null && FilePath.Contains("\\global\\")) textureFlags |= Helpers.TextureFlags.SnowTrack;//roads and tracks are in global, as MSTS will always use snow texture in snow weather
                 HasNightSubObj = sdFile.shape.ESD_SubObj;
             }
 

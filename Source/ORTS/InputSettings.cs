@@ -168,6 +168,7 @@ namespace ORTS
         CameraJumpBackPlayer,
         CameraJumpSeeSwitch,
         CameraVibrate,
+        CameraCabRotate,
 
         ControlForwards,
         ControlBackwards,
@@ -495,6 +496,7 @@ namespace ORTS
             Commands[(int)UserCommands.CameraJumpBackPlayer] = new UserCommandKeyInput(0x0A);
             Commands[(int)UserCommands.CameraJumpSeeSwitch] = new UserCommandKeyInput(0x22, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.CameraVibrate] = new UserCommandKeyInput(0x2F, KeyModifiers.Control);
+            Commands[(int)UserCommands.CameraCabRotate] = new UserCommandKeyInput(0x13, KeyModifiers.Alt);
 
             Commands[(int)UserCommands.ControlForwards] = new UserCommandKeyInput(0x11);
             Commands[(int)UserCommands.ControlBackwards] = new UserCommandKeyInput(0x1F);

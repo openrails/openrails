@@ -865,7 +865,7 @@ namespace ORTS
             }
             lookAtPosition.Z *= -1;
             lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.GetXNAMatrix());
-            if (tiltingLand && !attachedCar.HasFreightAnim)
+            if (tiltingLand && Program.Simulator.CabRotating)
             {
                 var up = (Matrix.CreateRotationZ(-3 * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
                 return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));

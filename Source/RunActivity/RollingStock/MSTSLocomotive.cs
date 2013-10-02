@@ -136,7 +136,7 @@ namespace ORTS
         public bool EmergencyEngagesHorn;
         public bool EmergencyButtonPressed;
         public bool WheelslipCausesThrottleDown;
-        public float CabRotationZ { get { return HasFreightAnim ? 0:  (UsingRearCab == true ? -totalRotationZ : totalRotationZ); } }
+        public float CabRotationZ { get { return Program.Simulator.CabRotating ? (UsingRearCab == true ? -totalRotationZ : totalRotationZ) : 0; } }
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
 
@@ -3194,10 +3194,13 @@ namespace ORTS
             : base(viewer, locomotive, control, shader)
         {
             ControlDial = control;
-            Origin = new Vector2((float)ControlDial.Width / 2, ControlDial.Center);
 
             Texture = CABTextureManager.GetTexture(Control.ACEFile, false, false, out IsNightTexture);
             Scale = (float)(ControlDial.Height / Texture.Height);
+            ControlDial.Width /= Scale;
+            ControlDial.Center /= Scale;
+            ControlDial.Height /= Scale;
+            Origin = new Vector2((float)ControlDial.Width / 2, ControlDial.Center);
         }
 
         public override void PrepareFrame(RenderFrame frame)
@@ -3211,8 +3214,8 @@ namespace ORTS
             base.PrepareFrame(frame);
 
             // Cab view height and vertical position adjusted to allow for clip or stretch.
-            Position.X = (float)Viewer.DisplaySize.X / 640 * ((float)Control.PositionX + Origin.X);
-            Position.Y = (float)Viewer.CabHeightPixels / 480 * ((float)Control.PositionY + Origin.Y) + Viewer.CabYOffsetPixels;
+            Position.X = (float)Viewer.DisplaySize.X / 640 * ((float)Control.PositionX + Origin.X*Scale);
+            Position.Y = (float)Viewer.CabHeightPixels / 480 * ((float)Control.PositionY + Origin.Y*Scale) + Viewer.CabYOffsetPixels;
             ScaleToScreen = (float)Viewer.DisplaySize.X / 640 * Scale;
 
             var rangeFraction = GetRangeFraction();

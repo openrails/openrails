@@ -74,12 +74,12 @@ namespace ORTS
 
         public static string GetTextureFile(Simulator simulator, TextureFlags textureFlags, string texturePath, string textureName)
         {
-            var alternativePath = "";
+            var alternativePath = @"\";
             if ((textureFlags & TextureFlags.Snow) != 0 || (textureFlags & TextureFlags.SnowTrack) != 0)
                 if (IsSnow(simulator))
                     alternativePath = @"\Snow\";
                 else
-                    alternativePath = "";
+                    alternativePath = @"\";
             else if ((textureFlags & TextureFlags.Spring) != 0 && simulator.Season == SeasonType.Spring && simulator.Weather != WeatherType.Snow)
                 alternativePath = @"\Spring\";
             else if ((textureFlags & TextureFlags.Autumn) != 0 && simulator.Season == SeasonType.Autumn && simulator.Weather != WeatherType.Snow)
