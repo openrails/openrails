@@ -692,8 +692,9 @@ namespace ORTS
 
             if (UserInput.IsPressed(UserCommands.CameraCabRotate))
             {
-                Simulator.CabRotating = !Simulator.CabRotating;
-                if (Simulator.Confirmer != null) Simulator.Confirmer.Message(ConfirmLevel.Information, "Rotating Camera " + Simulator.CabRotating);
+				Simulator.CabRotating = (Simulator.CabRotating + 1) % 4; //cab rotation can be shared by cab and land, 1 means cab rotate 1/4, land rotate 3/4
+				if (Simulator.Confirmer != null && Simulator.CabRotating!=0) Simulator.Confirmer.Message(ConfirmLevel.Information, "Rotating cab " + Simulator.CabRotating + "/4, rotating land " + (4 - Simulator.CabRotating) + "/4");
+				else if (Simulator.Confirmer != null) Simulator.Confirmer.Message(ConfirmLevel.Information, "Will not ratate cab and land");
             }
             //hit 9 key, get back to player train
             if( UserInput.IsPressed( UserCommands.CameraJumpBackPlayer ) ) {

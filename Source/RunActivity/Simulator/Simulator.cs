@@ -96,7 +96,7 @@ namespace ORTS
         public bool UseAdvancedAdhesion;
         public bool BreakCouplers;
         public int CarVibrating;
-        public bool CabRotating = true;
+        public int CabRotating = 1;
         public int UseSuperElevation; //amount of superelevation
         public int SuperElevationMinLen = 50;
         public float SuperElevationGauge = 1.435f;//1.435 guage

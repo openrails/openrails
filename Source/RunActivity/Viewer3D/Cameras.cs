@@ -865,10 +865,18 @@ namespace ORTS
             }
             lookAtPosition.Z *= -1;
             lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.GetXNAMatrix());
-            if (tiltingLand && Program.Simulator.CabRotating)
+            if (tiltingLand && Program.Simulator.CabRotating > 0)
             {
-                var up = (Matrix.CreateRotationZ(-3 * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
-                return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
+				if (attachedCar.HasFreightAnim)//cars with freight animation will rotate only camera, the land will rotate with the camera, so the FA can follow
+				{
+					var up = (Matrix.CreateRotationZ( Program.Simulator.CabRotating * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
+					return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
+				}
+				else
+				{
+					var up = (Matrix.CreateRotationZ((4 - Program.Simulator.CabRotating) * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
+					return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
+				}
             }
             else
                 return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
