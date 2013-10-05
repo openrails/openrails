@@ -39,6 +39,7 @@ namespace ORTS.MultiPlayer
 		*/
 		public void PushMsg(string s)
 		{
+            //if (msg.Length > 10 && !msg.Contains(":") && s.Contains(":")) msg = "";
 			msg += s; //add to existing string of msgs
 		}
 		public string GetMsg()
@@ -65,7 +66,11 @@ namespace ORTS.MultiPlayer
 				int len;
 				if (!int.TryParse(tmp, out len)) { msg = msg.Remove(0); return null; }
 				if (len < 0) return null;
-				if (index + 2 + len > msg.Length) return null;
+                if (index + 2 + len > msg.Length)
+                {
+                    //if (msg.LastIndexOf(":") > 64) { msg = msg.Remove(0, index + 1); }//if there is a : further down, means the length is wrong, needs to remove until next :
+                    return null;
+                }
 				tmp = msg.Substring(index + 2, len); //not taking ": "
 				msg = msg.Remove(0, index + 2 + len); //remove :
 				if (len > 1000000) return null;//a long message, will ignore it
@@ -92,8 +97,12 @@ namespace ORTS.MultiPlayer
 		}
 	}
 
-	public class MultiPlayerError : Exception
-	{
+    public class MultiPlayerError : Exception
+    {
 
-	}
+    }
+    public class SameNameError : Exception
+    {
+
+    }
 }

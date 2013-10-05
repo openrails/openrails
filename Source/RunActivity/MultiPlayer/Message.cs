@@ -150,7 +150,7 @@ namespace ORTS.MultiPlayer
 		{
 			string tmp = "MOVE ";
 			for (var i = 0; i < items.Count; i++) tmp += items[i].ToString() + " ";
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -402,7 +402,7 @@ namespace ORTS.MultiPlayer
 			}
 
 			tmp += "\r" + MPManager.Instance().version +"\r" + MD5;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		private object lockObjPlayer = new object();
@@ -438,8 +438,13 @@ namespace ORTS.MultiPlayer
 				{
 					if (MPManager.FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
 					{
-						MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
-						throw new Exception("Same name");
+                        try
+                        {
+                            MPManager.OnlineTrains.Players[user].protect = true;
+                        }
+                        catch { }
+						MPManager.BroadCast((new MSGMessage(user, "SameNameError", "A user with the same name exists")).ToString());
+						throw new Exception("Same Name");
 					}
 				}
 			}
@@ -529,8 +534,8 @@ namespace ORTS.MultiPlayer
 				//if someone with the same name is there, will throw a fatal error
 			if (MPManager.FindPlayerTrain(user) != null || MPManager.GetUserName() == user)
 			{
-				MPManager.BroadCast((new MSGMessage(user, "Error", "A user with the same name exists")).ToString());
-				throw new MultiPlayerError();
+				MPManager.BroadCast((new MSGMessage(user, "SameNameError", "A user with the same name exists")).ToString());
+				throw new SameNameError();
 			}
 
 			//if the client comes back after disconnected withing 1 minute
@@ -653,7 +658,7 @@ namespace ORTS.MultiPlayer
 		{
 			if (!OK) return null;
 			string tmp = "SWITCH " + user + " " + TileX + " " + TileZ + " " + WorldID + " " + Selection + " " + HandThrown;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -712,7 +717,7 @@ namespace ORTS.MultiPlayer
 		{
 			string tmp = "RESETSIGNAL " + user;
 			//System.Console.WriteLine(tmp);
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -806,7 +811,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "ORGSWITCH " + user + "\t" + msgx;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 	#endregion MSGOrgSwitch
@@ -961,7 +966,7 @@ namespace ORTS.MultiPlayer
 			Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gZipBuffer, 0, 4);
 
 			string tmp = "SWITCHSTATES " + Convert.ToBase64String(gZipBuffer);
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 	#endregion MSGSwitchStatus
@@ -1124,7 +1129,7 @@ namespace ORTS.MultiPlayer
 
 				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
 			}
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 
@@ -1354,7 +1359,7 @@ namespace ORTS.MultiPlayer
 
 				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
 			}
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 
@@ -1393,7 +1398,7 @@ namespace ORTS.MultiPlayer
 			{
 				tmp += " " + i;
 			}
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -1427,7 +1432,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "SERVER " + user;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -1439,7 +1444,7 @@ namespace ORTS.MultiPlayer
 				if (MPManager.Instance().AmAider)
 				{
 					string tmp = "SERVER MakeMeServer";
-					MPManager.Notify("" + tmp.Length + ": " + tmp);
+					MPManager.Notify(" " + tmp.Length + ": " + tmp);
 				}
 				return;
 			}
@@ -1479,7 +1484,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "ALIVE " + user;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -1533,7 +1538,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "TRAINMERGE " + TrainNumRetain + " " + TrainNumRemoved + " " + direction + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture) + " " + Travelled.ToString(CultureInfo.InvariantCulture);
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 	#endregion MSGTrainMerge
@@ -1566,13 +1571,25 @@ namespace ORTS.MultiPlayer
 		{
 			if (MPManager.GetUserName() == user || user == "All")
 			{
-				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Message(level == "Error" ? ConfirmLevel.Error : level == "Warning" ? ConfirmLevel.Warning : level == "Info" ? ConfirmLevel.Information : ConfirmLevel.None, msgx);
-				System.Console.WriteLine(level + ": " + msgx); 
+				System.Console.WriteLine(level + ": " + msgx);
+				if (Program.Simulator.Confirmer != null && level == "Error")
+					Program.Simulator.Confirmer.Message(ConfirmLevel.Error, msgx);
+
 				if (level == "Error" && !MPManager.IsServer())//if is a client, fatal error, will close the connection, and get into single mode
 				{
 					MPManager.Notify((new MSGQuit(MPManager.GetUserName())).ToString());//to be nice, still send a quit before close the connection
 					throw new MultiPlayerError();//this is a fatal error, thus the client will be stopped in ClientComm
+				}
+				else if (level == "SameNameError" && !MPManager.IsServer())//someone with my name but I have been admitted into the game, will ignore it, otherwise, will quit
+				{
+					System.Console.WriteLine(MPManager.OnlineTrains.Players.Count);
+
+					if (MPManager.OnlineTrains.Players.Count < 1)
+					{
+						if (Program.Simulator.Confirmer != null)
+							Program.Simulator.Confirmer.Message(ConfirmLevel.Error, "Name conflicted with people in the game, will play in single mode");
+						throw new SameNameError();//this is a fatal error, thus the client will be stopped in ClientComm
+					}
 				}
 				else if (level == "SwitchWarning")
 				{
@@ -1594,12 +1611,14 @@ namespace ORTS.MultiPlayer
 					MPManager.Instance().CheckSpad = true;
 					return;
 				}
-                else if (level == "TimeCheck" && !MPManager.IsServer())
-                {
-                    var t = double.Parse(msgx, CultureInfo.InvariantCulture);
-                    MPManager.Instance().serverTimeDifference = t - Program.Simulator.ClockTime;
-                    return;
-                }
+				else if (level == "TimeCheck" && !MPManager.IsServer())
+				{
+					var t = double.Parse(msgx, CultureInfo.InvariantCulture);
+					MPManager.Instance().serverTimeDifference = t - Program.Simulator.ClockTime;
+					return;
+				}
+				if (Program.Simulator.Confirmer != null)
+					Program.Simulator.Confirmer.Message(level == "Warning" ? ConfirmLevel.Warning : level == "Info" ? ConfirmLevel.Information : ConfirmLevel.None, msgx);
 
 			}
 		}
@@ -1607,7 +1626,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "MESSAGE " + user + "\t" + level + "\t" + msgx;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 
@@ -1683,7 +1702,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "CONTROL " + user + "\t" + level + "\t" + num;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 
@@ -1735,7 +1754,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "LOCCHANGE " + user + "\t" + engine + "\t" + num;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 
@@ -1768,7 +1787,7 @@ namespace ORTS.MultiPlayer
 		{
 
 			string tmp = "EVENT " + user + " " + EventName + " " + EventState;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -1842,7 +1861,7 @@ namespace ORTS.MultiPlayer
 		{
 
 			string tmp = "QUIT " + user;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -1861,42 +1880,38 @@ namespace ORTS.MultiPlayer
 			{
 				p = MPManager.OnlineTrains.Players[user];
 			}
-			if (p != null && Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.user + " quit.");
+			if (p == null) return;
+			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.user + " quit.");
 			if (MPManager.IsServer())
 			{
+				if (p.protect == true) { p.protect = false; return; }
 				MPManager.BroadCast(this.ToString()); //if the server, will broadcast
-				if (p != null)
+				//if the one quit controls my train, I will gain back the control
+				if (p.Train == Program.Simulator.PlayerLocomotive.Train)
+					Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+				MPManager.Instance().AddRemovedPlayer(p);
+				//the client may quit because of lost connection, will remember it so it may recover in the future when the player log in again
+				if (p.Train != null && p.status != OnlinePlayer.Status.Removed) //if this player has train and is not removed by the dispatcher
 				{
-					//if the one quit controls my train, I will gain back the control
-					if (p.Train == Program.Simulator.PlayerLocomotive.Train) 
-						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
-					MPManager.Instance().AddRemovedPlayer(p);
-					//the client may quit because of lost connection, will remember it so it may recover in the future when the player log in again
-					if (p.Train != null && p.status != OnlinePlayer.Status.Removed) //if this player has train and is not removed by the dispatcher
-					{
-						if (!MPManager.Instance().lostPlayer.ContainsKey(p.Username)) MPManager.Instance().lostPlayer.Add(p.Username, p);
-						p.quitTime = Program.Simulator.GameTime;
-						p.Train.SpeedMpS = 0.0f;
-						p.status = OnlinePlayer.Status.Quit;
-					}
+					if (!MPManager.Instance().lostPlayer.ContainsKey(p.Username)) MPManager.Instance().lostPlayer.Add(p.Username, p);
+					p.quitTime = Program.Simulator.GameTime;
+					p.Train.SpeedMpS = 0.0f;
+					p.status = OnlinePlayer.Status.Quit;
 				}
 				MPManager.BroadCast(this.ToString()); //broadcast twice
 
 			}
 			else //client will remove train
 			{
-				if (p != null)
+				//if the one quit controls my train, I will gain back the control
+				if (p.Train == Program.Simulator.PlayerLocomotive.Train)
+					Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+				MPManager.Instance().AddRemovedPlayer(p);
+				if (ServerQuit)//warning, need to remove other player trains if there are not AI, in the future
 				{
-					//if the one quit controls my train, I will gain back the control
-					if (p.Train == Program.Simulator.PlayerLocomotive.Train)
-						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
-					MPManager.Instance().AddRemovedPlayer(p);
-					if (ServerQuit)//warning, need to remove other player trains if there are not AI, in the future
-					{
-						//no matter what, let player gain back the control of the player train
-						Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
-						throw new MultiPlayerError(); //server quit, end communication by throwing this error 
-					}
+					//no matter what, let player gain back the control of the player train
+					Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
+					throw new MultiPlayerError(); //server quit, end communication by throwing this error 
 				}
 			}
 		}
@@ -1905,7 +1920,7 @@ namespace ORTS.MultiPlayer
 
 	#endregion MSGQuit
 
-	#region MSGGetTrain
+    #region MSGGetTrain
 	public class MSGGetTrain : Message
 	{
 		public int num;
@@ -1926,7 +1941,7 @@ namespace ORTS.MultiPlayer
 		{
 
 			string tmp = "GETTRAIN " + user + " " + num;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -2079,7 +2094,7 @@ namespace ORTS.MultiPlayer
 
 			if (t.Cars.Contains(Program.Simulator.PlayerLocomotive) || newT.Cars.Contains(Program.Simulator.PlayerLocomotive))
 			{
-				string info = "Trains uncoupled, gain back control by Shift-E";
+				string info = "Trains uncoupled, gain back control by Alt-E";
 				if (Program.Simulator.Confirmer != null)
 					Program.Simulator.Confirmer.Information(info);
 			}
@@ -2150,7 +2165,7 @@ namespace ORTS.MultiPlayer
 				+ FillInString(1)
 				+ "\t" + TileX2 + " " + TileZ2 + " " + X2.ToString(CultureInfo.InvariantCulture) + " " + Z2.ToString(CultureInfo.InvariantCulture) + " " + Travelled2.ToString(CultureInfo.InvariantCulture) + " " + Speed2.ToString(CultureInfo.InvariantCulture) + " " + train2Direction + " " + newTrainNumber + " " + mDirection2 + "\t"
 				+ FillInString(2);
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -2342,7 +2357,7 @@ namespace ORTS.MultiPlayer
 
 				if (train.Cars.Contains(Program.Simulator.PlayerLocomotive) || train2.Cars.Contains(Program.Simulator.PlayerLocomotive))
 				{
-					string info = "Trains uncoupled, gain back control by Shift-E";
+					string info = "Trains uncoupled, gain back control by Alt-E";
 					if (Program.Simulator.Confirmer != null)
 						Program.Simulator.Confirmer.Information(info);
 				}
@@ -2502,7 +2517,7 @@ namespace ORTS.MultiPlayer
 
 				tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\t";
 			}
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		static TrainCar FindCar(Train t1, Train t2, string carID)
@@ -2732,7 +2747,7 @@ namespace ORTS.MultiPlayer
 			Buffer.BlockCopy(compressedData, 0, gZipBuffer, 4, compressedData.Length);
 			Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gZipBuffer, 0, 4);
 			string tmp = "SIGNALSTATES " + Convert.ToBase64String(gZipBuffer); // fill in the message body here
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 	#endregion MSGSignalStatus
@@ -2840,7 +2855,7 @@ namespace ORTS.MultiPlayer
 				TT.ToString(CultureInfo.InvariantCulture) + "\t" + VL.ToString(CultureInfo.InvariantCulture) + "\t" + CC.ToString(CultureInfo.InvariantCulture) + "\t" +
 				BC.ToString(CultureInfo.InvariantCulture) + "\t" + DC.ToString(CultureInfo.InvariantCulture) + "\t" + FC.ToString(CultureInfo.InvariantCulture) + "\t" +
 				I1.ToString(CultureInfo.InvariantCulture) + "\t" + I2.ToString(CultureInfo.InvariantCulture); // fill in the message body here
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 	#endregion MSGLocoInfo
@@ -2867,7 +2882,7 @@ namespace ORTS.MultiPlayer
 		{
 
 			string tmp = "AVATAR " + user +"\n" + url;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -2943,7 +2958,7 @@ namespace ORTS.MultiPlayer
 		public override string ToString()
 		{
 			string tmp = "TEXT " + sender + "\t" + user + "\t" + msgx;
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 
@@ -2976,7 +2991,7 @@ namespace ORTS.MultiPlayer
 		{
 
 			string tmp = "WEATHER " + weather + " " + overcast.ToString(CultureInfo.InvariantCulture) + " " + fog.ToString(CultureInfo.InvariantCulture);
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -3023,7 +3038,7 @@ namespace ORTS.MultiPlayer
 		{
 
 			string tmp = "AIDER " + user + "\t" + (add == true ? "T" : "F");
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 
 		public override void HandleMsg()
@@ -3110,7 +3125,7 @@ namespace ORTS.MultiPlayer
 		{
 			
 			string tmp = "SIGNALCHANGE " + sender + " " + index + " " + pick; // fill in the message body here
-			return "" + tmp.Length + ": " + tmp;
+			return " " + tmp.Length + ": " + tmp;
 		}
 	}
 	#endregion MSGSignalChange

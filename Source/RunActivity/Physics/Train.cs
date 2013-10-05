@@ -11795,7 +11795,7 @@ namespace ORTS
                     var x = travelled + LastSpeedMpS * elapsedClockSeconds + (SpeedMpS - LastSpeedMpS) / 2 * elapsedClockSeconds;
                     this.MUDirection = (Direction)expectedDIr;
 
-                    if (Math.Abs(x - expectedTravelled) < 0.2 || Math.Abs(x - expectedTravelled) > 10)
+                    if (Math.Abs(x - expectedTravelled) < 1 || Math.Abs(x - expectedTravelled) > 20)
                     {
                         CalculatePositionOfCars(expectedTravelled - travelled);
                         //if something wrong with the switch

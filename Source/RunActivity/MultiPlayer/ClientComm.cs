@@ -99,7 +99,7 @@ namespace ORTS.MultiPlayer
 					info = decoder.GetMsg();
 					while (info != null)
 					{
-						//System.Console.WriteLine(info);
+						System.Console.WriteLine(info);
 						Message msg = Message.Decode(info);
 						if (Connected || msg is MSGRequired) msg.HandleMsg();
 						info = decoder.GetMsg();
@@ -108,6 +108,13 @@ namespace ORTS.MultiPlayer
 				catch (MultiPlayerError)
 				{
 					break;
+				}
+				catch (SameNameError) //I have conflict with some one in the game, will close, and abort.
+				{
+					if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Error("Connection to the server is lost, will play as single mode");
+					Program.Client = null;
+					tcpClient.Close();
+					listenThread.Abort();
 				}
 				catch (Exception e)
 				{
@@ -131,7 +138,7 @@ namespace ORTS.MultiPlayer
 				Program.Simulator.PlayerLocomotive.Train.TrainType = Train.TRAINTYPE.PLAYER;
 				Program.Simulator.PlayerLocomotive.Train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 			}
-			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("Shift-E to gain control of your train");
+			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("Alt-E to gain control of your train");
 
 			Program.Client = null;
 			tcpClient.Close();
