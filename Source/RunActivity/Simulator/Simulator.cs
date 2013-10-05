@@ -535,7 +535,6 @@ namespace ORTS
         {
 
             Debug.Assert(Trains != null, "Cannot InitializePlayerTrain() without Simulator.Trains.");
-
             // set up the player locomotive
             // first extract the player service definition from the activity file
             // this gives the consist and path
@@ -648,7 +647,10 @@ namespace ORTS
             train.CalculatePositionOfCars(0);
             Trains.Add(train);
             train.AITrainBrakePercent = 100;
-            train.TrainMaxSpeedMpS = (float)TRK.Tr_RouteFile.SpeedLimit;
+            if ((conFile.Train.TrainCfg.MaxVelocity != null) && (conFile.Train.TrainCfg.MaxVelocity.A <= 0f))
+                train.TrainMaxSpeedMpS = (float)TRK.Tr_RouteFile.SpeedLimit;
+            else
+                train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
 
             // Note the initial position to be stored by a Save and used in Menu.exe to calculate DistanceFromStartM 
             InitialTileX = Trains[0].FrontTDBTraveller.TileX + (Trains[0].FrontTDBTraveller.X / 2048);

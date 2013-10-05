@@ -34,7 +34,8 @@ using MSTS;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 using System.IO;
-using ORTS.Popups;  // needed for Confirmation
+using ORTS.Popups;
+using System.Diagnostics;  // needed for Confirmation
 
 namespace ORTS
 {
@@ -146,6 +147,13 @@ namespace ORTS
             return new MSTSElectricLocomotiveViewer(viewer, this);
         }
 
+        public override void Initialize()
+        {
+            if ((!Simulator.TRK.Tr_RouteFile.Electrified)&&(!Simulator.Settings.OverrideNonElectrifiedRoutes))
+                Trace.WriteLine("Warning: The route is not electrified. Electric driven trains will not run!");
+            base.Initialize();
+        }
+
         /// <summary>
         /// This is a periodic update to calculate physics 
         /// parameters and update the base class's MotiveForceN 
@@ -171,9 +179,12 @@ namespace ORTS
                 {
                     if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f)
                     {
-                        if (!PowerOn)
-                            SignalEvent(Event.EnginePowerOn);
-                        PowerOn = true;
+                        if ((Simulator.TRK.Tr_RouteFile.Electrified)||(Simulator.Settings.OverrideNonElectrifiedRoutes))
+                        {
+                            if (!PowerOn)
+                                SignalEvent(Event.EnginePowerOn);
+                            PowerOn = true;
+                        }
                         PantographFirstDelay = 0.0f;
                     }
                 }
@@ -184,9 +195,12 @@ namespace ORTS
                 {
                     if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f)
                     {
-                        if (!PowerOn)
-                            SignalEvent(Event.EnginePowerOn);
-                        PowerOn = true;
+                        if ((Simulator.TRK.Tr_RouteFile.Electrified)||(Simulator.Settings.OverrideNonElectrifiedRoutes))
+                        {
+                            if (!PowerOn)
+                                SignalEvent(Event.EnginePowerOn);
+                            PowerOn = true;
+                        }
                         PantographSecondDelay = 0.0f;
                     }
                 }
@@ -257,6 +271,10 @@ namespace ORTS
             if (PantographFirstUp != up)
                 PantographFirstDelay += PowerOnDelayS;
             PantographFirstUp = up;
+            if ((up) && (!Simulator.TRK.Tr_RouteFile.Electrified))
+                Simulator.Confirmer.Warning("No power line!");
+            if (Simulator.Settings.OverrideNonElectrifiedRoutes)
+                Simulator.Confirmer.Information("Power line condition overriden.");
         }
 
         public void SetPantographSecond( bool up)
@@ -264,6 +282,10 @@ namespace ORTS
             if (PantographSecondUp != up)
                 PantographSecondDelay += PowerOnDelayS;
             PantographSecondUp = up;
+            if((up)&&(!Simulator.TRK.Tr_RouteFile.Electrified))
+                Simulator.Confirmer.Warning("No power line!");
+            if (Simulator.Settings.OverrideNonElectrifiedRoutes)
+                Simulator.Confirmer.Information("Power line condition overriden.");
         }
 
         public override float GetDataOf(CabViewControl cvc)
@@ -339,7 +361,7 @@ namespace ORTS
         public override string GetDebugStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat("Car {0}\t{2} {1}\t{3:F0}%\t{4:F0}m/s\t{5:F0}kW\t{6:F0}kN\t{7}\t{8}\t\t{9}\t{10}\t{11}\n", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "", PantographFirstDelay > 0 || PantographSecondDelay > 0 ? "Switching" : PowerOn ? "Power on" : "Power off", PantographFirstUp ? "1st up" : "", PantographSecondUp ? "2nd up" : "");
+            status.AppendFormat("Car {0}\t{2} {1}\t{3:F0}%\t{4:F0}m/s\t{5:F0}kW\t{6:F0}kN\t{7}\t{8}\tElectric:\t{9}\t{10}\t{11}", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "", PantographFirstDelay > 0 || PantographSecondDelay > 0 ? "Switching" : PowerOn ? "Power on" : "Power off", PantographFirstUp ? "1st up" : "", PantographSecondUp ? "2nd up" : "");
             return status.ToString();
         }
 

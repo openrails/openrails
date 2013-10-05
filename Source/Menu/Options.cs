@@ -90,6 +90,7 @@ namespace ORTS
             numericCab2DStretch.Value = Settings.Cab2DStretch;
             checkBoxAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             checkBoxBreakCouplers.Checked = Settings.BreakCouplers;
+            checkBoxOverrideNonElectrified.Checked = Settings.OverrideNonElectrifiedRoutes;
 			soundVolume.Value = Settings.SoundVolumePercent;
             ElevationAmount.Value = Settings.UseSuperElevation;
             MinLengthChoice.Value = Settings.SuperElevationMinLen;
@@ -315,6 +316,7 @@ namespace ORTS
             Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
             Settings.UseAdvancedAdhesion = checkBoxAdvancedAdhesion.Checked;
             Settings.BreakCouplers = checkBoxBreakCouplers.Checked;
+            Settings.OverrideNonElectrifiedRoutes = checkBoxOverrideNonElectrified.Checked;
 			Settings.SoundVolumePercent = (int)soundVolume.Value;
             Settings.UseSuperElevation = (int)ElevationAmount.Value;
             Settings.SuperElevationMinLen = (int)MinLengthChoice.Value;

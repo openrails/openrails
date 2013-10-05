@@ -129,6 +129,8 @@ namespace ORTS
         public int AdhesionMovingAverageFilterSize { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
+        [Default(false)]
+        public bool OverrideNonElectrifiedRoutes { get; set; }
 
         // Experimental settings for super-elevation:
         [Default(0)]

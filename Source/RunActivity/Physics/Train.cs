@@ -1313,6 +1313,8 @@ namespace ORTS
 
             if (!existingSpeedLimits)
             {
+                if (TrainMaxSpeedMpS <= 0f)
+                    TrainMaxSpeedMpS = (this.LeadLocomotive as MSTSLocomotive).MaxSpeedMpS;
                 AllowedMaxSpeedMpS = TrainMaxSpeedMpS;   // set default
                 allowedMaxSpeedSignalMpS = TrainMaxSpeedMpS;   // set default
 
@@ -2644,6 +2646,17 @@ namespace ORTS
 
             foreach (TrainCar car in Cars)
             {
+                if (TrainMaxSpeedMpS <= 0f)
+                {
+                    if(car is MSTSLocomotive)
+                        TrainMaxSpeedMpS = (car as MSTSLocomotive).MaxSpeedMpS;
+                    if (car is MSTSElectricLocomotive)
+                        TrainMaxSpeedMpS = (car as MSTSElectricLocomotive).MaxSpeedMpS;
+                    if (car is MSTSDieselLocomotive)
+                        TrainMaxSpeedMpS = (car as MSTSDieselLocomotive).MaxSpeedMpS;
+                    if (car is MSTSSteamLocomotive)
+                        TrainMaxSpeedMpS = (car as MSTSSteamLocomotive).MaxSpeedMpS;
+                }
                 if (car.SpeedMpS > 0)
                 {
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
@@ -8665,7 +8678,7 @@ namespace ORTS
             thisInfo.projectedSpeedMpS = ProjectedSpeedMpS;
 
             // set max speed
-            thisInfo.allowedSpeedMpS = AllowedMaxSpeedMpS;
+            thisInfo.allowedSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
 
             // set direction
             thisInfo.direction = MUDirection == Direction.Forward ? 0 : (MUDirection == Direction.Reverse ? 1 : -1);
@@ -8791,7 +8804,7 @@ namespace ORTS
             thisInfo.projectedSpeedMpS = ProjectedSpeedMpS;
 
             // set max speed
-            thisInfo.allowedSpeedMpS = AllowedMaxSpeedMpS;
+            thisInfo.allowedSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
 
             // set direction
             thisInfo.direction = MUDirection == Direction.Forward ? 0 : (MUDirection == Direction.Reverse ? 1 : -1);
@@ -8933,7 +8946,7 @@ namespace ORTS
             thisInfo.projectedSpeedMpS = ProjectedSpeedMpS;
 
             // set max speed
-            thisInfo.allowedSpeedMpS = AllowedMaxSpeedMpS;
+            thisInfo.allowedSpeedMpS = Math.Min(AllowedMaxSpeedMpS, TrainMaxSpeedMpS);
 
             // set direction
             thisInfo.direction = MUDirection == Direction.Forward ? 0 : 1;
