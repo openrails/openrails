@@ -255,6 +255,18 @@ namespace ORTS
         {
             UpdateEnabled();
         }
+
+		bool CheckUserName(string text)
+		{
+			string tmp = text;
+			if (tmp.Length < 4 || tmp.Length > 10 || tmp.Contains("\"") || tmp.Contains("\'") || tmp.Contains(" ") || tmp.Contains("-") || Char.IsDigit(tmp, 0))
+			{
+				MessageBox.Show("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit.");
+				return false;
+			}
+			return true;
+		}
+
         #endregion
 
         #region Misc. buttons and options
@@ -298,6 +310,7 @@ namespace ORTS
 
         void buttonMPClient_Click(object sender, EventArgs e)
         {
+			if (CheckUserName(textBoxMPUser.Text) == false) return;
             SaveOptions();
             SelectedAction = UserAction.MultiplayerClient;
             DialogResult = DialogResult.OK;
@@ -305,7 +318,8 @@ namespace ORTS
 
         void buttonMPServer_Click(object sender, EventArgs e)
         {
-            SaveOptions();
+			if (CheckUserName(textBoxMPUser.Text) == false) return;
+			SaveOptions();
             SelectedAction = UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
         }
