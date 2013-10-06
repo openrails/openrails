@@ -874,7 +874,7 @@ namespace ORTS
 				}
 				else
 				{
-					var up = (Matrix.CreateRotationZ((4 - Program.Simulator.CabRotating) * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
+					var up = (Matrix.CreateRotationZ((Program.Simulator.CabRotating - 4) * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
 					return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
 				}
             }
