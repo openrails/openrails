@@ -32,6 +32,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -815,9 +816,21 @@ namespace ORTS
             Animations = sFile.shape.animations;
 
 #if DEBUG_SHAPE_HIERARCHY
-            Console.WriteLine("Shape {0}:", Path.GetFileNameWithoutExtension(FilePath).ToUpper());
-            for (var i = 0; i < MatrixNames.Count; ++i)
-                Console.WriteLine("  Matrix {0,-2} {1}", i, MatrixNames[i]);
+			var debugShapeHierarchy = new StringBuilder();
+			debugShapeHierarchy.AppendFormat("Shape {0}:\n", Path.GetFileNameWithoutExtension(FilePath).ToUpper());
+			for (var i = 0; i < MatrixNames.Count; ++i)
+				debugShapeHierarchy.AppendFormat("  Matrix {0,-2}: {1}\n", i, MatrixNames[i]);
+			for (var i = 0; i < sFile.shape.prim_states.Count; ++i)
+				debugShapeHierarchy.AppendFormat("  PState {0,-2}: flags={1,-8:X8} shader={2,-15} alpha={3,-2} vstate={4,-2} lstate={5,-2} zbias={6,-5:F3} zbuffer={7,-2} name={8}\n", i, sFile.shape.prim_states[i].flags, sFile.shape.shader_names[sFile.shape.prim_states[i].ishader], sFile.shape.prim_states[i].alphatestmode, sFile.shape.prim_states[i].ivtx_state, sFile.shape.prim_states[i].LightCfgIdx, sFile.shape.prim_states[i].ZBias, sFile.shape.prim_states[i].ZBufMode, sFile.shape.prim_states[i].Name);
+			for (var i = 0; i < sFile.shape.vtx_states.Count; ++i)
+				debugShapeHierarchy.AppendFormat("  VState {0,-2}: flags={1,-8:X8} lflags={2,-8:X8} lstate={3,-2} material={4,-3} matrix2={5,-2}\n", i, sFile.shape.vtx_states[i].flags, sFile.shape.vtx_states[i].LightFlags, sFile.shape.vtx_states[i].LightCfgIdx, sFile.shape.vtx_states[i].LightMatIdx, sFile.shape.vtx_states[i].Matrix2);
+			for (var i = 0; i < sFile.shape.light_model_cfgs.Count; ++i)
+			{
+				debugShapeHierarchy.AppendFormat("  LState {0,-2}: flags={1,-8:X8} uv_ops={2,-2}\n", i, sFile.shape.light_model_cfgs[i].flags, sFile.shape.light_model_cfgs[i].uv_ops.Count);
+				for (var j = 0; j < sFile.shape.light_model_cfgs[i].uv_ops.Count; ++j)
+					debugShapeHierarchy.AppendFormat("    UV OP {0,-2}: texture_address_mode={1,-2}\n", j, sFile.shape.light_model_cfgs[i].uv_ops[j].TexAddrMode);
+			}
+			Console.Write(debugShapeHierarchy.ToString());
 #endif
             LodControls = (from lod_control lod in sFile.shape.lod_controls
                            select new LodControl(lod, textureFlags, sFile, this)).ToArray();
@@ -925,7 +938,8 @@ namespace ORTS
 #endif
             {
 #if DEBUG_SHAPE_HIERARCHY
-                Console.WriteLine("      Sub object {0}:", subObjectIndex);
+				var debugShapeHierarchy = new StringBuilder();
+				debugShapeHierarchy.AppendFormat("      Sub object {0}:\n", subObjectIndex);
 #endif
                 var vertexBufferSet = new VertexBufferSet(sub_object, sFile, sharedShape.Viewer.GraphicsDevice);
 #if DEBUG_SHAPE_NORMALS
@@ -1016,14 +1030,14 @@ namespace ORTS
                     }
 
 #if DEBUG_SHAPE_HIERARCHY
-                    Console.Write("        Primitive {0}: prim_state_idx={1,-2} ivtx_state={2,-2} imatrix={3,-2}", primitiveIndex, primitive.prim_state_idx, primitiveState.ivtx_state, vertexState.imatrix);
+					debugShapeHierarchy.AppendFormat("        Primitive {0,-2}: pstate={1,-2} vstate={2,-2} lstate={3,-2} matrix={4,-2}", primitiveIndex, primitive.prim_state_idx, primitiveState.ivtx_state, vertexState.LightCfgIdx, vertexState.imatrix);
                     var debugMatrix = vertexState.imatrix;
                     while (debugMatrix >= 0)
                     {
-                        Console.Write(" {0}", sharedShape.MatrixNames[debugMatrix]);
+						debugShapeHierarchy.AppendFormat(" {0}", sharedShape.MatrixNames[debugMatrix]);
                         debugMatrix = hierarchy[debugMatrix];
                     }
-                    Console.WriteLine();
+					debugShapeHierarchy.Append("\n");
 #endif
 
 #if OPTIMIZE_SHAPES_ON_LOAD
@@ -1094,7 +1108,11 @@ namespace ORTS
                 if (primitiveIndex < ShapePrimitives.Length)
                     ShapePrimitives = ShapePrimitives.Take(primitiveIndex).ToArray();
 #endif
-            }
+
+#if DEBUG_SHAPE_HIERARCHY
+				Console.Write(debugShapeHierarchy.ToString());
+#endif
+			}
 
             [CallOnThread("Loader")]
             internal void Mark()
