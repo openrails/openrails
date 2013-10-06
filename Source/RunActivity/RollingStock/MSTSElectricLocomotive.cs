@@ -258,8 +258,11 @@ namespace ORTS
                 var mstsElectricLocomotive = car as MSTSElectricLocomotive;
                 if (mstsElectricLocomotive != null)
                 {
-                    if (item == 1) mstsElectricLocomotive.SetPantographFirst(raise);
-                    if (item == 2) mstsElectricLocomotive.SetPantographSecond(raise);
+                    if (mstsElectricLocomotive.AcceptMUSignals)
+                    {
+                        if (item == 1) mstsElectricLocomotive.SetPantographFirst(raise);
+                        if (item == 2) mstsElectricLocomotive.SetPantographSecond(raise);
+                    }
                 }
             }
             if( item == 1 ) this.Simulator.Confirmer.Confirm( CabControl.Pantograph1, raise == true ? CabSetting.On : CabSetting.Off );
@@ -286,6 +289,12 @@ namespace ORTS
                 Simulator.Confirmer.Warning("No power line!");
             if (Simulator.Settings.OverrideNonElectrifiedRoutes)
                 Simulator.Confirmer.Information("Power line condition overriden.");
+        }
+
+        public override void SetPower(bool ToState)
+        {
+            SetPantographFirst(ToState);
+            base.SetPower(ToState);
         }
 
         public override float GetDataOf(CabViewControl cvc)
@@ -361,7 +370,7 @@ namespace ORTS
         public override string GetDebugStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat("Car {0}\t{2} {1}\t{3:F0}%\t{4:F0}m/s\t{5:F0}kW\t{6:F0}kN\t{7}\t{8}\tElectric:\t{9}\t{10}\t{11}", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "", PantographFirstDelay > 0 || PantographSecondDelay > 0 ? "Switching" : PowerOn ? "Power on" : "Power off", PantographFirstUp ? "1st up" : "", PantographSecondUp ? "2nd up" : "");
+            status.AppendFormat("Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5:F0}m/s\t{6:F0}kW\t{7:F0}kN\t{8}\t{9}\tElectric:\t{10}\t{11}\t{12}", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", AcceptMUSignals ? "MU'd" : "Single", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "", PantographFirstDelay > 0 || PantographSecondDelay > 0 ? "Switching" : PowerOn ? "Power on" : "Power off", PantographFirstUp ? "1st up" : "", PantographSecondUp ? "2nd up" : "");
             return status.ToString();
         }
 

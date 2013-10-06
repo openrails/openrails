@@ -49,6 +49,7 @@ namespace ORTS
         public abstract void Connect();
         public abstract void Disconnect();
         public abstract void SetHandbrakePercent(float percent);
+        public abstract bool GetHandbrakeStatus();
         public abstract void SetRetainer(RetainerSetting setting);
     }
 
@@ -104,6 +105,11 @@ namespace ORTS
         {
             Car = car;
             BrakePipeVolumeFT3 = .028f * (1 + car.LengthM);
+        }
+
+        public override bool GetHandbrakeStatus()
+        {
+            return HandbrakePercent > 0;
         }
 
         public override void InitializeFromCopy(BrakeSystem copy)
@@ -542,6 +548,11 @@ namespace ORTS
         {
         }
 
+        public override bool GetHandbrakeStatus()
+        {
+            return HandbrakePercent > 0;
+        }
+
         public override void Update(float elapsedClockSeconds)
         {
             ValveState prevTripleValueState = TripleValveState;
@@ -770,6 +781,11 @@ namespace ORTS
         public VacuumSinglePipe( TrainCar car )
         {
             Car = car;
+        }
+
+        public override bool GetHandbrakeStatus()
+        {
+            return HandbrakePercent > 0;
         }
 
         public override void InitializeFromCopy(BrakeSystem copy)

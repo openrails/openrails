@@ -308,7 +308,7 @@ namespace ORTS
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive())
+            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
             {
                 ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
 
@@ -325,6 +325,7 @@ namespace ORTS
                     GearBoxController.Update(elapsedClockSeconds);
                 }
             }
+            LocalThrottlePercent = ThrottlePercent;
 
 #if INDIVIDUAL_CONTROL
 			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
@@ -433,7 +434,7 @@ namespace ORTS
             ExhaustDynamics = DieselEngines[0].ExhaustDynamics;
             ExhaustColor = DieselEngines[0].ExhaustColor;
 
-            if (PowerOn)
+            if (PowerOn = DieselEngines.PowerOn)
             {
                 if (TractiveForceCurves == null)
                 {
@@ -766,7 +767,7 @@ namespace ORTS
         public override string GetDebugStatus()
         {
             var status = new StringBuilder();
-            status.AppendFormat("Car {0}\t{2} {1}\t{3:F0}%\t{4:F0}m/s\t{5:F0}kW\t{6:F0}kN\t{7}\t{8}\t", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "");
+            status.AppendFormat("Car {0}\t{2} {1}\t{3}\t{4:F0}%\t{5:F0}m/s\t{6:F0}kW\t{7:F0}kN\t{8}\t{9}\t", UiD, Flipped ? "(flip)" : "", Direction == Direction.Forward ? "Fwd" : Direction == Direction.Reverse ? "Rev" : "N", AcceptMUSignals ? "MU'd" : "Single", ThrottlePercent, SpeedMpS, MotiveForceN * SpeedMpS / 1000, MotiveForceN / 1000, WheelSlip ? "Slipping" : "", CouplerOverloaded ? "Coupler overloaded" : "");
             if(DieselEngines.HasGearBox)
                 status.AppendFormat("Diesel:\t{0}\t{1:F0}RPM\tGear {2}\t Fuel \t{3:F0}L\t{4:F0}L/h", DieselEngines[0].EngineStatus, DieselEngines[0].RealRPM, DieselEngines.HasGearBox ? DieselEngines[0].GearBox.CurrentGearIndex : 0, DieselLevelL, DieselFlowLps * 3600.0f);
             else
@@ -781,6 +782,22 @@ namespace ORTS
         {
             if (!this.IsLeadLocomotive() && (this.ThrottlePercent == 0))
                 PowerOn = !PowerOn;
+        }
+
+        public override void SetPower(bool ToState)
+        {
+            if (ToState)
+            {
+                foreach (DieselEngine engine in DieselEngines)
+                    engine.Start();
+            }
+            else
+            {
+                foreach (DieselEngine engine in DieselEngines)
+                    engine.Stop();
+            }
+
+            base.SetPower(ToState);
         }
 
     } // class DieselLocomotive
@@ -893,7 +910,7 @@ namespace ORTS
                         }
                         //mstsDieselLocomotive.StartStopDiesel();
                         powerOn = mstsDieselLocomotive.DieselEngines.PowerOn;
-                        if ((car != Program.Simulator.PlayerLocomotive))
+                        if ((car != Program.Simulator.PlayerLocomotive)&&(mstsDieselLocomotive.AcceptMUSignals))
                         {
                             if ((mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped) ||
                                 (mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping))

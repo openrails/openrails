@@ -236,6 +236,58 @@ namespace ORTS {
         }
     }
 
+    // Power
+    [Serializable()]
+    public class PowerCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public PowerCommand(CommandLog log, MSTSLocomotive receiver, bool toState)
+            : base(log, toState)
+        {
+            Receiver = receiver;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;//no receiver of this panto
+            Receiver.SetPower(ToState);
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "ON" : "OFF");
+        }
+    }
+
+    // MU commands connection
+    [Serializable()]
+    public class ToggleMUCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleMUCommand(CommandLog log, MSTSLocomotive receiver, bool toState)
+            : base(log, toState)
+        {
+            Receiver = receiver;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;//no receiver of this panto
+            Receiver.ToggleMUCommand(ToState);
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "ON" : "OFF");
+        }
+    }
+
     [Serializable()]
     public class NotchedThrottleCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
@@ -381,6 +433,30 @@ namespace ORTS {
         }
 
         public override string ToString() {
+            return base.ToString() + " - " + (ToState ? "apply" : "release");
+        }
+    }
+
+    [Serializable()]
+    public class WagonHandbrakeCommand : BooleanCommand
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public WagonHandbrakeCommand(CommandLog log, MSTSWagon car, bool toState)
+            : base(log, toState)
+        {
+            Receiver = car;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.SetWagonHandbrake(ToState);
+            // Report();
+        }
+
+        public override string ToString()
+        {
             return base.ToString() + " - " + (ToState ? "apply" : "release");
         }
     }

@@ -559,6 +559,11 @@ namespace ORTS
             Simulator.Confirmer.Confirm( CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off );
         }
 
+        public bool GetTrainHandbrakeStatus()
+        {
+            return MSTSBrakeSystem.GetHandbrakeStatus();
+        }
+
         // sound sources and viewers can register themselves to get direct notification of an event
         public List<EventHandler> EventHandlers = new List<EventHandler>();
 
@@ -606,6 +611,14 @@ namespace ORTS
             Couplers[0]= coupler;
             if (Couplers.Count > 1)
                 Couplers.RemoveAt(1);
+        }
+
+        public void SetWagonHandbrake(bool ToState)
+        {
+            if (ToState)
+                MSTSBrakeSystem.SetHandbrakePercent(100);
+            else
+                MSTSBrakeSystem.SetHandbrakePercent(0);
         }
     }
 

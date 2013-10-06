@@ -98,6 +98,8 @@ namespace ORTS
         private float MaxVibSpeed = 15.0f;//the speed when max shaking happens
         private IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
 
+        public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals
+
         public float SpeedMpS
         {
             get
@@ -121,9 +123,45 @@ namespace ORTS
         }
 
         public Matrix SuperElevationMatrix = Matrix.Identity;
+
+        public float LocalThrottlePercent;
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
-        public float ThrottlePercent { get { return Train.MUThrottlePercent; } set { Train.MUThrottlePercent = value; } }
-        public int GearboxGearIndex { get { return Train.MUGearboxGearIndex; } set { Train.MUGearboxGearIndex = value; } }
+        public float ThrottlePercent 
+        { 
+            get
+            {
+                if (AcceptMUSignals)
+                    return Train.MUThrottlePercent;
+                else
+                    return LocalThrottlePercent;
+            }
+            set
+            {
+                if (AcceptMUSignals)
+                    Train.MUThrottlePercent = value;
+                else
+                    LocalThrottlePercent = value;
+            } 
+        }
+
+        public int LocalGearboxGearIndex;
+        public int GearboxGearIndex 
+        { 
+            get
+            {
+                if (AcceptMUSignals)
+                    return Train.MUGearboxGearIndex;
+                else
+                    return LocalGearboxGearIndex;
+            } 
+            set
+            {
+                if (AcceptMUSignals)
+                    Train.MUGearboxGearIndex = value;
+                else
+                    LocalGearboxGearIndex = value;
+            }
+        }
         public float DynamicBrakePercent { get { return Train.MUDynamicBrakePercent; } set { Train.MUDynamicBrakePercent = value; } }
         public Direction Direction
         { 

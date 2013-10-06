@@ -136,6 +136,9 @@ namespace ORTS
         public bool EmergencyEngagesHorn;
         public bool EmergencyButtonPressed;
         public bool WheelslipCausesThrottleDown;
+
+        
+
 		public float CabRotationZ { get { return (UsingRearCab == true ? -totalRotationZ * Program.Simulator.CabRotating : totalRotationZ * Program.Simulator.CabRotating); } }
 
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string,List<ParticleEmitterData>>();
@@ -580,12 +583,18 @@ namespace ORTS
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive()) {
+            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
+            {
                 ThrottlePercent = ThrottleController.Update(elapsedClockSeconds) * 100.0f;
                 ConfirmWheelslip();
-            } else {
+                LocalThrottlePercent = ThrottlePercent;
+            } 
+            else 
+            {
                 ThrottleController.Update(elapsedClockSeconds);
 			}
+            
+
 #if INDIVIDUAL_CONTROL
 
 			//this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
@@ -1687,6 +1696,16 @@ namespace ORTS
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
 
+        public virtual void SetPower(bool ToState)
+        {
+            
+        }
+
+        internal void ToggleMUCommand(bool ToState)
+        {
+            AcceptMUSignals = ToState;
+        }
+
         public void SetTrainHandbrake( bool apply ) {
             if( apply ) {
                 Train.SetHandbrakePercent( 100 );
@@ -1696,6 +1715,8 @@ namespace ORTS
                 Simulator.Confirmer.Confirm( CabControl.Handbrake, CabSetting.Off );
             }
         }
+
+        
 
         public void SetTrainRetainers( bool apply ) {
             Train.SetRetainers( apply );

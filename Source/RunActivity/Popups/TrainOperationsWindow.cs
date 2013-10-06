@@ -49,7 +49,8 @@ namespace ORTS.Popups {
             if( PlayerTrain != null ) {
                 int carPosition = 0;
                 foreach( var car in PlayerTrain.Cars ) {
-                    var carLabel = new Label( CarWidth, CarListHeight, car.CarID, LabelAlignment.Center );
+                    var carLabel = new TrainOperationsLabel(CarWidth, CarListHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
+                    carLabel.Click += new Action<Control, Point>(carLabel_Click);
 #if NEW_SIGNALLING
                     if (car == PlayerTrain.LeadLocomotive) carLabel.Color = Color.Red;
 #endif
@@ -60,6 +61,11 @@ namespace ORTS.Popups {
                 }
             }
             return hbox;
+        }
+
+        void carLabel_Click(Control arg1, Point arg2)
+        {
+            
         }
 
         public override void PrepareFrame( ElapsedTime elapsedTime, bool updateFull ) {
@@ -90,6 +96,27 @@ namespace ORTS.Popups {
 
         void TrainOperationsCoupler_Click( Control arg1, Point arg2 ) {
             new UncoupleCommand( Viewer.Log, CarPosition );
+        }
+    }
+
+    class TrainOperationsLabel : Label
+    {
+        readonly Viewer3D Viewer;
+        readonly int CarPosition;
+
+        public TrainOperationsLabel(int x, int y, Viewer3D viewer, TrainCar car, int carPosition, LabelAlignment alignment)
+            : base(x, y, "", alignment)
+        {
+            Viewer = viewer;
+            CarPosition = carPosition;
+            Text = car.CarID;
+            Click += new Action<Control, Point>(TrainOperationsLabel_Click);
+        }
+
+        void TrainOperationsLabel_Click(Control arg1, Point arg2)
+        {
+            Viewer.CarOperationsWindow.CarPosition = CarPosition;
+            Viewer.CarOperationsWindow.Visible = true;
         }
     }
 }
