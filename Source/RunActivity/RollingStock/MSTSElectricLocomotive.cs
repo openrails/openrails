@@ -294,6 +294,10 @@ namespace ORTS
         public override void SetPower(bool ToState)
         {
             SetPantographFirst(ToState);
+            if (!ToState)
+                Pan1Up = Pan2Up = Pan = ToState;
+            else
+                Pan1Up = ToState;
             base.SetPower(ToState);
         }
 

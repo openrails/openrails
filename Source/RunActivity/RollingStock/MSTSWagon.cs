@@ -480,7 +480,8 @@ namespace ORTS
 
         // <CJComment> Expected pantograph handling to be in MSTSElectricLocomotive.cs,
         // but guess that some trains have pantographs on non-motorised cars </CJComment>
-        public void ToggleFirstPantograph() {
+        public void ToggleFirstPantograph()
+        {
     		Pan1Up = !Pan1Up;
             if (Simulator.PlayerLocomotive == this) //inform everyone else in the train
             {
@@ -488,7 +489,10 @@ namespace ORTS
                 {
                     var mstsWagon = car as MSTSWagon;
                     if (car != this && mstsWagon != null)
-                        mstsWagon.Pan1Up = Pan1Up;
+                    {
+                        if(car.AcceptMUSignals)
+                            mstsWagon.Pan1Up = Pan1Up;
+                    }
                 }
             }
             if( Pan1Up ) {
@@ -506,7 +510,10 @@ namespace ORTS
                 {
                     var mstsWagon = car as MSTSWagon;
                     if (car != this && mstsWagon != null)
-                        mstsWagon.Pan2Up = Pan2Up;
+                    {
+                        if (car.AcceptMUSignals)
+                            mstsWagon.Pan2Up = Pan2Up;
+                    }
                 }
             }
             if( Pan2Up ) {
