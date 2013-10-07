@@ -2124,7 +2124,7 @@ namespace ORTS
             return data;
         }
 
-        private static float ConvertFromPSI(CabViewControl cvc, float data)
+        protected static float ConvertFromPSI(CabViewControl cvc, float data)
         {
             if (cvc.Units == CABViewControlUnits.BAR)
                 data *= 68.948e-3f;
@@ -3551,6 +3551,12 @@ namespace ORTS
             {
                 case CABViewControlTypes.ENGINE_BRAKE:
                 case CABViewControlTypes.TRAIN_BRAKE:
+                case CABViewControlTypes.REGULATOR:
+                case CABViewControlTypes.CUTOFF:
+                case CABViewControlTypes.BLOWER:
+                case CABViewControlTypes.DAMPERS_FRONT:
+                case CABViewControlTypes.WATER_INJECTOR1:
+                case CABViewControlTypes.WATER_INJECTOR2:
                     index = PercentToIndex(data);
                     break;
                 case CABViewControlTypes.THROTTLE:
@@ -3609,6 +3615,7 @@ namespace ORTS
                 case CABViewControlTypes.RESET:
                 case CABViewControlTypes.WIPERS:
                 case CABViewControlTypes.HORN:
+                case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.BELL:
                 case CABViewControlTypes.SANDERS:
                 case CABViewControlTypes.SANDING:
@@ -3628,6 +3635,9 @@ namespace ORTS
                 case CABViewControlTypes.PENALTY_APP:
                 case CABViewControlTypes.EMERGENCY_BRAKE:
                 case CABViewControlTypes.DOORS_DISPLAY:
+                case CABViewControlTypes.CYL_COCKS:
+                case CABViewControlTypes.STEAM_INJ1:
+                case CABViewControlTypes.STEAM_INJ2:
                     index = (int)data;
                     break;
             }

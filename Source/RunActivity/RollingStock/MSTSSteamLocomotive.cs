@@ -659,6 +659,58 @@ namespace ORTS
             }
         }
 
+        public override float GetDataOf(CabViewControl cvc)
+        {
+            float data;
+
+            switch (cvc.ControlType)
+            {
+                case CABViewControlTypes.WHISTLE:
+                    data = Horn ? 1 : 0;
+                    break;
+                case CABViewControlTypes.REGULATOR:
+                    data = ThrottlePercent / 100f;
+                    break;
+                case CABViewControlTypes.BOILER_WATER:
+                    data = WaterFraction;
+                    break;
+                case CABViewControlTypes.STEAMCHEST_PR:
+                    data = ConvertFromPSI(cvc, CylinderPressurePSI);
+                    break;
+                case CABViewControlTypes.STEAMHEAT_PRESSURE:
+                    data = ConvertFromPSI(cvc, BoilerPressurePSI);
+                    break;
+                case CABViewControlTypes.CUTOFF:
+                    data = Train.MUReverserPercent / 100f;
+                    break;
+                case CABViewControlTypes.CYL_COCKS:
+                    data = CylinderCocksOpen ? 1 : 0;
+                    break;
+                case CABViewControlTypes.BLOWER:
+                    data = BlowerController.CurrentValue;
+                    break;
+                case CABViewControlTypes.DAMPERS_FRONT:
+                    data = DamperController.CurrentValue;
+                    break;
+                case CABViewControlTypes.WATER_INJECTOR1:
+                    data = Injector1Controller.CurrentValue;
+                    break;
+                case CABViewControlTypes.WATER_INJECTOR2:
+                    data = Injector2Controller.CurrentValue;
+                    break;
+                case CABViewControlTypes.STEAM_INJ1:
+                    data = Injector1On ? 1 : 0;
+                    break;
+                case CABViewControlTypes.STEAM_INJ2:
+                    data = Injector2On ? 1 : 0;
+                    break;
+                default:
+                    data = base.GetDataOf(cvc);
+                    break;
+            }
+            return data;
+        }
+
         private string GetCutOffControllerStatus() {
             return String.Format( " {0} {1:F0}", Direction, Math.Abs( Train.MUReverserPercent ) );
         }
