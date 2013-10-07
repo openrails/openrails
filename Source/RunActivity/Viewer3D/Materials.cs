@@ -813,6 +813,22 @@ namespace ORTS
             : base(viewer, terrainTexture)
         {
         }
+
+		public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+		{
+			base.SetState(graphicsDevice, previousMaterial);
+
+			var rs = graphicsDevice.RenderState;
+			rs.CullMode = CullMode.None;
+		}
+
+		public override void ResetState(GraphicsDevice graphicsDevice)
+		{
+			base.ResetState(graphicsDevice);
+
+			var rs = graphicsDevice.RenderState;
+			rs.CullMode = CullMode.CullCounterClockwiseFace;
+		}
     }
 
     public class SkyMaterial : Material

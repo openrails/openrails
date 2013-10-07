@@ -95,7 +95,7 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void Update(ElapsedTime elapsedTime)
         {
-            if (PerformanceTune)
+            if (PerformanceTune && Viewer.RenderProcess.IsActive)
             {
                 // Work out how far we need to change the actual FPS to get to the target.
                 var target = Viewer.Settings.PerformanceTunerTarget - Viewer.RenderProcess.FrameRate.SmoothedValue;
