@@ -594,9 +594,15 @@ namespace ORTS
                 if (Injector2On)
                     BoilerMassLB += elapsedClockSeconds * Injector2Controller.CurrentValue * InjectorRateLBpS;
                 if (BoilerPressurePSI > MaxBoilerPressurePSI)
+                {
+                    SignalEvent(Event.SteamSafetyValveOn);
                     SafetyOn = true;
+                }
                 else if (BoilerPressurePSI < MaxBoilerPressurePSI - SafetyValveDropPSI)
+                {
+                    SignalEvent(Event.SteamSafetyValveOff);
                     SafetyOn = false;
+                }
                 if (SafetyOn)
                 {
                     BoilerMassLB -= elapsedClockSeconds * SafetyValveUsageLBpS;
@@ -762,6 +768,7 @@ namespace ORTS
             CutoffController.StartIncrease( target );
             CutoffController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
+            SignalEvent(Event.ReverserChange);
         }
 
         public void StopReverseIncrease() {
@@ -772,6 +779,7 @@ namespace ORTS
             CutoffController.StartDecrease( target );
             CutoffController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
+            SignalEvent(Event.ReverserChange);
         }
 
         public void StopReverseDecrease() {
@@ -819,6 +827,7 @@ namespace ORTS
         public void ToggleInjector1()
         {
             Injector1On = !Injector1On;
+            SignalEvent(Injector1On ? Event.SteamEjector1On : Event.SteamEjector1Off); // hook for sound trigger
             Simulator.Confirmer.Confirm( CabControl.Injector1, Injector1On ? CabSetting.On : CabSetting.Off );
         }
 
@@ -845,7 +854,8 @@ namespace ORTS
         public void ToggleInjector2()
         {
             Injector2On = !Injector2On;
-            Simulator.Confirmer.Confirm( CabControl.Injector2, Injector2On ? CabSetting.On : CabSetting.Off );
+            SignalEvent(Injector2On ? Event.SteamEjector2On : Event.SteamEjector2Off); // hook for sound trigger
+            Simulator.Confirmer.Confirm(CabControl.Injector2, Injector2On ? CabSetting.On : CabSetting.Off);
         }
 
         public void Injector1ChangeTo( bool increase, float? target ) {
@@ -876,6 +886,7 @@ namespace ORTS
             BlowerController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100 );
             BlowerController.StartIncrease( target );
+            SignalEvent(Event.BlowerChange);
         }
         public void StopBlowerIncrease() {
             BlowerController.StopIncrease();
@@ -884,6 +895,7 @@ namespace ORTS
             BlowerController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Blower, CabSetting.Decrease, BlowerController.CurrentValue * 100 );
             BlowerController.StartDecrease( target );
+            SignalEvent(Event.BlowerChange);
         }
         public void StopBlowerDecrease() {
             BlowerController.StopDecrease();
@@ -905,6 +917,7 @@ namespace ORTS
             DamperController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, CabSetting.Increase, DamperController.CurrentValue * 100 );
             DamperController.StartIncrease( target );
+            SignalEvent(Event.DamperChange);
         }
         public void StopDamperIncrease() {
             DamperController.StopIncrease();
@@ -913,6 +926,7 @@ namespace ORTS
             DamperController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Damper, CabSetting.Decrease, DamperController.CurrentValue * 100 );
             DamperController.StartDecrease( target );
+            SignalEvent(Event.DamperChange);
         }
         public void StopDamperDecrease() {
             DamperController.StopDecrease();
@@ -968,6 +982,7 @@ namespace ORTS
         public void ToggleCylinderCocks()
         {
             CylinderCocksOpen = !CylinderCocksOpen;
+            SignalEvent(Event.CylinderCocksToggle);
             Simulator.Confirmer.Confirm( CabControl.CylinderCocks, CylinderCocksOpen ? CabSetting.On : CabSetting.Off );
         }
 

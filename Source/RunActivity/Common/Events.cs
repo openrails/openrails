@@ -27,7 +27,7 @@ namespace ORTS
         None,
         BellOff,
         BellOn,
-        BlowerChange, // NOTE: Currently not used in Open Rails.
+        BlowerChange,
         CompressorOff,
         CompressorOn,
         ControlError,
@@ -36,8 +36,8 @@ namespace ORTS
         CoupleC, // NOTE: Currently not used in Open Rails.
         CrossingClosing,
         CrossingOpening,
-        CylinderCocksToggle, // NOTE: Currently not used in Open Rails.
-        DamperChange, // NOTE: Currently not used in Open Rails.
+        CylinderCocksToggle,
+        DamperChange,
         Derail1, // NOTE: Currently not used in Open Rails.
         Derail2, // NOTE: Currently not used in Open Rails.
         Derail3, // NOTE: Currently not used in Open Rails.
@@ -45,8 +45,8 @@ namespace ORTS
         DoorOpen,
         DynamicBrakeChange,
         DynamicBrakeIncrease, // NOTE: Currently not used in Open Rails.
-        DynamicBrakeOff, // NOTE: Currently not used in Open Rails.
-        EngineBrakeChange, // NOTE: Currently not used in Open Rails.
+        DynamicBrakeOff,
+        EngineBrakeChange,
         EngineBrakePressureDecrease,
         EngineBrakePressureIncrease,
         EnginePowerOff, 
@@ -78,13 +78,13 @@ namespace ORTS
         SanderOff,
         SanderOn,
         SemaphoreArm,
-        SteamEjector1Off, // NOTE: Currently not used in Open Rails.
-        SteamEjector1On, // NOTE: Currently not used in Open Rails.
-        SteamEjector2Off, // NOTE: Currently not used in Open Rails.
-        SteamEjector2On, // NOTE: Currently not used in Open Rails.
+        SteamEjector1Off,
+        SteamEjector1On,
+        SteamEjector2Off,
+        SteamEjector2On,
         SteamHeatChange, // NOTE: Currently not used in Open Rails.
-        SteamSafetyValveOff, // NOTE: Currently not used in Open Rails.
-        SteamSafetyValveOn, // NOTE: Currently not used in Open Rails.
+        SteamSafetyValveOff,
+        SteamSafetyValveOn,
         ThrottleChange,
         TrainBrakeChange,
         TrainBrakePressureDecrease,

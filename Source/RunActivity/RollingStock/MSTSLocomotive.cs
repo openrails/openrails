@@ -1536,6 +1536,7 @@ namespace ORTS
             
             EngineBrakeController.StartIncrease( target );
             Simulator.Confirmer.Confirm( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
+            SignalEvent(Event.EngineBrakeChange);
         }
 
         /// <summary>
@@ -1562,6 +1563,7 @@ namespace ORTS
             EngineBrakeController.StartDecrease( target );
             EngineBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
             Simulator.Confirmer.Confirm( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
+            SignalEvent(Event.EngineBrakeChange);
         }
 
         /// <summary>
