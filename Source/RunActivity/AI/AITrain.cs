@@ -3013,11 +3013,12 @@ namespace ORTS
         public override void InitializeBrakes()
         {
             float maxPressurePSI = 90;
+            float fullServPressurePSI = 64;
             BrakeLine3PressurePSI = BrakeLine4PressurePSI = 0;
             BrakeLine1PressurePSIorInHg = BrakeLine2PressurePSI = maxPressurePSI;
             foreach (TrainCar car in Cars)
             {
-                car.BrakeSystem.Initialize(false, maxPressurePSI, true);
+                car.BrakeSystem.Initialize(false, maxPressurePSI, fullServPressurePSI, true);
             }
         }
 

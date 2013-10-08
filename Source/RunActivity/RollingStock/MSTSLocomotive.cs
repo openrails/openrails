@@ -1905,6 +1905,11 @@ namespace ORTS
                         data = ConvertFromPSI(cvc, BrakeSystem.GetCylPressurePSI());
                         break;
                     }
+                case CABViewControlTypes.VACUUM_RESERVOIR_PRESSURE:
+                    {
+                        data = ConvertFromPSI(cvc, BrakeSystem.GetVacResPressurePSI());
+                        break;
+                    }
                 case CABViewControlTypes.RPM:
                     {
                         var mstsDieselLocomotive = this as MSTSDieselLocomotive;
@@ -2134,6 +2139,8 @@ namespace ORTS
                 data *= 6.89476f;
             else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
                 data *= 70.307e-3f;
+            else if (cvc.Units == CABViewControlUnits.INCHES_OF_MERCURY)
+                data *= 2.04177f;
             return data;
         }
 

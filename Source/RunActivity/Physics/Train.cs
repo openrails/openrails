@@ -2031,6 +2031,7 @@ namespace ORTS
                 Simulator.Confirmer.Confirm(CabControl.InitializeBrakes, CabSetting.Off);
 
             float maxPressurePSI = 90;
+            float fullServPressurePSI = 64;
             if (LeadLocomotiveIndex >= 0)
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
@@ -2038,8 +2039,9 @@ namespace ORTS
                 {
                     lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSIorInHg, 1000, ref BrakeLine4PressurePSI);
                     maxPressurePSI = lead.TrainBrakeController.GetMaxPressurePSI();
+                    fullServPressurePSI = maxPressurePSI - lead.TrainBrakeController.GetFullServReductionPSI();
                     BrakeLine1PressurePSIorInHg =
-                            MathHelper.Max(BrakeLine1PressurePSIorInHg, maxPressurePSI - lead.TrainBrakeController.GetFullServReductionPSI());
+                            MathHelper.Max(BrakeLine1PressurePSIorInHg, fullServPressurePSI);
                 }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
@@ -2057,7 +2059,7 @@ namespace ORTS
             BrakeLine2PressurePSI = maxPressurePSI;
             foreach (TrainCar car in Cars)
             {
-                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI, false);
+                car.BrakeSystem.Initialize(LeadLocomotiveIndex < 0, maxPressurePSI, fullServPressurePSI, false);
                 if (LeadLocomotiveIndex < 0)
                     car.BrakeSystem.BrakeLine1PressurePSI = -1;
             }

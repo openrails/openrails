@@ -38,6 +38,7 @@ namespace ORTS
         public abstract string GetFullStatus(BrakeSystem lastCarBrakeSystem);
         public abstract string[] GetDebugStatus();
         public abstract float GetCylPressurePSI();
+        public abstract float GetVacResPressurePSI();
 
         public abstract void Save(BinaryWriter outf);
 
@@ -45,7 +46,7 @@ namespace ORTS
 
         public abstract void PropagateBrakePressure(float elapsedClockSeconds);
 
-        public abstract void Initialize(bool handbrakeOn, float maxPressurePSI, bool immediateRelease);
+        public abstract void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease);
         public abstract void Connect();
         public abstract void Disconnect();
         public abstract void SetHandbrakePercent(float percent);
@@ -88,6 +89,7 @@ namespace ORTS
         protected float AutoCylPressurePSI = 64;
         protected float AuxResPressurePSI = 64;
         protected float EmergResPressurePSI = 64;
+        protected float FullServPressurePSI = 50;
         protected float MaxCylPressurePSI = 64;
         protected float AuxCylVolumeRatio = 2.5f;
         protected float AuxBrakeLineVolumeRatio = 3.1f;
@@ -169,6 +171,11 @@ namespace ORTS
                 return CylPressurePSI;
         }
 
+        public override float GetVacResPressurePSI()
+        {
+            return 0;
+        }
+
         public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
@@ -198,6 +205,7 @@ namespace ORTS
             outf.Write(AutoCylPressurePSI);
             outf.Write(AuxResPressurePSI);
             outf.Write(EmergResPressurePSI);
+            outf.Write(FullServPressurePSI);
             outf.Write((int)TripleValveState);
         }
 
@@ -213,16 +221,18 @@ namespace ORTS
             AutoCylPressurePSI = inf.ReadSingle();
             AuxResPressurePSI = inf.ReadSingle();
             EmergResPressurePSI = inf.ReadSingle();
+            FullServPressurePSI = inf.ReadSingle();
             TripleValveState = (ValveState)inf.ReadInt32();
         }
 
-        public override void Initialize(bool handbrakeOn, float maxPressurePSI, bool immediateRelease)
+        public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
             BrakeLine1PressurePSI = Car.Train.BrakeLine1PressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
             AuxResPressurePSI = BrakeLine1PressurePSI;
             EmergResPressurePSI = maxPressurePSI;
+            FullServPressurePSI = fullServPressurePSI;
             AutoCylPressurePSI = (maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
             if (AutoCylPressurePSI > MaxCylPressurePSI)
                 AutoCylPressurePSI = MaxCylPressurePSI;
@@ -239,14 +249,14 @@ namespace ORTS
         }
         public override void Disconnect()
         {
-            Initialize(false, 0, false);
+            Initialize(false, 0, 0, false);
             BrakeLine1PressurePSI = -1;
             BrakeLine2PressurePSI = 0;
         }
         public override void Update(float elapsedClockSeconds)
         {
             ValveState prevTripleValueState = TripleValveState;
-            if (BrakeLine1PressurePSI < AuxResPressurePSI - 10)
+            if (BrakeLine1PressurePSI < FullServPressurePSI)
                 TripleValveState = ValveState.Emergency;
             else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
                 TripleValveState = ValveState.Release;
@@ -863,6 +873,11 @@ namespace ORTS
             return 0;
         }
 
+        public override float GetVacResPressurePSI()
+        {
+            return VacResPressureAdjPSIA();
+        }
+
         public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
@@ -895,7 +910,7 @@ namespace ORTS
             VacResPressurePSIA = inf.ReadSingle();
         }
 
-        public override void Initialize(bool handbrakeOn, float maxVacuumInHg, bool immediateRelease)
+        public override void Initialize(bool handbrakeOn, float maxVacuumInHg, float fullServVacuumInHg, bool immediateRelease)
         {
             CylPressurePSIA = BrakeLine1PressurePSI = V2P(Car.Train.BrakeLine1PressurePSIorInHg);
             VacResPressurePSIA = V2P(maxVacuumInHg);
