@@ -227,9 +227,10 @@ namespace ORTS
                 else if (dV2 < -max) dV2 = -max;
                 Variable2 += dV2;
             }
-            Variable3 = 0;
             if ( DynamicBrakePercent > 0)
-                Variable3 = Math.Abs(MotiveForceN) / MaxDynamicBrakeForceN;
+                Variable3 = MaxDynamicBrakeForceN == 0 ? DynamicBrakePercent / 100f : Math.Abs(MotiveForceN) / MaxDynamicBrakeForceN;
+            else
+                Variable3 = 0;
         }
 
         /// <summary>

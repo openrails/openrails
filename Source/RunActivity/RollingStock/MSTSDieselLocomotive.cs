@@ -653,9 +653,15 @@ namespace ORTS
             //Variable2 = Math.Abs(WheelSpeedMpS);
 
             
-            Variable3 = 0;
             if ( DynamicBrakePercent > 0)
-                Variable3 -= MotiveForceN / MaxDynamicBrakeForceN;
+            {
+                if (MaxDynamicBrakeForceN == 0)
+                    Variable3 = DynamicBrakePercent / 100f;
+                else
+                    Variable3 -= MotiveForceN / MaxDynamicBrakeForceN;
+            }
+            else
+                Variable3 = 0;
             switch (this.Train.TrainType)
             {
                 case Train.TRAINTYPE.AI:
