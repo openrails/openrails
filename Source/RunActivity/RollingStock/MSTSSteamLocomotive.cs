@@ -674,11 +674,11 @@ namespace ORTS
                 case CABViewControlTypes.BOILER_WATER:
                     data = WaterFraction;
                     break;
+                case CABViewControlTypes.STEAM_PR:
+                    data = ConvertFromPSI(cvc, BoilerPressurePSI);
+                    break;
                 case CABViewControlTypes.STEAMCHEST_PR:
                     data = ConvertFromPSI(cvc, CylinderPressurePSI);
-                    break;
-                case CABViewControlTypes.STEAMHEAT_PRESSURE:
-                    data = ConvertFromPSI(cvc, BoilerPressurePSI);
                     break;
                 case CABViewControlTypes.CUTOFF:
                     data = Train.MUReverserPercent / 100f;
