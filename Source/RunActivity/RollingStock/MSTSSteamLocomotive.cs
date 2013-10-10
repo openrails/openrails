@@ -687,6 +687,7 @@ namespace ORTS
                     data = ConvertFromPSI(cvc, CylinderPressurePSI);
                     break;
                 case CABViewControlTypes.CUTOFF:
+                case CABViewControlTypes.REVERSER_PLATE:
                     data = Train.MUReverserPercent / 100f;
                     break;
                 case CABViewControlTypes.CYL_COCKS:

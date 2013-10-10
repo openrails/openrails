@@ -1957,6 +1957,11 @@ namespace ORTS
                         data = Bell ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.SMALL_EJECTOR:
+                    {
+                        data = CompressorOn ? 1 : 0;
+                        break;
+                    }
                 case CABViewControlTypes.RESET:
                     {
                         if (TrainControlSystem.AlerterButtonPressed)
@@ -3331,7 +3336,7 @@ namespace ORTS
             var yratio = (float)Viewer.CabHeightPixels / 480;
 
             float percent, xpos, ypos;
-            if (Control.MinValue < 0)
+            if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE)
             {
                 percent = GetRangeFractionLoadMeter();
                 LoadMeterPositive = percent >= 0;
@@ -3366,20 +3371,11 @@ namespace ORTS
             {
                 xpos = (float)Gauge.Width;
                 var adjustGaugeHeight = (float)Gauge.Height * (float)Control.MaxValue / (float)(Control.MaxValue - Control.MinValue);
-                if (Gauge.Direction == 0)  // bar grows from top
-                {
-                    if ((Control.MinValue < 0) && LoadMeterPositive)
-                        ypos = adjustGaugeHeight * percent;
-                    else
-                        ypos = (float)Gauge.Height * percent;
-                }
-                else  // bar grows from bottom
-                {
-                    if ((Control.MinValue < 0) && !LoadMeterPositive)
-                        ypos = (adjustGaugeHeight - 1) * percent;
-                    else
-                        ypos = (float)Gauge.Height * percent;
-                }
+                // Gauge.Direction is considered later below, no need to deal with it here, just calculate as if bar gown from bottom
+                if (Control.MinValue < 0 && !LoadMeterPositive)
+                    ypos = (adjustGaugeHeight - 1) * percent;
+                else
+                    ypos = (float)Gauge.Height * percent;
             }
 
             if (Gauge.ControlStyle == CABViewControlStyles.SOLID || Gauge.ControlStyle == CABViewControlStyles.LIQUID)
@@ -3647,6 +3643,7 @@ namespace ORTS
                 case CABViewControlTypes.CYL_COCKS:
                 case CABViewControlTypes.STEAM_INJ1:
                 case CABViewControlTypes.STEAM_INJ2:
+                case CABViewControlTypes.SMALL_EJECTOR:
                     index = (int)data;
                     break;
             }
@@ -3672,7 +3669,7 @@ namespace ORTS
 
             if (ControlDiscrete.Values.Count > 1)
             {
-                var val = ControlDiscrete.Values.Where(v => v <= percent).Last();
+                var val = ControlDiscrete.Values.Where(v => (float)v <= percent).Last();
                 index = ControlDiscrete.Values.IndexOf(val);
             }
             else if (ControlDiscrete.MaxValue != ControlDiscrete.MinValue)

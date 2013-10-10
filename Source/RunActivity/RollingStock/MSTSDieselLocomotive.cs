@@ -756,6 +756,26 @@ namespace ORTS
             base.UpdateParent(elapsedClockSeconds); // Calls the Update() method in the parent class MSTSLocomotive which calls Update() on its parent MSTSWagon which calls ...
         }
 
+        public override float GetDataOf(CabViewControl cvc)
+        {
+            float data;
+
+            switch (cvc.ControlType)
+            {
+                case CABViewControlTypes.FUEL_GAUGE:
+                    if (cvc.Units == CABViewControlUnits.GALLONS)
+                        data = L.ToGUS(DieselLevelL);
+                    else
+                        data = DieselLevelL;
+                    break;
+                default:
+                    data = base.GetDataOf(cvc);
+                    break;
+            }
+
+            return data;
+        }
+
         public override string GetStatus()
         {
             var result = new StringBuilder();
