@@ -1313,7 +1313,7 @@ namespace ORTS
 
             if (!existingSpeedLimits)
             {
-                if (TrainMaxSpeedMpS <= 0f)
+                if ((TrainMaxSpeedMpS <= 0f)&&(this.LeadLocomotive != null))
                     TrainMaxSpeedMpS = (this.LeadLocomotive as MSTSLocomotive).MaxSpeedMpS;
                 AllowedMaxSpeedMpS = TrainMaxSpeedMpS;   // set default
                 allowedMaxSpeedSignalMpS = TrainMaxSpeedMpS;   // set default
