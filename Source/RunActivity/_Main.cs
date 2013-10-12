@@ -69,6 +69,7 @@ namespace ORTS
         }
 
         public static Debugging.DispatchViewer DebugViewer;
+        public static Debugging.SoundDebugForm SoundDebugForm;
 
         /// <summary>
         /// The main entry point for the application.
@@ -229,6 +230,10 @@ namespace ORTS
                 DebugViewer.Hide();
                 Viewer.DebugViewerEnabled = false;
             }
+
+            SoundDebugForm = new SoundDebugForm(Simulator, Viewer);
+            SoundDebugForm.Hide();
+            Viewer.SoundDebugFormEnabled = false;
 
             Viewer.Run(null);
 

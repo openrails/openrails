@@ -62,6 +62,11 @@ namespace ORTS
 
         Dictionary<object, List<SoundSourceBase>> SoundSources = new Dictionary<object, List<SoundSourceBase>>();
 
+        public void GetSoundSources(ref Dictionary<object, List<SoundSourceBase>> soundSources)
+        {
+            soundSources = new Dictionary<object, List<SoundSourceBase>>(SoundSources);
+        }
+
         /// <summary>
         /// Adds a SoundSource list attached to an object to the playable sounds.
         /// </summary>

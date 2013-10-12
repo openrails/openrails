@@ -149,6 +149,7 @@ namespace ORTS
         private BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
 
         public bool DebugViewerEnabled;
+        public bool SoundDebugFormEnabled;
 
         // MSTS cab views are images with aspect ratio 4:3.
         // OR can use cab views with other aspect ratios where these are available.
@@ -781,6 +782,7 @@ namespace ORTS
 #endif
 
 			if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
+            if (UserInput.IsPressed(UserCommands.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 #if !NEW_SIGNALLING
 			if (UserInput.IsPressed(UserCommands.GameSwitchPicked) && (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer()))
 			{

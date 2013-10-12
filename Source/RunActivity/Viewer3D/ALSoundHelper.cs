@@ -66,6 +66,7 @@ namespace ORTS
         private int _length;
 
         public int NextBuffer;
+        public int NumCuePoints;
 
         /// <summary>
         /// Constructs a Sound Piece
@@ -78,7 +79,7 @@ namespace ORTS
             Name = name;
             IsExternal = isExternal;
             IsReleasedWithJump = isReleasedWithJump;
-            if (!WaveFileData.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal, isReleasedWithJump))
+            if (!WaveFileData.OpenWavFile(Name, ref BufferIDs, ref BufferLens, IsExternal, isReleasedWithJump, ref NumCuePoints))
             {
                 BufferIDs = new int[1];
                 BufferIDs[0] = 0;
@@ -242,6 +243,7 @@ namespace ORTS
         public PlayMode PlayMode;
         public PlayState PlayState;
         public float Pitch;
+        public bool SoftLoopPoints;
 
         // Caching of Pieces
         private static Dictionary<string, SoundPiece> AllPieces = new Dictionary<string, SoundPiece>();
@@ -267,6 +269,7 @@ namespace ORTS
             if (string.IsNullOrEmpty(name))
                 return;
 
+            SoftLoopPoints = false;
             string n = name;
             if (isReleasedWithJump)
                 n += ".j";
@@ -354,6 +357,7 @@ namespace ORTS
                         {
                             SoundPiece.QueueAll(soundSourceID);
                             PlayState = PlayState.Playing;
+                            SoftLoopPoints = false;
                         }
                         break;
                     }
@@ -372,6 +376,7 @@ namespace ORTS
                                 OpenAL.alSourcePlay(soundSourceID);
                                 OpenAL.alSourcei(soundSourceID, OpenAL.AL_LOOPING, OpenAL.AL_TRUE);
                                 PlayState = PlayState.Playing;
+                                SoftLoopPoints = true;
                             }
                         }
                         else
@@ -394,6 +399,7 @@ namespace ORTS
                                 SoundPiece.NextBuffer = 0;
                                 SoundPiece.Queue2(soundSourceID);
                                 PlayState = PlayState.Playing;
+                                SoftLoopPoints = false;
                             }
                         }
                         break;
@@ -401,6 +407,7 @@ namespace ORTS
                 default:
                     {
                         PlayState = PlayState.NOP;
+                        SoftLoopPoints = false;
                         break;
                     }
             }
@@ -429,7 +436,7 @@ namespace ORTS
         private static int refCount;
         private const int QUEUELENGHT = 16;
 
-        int SoundSourceID = -1;
+        public int SoundSourceID = -1;
         bool _isSlowRolloff;
         bool _isLooping;
         float _distanceFactor = 10;
@@ -1044,6 +1051,37 @@ namespace ORTS
                 OpenAL.alListenerf(OpenAL.AL_GAIN, 0);
                 _Muted = true;
             }
+        }
+
+        // Is called from sound debug form
+        public string[] GetPlayingData()
+        {
+            string[] retval = new string[4];
+            retval[0] = SoundSourceID.ToString();
+
+            if (SoundQueue[QueueTail % QUEUELENGHT].SoundPiece != null)
+            {
+                retval[1] = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.Name.Split('\\').Last();
+                retval[2] = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.NumCuePoints.ToString();
+            }
+            else
+            {
+                retval[1] = "(none)";
+                retval[2] = "0";
+            }
+
+            if (SoundQueue[QueueTail % QUEUELENGHT].PlayState != PlayState.NOP)
+            {
+                retval[3] = SoundQueue[QueueTail % QUEUELENGHT].PlayMode.ToString();
+                if (SoundQueue[QueueTail % QUEUELENGHT].SoftLoopPoints)
+                    retval[3] += "Soft";
+            }
+            else
+            {
+                retval[3] = "Stopped";
+            }
+
+            return retval;
         }
 
         public void Dispose()

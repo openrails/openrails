@@ -125,11 +125,15 @@ namespace ORTS
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alGetSourcef(int source, int attribute, out float val);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alGetSource3f(int source, int attribute, out float value1, out float value2, out float value3);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alListener3f(int attribute, float value1, float value2, float value3);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alListenerfv(int attribute, [In] float[] values);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alListenerf(int attribute, float value);
+        [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void alGetListener3f(int attribute, out float value1, out float value2, out float value3);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void alSourcePlay(int source);
         [SuppressUnmanagedCodeSecurity, DllImport("OpenAL32.dll", CallingConvention = CallingConvention.Cdecl)]
@@ -718,7 +722,7 @@ namespace ORTS
         /// <param name="ToMono">Indicates if the wave must be converted to mono</param>
         /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
         /// <returns>True if success</returns>
-        public static bool OpenWavFile(string Name, ref int[] BufferIDs, ref int[] BufferLens, bool ToMono, bool isReleasedWithJump)
+        public static bool OpenWavFile(string Name, ref int[] BufferIDs, ref int[] BufferLens, bool ToMono, bool isReleasedWithJump, ref int numCuePoints)
         {
             WaveFileData wfi = new WaveFileData();
             int fmt = -1;
@@ -759,6 +763,7 @@ namespace ORTS
                 samplePos[1] = (int)(wfi.CuePoints.Last());
                 if (samplePos[0] < samplePos[1] && samplePos[1] <= wfi.ulDataSize / (wfi.nBitsPerSample / 8 * wfi.nChannels))
                     alLoopPointsSoft = OpenAL.alIsExtensionPresent("AL_SOFT_LOOP_POINTS") == OpenAL.AL_TRUE;
+                numCuePoints = wfi.CuePoints.Length;
             }
 
             if (wfi.CuePoints == null || wfi.CuePoints.Length == 1 || alLoopPointsSoft)
@@ -785,7 +790,8 @@ namespace ORTS
             {
                 BufferIDs = new int[wfi.CuePoints.Length + 1];
                 BufferLens = new int[wfi.CuePoints.Length + 1];
-                
+                numCuePoints = wfi.CuePoints.Length;
+
                 uint prevAdjPos = 0;
                 for (var i = 0; i < wfi.CuePoints.Length; i++)
                 {
