@@ -351,26 +351,24 @@ namespace ORTS
             {
                 EvaporationAreaM2 = Me2.FromFt2(((NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(DriverWheelRadiusM * 2.0f) * EvapAreaDesignFactor));
             }
-            else
+            BurnRateLBpStoKGpS = new Interpolator(27);
+            for (int i = 0; i < 27; i++)
             {
-                BurnRateLBpStoKGpS = new Interpolator(27);
-                for (int i = 0; i < 27; i++)
-                {
-                    float x = .1f * i;
-                    float y = x;
-                    if (y < .02)
-                        y = .02f;
-                    else if (y > 2.5f)
-                        y = 2.5f;
-                    BurnRateLBpStoKGpS[x] = y / BoilerEfficiency[x];
-                }
-                float sy = (1400 - baseTempK) * W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2;
-                float sx = sy / (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] * 1.055f);  // 1 BTU = 1.055 joules ????
-                BurnRateLBpStoKGpS.ScaleX(sx);
-                BurnRateLBpStoKGpS.ScaleY(sy / FuelCalorificKJpKG);
-                BoilerEfficiency.ScaleX(sx);
-                MaxBoilerOutputLBpH = 3600 * sx;
+                float x = .1f * i;
+                float y = x;
+                if (y < .02)
+                    y = .02f;
+                else if (y > 2.5f)
+                    y = 2.5f;
+                BurnRateLBpStoKGpS[x] = y / BoilerEfficiency[x];
             }
+            float sy = (1400 - baseTempK) * W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2;
+            float sx = sy / (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] * 1.055f);  // 1 BTU = 1.055 joules ????
+            BurnRateLBpStoKGpS.ScaleX(sx);
+            BurnRateLBpStoKGpS.ScaleY(sy / FuelCalorificKJpKG);
+            BoilerEfficiency.ScaleX(sx);
+            MaxBoilerOutputLBpH = 3600 * sx;
+
             BurnRateLBpStoKGpS.ScaleY(BurnRateMultiplier);
             BlowerSteamUsageFactor = .04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
             InjectorFlowRateLBpS = (MaxBoilerOutputLBpH / 3600) / 2.0f;  // Set default feedwater flow values, assume two injectors
