@@ -46,7 +46,7 @@ namespace ORTS {
       , Blower
       , Damper
       , FiringRate
-      , ManualFiring
+      , FiringIsManual
       , FireShovelfull
       , CylinderCocks
       // Braking

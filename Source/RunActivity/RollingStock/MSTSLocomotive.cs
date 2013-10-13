@@ -83,7 +83,7 @@ namespace ORTS
         public float MaxForceN;
         public float MaxSpeedMpS = 1e3f;
         public float MainResPressurePSI = 130;
-        public bool CompressorOn;
+        public bool CompressorIsOn;
         public float AverageForceN;
         public bool PowerOn;
         public float PowerOnDelayS;
@@ -444,7 +444,7 @@ namespace ORTS
             outf.Write(Sander);
             outf.Write(Wiper);
             outf.Write(MainResPressurePSI);
-            outf.Write(CompressorOn);
+            outf.Write(CompressorIsOn);
             outf.Write(AverageForceN);
             outf.Write(LocomotiveAxle.AxleSpeedMpS);
             outf.Write( CabLightOn );
@@ -466,7 +466,7 @@ namespace ORTS
             if (inf.ReadBoolean()) SignalEvent(Event.SanderOn);
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             MainResPressurePSI = inf.ReadSingle();
-            CompressorOn = inf.ReadBoolean();
+            CompressorIsOn = inf.ReadBoolean();
             AverageForceN = inf.ReadSingle();
             LocomotiveAxle.Reset(inf.ReadSingle());
             CabLightOn = inf.ReadBoolean();
@@ -836,11 +836,11 @@ namespace ORTS
                     break;
                 
             }
-            if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorOn) && (PowerOn))
+            if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorIsOn) && (PowerOn))
                 SignalEvent(Event.CompressorOn);
-            else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
+            else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
-            if (CompressorOn)
+            if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
             if (VigilanceMonitor && Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
@@ -1790,8 +1790,8 @@ namespace ORTS
                 case Event._HeadlightDim: { Headlight = 1; break; }
                 case Event._HeadlightOn: { Headlight = 2; break; }
 
-                case Event.CompressorOn: { CompressorOn = true; break; }
-                case Event.CompressorOff: { CompressorOn = false; break; }
+                case Event.CompressorOn: { CompressorIsOn = true; break; }
+                case Event.CompressorOff: { CompressorIsOn = false; break; }
                 case Event._ResetWheelSlip: { LocomotiveAxle.Reset(SpeedMpS); ThrottleController.SetValue(0.0f); break; }
             }
 
@@ -1959,7 +1959,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.SMALL_EJECTOR:
                     {
-                        data = CompressorOn ? 1 : 0;
+                        data = CompressorIsOn ? 1 : 0;
                         break;
                     }
                 case CABViewControlTypes.RESET:

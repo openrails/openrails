@@ -742,11 +742,11 @@ namespace ORTS
                 EngineRPMold = EngineRPM;
             }
 
-            if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorOn) && (PowerOn))
+            if ((MainResPressurePSI < CompressorRestartPressurePSI) && (!CompressorIsOn) && (PowerOn))
                 SignalEvent(Event.CompressorOn);
-            else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorOn)
+            else if (MainResPressurePSI > MaxMainResPressurePSI && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
-            if ((CompressorOn)&&(PowerOn))
+            if ((CompressorIsOn)&&(PowerOn))
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
             
             if (VigilanceMonitor && Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())

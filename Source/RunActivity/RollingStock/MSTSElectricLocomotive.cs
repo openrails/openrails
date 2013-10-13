@@ -169,7 +169,7 @@ namespace ORTS
                 if (PowerOn)
                     SignalEvent(Event.EnginePowerOff);
                 PowerOn = false;
-                CompressorOn = false;
+                CompressorIsOn = false;
                 if ((PantographFirstDelay -= elapsedClockSeconds) < 0.0f) PantographFirstDelay = 0.0f;
                 if ((PantographSecondDelay -= elapsedClockSeconds) < 0.0f) PantographSecondDelay = 0.0f;
             }

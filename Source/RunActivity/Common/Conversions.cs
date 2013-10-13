@@ -29,6 +29,8 @@ namespace ORTS
     //
     // For example to convert a number from metres to inches, use "DiameterIn = M.ToIn(DiameterM);"
     // 
+    // Many units begin with a lowercase letter (kg, kW, in, lb) but capitalised here (Kg, KW, In, Lb) for ease of reading.
+    //
     // Web research suggests that VC++ will optimize "/ 2.0" replacing it with "* 0.5f" but VC# will not and cost is around 15 cycles.
 
     /// <summary>
@@ -124,7 +126,7 @@ namespace ORTS
         public static float FromTUS(float t)    { return t * 907.1847f; }   // Tons (US) => Kg
         public static float   ToTUS(float k)    { return k / 907.1847f; }   // Kg => Tons (US)
         public static float FromTUK(float t)    { return t * 1016.047f; }   // Tons (UK) => Kg 
-        public static float   ToTuk(float k)    { return k / 1016.047f; }   // kg => Tons (UK)
+        public static float   ToTUK(float k)    { return k / 1016.047f; }   // kg => Tons (UK)
     }
 
     /// <summary>
@@ -139,10 +141,12 @@ namespace ORTS
     /// Power conversions from and to Watts
     /// </summary>
     public class W {
-        public static float FromKw(float k) { return k * 1000f; } // Kw => Watts
-        public static float   ToKw(float w) { return w / 1000f; } // Watts => Kw
+        public static float FromKW(float k) { return k * 1000f; } // kW => Watts
+        public static float   ToKW(float w) { return w / 1000f; } // Watts => kW
         public static float FromHp(float h) { return h * 745.699872f; } // Hp => Watts
         public static float   ToHp(float w) { return w / 745.699872f; } // Watts => Hp
+        public static float FromBTUpS(float b) { return b * 1055.05585f; } // BTU/s => Watts
+        public static float   ToBTUpS(float w) { return w / 1055.05585f; } // Watts => BTU/s
     }
 
     /// <summary>
@@ -166,11 +170,22 @@ namespace ORTS
     }
 
     /// <summary>
+    /// Area conversions from and to m^2
+    /// </summary>
+    public class Me2
+    {
+        public static float FromFt2(float f) { return f / 10.764f; } // ft^2 => m^2
+        public static float   ToFt2(float m) { return m * 10.764f; } // m^2 => ft^2
+    }
+    
+    /// <summary>
     /// Volume conversions from and to m^3
     /// </summary>
     public class Me3 {
         public static float FromFt3(float f) { return f / 35.3146665722f; }    // ft^3 => m^3
         public static float   ToFt3(float m) { return m * 35.3146665722f; }    // m^3 => ft^3
+        public static float FromIn3(float i) { return i / 61023.7441f; }       // in^3 => m^3
+        public static float   ToIn3(float m) { return m * 61023.7441f; }       // m^3 => in^3
     }
 
     /// <summary>
@@ -183,14 +198,6 @@ namespace ORTS
         public static float   ToInHg(float k)   { return k / 3.386389f; }   // kPa => inHg
         public static float FromBar(float b)    { return b * 100.0f; }      // bar => kPa
         public static float   ToBar(float k)    { return k / 100.0f; }      // kPa => bar
-    }
-
-    /// <summary>
-    /// Area conversions from and to m^2
-    /// </summary>
-    public class Me2 {
-        public static float FromFt2(float f)    { return f / 10.764f; } // ft^2 => m^2
-        public static float   ToFt2(float m)    { return m * 10.764f; } // m^2 => ft^2
     }
 
     /// <summary>

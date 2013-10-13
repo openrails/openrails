@@ -215,7 +215,7 @@ namespace ORTS
 
                     Logger.Data(Viewer.PlayerLocomotive.BrakeSystem.GetCylPressurePSI().ToString("F0"));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI.ToString("F0"));
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).CompressorOn.ToString());
+                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn.ToString());
 #if GEARBOX_DEBUG_LOG
                     if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSDieselLocomotive))
                     {
@@ -258,10 +258,10 @@ namespace ORTS
                     {
                         Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerSteamUsageLBpS.ToString("F0"));
                         Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BoilerPressurePSI.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderCocksOpen.ToString());
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderCocksAreOpen.ToString());
                         Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).EvaporationLBpS.ToString("F0"));
                         Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FireMassKG.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).SteamUsageLBpS.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderSteamUsageLBpS.ToString("F0"));
                         if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerController != null)
                             Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerController.CurrentValue.ToString("F0"));
                         else
