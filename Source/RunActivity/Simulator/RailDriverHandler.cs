@@ -276,6 +276,7 @@ namespace ORTS
                     return;
                 }
             }
+			// TODO: This is... kinda weird and cool at the same time. STF parsing being used on RailDriver's calebration file. Probably should be a dedicated parser, though.
             STFReader reader = new STFReader(file, false);
             while (!reader.Eof)
             {

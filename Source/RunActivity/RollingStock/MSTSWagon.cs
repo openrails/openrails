@@ -189,7 +189,7 @@ namespace ORTS
                     Couplers[Couplers.Count - 1].SetR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(adhesion":  // Permits correct spelling
+                case "wagon(adhesion":  // TODO: Is permissing the correct spelling necessary?
                 case "wagon(adheasion":
                     stf.MustMatch("(");
                     Adhesion1 = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -206,23 +206,27 @@ namespace ORTS
                     AdhesionK = stf.ReadFloat(STFReader.UNITS.None, 0.7f); if (AdhesionK <= 0) AdhesionK = 0.7f;
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(or_adhesion(slipwarningtreshold":
+				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
+				case "wagon(or_adhesion(slipwarningtreshold":
                     stf.MustMatch("(");
                     SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
                     stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(or_adhesion(antislip":
+				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
+				case "wagon(or_adhesion(antislip":
                     stf.MustMatch("(");
                     //AntislipControl = stf.ReadStringBlock(null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(or_adhesion(wheelset(axle(inertia":
+				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
+				case "wagon(or_adhesion(wheelset(axle(inertia":
                     stf.MustMatch("(");                    
                     AxleInertiaKgm2 = stf.ReadFloat(STFReader.UNITS.RotationalInertia, null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(or_adhesion(wheelset(axle(radius":
+				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
+				case "wagon(or_adhesion(wheelset(axle(radius":
                     stf.MustMatch("(");
                     // <CJComment> Shouldn't this be "WheelRadiusM = " ? </CJComment>
                     AxleInertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);

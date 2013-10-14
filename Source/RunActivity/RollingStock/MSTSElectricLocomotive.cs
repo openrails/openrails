@@ -72,10 +72,6 @@ namespace ORTS
         {
             switch (lowercasetoken)
             {
-                // for example
-                //case "engine(sound": CabSoundFileName = stf.ReadStringBlock(); break;
-                //case "engine(cabview": CVFFileName = stf.ReadStringBlock(); break;
-                
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }

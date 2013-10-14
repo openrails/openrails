@@ -147,7 +147,8 @@ namespace ORTS
                 }
             } // class WAGFile.Engine
 
-            public class OpenRailsData
+			// FIXME: Customisation of MSTS file formats is not allowed: please remove.
+			public class OpenRailsData
             {
                 public string DLL;
 
