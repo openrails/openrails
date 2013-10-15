@@ -27,6 +27,8 @@
  *  
  */
 
+//#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -198,6 +200,7 @@ namespace ORTS
                     stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
+#if ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
                 case "wagon(or_adhesion(curtius_kniffler":   
                     stf.MustMatch("(");                      //e.g. Wagon ( OR_adhesion ( Curtius_Kniffler ( 7.5 44 0.161 0.7 ) ) )
                     Curtius_KnifflerA = stf.ReadFloat(STFReader.UNITS.None, 7.5f); if (Curtius_KnifflerA <= 0) Curtius_KnifflerA = 7.5f;
@@ -232,6 +235,7 @@ namespace ORTS
                     AxleInertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+#endif
                 case "wagon(lights":
                     if (Simulator.Settings.TrainLights)
                         Lights = new LightCollection(stf);

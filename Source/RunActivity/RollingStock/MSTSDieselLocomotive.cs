@@ -27,6 +27,9 @@
  *  LocomotiveViewer - provides basic animation for running gear, wipers, etc
  * 
  */
+
+//#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -101,15 +104,14 @@ namespace ORTS
                 case "engine(dieselsmokeeffectinitialmagnitude": InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxmagnitude": ExhaustMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                //case "engine(or_diesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                //case "engine(or_diesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;
+#if ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS  // FIXME: Customisation of MSTS file formats is not allowed: please remove.
+                case "engine(or_diesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;
+                case "engine(or_diesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;
+                case "engine(dieselengines": DieselEngines = new DieselEngines(this, stf); break;
+#endif
                 case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(dieselusedperhouratmaxpower": DieselUsedPerHourAtMaxPowerL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(dieselengines": DieselEngines = new DieselEngines(this, stf); break;
+                case "engine(dieselusedperhouratidle": DieselUsedPerHourAtIdleL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;				
                 default:
                     GearBox.Parse(lowercasetoken, stf);
                     base.Parse(lowercasetoken, stf); break;
