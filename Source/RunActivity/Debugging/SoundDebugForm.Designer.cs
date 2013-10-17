@@ -67,6 +67,8 @@ namespace ORTS.Debugging
             this.label2 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.cache = new System.Windows.Forms.TextBox();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -138,6 +140,8 @@ namespace ORTS.Debugging
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.streamProperties);
+            this.groupBox1.Controls.Add(this.label7);
+            this.groupBox1.Controls.Add(this.cache);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
@@ -196,6 +200,7 @@ namespace ORTS.Debugging
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
             this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 16.66667F));
+            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel2.Size = new System.Drawing.Size(127, 158);
             this.tableLayoutPanel2.TabIndex = 6;
             // 
@@ -313,6 +318,25 @@ namespace ORTS.Debugging
             this.label6.TabIndex = 4;
             this.label6.Text = "Volume";
             // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(6, 237);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(116, 26);
+            this.label7.TabIndex = 4;
+            this.label7.Text = "Total number of sound \r\nfiles in cache:";
+            // 
+            // cache
+            // 
+            this.cache.Location = new System.Drawing.Point(9, 266);
+            this.cache.Name = "cache";
+            this.cache.ReadOnly = true;
+            this.cache.Size = new System.Drawing.Size(51, 20);
+            this.cache.TabIndex = 0;
+            this.cache.Text = "0";
+            this.cache.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
             // SoundDebugForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -329,6 +353,7 @@ namespace ORTS.Debugging
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.streamProperties.ResumeLayout(false);
             this.streamProperties.PerformLayout();
             this.tableLayoutPanel2.ResumeLayout(false);
@@ -359,5 +384,7 @@ namespace ORTS.Debugging
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox cache;
     }
 }

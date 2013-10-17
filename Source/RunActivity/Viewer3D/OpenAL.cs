@@ -187,6 +187,22 @@ namespace ORTS
             
             return "";
         }
+
+        public static void Initialize()
+        {
+            //if (alcIsExtensionPresent(IntPtr.Zero, "ALC_ENUMERATION_EXT") == AL_TRUE)
+            //{
+            //    string deviceList = alcGetString(IntPtr.Zero, ALC_DEVICE_SPECIFIER);
+            //    string[] split = deviceList.Split('\0');
+            //    Trace.TraceInformation("___devlist {0}",deviceList);
+            //}
+            int[] attribs = new int[0];
+            IntPtr device = alcOpenDevice(null);
+            IntPtr context = alcCreateContext(device, attribs);
+            alcMakeContextCurrent(context);
+
+            Trace.TraceInformation("Initialized OpenAL {0}; device '{1}' by '{2}'", alGetString(AL_VERSION), alGetString(AL_RENDERER), alGetString(AL_VENDOR));
+        }
     }
 
     /// <summary>

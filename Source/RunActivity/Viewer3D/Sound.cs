@@ -877,6 +877,7 @@ namespace ORTS
             {
                 ALSoundSource.HardActive = false;
             }
+            Sweep();
         }
 
         public void Dispose()
@@ -887,6 +888,15 @@ namespace ORTS
                 ALSoundSource.Dispose();
                 ALSoundSource = null;
             }
+            Sweep();
+        }
+
+        private void Sweep()
+        {
+            foreach (var trigger in Triggers)
+                if (trigger.SoundCommand is ORTSSoundPlayCommand)
+                    foreach (var name in (trigger.SoundCommand as ORTSSoundPlayCommand).Files)
+                        SoundItem.Sweep(name, SoundSource.IsExternal, IsReleasedWithJump);
         }
 
     } // class ORTSStream
@@ -1486,7 +1496,7 @@ namespace ORTS
     /// </summary>
     public abstract class ORTSSoundPlayCommand : ORTSSoundCommand
     {
-        protected String[] Files;
+        public String[] Files;
         protected MSTS.SoundCommand.SelectionMethods SelectionMethod;
         protected int iFile;
 

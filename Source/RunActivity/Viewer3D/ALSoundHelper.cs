@@ -17,8 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-//#define ENUMERATION
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,6 +52,7 @@ namespace ORTS
         public int Channels { get; private set; }
         public bool IsExternal { get; private set; }
         public bool IsReleasedWithJump { get; private set; }
+        public int RefCount = 1; // When it falls back to 0, SoundPiece can be disposed
 
         private int[] BufferIDs;
         private int[] BufferLens;
@@ -241,21 +240,23 @@ namespace ORTS
     {
         public SoundPiece SoundPiece;
         public PlayMode PlayMode;
-        public PlayState PlayState;
         public float Pitch;
         public bool SoftLoopPoints;
 
-        // Caching of Pieces
-        private static Dictionary<string, SoundPiece> AllPieces = new Dictionary<string, SoundPiece>();
-        public static void DisposeAll()
+        private PlayState _playState;
+        public PlayState PlayState
         {
-            foreach (SoundPiece sp in AllPieces.Values)
+            get { return _playState; }
+            set
             {
-                sp.Dispose();
+                if (value == PlayState.NOP && _playState != PlayState.NOP && SoundPiece != null)
+                    SoundPiece.RefCount--;
+                _playState = value;
             }
-
-            AllPieces.Clear();
         }
+
+        // Caching of Pieces
+        public static Dictionary<string, SoundPiece> AllPieces = new Dictionary<string, SoundPiece>();
 
         /// <summary>
         /// Sets the Item's piece by its name
@@ -270,21 +271,40 @@ namespace ORTS
                 return;
 
             SoftLoopPoints = false;
-            string n = name;
-            if (isReleasedWithJump)
-                n += ".j";
-            if (IsExternal)
-                n += ".x";
+            string n = GetKey(name, IsExternal, isReleasedWithJump);
 
             if (AllPieces.ContainsKey(n))
             {
                 SoundPiece = AllPieces[n];
+                SoundPiece.RefCount++;
+                if (SoundPiece.RefCount < 1)
+                    SoundPiece.RefCount = 1;
             }
             else
             {
                 SoundPiece = new SoundPiece(name, IsExternal, isReleasedWithJump);
                 AllPieces.Add(n, SoundPiece);
             }
+        }
+
+        public static void Sweep(string name, bool isExternal, bool isReleasedWithJump)
+        {
+            string key = GetKey(name, isExternal, isReleasedWithJump);
+            if (AllPieces.ContainsKey(key) && AllPieces[key].RefCount < 1)
+            {
+                AllPieces[key].Dispose();
+                AllPieces.Remove(key);
+            }
+        }
+
+        public static string GetKey(string name, bool isExternal, bool isReleasedWithJump)
+        {
+            string key = name;
+            if (isReleasedWithJump)
+                key += ".j";
+            if (isExternal)
+                key += ".x";
+            return key;
         }
 
         public bool IsCheckpoint(int soundSourceID, int bufferID)
@@ -433,7 +453,6 @@ namespace ORTS
     /// </summary>
     public class ALSoundSource : IDisposable
     {
-        private static int refCount;
         private const int QUEUELENGHT = 16;
 
         public int SoundSourceID = -1;
@@ -447,38 +466,6 @@ namespace ORTS
 
         public bool NeedsFrequentUpdate;
 
-        private static void Initialize()
-        {
-            if (refCount == 0)
-            {
-#if ENUMERATION
-                if (OpenAL.alcIsExtensionPresent(IntPtr.Zero, "ALC_ENUMERATION_EXT") == OpenAL.AL_TRUE)
-                {
-                    string deviceList = OpenAL.alcGetString(IntPtr.Zero, OpenAL.ALC_DEVICE_SPECIFIER);
-                    string[] split = deviceList.Split('\0');
-                    Trace.TraceInformation("___devlist {0}",deviceList);
-                }
-#endif
-                int[] attribs = new int[0];
-                IntPtr device = OpenAL.alcOpenDevice(null);
-                IntPtr context = OpenAL.alcCreateContext(device, attribs);
-                OpenAL.alcMakeContextCurrent(context);
-
-                Trace.TraceInformation("Initialized OpenAL {0}; device '{1}' by '{2}'", OpenAL.alGetString(OpenAL.AL_VERSION), OpenAL.alGetString(OpenAL.AL_RENDERER), OpenAL.alGetString(OpenAL.AL_VENDOR));
-            }
-
-            refCount++;
-        }
-
-        private static void Uninitialize()
-        {
-            refCount--;
-            if (refCount == 0)
-            {
-                SoundItem.DisposeAll();
-            }
-        }
-
         /// <summary>
         /// Constructs a new AL sound source
         /// </summary>
@@ -487,7 +474,6 @@ namespace ORTS
         /// <param name="distanceFactor">The number indicating the fade speed by the distance</param>
         public ALSoundSource(bool isEnv, bool isSlowRolloff, float distanceFactor)
         {
-            Initialize();
             SoundSourceID = -1;
             SoundQueue[QueueTail].PlayState = PlayState.NOP;
             _isSlowRolloff = isSlowRolloff;
@@ -841,8 +827,8 @@ namespace ORTS
                 SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.Release ||
                 SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.ReleaseWithJump))
             {
-                SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
                 Stop();
+                SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
                 NeedsFrequentUpdate = false;
             }
         }
@@ -1031,9 +1017,6 @@ namespace ORTS
         private static bool _Muted;
         public static void UnMuteAll()
         {
-            if (refCount == 0)
-                Initialize();
-
             if (_Muted)
             {
                 OpenAL.alListenerf(OpenAL.AL_GAIN, 1);
@@ -1043,9 +1026,6 @@ namespace ORTS
 
         public static void MuteAll()
         {
-            if (refCount == 0)
-                Initialize();
-
             if (!_Muted)
             {
                 OpenAL.alListenerf(OpenAL.AL_GAIN, 0);
@@ -1087,7 +1067,6 @@ namespace ORTS
         public void Dispose()
         {
             if (SoundSourceID != -1) OpenAL.alDeleteSources(1, ref SoundSourceID);
-            Uninitialize();
         }
     }
 }

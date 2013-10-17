@@ -1195,6 +1195,9 @@ namespace ORTS
                 case CABViewControlTypes.BOILER_WATER:
                     data = WaterFraction;
                     break;
+                case CABViewControlTypes.TENDER_WATER:
+                    data = TenderWaterVolumeUKG; // Looks like default locomotives need an absolute UK gallons value
+                    break;
                 case CABViewControlTypes.STEAM_PR:
                     data = ConvertFromPSI(cvc, BoilerPressurePSI);
                     break;
@@ -1389,6 +1392,8 @@ namespace ORTS
         
         public void ToggleInjector1()
         {
+            if (!FiringIsManual)
+                return;
             Injector1IsOn = !Injector1IsOn;
             SignalEvent(Injector1IsOn ? Event.SteamEjector1On : Event.SteamEjector1Off); // hook for sound trigger
             Simulator.Confirmer.Confirm(CabControl.Injector1, Injector1IsOn ? CabSetting.On : CabSetting.Off);
@@ -1416,6 +1421,8 @@ namespace ORTS
 
         public void ToggleInjector2()
         {
+            if (!FiringIsManual)
+                return;
             Injector2IsOn = !Injector2IsOn;
             SignalEvent(Injector2IsOn ? Event.SteamEjector2On : Event.SteamEjector2Off); // hook for sound trigger
             Simulator.Confirmer.Confirm( CabControl.Injector2, Injector2IsOn ? CabSetting.On : CabSetting.Off );
@@ -1740,6 +1747,8 @@ namespace ORTS
         {
             var car = Car as MSTSSteamLocomotive;
             var steamUsageLBpS = car.CylinderSteamUsageLBpS + car.BlowerSteamUsageLBpS + car.BasicSteamUsageLBpS + (car.SafetyIsOn ? car.SafetyValveUsageLBpS : 0);
+            // TODO: Expected assignment:
+            //var steamVolumeM3pS = Kg.FromLb(steamUsageLBpS) * SteamVaporDensityAt100DegC1BarM3pKG;
             var steamVolumeM3pS = steamUsageLBpS * LBToKG * SteamVaporDensityAt100DegC1BarM3pKG; 
 
             foreach (var drawer in Cylinders)

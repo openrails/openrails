@@ -113,6 +113,8 @@ namespace ORTS
             while (Viewer.RealTime == 0)
                 Thread.Sleep(100);
 
+            OpenAL.Initialize();
+
             lock (SoundSources)
                 foreach (List<SoundSourceBase> src in SoundSources.Values)
                     foreach (SoundSourceBase ss in src)

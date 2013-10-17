@@ -100,24 +100,25 @@ namespace ORTS.Debugging
                         else
                             nodeString = "-";
                         nodeString += ": " + ss.SMSFileName + " ";
+                        string nodeKey = nodeString + ss.GetHashCode().ToString();
 
                         if (ss.Active)
                         {
-                            int index = activeSoundList.Nodes.IndexOfKey(nodeString);
+                            int index = activeSoundList.Nodes.IndexOfKey(nodeKey);
                             if (index == -1)
                             {
-                                activeSoundList.Nodes.Add(nodeString, nodeString);
-                                index = activeSoundList.Nodes.IndexOfKey(nodeString);
+                                activeSoundList.Nodes.Add(nodeKey, nodeString);
+                                index = activeSoundList.Nodes.IndexOfKey(nodeKey);
                             }
                             node = activeSoundList.Nodes[index];
                         }
                         else
                         {
-                            int index = inactiveSoundList.Nodes.IndexOfKey(nodeString);
+                            int index = inactiveSoundList.Nodes.IndexOfKey(nodeKey);
                             if (index == -1)
                             {
-                                inactiveSoundList.Nodes.Add(nodeString, nodeString);
-                                index = inactiveSoundList.Nodes.IndexOfKey(nodeString);
+                                inactiveSoundList.Nodes.Add(nodeKey, nodeString);
+                                index = inactiveSoundList.Nodes.IndexOfKey(nodeKey);
                             }
                             node = inactiveSoundList.Nodes[index];
                         }
@@ -212,6 +213,8 @@ namespace ORTS.Debugging
 
             activeSoundList.EndUpdate();
             inactiveSoundList.EndUpdate();
+
+            cache.Text = SoundItem.AllPieces.Count.ToString();
         }
 
         private void SoundDebugForm_FormClosing(object sender, FormClosingEventArgs e)
