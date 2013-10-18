@@ -767,6 +767,25 @@ namespace ORTS {
     }
 
     [Serializable()]
+    public class ContinuousFireboxDoorCommand : ContinuousCommand
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ContinuousFireboxDoorCommand(CommandLog log, bool toState, float? target, double startTime)
+            : base(log, toState, target, startTime)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.FireboxDoorChangeTo(ToState, Target);
+            // Report();
+        }
+    }
+
+    [Serializable()]
     public class ContinuousFiringRateCommand : ContinuousCommand {
         public static MSTSSteamLocomotive Receiver { get; set; }
 

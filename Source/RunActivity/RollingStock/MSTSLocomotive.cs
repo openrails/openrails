@@ -3095,7 +3095,7 @@ namespace ORTS
             if (_Location == 0)
                 foreach (var cvcr in CabViewControlRenderersList[i])
                     cvcr.PrepareFrame(frame);
-                }
+        }
         
         public override void Draw(GraphicsDevice graphicsDevice)
         {
@@ -3585,6 +3585,7 @@ namespace ORTS
                 case CABViewControlTypes.DAMPERS_FRONT:
                 case CABViewControlTypes.WATER_INJECTOR1:
                 case CABViewControlTypes.WATER_INJECTOR2:
+                case CABViewControlTypes.FIREHOLE:
                     index = PercentToIndex(data);
                     break;
                 case CABViewControlTypes.THROTTLE:

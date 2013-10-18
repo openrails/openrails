@@ -55,6 +55,7 @@ namespace ORTS
         public MSTSNotchController BlowerController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController DamperController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController FiringRateController = new MSTSNotchController(0, 1, 0.1f);
+        public MSTSNotchController FireboxDoorController = new MSTSNotchController(0, 1, 0.1f);
         bool Injector1IsOn;
         bool Injector2IsOn;
         public bool CylinderCocksAreOpen;
@@ -423,6 +424,7 @@ namespace ORTS
                 case "engine(enginecontrollers(blower": BlowerController.Parse(stf); break;
                 case "engine(enginecontrollers(dampersfront": DamperController.Parse(stf); break;
                 case "engine(enginecontrollers(shovel": FiringRateController.Parse(stf); break;
+                case "engine(enginecontrollers(firedoor": FireboxDoorController.Parse(stf); break;
 				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
 				case "engine(forcefactor1": ForceFactor1NpPSI = new Interpolator(stf); break;
 				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
@@ -489,6 +491,7 @@ namespace ORTS
             Injector2Controller = (MSTSNotchController)locoCopy.Injector2Controller.Clone();
             BlowerController = (MSTSNotchController)locoCopy.BlowerController.Clone();
             DamperController = (MSTSNotchController)locoCopy.DamperController.Clone();
+            FireboxDoorController = (MSTSNotchController)locoCopy.FireboxDoorController.Clone();
             FiringRateController = (MSTSNotchController)locoCopy.FiringRateController.Clone();
 
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
@@ -515,6 +518,7 @@ namespace ORTS
             ControllerFactory.Save(Injector2Controller, outf);
             ControllerFactory.Save(BlowerController, outf);
             ControllerFactory.Save(DamperController, outf);
+            ControllerFactory.Save(FireboxDoorController, outf);
             ControllerFactory.Save(FiringRateController, outf);
             base.Save(outf);
         }
@@ -540,6 +544,7 @@ namespace ORTS
             Injector2Controller = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             BlowerController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             DamperController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
+            FireboxDoorController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             FiringRateController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
             base.Restore(inf);
         }
@@ -590,7 +595,13 @@ namespace ORTS
             if( DamperController.UpdateValue < 0.0 ) {
                 Simulator.Confirmer.UpdateWithPerCent( CabControl.Damper, CabSetting.Decrease, DamperController.CurrentValue * 100 );
             }
-            if( FiringRateController.UpdateValue > 0.0 ) {
+            if (FireboxDoorController.UpdateValue > 0.0) {
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.FireboxDoor, CabSetting.Increase, FireboxDoorController.CurrentValue * 100);
+            }
+            if (FireboxDoorController.UpdateValue < 0.0) {
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.FireboxDoor, CabSetting.Decrease, FireboxDoorController.CurrentValue * 100);
+            }
+            if (FiringRateController.UpdateValue > 0.0) {
                 Simulator.Confirmer.UpdateWithPerCent( CabControl.FiringRate, CabSetting.Increase, FiringRateController.CurrentValue * 100 );
             }
             if( FiringRateController.UpdateValue < 0.0 ) {
@@ -631,10 +642,21 @@ namespace ORTS
             if( DamperController.UpdateValue < 0.0 )
                 Simulator.Confirmer.UpdateWithPerCent( CabControl.Damper, CabSetting.Decrease, DamperController.CurrentValue * 100 );
             FiringRateController.Update(elapsedClockSeconds);
-            if( FiringRateController.UpdateValue > 0.0 )
-                Simulator.Confirmer.UpdateWithPerCent( CabControl.FiringRate, CabSetting.Increase, FiringRateController.CurrentValue * 100 );
-            if( FiringRateController.UpdateValue < 0.0 )
-                Simulator.Confirmer.UpdateWithPerCent( CabControl.FiringRate, CabSetting.Decrease, FiringRateController.CurrentValue * 100 );
+            if (FiringRateController.UpdateValue > 0.0)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Increase, FiringRateController.CurrentValue * 100);
+            if (FiringRateController.UpdateValue < 0.0)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Decrease, FiringRateController.CurrentValue * 100);
+
+            var oldFireboxDoorValue = FireboxDoorController.CurrentValue;
+            FireboxDoorController.Update(elapsedClockSeconds);
+            if (FireboxDoorController.UpdateValue > 0.0)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.FireboxDoor, CabSetting.Increase, FireboxDoorController.CurrentValue * 100);
+            if (FireboxDoorController.UpdateValue < 0.0)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.FireboxDoor, CabSetting.Decrease, FireboxDoorController.CurrentValue * 100);
+            if (oldFireboxDoorValue == 0 && FireboxDoorController.CurrentValue > 0)
+                SignalEvent(Event.FireboxDoorOpen);
+            else if (oldFireboxDoorValue > 0 && FireboxDoorController.CurrentValue == 0)
+                SignalEvent(Event.FireboxDoorClose);
             
             base.Update(elapsedClockSeconds);
 
@@ -1217,6 +1239,9 @@ namespace ORTS
                 case CABViewControlTypes.DAMPERS_FRONT:
                     data = DamperController.CurrentValue;
                     break;
+                case CABViewControlTypes.FIREHOLE:
+                    data = FireboxDoorController.CurrentValue;
+                    break;
                 case CABViewControlTypes.WATER_INJECTOR1:
                     data = Injector1Controller.CurrentValue;
                     break;
@@ -1514,6 +1539,47 @@ namespace ORTS
             }
         }
 
+        public void StartFireboxDoorIncrease(float? target)
+        {
+            FireboxDoorController.CommandStartTime = Simulator.ClockTime;
+            Simulator.Confirmer.ConfirmWithPerCent(CabControl.FireboxDoor, CabSetting.Increase, FireboxDoorController.CurrentValue * 100);
+            FireboxDoorController.StartIncrease(target);
+            SignalEvent(Event.FireboxDoorChange);
+        }
+        public void StopFireboxDoorIncrease()
+        {
+            FireboxDoorController.StopIncrease();
+        }
+        public void StartFireboxDoorDecrease(float? target)
+        {
+            FireboxDoorController.CommandStartTime = Simulator.ClockTime;
+            Simulator.Confirmer.ConfirmWithPerCent(CabControl.FireboxDoor, CabSetting.Decrease, FireboxDoorController.CurrentValue * 100);
+            FireboxDoorController.StartDecrease(target);
+            SignalEvent(Event.FireboxDoorChange);
+        }
+        public void StopFireboxDoorDecrease()
+        {
+            FireboxDoorController.StopDecrease();
+        }
+
+        public void FireboxDoorChangeTo(bool increase, float? target)
+        {
+            if (increase)
+            {
+                if (target > FireboxDoorController.CurrentValue)
+                {
+                    StartFireboxDoorIncrease(target);
+                }
+            }
+            else
+            {
+                if (target < FireboxDoorController.CurrentValue)
+                {
+                    StartFireboxDoorDecrease(target);
+                }
+            }
+        }
+
         public void StartFiringRateIncrease( float? target ) {
             FiringRateController.CommandStartTime = Simulator.ClockTime;
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.FiringRate, FiringRateController.CurrentValue * 100 );
@@ -1714,6 +1780,17 @@ namespace ORTS
             else if( UserInput.IsReleased( UserCommands.ControlDamperDecrease ) ) {
                 SteamLocomotive.StopDamperDecrease();
                 new ContinuousDamperCommand( Viewer.Log, false, SteamLocomotive.DamperController.CurrentValue, SteamLocomotive.DamperController.CommandStartTime );
+            }
+            if (UserInput.IsPressed(UserCommands.ControlFireboxOpen))
+                SteamLocomotive.StartFireboxDoorIncrease(null);
+            else if (UserInput.IsReleased(UserCommands.ControlFireboxOpen)) {
+                SteamLocomotive.StopFireboxDoorIncrease();
+                new ContinuousFireboxDoorCommand(Viewer.Log, true, SteamLocomotive.FireboxDoorController.CurrentValue, SteamLocomotive.FireboxDoorController.CommandStartTime);
+            } else if (UserInput.IsPressed(UserCommands.ControlFireboxClose))
+                SteamLocomotive.StartFireboxDoorDecrease(null);
+            else if (UserInput.IsReleased(UserCommands.ControlFireboxClose)) {
+                SteamLocomotive.StopFireboxDoorDecrease();
+                new ContinuousFireboxDoorCommand(Viewer.Log, false, SteamLocomotive.FireboxDoorController.CurrentValue, SteamLocomotive.FireboxDoorController.CommandStartTime);
             }
             if (UserInput.IsPressed(UserCommands.ControlFiringRateIncrease))
                 SteamLocomotive.StartFiringRateIncrease( null );

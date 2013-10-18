@@ -51,8 +51,9 @@ namespace ORTS
         EngineBrakePressureIncrease,
         EnginePowerOff, 
         EnginePowerOn, 
-        FireboxDoorChange, // NOTE: Currently not used in Open Rails.
-        FireboxDoorClose, // NOTE: Currently not used in Open Rails.
+        FireboxDoorChange,
+        FireboxDoorOpen,
+        FireboxDoorClose,
         FuelTowerDown, // NOTE: Currently not used in Open Rails.
         FuelTowerTransferEnd, // NOTE: Currently not used in Open Rails.
         FuelTowerTransferStart, // NOTE: Currently not used in Open Rails.
@@ -183,7 +184,7 @@ namespace ORTS
                         case 37: return Event.LightSwitchToggle;
                         case 38: return Event.WaterScoopDown;
                         case 39: return Event.WaterScoopUp;
-                        // Event 40 is the firebox door open in MSTS sound files but is never used.
+                        case 40: return Event.FireboxDoorOpen; // Used in default steam locomotives (Scotsman and 380)
                         case 41: return Event.FireboxDoorClose;
                         case 42: return Event.SteamSafetyValveOn;
                         case 43: return Event.SteamSafetyValveOff;

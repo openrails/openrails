@@ -219,6 +219,8 @@ namespace ORTS
         ControlBlowerDecrease,
         ControlDamperIncrease,
         ControlDamperDecrease,
+        ControlFireboxOpen,
+        ControlFireboxClose,
         ControlFiringRateIncrease,
         ControlFiringRateDecrease,
         ControlFireShovelFull,
@@ -550,6 +552,8 @@ namespace ORTS
             Commands[(int)UserCommands.ControlBlowerDecrease] = new UserCommandKeyInput(0x31, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDamperIncrease] = new UserCommandKeyInput(0x32);
             Commands[(int)UserCommands.ControlDamperDecrease] = new UserCommandKeyInput(0x32, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlFireboxOpen] = new UserCommandKeyInput(0x21);
+            Commands[(int)UserCommands.ControlFireboxClose] = new UserCommandKeyInput(0x21, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlFiringRateIncrease] = new UserCommandKeyInput(0x13);
             Commands[(int)UserCommands.ControlFiringRateDecrease] = new UserCommandKeyInput(0x13, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlFireShovelFull] = new UserCommandKeyInput(0x13, KeyModifiers.Control);

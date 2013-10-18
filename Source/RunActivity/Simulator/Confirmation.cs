@@ -45,6 +45,7 @@ namespace ORTS {
       , Injector2
       , Blower
       , Damper
+      , FireboxDoor
       , FiringRate
       , FiringIsManual
       , FireShovelfull
@@ -86,7 +87,8 @@ namespace ORTS {
     }
 
     public enum CabSetting {
-        Off = 1     // 2 or 3 state control/reset/initialise
+        Name        // name of control
+        , Off       // 2 or 3 state control/reset/initialise
         , Neutral   // 2 or 3 state control
         , On        // 2 or 3 state control/apply/change
         , Decrease  // continuous control
@@ -127,6 +129,7 @@ namespace ORTS {
             , new string [] { "Injector 2", "off", null, "on", "close", "open" } 
             , new string [] { "Blower", null, null, null, "decrease", "increase" } 
             , new string [] { "Damper", null, null, null, "close", "open" } 
+            , new string [] { "Firebox Door", null, null, null, "close", "open" }
             , new string [] { "Firing Rate", null, null, null, "decrease", "increase" } 
             , new string [] { "Manual Firing", "off", null, "on" } 
             , new string [] { "Fire", null, null, "add shovelfull" } 
