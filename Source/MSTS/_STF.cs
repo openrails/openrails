@@ -1061,7 +1061,7 @@ namespace MSTS
                     case "": return 1.0;
                     case "kj/kg": return 1;
                     case "j/g": return 1;
-                    case "btu/lb": return 1 / 2.326f;
+                    case "btu/lb": return 2.326f;
                 }
             if ((validUnits & UNITS.TemperatureDifference) > 0)
                 switch (suffix)

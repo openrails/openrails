@@ -125,6 +125,39 @@ namespace ORTS
             110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f, 
             210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f, 
         };
+        
+        // pressure tables for Superheat Factors
+        static float[] SuperheatFactorPressureTablePSI = new float[]
+        {
+            10.0f, 120.00f, 140.00f, 160.00f, 180.00f, 200.00f, 220.00f, 240.00f, 250.0f, 300.0f
+        };
+
+        // Table to calculate steam reduction due to superheating - based on figures from Goss book and test on superheating
+        // Values represent fraction of steam usage compared to a saturated locomotive, ie 
+        static float[] SuperheaterSteamReductionTable = new float[]
+        {
+            0.710f, 0.817f, 0.826f, 0.838f, 0.842f, 0.847f, 0.868f, 0.915f, 0.930f, 1.0f
+        };
+        
+         // Table to calculate coal reduction due to superheating - based on figures from Goss book and test on superheating
+        // Values represent fraction of steam usage compared to a saturated locomotive, ie 
+        static float[] SuperheaterCoalReductionTable = new float[]
+        {
+            0.710f, 0.827f, 0.841f, 0.858f, 0.860f, 0.866f, 0.890f, 0.942f, 0.956f, 1.0f
+        };
+
+        // Reduction of Steam usage at various steam pressures
+        public static Interpolator SuperheaterSteamReductionInterpolatorPSItoX()
+        {
+            return new Interpolator(SuperheatFactorPressureTablePSI, SuperheaterSteamReductionTable);
+        }
+        
+        // Reduction of Steam usage at various steam pressures
+        public static Interpolator SuperheaterCoalReductionInterpolatorPSItoX()
+        {
+            return new Interpolator(SuperheatFactorPressureTablePSI, SuperheaterCoalReductionTable);
+        }
+        
 
         // Saturated pressure of steam (psi) @ water temperature (K)
         public static Interpolator SaturationPressureInterpolatorKtoPSI()
