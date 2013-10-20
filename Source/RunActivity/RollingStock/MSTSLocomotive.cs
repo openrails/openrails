@@ -2993,6 +2993,9 @@ namespace ORTS
                         CABTextureManager.LoadTextures(viewer, cabfile);
                     }
 
+                    if (cabView.CVFFile.CabViewControls == null)
+                        continue;
+
                     var controlSortIndex = 1;  // Controls are drawn atop the cabview and in order they appear in the CVF file.
                     // This allows the segments of moving-scale meters to be hidden by covers (e.g. TGV-A)
                     CabViewControlRenderersList.Add(new List<CabViewControlRenderer>());
@@ -3329,7 +3332,6 @@ namespace ORTS
             : base(viewer, locomotive, control, shader)
         {
             Gauge = control;
-            //SourceRectangle = Gauge.Area;
             if ((Control.ControlType == CABViewControlTypes.REVERSER_PLATE) || (Gauge.ControlStyle == CABViewControlStyles.POINTER))
             {
                 DrawColor = Color.White;
@@ -3463,7 +3465,7 @@ namespace ORTS
                 Position.X += Viewer.DisplaySize.X / 2; Position.Y += (Viewer.CabHeightPixels / 2 + Viewer.CabYOffsetPixels);
                 DestinationRectangle.X = (int)(Position.X + 0.5f); DestinationRectangle.Y = (int)(Position.Y + 0.5f);
             }
-            if (Control.MinValue < 0)
+            if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
                 DrawColor = LoadMeterPositive ? new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B) : new Color(Gauge.NegativeColor.R, Gauge.NegativeColor.G, Gauge.NegativeColor.B);
         }
 
