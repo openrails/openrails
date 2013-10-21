@@ -638,6 +638,7 @@ namespace ORTS
 #endif 
             Variable1 = Math.Abs(SpeedMpS);   // Steam locos seem to need this.
             Variable2 = 50;   // not sure what this one's for ie in an SMS file
+            Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRate.SmoothedValue * 100;
 
             float throttle = ThrottlePercent / 100;
             float cutoff = Math.Abs(Train.MUReverserPercent / 100);
