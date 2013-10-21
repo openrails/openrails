@@ -102,6 +102,7 @@ namespace ORTS
         float ExhaustLimitLBpH;     // steam usage rate that causes increased back pressure
         public float BasicSteamUsageLBpS;  // steam used for auxiliary stuff - ie loco at rest
         float IdealFireMassKG;        // Target fire mass
+        float MaxFireMassKG;        // Max possible fire mass
         float MaxFiringRateKGpS;              // Max rate at which fireman can shovel coal
         public float SafetyValveUsageLBpS;
         float SafetyValveDropPSI;               // Pressure drop before Safety valve turns off, normally around 3 psi
@@ -263,6 +264,8 @@ namespace ORTS
                     IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
                 //    StokerFitted = true;
                 }
+            if (MaxFireMassKG == 0)
+                MaxFireMassKG = 2 * IdealFireMassKG;
 
         #endregion
 
@@ -426,6 +429,7 @@ namespace ORTS
                 case "engine(safetyvalvessteamusage": SafetyValveUsageLBpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 3600; break;
                 case "engine(safetyvalvepressuredifference": SafetyValveDropPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(idealfiremass": IdealFireMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "engine(maxfiremass": MaxFireMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtenderwatermass": MaxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -493,6 +497,7 @@ namespace ORTS
             SafetyValveUsageLBpS = locoCopy.SafetyValveUsageLBpS;
             SafetyValveDropPSI = locoCopy.SafetyValveDropPSI;
             IdealFireMassKG = locoCopy.IdealFireMassKG;
+            MaxFireMassKG = locoCopy.MaxFireMassKG;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
             EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
             FuelCalorificKJpKG = locoCopy.FuelCalorificKJpKG;
@@ -840,7 +845,7 @@ namespace ORTS
                         }
                     }
                 }
-                FireMassKG = MathHelper.Clamp(FireMassKG, 0, 2 * IdealFireMassKG);
+                FireMassKG = MathHelper.Clamp(FireMassKG, 0, MaxFireMassKG);
             }
             // Adjust burn rates for firing in either manual or AI mode
             if (FiringIsManual)
@@ -1427,6 +1432,9 @@ namespace ORTS
                     break;
                 case CABViewControlTypes.DAMPERS_FRONT:
                     data = DamperController.CurrentValue;
+                    break;
+                case CABViewControlTypes.FIREBOX:
+                    data = FireMassKG / MaxFireMassKG;
                     break;
                 case CABViewControlTypes.FIREHOLE:
                     data = FireboxDoorController.CurrentValue;

@@ -211,7 +211,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
                 new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
                 new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCGauge(stf, basepath)); }), 
+                new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCFirebox(stf, basepath)); }), 
                 new STFReader.TokenProcessor("digitalclock", ()=>{ Add(new CVCDigitalClock(stf, basepath)); })
             });
             //TODO Uncomment when parsed all type
@@ -374,6 +374,8 @@ namespace MSTS
         public color NegativeColor { get; set; }
         public color DecreaseColor { get; set; }
 
+        public CVCGauge() { }
+
         public CVCGauge(STFReader stf, string basepath)
         {
             stf.MustMatch("(");
@@ -426,6 +428,36 @@ namespace MSTS
                 })
             });
         }
+    }
+
+    public class CVCFirebox : CVCGauge
+    {
+        public string FireACEFile;
+
+        public CVCFirebox(STFReader stf, string basepath) 
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf); }),
+                new STFReader.TokenProcessor("graphic", ()=>{ ParseFireACEFile(stf, basepath); }),
+                new STFReader.TokenProcessor("fuelcoal", ()=>{ ParseGraphic(stf, basepath); }),
+            });
+
+            Direction = 1;
+            Orientation = 1;
+            MaxValue = 1;
+            MinValue = 0;
+            ControlStyle = CABViewControlStyles.POINTER;
+            Area = new Rectangle(0, 0, (int)Width, (int)Height);
+            PositionY += Height / 2;
+        }
+
+        protected void ParseFireACEFile(STFReader stf, string basepath)
+        {
+            FireACEFile = Path.Combine(basepath, stf.ReadStringBlock(null));
+        }
+
     }
     #endregion
 

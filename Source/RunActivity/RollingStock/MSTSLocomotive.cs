@@ -3010,6 +3010,14 @@ namespace ORTS
                             CabViewControlRenderersList[i].Add(cvcr);
                             continue;
                         }
+                        CVCFirebox firebox = cvc as CVCFirebox;
+                        if (firebox != null)
+                        {
+                            CabViewGaugeRenderer cvgrFire = new CabViewGaugeRenderer(viewer, car, firebox, _Shader);
+                            cvgrFire.SortIndex = controlSortIndex++;
+                            CabViewControlRenderersList[i].Add(cvgrFire);
+                            // don't "continue", because this cvc has to be also recognized as CVCGauge
+                        }
                         CVCGauge gauge = cvc as CVCGauge;
                         if (gauge != null)
                         {
@@ -3327,6 +3335,7 @@ namespace ORTS
         Rectangle DestinationRectangle = new Rectangle();
         bool LoadMeterPositive = true;
         Color DrawColor;
+        bool IsFire;
 
         public CabViewGaugeRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CVCGauge control, CabShader shader)
             : base(viewer, locomotive, control, shader)
@@ -3345,12 +3354,26 @@ namespace ORTS
                 SourceRectangle = Gauge.Area;
             }
         }
+        
+        public CabViewGaugeRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CVCFirebox control, CabShader shader)
+            : base(viewer, locomotive, control, shader)
+        {
+            Gauge = control;
+            CABTextureManager.LoadTextures(Viewer, control.FireACEFile);
+            Texture = CABTextureManager.GetTexture(control.FireACEFile, false, Locomotive.CabLightOn, out IsNightTexture);
+            DrawColor = Color.White;
+            SourceRectangle.Width = (int)Texture.Width;
+            SourceRectangle.Height = (int)Texture.Height;
+            IsFire = true;
+        }
 
         public override void PrepareFrame(RenderFrame frame)
         {
-            var dark = Viewer.MaterialManager.sunDirection.Y <= 0f || Viewer.Camera.IsUnderground;
-
-            Texture = CABTextureManager.GetTexture(Control.ACEFile, dark, Locomotive.CabLightOn, out IsNightTexture);
+            if (!(Gauge is CVCFirebox))
+            {
+                var dark = Viewer.MaterialManager.sunDirection.Y <= 0f || Viewer.Camera.IsUnderground;
+                Texture = CABTextureManager.GetTexture(Control.ACEFile, dark, Locomotive.CabLightOn, out IsNightTexture);
+            }
             if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
@@ -3361,12 +3384,16 @@ namespace ORTS
             var yratio = (float)Viewer.CabHeightPixels / 480;
 
             float percent, xpos, ypos;
-            if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE)
+            if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Control.ControlType != CABViewControlTypes.FIREBOX)
             {
                 percent = GetRangeFractionLoadMeter();
                 LoadMeterPositive = percent >= 0;
                 Gauge.Direction = LoadMeterPositive ? 0 : 1;
                 percent = Math.Abs(percent);
+            }
+            else if (IsFire)
+            {
+                percent = 1;
             }
             else
             {
@@ -3457,6 +3484,11 @@ namespace ORTS
                 DestinationRectangle.Y = (int)(yratio * topY) + Viewer.CabYOffsetPixels;
                 DestinationRectangle.Width = (int)(xratio * Gauge.Area.Width);
                 DestinationRectangle.Height = (int)(yratio * Gauge.Area.Height);
+
+                // Adjust coal texture height, because it mustn't show up at the bootom of door (see Scotsman)
+                // TODO: cut the texture at the bottom instead of stretching
+                if (Gauge is CVCFirebox)
+                    DestinationRectangle.Height = Math.Min(DestinationRectangle.Height, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - DestinationRectangle.Y);
             }
             if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0 || Locomotive.Train.tilted)
             {
