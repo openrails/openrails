@@ -191,12 +191,22 @@ namespace ORTS.Debugging
                 if (selectedSoundSource.Car != null)
                 {
                     speed.Text = Math.Abs(selectedSoundSource.Car.SpeedMpS).ToString("F1");
-                    variable1.Text = selectedSoundSource.Car.Variable1.ToString("0.#%");
-                    variable3.Text = selectedSoundSource.Car.Variable3.ToString("0.#%");
+                    var Variable1 = selectedSoundSource.Car.Variable1;
+                    var Variable2 = selectedSoundSource.Car.Variable2;
+                    var Variable3 = selectedSoundSource.Car.Variable3;
+
+                    if (selectedSoundSource.Car is MSTSSteamLocomotive)
+                    {
+                        Variable1 /= 100f;
+                        Variable2 /= 100f;
+                        Variable3 /= 100f;
+                    }
                     if (selectedSoundSource.Car is MSTSElectricLocomotive)
-                        variable2.Text = (selectedSoundSource.Car.Variable2 / 100).ToString("0.#%");
-                    else
-                        variable2.Text = selectedSoundSource.Car.Variable2.ToString("0.#%");
+                        Variable2 /= 100f;
+
+                    variable1.Text = Variable1.ToString("0.#%");
+                    variable2.Text = Variable2.ToString("0.#%");
+                    variable3.Text = Variable3.ToString("0.#%");
                 }
                 else
                 {

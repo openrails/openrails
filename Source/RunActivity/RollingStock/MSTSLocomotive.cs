@@ -2101,24 +2101,18 @@ namespace ORTS
                         }
                         break;
                     }
-                case CABViewControlTypes.SPEEDLIM_DISPLAY:
+                case CABViewControlTypes.SPEEDLIMIT:
                     {
+                        // Displays current allowable speed
                         bool metric = cvc.Units == CABViewControlUnits.KM_PER_HOUR;
-                        if (this.Train.CABAspect == SignalHead.SIGASP.STOP ||
-                                this.Train.CABAspect == SignalHead.SIGASP.STOP_AND_PROCEED)
-                        {
-                            data = 0;
-                        }
-                        else
-                        {
-                            data = MpS.FromMpS(this.Train.AllowedMaxSpeedMpS, metric);
-                        }
+                        data = MpS.FromMpS(this.Train.AllowedMaxSpeedMpS, metric);
                         break;
                     }
-                // Steam instruments
-                case CABViewControlTypes.STEAM_PR:
+                case CABViewControlTypes.SPEEDLIM_DISPLAY:
                     {
-                        data = ConvertFromPSI(cvc, ((MSTSSteamLocomotive)this).BoilerPressurePSI);
+                        // Displays allowable speed shown on next signal
+                        bool metric = cvc.Units == CABViewControlUnits.KM_PER_HOUR;
+                        data = MpS.FromMpS(this.Train.CABNextSignalSpeedMpS, metric);
                         break;
                     }
                 // For gearbox engines

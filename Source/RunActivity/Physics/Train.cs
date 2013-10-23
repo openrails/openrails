@@ -130,6 +130,7 @@ namespace ORTS
         public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
 
         public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
+        public float CABNextSignalSpeedMpS;
 
         public float TrainMaxSpeedMpS;                   // Max speed as set by route (default value)
         public float AllowedMaxSpeedMpS;                 // Max speed as allowed
@@ -1911,19 +1912,25 @@ namespace ORTS
                 //
 
                 SignalHead.SIGASP thisState = SignalHead.SIGASP.UNKNOWN;
+                float cabNextSignalSpeed = 0;
 
                 if (IndexNextSignal >= 0)
                 {
                     distanceToSignal = SignalObjectItems[IndexNextSignal].distance_to_train;
                     thisState = SignalObjectItems[IndexNextSignal].signal_state;
+                    cabNextSignalSpeed = SignalObjectItems[IndexNextSignal].actual_speed;
                 }
                 else if (NextSignalObject[0] != null)
                 {
                     distanceToSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
                     thisState = NextSignalObject[0].this_sig_lr(SignalHead.SIGFN.NORMAL);
+                    cabNextSignalSpeed = IsFreight ?
+                        NextSignalObject[0].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
+                        NextSignalObject[0].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
                 }
 
                 CABAspect = thisState;
+                CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
                 SignalObject dummyObject = new SignalObject();
                 TMaspect = dummyObject.TranslateTMAspect(thisState);
 
@@ -4464,6 +4471,12 @@ namespace ORTS
                 NextSignalObject[1].this_sig_lr(SignalHead.SIGFN.NORMAL);
 
             CABAspect = MUDirection == Direction.Forward ? forwardstate : backwardstate;
+
+            int forwardIndex = MUDirection == Direction.Forward ? 0 : 1;
+            float cabNextSignalSpeed = NextSignalObject[forwardIndex] == null ? 0 : IsFreight ?
+                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
+                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
+            CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
         }
 
 
@@ -4863,6 +4876,12 @@ namespace ORTS
                 NextSignalObject[1].this_sig_lr(SignalHead.SIGFN.NORMAL);
 
             CABAspect = MUDirection == Direction.Forward ? forwardstate : backwardstate;
+
+            int forwardIndex = MUDirection == Direction.Forward ? 0 : 1;
+            float cabNextSignalSpeed = NextSignalObject[forwardIndex] == null ? 0 : IsFreight ?
+                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
+                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
+            CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
         }
 
 
@@ -5507,6 +5526,12 @@ namespace ORTS
                 NextSignalObject[1].this_sig_lr(SignalHead.SIGFN.NORMAL);
 
             CABAspect = MUDirection == Direction.Forward ? forwardstate : backwardstate;
+
+            int forwardIndex = MUDirection == Direction.Forward ? 0 : 1;
+            float cabNextSignalSpeed = NextSignalObject[forwardIndex] == null ? 0 : IsFreight ?
+                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
+                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
+            CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
         }
 
         //================================================================================================//
@@ -5938,6 +5963,12 @@ namespace ORTS
                 NextSignalObject[1].this_sig_lr(SignalHead.SIGFN.NORMAL);
 
             CABAspect = MUDirection == Direction.Forward ? forwardstate : backwardstate;
+
+            int forwardIndex = MUDirection == Direction.Forward ? 0 : 1;
+            float cabNextSignalSpeed = NextSignalObject[forwardIndex] == null ? 0 : IsFreight ?
+                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
+                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
+            CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
         }
 
 
