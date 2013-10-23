@@ -442,29 +442,17 @@ namespace ORTS
                 case "engine(enginecontrollers(shovel": FiringRateController.Parse(stf); break;
                 case "engine(enginecontrollers(firedoor": FireboxDoorController.Parse(stf); break;
                 case "engine(effects(steamspecialeffects": ParseEffects(lowercasetoken, stf); break;
-
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(gratearea": GrateAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
+                case "engine(ortsgratearea": GrateAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(superheater": Superheater = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(evaporationarea": EvaporationAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(fuelcalorific": FuelCalorificKJpKG = stf.ReadFloatBlock(STFReader.UNITS.EnergyDensity, null); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(burnratemultiplier": BurnRateMultiplier = stf.ReadIntBlock(null); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(forcefactor1": ForceFactor1NpPSI = new Interpolator(stf); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(forcefactor2": ForceFactor2NpPSI = new Interpolator(stf); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(cylinderpressuredrop": CylinderPressureDropLBpStoPSI = new Interpolator(stf); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(backpressure": BackPressureLBpStoPSI = new Interpolator(stf); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(burnrate": BurnRateLBpStoKGpS = new Interpolator(stf); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-                case "engine(boilerefficiency": BoilerEfficiency = new Interpolator(stf); break;
+                case "engine(ortsevaporationarea": EvaporationAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
+                case "engine(ortsfuelcalorific": FuelCalorificKJpKG = stf.ReadFloatBlock(STFReader.UNITS.EnergyDensity, null); break;
+                case "engine(ortsburnratemultiplier": BurnRateMultiplier = stf.ReadIntBlock(null); break;
+                case "engine(ortsforcefactor1": ForceFactor1NpPSI = new Interpolator(stf); break;
+                case "engine(ortsforcefactor2": ForceFactor2NpPSI = new Interpolator(stf); break;
+                case "engine(ortscylinderpressuredrop": CylinderPressureDropLBpStoPSI = new Interpolator(stf); break;
+                case "engine(ortsbackpressure": BackPressureLBpStoPSI = new Interpolator(stf); break;
+                case "engine(ortsburnrate": BurnRateLBpStoKGpS = new Interpolator(stf); break;
+                case "engine(ortsboilerefficiency": BoilerEfficiency = new Interpolator(stf); break;
 
                 default: base.Parse(lowercasetoken, stf); break;
             }

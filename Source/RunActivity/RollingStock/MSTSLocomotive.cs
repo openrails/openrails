@@ -347,51 +347,30 @@ namespace ORTS
                 case "engine(airbrakesmainresvolume": MainResVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-#if ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(mainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(enginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(enginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(brakepipetimefactor": BrakePipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(brakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(brakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(brakepipechargingrate": BrakePipeChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(maxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(stf); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(dynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(stf); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(continuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                // FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(orts(sanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(orts(powerondelay": PowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(orts(emergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(orts(emergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(orts(emergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "engine(orts(wheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
-#endif
+				case "engine(ortsmainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+				case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+				case "engine(ortsenginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+				case "engine(ortsbrakepipetimefactor": BrakePipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+				case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+				case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+				case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+				case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(stf); break;
+				case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(stf); break;
+				case "engine(ortscontinuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+				case "engine(orts(ortssanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+				case "engine(orts(ortspowerondelay": PowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+				case "engine(orts(ortsemergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
+				case "engine(orts(ortsemergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
+				case "engine(orts(ortsemergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
+				case "engine(orts(ortswheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-				// NOT FIXME: IT IS DEFINED IN MSTS
                 case "engine(dynamicbrakehasautobailoff":
-				case "engine(dynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
-                case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-
-				
+                case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
+                case "engine(ortsdynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(numwheels": NumWheelsAdhesionFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (NumWheelsAdhesionFactor < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;

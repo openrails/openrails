@@ -147,7 +147,6 @@ namespace ORTS
                 }
             } // class WAGFile.Engine
 
-			// FIXME: Customisation of MSTS file formats is not allowed: please remove.
 			public class OpenRailsData
             {
                 public string DLL;
@@ -156,7 +155,7 @@ namespace ORTS
                 {
                     stf.MustMatch("(");
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("dll", ()=>{ DLL = stf.ReadStringBlock(null); }),
+                        new STFReader.TokenProcessor("ortsdll", ()=>{ DLL = stf.ReadStringBlock(null); }),
                     });
                 }
             } // class WAGFile.Engine

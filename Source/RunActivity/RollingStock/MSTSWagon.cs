@@ -191,7 +191,7 @@ namespace ORTS
                     Couplers[Couplers.Count - 1].SetR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(adhesion":  // TODO: Is permissing the correct spelling necessary?
+                case "wagon(ortsadhesion":
                 case "wagon(adheasion":
                     stf.MustMatch("(");
                     Adhesion1 = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -200,8 +200,7 @@ namespace ORTS
                     stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
-#if ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
-                case "wagon(or_adhesion(curtius_kniffler":   
+                case "wagon(ortsadhesion(ortscurtius_kniffler":   
                     stf.MustMatch("(");                      //e.g. Wagon ( OR_adhesion ( Curtius_Kniffler ( 7.5 44 0.161 0.7 ) ) )
                     Curtius_KnifflerA = stf.ReadFloat(STFReader.UNITS.None, 7.5f); if (Curtius_KnifflerA <= 0) Curtius_KnifflerA = 7.5f;
                     Curtius_KnifflerB = stf.ReadFloat(STFReader.UNITS.None, 44.0f); if (Curtius_KnifflerB <= 0) Curtius_KnifflerB = 44.0f;
@@ -209,33 +208,28 @@ namespace ORTS
                     AdhesionK = stf.ReadFloat(STFReader.UNITS.None, 0.7f); if (AdhesionK <= 0) AdhesionK = 0.7f;
                     stf.SkipRestOfBlock();
                     break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "wagon(or_adhesion(slipwarningtreshold":
+                case "wagon(ortsadhesion(ortsslipwarningthreshold":
                     stf.MustMatch("(");
                     SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
                     stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "wagon(or_adhesion(antislip":
+                case "wagon(ortsadhesion(ortsantislip":
                     stf.MustMatch("(");
                     //AntislipControl = stf.ReadStringBlock(null);
                     stf.SkipRestOfBlock();
                     break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "wagon(or_adhesion(wheelset(axle(inertia":
+                case "wagon(ortsadhesion(wheelset(axle(ortsinertia":
                     stf.MustMatch("(");                    
                     AxleInertiaKgm2 = stf.ReadFloat(STFReader.UNITS.RotationalInertia, null);
                     stf.SkipRestOfBlock();
                     break;
-				// FIXME: Customisation of MSTS file formats is not allowed: please remove.
-				case "wagon(or_adhesion(wheelset(axle(radius":
+                case "wagon(ortsadhesion(wheelset(axle(ortsradius":
                     stf.MustMatch("(");
                     // <CJComment> Shouldn't this be "WheelRadiusM = " ? </CJComment>
                     AxleInertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
-#endif
                 case "wagon(lights":
                     if (Simulator.Settings.TrainLights)
                         Lights = new LightCollection(stf);

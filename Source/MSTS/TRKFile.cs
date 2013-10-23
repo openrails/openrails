@@ -45,7 +45,6 @@ namespace MSTS
             }
         }
         public Tr_RouteFile Tr_RouteFile;
-        // FIXME: Customisation of MSTS file formats is not allowed: please remove.
         public ORTRKData ORTRKData;
     }
 
@@ -61,7 +60,7 @@ namespace MSTS
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("maxviewingdistance", ()=>{ MaxViewingDistance = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("ortsmaxviewingdistance", ()=>{ MaxViewingDistance = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
             });
         }
     }

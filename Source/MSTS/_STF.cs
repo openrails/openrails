@@ -880,7 +880,9 @@ namespace MSTS
                 {
                     case "": return 0.09290304f;
                     case "*(m^2)": return 1.0f;
+                    case "m^2": return 1.0f;
                     case "*(ft^2)": return 0.09290304f;
+                    case "ft^2": return 0.09290304f;
                 }
             if ((validUnits & UNITS.Volume) > 0)
                 switch (suffix)
