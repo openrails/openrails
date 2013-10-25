@@ -35,6 +35,9 @@ namespace ORTS
         public bool AlerterButtonPressed;
         public bool OverspeedWarning;
         public bool PenaltyApplication;
+        public SignalHead.SIGASP CabSignalAspect = SignalHead.SIGASP.UNKNOWN; // Shown on ASPECT_DISPLAY cabcontrol
+        public float CurrentSpeedLimitMpS; // Shown on SPEEDLIMIT cabcontrol
+        public float NextSpeedLimitMpS; // Shown on SPEEDLIM_DISPLAY cabcontrol
 
         public bool OverspeedAlarm;
         
@@ -45,6 +48,9 @@ namespace ORTS
         protected MonitoringDevice OverspeedMonitor;
         protected MonitoringDevice EmergencyStopMonitor;
         protected MonitoringDevice AWSMonitor;
+
+        protected SignalObject nextSignalObject;
+        protected ObjectSpeedInfo SignalSpeed;
 
         protected bool TrainControlSystemIsActive;
 
@@ -83,6 +89,10 @@ namespace ORTS
         
         // Reset if allowed
         public virtual void TryReset() { }
+
+        public virtual void UpdateVigilance() { }
+
+        public virtual void UpdateSpeedControl() { }
 
         public virtual TrainControlSystem Clone() { return this; }
 
@@ -144,7 +154,71 @@ namespace ORTS
         {
             protected override float CurrentValue { get { return MSTSLocomotive.DistanceM; }}
         }
+
+        public virtual void UpdateCabNextSignal()
+        {
+            float nextSpeedLimitMpS = 0;
+
+            if (MSTSLocomotive.Train.IndexNextSignal >= 0 && MSTSLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
+            {
+                CabSignalAspect = MSTSLocomotive.Train.SignalObjectItems[MSTSLocomotive.Train.IndexNextSignal].signal_state;
+                nextSpeedLimitMpS = MSTSLocomotive.Train.SignalObjectItems[MSTSLocomotive.Train.IndexNextSignal].actual_speed;
+            }
+            else
+            {
+                if ((MSTSLocomotive.Train.MUDirection == Direction.Forward || MSTSLocomotive.Train.MUDirection == Direction.N)
+                    && MSTSLocomotive.Train.NextSignalObject[0] != null)
+                {
+                    nextSignalObject = MSTSLocomotive.Train.NextSignalObject[0];
+                    CabSignalAspect = nextSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                }
+                else if (MSTSLocomotive.Train.MUDirection == Direction.Reverse
+                    && MSTSLocomotive.Train.NextSignalObject[1] != null)
+                {
+                    nextSignalObject = MSTSLocomotive.Train.NextSignalObject[1];
+                    CabSignalAspect = nextSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                }
+                else
+                {
+                    nextSignalObject = null;
+                    CabSignalAspect = SignalHead.SIGASP.UNKNOWN;
+                }
+
+                if (nextSignalObject != null)
+                {
+                    SignalSpeed = nextSignalObject.this_sig_speed(SignalHead.SIGFN.NORMAL);
+                    if (SignalSpeed != null)
+                        nextSpeedLimitMpS = MSTSLocomotive.Train.IsFreight ? SignalSpeed.speed_freight : SignalSpeed.speed_pass;
+                }
+                else
+                {
+                    nextSpeedLimitMpS = float.MinValue;
+                }
+            }
+            NextSpeedLimitMpS = nextSpeedLimitMpS >= 0 ? 
+                Math.Min(nextSpeedLimitMpS, MSTSLocomotive.Train.TrainMaxSpeedMpS) : 
+                MSTSLocomotive.Train.TrainMaxSpeedMpS;
+            CurrentSpeedLimitMpS = MSTSLocomotive.Train.allowedMaxSpeedSignalMpS >= 0 ? 
+                MSTSLocomotive.Train.allowedMaxSpeedSignalMpS :
+                MSTSLocomotive.Train.TrainMaxSpeedMpS;
+        }
         
+        public virtual void UpdateCabNextSpeedLimit()
+        {
+            float nextSpeedLimitMpS;
+
+            if (MSTSLocomotive.Train.IndexNextSpeedlimit >= 0 && MSTSLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
+            {
+                nextSpeedLimitMpS = MSTSLocomotive.Train.SignalObjectItems[MSTSLocomotive.Train.IndexNextSpeedlimit].actual_speed;
+            }
+            else
+            {
+                nextSpeedLimitMpS = NextSpeedLimitMpS;
+            }
+            if (nextSpeedLimitMpS >= 0)
+                NextSpeedLimitMpS = Math.Min(nextSpeedLimitMpS, NextSpeedLimitMpS);
+        }
+
         protected class MonitoringDevice
         {
             public float MonitorTimeS = 66; // Time from alerter reset to applying emergency brake
@@ -193,13 +267,13 @@ namespace ORTS
 
     public class MSTSTrainControlSystem : TrainControlSystem
     {
-        Timer VigilanceAlarmTimer = new Timer();
-        Timer VigilanceEmergencyTimer = new Timer();
-        Timer VigilancePenaltyTimer = new Timer();
-        Timer OverspeedAlarmTimer = new Timer();
-        Timer OverspeedPenaltyTimer = new Timer();
+        protected Timer VigilanceAlarmTimer = new Timer();
+        protected Timer VigilanceEmergencyTimer = new Timer();
+        protected Timer VigilancePenaltyTimer = new Timer();
+        protected Timer OverspeedAlarmTimer = new Timer();
+        protected Timer OverspeedPenaltyTimer = new Timer();
 
-        float VigilanceAlarmTimeoutS;
+        protected float VigilanceAlarmTimeoutS;
 
         public MSTSTrainControlSystem(MSTSLocomotive mstsLocomotive)
         {
@@ -272,6 +346,11 @@ namespace ORTS
 
         public override void Update()
         {
+            UpdateCabNextSignal();
+
+            if (!MSTSLocomotive.VigilanceMonitor)
+                return;
+
             if (VigilanceMonitor != null)
                 UpdateVigilance();
             if (OverspeedMonitor != null)
@@ -281,7 +360,7 @@ namespace ORTS
                 PenaltyApplication = false;
         }
 
-        private void UpdateVigilance()
+        public override void UpdateVigilance()
         {
             if (!Simulator.Settings.Alerter)
                 return;
@@ -330,7 +409,7 @@ namespace ORTS
             }
         }
 
-        private void UpdateSpeedControl()
+        public override void UpdateSpeedControl()
         {
             OverspeedWarning = false;
 
@@ -379,4 +458,64 @@ namespace ORTS
         }
     }
 
+
+    public class EBICAB : MSTSTrainControlSystem
+    {
+        public EBICAB(MSTSLocomotive mstsLocomotive) : base(mstsLocomotive)
+        {
+        }
+
+        public override void Startup()
+        {
+            OverspeedMonitor.ResetOnResetButton = false;
+            base.Startup();
+        }
+        
+        // This differs from the original in displaying also the speed posts' speeds
+        public override void UpdateCabNextSignal()
+        {
+            base.UpdateCabNextSignal();
+            UpdateCabNextSpeedLimit();
+
+            CurrentSpeedLimitMpS = MSTSLocomotive.Train.AllowedMaxSpeedMpS >= 0 ?
+                MSTSLocomotive.Train.AllowedMaxSpeedMpS :
+                MSTSLocomotive.Train.TrainMaxSpeedMpS;
+
+            if ((int)NextSpeedLimitMpS >= (int)CurrentSpeedLimitMpS)
+                NextSpeedLimitMpS = float.MinValue;
+        }
+
+        public override void UpdateSpeedControl()
+        {
+            OverspeedWarning = Math.Abs(MSTSLocomotive.SpeedMpS) > CurrentSpeedLimitMpS * 1.05;
+
+            OverspeedAlarm = OverspeedAlarmTimer.Triggered;
+            
+            if (OverspeedAlarm && Simulator.Settings.Alerter)
+            {
+                SetFullBrake();
+                MSTSLocomotive.ThrottleController.SetValue(0.0f);
+
+                if (!OverspeedPenaltyTimer.Started)
+                    OverspeedPenaltyTimer.Start();
+                
+                if (Math.Abs(MSTSLocomotive.SpeedMpS) < 12 || Math.Abs(MSTSLocomotive.SpeedMpS) < CurrentSpeedLimitMpS)
+                {
+                    OverspeedAlarmTimer.Stop();
+                    OverspeedPenaltyTimer.Stop();
+                }
+                return;
+            }
+            if (OverspeedWarning)
+            {
+                if (!OverspeedAlarmTimer.Started)
+                    OverspeedAlarmTimer.Start();
+            }
+            else
+            {
+                OverspeedAlarmTimer.Stop();
+                OverspeedPenaltyTimer.Stop();
+            }
+        }
+    }
 }

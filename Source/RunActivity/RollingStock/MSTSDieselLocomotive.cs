@@ -749,7 +749,7 @@ namespace ORTS
             if ((CompressorIsOn)&&(PowerOn))
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
             
-            if (VigilanceMonitor && Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
+            if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
                 TrainControlSystem.Update();
 
             PrevMotiveForceN = MotiveForceN;
@@ -758,10 +758,14 @@ namespace ORTS
 
         public override float GetDataOf(CabViewControl cvc)
         {
-            float data;
+            float data = 0;
 
             switch (cvc.ControlType)
             {
+                case CABViewControlTypes.GEARS:
+                    if (DieselEngines.HasGearBox)
+                        data = DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                    break;
                 case CABViewControlTypes.FUEL_GAUGE:
                     if (cvc.Units == CABViewControlUnits.GALLONS)
                         data = L.ToGUS(DieselLevelL);

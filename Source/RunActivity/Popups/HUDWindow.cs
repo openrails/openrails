@@ -400,7 +400,7 @@ namespace ORTS.Popups
 
             TableSetCells(table, 0, "Player", "Tilted", "Type", "Length", "Weight", "Control Mode", "", "Out of Control", "", "Cab Aspect");
             TableAddLine(table);
-            TableSetCells(table, 0, locomotive.UiD + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? "R" : "F"), train.tilted.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(train.Length, true), FormatStrings.FormatMass(train.MassKg, true) , train.ControlMode.ToString(), "", train.OutOfControlReason.ToString(), "", train.CABAspect.ToString());
+            TableSetCells(table, 0, locomotive.UiD + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? "R" : "F"), train.tilted.ToString(), train.IsFreight ? "Freight" : "Pass", FormatStrings.FormatDistance(train.Length, true), FormatStrings.FormatMass(train.MassKg, true) , train.ControlMode.ToString(), "", train.OutOfControlReason.ToString(), "", mstsLocomotive.TrainControlSystem.CabSignalAspect.ToString());
             TableAddLine(table);
             TableAddLine(table);
             TableSetCells(table, 0, "Car", "Flipped", "Type", "Length", "Weight", "Drv/Cabs", "Wheels");

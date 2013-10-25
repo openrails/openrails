@@ -127,11 +127,6 @@ namespace ORTS
         public int IndexNextSpeedlimit = -1;             // Index in SignalObjectItems for next speedpost
         public SignalObject[] NextSignalObject = new SignalObject[2];  // direct reference to next signal
 
-        public TrackMonitorSignalAspect TMaspect = TrackMonitorSignalAspect.None;
-
-        public SignalHead.SIGASP CABAspect = SignalHead.SIGASP.UNKNOWN; // By GeorgeS
-        public float CABNextSignalSpeedMpS;
-
         public float TrainMaxSpeedMpS;                   // Max speed as set by route (default value)
         public float AllowedMaxSpeedMpS;                 // Max speed as allowed
         public float allowedMaxSpeedSignalMpS;           // Max speed as set by signal
@@ -1544,7 +1539,7 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
-        ///  Update the distance to and aspect of next signal
+        ///  Update the distance to next signal
         /// </summary>
 
         public void UpdateSignalState(int backward)
@@ -1908,31 +1903,15 @@ namespace ORTS
 
                 //
                 // update distance of signal if out of list
-                // get state of next signal
                 //
-
-                SignalHead.SIGASP thisState = SignalHead.SIGASP.UNKNOWN;
-                float cabNextSignalSpeed = 0;
-
                 if (IndexNextSignal >= 0)
                 {
                     distanceToSignal = SignalObjectItems[IndexNextSignal].distance_to_train;
-                    thisState = SignalObjectItems[IndexNextSignal].signal_state;
-                    cabNextSignalSpeed = SignalObjectItems[IndexNextSignal].actual_speed;
                 }
                 else if (NextSignalObject[0] != null)
                 {
                     distanceToSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
-                    thisState = NextSignalObject[0].this_sig_lr(SignalHead.SIGFN.NORMAL);
-                    cabNextSignalSpeed = IsFreight ?
-                        NextSignalObject[0].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
-                        NextSignalObject[0].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
                 }
-
-                CABAspect = thisState;
-                CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
-                SignalObject dummyObject = new SignalObject();
-                TMaspect = dummyObject.TranslateTMAspect(thisState);
 
                 //
                 // determine actual speed limits depending on overall speed and type of train
@@ -4459,24 +4438,6 @@ namespace ORTS
 
             // clear all build up distance actions
             requiredActions.RemovePendingAIActionItems(true);
-
-            // set cabaspect
-
-            SignalHead.SIGASP forwardstate =
-                NextSignalObject[0] == null ? SignalHead.SIGASP.UNKNOWN :
-                NextSignalObject[0].this_sig_lr(SignalHead.SIGFN.NORMAL);
-
-            SignalHead.SIGASP backwardstate =
-                NextSignalObject[1] == null ? SignalHead.SIGASP.UNKNOWN :
-                NextSignalObject[1].this_sig_lr(SignalHead.SIGFN.NORMAL);
-
-            CABAspect = MUDirection == Direction.Forward ? forwardstate : backwardstate;
-
-            int forwardIndex = MUDirection == Direction.Forward ? 0 : 1;
-            float cabNextSignalSpeed = NextSignalObject[forwardIndex] == null ? 0 : IsFreight ?
-                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
-                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
-            CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
         }
 
 
@@ -4864,24 +4825,6 @@ namespace ORTS
             }
 
             NextSignalObject[1] = nextSignal;
-
-            // set cabaspect
-
-            SignalHead.SIGASP forwardstate =
-                NextSignalObject[0] == null ? SignalHead.SIGASP.UNKNOWN :
-                NextSignalObject[0].this_sig_lr(SignalHead.SIGFN.NORMAL);
-
-            SignalHead.SIGASP backwardstate =
-                NextSignalObject[1] == null ? SignalHead.SIGASP.UNKNOWN :
-                NextSignalObject[1].this_sig_lr(SignalHead.SIGFN.NORMAL);
-
-            CABAspect = MUDirection == Direction.Forward ? forwardstate : backwardstate;
-
-            int forwardIndex = MUDirection == Direction.Forward ? 0 : 1;
-            float cabNextSignalSpeed = NextSignalObject[forwardIndex] == null ? 0 : IsFreight ?
-                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
-                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
-            CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
         }
 
 
@@ -5514,24 +5457,6 @@ namespace ORTS
 
             // clear all build up distance actions
             requiredActions.RemovePendingAIActionItems(true);
-
-            // set cabaspect
-
-            SignalHead.SIGASP forwardstate =
-                NextSignalObject[0] == null ? SignalHead.SIGASP.UNKNOWN :
-                NextSignalObject[0].this_sig_lr(SignalHead.SIGFN.NORMAL);
-
-            SignalHead.SIGASP backwardstate =
-                NextSignalObject[1] == null ? SignalHead.SIGASP.UNKNOWN :
-                NextSignalObject[1].this_sig_lr(SignalHead.SIGFN.NORMAL);
-
-            CABAspect = MUDirection == Direction.Forward ? forwardstate : backwardstate;
-
-            int forwardIndex = MUDirection == Direction.Forward ? 0 : 1;
-            float cabNextSignalSpeed = NextSignalObject[forwardIndex] == null ? 0 : IsFreight ?
-                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
-                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
-            CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
         }
 
         //================================================================================================//
@@ -5951,24 +5876,6 @@ namespace ORTS
             }
 
             NextSignalObject[1] = nextSignal;
-
-            // set cabaspect
-
-            SignalHead.SIGASP forwardstate =
-                NextSignalObject[0] == null ? SignalHead.SIGASP.UNKNOWN :
-                NextSignalObject[0].this_sig_lr(SignalHead.SIGFN.NORMAL);
-
-            SignalHead.SIGASP backwardstate =
-                NextSignalObject[1] == null ? SignalHead.SIGASP.UNKNOWN :
-                NextSignalObject[1].this_sig_lr(SignalHead.SIGFN.NORMAL);
-
-            CABAspect = MUDirection == Direction.Forward ? forwardstate : backwardstate;
-
-            int forwardIndex = MUDirection == Direction.Forward ? 0 : 1;
-            float cabNextSignalSpeed = NextSignalObject[forwardIndex] == null ? 0 : IsFreight ?
-                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_freight :
-                NextSignalObject[forwardIndex].this_sig_speed(SignalHead.SIGFN.NORMAL).speed_pass;
-            CABNextSignalSpeedMpS = cabNextSignalSpeed >= 0 ? cabNextSignalSpeed : TrainMaxSpeedMpS;
         }
 
 

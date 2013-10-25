@@ -845,7 +845,7 @@ namespace ORTS
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * MainResChargingRatePSIpS;
 
-            if (VigilanceMonitor && Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
+            if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
                 TrainControlSystem.Update();
 
             PrevMotiveForceN = MotiveForceN;
@@ -2051,7 +2051,7 @@ namespace ORTS
                     }
                 case CABViewControlTypes.ASPECT_DISPLAY:
                     {
-                        switch (Train.CABAspect)
+                        switch (TrainControlSystem.CabSignalAspect)
                         {
                             case SignalHead.SIGASP.STOP:
                                 {
@@ -2105,22 +2105,14 @@ namespace ORTS
                     {
                         // Displays current allowable speed
                         bool metric = cvc.Units == CABViewControlUnits.KM_PER_HOUR;
-                        data = MpS.FromMpS(this.Train.AllowedMaxSpeedMpS, metric);
+                        data = MpS.FromMpS(TrainControlSystem.CurrentSpeedLimitMpS, metric);
                         break;
                     }
                 case CABViewControlTypes.SPEEDLIM_DISPLAY:
                     {
                         // Displays allowable speed shown on next signal
                         bool metric = cvc.Units == CABViewControlUnits.KM_PER_HOUR;
-                        data = MpS.FromMpS(this.Train.CABNextSignalSpeedMpS, metric);
-                        break;
-                    }
-                // For gearbox engines
-                case CABViewControlTypes.GEARS:
-                    {
-                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                        if (mstsDieselLocomotive != null && mstsDieselLocomotive.DieselEngines.HasGearBox)
-                            data = mstsDieselLocomotive.DieselEngines[0].GearBox.CurrentGearIndex + 1;
+                        data = MpS.FromMpS(TrainControlSystem.NextSpeedLimitMpS, metric);
                         break;
                     }
                 default:
@@ -3828,6 +3820,11 @@ namespace ORTS
                 }
                 DrawText = String.Format(digital.Accuracy > 0 ? "{0:D2}:{1:D2}:{2:D2}" : "{0:D2}:{1:D2}", hour, minute, seconds);
                 DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B);
+            }
+            else if (Num < -2)
+            {
+                DrawText = String.Empty;
+                DrawColor = Color.White;
             }
             else if (digital.OldValue != 0 && digital.OldValue > Num && digital.DecreaseColor.A != 0)
             {
