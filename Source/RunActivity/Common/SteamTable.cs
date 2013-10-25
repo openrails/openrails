@@ -145,14 +145,32 @@ namespace ORTS
         {
             0.710f, 0.827f, 0.841f, 0.858f, 0.860f, 0.866f, 0.890f, 0.942f, 0.956f, 1.0f
         };
+        
+        // Fire Rate - ie lbs of coal per Square Foot of Grate Area 
+        static float[] CoalGrateAreaTableLbspFt2 = new float[]
+        {
+            20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f,
+        };
+        
+        // Boiler Efficiency - based upon paper from Locomotive Stoker paper - values above 120, extrapolated
+        static float[] BoilerEfficiencyTableX = new float[]
+        {
+            0.85f, 0.775f, 0.70f, 0.625f, 0.55f, 0.475f, 0.40f, 0.325f,
+        };
 
-        // Reduction of Steam usage at various steam pressures
+        // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area
+        public static Interpolator BoilerEfficiencyGrateAreaInterpolatorLbstoX()
+        {
+            return new Interpolator(CoalGrateAreaTableLbspFt2, BoilerEfficiencyTableX);
+        }
+
+        // Reduction of Steam usage at various steam pressures due to superheating
         public static Interpolator SuperheaterSteamReductionInterpolatorPSItoX()
         {
             return new Interpolator(SuperheatFactorPressureTablePSI, SuperheaterSteamReductionTable);
         }
         
-        // Reduction of Steam usage at various steam pressures
+        // Reduction of coal usage at various steam pressures due to superheating
         public static Interpolator SuperheaterCoalReductionInterpolatorPSItoX()
         {
             return new Interpolator(SuperheatFactorPressureTablePSI, SuperheaterCoalReductionTable);

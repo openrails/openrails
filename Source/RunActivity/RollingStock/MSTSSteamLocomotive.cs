@@ -65,23 +65,26 @@ namespace ORTS
         bool WaterIsExhausted = false;
         bool CoalIsExhausted = false;
         bool FireIsExhausted = false;
+        bool FuelBoost = false;
+        bool FuelBoostReset = false;
+        bool StokerIsMechanical = false;
 
         // state variables
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
         SmoothedData BoilerHeatSmoothBTU = new SmoothedData(60);       // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
         float BoilerMassLB;         // total mass of water and steam in boiler
 
-        float BoilerKW;          // power of boiler
-        float BoilerSteamHeatBTUpLB;  // Steam Heat based on current boiler pressure
-        float BoilerWaterHeatBTUpLB;  // Water Heat based on current boiler pressure
-        float BoilerSteamDensityLBpFT3;   // Steam Density based on current boiler pressure
-        float BoilerWaterDensityLBpFT3;    // Water Density based on current boiler pressure
+        float BoilerKW;                 // power of boiler
+        float BoilerSteamHeatBTUpLB;    // Steam Heat based on current boiler pressure
+        float BoilerWaterHeatBTUpLB;    // Water Heat based on current boiler pressure
+        float BoilerSteamDensityLBpFT3; // Steam Density based on current boiler pressure
+        float BoilerWaterDensityLBpFT3; // Water Density based on current boiler pressure
         float BoilerWaterTempK; 
         float FuelBurnRateLBpS;
         float FuelFeedRateLBpS;
         float DesiredChange;     // Amount of change to increase fire mass, clamped to range 0.0 - 1.0
         public float CylinderSteamUsageLBpS;
-        public float BlowerSteamUsageLBpS; // steam used by blower
+        public float BlowerSteamUsageLBpS;
         public float BoilerPressurePSI;
  
         float WaterFraction;        // fraction of boiler volume occupied by water
@@ -101,20 +104,23 @@ namespace ORTS
         float MaxBoilerOutputLBpH;  // maximum boiler steam generation rate
         float ExhaustLimitLBpH;     // steam usage rate that causes increased back pressure
         public float BasicSteamUsageLBpS;  // steam used for auxiliary stuff - ie loco at rest
-        float IdealFireMassKG;        // Target fire mass
+        float IdealFireMassKG;      // Target fire mass
         float MaxFireMassKG;        // Max possible fire mass
-        float MaxFiringRateKGpS;              // Max rate at which fireman can shovel coal
+        float MaxFiringRateKGpS;              // Max rate at which fireman or stoker can can feed coal into fire
+        float ORTSMaxFiringRateKGpS;          // OR equivalent of above
         public float SafetyValveUsageLBpS;
-        float SafetyValveDropPSI;               // Pressure drop before Safety valve turns off, normally around 3 psi
+        float SafetyValveDropPSI = 3.0f;      // Pressure drop before Safety valve turns off, normally around 3 psi
         float EvaporationAreaM2;
         float FuelCalorificKJpKG = 33400;
         float ManBlowerMultiplier = 20.0f;//25; // Blower Multipler for Manual firing
         float ShovelMassKG = 6;
         float BurnRateMultiplier = 1.0f;
-        float BurnRatio = 0.0f;          // Ratio to control burn rate - based on steam generation and usage
+        float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
         float BurnRateRawLBpS;           // Raw burnrate
-        SmoothedData FuelRate = new SmoothedData(120); // Automatic fireman takes 2 minutes to fully react to changing needs.
-        SmoothedData BurnRateSmoothLBpS = new SmoothedData(300); // Changes in BurnRate take 5 minutes to fully react to changing needs.
+        SmoothedData FuelRateStokerLBpS = new SmoothedData(30); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
+        SmoothedData FuelRate = new SmoothedData(90); // Automatic fireman takes x seconds to fully react to changing needs.
+        SmoothedData BurnRateSmoothLBpS = new SmoothedData(300); // Changes in BurnRate take x seconds to fully react to changing needs.
+        float FuelRateSmoothLBpS = 0.0f;     // Smoothed Fuel Rate
         
         // precomputed values
         float SweptVolumeToTravelRatioFT3pFT;     // precomputed multiplier for calculating steam used in cylinders
@@ -140,6 +146,7 @@ namespace ORTS
         Interpolator SaturationPressureKtoPSI;      // Saturated pressure of steam (psi) @ water temperature (K)
         Interpolator SuperheaterSteamReductionPSItoX;      // Table to determine reduction factor for Superheated Steam per PSI
         Interpolator SuperheaterCoalReductionPSItoX;      //  Table to determine reduction factor for Superheated Coal per PSI
+        Interpolator BoilerEfficiencyGrateAreaLBpFT2toX;      //  Table to determine boiler efficiency based upon lbs of coal per sq ft of Grate Area
         
         Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
 
@@ -148,21 +155,20 @@ namespace ORTS
 
   #region Additional steam properties
 
-        const float SpecificHeatCoalKjpKgK = 1.26f; // specific heat of coal - Kj/kg Kelvin
-        float WaterHeatBTUpFt3;             // Water heat in btu/ft3
+        const float SpecificHeatCoalKJpKGpK = 1.26f; // specific heat of coal - Kj/kg Kelvin
+        float WaterHeatBTUpFT3;             // Water heat in btu/ft3
         bool FusiblePlugIsBlown = false;    // Fusible plug blown, due to lack of water in the boiler
         bool LocoIsOilBurner = false;       // Used to identify if loco is oil burner
         float GrateAreaM2;                  // Grate Area in SqM
         float IdealFireDepthIN = 7.0f;      // Assume standard coal coverage of grate = 7 inches.
         float FuelDensityKGpM3 = 864.5f;    // Anthracite Coal : 50 - 58 (lb/ft3), 800 - 929 (kg/m3)
         float DamperFactorAI = 0.25f;       // factor to control draft through fire when locomotive is running in AI mode
-        float DamperFactorManual = 0.2f;    // factor to control draft through fire when locomotive is running in Manual mode
+        float DamperFactorManual = 1.0f;    // factor to control draft through fire when locomotive is running in Manual mode
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float MaxTenderCoalMassKG;          // Tender coal mass read from Eng File
         float MaxTenderWaterMassKG;         // Tender water mass read from Eng file
         float TenderCoalMassLB;             // Tender coal mass calculated from coal usage
         float TenderWaterVolumeUKG;         // Tender water mass calculated from water usage
-        //float DamperControlSetting = 0.0f;  // Damper user control setting
         float DamperBurnEffect;             // Effect of the Damper control
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
@@ -170,11 +176,11 @@ namespace ORTS
         float InjectorBoilerInputLB = 0.0f; // Input into boiler from injectors
 
         // Air Compressor Characteristics - assume 9.5in x 10in Compressor operating at 120 strokes per min.          
-        float CompCylDiaIN = 9.5f;          // Air Compressor Cylinder Diameter (in)
-        float CompCylStrokeIN = 10.0f;      // Air Compressor Cylinder Stroke (in)
-        float CompStrokespM = 120.0f;       // Air Compressor Cylinder Strokes per minute
-        float CompSteamUsageLBpS = 0.0f;    // Air Compressor steam usage when turned on
-        const float BTUpHtoKjpS = 0.000293071f;     // Convert BTU/s to Kj/s
+        float CompCylDiaIN = 9.5f;
+        float CompCylStrokeIN = 10.0f;
+        float CompStrokespM = 120.0f;
+        float CompSteamUsageLBpS = 0.0f;
+        const float BTUpHtoKJpS = 0.000293071f;     // Convert BTU/s to Kj/s
         float CylCockSteamUsageLBpS = 0.0f;         // Cylinder cocks steam usage when turned on
         float BoilerHeatTransferCoeffWpM2K = 45.0f; // Heat Transfer of locomotive boiler 45 Wm2K
         float TotalSteamUsageLBpS;                  // Running total for complete current steam usage
@@ -182,15 +188,12 @@ namespace ORTS
         float RadiationSteamLossLBpS = 2.5f;        // Steam loss due to radiation losses
         float AIBlowerMultiplier = 10.0f;           // Steam Blower multiplier for AI fireman
         float BlowerBurnEffect;                     // Effect of Blower on burning rate
-        float EquivalentBoilerLossesKW;     // Current equivalent losses for boiler in Kj/s, ie steam losses at the moment
-        float FlueTempDiffK;                // Current difference in flue temp at current firing and steam usage rates.
-        float FireHeatTxfKW;                // Current heat generated by the locomotive fire
-        float HeatMaterialThicknessFactor = 0.666f; // Material thicness for convection heat transfer
+        float EquivalentBoilerLossesKW;             // Current equivalent losses for boiler in Kj/s, ie steam losses at the moment
+        float FlueTempDiffK;                        // Current difference in flue temp at current firing and steam usage rates.
+        float FireHeatTxfKW;                        // Current heat generated by the locomotive fire
+        float HeatMaterialThicknessFactor = 0.905f; // Material thickness for convection heat transfer
         float TheoreticalMaxSteamOutputLBpS;        // Max boiler output based upon Output = EvapArea x 15 ( lbs steam per evap area)
         float BoilerFeedwaterHeatFactor = 3.0f;     // factor to increase the boiler feedwater temperature (via injector) to leesen impact of adding water to boiler
-        float AIBurnRateReductionFactor = 1.0f;     // factor to reduce burn rate in AI mode if excess steam being produced 
-        float AIBlowerBurnRateReductionFactor = 1.0f;       // factor to reduce blower burn rate in AI mode if excess steam being produced 
-        float AIRadiationLossesBurnRateReductionFactor = 1.0f;       // factor to reduce Radiation losses burn rate in AI mode if excess steam being produced 
 
         // Water model - locomotive boilers require water level to be maintained above the firebox crown sheet
         // This model is a crude representation of a water gauge based on a generic boiler and 8" water gauge
@@ -219,8 +222,17 @@ namespace ORTS
         float SuperheaterSteamProductionFactor = 1.0f;  // Above 1.0, increases steam production due to superheater, currently by 3%
         float SuperheaterSteamUsageFactor = 1.0f;       // Below 1.0, reduces steam usage due to superheater
         float SuperheaterCoalUsageFactor = 1.0f;        // Below 1.0, reduces coal usage due to superheater
-        const float BoilerkWtoBHP = 0.101942f;  // Convert Boiler kW to Boiler HP, note different to HP.
+        float Stoker = 0.0f;                // Currently 2 values respected: 0.0 for no mechanical stoker (default), = 1.0 for typical mechanical stoker
+        //float StokerMaxUsage = 0.01f;       // Max steam usage of stoker - 1% of max boiler output
+        //float StokerMinUsage = 0.005f;      // Min Steam usage - just to keep motor ticking over - 0.5% of max boiler output
+        float StokerSteamUsageLBpS;         // Current steam usage of stoker
+        const float BoilerKWtoBHP = 0.101942f;  // Convert Boiler kW to Boiler HP, note different to HP.
         float MaxTheoreticalFiringRateKgpS;     // Max firing rate that fireman can sustain for short periods
+        public float TempBurn;
+        float FuelBoostOnTimerS = 0.01f;    // Timer to allow fuel boosting for a short while
+        float FuelBoostResetTimerS = 0.01f; // Timer to rest fuel boosting for a while
+        float TimeFuelBoostOnS = 300.0f;    // Time to allow fuel boosting to go on for 
+        float TimeFuelBoostResetS = 1800.0f;// Time to wait before next fuel boost
   #endregion 
 
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
@@ -243,7 +255,7 @@ namespace ORTS
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume", wagFile))
                 BoilerVolumeFT3 = 1;
 
-        #region Initialise Additional steam properties
+        #region Initialise additional steam properties
 
             TenderCoalMassLB = Kg.ToLb(MaxTenderCoalMassKG); // Convert to work in lbs
             TenderWaterVolumeUKG = Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG;  // Convert to gals - 10lb = 1 gal (water)
@@ -255,15 +267,10 @@ namespace ORTS
                 IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
             }
             else
-                if (LocoIsOilBurner == false)
-                {
-                    IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
-                }
-                else
-                {
+                if (LocoIsOilBurner)
                     IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
-                //    StokerFitted = true;
-                }
+                else
+                    IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
             if (MaxFireMassKG == 0)
                 MaxFireMassKG = 2 * IdealFireMassKG;
 
@@ -294,6 +301,7 @@ namespace ORTS
             SaturationPressureKtoPSI = SteamTable.SaturationPressureInterpolatorKtoPSI();
             SuperheaterSteamReductionPSItoX = SteamTable.SuperheaterSteamReductionInterpolatorPSItoX();
             SuperheaterCoalReductionPSItoX = SteamTable.SuperheaterCoalReductionInterpolatorPSItoX();
+            BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
             
             BoilerPressurePSI = MaxBoilerPressurePSI;
             PSI = MaxBoilerPressurePSI;
@@ -360,7 +368,7 @@ namespace ORTS
                 BackPressureLBpStoPSI.ScaleX(1 / 3600f);
             }
 
-            // This is to model falling boiler efficiency as the combustion heat increases
+            // This is to model falling boiler efficiency as the combustion increases, based on a "crude" model, to be REDONE?
             if (BoilerEfficiency == null)
             {
                 BoilerEfficiency = new Interpolator(4);
@@ -371,9 +379,10 @@ namespace ORTS
             }
             float baseTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[MaxBoilerPressurePSI]));
             if (EvaporationAreaM2 == 0)        // If evaporation Area is not in ENG file then synthesize a value
-            {
                 EvaporationAreaM2 = Me2.FromFt2(((NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(DriverWheelRadiusM * 2.0f) * EvapAreaDesignFactor));
-            }
+
+            // Based on the EvapArea, this section calculates the maximum boiler output in lbs/s, and also calculates the theoretical burn rate in kg/s to support it.
+            // BurnRate creates a table with an x-axis of steam production in lb/s, and a y-axis calculating the coal burnt to support this production rate in lb/s.
             BurnRateLBpStoKGpS = new Interpolator(27);
             for (int i = 0; i < 27; i++)
             {
@@ -383,13 +392,13 @@ namespace ORTS
                     y = .02f;
                 else if (y > 2.5f)
                     y = 2.5f;
-                BurnRateLBpStoKGpS[x] = y / BoilerEfficiency[x];
+                BurnRateLBpStoKGpS[x] = y / BoilerEfficiency[x]; // To increase burnrate to compensate for a loss of energy, ie this is amount of coal that would need to compensate for the boiler efficiency
             }
-            float sy = (1400 - baseTempK) * W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2; 
-            float sx = sy / (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] * 1.055f);  // 1 BTU = 1.055 joules ????
-            BurnRateLBpStoKGpS.ScaleX(sx);
-            BurnRateLBpStoKGpS.ScaleY(sy / FuelCalorificKJpKG);
-            BoilerEfficiency.ScaleX(sx);
+            float sy = (1600 - baseTempK) * W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 / HeatMaterialThicknessFactor; // Boiler kWs
+            float sx = sy / (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] * 1.055f);  // BoilerkW / (SteamHeat- in kJ)?
+            BurnRateLBpStoKGpS.ScaleX(sx);  // Steam in lbs
+            BurnRateLBpStoKGpS.ScaleY(sy / FuelCalorificKJpKG); // Original Formula - FuelBurnt KG = BoilerkW / FuelCalorific - Convert to equivalent kgs of coal
+            BoilerEfficiency.ScaleX(sx); // Boiler Efficiency x axis - Steam in lbs
             MaxBoilerOutputLBpH = 3600 * sx;
             BurnRateLBpStoKGpS.ScaleY(BurnRateMultiplier);
             BlowerSteamUsageFactor = .04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
@@ -400,7 +409,16 @@ namespace ORTS
             if (MaxFiringRateKGpS == 0)
                 MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
                 
-             MaxTheoreticalFiringRateKgpS = MaxFiringRateKGpS * 1.2f; // allow the fireman to overfuel for short periods of time   
+            if (ORTSMaxFiringRateKGpS != 0)
+                MaxFiringRateKGpS = ORTSMaxFiringRateKGpS; // If OR value present then use it 
+
+            // Initialise Mechanical Stoker if present
+            if ( Stoker == 1.0f)
+            {
+                StokerIsMechanical = true;
+                MaxFiringRateKGpS = 2 * MaxFiringRateKGpS; // Temp allowance for mechanical stoker
+            }
+            MaxTheoreticalFiringRateKgpS = MaxFiringRateKGpS * 1.2f; // allow the fireman to overfuel for short periods of time 
         }
         
         public static bool ZeroError(float v, string name, string wagFile)
@@ -434,6 +452,8 @@ namespace ORTS
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtenderwatermass": MaxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(steamfiremanmaxpossiblefiringrate": MaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
+                case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
@@ -467,50 +487,41 @@ namespace ORTS
         public override void InitializeFromCopy(MSTSWagon copy)
         {
             MSTSSteamLocomotive locoCopy = (MSTSSteamLocomotive)copy;
-            CylinderSteamUsageLBpS = locoCopy.CylinderSteamUsageLBpS;
-            BoilerHeatBTU = locoCopy.BoilerHeatBTU;
-            BoilerMassLB = locoCopy.BoilerMassLB;
-            BoilerPressurePSI = locoCopy.BoilerPressurePSI;
-            WaterFraction = locoCopy.WaterFraction;
-            EvaporationLBpS = locoCopy.EvaporationLBpS;
-            MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI;
-            BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             NumCylinders = locoCopy.NumCylinders;
             CylinderStrokeM = locoCopy.CylinderStrokeM;
             CylinderDiameterM = locoCopy.CylinderDiameterM;
+            BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
+            MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI; 
             MaxBoilerOutputLBpH = locoCopy.MaxBoilerOutputLBpH;
             ExhaustLimitLBpH = locoCopy.ExhaustLimitLBpH;
             BasicSteamUsageLBpS = locoCopy.BasicSteamUsageLBpS;
-            SweptVolumeToTravelRatioFT3pFT = locoCopy.SweptVolumeToTravelRatioFT3pFT;
             SafetyValveUsageLBpS = locoCopy.SafetyValveUsageLBpS;
             SafetyValveDropPSI = locoCopy.SafetyValveDropPSI;
             IdealFireMassKG = locoCopy.IdealFireMassKG;
-            MaxFireMassKG = locoCopy.MaxFireMassKG;
-            MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
-            EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
-            FuelCalorificKJpKG = locoCopy.FuelCalorificKJpKG;
             ShovelMassKG = locoCopy.ShovelMassKG;
-            BurnRateMultiplier = locoCopy.BurnRateMultiplier;
-            ForceFactor1NpPSI = new Interpolator(locoCopy.ForceFactor1NpPSI);
-            ForceFactor2NpPSI = new Interpolator(locoCopy.ForceFactor2NpPSI);
-            CylinderPressureDropLBpStoPSI = new Interpolator(locoCopy.CylinderPressureDropLBpStoPSI);
-            BackPressureLBpStoPSI = new Interpolator(locoCopy.BackPressureLBpStoPSI);
-            CylinderSteamDensityPSItoLBpFT3 = new Interpolator(locoCopy.CylinderSteamDensityPSItoLBpFT3);
-            SteamDensityPSItoLBpFT3 = new Interpolator(locoCopy.SteamDensityPSItoLBpFT3);
-            WaterDensityPSItoLBpFT3 = new Interpolator(locoCopy.WaterDensityPSItoLBpFT3);
-            SteamHeatPSItoBTUpLB = new Interpolator(locoCopy.SteamHeatPSItoBTUpLB);
-            WaterHeatPSItoBTUpLB = new Interpolator(locoCopy.WaterHeatPSItoBTUpLB);
-            HeatToPressureBTUpLBtoPSI = new Interpolator(locoCopy.HeatToPressureBTUpLBtoPSI);
-            BurnRateLBpStoKGpS = new Interpolator(locoCopy.BurnRateLBpStoKGpS);
-            PressureToTemperaturePSItoF = new Interpolator(locoCopy.PressureToTemperaturePSItoF);
+            MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
+            MaxTenderWaterMassKG = locoCopy.MaxTenderWaterMassKG;
+            ORTSMaxFiringRateKGpS = locoCopy.ORTSMaxFiringRateKGpS;
+            Stoker = locoCopy.Stoker;
+            MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
             CutoffController = (MSTSNotchController)locoCopy.CutoffController.Clone();
             Injector1Controller = (MSTSNotchController)locoCopy.Injector1Controller.Clone();
             Injector2Controller = (MSTSNotchController)locoCopy.Injector2Controller.Clone();
             BlowerController = (MSTSNotchController)locoCopy.BlowerController.Clone();
             DamperController = (MSTSNotchController)locoCopy.DamperController.Clone();
-            FireboxDoorController = (MSTSNotchController)locoCopy.FireboxDoorController.Clone();
             FiringRateController = (MSTSNotchController)locoCopy.FiringRateController.Clone();
-
+            FireboxDoorController = (MSTSNotchController)locoCopy.FireboxDoorController.Clone();
+            GrateAreaM2 = locoCopy.GrateAreaM2;
+            Superheater = locoCopy.Superheater;
+            EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
+            FuelCalorificKJpKG = locoCopy.FuelCalorificKJpKG;
+            BurnRateMultiplier = locoCopy.BurnRateMultiplier;
+            ForceFactor1NpPSI = new Interpolator(locoCopy.ForceFactor1NpPSI);
+            ForceFactor2NpPSI = new Interpolator(locoCopy.ForceFactor2NpPSI);
+            CylinderPressureDropLBpStoPSI = new Interpolator(locoCopy.CylinderPressureDropLBpStoPSI);
+            BackPressureLBpStoPSI = new Interpolator(locoCopy.BackPressureLBpStoPSI);
+            BurnRateLBpStoKGpS = new Interpolator(locoCopy.BurnRateLBpStoKGpS);
+            BoilerEfficiency = locoCopy.BoilerEfficiency;
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
 
@@ -584,9 +595,8 @@ namespace ORTS
             if (CutoffController != null)
                 CutoffController.SetValue(Train.MUReverserPercent / 100);
         }
-
  
-      // +++++++++++++++++++++ Main Simulation - Start ++++++++++++++++++++++++++++++++
+        // +++++++++++++++++++++ Main Simulation - Start ++++++++++++++++++++++++++++++++
         /// <summary>
         /// This is a periodic update to calculate physics 
         /// parameters and update the base class's MotiveForceN 
@@ -670,7 +680,6 @@ namespace ORTS
             }
             else
                 CutoffController.Update(elapsedClockSeconds);
-
 
             if (CutoffController.UpdateValue != 0.0)
                 // On a steam locomotive, the Reverser is the same as the Cut Off Control.
@@ -762,6 +771,29 @@ namespace ORTS
             if (absSpeedMpS < 1.0f)    // locomotive is stationary then damper will have no effect
                 DamperBurnEffect = 0.0f;
             DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0, 1000.0f);
+
+            // Adjust burn rates for firing in either manual or AI mode
+            if (FiringIsManual)
+                BurnRateRawLBpS = Kg.ToLb(BurnRateLBpStoKGpS[(RadiationSteamLossLBpS) + BlowerBurnEffect + DamperBurnEffect]); // Manual Firing - note steam usage due to safety valve, compressor and steam cock operation not included, as these are factored into firemans calculations, and will be adjusted for manually - Radiation loss divided by factor of 5.0 to reduce the base level - Manual fireman to compensate as appropriate.
+            else
+            {
+                // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output
+                BurnRateRawLBpS = Kg.ToLb(BurnRateLBpStoKGpS[(HeatRatio * pS.FrompH(MaxBoilerOutputLBpH))]);
+
+                //  Limit burn rate in AI fireman to within acceptable range of Fireman firing rate
+                BurnRateRawLBpS = MathHelper.Clamp(BurnRateRawLBpS, 0.05f, Kg.ToLb(MaxFiringRateKGpS) * 1.2f);
+            }
+
+            FuelFeedRateLBpS = BurnRateRawLBpS;
+            if (FireMassKG < 25) // If fire level drops too far 
+            {
+                BurnRateRawLBpS = 0.0f; // If fire is no longer effective set burn rate to zero, change later to allow graduate ramp down
+                if (!FireIsExhausted)
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Fire has dropped too far. Your loco will fail.");
+                    FireIsExhausted = true; // fire has run out of fuel.
+                }
+            }
             if (IdealFireMassKG > 0)
             {
                 FireRatio = FireMassKG / IdealFireMassKG;
@@ -794,7 +826,6 @@ namespace ORTS
 
                 if (FiringIsManual)
                 {
-
                     // If tender coal is empty stop fuelrate (feeding coal onto fire).  
                     if (CoalIsExhausted)
                     {
@@ -812,8 +843,44 @@ namespace ORTS
                 {
                     // Automatic fireman, ish.
                     DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + Kg.FromLb(FuelBurnRateLBpS)) / MaxFiringRateKGpS, 0.001f, 1);
-                    FuelRate.Update(elapsedClockSeconds, DesiredChange);
+                    if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
+                    {
+                        FuelRateStokerLBpS.Update(elapsedClockSeconds, DesiredChange); // faster fuel feed rate for stoker    
+                        FuelRateSmoothLBpS = FuelRateStokerLBpS.SmoothedValue;
+                    }
+                    else
+                    {
+                        FuelRate.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for fireman
+                        FuelRateSmoothLBpS = FuelRate.SmoothedValue;
+                    }
                     // If tender coal is empty stop fuelrate (feeding coal onto fire).  
+                    if ((IdealFireMassKG - FireMassKG) > 20.0) // if firemass is falling too low shovel harder - needs further refinement as this shouldn't be able to be maintained indefinitely
+                    {
+                        if (FuelBoostOnTimerS < TimeFuelBoostOnS) // If fuel boost timer still has time available allow fuel boost
+                        {
+                            FuelBoostResetTimerS = 0.01f;     // Reset fuel reset (time out) timer to allow stop boosting for a period of time.
+                            if (!FuelBoost)
+                            {
+                                FuelBoost = true; // boost shoveling 
+                                if (!StokerIsMechanical)  // Don't display message if stoker in operation
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "FireMass is getting low. Your fireman will shovel faster, but don't wear him out.");
+                                }
+                            }
+                        }
+                    }
+                    else if ((IdealFireMassKG - FireMassKG) < 1.0)
+                    {
+                        FuelBoost = false;
+                        if (FuelBoost)
+                        {
+                            FuelBoost = false; // disable boost shoveling 
+                            if (!StokerIsMechanical)  // Don't display message if stoker in operation
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, "FireMass is back within limits. Your fireman will shovel as per normal.");
+                            }
+                        }
+                    }
                     if (CoalIsExhausted)
                     {
                         FuelFeedRateLBpS = 0.0f; // set fuel rate to zero if tender empty
@@ -821,46 +888,31 @@ namespace ORTS
                     }
                     else
                     {
-                        if (TotalSteamUsageLBpS > EvaporationLBpS)
+                        if (FuelBoost && !FuelBoostReset) // if firemass is falling too low, shovel harder - needs further refinement as this shouldn't be able to be maintained indefinitely
                         {
-                            FuelFeedRateLBpS = Kg.ToLb(MaxTheoreticalFiringRateKgpS) * FuelRate.SmoothedValue;  // At times of heavy steam usage allow AI fireman to overfuel
-                            FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRate.SmoothedValue - Kg.FromLb(FuelBurnRateLBpS));
+                            FuelFeedRateLBpS = Kg.ToLb(MaxTheoreticalFiringRateKgpS) * FuelRateSmoothLBpS;  // At times of heavy burning allow AI fireman to overfuel
+                            FireMassKG += elapsedClockSeconds * (MaxTheoreticalFiringRateKgpS * FuelRateSmoothLBpS - Kg.FromLb(FuelBurnRateLBpS));
+                            FuelBoostOnTimerS += elapsedClockSeconds; // Time how long to fuel boost for
                         }
                         else
                         {
-
-                            FuelFeedRateLBpS = Kg.ToLb(MaxFiringRateKGpS) * FuelRate.SmoothedValue;
-                            FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRate.SmoothedValue - Kg.FromLb(FuelBurnRateLBpS));
+                            FuelFeedRateLBpS = Kg.ToLb(MaxFiringRateKGpS) * FuelRateSmoothLBpS;
+                            FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRateSmoothLBpS - Kg.FromLb(FuelBurnRateLBpS));
                         }
-                    }
+                    }                  
                 }
-                FireMassKG = MathHelper.Clamp(FireMassKG, 0, MaxFireMassKG);
-            }
-            // Adjust burn rates for firing in either manual or AI mode
-            if (FiringIsManual)
-                BurnRateRawLBpS = Kg.ToLb(BurnRateLBpStoKGpS[(RadiationSteamLossLBpS) + BlowerBurnEffect + DamperBurnEffect]); // Manual Firing - note steam usage due to safety valve, compressor and steam cock operation not included, as these are factored into firemans calculations, and will be adjusted for manually - Radiation loss divided by factor of 5.0 to reduce the base level - Manual fireman to compensate as appropriate.
-            else
-            {
-                BurnRateRawLBpS = Kg.ToLb(BurnRateLBpStoKGpS[(AIRadiationLossesBurnRateReductionFactor * RadiationSteamLossLBpS) + (AIBurnRateReductionFactor * CylinderSteamUsageLBpS) + (AIBlowerBurnRateReductionFactor * BlowerBurnEffect) + DamperBurnEffect + GeneratorSteamUsageLBpS]); // Base AI firing rate, other usages will be included depending upon whether they are on or not.
-                if (CompressorIsOn)
-                    BurnRateRawLBpS += Kg.ToLb(BurnRateLBpStoKGpS[CompSteamUsageLBpS]); // compensate for steam usage of compressor
-                if (Injector1IsOn)
-                    BurnRateRawLBpS += Kg.ToLb(BurnRateLBpStoKGpS[Injector1Fraction * InjectorFlowRateLBpS * ((BoilerSteamHeatBTUpLB - (BoilerFeedwaterHeatFactor * BoilerWaterHeatBTUpLB)) / BoilerSteamHeatBTUpLB)]); // compensate for No 1 Injector - mass of water & heat loss approximation - similar to BTU Heat Above
-                if (Injector2IsOn)
-                    BurnRateRawLBpS += Kg.ToLb(BurnRateLBpStoKGpS[Injector2Fraction * InjectorFlowRateLBpS * ((BoilerSteamHeatBTUpLB - (BoilerFeedwaterHeatFactor * BoilerWaterHeatBTUpLB)) / BoilerSteamHeatBTUpLB)]); // compensate for No 2 Injector - mass of water & heat loss approximation - similar to BTU Heat Above
-                //  Limit burn rate in AI fireman to within acceptable range of Fireman firing rate
-                BurnRateRawLBpS = MathHelper.Clamp(BurnRateRawLBpS, 0, Kg.ToLb(MaxFiringRateKGpS) * 1.2f);
-            }
+                FireMassKG = MathHelper.Clamp(FireMassKG, 0, 2 * IdealFireMassKG);
 
-            FuelFeedRateLBpS = BurnRateRawLBpS;
-            if (FireMassKG < 25) // If fire level drops too far 
-            {
-                BurnRateRawLBpS = 0.0f; // If fire is no longer effective set burn rate to zero, change later to allow graduate ramp down
-                if (!FireIsExhausted)
+                // Time Fuel Boost reset time if all time has been used up on boost timer
+                if (FuelBoostOnTimerS >= TimeFuelBoostOnS)
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Fire has dropped too far. Your loco will fail.");
-                    FireIsExhausted = true; // fire has run out of fuel.
-
+                    FuelBoostResetTimerS += elapsedClockSeconds; // Time how long to wait for next fuel boost
+                    FuelBoostReset = true;
+                }
+                if (FuelBoostResetTimerS > TimeFuelBoostResetS)
+                {
+                    FuelBoostOnTimerS = 0.01f;     // Reset fuel boost timer to allow another boost if required.
+                    FuelBoostReset = false;
                 }
             }
             Smoke.Update(elapsedClockSeconds, FuelFeedRateLBpS / FuelBurnRateLBpS);
@@ -938,20 +990,18 @@ namespace ORTS
             // Heat transferred per unit time (W or J/s) = (Heat Txf Coeff (W/m2K) * Heat Txf Area (m2) * Temp Difference (K)) / Material Thickness - in this instance the material thickness is a means of increasing the boiler output - convection heat formula.
             // Heat transfer Coefficient for Locomotive Boiler = 45.0 Wm^2K            
             BoilerKW = (FlueTempK - BoilerWaterTempK) * W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 / HeatMaterialThicknessFactor;
-            FireHeatTxfKW = Kg.FromLb(FuelBurnRateLBpS) * FuelCalorificKJpKG * BoilerEfficiency[CylinderSteamUsageLBpS] / (SpecificHeatCoalKjpKgK * FireMassKG); // Current heat txf based on fire burning rate  
+            FireHeatTxfKW = Kg.FromLb(FuelBurnRateLBpS) * FuelCalorificKJpKG * BoilerEfficiency[CylinderSteamUsageLBpS] / (SpecificHeatCoalKJpKGpK * FireMassKG); // Current heat txf based on fire burning rate  
 
             //<CJComment> Concern about using BTUpHtKjpS here as mixing Hours and Seconds. Expected assignment:
             // EquivalentBoilerLossesKjpS = W.ToKW(W.FromBTUpS((CurrentTotalSteamUsageLbpS * steamHeatCurrentBTUpLB))); // Calculate current equivalent boilerkW losses - ie steamlosses in lbs * steamHeat & then convert to kW            
             //</CJComment>
-            EquivalentBoilerLossesKW = ((TotalSteamUsageLBpS * BoilerSteamHeatBTUpLB) * BTUpHtoKjpS); // Calculate current equivalent boilerkW losses - ie steamlosses in lbs * steamHeat & then convert to kW            
+            EquivalentBoilerLossesKW = ((TotalSteamUsageLBpS * BoilerSteamHeatBTUpLB) * BTUpHtoKJpS); // Calculate current equivalent boilerkW losses - ie steamlosses in lbs * steamHeat & then convert to kW            
 
             FlueTempDiffK = (FireHeatTxfKW - EquivalentBoilerLossesKW) / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2); // calculate current FlueTempK difference, based upon heat input due to firing - heat taken out by boiler
 
             if (FireMassKG < 1.0f)
             {
-
-                FlueTempK += elapsedClockSeconds * (FlueTempDiffK); // Calculate increase or decrease in Flue Temp
-                //    FlueTempK = WaterTempK + Kg.FromLb(BurnRateLBpS) * FuelCalorificKJpKG * BoilerEfficiency[CylinderSteamUsageLBpS] / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2); // original formula
+                FlueTempK += elapsedClockSeconds * FlueTempDiffK; // Calculate increase or decrease in Flue Temp
             }
             else
             {
@@ -967,11 +1017,10 @@ namespace ORTS
                     }
                     else
                     {
-                        FlueTempK += elapsedClockSeconds * (FlueTempDiffK); // Calculate increase or decrease in Flue Temp
+                        FlueTempK += elapsedClockSeconds * FlueTempDiffK; // Calculate increase or decrease in Flue Temp
                     }
                 }
             }
-
             FlueTempK = MathHelper.Clamp(FlueTempK, 0, FlueTempK = 1600.0f);    // Maximum firebox temp in Penn document = 1514 K.
 
             if (FusiblePlugIsBlown)
@@ -987,10 +1036,6 @@ namespace ORTS
 
             // Cap Steam Generation rate if excessive
             EvaporationLBpS = MathHelper.Clamp(EvaporationLBpS, 0, TheoreticalMaxSteamOutputLBpS); // If steam generation is too high, then cap at max theoretical rule of thumb
-            // BurnRatio = MathHelper.Clamp((TotalSteamUsageLBpS / EvaporationLBpS), 0.1f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
-
-            BurnRatio = MathHelper.Clamp((BoilerHeatOutBTUpS / BoilerHeatInBTUpS), 0.1f, 1.0f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
-
             if (SafetyIsOn)
             {
                 // If safety valve is on, then maintain Boiler BTU rather then increase it
@@ -1001,7 +1046,7 @@ namespace ORTS
                 BoilerHeatInBTUpS = (EvaporationLBpS * BoilerSteamHeatBTUpLB);
             }
 
-            // Basic steam radiation loses 
+            // Basic steam radiation losses 
             RadiationSteamLossLBpS = pS.FrompM((absSpeedMpS == 0.0f) ?
                 3.04f : // lb/min at rest 
                 5.29f); // lb/min moving
@@ -1027,14 +1072,14 @@ namespace ORTS
             // Based on formula - BoilerCapacity (btu/h) = (SteamEnthalpy (btu/lb) - EnthalpyCondensate (btu/lb) ) x SteamEvaporated (lb/h) ?????
             // EnthalpyWater (btu/lb) = BoilerCapacity (btu/h) / SteamEvaporated (lb/h) + Enthalpysteam (btu/lb)  ?????
 
-            //CJ
+            //<CJComment> Correct statement commented out. Needs sorting. </CJComment>
             //BoilerHeatSmoothBTU.Update(elapsedClockSeconds, BoilerHeatBTU);
             BoilerHeatSmoothBTU.Update(0.1f, BoilerHeatBTU);
 
-            WaterHeatBTUpFt3 = (BoilerHeatSmoothBTU.Value / BoilerVolumeFT3 - (1 - WaterFraction) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (WaterFraction * BoilerWaterDensityLBpFT3);
+            WaterHeatBTUpFT3 = (BoilerHeatSmoothBTU.Value / BoilerVolumeFT3 - (1 - WaterFraction) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (WaterFraction * BoilerWaterDensityLBpFT3);
 
             #region Boiler Pressure calculation
-            // works on the principle that boiler preesure will go up or down based on the change in water temperature, which is impacted by the heat gain or loss to the boiler
+            // works on the principle that boiler pressure will go up or down based on the change in water temperature, which is impacted by the heat gain or loss to the boiler
             WaterVolL = WaterFraction * BoilerVolumeFT3 * 28.31f;   // idealy should be equal to water flow in and out. 1ft3 = 28.31 litres of water
             BkW_Diff = (((BoilerHeatInBTUpS - BoilerHeatOutBTUpS) * 3600) * 0.0002931f);            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
             SpecificHeatWaterKJpKGpC = SpecificHeatKtoKJpKGpK[WaterTempNewK] * WaterVolL;  // Spec Heat = kj/kg, litres = kgs of water
@@ -1096,12 +1141,8 @@ namespace ORTS
 
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (absSpeedMpS < 2.0)
-            {
                 if (MotiveForceN > StartTractiveEffortN)
-                {
                     StartTractiveEffortN = MotiveForceN; // update to new maximum TE
-                }
-            }
         }
 
         private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
@@ -1136,6 +1177,8 @@ namespace ORTS
                 CylCockSteamUsageLBpS = 0.0f;       // set steam usage to zero if turned off
                 CylDerateFactorCocks = 1.0f;     // Restore derating factor once cylinder cocks are closed
             }
+
+            //<CJComment> What if there is no electricity generator? </CJComment>
             // Calculate Generator steam Usage if turned on
             // Assume generator kW = 350W for D50 Class locomotive
 
@@ -1153,6 +1196,9 @@ namespace ORTS
                 GeneratorSteamUsageLBpS = 0.0f;
             }
             // Other Aux device usage??
+
+            // Determine Heat Ratio
+            HeatRatio = MathHelper.Clamp((BoilerHeatOutBTUpS / BoilerHeatInBTUpS), 0.1f, 1.2f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
         }
 
         private void UpdateWaterGauge()
@@ -1166,10 +1212,8 @@ namespace ORTS
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Water level dropped too far. Plug has fused and loco has failed.");
                 FusiblePlugIsBlown = true; // if water level has dropped, then fusible plug will blow , see "water model"
             }
-
             // Check for priming            
             if (WaterFraction >= 0.91f)
-
             {
                 if (!IsPriming)
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Boiler overfull and priming.");
@@ -1266,7 +1310,6 @@ namespace ORTS
             else
 
             #region AI Fireman
-
             {
                 if (absSpeedMpS > 4.5)
                 {
@@ -1290,35 +1333,39 @@ namespace ORTS
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                 }
-                else if (WaterGlassLevelIN <= 7.0 & WaterGlassLevelIN > 6.75) // turn injector 1 on 20% if water level in boiler drops below 7.0
+                else if (WaterGlassLevelIN > 7.0)
+                {
+                    //<CJComment> What settings in this range? </CJComment>
+                }
+                else if (WaterGlassLevelIN > 6.75) // turn injector 1 on 20% if water level in boiler drops below 7.0
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 0.2f;
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                 }
-                else if (WaterGlassLevelIN <= 6.75 & WaterGlassLevelIN > 6.5) // turn injector 1 on 40% if water level in boiler drops below 6.75
+                else if (WaterGlassLevelIN > 6.5) // turn injector 1 on 40% if water level in boiler drops below 6.75
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 0.4f;
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                 }
-                else if (WaterGlassLevelIN <= 6.5 & WaterGlassLevelIN > 6.25) // turn injector 1 on 60% if water level in boiler drops below 6.5
+                else if (WaterGlassLevelIN > 6.25) // turn injector 1 on 60% if water level in boiler drops below 6.5
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 0.6f;
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                 }
-                else if (WaterGlassLevelIN <= 6.25 & WaterGlassLevelIN > 6.0) // turn injector 1 on 80% if water level in boiler drops below 6.25
+                else if (WaterGlassLevelIN > 6.0) // turn injector 1 on 80% if water level in boiler drops below 6.25
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 0.8f;
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                 }
-                else if (WaterGlassLevelIN <= 6.0 & WaterGlassLevelIN > 5.75) // turn injector 1 on 100% if water level in boiler drops below 6.0
+                else if (WaterGlassLevelIN > 5.75) // turn injector 1 on 100% if water level in boiler drops below 6.0
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 1.0f;
@@ -1327,35 +1374,39 @@ namespace ORTS
                 }
                 else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 10.0))  // If boiler pressure is not too low then turn on injector 2
                 {
-                    if (WaterGlassLevelIN <= 5.75 & WaterGlassLevelIN > 5.5) // leave injector 1 on 100% & turn injector 2 on 20% if water level in boiler drops below 5.75
+                    if (WaterGlassLevelIN > 5.75)
+                    {
+                        //<CJComment> What settings in this range? </CJComment>
+                    }
+                    else if (WaterGlassLevelIN > 5.5) // leave injector 1 on 100% & turn injector 2 on 20% if water level in boiler drops below 5.75
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
                         Injector2IsOn = true;
                         Injector2Fraction = 0.2f;
                     }
-                    else if (WaterGlassLevelIN <= 5.5 & WaterGlassLevelIN > 5.25) // leave injector 1 on 100% & turn injector 2 on 40% if water level in boiler drops below 5.5
+                    else if (WaterGlassLevelIN > 5.25) // leave injector 1 on 100% & turn injector 2 on 40% if water level in boiler drops below 5.5
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
                         Injector2IsOn = true;
                         Injector2Fraction = 0.4f;
                     }
-                    else if (WaterGlassLevelIN <= 5.25 & WaterGlassLevelIN > 5.0) // leave injector 1 on 100% & turn injector 2 on 60% if water level in boiler drops below 5.25
+                    else if (WaterGlassLevelIN > 5.0) // leave injector 1 on 100% & turn injector 2 on 60% if water level in boiler drops below 5.25
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
                         Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
                     }
-                    else if (WaterGlassLevelIN <= 5.0 & WaterGlassLevelIN > 4.75) // leave injector 1 on 100% & turn injector 2 on 80% if water level in boiler drops below 5.0
+                    else if (WaterGlassLevelIN > 4.75) // leave injector 1 on 100% & turn injector 2 on 80% if water level in boiler drops below 5.0
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
                         Injector2IsOn = true;
                         Injector2Fraction = 0.8f;
                     }
-                    else if (WaterGlassLevelIN <= 4.75 & WaterGlassLevelIN > 4.5) // leave injector 1 on 100% & turn injector 2 on 100% if water level in boiler drops below 4.75
+                    else if (WaterGlassLevelIN > 4.5) // leave injector 1 on 100% & turn injector 2 on 100% if water level in boiler drops below 4.75
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
@@ -1364,21 +1415,14 @@ namespace ORTS
                     }
                 }
                 if (EvaporationLBpS < TotalSteamUsageLBpS)    // More steam being used then generated, then turn up the steam generation rate by increasing damper.
-                {
                     DamperBurnEffect = ((-1.0f * EvaporationLBpS / (EvaporationLBpS - TotalSteamUsageLBpS)) * DamperFactorAI * absSpeedMpS); // automatic damper - increases with increasing steam usage
-                }
-                else if (EvaporationLBpS > TotalSteamUsageLBpS)  // 
-                {
+                else
                     DamperBurnEffect = ((EvaporationLBpS - TotalSteamUsageLBpS) / EvaporationLBpS) * DamperFactorAI * absSpeedMpS; // automatic damper - if steam generation is greater then reduce
-                }
+
                 if (BoilerPressurePSI > MaxBoilerPressurePSI + 1)
-                {
                     HeatMaterialThicknessFactor = 1.0f; // reduce boilerkW
-                }
                 else if (BoilerPressurePSI <= MaxBoilerPressurePSI - 2)
-                {
                     HeatMaterialThicknessFactor = 0.66f; // re-instate boilerkW values
-                }
             }
             #endregion
         }
@@ -1495,15 +1539,15 @@ namespace ORTS
                 BoilerVolumeFT3,
                 MaxBoilerOutputLBpH,
                 Superheater);
-            status.AppendFormat("Boiler:\tPressure\t{0:N0} psi\t\tPower\t{1:N0} bhp\t\tMass\t{2:N0} lb\t\tEff. \t{3:N0}\n",
+            status.AppendFormat("Boiler:\tPressure\t{0:N0} psi\t\tPower\t{1:N0} bhp\t\tMass\t{2:N0} lb\t\tEff. \t{3:N2}\n",
                 BoilerPressurePSI,
-                BoilerKW * BoilerkWtoBHP,
+                BoilerKW * BoilerKWtoBHP,
                 BoilerMassLB,
                 BoilerEfficiency[CylinderSteamUsageLBpS]);
             status.AppendFormat("Heat:\tSteam\t{0:N0} BTU/lb\t\tWater\t{1:N0} BTU/lb\t\tand\t{2:N0} BTU/ft^3\t\tHeat\t{3:N0} BTU\n",
                 BoilerSteamHeatBTUpLB,
                 BoilerWaterHeatBTUpLB,
-                WaterHeatBTUpFt3,
+                WaterHeatBTUpFT3,
                 BoilerHeatSmoothBTU.Value);
             status.AppendFormat("Thermal:\tIn\t{0:N0} BTU\t\tout\t{1:N0} BTU\n",
                 BoilerHeatInBTUpS,
@@ -1514,14 +1558,15 @@ namespace ORTS
                 
                 status.AppendFormat("\n\t\t === Steam Usage === \t\t{0:N0} lb/h\n",
                 pS.TopH(TotalSteamUsageLBpS));
-            status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\t\tBlower\t{1:N0} lb/h\t\tRad.\t{2:N0} lb/h\t\tComp.\t{3:N0} lb/h\t\tCyl. Cock\t{4:N0} lb/h\t\tSafety\t{5:N0} lb/h\t\tGen.\t{6:N0} lb/h\n",
+                status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tCyl. Cock\t{4:N0} lb/h\tSafety\t{5:N0} lb/h\tGen.\t{6:N0} lb/h\tStoke\t{7:N0} lb/h\n",
                 pS.TopH(CylinderSteamUsageLBpS),
                 pS.TopH(BlowerSteamUsageLBpS),
                 pS.TopH(RadiationSteamLossLBpS),
                 pS.TopH(CompSteamUsageLBpS),
                 pS.TopH(CylCockSteamUsageLBpS),
                 pS.TopH(SafetyValveUsageLBpS),
-                pS.TopH(GeneratorSteamUsageLBpS));
+                pS.TopH(GeneratorSteamUsageLBpS),
+                pS.TopH(StokerSteamUsageLBpS));
             status.AppendFormat("Press.:\tChest\t{0:N0} psi\t\tBack\t{1:N0} psi\n",
                 CylinderPressurePSI,
                 BackPressurePSI);
@@ -1539,25 +1584,27 @@ namespace ORTS
                 pS.TopH(FuelBurnRateLBpS));
             status.AppendFormat("Burn:\tDes. Chg.\t{0:N2}\t\tFuel(sm)\t{1:N0} lb/h\t\tDmp. Eff.\t{2:N1}\t\tFuel Cal.\t{3:N0} BTU/lb\n",
                 DesiredChange,
-                pS.TopH(FuelRate.SmoothedValue),
+                pS.TopH(FuelRateSmoothLBpS),
                 DamperBurnEffect,
                 KJpKg.ToBTUpLb(FuelCalorificKJpKG));                
             status.AppendFormat("Water:\tLevel\t{0:N0} %\t\tGlass\t{1:N1} in\n",
                 WaterFraction * 100,
                 WaterGlassLevelIN);
-            status.AppendFormat("Injector:\tMax Rate\t{0:N0} gal/h\t\tInj. 1\t{1:N0} gal/h\t\tInj. 2\t{2:N0} gal/h\n",
+            status.AppendFormat("Injector:\tMax Rate\t{0:N0} gal(uk)/h\t\tInj. 1\t{1:N0} gal(uk)/h\t\tInj. 2\t{2:N0} gal(uk)/h\n",
                 pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
                 Injector1Fraction * pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
                 Injector2Fraction * pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG);
-            status.AppendFormat("Tender:\tCoal\t{0:N0} lb\t{1:N0} %\tWater\t{2:N0} gal\t{3:F0} %\n",
+            status.AppendFormat("Tender:\tCoal\t{0:N0} lb\t{1:N0} %\tWater\t{2:N0} gal(uk)\t\t{3:F0} %\n",
                 TenderCoalMassLB,
                 (TenderCoalMassLB / Kg.ToLb(MaxTenderCoalMassKG)) * 100,
                 TenderWaterVolumeUKG,
                 (TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG)) * 100);
-            status.AppendFormat("Status.:\tCoalOut\t{0}\tWaterOut\t{1}\tFireOut\t{2}",
+            status.AppendFormat("Status.:\tCoalOut\t{0}\tWaterOut\t{1}\tFireOut\t{2}\tStoker\t{3}\tBoost\t{4}",
                 CoalIsExhausted,
                 WaterIsExhausted,
-                FireIsExhausted);    
+                FireIsExhausted,
+                StokerIsMechanical,
+                FuelBoost);   
                 
             status.AppendFormat("\n\t\t === Pulling Performance === \n");
             status.AppendFormat("Pulling:\tForce\t{0:N0} lbf\t\t(smooth)\t{1:N0} lbf\t\tPower\t{2:N0} hp\t\t(smooth)\t{3:F0} hp\n",
@@ -1566,7 +1613,13 @@ namespace ORTS
                 W.ToHp(MotiveForceN * SpeedMpS),
                 W.ToHp(MotiveForceSmoothedN.SmoothedValue * SpeedMpS));
             status.AppendFormat("Beta:\tStart TE\t{0:N0} lbf",
-                N.ToLbf(StartTractiveEffortN));     
+                N.ToLbf(StartTractiveEffortN));
+            status.AppendFormat("\n\t\t === Temp === \n");
+            status.AppendFormat("Fire:\tComb\t{0:N1} lbs/ft2\t\tBoiler Eff\t{1:N2}\t\tBoost\t{2:N2}\t\tReset\t{3:N2}\n",
+            (pS.TopH(FuelBurnRateLBpS) / Me2.ToFt2(GrateAreaM2)),
+            BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(FuelBurnRateLBpS) / Me2.ToFt2(GrateAreaM2))],
+            FuelBoostOnTimerS,
+            FuelBoostResetTimerS);
             return status.ToString();
         }
 
