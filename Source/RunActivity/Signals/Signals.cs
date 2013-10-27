@@ -8441,16 +8441,23 @@ namespace ORTS
             if (internalBlockState == INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR && hasPermission == PERMISSION.REQUESTED && !isPropagated)
             {
                 hasPermission = PERMISSION.GRANTED;
+                Program.Simulator.SoundNotify = Event.PermissionGranted;
             }
             else if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && signalState == SignalHead.SIGASP.STOP &&
                 internalBlockState <= INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR && hasPermission == PERMISSION.REQUESTED)
             {
                 hasPermission = PERMISSION.GRANTED;
+                Program.Simulator.SoundNotify = Event.PermissionGranted;
             }
             else if (MultiPlayer.MPManager.IsMultiPlayer() && enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.EXPLORER 
                 && signalState == SignalHead.SIGASP.STOP && internalBlockState <= INTERNAL_BLOCKSTATE.OCCUPIED_SAMEDIR && hasPermission == PERMISSION.REQUESTED)
             {//added by JTang
                 hasPermission = PERMISSION.GRANTED;
+                Program.Simulator.SoundNotify = Event.PermissionGranted;
+            }
+            else if (hasPermission == PERMISSION.REQUESTED)
+            {
+                Program.Simulator.SoundNotify = Event.PermissionDenied;
             }
 
             // reserve full section if allowed

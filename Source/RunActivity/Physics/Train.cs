@@ -4855,6 +4855,7 @@ namespace ORTS
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Next signal already allocated to other train");
+                Simulator.SoundNotify = Event.PermissionDenied;
                 return;
             }
 
@@ -4915,6 +4916,7 @@ namespace ORTS
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                         Simulator.Confirmer.Message(ConfirmLevel.Information, "Request to clear signal cannot be processed");
+                    Program.Simulator.SoundNotify = Event.PermissionDenied;
                 }
             }
         }
@@ -5933,6 +5935,9 @@ namespace ORTS
             TCSubpathRoute newRouteR = CheckExplorerPath(routeIndex, tempPos, ValidRoute[routeIndex], true, ref EndAuthorityType[routeIndex],
                 ref DistanceToEndNodeAuthorityM[routeIndex]);
             ValidRoute[routeIndex] = newRouteR;
+            Simulator.SoundNotify = reqSignal.hasPermission == SignalObject.PERMISSION.GRANTED ?
+                Event.PermissionGranted :
+                Event.PermissionDenied;
         }
 
         //================================================================================================//
@@ -6558,6 +6563,7 @@ namespace ORTS
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, "Cannot clear signal behind train while in AUTO mode");
+                    Simulator.SoundNotify = Event.PermissionDenied;
                 }
 
                 else if (NextSignalObject[0] != null)

@@ -775,7 +775,7 @@ namespace ORTS
                     volume *= Interpolate(x, MSTSStream.VolumeCurves[i]);
                 }
 
-            if (SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External)
+            if (SoundSource.IsExternal && SoundSource.Viewer.Camera.Style != Camera.Styles.External && SoundSource != SoundSource.Viewer.World.GameSounds)
                 volume *= 0.5f;
 
             ALSoundSource.Volume = volume;

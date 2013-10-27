@@ -117,6 +117,7 @@ namespace ORTS
         // Confirmer should be part of the Viewer, rather than the Simulator, as it is part of the user interface.
         // Perhaps an Observer design pattern would be better, so the Simulator sends messages to any observers. </CJComment>
         public Confirmer Confirmer;                 // Set by the Viewer
+        public Event SoundNotify = Event.None;
 
         public Simulator(UserSettings settings, string activityPath)
         {

@@ -329,7 +329,6 @@ namespace ORTS {
         public DateTime CompletedAt { get; internal set; }
         public string DisplayMessage { get; internal set; }
         public Color DisplayColor { get; internal set; }
-        public Event SoundNotify = Event.None;
 
         public virtual void NotifyEvent( ActivityEventType EventType ) {
         }
@@ -339,7 +338,6 @@ namespace ORTS {
             if( IsCompleted == null ) outf.Write( noval ); else outf.Write( IsCompleted.Value ? (Int32)1 : (Int32)0 );
             outf.Write( (Int64)CompletedAt.Ticks );
             outf.Write( DisplayMessage );
-            outf.Write( (Int32)SoundNotify );
         }
 
         public virtual void Restore( BinaryReader inf ) {
@@ -348,7 +346,6 @@ namespace ORTS {
             IsCompleted = rdval == -1 ? (bool?)null : rdval == 0 ? false : true;
             CompletedAt = new DateTime( inf.ReadInt64() );
             DisplayMessage = inf.ReadString();
-            SoundNotify = (Event)inf.ReadInt32();
         }
     }
 
@@ -583,7 +580,7 @@ namespace ORTS {
                     else if( !maydepart ) {
                         maydepart = true;
                         DisplayMessage = "Passenger boarding completed. You may depart now.";
-                        SoundNotify = Event.PermissionToDepart;
+                        Program.Simulator.SoundNotify = Event.PermissionToDepart;
 
                         // if last task, show closure window
 

@@ -160,20 +160,10 @@ namespace ORTS
 			try
 			{
 				// Update activity sounds
+                if (Viewer.Simulator.SoundNotify != Event.None)
 				{
-					Activity act = Viewer.Simulator.ActivityRun;
-					if (act != null)
-					{
-						ActivityTask at = act.Current;
-						if (at != null)
-						{
-							if (at.SoundNotify != Event.None)
-							{
-								if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(at.SoundNotify);
-                                at.SoundNotify = Event.None;
-							}
-						}
-					}
+                    if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(Viewer.Simulator.SoundNotify);
+                    Viewer.Simulator.SoundNotify = Event.None;
 				}
 #if DOPPLER
                 if (Viewer != null || Viewer.Camera != null) // For sure we have a Camera
