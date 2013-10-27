@@ -61,7 +61,7 @@ namespace ORTS
         public bool CylinderCocksAreOpen;
         bool FiringIsManual;
         bool BlowerIsOn = false;
-        bool IsPriming = false;
+        bool BoilerIsPriming = false;
         bool WaterIsExhausted = false;
         bool CoalIsExhausted = false;
         bool FireIsExhausted = false;
@@ -154,7 +154,6 @@ namespace ORTS
         float BackPressurePSI;
 
   #region Additional steam properties
-
         const float SpecificHeatCoalKJpKGpK = 1.26f; // specific heat of coal - Kj/kg Kelvin
         float WaterHeatBTUpFT3;             // Water heat in btu/ft3
         bool FusiblePlugIsBlown = false;    // Fusible plug blown, due to lack of water in the boiler
@@ -181,7 +180,6 @@ namespace ORTS
         float CompStrokespM = 120.0f;
         float CompSteamUsageLBpS = 0.0f;
         const float BTUpHtoKJpS = 0.000293071f;     // Convert BTU/s to Kj/s
-        float CylCockSteamUsageLBpS = 0.0f;         // Cylinder cocks steam usage when turned on
         float BoilerHeatTransferCoeffWpM2K = 45.0f; // Heat Transfer of locomotive boiler 45 Wm2K
         float TotalSteamUsageLBpS;                  // Running total for complete current steam usage
         float GeneratorSteamUsageLBpS = 1.0f;       // Generator Steam Usage
@@ -215,8 +213,11 @@ namespace ORTS
         float BoilerHeatOutBTUpS = 0.0f;// heat out of boiler in BTU
         float BoilerHeatInBTUpS = 0.0f; // heat into boiler in BTU
         float InjCylEquivSizeIN;        // Calculate the equivalent cylinder size for purpose of sizing the injector.
-        float CylDerateFactorCocks = 1.0f;      // Cylinder Derating factor if locomotive cylinder cocks are open
-        float CylDerateFactorPrime = 1.0f;      // Cylinder Derating factor if locomotive has primed
+        
+        // Derating factors for motive force 
+        float CylinderCocksDeratingFactor = 0.01f;  // Factor if cylinder cocks are open
+        float BoilerPrimingDeratingFactor = 0.001f; // Factor if boiler is priming
+        
         float StartTractiveEffortN = 0.0f;      // Record starting tractive effort
         float Superheater = 1.0f;               // Currently 2 values respected: 1.0 for no superheat (default), > 1.0 for typical superheat
         float SuperheaterSteamProductionFactor = 1.0f;  // Above 1.0, increases steam production due to superheater, currently by 3%
@@ -228,7 +229,6 @@ namespace ORTS
         float StokerSteamUsageLBpS;         // Current steam usage of stoker
         const float BoilerKWtoBHP = 0.101942f;  // Convert Boiler kW to Boiler HP, note different to HP.
         float MaxTheoreticalFiringRateKgpS;     // Max firing rate that fireman can sustain for short periods
-        public float TempBurn;
         float FuelBoostOnTimerS = 0.01f;    // Timer to allow fuel boosting for a short while
         float FuelBoostResetTimerS = 0.01f; // Timer to rest fuel boosting for a while
         float TimeFuelBoostOnS = 300.0f;    // Time to allow fuel boosting to go on for 
@@ -271,7 +271,8 @@ namespace ORTS
                     IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
                 else
                     IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
-            if (MaxFireMassKG == 0)
+            if (MaxFireMassKG == 0) // If not specified, assume twice as much as ideal. 
+                                    // Scale FIREBOX control to show FireMassKG as fraction of MaxFireMassKG.
                 MaxFireMassKG = 2 * IdealFireMassKG;
 
         #endregion
@@ -794,126 +795,122 @@ namespace ORTS
                     FireIsExhausted = true; // fire has run out of fuel.
                 }
             }
-            if (IdealFireMassKG > 0)
+            FireRatio = FireMassKG / IdealFireMassKG;
+            if (absSpeedMpS == 0)
             {
-                FireRatio = FireMassKG / IdealFireMassKG;
-                if (absSpeedMpS == 0)
+                BurnRateRawLBpS *= FireRatio * 0.2f; // reduce background burnrate if stationary
+                // <CJComment> Correct version commented out. Needs fixing. </CJComment>
+                //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS);
+                BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
+                FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
+            }
+            else if (FireRatio < 1.0f)  // maximise burnrate when FireMass = IdealFireMass, else allow a reduction in efficiency
+            {
+                BurnRateRawLBpS *= FireRatio;
+                // <CJComment> Correct version commented out. Needs fixing. </CJComment>
+                //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS);
+                BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
+                FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
+            }
+            else
+            {
+                BurnRateRawLBpS *= 2 - FireRatio;
+                // <CJComment> Correct version commented out. Needs fixing. </CJComment>
+                //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS); // Smooth the burn rate
+                BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
+                FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
+            }
+            FuelBurnRateLBpS = MathHelper.Clamp(FuelBurnRateLBpS, 0, MaxFireMassKG); // clamp burnrate to maintain it within limits
+
+            if (FiringIsManual)
+            {
+                // If tender coal is empty stop fuelrate (feeding coal onto fire).  
+                if (CoalIsExhausted)
                 {
-                    BurnRateRawLBpS *= FireRatio * 0.2f; // reduce background burnrate if stationary
-                    // <CJComment> Correct version commented out. Needs fixing. </CJComment>
-                    //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS);
-                    BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
-                    FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
-                }
-                else if (FireRatio < 1.0f)  // maximise burnrate when FireMass = IdealFireMass, else allow a reduction in efficiency
-                {
-                    BurnRateRawLBpS *= FireRatio;
-                    // <CJComment> Correct version commented out. Needs fixing. </CJComment>
-                    //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS);
-                    BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
-                    FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
+                    FuelFeedRateLBpS = 0.0f; // set fuel rate to zero if tender empty
+                    DesiredChange = 0.0f;
+                    FireMassKG -= elapsedClockSeconds * Kg.FromLb(FuelBurnRateLBpS); // Firemass will only decrease if tender coal is empty
                 }
                 else
                 {
-                    BurnRateRawLBpS *= 2 - FireRatio;
-                    // <CJComment> Correct version commented out. Needs fixing. </CJComment>
-                    //BurnRateSmoothLBpS.Update(elapsedClockSeconds, BurnRateRawLBpS); // Smooth the burn rate
-                    BurnRateSmoothLBpS.Update(0.1f, BurnRateRawLBpS); // Smooth the burn rate
-                    FuelBurnRateLBpS = BurnRateSmoothLBpS.SmoothedValue;
+                    FuelFeedRateLBpS = Kg.ToLb(MaxFiringRateKGpS) * FiringRateController.CurrentValue;
+                    FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FiringRateController.CurrentValue - Kg.FromLb(FuelBurnRateLBpS));
                 }
-
-                FuelBurnRateLBpS = MathHelper.Clamp(FuelBurnRateLBpS, 0, 2 * IdealFireMassKG); // clamp burnarte to maintain it within limits
-
-                if (FiringIsManual)
+            }
+            else if (elapsedClockSeconds > 0.001 && MaxFiringRateKGpS > 0.001)
+            {
+                // Automatic fireman, ish.
+                DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + Kg.FromLb(FuelBurnRateLBpS)) / MaxFiringRateKGpS, 0.001f, 1);
+                if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
                 {
-                    // If tender coal is empty stop fuelrate (feeding coal onto fire).  
-                    if (CoalIsExhausted)
-                    {
-                        FuelFeedRateLBpS = 0.0f; // set fuel rate to zero if tender empty
-                        DesiredChange = 0.0f;
-                        FireMassKG -= elapsedClockSeconds * Kg.FromLb(FuelBurnRateLBpS); // Firemass will only decrease if tender coal is empty
-                    }
-                    else
-                    {
-                        FuelFeedRateLBpS = Kg.ToLb(MaxFiringRateKGpS) * FiringRateController.CurrentValue;
-                        FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FiringRateController.CurrentValue - Kg.FromLb(FuelBurnRateLBpS));
-                    }
+                    FuelRateStokerLBpS.Update(elapsedClockSeconds, DesiredChange); // faster fuel feed rate for stoker    
+                    FuelRateSmoothLBpS = FuelRateStokerLBpS.SmoothedValue;
                 }
-                else if (elapsedClockSeconds > 0.001 && MaxFiringRateKGpS > 0.001)
+                else
                 {
-                    // Automatic fireman, ish.
-                    DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + Kg.FromLb(FuelBurnRateLBpS)) / MaxFiringRateKGpS, 0.001f, 1);
-                    if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
+                    FuelRate.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for fireman
+                    FuelRateSmoothLBpS = FuelRate.SmoothedValue;
+                }
+                // If tender coal is empty stop fuelrate (feeding coal onto fire).  
+                if ((IdealFireMassKG - FireMassKG) > 20.0) // if firemass is falling too low shovel harder - needs further refinement as this shouldn't be able to be maintained indefinitely
+                {
+                    if (FuelBoostOnTimerS < TimeFuelBoostOnS) // If fuel boost timer still has time available allow fuel boost
                     {
-                        FuelRateStokerLBpS.Update(elapsedClockSeconds, DesiredChange); // faster fuel feed rate for stoker    
-                        FuelRateSmoothLBpS = FuelRateStokerLBpS.SmoothedValue;
-                    }
-                    else
-                    {
-                        FuelRate.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for fireman
-                        FuelRateSmoothLBpS = FuelRate.SmoothedValue;
-                    }
-                    // If tender coal is empty stop fuelrate (feeding coal onto fire).  
-                    if ((IdealFireMassKG - FireMassKG) > 20.0) // if firemass is falling too low shovel harder - needs further refinement as this shouldn't be able to be maintained indefinitely
-                    {
-                        if (FuelBoostOnTimerS < TimeFuelBoostOnS) // If fuel boost timer still has time available allow fuel boost
+                        FuelBoostResetTimerS = 0.01f;     // Reset fuel reset (time out) timer to allow stop boosting for a period of time.
+                        if (!FuelBoost)
                         {
-                            FuelBoostResetTimerS = 0.01f;     // Reset fuel reset (time out) timer to allow stop boosting for a period of time.
-                            if (!FuelBoost)
-                            {
-                                FuelBoost = true; // boost shoveling 
-                                if (!StokerIsMechanical)  // Don't display message if stoker in operation
-                                {
-                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "FireMass is getting low. Your fireman will shovel faster, but don't wear him out.");
-                                }
-                            }
-                        }
-                    }
-                    else if ((IdealFireMassKG - FireMassKG) < 1.0)
-                    {
-                        FuelBoost = false;
-                        if (FuelBoost)
-                        {
-                            FuelBoost = false; // disable boost shoveling 
+                            FuelBoost = true; // boost shoveling 
                             if (!StokerIsMechanical)  // Don't display message if stoker in operation
                             {
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, "FireMass is back within limits. Your fireman will shovel as per normal.");
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, "FireMass is getting low. Your fireman will shovel faster, but don't wear him out.");
                             }
                         }
                     }
-                    if (CoalIsExhausted)
+                }
+                else if ((IdealFireMassKG - FireMassKG) < 1.0)
+                {
+                    FuelBoost = false;
+                    if (FuelBoost)
                     {
-                        FuelFeedRateLBpS = 0.0f; // set fuel rate to zero if tender empty
-                        FireMassKG -= elapsedClockSeconds * Kg.FromLb(FuelBurnRateLBpS); // Firemass will only decrease if tender coal is empty
+                        FuelBoost = false; // disable boost shoveling 
+                        if (!StokerIsMechanical)  // Don't display message if stoker in operation
+                        {
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, "FireMass is back within limits. Your fireman will shovel as per normal.");
+                        }
+                    }
+                }
+                if (CoalIsExhausted)
+                {
+                    FuelFeedRateLBpS = 0.0f; // set fuel rate to zero if tender empty
+                    FireMassKG -= elapsedClockSeconds * Kg.FromLb(FuelBurnRateLBpS); // Firemass will only decrease if tender coal is empty
+                }
+                else
+                {
+                    if (FuelBoost && !FuelBoostReset) // if firemass is falling too low, shovel harder - needs further refinement as this shouldn't be able to be maintained indefinitely
+                    {
+                        FuelFeedRateLBpS = Kg.ToLb(MaxTheoreticalFiringRateKgpS) * FuelRateSmoothLBpS;  // At times of heavy burning allow AI fireman to overfuel
+                        FireMassKG += elapsedClockSeconds * (MaxTheoreticalFiringRateKgpS * FuelRateSmoothLBpS - Kg.FromLb(FuelBurnRateLBpS));
+                        FuelBoostOnTimerS += elapsedClockSeconds; // Time how long to fuel boost for
                     }
                     else
                     {
-                        if (FuelBoost && !FuelBoostReset) // if firemass is falling too low, shovel harder - needs further refinement as this shouldn't be able to be maintained indefinitely
-                        {
-                            FuelFeedRateLBpS = Kg.ToLb(MaxTheoreticalFiringRateKgpS) * FuelRateSmoothLBpS;  // At times of heavy burning allow AI fireman to overfuel
-                            FireMassKG += elapsedClockSeconds * (MaxTheoreticalFiringRateKgpS * FuelRateSmoothLBpS - Kg.FromLb(FuelBurnRateLBpS));
-                            FuelBoostOnTimerS += elapsedClockSeconds; // Time how long to fuel boost for
-                        }
-                        else
-                        {
-                            FuelFeedRateLBpS = Kg.ToLb(MaxFiringRateKGpS) * FuelRateSmoothLBpS;
-                            FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRateSmoothLBpS - Kg.FromLb(FuelBurnRateLBpS));
-                        }
-                    }                  
-                }
-                FireMassKG = MathHelper.Clamp(FireMassKG, 0, 2 * IdealFireMassKG);
+                        FuelFeedRateLBpS = Kg.ToLb(MaxFiringRateKGpS) * FuelRateSmoothLBpS;
+                        FireMassKG += elapsedClockSeconds * (MaxFiringRateKGpS * FuelRateSmoothLBpS - Kg.FromLb(FuelBurnRateLBpS));
+                    }
+                }                  
+            }
+            FireMassKG = MathHelper.Clamp(FireMassKG, 0, MaxFireMassKG);
 
-                // Time Fuel Boost reset time if all time has been used up on boost timer
-                if (FuelBoostOnTimerS >= TimeFuelBoostOnS)
-                {
-                    FuelBoostResetTimerS += elapsedClockSeconds; // Time how long to wait for next fuel boost
-                    FuelBoostReset = true;
-                }
-                if (FuelBoostResetTimerS > TimeFuelBoostResetS)
-                {
-                    FuelBoostOnTimerS = 0.01f;     // Reset fuel boost timer to allow another boost if required.
-                    FuelBoostReset = false;
-                }
+            // Time Fuel Boost reset time if all time has been used up on boost timer
+            if (FuelBoostOnTimerS >= TimeFuelBoostOnS)
+            {
+                FuelBoostResetTimerS += elapsedClockSeconds; // Time how long to wait for next fuel boost
+                FuelBoostReset = true;
+            }
+            if (FuelBoostResetTimerS > TimeFuelBoostResetS)
+            {
+                FuelBoostOnTimerS = 0.01f;     // Reset fuel boost timer to allow another boost if required.
+                FuelBoostReset = false;
             }
             Smoke.Update(elapsedClockSeconds, FuelFeedRateLBpS / FuelBurnRateLBpS);
         }
@@ -1118,8 +1115,12 @@ namespace ORTS
 
         private void UpdateMotion(float elapsedClockSeconds, float cutoff, float absSpeedMpS)
         {
-            MotiveForceN = CylDerateFactorPrime * CylDerateFactorCocks * (Direction == Direction.Forward ? 1 : -1) * (BackPressurePSI * ForceFactor1NpPSI[cutoff] + CylinderPressurePSI * ForceFactor2NpPSI[cutoff]); // Original Formula
-            // MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * (N.FromLbf(BackPressurePSI * ForceFactor1[cutoff]) + N.ToLbf(CylinderPressurePSI * ForceFactor2[cutoff]));
+            MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * (BackPressurePSI * ForceFactor1NpPSI[cutoff] + CylinderPressurePSI * ForceFactor2NpPSI[cutoff]); // Original Formula
+            // Derate when needed.
+            if (CylinderCocksAreOpen)
+                MotiveForceN *= (1 - CylinderCocksDeratingFactor);
+            if (BoilerIsPriming)
+                MotiveForceN *= (1 - BoilerPrimingDeratingFactor);
             MotiveForceSmoothedN.Update(elapsedClockSeconds, MotiveForceN);
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
@@ -1162,26 +1163,9 @@ namespace ORTS
                 CompSteamUsageLBpS = 0.0f;    // Set steam usage to zero if compressor is turned off
             }
 
-            // Calculate cylinder cock steam Usage if turned on
-            if (CylinderCocksAreOpen)
-            {
-                CylCockSteamUsageLBpS = Me3.ToFt3((float)Math.PI * NumCylinders * (CylinderDiameterM / 2.0f) * (CylinderDiameterM / 2.0f) * CylinderStrokeM) * CylinderSteamDensityPSItoLBpFT3[BoilerPressurePSI];       // Assume that the cylinder cock is approx % value of cylinder steam usage
-                BoilerMassLB -= elapsedClockSeconds * CylCockSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by cylinder steam cocks  
-                BoilerHeatBTU -= elapsedClockSeconds * CylCockSteamUsageLBpS * BoilerSteamHeatBTUpLB;  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
-                BoilerHeatOutBTUpS += CylCockSteamUsageLBpS * BoilerSteamHeatBTUpLB;  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks                
-                TotalSteamUsageLBpS += CylCockSteamUsageLBpS;
-                CylDerateFactorCocks = 0.01f;     // Temporarily derate cylinders and motive force whilst cylinder cocks are on
-            }
-            else
-            {
-                CylCockSteamUsageLBpS = 0.0f;       // set steam usage to zero if turned off
-                CylDerateFactorCocks = 1.0f;     // Restore derating factor once cylinder cocks are closed
-            }
-
             //<CJComment> What if there is no electricity generator? </CJComment>
             // Calculate Generator steam Usage if turned on
             // Assume generator kW = 350W for D50 Class locomotive
-
             if (absSpeedMpS > 2.0f) //  Turn generator on if moving
             {
                 GeneratorSteamUsageLBpS = 0.0291666f; // Assume 105lb/hr steam usage for 500W generator
@@ -1215,17 +1199,15 @@ namespace ORTS
             // Check for priming            
             if (WaterFraction >= 0.91f)
             {
-                if (!IsPriming)
+                if (!BoilerIsPriming)
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Boiler overfull and priming.");
-                IsPriming = true;
-                CylDerateFactorPrime = 0.001f;     // Derate cylinder output due to priming
+                BoilerIsPriming = true;
             }
             else if (WaterFraction < 0.90f)
             {
-                if (IsPriming)
+                if (BoilerIsPriming)
                     Simulator.Confirmer.Message(ConfirmLevel.Information, "Boiler no longer priming.");
-                IsPriming = false;
-                CylDerateFactorPrime = 1.0f;     // Reset cylinder output due to priming
+                BoilerIsPriming = false;
             }
         }
 
@@ -1558,12 +1540,11 @@ namespace ORTS
                 
                 status.AppendFormat("\n\t\t === Steam Usage === \t\t{0:N0} lb/h\n",
                 pS.TopH(TotalSteamUsageLBpS));
-                status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tCyl. Cock\t{4:N0} lb/h\tSafety\t{5:N0} lb/h\tGen.\t{6:N0} lb/h\tStoke\t{7:N0} lb/h\n",
+                status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tSafety\t{5:N0} lb/h\tGen.\t{6:N0} lb/h\tStoke\t{7:N0} lb/h\n",
                 pS.TopH(CylinderSteamUsageLBpS),
                 pS.TopH(BlowerSteamUsageLBpS),
                 pS.TopH(RadiationSteamLossLBpS),
                 pS.TopH(CompSteamUsageLBpS),
-                pS.TopH(CylCockSteamUsageLBpS),
                 pS.TopH(SafetyValveUsageLBpS),
                 pS.TopH(GeneratorSteamUsageLBpS),
                 pS.TopH(StokerSteamUsageLBpS));
@@ -1573,7 +1554,7 @@ namespace ORTS
             status.AppendFormat("Status.:\tSafety\t{0}\tFusePlug\t{1}\tPrime\t{2}",
                 SafetyIsOn,
                 FusiblePlugIsBlown,
-                IsPriming);
+                BoilerIsPriming);
                 
             status.AppendFormat("\n\t === Fireman === \n");
             status.AppendFormat("Fire Mass:\tIdeal\t{0:N0} lb\t\tFire\t{1:N0} lb\t\tMax Fire\t{2:N0} lb/h\t\tRate:\tFuel\t{3:N0} lb/h\t\tBurn\t{4:N0} lb/h\n",

@@ -34,7 +34,7 @@ namespace ORTS
         /// </summary>
         NotDriven = 0,
         /// <summary>
-        /// Traction motor conected through gearbox to axle
+        /// Traction motor connected through gearbox to axle
         /// </summary>
         MotorDriven = 1,
         /// <summary>
@@ -44,7 +44,6 @@ namespace ORTS
     }
     /// <summary>
     /// Axle class by Matej Pacha (c)2011, University of Zilina, Slovakia (matej.pacha@kves.uniza.sk)
-    /// Use of this code is restricted outside of OpenRails Simulator without special permission!
     /// The class is used to manage and simulate axle forces considering adhesion problems.
     /// Basic configuration:
     ///  - Motor generates motive torque what is converted into a motive force (through gearbox)
@@ -130,7 +129,7 @@ namespace ORTS
                         break;
                     case AxleDriveType.MotorDriven:
                         //Total inertia considering gearbox
-                        totalInertiaKgm2 = inertiaKgm2 + transmitionRatio * transmitionRatio * motor.InertiaKgm2;
+                        totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
                         break;
                     case AxleDriveType.ForceDriven:
                         totalInertiaKgm2 = inertiaKgm2;
@@ -182,7 +181,7 @@ namespace ORTS
                     case AxleDriveType.NotDriven:
                         break;
                     case AxleDriveType.MotorDriven:
-                        totalInertiaKgm2 = inertiaKgm2 + transmitionRatio * transmitionRatio * motor.InertiaKgm2;
+                        totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
                         break;
                     case AxleDriveType.ForceDriven:
                         totalInertiaKgm2 = inertiaKgm2;
@@ -199,50 +198,50 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Transmition ratio on gearbox covered by TransmitionRatio interface
+        /// Transmission ratio on gearbox covered by TransmissionRatio interface
         /// </summary>
-        float transmitionRatio;
+        float transmissionRatio;
         /// <summary>
-        /// Read/Write positive nonzero transmition ratio, given by n1:n2 ratio
+        /// Read/Write positive nonzero transmission ratio, given by n1:n2 ratio
         /// Throws an exception when negative or zero value is passed
         /// </summary>
-        public float TransmitionRatio
+        public float TransmissionRatio
         {
             set
             {
                 if (value <= 0.0)
-                    throw new NotSupportedException("Transmition ratio must be greater than zero");
-                transmitionRatio = value;
+                    throw new NotSupportedException("Transmission ratio must be greater than zero");
+                transmissionRatio = value;
             }
             get
             {
-                return transmitionRatio;
+                return transmissionRatio;
             }
         }
 
         /// <summary>
-        /// Transmition efficiency, relative to 1.0, covered by TransmitionEfficiency interface
+        /// Transmission efficiency, relative to 1.0, covered by TransmissionEfficiency interface
         /// </summary>
-        float transmitionEfficiency;
+        float transmissionEfficiency;
         /// <summary>
-        /// Read/Write transmition efficiency, relattve to 1.0, within range of 0.0 to 1.0 (1.0 means 100%, 0.5 means 50%)
+        /// Read/Write transmission efficiency, relative to 1.0, within range of 0.0 to 1.0 (1.0 means 100%, 0.5 means 50%)
         /// Throws an exception when out of range value is passed
         /// When 0.0 is set the value of 0.99 is used instead
         /// </summary>
-        public float TransmitionEfficiency
+        public float TransmissionEfficiency
         {
             set
             {
                 if (value > 1.0f)
                     throw new NotSupportedException("Value must be within the range of 0.0 and 1.0");
                 if (value <= 0.0f)
-                    transmitionEfficiency = 0.99f;
+                    transmissionEfficiency = 0.99f;
                 else
-                    transmitionEfficiency = value;
+                    transmissionEfficiency = value;
             }
             get
             {
-                return transmitionEfficiency;
+                return transmissionEfficiency;
             }
         }
 
@@ -495,14 +494,14 @@ namespace ORTS
         /// <summary>
         /// Nonparametric constructor of Axle class instance
         /// - sets motor parameter to null
-        /// - sets TransmitionEfficiency to 0.99 (99%)
+        /// - sets TtransmissionEfficiency to 0.99 (99%)
         /// - sets SlipWarningThresholdPercent to 70%
         /// - sets axle DriveType to ForceDriven
         /// - updates totalInertiaKgm2 parameter
         /// </summary>
         public Axle()
         {
-            transmitionEfficiency = 0.99f;
+            transmissionEfficiency = 0.99f;
             SlipWarningTresholdPercent = 70.0f;
             driveType = AxleDriveType.ForceDriven;
             AxleRevolutionsInt.IsLimited = true;
@@ -519,7 +518,7 @@ namespace ORTS
                 case AxleDriveType.MotorDriven:
                     AxleRevolutionsInt.Max = 5000.0f;
                     AxleRevolutionsInt.Min = -5000.0f;
-                    totalInertiaKgm2 = inertiaKgm2 + transmitionRatio * transmitionRatio * motor.InertiaKgm2;
+                    totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
                     break;
                 case AxleDriveType.ForceDriven:
                     AxleRevolutionsInt.Max = 100.0f;
@@ -534,7 +533,7 @@ namespace ORTS
 
         /// <summary>
         /// Creates motor driven axle class instance
-        /// - sets TransmitionEfficiency to 0.99 (99%)
+        /// - sets TransmissionEfficiency to 0.99 (99%)
         /// - sets SlipWarningThresholdPercent to 70%
         /// - sets axle DriveType to MotorDriven
         /// - updates totalInertiaKgm2 parameter
@@ -544,7 +543,7 @@ namespace ORTS
         {
             motor = electricMotor;
             motor.AxleConnected = this;
-            transmitionEfficiency = 0.99f;
+            transmissionEfficiency = 0.99f;
             driveType = AxleDriveType.MotorDriven;
             AxleRevolutionsInt.IsLimited = true;
             Adhesion2 = 0.331455f;
@@ -561,7 +560,7 @@ namespace ORTS
                 case AxleDriveType.MotorDriven:
                     AxleRevolutionsInt.Max = 5000.0f;
                     AxleRevolutionsInt.Min = -5000.0f;
-                    totalInertiaKgm2 = inertiaKgm2 + transmitionRatio * transmitionRatio * motor.InertiaKgm2;
+                    totalInertiaKgm2 = inertiaKgm2 + transmissionRatio * transmissionRatio * motor.InertiaKgm2;
                     break;
                 case AxleDriveType.ForceDriven:
                     AxleRevolutionsInt.Max = 100.0f;
@@ -592,7 +591,7 @@ namespace ORTS
                     //Axle revolutions integration
                     axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
                         axleDiameterM * axleDiameterM / (4.0f * (totalInertiaKgm2))
-                        * (2.0f * transmitionRatio / axleDiameterM * (-Math.Abs(brakeForceN)) - AxleForceN));
+                        * (2.0f * transmissionRatio / axleDiameterM * (-Math.Abs(brakeForceN)) - AxleForceN));
                     break;
                 case AxleDriveType.MotorDriven:
                     //Axle revolutions integration
@@ -603,11 +602,11 @@ namespace ORTS
                     }
                     axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
                         axleDiameterM * axleDiameterM / (4.0f * (totalInertiaKgm2))
-                        * (2.0f * transmitionRatio / axleDiameterM * motor.DevelopedTorqueNm * transmitionEfficiency
+                        * (2.0f * transmissionRatio / axleDiameterM * motor.DevelopedTorqueNm * transmissionEfficiency
                         - Math.Abs(brakeForceN) - (axleSpeedMpS > 0.0 ? Math.Abs(dampingNs) : 0.0f)) - AxleForceN);
 
                     //update motor values
-                    motor.RevolutionsRad = axleSpeedMpS * 2.0f * transmitionRatio / (axleDiameterM);
+                    motor.RevolutionsRad = axleSpeedMpS * 2.0f * transmissionRatio / (axleDiameterM);
                     motor.Update(timeSpan);
                     break;
                 case AxleDriveType.ForceDriven:
@@ -629,7 +628,7 @@ namespace ORTS
                             axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
                                     (
                                         (
-                                        driveForceN * transmitionEfficiency
+                                        driveForceN * transmissionEfficiency
                                         - brakeForceN
                                         - slipDerivationMpSS * dampingNs
                                         - Math.Abs(SlipSpeedMpS) * frictionN
@@ -653,7 +652,7 @@ namespace ORTS
                                 axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
                                         (
                                             (
-                                            driveForceN * transmitionEfficiency
+                                            driveForceN * transmissionEfficiency
                                             + brakeForceN
                                             - slipDerivationMpSS * dampingNs
                                             - Math.Abs(SlipSpeedMpS) * frictionN

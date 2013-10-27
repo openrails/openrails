@@ -66,18 +66,18 @@ namespace ORTS
 
         public float CoolingPowerW { set; get; }
 
-        float transmitionRatio;
-        public float TransmitionRatio
+        float transmissionRatio;
+        public float TransmissionRatio
         {
             set
             {
                 if (value <= 0.0)
-                    throw new NotSupportedException("Transmition ratio must be greater than zero");
-                transmitionRatio = value;
+                    throw new NotSupportedException("Transmission ratio must be greater than zero");
+                transmissionRatio = value;
             }
             get
             {
-                return transmitionRatio;
+                return transmissionRatio;
             }
         }
 
@@ -105,7 +105,7 @@ namespace ORTS
             inertiaKgm2 = 1.0f;
             revolutionsRad = 0.0f;
             axleDiameterM = 1.0f;
-            transmitionRatio = 1.0f;
+            transmissionRatio = 1.0f;
             temperatureK = 0.0f;
             ThermalCoeffJ_m2sC = 50.0f;
             SpecificHeatCapacityJ_kg_C = 40.0f;
