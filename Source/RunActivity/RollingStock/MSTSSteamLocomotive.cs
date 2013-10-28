@@ -1356,11 +1356,7 @@ namespace ORTS
                 }
                 else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 10.0))  // If boiler pressure is not too low then turn on injector 2
                 {
-                    if (WaterGlassLevelIN > 5.75)
-                    {
-                        //<CJComment> What settings in this range? </CJComment>
-                    }
-                    else if (WaterGlassLevelIN > 5.5) // leave injector 1 on 100% & turn injector 2 on 20% if water level in boiler drops below 5.75
+                    if (WaterGlassLevelIN > 5.5) // leave injector 1 on 100% & turn injector 2 on 20% if water level in boiler drops below 5.75
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
@@ -1540,7 +1536,7 @@ namespace ORTS
                 
                 status.AppendFormat("\n\t\t === Steam Usage === \t\t{0:N0} lb/h\n",
                 pS.TopH(TotalSteamUsageLBpS));
-                status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tSafety\t{5:N0} lb/h\tGen.\t{6:N0} lb/h\tStoke\t{7:N0} lb/h\n",
+                status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tSafety\t{4:N0} lb/h\tGen.\t{5:N0} lb/h\tStoke\t{6:N0} lb/h\n",
                 pS.TopH(CylinderSteamUsageLBpS),
                 pS.TopH(BlowerSteamUsageLBpS),
                 pS.TopH(RadiationSteamLossLBpS),
