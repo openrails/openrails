@@ -626,6 +626,8 @@ namespace ORTS
         public bool IsReleasedWithJump;
         public ORTSTrigger LastTriggered = new ORTSTrigger();
         public bool RepeatedTrigger;
+        List<ORTSTrigger> VariableTriggers;
+        IEnumerable<ORTSTrigger> TriggersList;
 
         public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, int index, bool isSlowRolloff, float factor)
         {
@@ -674,6 +676,10 @@ namespace ORTS
                     }
                     IsReleasedWithJump |= (Triggers.Last().SoundCommand is ORTSReleaseLoopReleaseWithJump);
                 }  // for each mstsStream.Trigger
+
+            VariableTriggers = (from t in Triggers 
+                                where t is ORTSVariableTrigger
+                                select t).ToList();
         }
 
         public void Update(float[] position, float[] velocity)
@@ -702,16 +708,12 @@ namespace ORTS
                 // If no triggers active, Initialize the Initial
                 if (!ALSoundSource.isPlaying)
                 {
-                    var vtq = (from t in Triggers
-                               where t is ORTSVariableTrigger
-                               select t).ToList();
-
-                    if (vtq.Count > 0)
+                    if (VariableTriggers.Count > 0)
                     {
-                        var vtqb = from ORTSVariableTrigger t in vtq
-                                   where t.IsBellow
-                                   select t;
-                        if (vtqb.Count() == vtq.Count && _InitialTrigger.SoundCommand is ORTSSoundPlayCommand)
+                        TriggersList = from ORTSVariableTrigger t in VariableTriggers
+                                                where t.IsBellow
+                                                select t as ORTSTrigger;
+                        if (TriggersList.Count() == VariableTriggers.Count && _InitialTrigger.SoundCommand is ORTSSoundPlayCommand)
                         {
                             _InitialTrigger.Initialize();
                         }
@@ -720,11 +722,11 @@ namespace ORTS
                 // If triggers are active, reset the Initial
                 else
                 {
-                    var qt = from t in Triggers
+                    TriggersList = from t in Triggers
                              where t.Signaled &&
                              (t.SoundCommand is ORTSStartLoop || t.SoundCommand is ORTSStartLoopRelease)
                              select t;
-                    if (qt.Count() > 1 && _InitialTrigger.Signaled) 
+                    if (TriggersList.Count() > 1 && _InitialTrigger.Signaled)
                         _InitialTrigger.Signaled = false;
                 }
             }

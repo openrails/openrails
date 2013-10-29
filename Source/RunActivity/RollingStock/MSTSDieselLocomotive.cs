@@ -636,32 +636,6 @@ namespace ORTS
             }// end AI locomotive
 #endif
 
-            // Variable1 is wheel rotation in m/sec for steam locomotives
-            //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
-
-            //if (PowerOn)
-            //    Variable1 = ThrottlePercent / 100f;   // throttle setting
-            //else
-            //{
-            //    Variable1 = -IdleRPM/(MaxRPM - IdleRPM);
-            //    ExhaustParticles = 0;
-
-            //}
-            EngineRPMRatio = (DieselEngines[0].RealRPM - DieselEngines[0].IdleRPM) / (DieselEngines[0].MaxRPM - DieselEngines[0].IdleRPM);
-            // Variable1 is computed after Variable2;
-
-            //Variable2 = Math.Abs(WheelSpeedMpS);
-
-            
-            if ( DynamicBrakePercent > 0)
-            {
-                if (MaxDynamicBrakeForceN == 0)
-                    Variable3 = DynamicBrakePercent / 100f;
-                else
-                    Variable3 -= MotiveForceN / MaxDynamicBrakeForceN;
-            }
-            else
-                Variable3 = 0;
             switch (this.Train.TrainType)
             {
                 case Train.TRAINTYPE.AI:
@@ -706,35 +680,33 @@ namespace ORTS
 
             }
 
-            
+            EngineRPMRatio = (DieselEngines[0].RealRPM - DieselEngines[0].IdleRPM) / (DieselEngines[0].MaxRPM - DieselEngines[0].IdleRPM);
+
+            if (GearBox == null) Variable1 = EngineRPMRatio; // Not gearbased, Variable1 similar to Variable2
+            else Variable1 = ThrottlePercent / 100.0f; // Gearbased, Variable1 proportional to ThrottlePercent
+            // else Variable1 = MotiveForceN / MaxForceN; // Gearbased, Variable1 proportional to motive force
+            // allows for motor volume proportional to effort.
 
             // Refined Variable2 setting to graduate
             if (Variable2 != EngineRPMRatio)
             {
-                // Calculated value
-                float addition = PercentChangePerSec;
-                bool neg = false;
-
-                if (EngineRPMRatio < Variable2)
-                {
-                    addition *= -1;
-                    neg = true;
-                }
-
-                addition *= elapsedClockSeconds;
-
-                Variable2 += addition;
-
-                if ((neg && Variable2 < EngineRPMRatio) || (!neg && Variable2 > EngineRPMRatio))
-                    Variable2 = EngineRPMRatio;
+                // We must avoid Variable2 to run outside of [0, 1] range, even temporarily (because of multithreading)
+                Variable2 = EngineRPMRatio < Variable2 ?
+                    Math.Max(Math.Max(Variable2 - elapsedClockSeconds * PercentChangePerSec, EngineRPMRatio), 0) :
+                    Math.Min(Math.Min(Variable2 + elapsedClockSeconds * PercentChangePerSec, EngineRPMRatio), 1);
             }
-            // Gearbased or not?
-            if (GearBox == null) Variable1 = EngineRPMRatio; // Not gearbased, Variable1 similar to Variable2
-            else Variable1 = ThrottlePercent / 100.0f ; // Gearbased, Variable1 proportional to ThrottlePercent
-            // else Variable1 = MotiveForceN / MaxForceN; // Gearbased, Variable1 proportional to motive force
-            // allows for motor volume proportional to effort.
 
             EngineRPM = Variable2 * (MaxRPM - IdleRPM) + IdleRPM;
+
+            if (DynamicBrakePercent > 0)
+            {
+                if (MaxDynamicBrakeForceN == 0)
+                    Variable3 = DynamicBrakePercent / 100f;
+                else
+                    Variable3 = Math.Abs(MotiveForceN) / MaxDynamicBrakeForceN;
+            }
+            else
+                Variable3 = 0;
 
             if (elapsedClockSeconds > 0.0f)
             {

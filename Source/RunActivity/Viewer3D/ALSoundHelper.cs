@@ -642,7 +642,7 @@ namespace ORTS
         }
 
         public float SampleRate { get; private set; }
-        public bool isPlaying { get; private set; }
+        public bool isPlaying { get; private set; } // Its purpose is to predict the playing state rather than copy the one in OpenAL
 
         /// <summary>
         /// Updates Items state and Queue
@@ -712,12 +712,12 @@ namespace ORTS
                                             SoundQueue[QueueTail % QUEUELENGHT].LeaveItemPlay(SoundSourceID);
                                             Start(); // Restart if buffers had been exhausted because of large update time
                                             NeedsFrequentUpdate = false; // Queued the last chunk, get rest
+                                            isPlaying = false;
                                             int state;
                                             OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_SOURCE_STATE, out state);
                                             if (state != OpenAL.AL_PLAYING)
                                             {
                                                 SoundQueue[QueueTail % QUEUELENGHT].PlayState = PlayState.NOP;
-                                                isPlaying = false;
                                             }
                                         }
 
@@ -733,6 +733,7 @@ namespace ORTS
                                             SoundQueue[QueueTail % QUEUELENGHT].PlayMode = SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayMode;
                                             SoundQueue[(QueueTail + 1) % QUEUELENGHT].PlayState = PlayState.NOP;
                                             LeaveLoop();
+                                            isPlaying = false;
                                         }
                                         else if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode == PlayMode.Loop)
                                         {
@@ -746,11 +747,13 @@ namespace ORTS
                                             if (SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isMine(bufferID))
                                             {
                                                 EnterLoop();
+                                                isPlaying = true;
                                                 NeedsFrequentUpdate = false; // Start unattended looping by OpenAL
                                             }
                                             else
                                             {
                                                 LeaveLoop(); // Just in case. Wait one more cycle for our buffer,
+                                                isPlaying = false;
                                                 NeedsFrequentUpdate = true; // and watch carefully
                                             }
                                         }
@@ -777,11 +780,18 @@ namespace ORTS
                             if (SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.Release
                                 && SoundQueue[QueueTail % QUEUELENGHT].PlayMode != PlayMode.ReleaseWithJump)
                             {
-                                SoundQueue[QueueTail % QUEUELENGHT].InitItemPlay(SoundSourceID);
-                                SampleRate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.Frequency;
+                                int bufferID;
+                                OpenAL.alGetSourcei(SoundSourceID, OpenAL.AL_BUFFER, out bufferID);
+                                // Wait with initialization of a similar sound piece to the previous one, while that is still in queue.
+                                // Otherwise we might end up with queueing the same buffers hundred times.
+                                if (!isPlaying || !SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.isMine(bufferID))
+                                {
+                                    SoundQueue[QueueTail % QUEUELENGHT].InitItemPlay(SoundSourceID);
+                                    SampleRate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.Frequency;
 
-                                Start();
-                                NeedsFrequentUpdate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.IsReleasedWithJump;
+                                    Start();
+                                    NeedsFrequentUpdate = SoundQueue[QueueTail % QUEUELENGHT].SoundPiece.IsReleasedWithJump;
+                                }
                             }
                             // Otherwise mark as done
                             else
@@ -891,6 +901,11 @@ namespace ORTS
                                     if (Mode == PlayMode.Release || Mode == PlayMode.ReleaseWithJump)
                                     {
                                         prevMode = PlayMode.OneShot;
+                                    }
+                                    // If we want to play a new loop, release the previous one
+                                    else if (Mode == PlayMode.Loop)
+                                    {
+                                        prevMode = PlayMode.Release;
                                     }
                                     break;
                                 }

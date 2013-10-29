@@ -69,7 +69,7 @@ namespace ORTS.Debugging
         void UITimer_Tick(object sender, EventArgs e)
         {
             Visible = Viewer.SoundDebugFormEnabled;
-            if (!Visible || Program.Simulator.GameTime - lastUpdateTime < 1) return;
+            if (!Visible || Program.Simulator.GameTime - lastUpdateTime < 0.1) return;
             lastUpdateTime = Program.Simulator.GameTime;
 
             UpdateContent();
