@@ -2719,7 +2719,7 @@ namespace ORTS.MultiPlayer
 			int i = 0;
 			foreach (var t in signals)
 			{
-				t.Value.state = (SignalHead.SIGASP)(signalsStates[2 * i] - 1); //we added 1 when build the message, need to subtract it out
+				t.Value.state = (SignalHead.MstsSignalAspect)(signalsStates[2 * i] - 1); //we added 1 when build the message, need to subtract it out
 				t.Value.draw_state = (int)(signalsStates[2 * i + 1] - 1);
 				//t.Value.draw_state = t.Value.def_draw_state(t.Value.state);
 				//System.Console.Write(msgx[i]-48);
@@ -3092,26 +3092,26 @@ namespace ORTS.MultiPlayer
             switch (pick)
             {
                 case 0:
-                    signal.holdState = SignalObject.HOLDSTATE.NONE;
+                    signal.holdState = SignalObject.HoldState.None;
                     break;
                 case 1:
-                    signal.holdState = SignalObject.HOLDSTATE.MANUAL_LOCK;
+                    signal.holdState = SignalObject.HoldState.ManualLock;
                     break;
                 case 2:
-                    signal.holdState = SignalObject.HOLDSTATE.MANUAL_APPROACH;
+                    signal.holdState = SignalObject.HoldState.ManualApproach;
                     foreach (var sigHead in signal.SignalHeads)
                     {
-                        var drawstate1 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_1);
-                        var drawstate2 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_2);
-                        var drawstate3 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_3);
-                        if (drawstate1 > 0) { sigHead.state = SignalHead.SIGASP.APPROACH_1; }
-                        else if (drawstate2 > 0) { sigHead.state = SignalHead.SIGASP.APPROACH_2; }
-                        else { sigHead.state = SignalHead.SIGASP.APPROACH_3; }
+                        var drawstate1 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_1);
+                        var drawstate2 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_2);
+                        var drawstate3 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_3);
+                        if (drawstate1 > 0) { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_1; }
+                        else if (drawstate2 > 0) { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_2; }
+                        else { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_3; }
                         sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
                     }
                     break;
                 case 3:
-                    signal.holdState = SignalObject.HOLDSTATE.MANUAL_PASS;
+                    signal.holdState = SignalObject.HoldState.ManualPass;
                     foreach (var sigHead in signal.SignalHeads)
                     {
                         sigHead.SetLeastRestrictiveAspect();

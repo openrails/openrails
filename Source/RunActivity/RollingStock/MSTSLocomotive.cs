@@ -2053,42 +2053,42 @@ namespace ORTS
                     {
                         switch (TrainControlSystem.CabSignalAspect)
                         {
-                            case SignalHead.SIGASP.STOP:
+                            case SignalHead.MstsSignalAspect.STOP:
                                 {
                                     data = 0;
                                     break;
                                 }
-                            case SignalHead.SIGASP.STOP_AND_PROCEED:
+                            case SignalHead.MstsSignalAspect.STOP_AND_PROCEED:
                                 {
                                     data = 1;
                                     break;
                                 }
-                            case SignalHead.SIGASP.RESTRICTING:
+                            case SignalHead.MstsSignalAspect.RESTRICTING:
                                 {
                                     data = 2;
                                     break;
                                 }
-                            case SignalHead.SIGASP.APPROACH_1:
+                            case SignalHead.MstsSignalAspect.APPROACH_1:
                                 {
                                     data = 3;
                                     break;
                                 }
-                            case SignalHead.SIGASP.APPROACH_2:
+                            case SignalHead.MstsSignalAspect.APPROACH_2:
                                 {
                                     data = 4;
                                     break;
                                 }
-                            case SignalHead.SIGASP.APPROACH_3:
+                            case SignalHead.MstsSignalAspect.APPROACH_3:
                                 {
                                     data = 5;
                                     break;
                                 }
-                            case SignalHead.SIGASP.CLEAR_1:
+                            case SignalHead.MstsSignalAspect.CLEAR_1:
 								{
 									data = 6;
 									break;
 								}
-							case SignalHead.SIGASP.CLEAR_2:
+							case SignalHead.MstsSignalAspect.CLEAR_2:
                                 {
                                     data = 7;
                                     break;

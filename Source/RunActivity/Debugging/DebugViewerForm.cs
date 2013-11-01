@@ -2014,15 +2014,15 @@ namespace ORTS.Debugging
 #endif
 				  break;
 			  case 2:
-                  signal.holdState = SignalObject.HOLDSTATE.MANUAL_APPROACH;
+                  signal.holdState = SignalObject.HoldState.ManualApproach;
                   foreach (var sigHead in signal.SignalHeads)
                   {
-                      var drawstate1 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_1);
-                      var drawstate2 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_2);
-                      var drawstate3 = sigHead.def_draw_state(SignalHead.SIGASP.APPROACH_3);
-                      if (drawstate1 > 0) { sigHead.state = SignalHead.SIGASP.APPROACH_1; }
-                      else if (drawstate2 > 0) { sigHead.state = SignalHead.SIGASP.APPROACH_2; }
-                      else { sigHead.state = SignalHead.SIGASP.APPROACH_3; }
+                      var drawstate1 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_1);
+                      var drawstate2 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_2);
+                      var drawstate3 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_3);
+                      if (drawstate1 > 0) { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_1; }
+                      else if (drawstate2 > 0) { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_2; }
+                      else { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_3; }
                       sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
                   }
 
@@ -2044,7 +2044,7 @@ namespace ORTS.Debugging
 #endif
 				  break;
 			  case 3:
-                  signal.holdState = SignalObject.HOLDSTATE.MANUAL_PASS;
+                  signal.holdState = SignalObject.HoldState.ManualPass;
                   foreach (var sigHead in signal.SignalHeads)
                   {
                       sigHead.SetLeastRestrictiveAspect();
@@ -2218,13 +2218,13 @@ namespace ORTS.Debugging
 
 			   foreach (var head in Signal.SignalHeads)
 			   {
-				   if (head.state == SignalHead.SIGASP.CLEAR_1 ||
-					   head.state == SignalHead.SIGASP.CLEAR_2)
+				   if (head.state == SignalHead.MstsSignalAspect.CLEAR_1 ||
+					   head.state == SignalHead.MstsSignalAspect.CLEAR_2)
 				   {
 					   returnValue = 0;
 				   }
-				   if (head.state == SignalHead.SIGASP.APPROACH_1 ||
-					   head.state == SignalHead.SIGASP.APPROACH_2 || head.state == SignalHead.SIGASP.APPROACH_3)
+				   if (head.state == SignalHead.MstsSignalAspect.APPROACH_1 ||
+					   head.state == SignalHead.MstsSignalAspect.APPROACH_2 || head.state == SignalHead.MstsSignalAspect.APPROACH_3)
 				   {
 					   returnValue = 1;
 				   }

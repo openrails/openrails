@@ -1279,12 +1279,12 @@ namespace ORTS
         /// get aspect of next signal ahead
         /// </summary>
 
-        public SignalHead.SIGASP GetNextSignalAspect(int direction)
+        public SignalHead.MstsSignalAspect GetNextSignalAspect(int direction)
         {
-            SignalHead.SIGASP thisAspect = SignalHead.SIGASP.STOP;
+            SignalHead.MstsSignalAspect thisAspect = SignalHead.MstsSignalAspect.STOP;
             if (NextSignalObject[direction] != null)
             {
-                thisAspect = NextSignalObject[direction].this_sig_lr(SignalHead.SIGFN.NORMAL);
+                thisAspect = NextSignalObject[direction].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
             }
 
             return thisAspect;
@@ -1322,7 +1322,7 @@ namespace ORTS
                 if (speedpostList.Count > 0)
                 {
                     SignalObject thisSpeedpost = signalRef.SignalObjects[speedpostList[0]];
-                    ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalHead.SIGFN.SPEED);
+                    ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalHead.MstsSignalFunction.SPEED);
 
                     AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, IsFreight ? speed_info.speed_freight : speed_info.speed_pass);
                 }
@@ -1345,7 +1345,7 @@ namespace ORTS
                     if (speedpostList.Count > 0)
                     {
                         SignalObject thisSpeedpost = signalRef.SignalObjects[speedpostList[0]];
-                        ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalHead.SIGFN.SPEED);
+                        ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(SignalHead.MstsSignalFunction.SPEED);
                         float distanceFromFront = Length - thisSpeedpost.DistanceTo(RearTDBTraveller);
                         if (distanceFromFront >= 0)
                         {
@@ -1389,22 +1389,22 @@ namespace ORTS
 
             //  get first item from train (irrespective of distance)
 
-            ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.NONE_FOUND;
+            ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.None;
             float distanceToLastObject = 9E29f;  // set to overlarge value
-            SignalHead.SIGASP nextAspect = SignalHead.SIGASP.UNKNOWN;
+            SignalHead.MstsSignalAspect nextAspect = SignalHead.MstsSignalAspect.UNKNOWN;
 
             ObjectItemInfo firstObject = signalRef.GetNextObject_InRoute(routedForward, ValidRoute[0],
                 PresentPosition[0].RouteListIndex, PresentPosition[0].TCOffset, -1,
-                ObjectItemInfo.ObjectItemType.ANY);
+                ObjectItemInfo.ObjectItemType.Any);
 
             returnState = firstObject.ObjectState;
-            if (returnState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+            if (returnState == ObjectItemInfo.ObjectItemFindState.Object)
             {
                 firstObject.distance_to_train = firstObject.distance_found;
                 SignalObjectItems.Add(firstObject);
                 if (firstObject.ObjectDetails.isSignal)
                 {
-                    nextAspect = firstObject.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                    nextAspect = firstObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                 }
                 distanceToLastObject = firstObject.distance_found;
             }
@@ -1422,9 +1422,9 @@ namespace ORTS
             float offset = PresentPosition[0].TCOffset;
             int nextIndex = routeListIndex;
 
-            while (returnState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND &&
+            while (returnState == ObjectItemInfo.ObjectItemFindState.Object &&
                 distanceToLastObject < maxDistance &&
-                nextAspect != SignalHead.SIGASP.STOP)
+                nextAspect != SignalHead.MstsSignalAspect.STOP)
             {
                 int foundSection = -1;
 
@@ -1453,15 +1453,15 @@ namespace ORTS
                 }
 
                 nextObject = signalRef.GetNextObject_InRoute(routedForward, ValidRoute[0],
-                nextIndex, offset, -1, ObjectItemInfo.ObjectItemType.ANY);
+                nextIndex, offset, -1, ObjectItemInfo.ObjectItemType.Any);
 
                 returnState = nextObject.ObjectState;
 
-                if (returnState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+                if (returnState == ObjectItemInfo.ObjectItemFindState.Object)
                 {
                     if (nextObject.ObjectDetails.isSignal)
                     {
-                        nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                        nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                         nextAspect = nextObject.signal_state;
 
                     }
@@ -1487,7 +1487,7 @@ namespace ORTS
                 if (!signalFound)
                 {
                     ObjectItemInfo thisObject = SignalObjectItems[isig];
-                    if (thisObject.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+                    if (thisObject.ObjectType == ObjectItemInfo.ObjectItemType.Signal)
                     {
                         signalFound = true;
                         IndexNextSignal = isig;
@@ -1497,7 +1497,7 @@ namespace ORTS
                 if (!speedlimFound)
                 {
                     ObjectItemInfo thisObject = SignalObjectItems[isig];
-                    if (thisObject.ObjectType == ObjectItemInfo.ObjectItemType.SPEEDLIMIT)
+                    if (thisObject.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit)
                     {
                         speedlimFound = true;
                         IndexNextSpeedlimit = isig;
@@ -1520,9 +1520,9 @@ namespace ORTS
             {
                 ObjectItemInfo firstSignalObject = signalRef.GetNextObject_InRoute(routedForward, ValidRoute[0],
                     PresentPosition[0].RouteListIndex, PresentPosition[0].TCOffset, -1,
-                    ObjectItemInfo.ObjectItemType.SIGNAL);
+                    ObjectItemInfo.ObjectItemType.Signal);
 
-                if (firstSignalObject.ObjectState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+                if (firstSignalObject.ObjectState == ObjectItemInfo.ObjectItemFindState.Object)
                 {
                     NextSignalObject[0] = firstSignalObject.ObjectDetails;
                     firstSignalObject.distance_to_train = firstSignalObject.distance_found;
@@ -1546,7 +1546,7 @@ namespace ORTS
         {
             // for AUTO mode, use direction 0 only
 
-            ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND;
+            ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.Object;
 
             bool listChanged = false;
             bool signalFound = false;
@@ -1647,10 +1647,10 @@ namespace ORTS
                     while (!noMoreNewSignals)
                     {
                         ObjectItemInfo newObjectItem = signalRef.GetNextObject_InRoute(routedForward, ValidRoute[0],
-                           thisIndex, offset, -1, ObjectItemInfo.ObjectItemType.SIGNAL);
+                           thisIndex, offset, -1, ObjectItemInfo.ObjectItemType.Signal);
 
                         returnState = newObjectItem.ObjectState;
-                        if (returnState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+                        if (returnState == ObjectItemInfo.ObjectItemFindState.Object)
                         {
                             newSignalIndex = newObjectItem.ObjectDetails.thisRef;
 
@@ -1693,10 +1693,10 @@ namespace ORTS
             {
                 firstObject = signalRef.GetNextObject_InRoute(routedForward, ValidRoute[0],
                       PresentPosition[0].RouteListIndex, PresentPosition[0].TCOffset, -1,
-                      ObjectItemInfo.ObjectItemType.ANY);
+                      ObjectItemInfo.ObjectItemType.Any);
 
                 returnState = firstObject.ObjectState;
-                if (returnState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+                if (returnState == ObjectItemInfo.ObjectItemFindState.Object)
                 {
                     firstObject.distance_to_train = firstObject.distance_found;
                     SignalObjectItems.Add(firstObject);
@@ -1705,7 +1705,7 @@ namespace ORTS
 
             // reset next signal object if none found
 
-            if (SignalObjectItems.Count <= 0 || (SignalObjectItems.Count == 1 && SignalObjectItems[0].ObjectType == ObjectItemInfo.ObjectItemType.SPEEDLIMIT))
+            if (SignalObjectItems.Count <= 0 || (SignalObjectItems.Count == 1 && SignalObjectItems[0].ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit))
             {
                 NextSignalObject[0] = null;
                 distanceToSignal = 0;
@@ -1724,8 +1724,8 @@ namespace ORTS
 
                 if (firstObject.ObjectDetails.isSignal)
                 {
-                    firstObject.signal_state = firstObject.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL);
-                    ObjectSpeedInfo thisSpeed = firstObject.ObjectDetails.this_sig_speed(SignalHead.SIGFN.NORMAL);
+                    firstObject.signal_state = firstObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                    ObjectSpeedInfo thisSpeed = firstObject.ObjectDetails.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
                     firstObject.speed_passenger = thisSpeed == null ? -1 : thisSpeed.speed_pass;
                     firstObject.speed_freight = thisSpeed == null ? -1 : thisSpeed.speed_freight;
                     firstObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
@@ -1747,13 +1747,13 @@ namespace ORTS
 
                     if (nextObject.ObjectDetails.isSignal)
                     {
-                        nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                        nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                         if (nextObject.ObjectDetails.enabledTrain != null && nextObject.ObjectDetails.enabledTrain.Train != this)
-                            nextObject.signal_state = SignalHead.SIGASP.STOP; // state not valid if not enabled for this train
-                        ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.SIGFN.NORMAL);
-                        nextObject.speed_passenger = thisSpeed == null || nextObject.signal_state == SignalHead.SIGASP.STOP ? -1 : thisSpeed.speed_pass;
-                        nextObject.speed_freight = thisSpeed == null || nextObject.signal_state == SignalHead.SIGASP.STOP ? -1 : thisSpeed.speed_freight;
-                        nextObject.speed_flag = thisSpeed == null || nextObject.signal_state == SignalHead.SIGASP.STOP ? 0 : thisSpeed.speed_flag;
+                            nextObject.signal_state = SignalHead.MstsSignalAspect.STOP; // state not valid if not enabled for this train
+                        ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
+                        nextObject.speed_passenger = thisSpeed == null || nextObject.signal_state == SignalHead.MstsSignalAspect.STOP ? -1 : thisSpeed.speed_pass;
+                        nextObject.speed_freight = thisSpeed == null || nextObject.signal_state == SignalHead.MstsSignalAspect.STOP ? -1 : thisSpeed.speed_freight;
+                        nextObject.speed_flag = thisSpeed == null || nextObject.signal_state == SignalHead.MstsSignalAspect.STOP ? 0 : thisSpeed.speed_flag;
                     }
 
                     prevObject = nextObject;
@@ -1764,12 +1764,12 @@ namespace ORTS
                 // If so, no check on list is required
                 //
 
-                SignalHead.SIGASP nextAspect = SignalHead.SIGASP.UNKNOWN;
+                SignalHead.MstsSignalAspect nextAspect = SignalHead.MstsSignalAspect.UNKNOWN;
 
                 for (int isig = SignalObjectItems.Count - 1; isig >= 0 && !signalFound; isig--)
                 {
                     ObjectItemInfo nextObject = SignalObjectItems[isig];
-                    if (nextObject.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+                    if (nextObject.ObjectType == ObjectItemInfo.ObjectItemType.Signal)
                     {
                         signalFound = true;
                         nextAspect = nextObject.signal_state;
@@ -1789,8 +1789,8 @@ namespace ORTS
                 prevObject = SignalObjectItems[SignalObjectItems.Count - 1];  // last object
 
                 while (lastDistance < maxDistance &&
-                          returnState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND &&
-                          nextAspect != SignalHead.SIGASP.STOP)
+                          returnState == ObjectItemInfo.ObjectItemFindState.Object &&
+                          nextAspect != SignalHead.MstsSignalAspect.STOP)
                 {
 
                     SignalObject prevSignal = prevObject.ObjectDetails;
@@ -1811,11 +1811,11 @@ namespace ORTS
                     }
 
                     ObjectItemInfo nextObject = signalRef.GetNextObject_InRoute(routedForward, ValidRoute[0],
-                         lastIndex, offset, -1, ObjectItemInfo.ObjectItemType.ANY);
+                         lastIndex, offset, -1, ObjectItemInfo.ObjectItemType.Any);
 
                     returnState = nextObject.ObjectState;
 
-                    if (returnState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+                    if (returnState == ObjectItemInfo.ObjectItemFindState.Object)
                     {
                         nextObject.distance_to_object = nextObject.distance_found;
                         nextObject.distance_to_train = prevObject.distance_to_train + nextObject.distance_to_object;
@@ -1825,9 +1825,9 @@ namespace ORTS
 
                         if (nextObject.ObjectDetails.isSignal)
                         {
-                            nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                            nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                             nextAspect = nextObject.signal_state;
-                            ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.SIGFN.NORMAL);
+                            ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
                             nextObject.speed_passenger = thisSpeed == null ? -1 : thisSpeed.speed_pass;
                             nextObject.speed_freight = thisSpeed == null ? -1 : thisSpeed.speed_freight;
                             nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
@@ -1866,12 +1866,12 @@ namespace ORTS
                     for (int isig = 0; isig < SignalObjectItems.Count && (!signalFound || !speedlimFound); isig++)
                     {
                         ObjectItemInfo nextObject = SignalObjectItems[isig];
-                        if (!signalFound && nextObject.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+                        if (!signalFound && nextObject.ObjectType == ObjectItemInfo.ObjectItemType.Signal)
                         {
                             signalFound = true;
                             IndexNextSignal = isig;
                         }
-                        else if (!speedlimFound && nextObject.ObjectType == ObjectItemInfo.ObjectItemType.SPEEDLIMIT)
+                        else if (!speedlimFound && nextObject.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit)
                         {
                             speedlimFound = true;
                             IndexNextSpeedlimit = isig;
@@ -1888,9 +1888,9 @@ namespace ORTS
                 {
                     ObjectItemInfo firstSignalObject = signalRef.GetNextObject_InRoute(routedForward, ValidRoute[0],
                             PresentPosition[0].RouteListIndex, PresentPosition[0].TCOffset, -1,
-                            ObjectItemInfo.ObjectItemType.SIGNAL);
+                            ObjectItemInfo.ObjectItemType.Signal);
 
-                    if (firstSignalObject.ObjectState == ObjectItemInfo.ObjectItemFindState.OBJECT_FOUND)
+                    if (firstSignalObject.ObjectState == ObjectItemInfo.ObjectItemFindState.Object)
                     {
                         NextSignalObject[0] = firstSignalObject.ObjectDetails;
                         firstSignalObject.distance_to_train = firstSignalObject.distance_found;
@@ -2788,8 +2788,7 @@ namespace ORTS
 
             if (ValidRoute[0] == null)
             {
-                ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset,
-                            PresentPosition[1].TCDirection, trainLength, false, true, true);
+				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, trainLength, true, true);
             }
 
             // find sections
@@ -2914,8 +2913,7 @@ namespace ORTS
 
             if (ValidRoute[0] == null)
             {
-                ValidRoute[0] = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
-                        PresentPosition[1].TCDirection, Length, false, true, true);
+				ValidRoute[0] = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
             }
 
             // get index of first section in route
@@ -3189,7 +3187,7 @@ namespace ORTS
                     // check if train really went passed signal in correct direction
                     if (ValidRoute[direction].SignalIsAheadOfTrain(NextSignalObject[direction], trainPreviousPos)) // train was in front on last check, so we did pass
                     {
-                        SignalHead.SIGASP signalState = GetNextSignalAspect(direction);
+                        SignalHead.MstsSignalAspect signalState = GetNextSignalAspect(direction);
                         passedSignalIndex = NextSignalObject[direction].thisRef;
 
 #if DEBUG_REPORTS
@@ -3212,7 +3210,7 @@ namespace ORTS
                             File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
                         }
 
-                        if (signalState == SignalHead.SIGASP.STOP && NextSignalObject[direction].hasPermission == SignalObject.PERMISSION.DENIED)
+                        if (signalState == SignalHead.MstsSignalAspect.STOP && NextSignalObject[direction].hasPermission == SignalObject.Permission.Denied)
                         {
                             Trace.TraceWarning("Train {0} passing signal {1} at {2} at danger at {3}",
                                Number.ToString(), NextSignalObject[direction].thisRef.ToString(),
@@ -3221,7 +3219,7 @@ namespace ORTS
                             break;
                         }
 
-                        else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[direction].sigfound[(int)SignalHead.SIGFN.NORMAL] < 0) // no next signal
+                        else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[direction].sigfound[(int)SignalHead.MstsSignalFunction.NORMAL] < 0) // no next signal
                         {
                             SwitchToNodeControl(LastReservedSection[direction]);
 #if DEBUG_REPORTS
@@ -3235,7 +3233,7 @@ namespace ORTS
                             }
                             break;
                         }
-                        else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[direction].block_state() != SignalObject.BLOCKSTATE.CLEAR) // route to next signal not clear
+                        else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[direction].block_state() != SignalObject.MstsBlockState.CLEAR) // route to next signal not clear
                         {
                             SwitchToNodeControl(LastReservedSection[direction]);
 #if DEBUG_REPORTS
@@ -3252,7 +3250,7 @@ namespace ORTS
                     }
 
                     // get next signal
-                    int nextSignalIndex = NextSignalObject[direction].sigfound[(int)SignalHead.SIGFN.NORMAL];
+                    int nextSignalIndex = NextSignalObject[direction].sigfound[(int)SignalHead.MstsSignalFunction.NORMAL];
                     if (nextSignalIndex >= 0)
                     {
                         NextSignalObject[direction] = signalRef.SignalObjects[nextSignalIndex];
@@ -3347,7 +3345,7 @@ namespace ORTS
                     TrackCircuitSection rearSection = signalRef.TrackCircuitList[RearSignalObject.TCNextTC];
                     if (!TCSubpathRoute.IsAheadOfTrain(rearSection, 0.0f, overlapPosition))
                     {
-                        if (RearSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.STOP)
+                        if (RearSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == SignalHead.MstsSignalAspect.STOP)
                         {
                             SetTrainOutOfControl(OUTOFCONTROL.SPAD_REAR);
                             outOfControl = true;
@@ -3403,7 +3401,7 @@ namespace ORTS
                                 {
                                     clearPath += nextSection.Length;
                                     thisSection = nextSection;
-                                    if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                                    if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                                     {
                                         SetTrainOutOfControl(OUTOFCONTROL.SLIPPED_TO_ENDOFTRACK);
                                         outOfControl = true;
@@ -3533,7 +3531,7 @@ namespace ORTS
                     for (int iIndex = PresentPosition[0].RouteListIndex + 1; iIndex < ValidRoute[0].Count && !junctionFound; iIndex++)
                     {
                         thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
-                        junctionFound = thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION;
+                        junctionFound = thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
                         lengthToGo += thisSection.Length;
                     }
 
@@ -3549,7 +3547,7 @@ namespace ORTS
             {
                 // if last entry in route is END_OF_TRACK, check against previous entry as this can never be the trains position nor a signal reference section
                 int lastValidRouteIndex = ValidRoute[0].Count - 1;
-                if (signalRef.TrackCircuitList[ValidRoute[0][lastValidRouteIndex].TCSectionIndex].CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                if (signalRef.TrackCircuitList[ValidRoute[0][lastValidRouteIndex].TCSectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                     lastValidRouteIndex--;
                 
                 // if end of train on last section in route - end of route reached
@@ -3602,7 +3600,7 @@ namespace ORTS
                             distanceToNextSignal = length + Length; // distance is total length plus train length (must be re-compensated)
                         }
 
-                        if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION || thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                         {
                             intermediateJunction = true;
                             distanceToNextJunction = 0f;
@@ -3613,8 +3611,8 @@ namespace ORTS
                             thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
                             length += thisSection.Length;
 
-                            if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
-                                thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                            if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
+                                thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                             {
                                 intermediateJunction = true;
                                 distanceToNextJunction = distanceToNextJunction < 0 ? length : distanceToNextJunction;
@@ -3651,8 +3649,8 @@ namespace ORTS
                             TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
                             int direction = ValidRoute[0][iIndex].Direction;
 
-                            if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
-                                thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                            if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
+                                thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                             {
                                 intermediateJunction = true;
                             }
@@ -3763,7 +3761,7 @@ namespace ORTS
                             {
                                 int thisSectionIndex = nextRoute[iIndex].TCSectionIndex;
                                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
-                                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                                 {
                                     junctionFound = true;
                                     if (thisSection.CircuitState.ThisTrainOccupying(this))
@@ -3902,8 +3900,7 @@ namespace ORTS
 
                 if (rearIndex < 0) // end of train not on new route
                 {
-                    TCSubpathRoute tempRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
-                        PresentPosition[1].TCDirection, Length, false, false, true);
+					TCSubpathRoute tempRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
                     for (int iIndex = 0; iIndex < tempRoute.Count; iIndex++)
                     {
@@ -3987,8 +3984,8 @@ namespace ORTS
                 SignalObject signalObject = signalRef.SignalObjects[signalObjectIndex];
 
                 //the following is added by JTang, passing a hold signal, will take back control by the system
-                if (signalObject.holdState == SignalObject.HOLDSTATE.MANUAL_PASS ||
-                    signalObject.holdState == SignalObject.HOLDSTATE.MANUAL_APPROACH) signalObject.holdState = SignalObject.HOLDSTATE.NONE;
+                if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
+                    signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
 
                 signalObject.resetSignalEnabled();
             }
@@ -4021,7 +4018,7 @@ namespace ORTS
             if (signalObjectIndex >= 0)
             {
                 SignalObject thisSignal = signalRef.SignalObjects[signalObjectIndex];
-                int nextSignalIndex = thisSignal.sigfound[(int)SignalHead.SIGFN.NORMAL];
+                int nextSignalIndex = thisSignal.sigfound[(int)SignalHead.MstsSignalFunction.NORMAL];
                 if (nextSignalIndex >= 0)
                 {
                     SignalObject nextSignal = signalRef.SignalObjects[nextSignalIndex];
@@ -4033,7 +4030,7 @@ namespace ORTS
 
             else if (SpeedMpS < Math.Abs(0.1) &&
              NextSignalObject[0] != null &&
-             GetNextSignalAspect(0) == SignalHead.SIGASP.STOP &&
+             GetNextSignalAspect(0) == SignalHead.MstsSignalAspect.STOP &&
                      CheckTrainWaitingForSignal(NextSignalObject[0], 0))
             {
                 bool hasClaimed = ClaimState;
@@ -4226,11 +4223,11 @@ namespace ORTS
 
             // signal is in holding list - so not really waiting - but remove from list if held for station stop
 
-            if (thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_LOCK)
+            if (thisSignal.holdState == SignalObject.HoldState.ManualLock)
             {
                 return (false);
             }
-            else if (thisSignal.holdState == SignalObject.HOLDSTATE.STATION_STOP)
+            else if (thisSignal.holdState == SignalObject.HoldState.StationStop)
             {
                 HoldingSignals.Remove(thisSignal.thisRef);
                 return (false);
@@ -4293,8 +4290,7 @@ namespace ORTS
         {
             // occupation is set in forward mode only
             // build route from rear to front - before reset occupy so correct switch alignment is used
-            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
-                            PresentPosition[1].TCDirection, Length, false, false, true);
+			TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
             // save present occupation list
 
@@ -4404,10 +4400,10 @@ namespace ORTS
             if (signalObjectIndex >= 0)
             {
                 SignalObject thisSignal = signalRef.SignalObjects[signalObjectIndex];
-                thisSignal.hasPermission = SignalObject.PERMISSION.DENIED;
+                thisSignal.hasPermission = SignalObject.Permission.Denied;
                 //the following is added by JTang, passing a hold signal, will take back control by the system
-                if (thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_PASS ||
-                    thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_APPROACH) thisSignal.holdState = SignalObject.HOLDSTATE.NONE;
+                if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
+                    thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
 
                 thisSignal.resetSignalEnabled();
             }
@@ -4536,10 +4532,10 @@ namespace ORTS
                 if (thisSection.EndSignals[reqDirection] != null)
                 {
                     SignalObject endSignal = thisSection.EndSignals[reqDirection];
-                    SignalHead.SIGASP thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.SIGFN.NORMAL);
+                    SignalHead.MstsSignalAspect thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                     hasEndSignal = true;
 
-                    if (thisAspect == SignalHead.SIGASP.STOP && endSignal.hasPermission != SignalObject.PERMISSION.GRANTED)
+                    if (thisAspect == SignalHead.MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
                     {
                         endWithSignal = true;
                         sectionWithSignalIndex = iindex;
@@ -4585,7 +4581,7 @@ namespace ORTS
                 MisalignedSwitch[1] = -1;
 
                 TrackCircuitSection nextSection = nextSectionIndex >= 0 ? signalRef.TrackCircuitList[nextSectionIndex] : null;
-                if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                 {
                     if (nextSection.Pins[0, 0].Link != lastSectionIndex &&
                         nextSection.Pins[1, nextSection.JunctionLastRoute].Link != lastSectionIndex)
@@ -4727,15 +4723,15 @@ namespace ORTS
 
                         // check for end authority if not ended with signal
                         // last section is end of track
-                        if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                         {
                             endAuthority = END_AUTHORITY.END_OF_TRACK;
                             endAuthorityDistanceM = totalLengthM;
                         }
 
                         // first non-available section is switch or crossover
-                        else if (nextSection != null && (nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
-                                     nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER))
+                        else if (nextSection != null && (nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
+                                     nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover))
                         {
                             endAuthority = END_AUTHORITY.RESERVED_SWITCH;
                             endAuthorityDistanceM = totalLengthM;
@@ -4861,8 +4857,8 @@ namespace ORTS
 
             requestedSignal.enabledTrain = routeIndex == 0 ? routedForward : routedBackward;
             requestedSignal.signalRoute.Clear();
-            requestedSignal.holdState = SignalObject.HOLDSTATE.NONE;
-            requestedSignal.hasPermission = SignalObject.PERMISSION.REQUESTED;
+            requestedSignal.holdState = SignalObject.HoldState.None;
+            requestedSignal.hasPermission = SignalObject.Permission.Requested;
 
             // get route from next signal - extend to next signal or maximum length
 
@@ -4937,7 +4933,7 @@ namespace ORTS
             for (int iindex = 0; iindex < ValidRoute[routeDirectionIndex].Count && reqSwitch == null; iindex++)
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[routeDirectionIndex][iindex].TCSectionIndex];
-                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                 {
                     reqSwitch = thisSection;
                 }
@@ -4952,11 +4948,11 @@ namespace ORTS
                 int curDirection = thisElement.Direction;
                 int nextSectionIndex = thisElement.TCSectionIndex;
 
-                bool validRoute = lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL;
+                bool validRoute = lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Normal;
 
                 while (reqSwitch == null && validRoute)
                 {
-                    if (lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                    if (lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                     {
                         int outPinIndex = curDirection == 0 ? 1 : 0;
                         if (lastSection.Pins[curDirection, 0].Link == nextSectionIndex)
@@ -4977,11 +4973,11 @@ namespace ORTS
                         lastSection = signalRef.TrackCircuitList[nextSectionIndex];
                     }
 
-                    if (lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                    if (lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                     {
                         reqSwitch = lastSection;
                     }
-                    else if (lastSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                    else if (lastSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
                     {
                         validRoute = false;
                     }
@@ -5172,7 +5168,7 @@ namespace ORTS
             if (foundSpeedLimit.Count > 0)
             {
                 SignalObject speedLimit = signalRef.SignalObjects[Math.Abs(foundSpeedLimit[0])];
-                ObjectSpeedInfo thisSpeedInfo = speedLimit.this_lim_speed(SignalHead.SIGFN.SPEED);
+                ObjectSpeedInfo thisSpeedInfo = speedLimit.this_lim_speed(SignalHead.MstsSignalFunction.SPEED);
                 float thisSpeedMpS = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
 
                 if (thisSpeedMpS > 0)
@@ -5262,7 +5258,7 @@ namespace ORTS
                     }
                     else
                     {
-                        ObjectSpeedInfo thisSpeedInfo = thisObject.this_lim_speed(SignalHead.SIGFN.SPEED);
+                        ObjectSpeedInfo thisSpeedInfo = thisObject.this_lim_speed(SignalHead.MstsSignalFunction.SPEED);
                         float thisSpeedMpS = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
 
                         if (thisSpeedMpS > 0)
@@ -5292,7 +5288,7 @@ namespace ORTS
             if (passedSignalIndex >= 0)
             {
                 SignalObject passedSignal = signalRef.SignalObjects[passedSignalIndex];
-                ObjectSpeedInfo thisSpeedInfo = passedSignal.this_sig_speed(SignalHead.SIGFN.NORMAL);
+                ObjectSpeedInfo thisSpeedInfo = passedSignal.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
 
                 if (thisSpeedInfo != null)
                 {
@@ -5318,8 +5314,7 @@ namespace ORTS
         {
             // occupation is set in forward mode only
             // build route from rear to front - before reset occupy so correct switch alignment is used
-            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
-                            PresentPosition[1].TCDirection, Length, false, false, true);
+			TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
             // save present occupation list
 
@@ -5425,10 +5420,10 @@ namespace ORTS
             if (signalObjectIndex >= 0)
             {
                 SignalObject thisSignal = signalRef.SignalObjects[signalObjectIndex];
-                thisSignal.hasPermission = SignalObject.PERMISSION.DENIED;
+                thisSignal.hasPermission = SignalObject.Permission.Denied;
                 //the following is added by JTang, passing a hold signal, will take back control by the system
-                if (thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_PASS ||
-                    thisSignal.holdState == SignalObject.HOLDSTATE.MANUAL_APPROACH) thisSignal.holdState = SignalObject.HOLDSTATE.NONE;
+                if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
+                    thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
 
                 thisSignal.resetSignalEnabled();
             }
@@ -5556,10 +5551,10 @@ namespace ORTS
                 if (thisSection.EndSignals[reqDirection] != null)
                 {
                     SignalObject endSignal = thisSection.EndSignals[reqDirection];
-                    SignalHead.SIGASP thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.SIGFN.NORMAL);
+                    SignalHead.MstsSignalAspect thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                     hasEndSignal = true;
 
-                    if (thisAspect == SignalHead.SIGASP.STOP && endSignal.hasPermission != SignalObject.PERMISSION.GRANTED)
+                    if (thisAspect == SignalHead.MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
                     {
                         endWithSignal = true;
                         sectionWithSignalIndex = iindex;
@@ -5600,7 +5595,7 @@ namespace ORTS
                 MisalignedSwitch[1] = -1;
 
                 TrackCircuitSection nextSection = nextSectionIndex >= 0 ? signalRef.TrackCircuitList[nextSectionIndex] : null;
-                if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                 {
                     if (nextSection.Pins[0, 0].Link != lastSectionIndex &&
                         nextSection.Pins[0, 1].Link != lastSectionIndex &&
@@ -5675,8 +5670,8 @@ namespace ORTS
 
                 SignalObject nextSignal = thisSection.EndSignals[thisElement.Direction];
                 if (nextSignal != null &&
-                    nextSignal.this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.STOP &&
-                    nextSignal.hasPermission != SignalObject.PERMISSION.GRANTED)
+                    nextSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == SignalHead.MstsSignalAspect.STOP &&
+                    nextSignal.hasPermission != SignalObject.Permission.Granted)
                 {
                     unclearedSignal = true;
                     signalIndex = iindex;
@@ -5765,15 +5760,15 @@ namespace ORTS
 
                         // check for end authority if not ended with signal
                         // last section is end of track
-                        if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                         {
                             endAuthority = END_AUTHORITY.END_OF_TRACK;
                             endAuthorityDistanceM = totalLengthM;
                         }
 
                         // first non-available section is switch or crossover
-                        else if (nextSection != null && (nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
-                                     nextSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER))
+                        else if (nextSection != null && (nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
+                                     nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover))
                         {
                             endAuthority = END_AUTHORITY.RESERVED_SWITCH;
                             endAuthorityDistanceM = totalLengthM;
@@ -5903,7 +5898,7 @@ namespace ORTS
                     if (thisSection.EndSignals[direction] != null)
                     {
                         reqSignal = thisSection.EndSignals[direction];
-                        signalFound = (reqSignal.this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.STOP);
+                        signalFound = (reqSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == SignalHead.MstsSignalAspect.STOP);
                     }
                 }
             }
@@ -5918,7 +5913,7 @@ namespace ORTS
 
             // signal at danger is found - set PERMISSION REQUESTED, and request clear signal
             // if signal has a route, set PERMISSION REQUESTED, and perform signal update
-            reqSignal.hasPermission = SignalObject.PERMISSION.REQUESTED;
+            reqSignal.hasPermission = SignalObject.Permission.Requested;
 
             TCPosition tempPos = new TCPosition();
 
@@ -5935,7 +5930,7 @@ namespace ORTS
             TCSubpathRoute newRouteR = CheckExplorerPath(routeIndex, tempPos, ValidRoute[routeIndex], true, ref EndAuthorityType[routeIndex],
                 ref DistanceToEndNodeAuthorityM[routeIndex]);
             ValidRoute[routeIndex] = newRouteR;
-            Simulator.SoundNotify = reqSignal.hasPermission == SignalObject.PERMISSION.GRANTED ?
+            Simulator.SoundNotify = reqSignal.hasPermission == SignalObject.Permission.Granted ?
                 Event.PermissionGranted :
                 Event.PermissionDenied;
         }
@@ -5957,7 +5952,7 @@ namespace ORTS
             for (int iindex = 0; iindex < ValidRoute[routeDirectionIndex].Count && reqSwitch == null; iindex++)
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[routeDirectionIndex][iindex].TCSectionIndex];
-                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                 {
                     reqSwitch = thisSection;
                 }
@@ -5972,11 +5967,11 @@ namespace ORTS
                 int curDirection = thisElement.Direction;
                 int nextSectionIndex = thisElement.TCSectionIndex;
 
-                bool validRoute = lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL;
+                bool validRoute = lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Normal;
 
                 while (reqSwitch == null && validRoute)
                 {
-                    if (lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                    if (lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                     {
                         int outPinIndex = curDirection == 0 ? 1 : 0;
                         if (lastSection.Pins[curDirection, 0].Link == nextSectionIndex)
@@ -5997,11 +5992,11 @@ namespace ORTS
                         lastSection = signalRef.TrackCircuitList[nextSectionIndex];
                     }
 
-                    if (lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                    if (lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                     {
                         reqSwitch = lastSection;
                     }
-                    else if (lastSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                    else if (lastSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
                     {
                         validRoute = false;
                     }
@@ -6480,8 +6475,7 @@ namespace ORTS
             if (rearIndex < 0)
             {
 
-                TCSubpathRoute tempRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
-                            PresentPosition[1].TCDirection, Length, false, true, true);
+				TCSubpathRoute tempRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
 
                 for (int iindex = tempRoute.Count - 1; iindex >= 0; iindex--)
                 {
@@ -6568,7 +6562,7 @@ namespace ORTS
 
                 else if (NextSignalObject[0] != null)
                 {
-                    NextSignalObject[0].hasPermission = SignalObject.PERMISSION.REQUESTED;
+                    NextSignalObject[0].hasPermission = SignalObject.Permission.Requested;
                 }
             }
         }
@@ -7015,8 +7009,7 @@ namespace ORTS
 
             OccupiedTrack.Clear();
             if (TrainRoute != null) TrainRoute.Clear();
-            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
-                PresentPosition[1].TCDirection, Length, false, false, true);
+			TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
             foreach (TCRouteElement thisElement in TrainRoute)
             {
@@ -7029,8 +7022,8 @@ namespace ORTS
             foreach (TrackCircuitSection thisSection in OccupiedTrack)
             {
                 float distanceToClear = DistanceTravelledM + thisSection.Length + standardOverlapM;
-                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION ||
-                    thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction ||
+                    thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                 {
                     distanceToClear += Length + junctionOverlapM;
                 }
@@ -7187,8 +7180,7 @@ namespace ORTS
             // build route of sections now occupied
             OccupiedTrack.Clear();
             if (TrainRoute != null) TrainRoute.Clear();
-            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
-                PresentPosition[1].TCDirection, Length, false, false, true);
+			TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
             foreach (TCRouteElement thisElement in TrainRoute)
             {
@@ -7229,8 +7221,7 @@ namespace ORTS
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
                 offset = PresentPosition[1].TCOffset;
 
-                ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset,
-                            PresentPosition[1].TCDirection, Length, false, true, true);
+				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
 
             }
 
@@ -7348,7 +7339,7 @@ namespace ORTS
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisSectionIndex];
                         int thisSectionDirection = thisElement.Direction;
 
-                        if (thisSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                        if (thisSection.CircuitType != TrackCircuitSection.TrackCircuitType.Crossover)
                         {
                             if (otherRouteDict.ContainsKey(thisSectionIndex))
                             {
@@ -7460,7 +7451,7 @@ namespace ORTS
 
             // if section is not a junction, check if either route not ended, if so continue up to next junction
             TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastSectionIndex];
-            if (lastSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+            if (lastSection.CircuitType != TrackCircuitSection.TrackCircuitType.Junction)
             {
                 bool endSectionFound = false;
                 if (thisTrainIndex < (thisRoute.Count - 1))
@@ -7468,7 +7459,7 @@ namespace ORTS
                     for (int iIndex = thisTrainIndex + 1; iIndex < thisRoute.Count - 1 && !endSectionFound; iIndex++)
                     {
                         lastSection = signalRef.TrackCircuitList[thisRoute[iIndex].TCSectionIndex];
-                        endSectionFound = lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION;
+                        endSectionFound = lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
                     }
                 }
 
@@ -7477,7 +7468,7 @@ namespace ORTS
                     for (int iIndex = otherTrainIndex - 1; iIndex >= 0 && !endSectionFound; iIndex--)
                     {
                         lastSection = signalRef.TrackCircuitList[otherRoute[iIndex].TCSectionIndex];
-                        endSectionFound = lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION;
+                        endSectionFound = lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
                         if (lastSection.IsSet(otherTrain))
                         {
                             allreadyActive = true;
@@ -7999,7 +7990,7 @@ namespace ORTS
 
                 // check if next section is junction
 
-                else if (nextSection == null || nextSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                else if (nextSection == null || nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
                 {
                     endSectionFound = true;
                 }
@@ -8018,7 +8009,7 @@ namespace ORTS
                         lastIndex = nextIndex;
                         endSignalIndex = nextSection.EndSignals[direction].thisRef;
                     }
-                    else if (nextSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                    else if (nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
                     {
                         endSectionFound = true;
                         lastIndex = nextIndex - 1;
@@ -8280,13 +8271,13 @@ namespace ORTS
 
                 if (NextSignalObject[1] != null)
                 {
-                    SignalHead.SIGASP nextAspect = GetNextSignalAspect(1);
-                    if (NextSignalObject[1].enabledTrain == null || NextSignalObject[1].enabledTrain.Train != this) nextAspect = SignalHead.SIGASP.STOP;  // aspect only valid if signal enabled for this train
+                    SignalHead.MstsSignalAspect nextAspect = GetNextSignalAspect(1);
+                    if (NextSignalObject[1].enabledTrain == null || NextSignalObject[1].enabledTrain.Train != this) nextAspect = SignalHead.MstsSignalAspect.STOP;  // aspect only valid if signal enabled for this train
 
                     switch (nextAspect)
                     {
-                        case SignalHead.SIGASP.STOP:
-                            if (NextSignalObject[1].hasPermission == SignalObject.PERMISSION.GRANTED)
+                        case SignalHead.MstsSignalAspect.STOP:
+                            if (NextSignalObject[1].hasPermission == SignalObject.Permission.Granted)
                             {
                                 firstchar = "G";
                             }
@@ -8295,25 +8286,25 @@ namespace ORTS
                                 firstchar = "S";
                             }
                             break;
-                        case SignalHead.SIGASP.STOP_AND_PROCEED:
+                        case SignalHead.MstsSignalAspect.STOP_AND_PROCEED:
                             firstchar = "P";
                             break;
-                        case SignalHead.SIGASP.RESTRICTING:
+                        case SignalHead.MstsSignalAspect.RESTRICTING:
                             firstchar = "R";
                             break;
-                        case SignalHead.SIGASP.APPROACH_1:
+                        case SignalHead.MstsSignalAspect.APPROACH_1:
                             firstchar = "A";
                             break;
-                        case SignalHead.SIGASP.APPROACH_2:
+                        case SignalHead.MstsSignalAspect.APPROACH_2:
                             firstchar = "A";
                             break;
-                        case SignalHead.SIGASP.APPROACH_3:
+                        case SignalHead.MstsSignalAspect.APPROACH_3:
                             firstchar = "A";
                             break;
-                        case SignalHead.SIGASP.CLEAR_1:
+                        case SignalHead.MstsSignalAspect.CLEAR_1:
                             firstchar = "C";
                             break;
-                        case SignalHead.SIGASP.CLEAR_2:
+                        case SignalHead.MstsSignalAspect.CLEAR_2:
                             firstchar = "C";
                             break;
                     }
@@ -8324,13 +8315,13 @@ namespace ORTS
 
                 if (NextSignalObject[0] != null)
                 {
-                    SignalHead.SIGASP nextAspect = GetNextSignalAspect(0);
-                    if (NextSignalObject[0].enabledTrain == null || NextSignalObject[0].enabledTrain.Train != this) nextAspect = SignalHead.SIGASP.STOP;  // aspect only valid if signal enabled for this train
+                    SignalHead.MstsSignalAspect nextAspect = GetNextSignalAspect(0);
+                    if (NextSignalObject[0].enabledTrain == null || NextSignalObject[0].enabledTrain.Train != this) nextAspect = SignalHead.MstsSignalAspect.STOP;  // aspect only valid if signal enabled for this train
 
                     switch (nextAspect)
                     {
-                        case SignalHead.SIGASP.STOP:
-                            if (NextSignalObject[0].hasPermission == SignalObject.PERMISSION.GRANTED)
+                        case SignalHead.MstsSignalAspect.STOP:
+                            if (NextSignalObject[0].hasPermission == SignalObject.Permission.Granted)
                             {
                                 lastchar = "G";
                             }
@@ -8339,25 +8330,25 @@ namespace ORTS
                                 lastchar = "S";
                             }
                             break;
-                        case SignalHead.SIGASP.STOP_AND_PROCEED:
+                        case SignalHead.MstsSignalAspect.STOP_AND_PROCEED:
                             lastchar = "P";
                             break;
-                        case SignalHead.SIGASP.RESTRICTING:
+                        case SignalHead.MstsSignalAspect.RESTRICTING:
                             lastchar = "R";
                             break;
-                        case SignalHead.SIGASP.APPROACH_1:
+                        case SignalHead.MstsSignalAspect.APPROACH_1:
                             lastchar = "A";
                             break;
-                        case SignalHead.SIGASP.APPROACH_2:
+                        case SignalHead.MstsSignalAspect.APPROACH_2:
                             lastchar = "A";
                             break;
-                        case SignalHead.SIGASP.APPROACH_3:
+                        case SignalHead.MstsSignalAspect.APPROACH_3:
                             lastchar = "A";
                             break;
-                        case SignalHead.SIGASP.CLEAR_1:
+                        case SignalHead.MstsSignalAspect.CLEAR_1:
                             lastchar = "C";
                             break;
-                        case SignalHead.SIGASP.CLEAR_2:
+                        case SignalHead.MstsSignalAspect.CLEAR_2:
                             lastchar = "C";
                             break;
                     }
@@ -8371,32 +8362,32 @@ namespace ORTS
             {
                 if (NextSignalObject[0] != null)
                 {
-                    SignalHead.SIGASP nextAspect = GetNextSignalAspect(0);
+                    SignalHead.MstsSignalAspect nextAspect = GetNextSignalAspect(0);
 
                     switch (nextAspect)
                     {
-                        case SignalHead.SIGASP.STOP:
+                        case SignalHead.MstsSignalAspect.STOP:
                             statusString[iColumn] = "STOP";
                             break;
-                        case SignalHead.SIGASP.STOP_AND_PROCEED:
+                        case SignalHead.MstsSignalAspect.STOP_AND_PROCEED:
                             statusString[iColumn] = "SPRC";
                             break;
-                        case SignalHead.SIGASP.RESTRICTING:
+                        case SignalHead.MstsSignalAspect.RESTRICTING:
                             statusString[iColumn] = "REST";
                             break;
-                        case SignalHead.SIGASP.APPROACH_1:
+                        case SignalHead.MstsSignalAspect.APPROACH_1:
                             statusString[iColumn] = "APP1";
                             break;
-                        case SignalHead.SIGASP.APPROACH_2:
+                        case SignalHead.MstsSignalAspect.APPROACH_2:
                             statusString[iColumn] = "APP2";
                             break;
-                        case SignalHead.SIGASP.APPROACH_3:
+                        case SignalHead.MstsSignalAspect.APPROACH_3:
                             statusString[iColumn] = "APP3";
                             break;
-                        case SignalHead.SIGASP.CLEAR_1:
+                        case SignalHead.MstsSignalAspect.CLEAR_1:
                             statusString[iColumn] = "CLR1";
                             break;
-                        case SignalHead.SIGASP.CLEAR_2:
+                        case SignalHead.MstsSignalAspect.CLEAR_2:
                             statusString[iColumn] = "CLR2";
                             break;
                     }
@@ -8511,13 +8502,13 @@ namespace ORTS
 
             switch (thisSection.CircuitType)
             {
-                case TrackCircuitSection.CIRCUITTYPE.JUNCTION:
+                case TrackCircuitSection.TrackCircuitType.Junction:
                     returnString = String.Concat(returnString, ">");
                     break;
-                case TrackCircuitSection.CIRCUITTYPE.CROSSOVER:
+                case TrackCircuitSection.TrackCircuitType.Crossover:
                     returnString = String.Concat(returnString, "+");
                     break;
-                case TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK:
+                case TrackCircuitSection.TrackCircuitType.EndOfTrack:
                     returnString = direction == 0 ? String.Concat(returnString, "]") : String.Concat(returnString, "[");
                     break;
                 default:
@@ -8666,10 +8657,10 @@ namespace ORTS
             bool signalProcessed = false;
             foreach (ObjectItemInfo thisItem in SignalObjectItems)
             {
-                if (thisItem.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+                if (thisItem.ObjectType == ObjectItemInfo.ObjectItemType.Signal)
                 {
                     TrackMonitorSignalAspect signalAspect =
-                        thisItem.ObjectDetails.TranslateTMAspect(thisItem.ObjectDetails.this_sig_lr(SignalHead.SIGFN.NORMAL));
+                        thisItem.ObjectDetails.TranslateTMAspect(thisItem.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
                     if (thisItem.ObjectDetails.enabledTrain == null || thisItem.ObjectDetails.enabledTrain.Train != this)
                     {
                         signalAspect = TrackMonitorSignalAspect.Stop;
@@ -8684,7 +8675,7 @@ namespace ORTS
                     thisInfo.ObjectInfoForward.Add(nextItem);
                     signalProcessed = true;
                 }
-                else if (thisItem.ObjectType == ObjectItemInfo.ObjectItemType.SPEEDLIMIT && thisItem.actual_speed > 0)
+                else if (thisItem.ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit && thisItem.actual_speed > 0)
                 {
                     TrainObjectItem nextItem = new TrainObjectItem(thisItem.actual_speed, thisItem.distance_to_train);
                     thisInfo.ObjectInfoForward.Add(nextItem);
@@ -8694,8 +8685,8 @@ namespace ORTS
             if (!signalProcessed && NextSignalObject[0] != null && NextSignalObject[0].enabledTrain != null && NextSignalObject[0].enabledTrain.Train == this)
             {
                 TrackMonitorSignalAspect signalAspect =
-                    NextSignalObject[0].TranslateTMAspect(NextSignalObject[0].this_sig_lr(SignalHead.SIGFN.NORMAL));
-                ObjectSpeedInfo thisSpeedInfo = NextSignalObject[0].this_sig_speed(SignalHead.SIGFN.NORMAL);
+                    NextSignalObject[0].TranslateTMAspect(NextSignalObject[0].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
+                ObjectSpeedInfo thisSpeedInfo = NextSignalObject[0].this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
                 float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
                 TrainObjectItem nextItem = new TrainObjectItem(signalAspect, validSpeed, distanceToSignal);
@@ -8721,7 +8712,7 @@ namespace ORTS
             {
                 if (RearSignalObject != null)
                 {
-                    TrackMonitorSignalAspect signalAspect = RearSignalObject.TranslateTMAspect(RearSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL));
+                    TrackMonitorSignalAspect signalAspect = RearSignalObject.TranslateTMAspect(RearSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
                     TrainObjectItem nextItem = new TrainObjectItem(signalAspect, -1.0f, ClearanceAtRearM);
                     thisInfo.ObjectInfoBackward.Add(nextItem);
                 }
@@ -8790,10 +8781,10 @@ namespace ORTS
                     {
                         distanceToTrainM = sectionStart + thisSection.Length;
                         SignalObject thisSignal = thisSection.EndSignals[sectionDirection];
-                        ObjectSpeedInfo thisSpeedInfo = thisSignal.this_sig_speed(SignalHead.SIGFN.NORMAL);
+                        ObjectSpeedInfo thisSpeedInfo = thisSignal.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
                         float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
-                        TrackMonitorSignalAspect signalAspect = thisSignal.TranslateTMAspect(thisSignal.this_sig_lr(SignalHead.SIGFN.NORMAL));
+                        TrackMonitorSignalAspect signalAspect = thisSignal.TranslateTMAspect(thisSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
                         thisItem = new TrainObjectItem(signalAspect, validSpeed, distanceToTrainM);
                         thisInfo.ObjectInfoForward.Add(thisItem);
                     }
@@ -8803,7 +8794,7 @@ namespace ORTS
                         foreach (ORTS.TrackCircuitSignalItem thisSpeeditem in thisSection.CircuitItems.TrackCircuitSpeedPosts[sectionDirection].TrackCircuitItem)
                         {
                             SignalObject thisSpeedpost = thisSpeeditem.SignalRef;
-                            ObjectSpeedInfo thisSpeedInfo = thisSpeedpost.this_sig_speed(SignalHead.SIGFN.SPEED);
+                            ObjectSpeedInfo thisSpeedInfo = thisSpeedpost.this_sig_speed(SignalHead.MstsSignalFunction.SPEED);
                             float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;
@@ -8844,10 +8835,10 @@ namespace ORTS
                     {
                         distanceToTrainM = sectionStart + thisSection.Length;
                         SignalObject thisSignal = thisSection.EndSignals[sectionDirection];
-                        ObjectSpeedInfo thisSpeedInfo = thisSignal.this_sig_speed(SignalHead.SIGFN.NORMAL);
+                        ObjectSpeedInfo thisSpeedInfo = thisSignal.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
                         float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
-                        TrackMonitorSignalAspect signalAspect = thisSignal.TranslateTMAspect(thisSignal.this_sig_lr(SignalHead.SIGFN.NORMAL));
+                        TrackMonitorSignalAspect signalAspect = thisSignal.TranslateTMAspect(thisSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
                         thisItem = new TrainObjectItem(signalAspect, validSpeed, distanceToTrainM);
                         thisInfo.ObjectInfoBackward.Add(thisItem);
                     }
@@ -8857,7 +8848,7 @@ namespace ORTS
                         foreach (ORTS.TrackCircuitSignalItem thisSpeeditem in thisSection.CircuitItems.TrackCircuitSpeedPosts[sectionDirection].TrackCircuitItem)
                         {
                             SignalObject thisSpeedpost = thisSpeeditem.SignalRef;
-                            ObjectSpeedInfo thisSpeedInfo = thisSpeedpost.this_sig_speed(SignalHead.SIGFN.SPEED);
+                            ObjectSpeedInfo thisSpeedInfo = thisSpeedpost.this_sig_speed(SignalHead.MstsSignalFunction.SPEED);
                             float validSpeed = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
 
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;
@@ -8957,7 +8948,7 @@ namespace ORTS
 
                 // process Junction
 
-                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                 {
                     if (thisSection.Pins[0, 0].Link == nextSectionIndex)
                     {
@@ -9428,13 +9419,13 @@ namespace ORTS
                 int lastDirection = lastElement.Direction;
 
                 List<TCRouteElement> addedElements = new List<TCRouteElement>();
-                if (lastEndSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                if (lastEndSection.CircuitType != TrackCircuitSection.TrackCircuitType.EndOfTrack)
                 {
                     int thisDirection = lastDirection;
                     lastDirection = lastEndSection.Pins[thisDirection, 0].Direction;
                     lastEndSection = orgSignals.TrackCircuitList[lastEndSection.Pins[thisDirection, 0].Link];
 
-                    while (lastEndSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                    while (lastEndSection.CircuitType == TrackCircuitSection.TrackCircuitType.Normal)
                     {
                         addedElements.Add(new TCRouteElement(lastEndSection.Index, lastDirection));
                         thisDirection = lastDirection;
@@ -9442,7 +9433,7 @@ namespace ORTS
                         lastEndSection = orgSignals.TrackCircuitList[lastEndSection.Pins[thisDirection, 0].Link];
                     }
 
-                    if (lastEndSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                    if (lastEndSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                     {
                         foreach (TCRouteElement addedElement in addedElements)
                         {
@@ -9475,11 +9466,11 @@ namespace ORTS
                         for (int iSection = revSubPath.Count - 1; iSection > 0 && withinOffset; iSection--)
                         {
                             TrackCircuitSection thisSection = orgSignals.TrackCircuitList[revSubPath[iSection].TCSectionIndex];
-                            if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                            if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                             {
                                 withinOffset = false;    // always end on junction (next node)
                             }
-                            else if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                            else if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                             {
                                 removeSections.Add(iSection);        // always remove crossover if last section was removed
                                 lastSectionIndex = iSection - 1;
@@ -9500,11 +9491,11 @@ namespace ORTS
                         for (int iSection = revSubPath.Count - 1; iSection > 0 && withinOffset; iSection--)
                         {
                             TrackCircuitSection thisSection = orgSignals.TrackCircuitList[revSubPath[iSection].TCSectionIndex];
-                            if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.JUNCTION)
+                            if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                             {
                                 withinOffset = false;     // always end on junction (next node)
                             }
-                            else if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                            else if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                             {
                                 removeSections.Add(iSection);        // always remove crossover if last section was removed
                                 lastSectionIndex = iSection - 1;
@@ -9626,7 +9617,7 @@ namespace ORTS
                         }
                     }
 
-                    if (lastSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.END_OF_TRACK)
+                    if (lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                     {
 
                         // first length of added sections
@@ -9638,7 +9629,7 @@ namespace ORTS
                         {
                             TrackCircuitSection thisSection = orgSignals.TrackCircuitList[Math.Abs(addSections[iSection])];
                             totalLength += thisSection.Length;
-                            if (thisSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                            if (thisSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
                             {
                                 juncfound = true;
                             }
@@ -9660,7 +9651,7 @@ namespace ORTS
                             {
                                 sigIndex = iSection;
                             }
-                            else if (thisSection.CircuitType != TrackCircuitSection.CIRCUITTYPE.NORMAL)
+                            else if (thisSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
                             {
                                 juncfound = true;
                             }
@@ -10183,7 +10174,7 @@ namespace ORTS
                 OutPin[1] = 0;           // always 0 for NORMAL sections, updated for JUNCTION sections
 
                 TrackCircuitSection thisSection = mySignals.TrackCircuitList[TCSectionIndex];
-                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                 {
                     int outPinLink = direction;
                     int nextIndex = thisNode.TCCrossReference[TCIndex + 1].CrossRefIndex;
@@ -10207,7 +10198,7 @@ namespace ORTS
                 OutPin[0] = direction;
                 OutPin[1] = 0;           // always 0 for NORMAL sections, updated for JUNCTION sections
 
-                if (thisSection.CircuitType == TrackCircuitSection.CIRCUITTYPE.CROSSOVER)
+                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                 {
                     int inPinLink = direction == 0 ? 1 : 0;
                     OutPin[1] = (thisSection.Pins[inPinLink, 0].Link == lastSectionIndex) ? 0 : 1;

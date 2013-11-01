@@ -1677,8 +1677,8 @@ namespace ORTS
                         string partString = TermString.Substring(6);
                         try
                         {
-                            SignalObject.BLOCKSTATE Blockstate =
-                                    (SignalObject.BLOCKSTATE)Enum.Parse(typeof(SignalObject.BLOCKSTATE), partString, true);
+                            SignalObject.MstsBlockState Blockstate =
+                                    (SignalObject.MstsBlockState)Enum.Parse(typeof(SignalObject.MstsBlockState), partString, true);
                             TermParts = new SCRParameterType(SCRTermType.Block, (int)Blockstate);
                         }
                         catch (Exception Ex)
@@ -1703,8 +1703,8 @@ namespace ORTS
                         string partString = TermString.Substring(7);
                         try
                         {
-                            SignalHead.SIGASP Aspect =
-                                    (SignalHead.SIGASP)Enum.Parse(typeof(SignalHead.SIGASP), partString, true);
+                            SignalHead.MstsSignalAspect Aspect =
+                                    (SignalHead.MstsSignalAspect)Enum.Parse(typeof(SignalHead.MstsSignalAspect), partString, true);
                             TermParts = new SCRParameterType(SCRTermType.Sigasp, (int)Aspect);
                         }
                         catch (Exception Ex)
@@ -1728,8 +1728,8 @@ namespace ORTS
                         string partString = TermString.Substring(6);
                         try
                         {
-                            SignalHead.SIGFN Type =
-                                    (SignalHead.SIGFN)Enum.Parse(typeof(SignalHead.SIGFN), partString, true);
+                            SignalHead.MstsSignalFunction Type =
+                                    (SignalHead.MstsSignalFunction)Enum.Parse(typeof(SignalHead.MstsSignalFunction), partString, true);
                             TermParts = new SCRParameterType(SCRTermType.Sigfn, (int)Type);
                         }
                         catch (Exception Ex)
@@ -2843,7 +2843,7 @@ namespace ORTS
 
         public void SH_update_basic(SignalHead thisHead)
         {
-            if (thisHead.mainSignal.block_state() == SignalObject.BLOCKSTATE.CLEAR)
+            if (thisHead.mainSignal.block_state() == SignalObject.MstsBlockState.CLEAR)
             {
                 thisHead.SetLeastRestrictiveAspect();
             }
@@ -3021,7 +3021,7 @@ namespace ORTS
                     switch (FloatType)
                     {
                         case SCRExternalFloats.STATE:
-                            thisHead.state = (SignalHead.SIGASP)tempvalue;
+                            thisHead.state = (SignalHead.MstsSignalAspect)tempvalue;
                             break;
 
                         case SCRExternalFloats.DRAW_STATE:
@@ -3282,7 +3282,7 @@ namespace ORTS
                 // next_sig_lr
 
                 case (SCRExternalFunctions.NEXT_SIG_LR):
-                    return_value = (int)thisHead.next_sig_lr((SignalHead.SIGFN)parameter1_value);
+                    return_value = (int)thisHead.next_sig_lr((SignalHead.MstsSignalFunction)parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -3305,7 +3305,7 @@ namespace ORTS
                 // next_sig_mr
 
                 case (SCRExternalFunctions.NEXT_SIG_MR):
-                    return_value = (int)thisHead.next_sig_mr((SignalHead.SIGFN)parameter1_value);
+                    return_value = (int)thisHead.next_sig_mr((SignalHead.MstsSignalFunction)parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -3328,7 +3328,7 @@ namespace ORTS
                     
                 case (SCRExternalFunctions.THIS_SIG_LR):
                     bool sigfound_lr = false;
-                    SignalHead.SIGASP returnState_lr = thisHead.this_sig_lr((SignalHead.SIGFN)parameter1_value, ref sigfound_lr);
+                    SignalHead.MstsSignalAspect returnState_lr = thisHead.this_sig_lr((SignalHead.MstsSignalFunction)parameter1_value, ref sigfound_lr);
                     return_value = sigfound_lr ? (int)returnState_lr : -1;
                     break;
 
@@ -3336,14 +3336,14 @@ namespace ORTS
 
                 case (SCRExternalFunctions.THIS_SIG_MR):
                     bool sigfound_mr = false;
-                    SignalHead.SIGASP returnState_mr = thisHead.this_sig_mr((SignalHead.SIGFN)parameter1_value, ref sigfound_mr);
+                    SignalHead.MstsSignalAspect returnState_mr = thisHead.this_sig_mr((SignalHead.MstsSignalFunction)parameter1_value, ref sigfound_mr);
                     return_value = sigfound_mr ? (int)returnState_mr : -1;
                     break;
 
                 // opp_sig_lr
 
                 case (SCRExternalFunctions.OPP_SIG_LR):
-                    return_value = (int)thisHead.opp_sig_lr((SignalHead.SIGFN)parameter1_value);
+                    return_value = (int)thisHead.opp_sig_lr((SignalHead.MstsSignalFunction)parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -3369,7 +3369,7 @@ namespace ORTS
                 // opp_sig_mr
 
                 case (SCRExternalFunctions.OPP_SIG_MR):
-                    return_value = (int)thisHead.opp_sig_mr((SignalHead.SIGFN)parameter1_value);
+                    return_value = (int)thisHead.opp_sig_mr((SignalHead.MstsSignalFunction)parameter1_value);
                     break;
 
                 // dist_multi_sig_mr
@@ -3393,8 +3393,8 @@ namespace ORTS
 #endif
 
                     return_value = (int)thisHead.dist_multi_sig_mr(
-                            (SignalHead.SIGFN)parameter1_value,
-                            (SignalHead.SIGFN)parameter2_value,
+                            (SignalHead.MstsSignalFunction)parameter1_value,
+                            (SignalHead.MstsSignalFunction)parameter2_value,
                             dumpfile);
 
                     break;
@@ -3410,7 +3410,7 @@ namespace ORTS
                 // def_draw_state
 
                 case (SCRExternalFunctions.DEF_DRAW_STATE):
-                    return_value = thisHead.def_draw_state((SignalHead.SIGASP)parameter1_value);
+                    return_value = thisHead.def_draw_state((SignalHead.MstsSignalAspect)parameter1_value);
                     break;
 
                 // DEBUG routine : to be implemented later

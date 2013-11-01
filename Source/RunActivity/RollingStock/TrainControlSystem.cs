@@ -35,7 +35,7 @@ namespace ORTS
         public bool AlerterButtonPressed;
         public bool OverspeedWarning;
         public bool PenaltyApplication;
-        public SignalHead.SIGASP CabSignalAspect = SignalHead.SIGASP.UNKNOWN; // Shown on ASPECT_DISPLAY cabcontrol
+        public SignalHead.MstsSignalAspect CabSignalAspect = SignalHead.MstsSignalAspect.UNKNOWN; // Shown on ASPECT_DISPLAY cabcontrol
         public float CurrentSpeedLimitMpS; // Shown on SPEEDLIMIT cabcontrol
         public float NextSpeedLimitMpS; // Shown on SPEEDLIM_DISPLAY cabcontrol
 
@@ -170,23 +170,23 @@ namespace ORTS
                     && MSTSLocomotive.Train.NextSignalObject[0] != null)
                 {
                     nextSignalObject = MSTSLocomotive.Train.NextSignalObject[0];
-                    CabSignalAspect = nextSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                    CabSignalAspect = nextSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                 }
                 else if (MSTSLocomotive.Train.MUDirection == Direction.Reverse
                     && MSTSLocomotive.Train.NextSignalObject[1] != null)
                 {
                     nextSignalObject = MSTSLocomotive.Train.NextSignalObject[1];
-                    CabSignalAspect = nextSignalObject.this_sig_lr(SignalHead.SIGFN.NORMAL);
+                    CabSignalAspect = nextSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                 }
                 else
                 {
                     nextSignalObject = null;
-                    CabSignalAspect = SignalHead.SIGASP.UNKNOWN;
+                    CabSignalAspect = SignalHead.MstsSignalAspect.UNKNOWN;
                 }
 
                 if (nextSignalObject != null)
                 {
-                    SignalSpeed = nextSignalObject.this_sig_speed(SignalHead.SIGFN.NORMAL);
+                    SignalSpeed = nextSignalObject.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
                     if (SignalSpeed != null)
                         nextSpeedLimitMpS = MSTSLocomotive.Train.IsFreight ? SignalSpeed.speed_freight : SignalSpeed.speed_pass;
                 }

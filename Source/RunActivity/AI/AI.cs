@@ -83,7 +83,7 @@ namespace ORTS
                 for (double runTime = firstAITime; runTime < Simulator.ClockTime; runTime += 5.0) // update with 5 secs interval
                 {
                     AIUpdate((float)(runTime - clockTime), PreUpdate);
-                    Simulator.Signals.Update((float)(runTime - clockTime));
+					Simulator.Signals.Update();
                     clockTime = runTime;
                 }
 

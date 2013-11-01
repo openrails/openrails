@@ -236,7 +236,7 @@ namespace MSTS
 		public int NumClearAhead_ORTS;
 		public float SemaphoreInfo = -1; //[Rob Roeterdink] default -1 as 0 is active value
 
-	public SignalType(FnTypes reqType, ORTS.SignalHead.SIGASP reqAspect)
+	public SignalType(FnTypes reqType, ORTS.SignalHead.MstsSignalAspect reqAspect)
 	     /// <summary>
 	     /// constructor for dummy entries
 	     /// </summary>
@@ -377,7 +377,7 @@ namespace MSTS
 		/// <summary>
 		/// This method returns the default draw state for the specified aspect or -1 if none.
 		/// </summary>
-		public int def_draw_state(SignalHead.SIGASP state)
+		public int def_draw_state(SignalHead.MstsSignalAspect state)
 		{
 			for (int i = 0; i < Aspects.Count; i++)
 			{
@@ -392,50 +392,50 @@ namespace MSTS
         /// <summary>
 		/// This method returns the next least restrictive aspect from the one specified.
         /// </summary>
-        public SignalHead.SIGASP GetNextLeastRestrictiveState(SignalHead.SIGASP state)
+        public SignalHead.MstsSignalAspect GetNextLeastRestrictiveState(SignalHead.MstsSignalAspect state)
         {
-            SignalHead.SIGASP targetState = SignalHead.SIGASP.UNKNOWN;
-            SignalHead.SIGASP leastState = SignalHead.SIGASP.STOP;
+            SignalHead.MstsSignalAspect targetState = SignalHead.MstsSignalAspect.UNKNOWN;
+            SignalHead.MstsSignalAspect leastState = SignalHead.MstsSignalAspect.STOP;
 
             for (int i=0;i< Aspects.Count;i++)
             {
                 if (Aspects[i].Aspect > leastState) leastState = Aspects[i].Aspect;
                 if (Aspects[i].Aspect > state && Aspects[i].Aspect < targetState) targetState = Aspects[i].Aspect;
             }
-            if (targetState == SignalHead.SIGASP.UNKNOWN) return leastState; else return targetState;
+            if (targetState == SignalHead.MstsSignalAspect.UNKNOWN) return leastState; else return targetState;
         }
 
         /// <summary>
 		/// This method returns the most restrictive aspect for this signal type.
         /// </summary>
-        public SignalHead.SIGASP GetMostRestrictiveAspect()
+        public SignalHead.MstsSignalAspect GetMostRestrictiveAspect()
         {
-            SignalHead.SIGASP targetAspect = SignalHead.SIGASP.UNKNOWN;
+            SignalHead.MstsSignalAspect targetAspect = SignalHead.MstsSignalAspect.UNKNOWN;
             for (int i = 0; i < Aspects.Count; i++)
             {
                 if (Aspects[i].Aspect < targetAspect) targetAspect = Aspects[i].Aspect;
             }
-            if (targetAspect == SignalHead.SIGASP.UNKNOWN) return SignalHead.SIGASP.STOP; else return targetAspect;
+            if (targetAspect == SignalHead.MstsSignalAspect.UNKNOWN) return SignalHead.MstsSignalAspect.STOP; else return targetAspect;
         }
 
         /// <summary>
 		/// This method returns the least restrictive aspect for this signal type.
 		/// [Rob Roeterdink] added for basic signals without script
         /// </summary>
-        public SignalHead.SIGASP GetLeastRestrictiveAspect()
+        public SignalHead.MstsSignalAspect GetLeastRestrictiveAspect()
         {
-            SignalHead.SIGASP targetAspect = SignalHead.SIGASP.STOP;
+            SignalHead.MstsSignalAspect targetAspect = SignalHead.MstsSignalAspect.STOP;
             for (int i = 0; i < Aspects.Count; i++)
             {
                 if (Aspects[i].Aspect > targetAspect) targetAspect = Aspects[i].Aspect;
             }
-            if (targetAspect > SignalHead.SIGASP.CLEAR_2) return SignalHead.SIGASP.CLEAR_2; else return targetAspect;
+            if (targetAspect > SignalHead.MstsSignalAspect.CLEAR_2) return SignalHead.MstsSignalAspect.CLEAR_2; else return targetAspect;
         }
 
         /// <summary>
 		/// This method returns the lowest speed limit linked to the aspect
         /// </summary>
-        public float GetSpeedLimitMpS(SignalHead.SIGASP aspect)
+        public float GetSpeedLimitMpS(SignalHead.MstsSignalAspect aspect)
         {
             for (int i = 0; i < Aspects.Count; i++)
                 if (Aspects[i].Aspect == aspect)
@@ -560,12 +560,12 @@ namespace MSTS
 
 	public class SignalAspect
 	{
-		public readonly ORTS.SignalHead.SIGASP Aspect;
+		public readonly ORTS.SignalHead.MstsSignalAspect Aspect;
 		public readonly string DrawStateName;
 		public float SpeedMpS;  // Speed limit for this aspect. -1 if track speed is to be used
 		public bool Asap;  // Set to true if SignalFlags ASAP option specified
 
-	public SignalAspect(ORTS.SignalHead.SIGASP reqAspect, string reqName)
+	public SignalAspect(ORTS.SignalHead.MstsSignalAspect reqAspect, string reqName)
 	     /// <summary>
 	     /// constructor for dummy entries
 	     /// </summary>
@@ -583,12 +583,12 @@ namespace MSTS
             string aspectName = stf.ReadString();
             try
             {
-                Aspect = (ORTS.SignalHead.SIGASP)Enum.Parse(typeof(ORTS.SignalHead.SIGASP), aspectName, true);
+                Aspect = (ORTS.SignalHead.MstsSignalAspect)Enum.Parse(typeof(ORTS.SignalHead.MstsSignalAspect), aspectName, true);
             }
             catch (ArgumentException)
             {
                 STFException.TraceInformation(stf, "Skipped unknown signal aspect " + aspectName);
-                Aspect = SignalHead.SIGASP.UNKNOWN;
+                Aspect = SignalHead.MstsSignalAspect.UNKNOWN;
             }
             DrawStateName = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {

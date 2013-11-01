@@ -225,7 +225,7 @@ namespace ORTS
                                            GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
                                                GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
                                                Color.Green,
-                                           String.Format("Signal ({0})", signalObj.Signal.this_sig_lr(SignalHead.SIGFN.NORMAL)),
+                                           String.Format("Signal ({0})", signalObj.Signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL)),
                                            Owner.TextFontDefaultOutlined));
 #endif
                             }
@@ -301,16 +301,15 @@ namespace ORTS
                 int direction = (int)trackNode.Direction;
 
                 tn.TCCrossReference.GetTCPosition(offset, direction, ref thisPosition);
-                Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex,
-                    thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, true, false);
+				Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex, thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, false);
 
                 ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextObject_InRoute(null, tempRoute, 0,
-                    thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.SIGNAL, thisPosition);
+                    thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.Signal, thisPosition);
 
                 var signal = thisInfo.ObjectDetails;
                 if (signal == null)
                     break;
-                if (signal.this_sig_lr(SignalHead.SIGFN.NORMAL) == SignalHead.SIGASP.UNKNOWN)
+                if (signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == SignalHead.MstsSignalAspect.UNKNOWN)
                     break;
                 var signalDistance = thisInfo.distance_found;
 #endif
@@ -345,11 +344,11 @@ namespace ORTS
 #else
         static DebugWindowSignalAspect GetAspect(SignalObject signal)
         {
-            var aspect = signal.this_sig_lr(SignalHead.SIGFN.NORMAL);
+            var aspect = signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
 
-            if (aspect >= SignalHead.SIGASP.CLEAR_1)
+            if (aspect >= SignalHead.MstsSignalAspect.CLEAR_1)
                 return DebugWindowSignalAspect.Clear;
-            if (aspect >= SignalHead.SIGASP.STOP_AND_PROCEED)
+            if (aspect >= SignalHead.MstsSignalAspect.STOP_AND_PROCEED)
                 return DebugWindowSignalAspect.Warning;
             return DebugWindowSignalAspect.Stop;
         }
