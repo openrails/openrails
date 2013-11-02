@@ -579,7 +579,7 @@ namespace ORTS
 
 		protected override void SetUserValue(string name, int value)
 		{
-			NativeMethods.WritePrivateProfileString(SectionName, name, "int:" + value.ToString("R", CultureInfo.InvariantCulture), FilePath);
+			NativeMethods.WritePrivateProfileString(SectionName, name, "int:" + value.ToString(CultureInfo.InvariantCulture), FilePath);
 		}
 
 		protected override void SetUserValue(string name, bool value)
@@ -594,7 +594,7 @@ namespace ORTS
 
 		protected override void SetUserValue(string name, int[] value)
 		{
-			NativeMethods.WritePrivateProfileString(SectionName, name, "int[]:" + String.Join(",", ((int[])value).Select(v => v.ToString("R", CultureInfo.InvariantCulture)).ToArray()), FilePath);
+			NativeMethods.WritePrivateProfileString(SectionName, name, "int[]:" + String.Join(",", ((int[])value).Select(v => v.ToString(CultureInfo.InvariantCulture)).ToArray()), FilePath);
 		}
 	}
 
