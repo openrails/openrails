@@ -105,7 +105,7 @@ namespace ORTS
                 if( MatchesDefaults() )
                     InputSettings.Sources[(int)eCommand] = UserSettings.Source.Default;
                 else
-                    InputSettings.Sources[(int)eCommand] = UserSettings.Source.Registry;
+                    InputSettings.Sources[(int)eCommand] = UserSettings.Source.User;
                 RefreshColor();
             }
             else if ( result == DialogResult.Ignore)

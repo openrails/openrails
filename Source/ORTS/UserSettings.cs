@@ -18,9 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -50,20 +52,19 @@ namespace ORTS
     /// <para>Settings are saved into the registry, under a key provided to <c>UserSettings.UserSettings</c>.</para>
     /// <para>Command-line overriding of options is possible using the formats "-name=value" and "/name:value".</para>
     /// </remarks>
-    public class UserSettings
+    public abstract class UserSettings
     {
-        readonly string RegistryKey;
-        readonly Dictionary<string, object> CustomDefaultValues = new Dictionary<string, object>();
-        readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
+		public enum Source
+		{
+			Default,
+			CommandLine,
+			User, // FIXME: Not registry!
+		}
 
-        public enum Source
-        {
-            Default,
-            CommandLine,
-            Registry,
-        }
+		protected readonly Dictionary<string, object> CustomDefaultValues = new Dictionary<string, object>();
+		protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
 
-        #region User Settings
+		#region User Settings
 
         // Please put all user settings in here as auto-properties. Public properties
         // of type 'string', 'int', 'bool', 'string[]' and 'int[]' are automatically loaded/saved.
@@ -260,200 +261,349 @@ namespace ORTS
         
         #endregion
 
-        /// <summary>
-        /// Initializes a new instance of <c>UserSettings</c> with a given <paramref name="registryKey"/> and list of <paramref name="options"/> overrides.
-        /// </summary>
-        /// <param name="registryKey">Registry key under <c>HKEY_CURRENT_USER</c> to load and save the settings.</param>
-        /// <param name="options">List of all the setting overrides from the command-line.</param>
-        public UserSettings(string registryKey, IEnumerable<string> options)
+		protected UserSettings()
+		{
+			CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+			CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
+			CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
+		}
+
+		/// <summary>
+		/// Gets the default value of a specific setting.
+		/// </summary>
+		/// <param name="name">The name of the setting to fetch the default value of.</param>
+		/// <returns>The default value of the setting.</returns>
+		public object GetDefaultValue(string name)
+		{
+			var property = GetType().GetProperty(name);
+
+			if (CustomDefaultValues.ContainsKey(property.Name))
+				return CustomDefaultValues[property.Name];
+
+			if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
+				return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
+
+			throw new InvalidDataException(String.Format("UserSetting property {0} has no default value.", property.Name));
+		}
+
+		protected abstract object GetUserValue(string name);
+
+		protected abstract void SetUserValue(string name, string value);
+
+		protected abstract void SetUserValue(string name, int value);
+
+		protected abstract void SetUserValue(string name, bool value);
+
+		protected abstract void SetUserValue(string name, string[] value);
+
+		protected abstract void SetUserValue(string name, int[] value);
+
+		protected abstract void DeleteUserValue(string name);
+
+		/// <summary>
+		/// Writes out all settings, their current value, and where it was loaded from to the console.
+		/// </summary>
+		public void Log()
+		{
+			foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
+			{
+				var value = property.GetValue(this, null);
+				var source = Sources[property.Name];
+				if (property.PropertyType == typeof(string[]))
+					Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((string[])value).Select(v => v.ToString()).ToArray()), source == Source.CommandLine ? "(command-line)" : source == Source.User ? "(registry)" : "");
+				else if (property.PropertyType == typeof(int[]))
+					Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source == Source.CommandLine ? "(command-line)" : source == Source.User ? "(registry)" : "");
+				else
+					Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source == Source.CommandLine ? "(command-line)" : source == Source.User ? "(user set)" : "");
+			}
+		}
+
+		/// <summary>
+		/// Saves all peristent settings.
+		/// </summary>
+		public void Save()
+		{
+			foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy))
+				Save(property);
+		}
+
+		/// <summary>
+		/// Saves only a single persistent setting.
+		/// </summary>
+		/// <remarks>
+		/// Used, eg, by Popups.Window to save their location.
+		/// </remarks>
+		/// <param name="name">Name of the setting to save.</param>
+		public void Save(string name)
+		{
+			Save(GetType().GetProperty(name));
+		}
+
+		/// <summary>
+		/// Merges the settings from the defaults, the saved values, and the <paramref name="options"/> passed in.
+		/// </summary>
+		/// <param name="options">A list of options to override the default and saved values, specified in "name=value" or "name:value" format.</param>
+		protected void Load(IEnumerable<string> options)
+		{
+			// This special command-line option prevents the registry values from being used.
+			var allowUserSettings = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
+
+			// Pull apart the command-line options so we can find them by setting name.
+			var optionsDictionary = new Dictionary<string, string>();
+			foreach (var option in options)
+			{
+				var k = option.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant();
+				var v = option.Contains('=') || option.Contains(':') ? option.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes";
+				optionsDictionary[k] = v;
+			}
+
+			// All public instance properties are settings. Go through them all.
+			foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy))
+				Load(allowUserSettings, optionsDictionary, property);
+		}
+
+		void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary, PropertyInfo property)
+		{
+			// Get the default value.
+			var defValue = GetDefaultValue(property.Name);
+
+			// Read in the registry option, if it exists.
+			var userValue = allowUserSettings ? GetUserValue(property.Name) : null;
+
+			// Read in the command-line option, if it exists into optValue.
+			var propertyNameLower = property.Name.ToLowerInvariant();
+			var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
+
+			// Map registry option for boolean types so 1 is true; everything else is false.
+			if ((userValue != null) && (userValue is int) && (property.PropertyType == typeof(bool)))
+				userValue = (int)userValue == 1;
+
+			// Map registry option for int[] types.
+			else if ((userValue != null) && (userValue is string) && (property.PropertyType == typeof(int[])))
+				userValue = ((string)userValue).Split(',').Select(s => int.Parse(s)).ToArray();
+
+			// Parse command-line option for boolean types so true/yes/on/1 are all true; everything else is false.
+			if ((optValue != null) && (property.PropertyType == typeof(bool)))
+				optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
+
+			// Parse command-line option for int types.
+			else if ((optValue != null) && (property.PropertyType == typeof(int)))
+				optValue = int.Parse((string)optValue);
+
+			// Parse command-line option for string[] types.
+			else if ((optValue != null) && (property.PropertyType == typeof(string[])))
+				optValue = ((string)optValue).Split(',').Select(s => s.Trim()).ToArray();
+
+			// Parse command-line option for int[] types.
+			else if ((optValue != null) && (property.PropertyType == typeof(int[])))
+				optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
+
+			// We now have defValue, regValue, optValue containing the default, persisted and override values
+			// for the setting. regValue and optValue are null if they are not found/specified.
+			var value = optValue != null ? optValue : userValue != null ? userValue : defValue;
+			try
+			{
+				// int[] values must have the same number of items as default value.
+				if ((property.PropertyType == typeof(int[])) && (value != null) && ((int[])value).Length != ((int[])defValue).Length)
+					throw new ArgumentException();
+
+				property.SetValue(this, value, new object[0]);
+				Sources.Add(property.Name, value.Equals(defValue) ? Source.Default : optValue != null ? Source.CommandLine : userValue != null ? Source.User : Source.Default);
+			}
+			catch (ArgumentException)
+			{
+				Trace.TraceWarning("Unable to load {0} value from type {1}", property.Name, value.GetType().FullName);
+				value = defValue;
+				Sources.Add(property.Name, Source.Default);
+			}
+		}
+
+		void Save(PropertyInfo property)
+		{
+			if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length > 0)
+				return;
+
+			object defValue = null;
+			if (CustomDefaultValues.ContainsKey(property.Name))
+				defValue = CustomDefaultValues[property.Name];
+			else if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
+				defValue = (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
+			else
+				throw new InvalidDataException(String.Format("UserSetting property {0} has no default value.", property.Name));
+
+			var value = property.GetValue(this, null);
+
+			if (defValue.Equals(value)
+				|| (property.PropertyType == typeof(string[]) && String.Join(",", (string[])defValue) == String.Join(",", (string[])value))
+				|| (property.PropertyType == typeof(int[]) && String.Join(",", ((int[])defValue).Select(v => v.ToString()).ToArray()) == String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray())))
+			{
+				DeleteUserValue(property.Name);
+			}
+			else if (property.PropertyType == typeof(string))
+			{
+				SetUserValue(property.Name, (string)value);
+			}
+			else if (property.PropertyType == typeof(int))
+			{
+				SetUserValue(property.Name, (int)value);
+			}
+			else if (property.PropertyType == typeof(bool))
+			{
+				SetUserValue(property.Name, (bool)value);
+			}
+			else if (property.PropertyType == typeof(string[]))
+			{
+				SetUserValue(property.Name, (string[])value);
+			}
+			else if (property.PropertyType == typeof(int[]))
+			{
+				SetUserValue(property.Name, (int[])value);
+			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance of a subclass of <c>UserSettings</c> with a given <paramref name="registryKey"/> and <paramref name="filePath"/> and list of <paramref name="options"/> overrides.
+		/// </summary>
+		/// <param name="registryKey">Registry key under <c>HKEY_CURRENT_USER</c> to load and save the settings.</param>
+		/// <param name="filePath">File path from which to load and save the settings.</param>
+		/// <param name="options">List of all the setting overrides from the command-line.</param>
+		public static UserSettings GetSettings(string registryKey, string filePath, IEnumerable<string> options)
+		{
+			if (File.Exists(filePath))
+				return new UserSettingsLocalIni(filePath, options);
+			return new UserSettingsRegistry(registryKey, options);
+		}
+	}
+
+	public class UserSettingsRegistry : UserSettings
+	{
+        readonly string RegistryKey;
+		readonly RegistryKey Key;
+
+		internal UserSettingsRegistry(string registryKey, IEnumerable<string> options)
         {
             RegistryKey = registryKey;
-            InitUserSettings();
-            LoadUserSettings(options);
+			Key = Registry.CurrentUser.CreateSubKey(RegistryKey);
+			Load(options);
         }
 
-        public object GetDefault(string name)
-        {
-            var property = GetType().GetProperty(name);
+		protected override object GetUserValue(string name)
+		{
+			return Key.GetValue(name);
+		}
 
-            if (CustomDefaultValues.ContainsKey(property.Name))
-                return CustomDefaultValues[property.Name];
+		protected override void DeleteUserValue(string name)
+		{
+			Key.DeleteValue(name, false);
+		}
 
-            if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
-                return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
+		protected override void SetUserValue(string name, string value)
+		{
+			Key.SetValue(name, value, RegistryValueKind.String);
+		}
 
-            throw new InvalidDataException(String.Format("UserSetting property {0} has no default value.", property.Name));
-        }
+		protected override void SetUserValue(string name, int value)
+		{
+			Key.SetValue(name, value, RegistryValueKind.DWord);
+		}
 
-        void InitUserSettings()
-        {
-            CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
-            CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
-        }
+		protected override void SetUserValue(string name, bool value)
+		{
+			Key.SetValue(name, value ? 1 : 0, RegistryValueKind.DWord);
+		}
 
-        /// <summary>
-        /// Merges the settings from the defaults, the saved values, and the <paramref name="options"/> passed in.
-        /// </summary>
-        /// <param name="options">A list of options to override the default and saved values, specified in "name=value" or "name:value" format.</param>
-        void LoadUserSettings(IEnumerable<string> options)
-        {
-            // This special command-line option prevents the registry values from being used.
-            var allowRegistryValues = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
+		protected override void SetUserValue(string name, string[] value)
+		{
+			Key.SetValue(name, value, RegistryValueKind.MultiString);
+		}
 
-            // Pull apart the command-line options so we can find them by setting name.
-            var optionsDictionary = new Dictionary<string, string>();
-            foreach (var option in options)
-            {
-                var k = option.Split(new[] { '=', ':' }, 2)[0].ToLowerInvariant();
-                var v = option.Contains('=') || option.Contains(':') ? option.Split(new[] { '=', ':' }, 2)[1].ToLowerInvariant() : "yes";
-                optionsDictionary[k] = v;
-            }
-
-            using (var RK = Registry.CurrentUser.OpenSubKey(RegistryKey))
-            {
-                // All public instance properties are settings. Go through them all.
-                foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
-                {
-                    // Get the default value.
-                    var defValue = GetDefault(property.Name);
-                    // Read in the registry option, if it exists.
-                    var regValue = allowRegistryValues && RK != null ? RK.GetValue(property.Name, null) : null;
-                    // Read in the command-line option, if it exists into optValue.
-                    var propertyNameLower = property.Name.ToLowerInvariant();
-                    var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
-
-                    // Map registry option for boolean types so 1 is true; everything else is false.
-                    if ((regValue != null) && (regValue is int) && (property.PropertyType == typeof(bool)))
-                        regValue = (int)regValue == 1;
-
-                    // Map registry option for int[] types.
-                    else if ((regValue != null) && (regValue is string) && (property.PropertyType == typeof(int[])))
-                        regValue = ((string)regValue).Split(',').Select(s => int.Parse(s)).ToArray();
-
-                    // Parse command-line option for boolean types so true/yes/on/1 are all true; everything else is false.
-                    if ((optValue != null) && (property.PropertyType == typeof(bool)))
-                        optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
-
-                    // Parse command-line option for int types.
-                    else if ((optValue != null) && (property.PropertyType == typeof(int)))
-                        optValue = int.Parse((string)optValue);
-
-                    // Parse command-line option for string[] types.
-                    else if ((optValue != null) && (property.PropertyType == typeof(string[])))
-                        optValue = ((string)optValue).Split(',').Select(s => s.Trim()).ToArray();
-
-                    // Parse command-line option for int[] types.
-                    else if ((optValue != null) && (property.PropertyType == typeof(int[])))
-                        optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
-
-                    // We now have defValue, regValue, optValue containing the default, persisted and override values
-                    // for the setting. regValue and optValue are null if they are not found/specified.
-                    var value = optValue != null ? optValue : regValue != null ? regValue : defValue;
-                    try
-                    {
-                        // int[] values must have the same number of items as default value.
-                        if ((property.PropertyType == typeof(int[])) && (value != null) && ((int[])value).Length != ((int[])defValue).Length)
-                            throw new ArgumentException();
-
-                        property.SetValue(this, value, new object[0]);
-                        Sources.Add(property.Name, value.Equals(defValue) ? Source.Default : optValue != null ? Source.CommandLine : regValue != null ? Source.Registry : Source.Default);
-                    }
-                    catch (ArgumentException)
-                    {
-                        Trace.TraceWarning("Unable to load {0} value from type {1}", property.Name, value.GetType().FullName);
-                        value = defValue;
-                        Sources.Add(property.Name, Source.Default);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Writes out all settings, their current value, and where it was loaded from to the console.
-        /// </summary>
-        public void Log()
-        {
-            foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
-            {
-                var value = property.GetValue(this, null);
-                var source = Sources[property.Name];
-                if (property.PropertyType == typeof(string[]))
-                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((string[])value).Select(v => v.ToString()).ToArray()), source == Source.CommandLine ? "(command-line)" : source == Source.Registry ? "(registry)" : "");
-                else if (property.PropertyType == typeof(int[]))
-                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source == Source.CommandLine ? "(command-line)" : source == Source.Registry ? "(registry)" : "");
-                else 
-                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source == Source.CommandLine ? "(command-line)" : source == Source.Registry ? "(registry)" : "");
-            }
-        }
-
-        /// <summary>
-        /// Saves all peristent settings.
-        /// </summary>
-        public void Save()
-        {
-            Save(null);
-        }
-
-        /// <summary>
-        /// Saves only a single persistent setting.
-        /// </summary>
-        /// <remarks>
-        /// Used, eg, by Popups.Window to save their location.
-        /// </remarks>
-        /// <param name="name">Name of the setting to save.</param>
-        public void Save(string name)
-        {
-            using (var RK = Registry.CurrentUser.CreateSubKey(RegistryKey))
-            {
-                var values = RK.GetValueNames();
-                foreach (var property in GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).OrderBy(p => p.Name))
-                {
-                    if ((name != null) && (property.Name != name))
-                        continue;
-
-                    if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length > 0)
-                        continue;
-
-                    object defValue = null;
-                    if (CustomDefaultValues.ContainsKey(property.Name))
-                        defValue = CustomDefaultValues[property.Name];
-                    else if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
-                        defValue = (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
-                    else
-                        throw new InvalidDataException(String.Format("UserSetting property {0} has no default value.", property.Name));
-
-                    var value = property.GetValue(this, null);
-
-                    if (defValue.Equals(value)
-                        || (property.PropertyType == typeof(string[]) && String.Join(",", (string[])defValue) == String.Join(",", (string[])value))
-                        || (property.PropertyType == typeof(int[]) && String.Join(",", ((int[])defValue).Select(v => v.ToString()).ToArray()) == String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray())))
-                    {
-                        if (values.Contains(property.Name, StringComparer.OrdinalIgnoreCase))
-                            RK.DeleteValue(property.Name);
-                    }
-                    else if (property.PropertyType == typeof(string))
-                    {
-                        RK.SetValue(property.Name, value, RegistryValueKind.String);
-                    }
-                    else if (property.PropertyType == typeof(int))
-                    {
-                        RK.SetValue(property.Name, value, RegistryValueKind.DWord);
-                    }
-                    else if (property.PropertyType == typeof(bool))
-                    {
-                        RK.SetValue(property.Name, (bool)value ? 1 : 0, RegistryValueKind.DWord);
-                    }
-                    else if (property.PropertyType == typeof(string[]))
-                    {
-                        RK.SetValue(property.Name, (string[])value, RegistryValueKind.MultiString);
-                    }
-                    else if (property.PropertyType == typeof(int[]))
-                    {
-                        RK.SetValue(property.Name, String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray()), RegistryValueKind.String);
-                    }
-                }
-            }
-        }
+		protected override void SetUserValue(string name, int[] value)
+		{
+			Key.SetValue(name, String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray()), RegistryValueKind.String);
+		}
     }
+
+	public class UserSettingsLocalIni : UserSettings
+	{
+		const string SectionName = "ORTS";
+
+		readonly string FilePath;
+
+		internal UserSettingsLocalIni(string filePath, IEnumerable<string> options)
+		{
+			FilePath = filePath;
+			Load(options);
+		}
+
+		protected override object GetUserValue(string name)
+		{
+			var buffer = new String('\0', 256);
+			var length = NativeMethods.GetPrivateProfileString(SectionName, name, null, buffer, buffer.Length, FilePath);
+			if (length == 0)
+				return null;
+			buffer = buffer.Substring(0, length);
+			var value = buffer.Split(':');
+			if (value.Length < 2)
+			{
+				Trace.TraceWarning("Setting {0} contains invalid value {1}", name, buffer);
+				return null;
+			}
+			var valueFull = String.Join(":", value.Skip(1).ToArray());
+			switch (value[0])
+			{
+				case "string":
+					return valueFull;
+				case "int":
+					return int.Parse(valueFull, CultureInfo.InvariantCulture);
+				case "bool":
+					return valueFull.Equals("true", StringComparison.InvariantCultureIgnoreCase);
+				case "string[]":
+					return valueFull.Split(',');
+				case "int[]":
+					return valueFull.Split(',').Select(v => int.Parse(v, CultureInfo.InvariantCulture)).ToArray();
+				default:
+					Trace.TraceWarning("Setting {0} contains invalid value {1}", name, buffer);
+					return null;
+			}
+		}
+
+		protected override void DeleteUserValue(string name)
+		{
+			NativeMethods.WritePrivateProfileString(SectionName, name, null, FilePath);
+		}
+
+		protected override void SetUserValue(string name, string value)
+		{
+			NativeMethods.WritePrivateProfileString(SectionName, name, "string:" + value, FilePath);
+		}
+
+		protected override void SetUserValue(string name, int value)
+		{
+			NativeMethods.WritePrivateProfileString(SectionName, name, "int:" + value.ToString("R", CultureInfo.InvariantCulture), FilePath);
+		}
+
+		protected override void SetUserValue(string name, bool value)
+		{
+			NativeMethods.WritePrivateProfileString(SectionName, name, "bool:" + (value ? "true" : "false"), FilePath);
+		}
+
+		protected override void SetUserValue(string name, string[] value)
+		{
+			NativeMethods.WritePrivateProfileString(SectionName, name, "string[]:" + String.Join(",", value), FilePath);
+		}
+
+		protected override void SetUserValue(string name, int[] value)
+		{
+			NativeMethods.WritePrivateProfileString(SectionName, name, "int[]:" + String.Join(",", ((int[])value).Select(v => v.ToString("R", CultureInfo.InvariantCulture)).ToArray()), FilePath);
+		}
+	}
+
+	internal class NativeMethods
+	{
+		[DllImport("KERNEL32.DLL", EntryPoint = "GetPrivateProfileStringW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+		public static extern int GetPrivateProfileString(string sectionName, string keyName, string defaultValue, string value, int size, string fileName);
+
+		[DllImport("KERNEL32.DLL", EntryPoint = "WritePrivateProfileStringW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+		public static extern int WritePrivateProfileString(string sectionName, string keyName, string value, string fileName);
+	}
 }

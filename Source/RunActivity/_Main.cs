@@ -560,7 +560,7 @@ namespace ORTS
 
         static UserSettings GetSettings(IEnumerable<string> options)
         {
-            return new UserSettings(RegistryKey, options);
+			return UserSettings.GetSettings(RegistryKey, Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "OpenRails.ini"), options);
         }
 
         static void InitLogging( UserSettings settings, string[] args ) {

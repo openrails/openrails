@@ -90,7 +90,7 @@ namespace ORTS
         void MainForm_Shown(object sender, EventArgs e)
         {
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
-            Settings = new UserSettings(Program.RegistryKey, options);
+            Settings = UserSettings.GetSettings(Program.RegistryKey, System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "OpenRails.ini"), options);
 
             LoadOptions();
 
@@ -376,7 +376,7 @@ namespace ORTS
             }
             else
             {
-                Settings.Multiplayer_Port = (int)Settings.GetDefault("Multiplayer_Port");
+                Settings.Multiplayer_Port = (int)Settings.GetDefaultValue("Multiplayer_Port");
             }
             Settings.Menu_Selection = new[] {
                 comboBoxFolder.SelectedItem != null ? (comboBoxFolder.SelectedItem as Folder).Path : "",

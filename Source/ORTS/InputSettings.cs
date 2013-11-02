@@ -624,7 +624,7 @@ namespace ORTS
                         try
                         {
                             Commands[(int)eCommand].SetFromRegString((string)regValue);
-                            Sources[(int)eCommand] = UserSettings.Source.Registry;
+                            Sources[(int)eCommand] = UserSettings.Source.User;
                         }
                         catch (ArgumentException)
                         {
