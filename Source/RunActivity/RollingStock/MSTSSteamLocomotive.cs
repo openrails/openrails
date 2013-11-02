@@ -182,6 +182,7 @@ namespace ORTS
         const float BTUpHtoKJpS = 0.000293071f;     // Convert BTU/s to Kj/s
         float BoilerHeatTransferCoeffWpM2K = 45.0f; // Heat Transfer of locomotive boiler 45 Wm2K
         float TotalSteamUsageLBpS;                  // Running total for complete current steam usage
+
         float GeneratorSteamUsageLBpS = 1.0f;       // Generator Steam Usage
         float RadiationSteamLossLBpS = 2.5f;        // Steam loss due to radiation losses
         float AIBlowerMultiplier = 10.0f;           // Steam Blower multiplier for AI fireman
@@ -213,6 +214,10 @@ namespace ORTS
         float BoilerHeatOutBTUpS = 0.0f;// heat out of boiler in BTU
         float BoilerHeatInBTUpS = 0.0f; // heat into boiler in BTU
         float InjCylEquivSizeIN;        // Calculate the equivalent cylinder size for purpose of sizing the injector.
+
+        // Values from previous iteration to use in UpdateFiring() and show in HUD
+        float PreviousBoilerHeatOutBTUpS = 0.0f;
+        float PreviousTotalSteamUsageLBpS;
         
         // Derating factors for motive force 
         float CylinderCocksDeratingFactor = 0.01f;  // Factor if cylinder cocks are open
@@ -305,11 +310,14 @@ namespace ORTS
             BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
             
             BoilerPressurePSI = MaxBoilerPressurePSI;
+            ApplyBoilerPressure();
+
             PSI = MaxBoilerPressurePSI;
             CylinderSteamUsageLBpS = 0;
             WaterFraction = 0.9f;
             BoilerMassLB= WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerPressurePSI] + (1-WaterFraction) * BoilerVolumeFT3 *SteamDensityPSItoLBpFT3[MaxBoilerPressurePSI];
             BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI]*WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1-WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+
             // the next two tables are the average over a full wheel rotation calculated using numeric integration
             // they depend on valve geometry and main rod length etc
             if (ForceFactor1NpPSI == null)
@@ -919,13 +927,6 @@ namespace ORTS
         {
             float absSpeedMpS = Math.Abs(Train.SpeedMpS);
 
-            BoilerSteamHeatBTUpLB = SteamHeatPSItoBTUpLB[BoilerPressurePSI];
-            BoilerWaterHeatBTUpLB = WaterHeatPSItoBTUpLB[BoilerPressurePSI];
-            BoilerSteamDensityLBpFT3 = SteamDensityPSItoLBpFT3[BoilerPressurePSI];
-            BoilerWaterDensityLBpFT3 = WaterDensityPSItoLBpFT3[BoilerPressurePSI];
-            BoilerHeatOutBTUpS = 0.0f;      // reset for next pass
-            TotalSteamUsageLBpS = 0.0f;   // reset for next pass
-
             // Safety Valve
             if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
             {
@@ -992,7 +993,7 @@ namespace ORTS
             //<CJComment> Concern about using BTUpHtKjpS here as mixing Hours and Seconds. Expected assignment:
             // EquivalentBoilerLossesKjpS = W.ToKW(W.FromBTUpS((CurrentTotalSteamUsageLbpS * steamHeatCurrentBTUpLB))); // Calculate current equivalent boilerkW losses - ie steamlosses in lbs * steamHeat & then convert to kW            
             //</CJComment>
-            EquivalentBoilerLossesKW = ((TotalSteamUsageLBpS * BoilerSteamHeatBTUpLB) * BTUpHtoKJpS); // Calculate current equivalent boilerkW losses - ie steamlosses in lbs * steamHeat & then convert to kW            
+            EquivalentBoilerLossesKW = ((PreviousTotalSteamUsageLBpS * BoilerSteamHeatBTUpLB) * BTUpHtoKJpS); // Calculate current equivalent boilerkW losses - ie steamlosses in lbs * steamHeat & then convert to kW            
 
             FlueTempDiffK = (FireHeatTxfKW - EquivalentBoilerLossesKW) / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2); // calculate current FlueTempK difference, based upon heat input due to firing - heat taken out by boiler
 
@@ -1064,7 +1065,7 @@ namespace ORTS
             // If density Dx = Mx/Vx, we can write:
             //             Vw/Vb = (Mb/Vb - Ds)/Dw - Ds)
             WaterFraction = ((BoilerMassLB / BoilerVolumeFT3) - BoilerSteamDensityLBpFT3) / (BoilerWaterDensityLBpFT3 - BoilerSteamDensityLBpFT3);
-
+            
             // Update Boiler Heat based upon current Evaporation rate
             // Based on formula - BoilerCapacity (btu/h) = (SteamEnthalpy (btu/lb) - EnthalpyCondensate (btu/lb) ) x SteamEvaporated (lb/h) ?????
             // EnthalpyWater (btu/lb) = BoilerCapacity (btu/h) / SteamEvaporated (lb/h) + Enthalpysteam (btu/lb)  ?????
@@ -1094,6 +1095,23 @@ namespace ORTS
             {
                 BoilerPressurePSI = MaxBoilerPressurePSI + 10.0f;  // Check for manual firing
             }
+
+            ApplyBoilerPressure();
+        }
+
+        private void ApplyBoilerPressure()
+        {
+            BoilerSteamHeatBTUpLB = SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+            BoilerWaterHeatBTUpLB = WaterHeatPSItoBTUpLB[BoilerPressurePSI];
+            BoilerSteamDensityLBpFT3 = SteamDensityPSItoLBpFT3[BoilerPressurePSI];
+            BoilerWaterDensityLBpFT3 = WaterDensityPSItoLBpFT3[BoilerPressurePSI];
+
+            // Save values for use in UpdateFiring() and HUD
+            PreviousBoilerHeatOutBTUpS = BoilerHeatOutBTUpS;
+            PreviousTotalSteamUsageLBpS = TotalSteamUsageLBpS;
+            // Reset for next pass
+            BoilerHeatOutBTUpS = 0.0f;
+            TotalSteamUsageLBpS = 0.0f;
         }
 
         private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS)
@@ -1392,10 +1410,10 @@ namespace ORTS
                         Injector2Fraction = 1.0f;
                     }
                 }
-                if (EvaporationLBpS < TotalSteamUsageLBpS)    // More steam being used then generated, then turn up the steam generation rate by increasing damper.
-                    DamperBurnEffect = ((-1.0f * EvaporationLBpS / (EvaporationLBpS - TotalSteamUsageLBpS)) * DamperFactorAI * absSpeedMpS); // automatic damper - increases with increasing steam usage
+                if (EvaporationLBpS < PreviousTotalSteamUsageLBpS)    // More steam being used then generated, then turn up the steam generation rate by increasing damper.
+                    DamperBurnEffect = ((-1.0f * EvaporationLBpS / (EvaporationLBpS - PreviousTotalSteamUsageLBpS)) * DamperFactorAI * absSpeedMpS); // automatic damper - increases with increasing steam usage
                 else
-                    DamperBurnEffect = ((EvaporationLBpS - TotalSteamUsageLBpS) / EvaporationLBpS) * DamperFactorAI * absSpeedMpS; // automatic damper - if steam generation is greater then reduce
+                    DamperBurnEffect = ((EvaporationLBpS - PreviousTotalSteamUsageLBpS) / EvaporationLBpS) * DamperFactorAI * absSpeedMpS; // automatic damper - if steam generation is greater then reduce
 
                 if (BoilerPressurePSI > MaxBoilerPressurePSI + 1)
                     HeatMaterialThicknessFactor = 1.0f; // reduce boilerkW
@@ -1477,7 +1495,7 @@ namespace ORTS
         public override string GetStatus()
         {
             var evap = pS.TopH(EvaporationLBpS);
-            var usage = pS.TopH(TotalSteamUsageLBpS);
+            var usage = pS.TopH(PreviousTotalSteamUsageLBpS);
             
 			var result = new StringBuilder();
             result.AppendFormat("Boiler pressure = {0:F1} PSI\nSteam = +{1:F0} lb/h -{2:F0} lb/h ({3:F0} %)\nWater Gauge = {4:F1} in", BoilerPressurePSI, evap, usage, Smoke.SmoothedValue * 100, WaterGlassLevelIN);
@@ -1529,13 +1547,13 @@ namespace ORTS
                 BoilerHeatSmoothBTU.Value);
             status.AppendFormat("Thermal:\tIn\t{0:N0} BTU\t\tout\t{1:N0} BTU\n",
                 BoilerHeatInBTUpS,
-                BoilerHeatOutBTUpS);    
+                PreviousBoilerHeatOutBTUpS);    
             status.AppendFormat("Temp.:\tFlue\t{0:N0} F\t\tWater\t{1:N0} F",
                 C.ToF(C.FromK(FlueTempK)),
                 C.ToF(C.FromK(BoilerWaterTempK)));
                 
                 status.AppendFormat("\n\t\t === Steam Usage === \t\t{0:N0} lb/h\n",
-                pS.TopH(TotalSteamUsageLBpS));
+                pS.TopH(PreviousTotalSteamUsageLBpS));
                 status.AppendFormat("Usage.:\tCyl.\t{0:N0} lb/h\tBlower\t{1:N0} lb/h\tRad.\t{2:N0} lb/h\tComp.\t{3:N0} lb/h\tSafety\t{4:N0} lb/h\tGen.\t{5:N0} lb/h\tStoke\t{6:N0} lb/h\n",
                 pS.TopH(CylinderSteamUsageLBpS),
                 pS.TopH(BlowerSteamUsageLBpS),
