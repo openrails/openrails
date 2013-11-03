@@ -447,20 +447,22 @@ namespace ORTS
 
         bool UpdateState()
         {
+			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
+			var locomotive = Car.Train != null && Car.Train.LeadLocomotive != null ? Car.Train.LeadLocomotive : null;
+			var mstsLocomotive = locomotive as MSTSLocomotive;
+
             // Headlight
-			var newTrainHeadlight = Car.Train != null && Car.Train == Viewer.PlayerTrain ? Viewer.PlayerLocomotive.Headlight : 2;
-			if (Car.Train != null && Car.Train.LeadLocomotive != null) newTrainHeadlight = Car.Train.LeadLocomotive.Headlight;
+			var newTrainHeadlight = locomotive != null ? locomotive.Headlight : 2;
             // Unit
-            var locoIsFlipped = Car.Train == Viewer.PlayerTrain && Viewer.PlayerLocomotive.Flipped;
-            if (Car.Train != null && Car.Train.LeadLocomotive != null && Car.Train != Viewer.PlayerTrain) locoIsFlipped = Car.Train.LeadLocomotive.Flipped;
-            var newCarIsReversed = (Car.Flipped ^ locoIsFlipped) || Car.Train != null && Car.Train.LeadLocomotive != null && ((MSTSLocomotive)Car.Train.LeadLocomotive).UsingRearCab;
-            var newCarIsFirst = Car.Train == null || (locoIsFlipped ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
-            var newCarIsLast = Car.Train == null || (locoIsFlipped ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
+			var locomotiveFlipped = locomotive != null && locomotive.Flipped;
+			var locomotiveReverseCab = mstsLocomotive != null && mstsLocomotive.UsingRearCab;
+            var newCarIsReversed = Car.Flipped ^ locomotiveFlipped ^ locomotiveReverseCab;
+			var newCarIsFirst = Car.Train == null || (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
+			var newCarIsLast = Car.Train == null || (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
             // Penalty
-            var newPenalty = Car.Train != null && Car.Train.LeadLocomotive != null && Car.Train.LeadLocomotive is MSTSLocomotive && (Car.Train.LeadLocomotive as MSTSLocomotive).TrainBrakeController.GetIsEmergency();
+			var newPenalty = mstsLocomotive != null && mstsLocomotive.TrainBrakeController.GetIsEmergency();
             // Control
-            var newCarIsPlayer = Car == Viewer.PlayerLocomotive;
-            if (Car.Train != null && Car.Train.TrainType == Train.TRAINTYPE.REMOTE) newCarIsPlayer = true;//for remote trains
+            var newCarIsPlayer = (Car.Train != null && Car.Train == Viewer.PlayerTrain) || (Car.Train != null && Car.Train.TrainType == Train.TRAINTYPE.REMOTE);
             // Service
             var newCarInService = Car.Train != null;
             // Time of day

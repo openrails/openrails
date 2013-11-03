@@ -880,11 +880,12 @@ namespace ORTS
                 // seems there is nothing to attach camera to car
             }
 
+			// If there is a player locomotive, and it is in this train, update it to match the new lead locomotive.
             if (Simulator.PlayerLocomotive != null && Simulator.PlayerLocomotive.Train == this)
-            {
-                Simulator.PlayerLocomotive = newLead;
-            }
-            return Simulator.PlayerLocomotive;
+
+				Simulator.PlayerLocomotive = newLead;
+
+			return newLead;
         }
 
         //this function is needed for Multiplayer games as they do not need to have cabs, but need to know lead locomotives
