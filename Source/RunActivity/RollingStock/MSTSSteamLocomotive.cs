@@ -643,8 +643,8 @@ namespace ORTS
 					Train.MUDirection = Direction.Reverse;
 			}
 #endif 
-            Variable1 = Math.Abs(SpeedMpS);   // Steam locos seem to need this.
-            Variable2 = 50;   // not sure what this one's for ie in an SMS file
+            Variable1 = (Simulator.UseAdvancedAdhesion ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM; // Unit is [rad/s]. Value of 6.28 means 1 rotation/second.
+            Variable2 = Math.Min(CylinderPressurePSI / MaxBoilerPressurePSI * 100f, 100f);
             Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRate.SmoothedValue * 100;
 
             float throttle = ThrottlePercent / 100;
