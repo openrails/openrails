@@ -66,28 +66,28 @@ namespace ORTS
             0.2782f, 0.2994f, 0.3205f, 0.3416f, 0.3627f, 0.3838f, 0.4048f, 0.4259f, 0.4469f, 0.4680f,
             0.4890f, 0.5101f, 0.5312f, 0.5522f, 0.5733f, 0.5944f, 0.6155f, 0.6367f, 0.6578f, 0.6790f
         };
-        // injector 9mm flowrates (gallons per minute) - data extrapolated below 40psi and over 180psi
+        // injector 9mm flowrates (gallons (uk) per minute) - data extrapolated below 40psi and over 180psi
         static float[] Injector09FlowTableUKGpM = new float[]
         {
             7.3f, 9.3f, 11.3f, 13.3f, 15.3f, 17.3f, 18.8f, 20.3f, 21.7f, 23.0f, 24.3f,
             25.45f, 26.6f, 27.65f, 28.7f, 29.7f, 30.7f, 31.7f, 32.7f, 33.7f, 34.7f,
             35.7f, 36.7f, 38.7f, 39.7f, 40.7f, 41.7f, 42.7f, 43.7f, 44.7f, 45.7f
         };
-        // injector 10mm flowrates (gallons per minute) - data extrapolated below 40psi and over 200psi
+        // injector 10mm flowrates (gallons (uk) per minute) - data extrapolated below 40psi and over 200psi
         static float[] Injector10FlowTableUKGpM = new float[]
         {
             9.3f, 11.5f, 14.00f, 16.4f, 18.9f, 21.2f, 23.2f, 25.1f, 26.8f, 28.4f, 30.0f,
             31.2f, 32.3f, 33.45f, 35.4f, 36.65f, 37.9f, 39.05f, 40.2f, 41.2f, 42.4f,
             44.6f, 45.8f, 47.0f, 48.2f, 49.4f, 50.6f, 51.8f, 53.0f, 54.2f, 56.4f
         };
-        // injector 11mm flowrates (gallons per minute) - data extrapolated below 40psi and over 200psi
+        // injector 11mm flowrates (gallons (uk) per minute) - data extrapolated below 40psi and over 200psi
         static float[] Injector11FlowTableUKGpM = new float[]
         {
             9.3f, 11.5f, 14.00f, 16.4f, 25.6f, 27.4f, 29.1f, 31.6f, 34.5f, 37.3f, 40.8f,
             42.0f, 43.2f, 44.45f, 45.7f, 46.5f, 47.3f, 48.5f, 49.7f, 52.6f, 55.5f,
             56.5f, 57.5f, 58.5f, 59.5f, 60.5f, 61.5f, 62.5f, 63.5f, 64.5f, 65.5f
         };
-        // injector 13mm flowrates (gallons per minute) - data extrapolated below 40psi and over 200psi
+        // injector 13mm flowrates (gallons (uk) per minute) - data extrapolated below 40psi and over 200psi
         static float[] Injector13FlowTableUKGpM = new float[]
         {
             9.3f, 11.5f, 14.00f, 16.4f, 39.2f, 41.8f, 45.2f, 48.7f, 52.1f, 55.3f, 58.7f,
@@ -157,6 +157,60 @@ namespace ORTS
         {
             0.85f, 0.775f, 0.70f, 0.625f, 0.55f, 0.475f, 0.40f, 0.325f,
         };
+        
+        // pressure tables for Injectors temperature and steam usage
+        static float[] InjectorUsePressureTablePSI = new float[]
+        {
+            75.0f, 150.00f, 175.00f, 200.00f, 225.00f
+        };
+
+        // Temperature tables for water delivered into the boiler (Fahrenheit) - Minimum Injector Capacity - Ref Sellers Injector
+        static float[] WaterTemPDeliveryMinTableF = new float[]
+        {
+            217.0f, 255.00f, 257.00f, 260.00f, 269.00f
+        };
+
+        // Temperature tables for water delivered into the boiler (Fahrenheit) - Maximum Injector Capacity - Ref Sellers Injector
+        static float[] WaterTemPDeliveryMaxTableF = new float[]
+        {
+            128.0f, 149.00f, 156.00f, 164.00f, 174.00f
+        };
+
+        // Water per fed through injector per pound of steam used - Ref Sellers Injector
+        static float[] WaterDelFedSteamTableLbs = new float[]
+        {
+            17.20f, 12.80f, 11.80f, 10.70f, 9.70f
+        };
+
+        // Water per fed through injector factor to determine min capacity ie min/max - Ref Sellers Injector
+        static float[] InjMinCapFactorTableX = new float[]
+        {
+            0.366f, 0.395f, 0.419f, 0.454f, 0.509f
+        };
+
+        // Injector factor to determine the min capacity of the injector
+        public static Interpolator InjCapMinFactorInterpolatorX()
+        {
+            return new Interpolator(InjectorUsePressureTablePSI, InjMinCapFactorTableX);
+        }       
+
+        // Injector max delivery water temp (Fahr) per pressure of steam (psi)
+        public static Interpolator InjDelWaterTempMaxPressureInterpolatorFtoPSI()
+        {
+            return new Interpolator(InjectorUsePressureTablePSI, WaterTemPDeliveryMaxTableF);
+        }        
+        
+        // Injector min delivery water temp (Fahr) per pressure of steam (psi)
+        public static Interpolator InjDelWaterTempMinPressureInterpolatorFtoPSI()
+        {
+            return new Interpolator(InjectorUsePressureTablePSI, WaterTemPDeliveryMinTableF);
+        }  
+        
+        // Injector water fed per lb of steam at pressure of steam (psi)
+        public static Interpolator InjWaterFedSteamPressureInterpolatorFtoPSI()
+        {
+            return new Interpolator(InjectorUsePressureTablePSI, WaterDelFedSteamTableLbs);
+        }    
 
         // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area
         public static Interpolator BoilerEfficiencyGrateAreaInterpolatorLbstoX()
