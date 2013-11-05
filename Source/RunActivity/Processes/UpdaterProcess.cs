@@ -132,6 +132,8 @@ namespace ORTS
         RenderFrame CurrentFrame;
         double TotalRealSeconds;
         double LastTotalRealSeconds = -1;
+		double[] AverageElapsedRealTime = new double[10];
+		int AverageElapsedRealTimeIndex;
 
         [CallOnThread("Updater")]
         public void Update()
@@ -149,14 +151,29 @@ namespace ORTS
             else if (TotalRealSeconds - LastTotalRealSeconds > 0.25f)
                 LastTotalRealSeconds = TotalRealSeconds;
 
-            var elapsedRealTime = (float)(TotalRealSeconds - LastTotalRealSeconds);
+            var elapsedRealTime = TotalRealSeconds - LastTotalRealSeconds;
             LastTotalRealSeconds = TotalRealSeconds;
+
+			if (elapsedRealTime > 0)
+			{
+				// Store the elapsed real time, but also loop through overwriting any blank entries.
+				do
+				{
+					AverageElapsedRealTime[AverageElapsedRealTimeIndex] = elapsedRealTime;
+					AverageElapsedRealTimeIndex = (AverageElapsedRealTimeIndex + 1) % AverageElapsedRealTime.Length;
+				} while (AverageElapsedRealTime[AverageElapsedRealTimeIndex] == 0);
+
+				// Elapsed real time is now the average.
+				elapsedRealTime = 0;
+				for (var i = 0; i < AverageElapsedRealTime.Length; i++)
+					elapsedRealTime += AverageElapsedRealTime[i] / AverageElapsedRealTime.Length;
+			}
 
             try
             {
                 CurrentFrame.Clear();
-                Viewer.RenderProcess.ComputeFPS(elapsedRealTime);
-                Viewer.Update(elapsedRealTime, CurrentFrame);
+                Viewer.RenderProcess.ComputeFPS((float)elapsedRealTime);
+				Viewer.Update((float)elapsedRealTime, CurrentFrame);
                 CurrentFrame.Sort();
             }
             finally
