@@ -91,6 +91,7 @@ namespace ORTS
                     MultiPlayer.MPManager.Instance().newWeather != (int)Viewer.Simulator.Weather)
 				{
 					Viewer.Simulator.Weather = (WeatherType)MultiPlayer.MPManager.Instance().newWeather;
+                    Viewer.World.WeatherControl.SetWeatherParams();
 					try
 					{
 						MultiPlayer.MPManager.Instance().weatherChanged = false;
@@ -116,6 +117,7 @@ namespace ORTS
                         Viewer.Simulator.Weather = WeatherType.Clear;
                         break;
                 }
+                Viewer.World.WeatherControl.SetWeatherParams();
                 precipMesh.Initialize(Viewer.Simulator);
 				if (MultiPlayer.MPManager.IsServer())
 				{

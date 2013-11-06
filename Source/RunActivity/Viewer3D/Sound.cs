@@ -356,30 +356,24 @@ namespace ORTS
                     foreach (SoundStream stream in SoundStreams)
                     {
                         stream.HardActivate();
+                        bool released = false;
                         // run the initial triggers
                         foreach (ORTSTrigger trigger in stream.Triggers)
                         {
                             trigger.Initialize();
                             trigger.TryTrigger();
+
+                            released |= trigger.Signaled &&
+                                (trigger.SoundCommand is ORTSReleaseLoopRelease || trigger.SoundCommand is ORTSReleaseLoopReleaseWithJump);
                         }
 
-                        var rt = from t in stream.Triggers
-                                 where t.Signaled &&
-                                 (t.SoundCommand is ORTSReleaseLoopRelease || t.SoundCommand is ORTSReleaseLoopReleaseWithJump)
-                                 select t;
-
-                        if (rt.Count() == 0)
+                        if (!released && !stream.ALSoundSource.isPlaying)
                         {
-                            var qt = from t in stream.Triggers
-                                     where t.Signaled &&
-                                     (t.SoundCommand is ORTSStartLoop || t.SoundCommand is ORTSStartLoopRelease)
-                                     select t;
-                            if (qt.Count() > 0 && !stream.ALSoundSource.isPlaying)
-                                foreach (var t in qt)
-                                    if (t.Enabled)
-                                    {
-                                        t.SoundCommand.Run();
-                                    }
+                            foreach (ORTSTrigger trigger in stream.Triggers)
+                            {
+                                if (trigger.Signaled && trigger.Enabled && (trigger.SoundCommand is ORTSStartLoop || trigger.SoundCommand is ORTSStartLoopRelease))
+                                    trigger.SoundCommand.Run();
+                            }
                         }
                         stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D || !IsExternal);
                     }
@@ -547,6 +541,8 @@ namespace ORTS
             }
         }
 
+        private bool WeatherSound { get { return Viewer.World.WeatherControl.WeatherSounds.Contains(this); } }
+
         /// <summary>
         /// Hack for enabling additional cab sounds (like radio sounds) of an attached (maybe invisible) car.
         /// </summary>
@@ -574,7 +570,7 @@ namespace ORTS
 
             Camera.Styles viewpoint = Viewer.Camera.Style;
 
-            if (IsEnvSound || !IsEnvSound && IsntThisCabView && !IsInvisibleSoundCar)
+            if (IsEnvSound || !IsEnvSound && IsntThisCabView && !IsInvisibleSoundCar && !WeatherSound)
             {
                 viewpoint = Camera.Styles.External;
             }
@@ -708,7 +704,7 @@ namespace ORTS
                 // If no triggers active, Initialize the Initial
                 if (!ALSoundSource.isPlaying)
                 {
-                    if (VariableTriggers.Count > 0)
+                    if (VariableTriggers.Count > 0 || Triggers.Count == 1)
                     {
                         TriggersList = from ORTSVariableTrigger t in VariableTriggers
                                                 where t.IsBellow

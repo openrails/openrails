@@ -510,6 +510,7 @@ namespace ORTS.MultiPlayer
 					Program.Simulator.Weather = (WeatherType)this.weather;
 					Program.Simulator.ClockTime = this.seconds;
 					Program.Simulator.Season = (SeasonType)this.season;
+                    Program.Simulator.Confirmer.Viewer.World.WeatherControl.SetWeatherParams();
 				}
 			}
 		}

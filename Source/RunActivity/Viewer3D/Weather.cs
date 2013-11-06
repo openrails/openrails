@@ -27,35 +27,57 @@ namespace ORTS
     public class WeatherControl
     {
         Viewer3D Viewer;
-        private int weatherType;
+        private int weatherType = -1;
         public int seasonType;
         // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
         public float overcast = 0.1f;
         public float intensity = 3500;
         public float fogCoeff = 0.75f;
+        public readonly List<SoundSourceBase> RainSound;
+        public readonly List<SoundSourceBase> SnowSound;
+        public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
 
         public WeatherControl(Viewer3D viewer)
         {
             Viewer = viewer;
-            weatherType = (int)Viewer.Simulator.Weather;
             seasonType = (int)Viewer.Simulator.Season;
+
+            string[] pathArray = {Program.Simulator.RoutePath + @"\SOUND", 
+                                  Program.Simulator.BasePath + @"\SOUND"};
+            
+            RainSound = new List<SoundSourceBase>() {
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_in.sms")),
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_ex.sms"))};
+            SnowSound = new List<SoundSourceBase>() {
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_in.sms")),
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_ex.sms"))};
+
+            WeatherSounds.AddRange(RainSound);
+            WeatherSounds.AddRange(SnowSound);
 
             SetWeatherParams();
         }
 
-        void SetWeatherParams()
+        public void SetWeatherParams()
         {
+            if (weatherType == (int)Viewer.Simulator.Weather)
+                return;
+
+            if (Viewer.SoundProcess != null) Viewer.SoundProcess.RemoveSoundSource(this);
+            weatherType = (int)Viewer.Simulator.Weather;
             switch (weatherType)
             {
                 case (int)MSTS.WeatherType.Rain:
                     overcast = 0.7f;
                     intensity = 4500;
                     fogCoeff = 0.5f;
+                    if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, RainSound);
                     break;
                 case (int)MSTS.WeatherType.Snow:
                     overcast = 0.6f;
                     intensity = 6500;
                     fogCoeff = 0.1f;
+                    if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, SnowSound);
                     break;
                 case (int)MSTS.WeatherType.Clear:
                     overcast = 0.05f;

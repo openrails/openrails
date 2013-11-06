@@ -50,7 +50,13 @@ namespace ORTS
                     Thread.Start();
                 }
                 if (Viewer.World.GameSounds != null)
-                    AddSoundSource(Viewer.Simulator.RoutePath + "\\Sound\\ingame.sms", new List<SoundSourceBase>() { Viewer.World.GameSounds });
+                    AddSoundSource(Viewer.World.GameSounds.SMSFolder + "\\" + Viewer.World.GameSounds.SMSFileName, new List<SoundSourceBase>() { Viewer.World.GameSounds });
+
+                // Need to repeat it here, since the SoundProcess was not yet available at WeatherControl construction time
+                if (Viewer.Simulator.Weather == MSTS.WeatherType.Rain)
+                    AddSoundSource(Viewer.World.WeatherControl, Viewer.World.WeatherControl.RainSound);
+                else if (Viewer.Simulator.Weather == MSTS.WeatherType.Snow)
+                    AddSoundSource(Viewer.World.WeatherControl, Viewer.World.WeatherControl.SnowSound);
             }
         }
 
