@@ -33,6 +33,7 @@ namespace ORTS
         public float overcast = 0.1f;
         public float intensity = 3500;
         public float fogCoeff = 0.75f;
+        public readonly List<SoundSourceBase> ClearSound;
         public readonly List<SoundSourceBase> RainSound;
         public readonly List<SoundSourceBase> SnowSound;
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
@@ -45,6 +46,9 @@ namespace ORTS
             string[] pathArray = {Program.Simulator.RoutePath + @"\SOUND", 
                                   Program.Simulator.BasePath + @"\SOUND"};
             
+            ClearSound = new List<SoundSourceBase>() {
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_in.sms")),
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_ex.sms"))}; 
             RainSound = new List<SoundSourceBase>() {
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_in.sms")),
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_ex.sms"))};
@@ -52,6 +56,7 @@ namespace ORTS
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_in.sms")),
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_ex.sms"))};
 
+            WeatherSounds.AddRange(ClearSound); 
             WeatherSounds.AddRange(RainSound);
             WeatherSounds.AddRange(SnowSound);
 
@@ -82,6 +87,7 @@ namespace ORTS
                 case (int)MSTS.WeatherType.Clear:
                     overcast = 0.05f;
                     fogCoeff = 0.9f;
+                    if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, ClearSound);
                     break;
             }
         }
