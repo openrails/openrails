@@ -128,7 +128,7 @@ namespace ORTS
             // Create trackcircuit database
             //
 
-			CreateTrackCircuits(trackDB.TrItemTable, trackDB.TrackNodes, tsectiondat);
+            CreateTrackCircuits(trackDB.TrItemTable, trackDB.TrackNodes, tsectiondat);
 
             //
             // Process platform information
@@ -295,7 +295,7 @@ namespace ORTS
         {
             foreach (TrackCircuitSection thisSection in TrackCircuitList)
             {
-				thisSection.CircuitState.RestoreTrains(trains);
+                thisSection.CircuitState.RestoreTrains(trains);
             }
 
             // restore train information
@@ -463,7 +463,7 @@ namespace ORTS
         /// Update : perform signal updates
         /// 
 
-		public void Update()
+        public void Update()
         {
             if (MultiPlayer.MPManager.IsClient()) return; //in MP, client will not update
 
@@ -562,27 +562,27 @@ namespace ORTS
 
                 // restore all links and indices
 
-				for (var iSignal = 0; iSignal < SignalObjects.Length; iSignal++)
+                for (var iSignal = 0; iSignal < SignalObjects.Length; iSignal++)
                 {
                     if (SignalObjects[iSignal] != null)
                     {
-						var thisObject = SignalObjects[iSignal];
+                        var thisObject = SignalObjects[iSignal];
                         thisObject.thisRef = iSignal;
 
-						foreach (var thisHead in thisObject.SignalHeads)
+                        foreach (var thisHead in thisObject.SignalHeads)
                         {
                             thisHead.mainSignal = thisObject;
                             var trackItem = TrItems[thisHead.TDBIndex];
-							var sigItem = trackItem as SignalItem;
-							var speedItem = trackItem as SpeedPostItem;
-							if (sigItem != null)
-							{
-								sigItem.sigObj = thisObject.thisRef;
-							}
-							else if (speedItem != null)
-							{
-								speedItem.sigObj = thisObject.thisRef;
-							}
+                            var sigItem = trackItem as SignalItem;
+                            var speedItem = trackItem as SpeedPostItem;
+                            if (sigItem != null)
+                            {
+                                sigItem.sigObj = thisObject.thisRef;
+                            }
+                            else if (speedItem != null)
+                            {
+                                speedItem.sigObj = thisObject.thisRef;
+                            }
                         }
                     }
                 }
@@ -840,7 +840,7 @@ namespace ORTS
                             sigItem.sigObj = foundSignals;
 
                             bool validSignal = true;
-							lastSignal = AddSignal(index, i, sigItem, TDBRef, tsectiondat, tdbfile, ref validSignal);
+                            lastSignal = AddSignal(index, i, sigItem, TDBRef, tsectiondat, tdbfile, ref validSignal);
 
                             if (validSignal)
                             {
@@ -860,7 +860,7 @@ namespace ORTS
                             {
                                 speedItem.sigObj = foundSignals;
 
-								lastSignal = AddSpeed(index, i, speedItem, TDBRef, tsectiondat, tdbfile);
+                                lastSignal = AddSpeed(index, i, speedItem, TDBRef, tsectiondat, tdbfile);
                                 speedItem.sigObj = lastSignal;
 
                             }
@@ -908,7 +908,7 @@ namespace ORTS
 
                 if (thisWorldObject.HeadReference.Count > 1)
                 {
-                    
+
                     foreach (KeyValuePair<uint, uint> thisReference in thisWorldObject.HeadReference)
                     {
                         if (SignalHeadList.ContainsKey(thisReference.Key))
@@ -942,7 +942,7 @@ namespace ORTS
         /// This method adds a new Signal to the list
         ///
 
-		private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile, ref bool validSignal)
+        private int AddSignal(int trackNode, int nodeIndx, SignalItem sigItem, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile, ref bool validSignal)
         {
             validSignal = true;
 
@@ -995,7 +995,7 @@ namespace ORTS
         /// This method adds a new Speedpost to the list
         ///
 
-		private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
+        private int AddSpeed(int trackNode, int nodeIndx, SpeedPostItem speedItem, int TDBRef, TSectionDatFile tsectiondat, TDBFile tdbfile)
         {
             signalObjects[foundSignals] = new SignalObject();
             signalObjects[foundSignals].isSignal = false;
@@ -1441,7 +1441,7 @@ namespace ORTS
         // Create Track Circuits
         //
 
-		private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat)
+        private void CreateTrackCircuits(TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat)
         {
 
             //
@@ -1471,7 +1471,7 @@ namespace ORTS
             int originalNodes = TrackCircuitList.Count;
             for (int iNode = 1; iNode < originalNodes; iNode++)
             {
-				ProcessNodes(iNode, TrItems, trackNodes, tsectiondat);
+                ProcessNodes(iNode, TrItems, trackNodes, tsectiondat);
             }
 
             //
@@ -1780,7 +1780,7 @@ namespace ORTS
         // ProcessNodes
         //
 
-		public void ProcessNodes(int iNode, TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat)
+        public void ProcessNodes(int iNode, TrItem[] TrItems, TrackNode[] trackNodes, TSectionDatFile tsectiondat)
         {
 
             //
@@ -2748,7 +2748,7 @@ namespace ORTS
 
         public void setSwitch(int nodeIndex, int switchPos, TrackCircuitSection thisSection)
         {
-            if (MultiPlayer.MPManager.NoAutoSwitch() ) return;
+            if (MultiPlayer.MPManager.NoAutoSwitch()) return;
             TrackNode thisNode = trackDB.TrackNodes[nodeIndex];
             thisNode.TrJunctionNode.SelectedRoute = switchPos;
             thisSection.JunctionLastRoute = switchPos;
@@ -2768,14 +2768,14 @@ namespace ORTS
 				thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex,
 				thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex]));
 #endif
-			if (thisTrain.Train.CheckTrain)
-			{
-				File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Request for clear node from train {0} at section {1} starting from {2}\n",
-					thisTrain.Train.Number,
-					thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex,
-					thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex]));
-			}
+            if (thisTrain.Train.CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                    String.Format("Request for clear node from train {0} at section {1} starting from {2}\n",
+                    thisTrain.Train.Number,
+                    thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex,
+                    thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex]));
+            }
 
             // check if present clearance is beyond required maximum distance
 
@@ -2783,7 +2783,7 @@ namespace ORTS
             Train.TCRouteElement thisElement = null;
             TrackCircuitSection thisSection = null;
 
-            List <int> sectionsInRoute = new List<int>();
+            List<int> sectionsInRoute = new List<int>();
 
             float clearedDistanceM = 0.0f;
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
@@ -2840,14 +2840,14 @@ namespace ORTS
                 if (endListIndex >= 0)
                 {
                     File.AppendAllText(@"C:\temp\checktrain.txt",
-						String.Format("Index in route list : {0} = {1}\n",
-						endListIndex, thisRoute[endListIndex].TCSectionIndex));
+                        String.Format("Index in route list : {0} = {1}\n",
+                        endListIndex, thisRoute[endListIndex].TCSectionIndex));
                 }
                 else
                 {
                     File.AppendAllText(@"C:\temp\checktrain.txt",
-						String.Format("Index in route list : {0}\n",
-						endListIndex));
+                        String.Format("Index in route list : {0}\n",
+                        endListIndex));
                 }
             }
 
@@ -2865,8 +2865,8 @@ namespace ORTS
                     if (thisTrain.Train.CheckTrain)
                     {
                         File.AppendAllText(@"C:\temp\checktrain.txt",
-							String.Format("Cleared Distance : {0} > Max Distance \n",
-							FormatStrings.FormatDistance(clearedDistanceM, true)));
+                            String.Format("Cleared Distance : {0} > Max Distance \n",
+                            FormatStrings.FormatDistance(clearedDistanceM, true)));
                     }
 
                 }
@@ -2884,7 +2884,7 @@ namespace ORTS
             }
 
             if (routeIndex < 0) return;//by JTang
-            
+
             int lastRouteIndex = routeIndex;
             float offset = 0.0f;
             if (routeIndex == thisPosition.RouteListIndex)
@@ -2897,7 +2897,7 @@ namespace ORTS
             if (thisTrain.Train.LoopSection >= 0)
             {
                 thisSection = TrackCircuitList[thisTrain.Train.LoopSection];
-                if (thisSection.CircuitState.ThisTrainOccupying(thisTrain.Train) || 
+                if (thisSection.CircuitState.ThisTrainOccupying(thisTrain.Train) ||
                     (thisSection.CircuitState.TrainReserved != null && thisSection.CircuitState.TrainReserved.Train == thisTrain.Train))
                 {
                     furthestRouteCleared = true;
@@ -2918,7 +2918,7 @@ namespace ORTS
                         }
                         routePart = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex];
                     }
-                 
+
                     thisTrain.Train.LoopSection = -1;
                 }
             }
@@ -2930,9 +2930,9 @@ namespace ORTS
 
                 if (thisTrain.Train.CheckTrain)
                 {
-					File.AppendAllText(@"C:\temp\checktrain.txt",
-						String.Format("Starting check from : Index in route list : {0} = {1}\n",
-						routeIndex, thisRoute[routeIndex].TCSectionIndex));
+                    File.AppendAllText(@"C:\temp\checktrain.txt",
+                        String.Format("Starting check from : Index in route list : {0} = {1}\n",
+                        routeIndex, thisRoute[routeIndex].TCSectionIndex));
                 }
 
                 // check if train ahead still in last available section
@@ -2946,9 +2946,9 @@ namespace ORTS
                 if (thisTrain.Train.CheckTrain)
                 {
                     File.AppendAllText(@"C:\temp\checktrain.txt",
-						String.Format("Train ahead in section {0} : {1}\n",
-						thisSection.Index, trainAhead.Count));
-				}
+                        String.Format("Train ahead in section {0} : {1}\n",
+                        thisSection.Index, trainAhead.Count));
+                }
 
                 if (trainAhead.Count > 0)
                 {
@@ -2957,8 +2957,8 @@ namespace ORTS
                     if (thisTrain.Train.CheckTrain)
                     {
                         File.AppendAllText(@"C:\temp\checktrain.txt",
-							String.Format("Set last valid section : Index in route list : {0} = {1}\n",
-							lastRouteIndex, thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][lastRouteIndex].TCSectionIndex));
+                            String.Format("Set last valid section : Index in route list : {0} = {1}\n",
+                            lastRouteIndex, thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][lastRouteIndex].TCSectionIndex));
                     }
                 }
 
@@ -2969,9 +2969,9 @@ namespace ORTS
                     if (thisTrain.Train.CheckTrain)
                     {
                         File.AppendAllText(@"C:\temp\checktrain.txt",
-							String.Format("Checking : Index in route list : {0} = {1}\n",
-							routeIndex, thisRoute[routeIndex].TCSectionIndex));
-					}
+                            String.Format("Checking : Index in route list : {0} = {1}\n",
+                            routeIndex, thisRoute[routeIndex].TCSectionIndex));
+                    }
 
                     thisElement = routePart[routeIndex];
                     sectionIndex = thisElement.TCSectionIndex;
@@ -2988,7 +2988,7 @@ namespace ORTS
                         if (thisTrain.Train.CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
-								"Section looped \n");
+                                "Section looped \n");
                         }
                     }
 
@@ -3003,7 +3003,7 @@ namespace ORTS
                         if (thisTrain.Train.CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
-								"Section clear \n");
+                                "Section clear \n");
                         }
 
                         routeIndex++;
@@ -3022,8 +3022,8 @@ namespace ORTS
                             if (thisTrain.Train.CheckTrain)
                             {
                                 File.AppendAllText(@"C:\temp\checktrain.txt",
-									String.Format("Has end signal : {0}\n",
-									thisSection.EndSignals[thisElement.Direction].thisRef));
+                                    String.Format("Has end signal : {0}\n",
+                                    thisSection.EndSignals[thisElement.Direction].thisRef));
                             }
                         }
 
@@ -3041,7 +3041,7 @@ namespace ORTS
                         if (thisTrain.Train.CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
-								"Section blocked \n");
+                                "Section blocked \n");
                         }
                         lastRouteIndex = routeIndex - 1;
                         lastReserved = lastRouteIndex >= 0 ? routePart[lastRouteIndex].TCSectionIndex : -1;
@@ -3062,8 +3062,8 @@ namespace ORTS
                 if (thisTrain.Train.CheckTrain)
                 {
                     File.AppendAllText(@"C:\temp\checktrain.txt",
-						String.Format("Last section cleared in route list : {0} = {1}\n",
-						lastRouteIndex, thisRoute[lastRouteIndex].TCSectionIndex));
+                        String.Format("Last section cleared in route list : {0} = {1}\n",
+                        lastRouteIndex, thisRoute[lastRouteIndex].TCSectionIndex));
                 }
                 // end of track reached
 
@@ -3074,7 +3074,7 @@ namespace ORTS
                     if (thisTrain.Train.CheckTrain)
                     {
                         File.AppendAllText(@"C:\temp\checktrain.txt",
-							"End of track \n");
+                            "End of track \n");
                     }
                 }
 
@@ -3089,7 +3089,7 @@ namespace ORTS
                         if (thisTrain.Train.CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
-								"End of path \n");
+                                "End of path \n");
                         }
                     }
                 }
@@ -3112,7 +3112,7 @@ namespace ORTS
                         if (thisTrain.Train.CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
-								"Reserved Switch \n");
+                                "Reserved Switch \n");
                         }
                     }
                 }
@@ -3141,7 +3141,7 @@ namespace ORTS
                         if (thisTrain.Train.CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
-								"Train Ahead \n");
+                                "Train Ahead \n");
                         }
                     }
                     else
@@ -3159,7 +3159,7 @@ namespace ORTS
                                 if (thisTrain.Train.CheckTrain)
                                 {
                                     File.AppendAllText(@"C:\temp\checktrain.txt",
-										"Train Ahead \n");
+                                        "Train Ahead \n");
                                 }
                             }
                         }
@@ -3185,8 +3185,8 @@ namespace ORTS
             if (thisTrain.Train.CheckTrain)
             {
                 File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Returned : \n    State : {0}\n    Dist  : {1}\n    Sect  : {2}\n",
-					endAuthority, FormatStrings.FormatDistance(clearedDistanceM, true), lastReserved));
+                    String.Format("Returned : \n    State : {0}\n    Dist  : {1}\n    Sect  : {2}\n",
+                    endAuthority, FormatStrings.FormatDistance(clearedDistanceM, true), lastReserved));
             }
         }
 
@@ -3205,7 +3205,7 @@ namespace ORTS
 
             // if occupied by train - skip actions and proceed to next section
 
-            if (firstSection.CircuitState.ThisTrainOccupying(reqTrain))
+            if (!firstSection.CircuitState.ThisTrainOccupying(reqTrain))
             {
 
                 // if not reserved - no further route ahead
@@ -3259,7 +3259,7 @@ namespace ORTS
 
                 TrackCircuitSection trySection = null;
 
-                int iPinLink = nextDirection == 0 ? 1 : 0;
+                int iPinLink = nextDirection;
                 for (int iPinIndex = 0; iPinIndex <= 1; iPinIndex++)
                 {
                     int trySectionIndex = thisSection.ActivePins[iPinLink, iPinIndex].Link;
@@ -3290,6 +3290,19 @@ namespace ORTS
                     }
                 }
             }
+
+        // update valid route list
+
+            if (reqTrain.Train.ValidRoute[reqTrain.TrainRouteDirectionIndex] != null)
+            {
+                for (int ielement = (reqTrain.Train.ValidRoute[reqTrain.TrainRouteDirectionIndex].Count - 1); ielement > 0; ielement--)
+                {
+                    Train.TCRouteElement thisElement = reqTrain.Train.ValidRoute[reqTrain.TrainRouteDirectionIndex][ielement];
+                    TrackCircuitSection thisSection = TrackCircuitList[thisElement.TCSectionIndex];
+                    if (thisSection.CircuitState.TrainReserved == null) reqTrain.Train.ValidRoute[reqTrain.TrainRouteDirectionIndex].RemoveAt(ielement);
+                }
+            }
+
         }
 
         //================================================================================================//
@@ -3323,7 +3336,7 @@ namespace ORTS
         // Used for trains without path (eg stationary constists), manual operation
         //
 
-		public Train.TCSubpathRoute BuildTempRoute(Train thisTrain, int firstSectionIndex, float firstOffset, int firstDirection, float routeLength, bool overrideManualSwitchState, bool autoAlign)
+        public Train.TCSubpathRoute BuildTempRoute(Train thisTrain, int firstSectionIndex, float firstOffset, int firstDirection, float routeLength, bool overrideManualSwitchState, bool autoAlign)
         {
             bool honourManualSwitchState = !overrideManualSwitchState;
             List<int> sectionList = ScanRoute(thisTrain, firstSectionIndex, firstOffset, firstDirection,
@@ -3398,7 +3411,7 @@ namespace ORTS
                 // check looped
 
                 int routedIndex = curDirection == 0 ? thisIndex : -thisIndex;
-                if (foundItems.Contains(routedIndex))
+                if (foundItems.Contains(thisIndex) || foundItems.Contains(-thisIndex))
                 {
                     break;
                 }
@@ -3567,7 +3580,7 @@ namespace ORTS
 
                         TrackCircuitSection nextSection = TrackCircuitList[nextIndex];
 
-                        // if next section is junction : check if locked agains AI and if auto-alignment allowed
+                        // if next section is junction : check if locked against AI and if auto-alignment allowed
                         // switchable end of switch is always pin direction 1
                         if (nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                         {
@@ -3617,7 +3630,7 @@ namespace ORTS
                     {
                         TrackCircuitState thisState = thisSection.CircuitState;
 
-                        if (!thisState.TrainOccupy.ContainsTrain(thisTrain) && 
+                        if (!thisState.TrainOccupy.ContainsTrain(thisTrain) &&
                             (thisState.TrainReserved != null && thisState.TrainReserved.Train != thisTrain))
                         {
                             endOfRoute = true;
@@ -4156,7 +4169,7 @@ namespace ORTS
             }
             return (false);
         }
-        
+
         public bool RequestSetSwitch(TrackNode switchNode)
         {
             return RequestSetSwitch(switchNode.TCCrossReference[0].CrossRefIndex);
@@ -4235,7 +4248,7 @@ namespace ORTS
                     {
                         t.ProcessRequestExplorerSetSwitch(switchSection.Index);
                     }
-                    catch {}
+                    catch { }
                 }
             }
             return (switchSet);
@@ -4350,7 +4363,7 @@ namespace ORTS
                 Pins[0, pin] = thisNode.TrPins[PinNo].Copy();
                 PinNo++;
             }
-            if (PinNo < thisNode.Inpins) PinNo = (int) thisNode.Inpins;
+            if (PinNo < thisNode.Inpins) PinNo = (int)thisNode.Inpins;
             for (int pin = 0; pin < Math.Min(thisNode.Outpins, Pins.GetLength(1)); pin++)
             {
                 Pins[1, pin] = thisNode.TrPins[PinNo].Copy();
@@ -4645,7 +4658,7 @@ namespace ORTS
             }
 
             // check reservation
-            
+
             if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train == thisTrain.Train)
             {
                 return (true);
@@ -4781,10 +4794,10 @@ namespace ORTS
 #endif
             if (thisTrain.Train.CheckTrain)
             {
-				File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Reserve section {0} for train {1}\n",
-					this.Index,
-					thisTrain.Train.Number));
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                    String.Format("Reserve section {0} for train {1}\n",
+                    this.Index,
+                    thisTrain.Train.Number));
             }
 
             Train.TCRouteElement thisElement;
@@ -4792,7 +4805,7 @@ namespace ORTS
             if (!CircuitState.ThisTrainOccupying(thisTrain.Train))
             {
                 //if (!MultiPlayer.MPManager.IsMultiPlayer())
-                    CircuitState.TrainReserved = thisTrain;
+                CircuitState.TrainReserved = thisTrain;
             }
 
             // remove from claim or deadlock claim
@@ -4947,11 +4960,11 @@ namespace ORTS
 #endif
             if (thisTrain.Train.CheckTrain)
             {
-				File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Occupy section {0} for train {1}\n",
-					this.Index,
-					thisTrain.Train.Number));
-			}
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                    String.Format("Occupy section {0} for train {1}\n",
+                    this.Index,
+                    thisTrain.Train.Number));
+            }
 
             int direction = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCDirection;
             CircuitState.TrainOccupy.Add(thisTrain, direction);
@@ -5061,11 +5074,11 @@ namespace ORTS
 #endif
             if (thisTrain.Train.CheckTrain)
             {
-				File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Clear section {0} for train {1}\n",
-					this.Index,
-					thisTrain.Train.Number));
-			}
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                    String.Format("Clear section {0} for train {1}\n",
+                    this.Index,
+                    thisTrain.Train.Number));
+            }
 
             if (CircuitState.TrainOccupy.ContainsTrain(thisTrain))
             {
@@ -5182,11 +5195,11 @@ namespace ORTS
 #endif
             if (thisTrain.Train.CheckTrain)
             {
-				File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Remove train from section {0} for train {1}\n",
-					this.Index,
-					thisTrain.Train.Number));
-			}
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                    String.Format("Remove train from section {0} for train {1}\n",
+                    this.Index,
+                    thisTrain.Train.Number));
+            }
 
             if (CircuitState.ThisTrainOccupying(thisTrain))
             {
@@ -5475,7 +5488,7 @@ namespace ORTS
                         }
                     }
                     else
-                    localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
+                        localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
                 }
             }
 
@@ -5815,7 +5828,7 @@ namespace ORTS
                     TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
 
                     // if other section allready set do not set deadlock
-                    if (otherTrain != null && endSection.IsSet(otherTrain)) 
+                    if (otherTrain != null && endSection.IsSet(otherTrain))
                         break;
 
                     if (DeadlockTraps.ContainsKey(thisTrain.Number))
@@ -6178,7 +6191,7 @@ namespace ORTS
         // Reset train references after restore
         //
 
-		public void RestoreTrains(List<Train> trains)
+        public void RestoreTrains(List<Train> trains)
         {
 
             // Occupy
@@ -6220,7 +6233,7 @@ namespace ORTS
                 {
                     int reservedDirection = TrainReserved.TrainRouteDirectionIndex;
                     //if (!MultiPlayer.MPManager.IsMultiPlayer())
-                        TrainReserved = reservedDirection == 0 ? reservedTrain.routedForward : reservedTrain.routedBackward;
+                    TrainReserved = reservedDirection == 0 ? reservedTrain.routedForward : reservedTrain.routedBackward;
                 }
                 else
                 {
@@ -6571,9 +6584,9 @@ namespace ORTS
 
     public class SignalObject
     {
-		[SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
-		[SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
-		public enum MstsBlockState
+        [SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
+        [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
+        public enum MstsBlockState
         {
             CLEAR,         // Block ahead is clear and accesible
             OCCUPIED,      // Block ahead is occupied by one or more wagons/locos not moving in opposite direction
@@ -7308,7 +7321,7 @@ namespace ORTS
 
         public ObjectSpeedInfo this_sig_speed(SignalHead.MstsSignalFunction fn_type)
         {
-			var sigAsp = SignalHead.MstsSignalAspect.STOP;
+            var sigAsp = SignalHead.MstsSignalAspect.STOP;
             var set_speed = new ObjectSpeedInfo(-1, -1, false);
 
             foreach (SignalHead sigHead in SignalHeads)
@@ -7316,7 +7329,7 @@ namespace ORTS
                 if (sigHead.sigFunction == fn_type && sigHead.state >= sigAsp)
                 {
                     sigAsp = sigHead.state;
-					set_speed = sigHead.speed_info[(int)sigAsp];
+                    set_speed = sigHead.speed_info[(int)sigAsp];
                 }
             }
             return set_speed;
@@ -7335,7 +7348,7 @@ namespace ORTS
             {
                 if (sigHead.sigFunction == fn_type)
                 {
-					ObjectSpeedInfo this_speed = sigHead.speed_info[(int)sigHead.state];
+                    ObjectSpeedInfo this_speed = sigHead.speed_info[(int)sigHead.state];
                     if (this_speed != null)
                     {
                         if (this_speed.speed_pass > 0 && this_speed.speed_pass < set_speed.speed_pass)
@@ -8082,7 +8095,7 @@ namespace ORTS
 
                 if (ReqNumClearAhead > 0)
                 {
-                    int nextSignalIndex = sigfound[(int) SignalHead.MstsSignalFunction.NORMAL];
+                    int nextSignalIndex = sigfound[(int)SignalHead.MstsSignalFunction.NORMAL];
                     if (nextSignalIndex >= 0)
                     {
                         SignalObject nextSignal = signalObjects[nextSignalIndex];
@@ -8112,12 +8125,12 @@ namespace ORTS
 #endif
             if (thisTrain.Train.CheckTrain)
             {
-				File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Request for clear signal from train {0} at section {1} for signal {2}\n",
-					thisTrain.Train.Number,
-					thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex,
-					thisRef));
-			}
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                    String.Format("Request for clear signal from train {0} at section {1} for signal {2}\n",
+                    thisTrain.Train.Number,
+                    thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex,
+                    thisRef));
+            }
 
             int procstate = 0;
             int foundFirstSection = -1;
@@ -8353,7 +8366,7 @@ namespace ORTS
                 hasPermission = Permission.Granted;
                 Program.Simulator.SoundNotify = Event.PermissionGranted;
             }
-            else if (MultiPlayer.MPManager.IsMultiPlayer() && enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.EXPLORER 
+            else if (MultiPlayer.MPManager.IsMultiPlayer() && enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.EXPLORER
                 && signalState == SignalHead.MstsSignalAspect.STOP && internalBlockState <= InternalBlockstate.OccupiedSameDirection && hasPermission == Permission.Requested)
             {//added by JTang
                 hasPermission = Permission.Granted;
@@ -8748,7 +8761,7 @@ namespace ORTS
 
                 // use alternative route
 
-                if (startAlternativeRoute > 0 && 
+                if (startAlternativeRoute > 0 &&
                     (startSection.CircuitState.TrainReserved == null || startSection.CircuitState.TrainReserved.Train != thisTrain.Train))
                 {
                     Train.TCSubpathRoute altRoutePart = thisTrain.Train.ExtractAlternativeRoute(altRoute);
@@ -8989,13 +9002,13 @@ namespace ORTS
 #endif
             if (enabledTrain != null && enabledTrain.Train.CheckTrain)
             {
-				File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Signal {0} reset on Junction Change\n",
-					thisRef));
-				File.AppendAllText(@"C:\temp\checktrain.txt",
-					String.Format("Train {0} affected; new NORMAL signal : {1}\n",
-					enabledTrain.Train.Number, sigfound[(int)SignalHead.MstsSignalFunction.NORMAL]));
-			}
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                    String.Format("Signal {0} reset on Junction Change\n",
+                    thisRef));
+                File.AppendAllText(@"C:\temp\checktrain.txt",
+                    String.Format("Train {0} affected; new NORMAL signal : {1}\n",
+                    enabledTrain.Train.Number, sigfound[(int)SignalHead.MstsSignalFunction.NORMAL]));
+            }
         }
 
         //================================================================================================//
@@ -9094,8 +9107,8 @@ namespace ORTS
 
     public class SignalHead
     {
-		[SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
-		[SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
+        [SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
+        [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
         public enum MstsSignalAspect
         {
             STOP,
@@ -9109,9 +9122,9 @@ namespace ORTS
             UNKNOWN,
         }
 
-		[SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
-		[SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
-		public enum MstsSignalFunction
+        [SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
+        [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
+        public enum MstsSignalFunction
         {
             NORMAL,
             DISTANCE,
@@ -9311,12 +9324,12 @@ namespace ORTS
 
             // get signal of type 2 (end signal)
 
-			if (dumpfile.Length > 1)
-			{
-				File.AppendAllText(dumpfile,
-					String.Format("DIST_MULTI_SIG_MR for {0} + upto {1}\n",
-					sigFN1, sigFN2));
-			}
+            if (dumpfile.Length > 1)
+            {
+                File.AppendAllText(dumpfile,
+                    String.Format("DIST_MULTI_SIG_MR for {0} + upto {1}\n",
+                    sigFN1, sigFN2));
+            }
 
             int sig2Index = mainSignal.sigfound[(int)sigFN2];
             if (sig2Index < 0)           // try renewed search with full route
@@ -9331,12 +9344,12 @@ namespace ORTS
                     File.AppendAllText(dumpfile, "  no signal type 2 found\n");
             }
 
-			if (dumpfile.Length > 1)
-			{
-				File.AppendAllText(dumpfile, 
-					String.Format("  signal type 2 : {0}\n",
-					mainSignal.sigfound[(int)sigFN2]));
-			}
+            if (dumpfile.Length > 1)
+            {
+                File.AppendAllText(dumpfile,
+                    String.Format("  signal type 2 : {0}\n",
+                    mainSignal.sigfound[(int)sigFN2]));
+            }
             SignalObject thisSignal = mainSignal;
 
             // ensure next signal of type 1 is located correctly
@@ -9353,12 +9366,12 @@ namespace ORTS
                 MstsSignalAspect thisState = thisSignal.this_sig_mr(sigFN1);
                 foundState = foundState < thisState ? foundState : thisState;
 
-				if (dumpfile.Length > 1)
-				{
-					File.AppendAllText(dumpfile, 
-						String.Format("  signal type 1 : {0} = {1}\n",
-						thisSignal.thisRef, thisState));
-				}
+                if (dumpfile.Length > 1)
+                {
+                    File.AppendAllText(dumpfile,
+                        String.Format("  signal type 1 : {0} = {1}\n",
+                        thisSignal.thisRef, thisState));
+                }
 
                 // ensure correct next signals are located
                 thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
@@ -9452,7 +9465,7 @@ namespace ORTS
             {
                 juncfound = mainSignal.route_set(JunctionMainNode, TrackJunctionNode);
             }
-                //added by JTang
+            //added by JTang
             else if (MultiPlayer.MPManager.IsMultiPlayer())
             {
                 var node = mainSignal.signalRef.trackDB.TrackNodes[mainSignal.trackNode];
@@ -9794,15 +9807,15 @@ namespace ORTS
                 TCSectionIndex.Add(sectionIndex);
             }
 
-            orgDetails.PlatformReference.CopyTo(PlatformReference,0);
+            orgDetails.PlatformReference.CopyTo(PlatformReference, 0);
             TCOffset[0, 0] = orgDetails.TCOffset[0, 0];
             TCOffset[0, 1] = orgDetails.TCOffset[0, 1];
             TCOffset[1, 0] = orgDetails.TCOffset[1, 0];
             TCOffset[1, 1] = orgDetails.TCOffset[1, 1];
-            orgDetails.nodeOffset.CopyTo(nodeOffset,0);
+            orgDetails.nodeOffset.CopyTo(nodeOffset, 0);
             Length = orgDetails.Length;
-            orgDetails.EndSignals.CopyTo(EndSignals,0);
-            orgDetails.DistanceToSignals.CopyTo(DistanceToSignals,0);
+            orgDetails.EndSignals.CopyTo(EndSignals, 0);
+            orgDetails.DistanceToSignals.CopyTo(DistanceToSignals, 0);
             Name = String.Copy(orgDetails.Name);
             MinWaitingTime = orgDetails.MinWaitingTime;
         }

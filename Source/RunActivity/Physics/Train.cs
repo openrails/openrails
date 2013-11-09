@@ -154,7 +154,7 @@ namespace ORTS
         public List<int> HoldingSignals = new List<int>();// list of signals which must not be cleared (eg station stops)
         public List<StationStop> StationStops = new List<StationStop>();  //list of station stop details
         public Traffic_Service_Definition TrafficService;
-        public int[] MisalignedSwitch = new int[2] { -1, -1 };  // misaligned switch indication :
+        public int[,] MisalignedSwitch = new int[2, 2] { { -1, -1 }, { -1, -1 } };  // misaligned switch indication per direction:
         // cell 0 : index of switch, cell 1 : required linked section; -1 if not valid
         public Dictionary<int, float> PassedSignalSpeeds = new Dictionary<int, float>();  // list of signals and related speeds pending processing (manual and explorer mode)
         public int[] LastPassedSignal = new int[2] { -1, -1 };  // index of last signal which set speed limit per direction (manual and explorer mode)
@@ -840,7 +840,7 @@ namespace ORTS
             // negative numbers used if rear cab selected
             // because '0' has no negative, all indices are shifted by 1!!!!
 
-            int presentIndex = LeadLocomotiveIndex+1;
+            int presentIndex = LeadLocomotiveIndex + 1;
             if (((MSTSLocomotive)LeadLocomotive).UsingRearCab) presentIndex = -presentIndex;
 
             List<int> cabList = new List<int>();
@@ -850,13 +850,13 @@ namespace ORTS
                 if (SkipOtherUsersCar(i)) continue;
                 if (Cars[i].Flipped)
                 {
-                    if (Cars[i].HasRearCab) cabList.Add(-(i+1));
-                    if (Cars[i].HasFrontCab) cabList.Add(i+1);
+                    if (Cars[i].HasRearCab) cabList.Add(-(i + 1));
+                    if (Cars[i].HasFrontCab) cabList.Add(i + 1);
                 }
                 else
                 {
-                    if (Cars[i].HasFrontCab) cabList.Add(i+1);
-                    if (Cars[i].HasRearCab) cabList.Add(-(i+1));
+                    if (Cars[i].HasFrontCab) cabList.Add(i + 1);
+                    if (Cars[i].HasRearCab) cabList.Add(-(i + 1));
                 }
             }
 
@@ -866,7 +866,7 @@ namespace ORTS
             int nextCabIndex = cabList[lastIndex + 1];
 
             TrainCar oldLead = LeadLocomotive;
-            LeadLocomotiveIndex = Math.Abs(nextCabIndex)-1;
+            LeadLocomotiveIndex = Math.Abs(nextCabIndex) - 1;
             Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
             TrainCar newLead = LeadLocomotive;  // Changing LeadLocomotiveIndex also changed LeadLocomotive
             ((MSTSLocomotive)newLead).UsingRearCab = nextCabIndex < 0;
@@ -880,12 +880,12 @@ namespace ORTS
                 // seems there is nothing to attach camera to car
             }
 
-			// If there is a player locomotive, and it is in this train, update it to match the new lead locomotive.
+            // If there is a player locomotive, and it is in this train, update it to match the new lead locomotive.
             if (Simulator.PlayerLocomotive != null && Simulator.PlayerLocomotive.Train == this)
 
-				Simulator.PlayerLocomotive = newLead;
+                Simulator.PlayerLocomotive = newLead;
 
-			return newLead;
+            return newLead;
         }
 
         //this function is needed for Multiplayer games as they do not need to have cabs, but need to know lead locomotives
@@ -1078,7 +1078,7 @@ namespace ORTS
 
             else if (ValidRoute[0] != null)     // no actions required for static objects //
             {
-                movedBackward = CheckBackwardClearance();                                       // check clearance at rear //
+                if (ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL) movedBackward = CheckBackwardClearance();  // check clearance at rear if not out of control //
                 UpdateTrainPosition();                                                          // position update         //
                 UpdateTrainPositionInformation();                                               // position update         //
                 int SignalObjIndex = CheckSignalPassed(0, PresentPosition[0], PreviousPosition[0]);   // check if passed signal  //
@@ -1107,7 +1107,7 @@ namespace ORTS
                 {//if both travellers are out, very rare occation, but have to treat it
                     RearTDBTraveller.ReverseDirection();
                     RearTDBTraveller.NextTrackNode();
-                } 
+                }
                 else if (FrontTDBTraveller.IsEnd) RearTDBTraveller.Move(-1);//if front is out, move back
                 else if (RearTDBTraveller.IsEnd) RearTDBTraveller.Move(1);//if rear is out, move forward
                 foreach (var car in Cars) { car.SpeedMpS = 0; } //can set crash here by setting XNA matrix
@@ -1155,7 +1155,7 @@ namespace ORTS
             IsWheelSlip = whlslp;
             IsWheelSlipWarninq = whlslpwrn;
 
-             // Coupler breaker
+            // Coupler breaker
             if (uncoupleBehindCar != null)
             {
                 if (uncoupleBehindCar.CouplerOverloaded)
@@ -1310,7 +1310,7 @@ namespace ORTS
 
             if (!existingSpeedLimits)
             {
-                if ((TrainMaxSpeedMpS <= 0f)&&(this.LeadLocomotive != null))
+                if ((TrainMaxSpeedMpS <= 0f) && (this.LeadLocomotive != null))
                     TrainMaxSpeedMpS = (this.LeadLocomotive as MSTSLocomotive).MaxSpeedMpS;
                 AllowedMaxSpeedMpS = TrainMaxSpeedMpS;   // set default
                 allowedMaxSpeedSignalMpS = TrainMaxSpeedMpS;   // set default
@@ -1846,7 +1846,7 @@ namespace ORTS
                 if (IndexNextSignal >= SignalObjectItems.Count)
                 {
                     if (CheckTrain)
-                        File.AppendAllText(@"F:\temp\checktrain.txt", "Error in UpdateSignalState: IndexNextSignal out of range : " + IndexNextSignal + 
+                        File.AppendAllText(@"F:\temp\checktrain.txt", "Error in UpdateSignalState: IndexNextSignal out of range : " + IndexNextSignal +
                                              " (max value : " + SignalObjectItems.Count + ") \n");
                     listChanged = true;
                 }
@@ -2637,7 +2637,7 @@ namespace ORTS
             {
                 if (TrainMaxSpeedMpS <= 0f)
                 {
-                    if(car is MSTSLocomotive)
+                    if (car is MSTSLocomotive)
                         TrainMaxSpeedMpS = (car as MSTSLocomotive).MaxSpeedMpS;
                     if (car is MSTSElectricLocomotive)
                         TrainMaxSpeedMpS = (car as MSTSElectricLocomotive).MaxSpeedMpS;
@@ -2789,7 +2789,7 @@ namespace ORTS
 
             if (ValidRoute[0] == null)
             {
-				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, trainLength, true, true);
+                ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, trainLength, true, true);
             }
 
             // find sections
@@ -2914,7 +2914,7 @@ namespace ORTS
 
             if (ValidRoute[0] == null)
             {
-				ValidRoute[0] = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
+                ValidRoute[0] = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
             }
 
             // get index of first section in route
@@ -3550,7 +3550,7 @@ namespace ORTS
                 int lastValidRouteIndex = ValidRoute[0].Count - 1;
                 if (signalRef.TrackCircuitList[ValidRoute[0][lastValidRouteIndex].TCSectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                     lastValidRouteIndex--;
-                
+
                 // if end of train on last section in route - end of route reached
 
                 if (PresentPosition[1].RouteListIndex == lastValidRouteIndex)
@@ -3588,7 +3588,7 @@ namespace ORTS
                     bool intermediateSignal = false;
                     float length = 0f;
                     float distanceToNextJunction = -1f;
-                    float distanceToNextSignal   = -1f;
+                    float distanceToNextSignal = -1f;
 
                     if (PresentPosition[1].RouteListIndex >= 0) // end of train is on route
                     {
@@ -3901,7 +3901,7 @@ namespace ORTS
 
                 if (rearIndex < 0) // end of train not on new route
                 {
-					TCSubpathRoute tempRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
+                    TCSubpathRoute tempRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
                     for (int iIndex = 0; iIndex < tempRoute.Count; iIndex++)
                     {
@@ -4291,7 +4291,7 @@ namespace ORTS
         {
             // occupation is set in forward mode only
             // build route from rear to front - before reset occupy so correct switch alignment is used
-			TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
+            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
             // save present occupation list
 
@@ -4301,35 +4301,7 @@ namespace ORTS
                 clearedSections.Add(OccupiedTrack[iindex]);
             }
 
-            // first, check for misaligned switch
-
-            foreach (TCRouteElement thisElement in TrainRoute)
-            {
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-
-                // occupying misaligned switch : reset routes and position
-                if (thisSection.Index == MisalignedSwitch[0])
-                {
-                    // align switch
-                    thisSection.alignSwitchPins(MisalignedSwitch[1]);
-                    MisalignedSwitch[0] = -1;
-                    MisalignedSwitch[1] = -1;
-
-                    // set to out of control
-                    SetTrainOutOfControl(OUTOFCONTROL.MISALIGNED_SWITCH);
-
-                    // recalculate track position
-                    UpdateTrainPosition();
-
-                    // rebuild this list
-                    UpdateSectionStateManual();
-
-                    // exit, as routine has called itself
-                    return;
-                }
-            }
-
-            // if all is well, set track occupied
+            // set track occupied
 
             OccupiedTrack.Clear();
 
@@ -4472,6 +4444,46 @@ namespace ORTS
             int thisRouteIndex = newRoute.GetRouteIndex(requiredPosition.TCSectionIndex, 0);
             if (thisRouteIndex < 0)    // no valid point in route
             {
+                // check if run out of route on misaligned switch
+
+                if (newRoute.Count > 0)
+                {
+                    // get last section, and get next expected section
+                    TrackCircuitSection lastSection = signalRef.TrackCircuitList[newRoute[newRoute.Count - 1].TCSectionIndex];
+                    int nextSectionIndex = lastSection.ActivePins[newRoute[newRoute.Count - 1].Direction, 0].Link;
+
+                    if (nextSectionIndex >= 0)
+                    {
+                        TrackCircuitSection nextSection = signalRef.TrackCircuitList[nextSectionIndex];
+
+                        // is next expected section misaligned switch and is present section trailing end of this switch
+                        if (nextSectionIndex == MisalignedSwitch[direction, 0] && lastSection.Index == MisalignedSwitch[direction, 1] &&
+                            nextSection.ActivePins[0, 0].Link == requiredPosition.TCSectionIndex)
+                        {
+
+                            // misaligned switch
+
+                            // reset indication
+                            MisalignedSwitch[direction, 0] = -1;
+                            MisalignedSwitch[direction, 1] = -1;
+
+                            // set to out of control
+                            SetTrainOutOfControl(OUTOFCONTROL.MISALIGNED_SWITCH);
+
+                            // recalculate track position
+                            UpdateTrainPosition();
+
+                            // rebuild this list
+                            UpdateSectionStateManual();
+
+                            // exit
+
+                            return (newRoute);
+                        }
+                    }
+                }
+
+
                 if (requiredRoute != null && requiredRoute.Count > 0)  // if route defined, then breakdown route
                 {
                     signalRef.BreakDownRouteList(requiredRoute, 0, thisRouted);
@@ -4480,6 +4492,9 @@ namespace ORTS
 
 
                 // build new route
+
+                MisalignedSwitch[direction, 0] = -1;
+                MisalignedSwitch[direction, 1] = -1;
 
                 List<int> tempSections = new List<int>();
                 tempSections = signalRef.ScanRoute(this, requiredPosition.TCSectionIndex, requiredPosition.TCOffset,
@@ -4578,8 +4593,8 @@ namespace ORTS
 
                 // check if last item is non-aligned switch
 
-                MisalignedSwitch[0] = -1;
-                MisalignedSwitch[1] = -1;
+                MisalignedSwitch[direction, 0] = -1;
+                MisalignedSwitch[direction, 1] = -1;
 
                 TrackCircuitSection nextSection = nextSectionIndex >= 0 ? signalRef.TrackCircuitList[nextSectionIndex] : null;
                 if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
@@ -4587,14 +4602,14 @@ namespace ORTS
                     if (nextSection.Pins[0, 0].Link != lastSectionIndex &&
                         nextSection.Pins[1, nextSection.JunctionLastRoute].Link != lastSectionIndex)
                     {
-                        MisalignedSwitch[0] = nextSection.Index;
-                        MisalignedSwitch[1] = lastSectionIndex;
+                        MisalignedSwitch[direction, 0] = nextSection.Index;
+                        MisalignedSwitch[direction, 1] = lastSectionIndex;
                     }
                 }
 
                 List<int> tempSections = new List<int>();
 
-                if (nextSectionIndex >= 0 && MisalignedSwitch[0] < 0)
+                if (nextSectionIndex >= 0 && MisalignedSwitch[direction, 0] < 0)
                 {
                     bool reqAutoAlign = hasEndSignal; // auto-align switchs if route is extended from signal
 
@@ -4994,9 +5009,14 @@ namespace ORTS
                     signalRef.setSwitch(reqSwitch.OriginalIndex, reqSwitch.JunctionSetManual, reqSwitch);
                     switchSet = true;
                 }
-                // check if switch reserved by this train - if so, dealign
+                // check if switch reserved by this train - if so, dealign and breakdown route
                 else if (reqSwitch.CircuitState.TrainReserved != null && reqSwitch.CircuitState.TrainReserved.Train == this)
                 {
+                    int reqRouteIndex = reqSwitch.CircuitState.TrainReserved.TrainRouteDirectionIndex;
+                    int routeIndex = ValidRoute[reqRouteIndex].GetRouteIndex(reqSwitch.Index, 0);
+                    signalRef.BreakDownRouteList(ValidRoute[reqRouteIndex], routeIndex, reqSwitch.CircuitState.TrainReserved);
+                    ValidRoute[reqRouteIndex].RemoveRange(routeIndex, ValidRoute[reqRouteIndex].Count - routeIndex);
+
                     reqSwitch.deAlignSwitchPins();
                     reqSwitch.JunctionSetManual = reqSwitch.JunctionLastRoute == 0 ? 1 : 0;
                     signalRef.setSwitch(reqSwitch.OriginalIndex, reqSwitch.JunctionSetManual, reqSwitch);
@@ -5007,7 +5027,7 @@ namespace ORTS
                     ProcessManualSwitch(routeDirectionIndex, reqSwitch, direction);
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Confirm(
-                        (direction == Direction.Forward) ? CabControl.SwitchAhead : CabControl.SwitchBehind, 
+                        (direction == Direction.Forward) ? CabControl.SwitchAhead : CabControl.SwitchBehind,
                         CabSetting.On);
             }
             else
@@ -5104,8 +5124,8 @@ namespace ORTS
             switchSection.JunctionSetManual = reqSwitchPosition;
 
             // reset indication for misaligned switch
-            MisalignedSwitch[0] = -1;
-            MisalignedSwitch[1] = -1;
+            MisalignedSwitch[routeDirectionIndex, 0] = -1;
+            MisalignedSwitch[routeDirectionIndex, 1] = -1;
 
             // build new route
 
@@ -5253,8 +5273,8 @@ namespace ORTS
                             allowedMaxSpeedSignalMpS = PassedSignalSpeeds[thisObject.thisRef];
                             AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, allowedMaxSpeedSignalMpS);
 
-							if (!remainingSignals.ContainsKey(thisObject.thisRef))
-								remainingSignals.Add(thisObject.thisRef, allowedMaxSpeedSignalMpS);
+                            if (!remainingSignals.ContainsKey(thisObject.thisRef))
+                                remainingSignals.Add(thisObject.thisRef, allowedMaxSpeedSignalMpS);
                         }
                     }
                     else
@@ -5280,8 +5300,8 @@ namespace ORTS
             PassedSignalSpeeds.Clear();
             foreach (KeyValuePair<int, float> thisPair in remainingSignals)
             {
-				if (!PassedSignalSpeeds.ContainsKey(thisPair.Key))
-					PassedSignalSpeeds.Add(thisPair.Key, thisPair.Value);
+                if (!PassedSignalSpeeds.ContainsKey(thisPair.Key))
+                    PassedSignalSpeeds.Add(thisPair.Key, thisPair.Value);
             }
 
             // check if signal passed posed a speed limit lower than present limit
@@ -5315,7 +5335,7 @@ namespace ORTS
         {
             // occupation is set in forward mode only
             // build route from rear to front - before reset occupy so correct switch alignment is used
-			TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
+            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
             // save present occupation list
 
@@ -5327,17 +5347,18 @@ namespace ORTS
 
             // first check for misaligned switch
 
+            int reqDirection = MUDirection == Direction.Forward ? 0 : 1;
             foreach (TCRouteElement thisElement in TrainRoute)
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
 
                 // occupying misaligned switch : reset routes and position
-                if (thisSection.Index == MisalignedSwitch[0])
+                if (thisSection.Index == MisalignedSwitch[reqDirection, 0])
                 {
                     // align switch
-                    thisSection.alignSwitchPins(MisalignedSwitch[1]);
-                    MisalignedSwitch[0] = -1;
-                    MisalignedSwitch[1] = -1;
+                    thisSection.alignSwitchPins(MisalignedSwitch[reqDirection, 1]);
+                    MisalignedSwitch[reqDirection, 0] = -1;
+                    MisalignedSwitch[reqDirection, 1] = -1;
 
                     // recalculate track position
                     UpdateTrainPosition();
@@ -5592,8 +5613,8 @@ namespace ORTS
 
                 // check if last item is non-aligned switch
 
-                MisalignedSwitch[0] = -1;
-                MisalignedSwitch[1] = -1;
+                MisalignedSwitch[direction, 0] = -1;
+                MisalignedSwitch[direction, 1] = -1;
 
                 TrackCircuitSection nextSection = nextSectionIndex >= 0 ? signalRef.TrackCircuitList[nextSectionIndex] : null;
                 if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
@@ -5602,14 +5623,14 @@ namespace ORTS
                         nextSection.Pins[0, 1].Link != lastSectionIndex &&
                         nextSection.Pins[1, nextSection.JunctionLastRoute].Link != lastSectionIndex)
                     {
-                        MisalignedSwitch[0] = nextSection.Index;
-                        MisalignedSwitch[1] = lastSectionIndex;
+                        MisalignedSwitch[direction, 0] = nextSection.Index;
+                        MisalignedSwitch[direction, 1] = lastSectionIndex;
                     }
                 }
 
                 List<int> tempSections = new List<int>();
 
-                if (nextSectionIndex >= 0 && MisalignedSwitch[0] < 0)
+                if (nextSectionIndex >= 0 && MisalignedSwitch[direction, 0] < 0)
                 {
                     bool reqAutoAlign = hasEndSignal; // auto-align switches if route is extended from signal
 
@@ -6476,7 +6497,7 @@ namespace ORTS
             if (rearIndex < 0)
             {
 
-				TCSubpathRoute tempRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
+                TCSubpathRoute tempRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
 
                 for (int iindex = tempRoute.Count - 1; iindex >= 0; iindex--)
                 {
@@ -6651,6 +6672,11 @@ namespace ORTS
 
         public void SetTrainOutOfControl(OUTOFCONTROL reason)
         {
+
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL) // allready out of control, so exit
+            {
+                return;
+            }
 
             // clear all reserved sections etc. - both directions
             if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
@@ -7010,7 +7036,7 @@ namespace ORTS
 
             OccupiedTrack.Clear();
             if (TrainRoute != null) TrainRoute.Clear();
-			TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
+            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
             foreach (TCRouteElement thisElement in TrainRoute)
             {
@@ -7181,7 +7207,7 @@ namespace ORTS
             // build route of sections now occupied
             OccupiedTrack.Clear();
             if (TrainRoute != null) TrainRoute.Clear();
-			TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
+            TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, false, true);
 
             foreach (TCRouteElement thisElement in TrainRoute)
             {
@@ -7222,7 +7248,7 @@ namespace ORTS
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
                 offset = PresentPosition[1].TCOffset;
 
-				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
+                ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
 
             }
 
@@ -9112,7 +9138,7 @@ namespace ORTS
             public List<TCSubpathRoute> TCAlternativePaths = new List<TCSubpathRoute>();
             public int activeSubpath;
             public int activeAltpath;
-            public List<int[]> WaitingPoints = new List<int[]>(); //[0] = sublist in which WP is placed; 
+            public List<int[]> WaitingPoints = new List<int[]>(); // [0] = sublist in which WP is placed; 
                                                                   // [1] = WP section; [2] = WP wait time (delta); [3] = WP depart time;
                                                                   // [4] = hold signal
             public List<TCReversalInfo> ReversalInfo = new List<TCReversalInfo>();
@@ -9396,7 +9422,7 @@ namespace ORTS
                         {
                             TCRouteElement thisElement =
                                 new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                            if (thisSubpath.Count <= 0 || thisSubpath[thisSubpath.Count-1].TCSectionIndex != thisElement.TCSectionIndex) thisSubpath.Add(thisElement); // only add if not yet set
+                            if (thisSubpath.Count <= 0 || thisSubpath[thisSubpath.Count - 1].TCSectionIndex != thisElement.TCSectionIndex) thisSubpath.Add(thisElement); // only add if not yet set
                         }
                     }
                 }
@@ -10818,7 +10844,7 @@ namespace ORTS
                     }
 
                     Valid = LastDivergeIndex >= 0; // it is a reversal
-                    validDivPoint = LastDivergeIndex > 0 && FirstDivergeIndex < (firstRoute.Count-1); // valid reversal point
+                    validDivPoint = LastDivergeIndex > 0 && FirstDivergeIndex < (firstRoute.Count - 1); // valid reversal point
                     if (lastRoute.Count == 1 && FirstDivergeIndex < (firstRoute.Count - 1)) validDivPoint = true; // valid reversal point in first and only section
                 }
 
@@ -11399,7 +11425,7 @@ namespace ORTS
                     DepartTime = Math.Max(0, departTime);
                 }
                 else
-                    // times may be <0 for waiting point
+                // times may be <0 for waiting point
                 {
                     ArrivalTime = arrivalTime;
                     DepartTime = departTime;
@@ -11755,7 +11781,7 @@ namespace ORTS
                             Traveller t = null;
                             if (expectedTracIndex <= 0)
                             {
-                                t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes,  expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
+                                t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
                             }
                             else
                             {
