@@ -17,8 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-#define DOPPLER
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -173,32 +171,7 @@ namespace ORTS
                     if (Viewer.World.GameSounds != null) Viewer.World.GameSounds.HandleEvent(Viewer.Simulator.SoundNotify);
                     Viewer.Simulator.SoundNotify = Event.None;
 				}
-#if DOPPLER
-                if (Viewer != null || Viewer.Camera != null) // For sure we have a Camera
-                {
-                    float[] cameraPosition = new float[] {
-                        Viewer.Camera.CameraWorldLocation.Location.X + 2048 * Viewer.Camera.CameraWorldLocation.TileX,
-                        Viewer.Camera.CameraWorldLocation.Location.Y,
-                        Viewer.Camera.CameraWorldLocation.Location.Z + 2048 * Viewer.Camera.CameraWorldLocation.TileZ};
 
-                    float[] cameraVelocity = new float[] { 0, 0, 0 };
-
-                    if (!(Viewer.Camera is TracksideCamera) && !(Viewer.Camera is FreeRoamCamera) && Viewer.Camera.AttachedCar != null)
-                    {
-                        Vector3 directionVector = Vector3.Multiply(Viewer.Camera.AttachedCar.GetXNAMatrix().Forward, Viewer.Camera.AttachedCar.SpeedMpS);
-                        cameraVelocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
-                    }
-
-                    float[] cameraOrientation = new float[] { 
-                        Viewer.Camera.XNAView.Backward.X, Viewer.Camera.XNAView.Backward.Y, Viewer.Camera.XNAView.Backward.Z,
-                        Viewer.Camera.XNAView.Down.X, Viewer.Camera.XNAView.Down.Y, Viewer.Camera.XNAView.Down.Z };
-
-                    OpenAL.alListenerfv(OpenAL.AL_POSITION, cameraPosition);
-                    OpenAL.alListenerfv(OpenAL.AL_VELOCITY, cameraVelocity);
-                    OpenAL.alListenerfv(OpenAL.AL_ORIENTATION, cameraOrientation);
-                    OpenAL.alListenerf(OpenAL.AL_GAIN, Program.Simulator.Paused ? 0 : (float)Program.Simulator.Settings.SoundVolumePercent / 100f);
-                }
-#endif
                 // Update all sound in our list
 				lock (SoundSources)
 				{

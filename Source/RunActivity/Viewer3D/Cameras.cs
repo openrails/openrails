@@ -277,6 +277,29 @@ namespace ORTS
                 return MathHelper.Clamp(angle, Minimum, Maximum);
             }
         }
+
+        public void UpdateListener()
+        {
+            float[] cameraPosition = new float[] {
+                        CameraWorldLocation.Location.X,
+                        CameraWorldLocation.Location.Y,
+                        CameraWorldLocation.Location.Z};
+
+            float[] cameraVelocity = new float[] { 0, 0, 0 };
+
+            if (!(this is TracksideCamera) && !(this is FreeRoamCamera) && AttachedCar != null)
+            {
+                cameraVelocity = AttachedCar.Velocity;
+            }
+
+            float[] cameraOrientation = new float[] { 
+                        XNAView.Backward.X, XNAView.Backward.Y, XNAView.Backward.Z,
+                        XNAView.Down.X, XNAView.Down.Y, XNAView.Down.Z };
+
+            OpenAL.alListenerfv(OpenAL.AL_POSITION, cameraPosition);
+            OpenAL.alListenerfv(OpenAL.AL_VELOCITY, cameraVelocity);
+            OpenAL.alListenerfv(OpenAL.AL_ORIENTATION, cameraOrientation);
+        }
     }
 
     public abstract class LookAtCamera : Camera
@@ -684,6 +707,7 @@ namespace ORTS
                     }
                 }
             }
+            UpdateListener();
         }
 
         protected virtual void PanRight(float speed)
@@ -905,6 +929,7 @@ namespace ORTS
                 cameraLocation.Location.Z *= -1;
             }
             UpdateRotation(elapsedTime);
+            UpdateListener();
         }
     }
 
@@ -1118,6 +1143,7 @@ namespace ORTS
 
             // Update location of camera
             UpdateLocation();
+            UpdateListener();
         }
 
         protected void PanUp(float speed)
@@ -1619,6 +1645,7 @@ namespace ORTS
             }
 
             targetLocation.Location.Y += TargetAltitude;
+            UpdateListener();
         }
     }
 }

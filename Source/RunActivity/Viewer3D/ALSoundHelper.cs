@@ -456,9 +456,8 @@ namespace ORTS
         private const int QUEUELENGHT = 16;
 
         public int SoundSourceID = -1;
-        bool _isSlowRolloff;
-        bool _isLooping;
-        float _distanceFactor = 10;
+        bool Looping;
+        float RolloffFactor = 1;
 
         private SoundItem[] SoundQueue = new SoundItem[QUEUELENGHT];
         private int QueueHeader;
@@ -470,14 +469,12 @@ namespace ORTS
         /// Constructs a new AL sound source
         /// </summary>
         /// <param name="isEnv">True if environment sound</param>
-        /// <param name="isSlowRolloff">True if stationary, slow roll off sound</param>
-        /// <param name="distanceFactor">The number indicating the fade speed by the distance</param>
-        public ALSoundSource(bool isEnv, bool isSlowRolloff, float distanceFactor)
+        /// <param name="rolloffFactor">The number indicating the fade speed by the distance</param>
+        public ALSoundSource(bool isEnv, float rolloffFactor)
         {
             SoundSourceID = -1;
             SoundQueue[QueueTail].PlayState = PlayState.NOP;
-            _isSlowRolloff = isSlowRolloff;
-            _distanceFactor = 1 / (distanceFactor / 350);
+            RolloffFactor = rolloffFactor;
         }
 
         private bool _nxtUpdate;
@@ -499,17 +496,10 @@ namespace ORTS
                         _MustActivate = false;
                         _MustWarn = true;
 
-                        //OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_DISTANCE, _distanceFactor);
-                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_REFERENCE_DISTANCE, 5f); // meter - below is no attenuation
-                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_GAIN, 1);
-                        if (_isSlowRolloff)
-                        {
-                            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_ROLLOFF_FACTOR, .4f);
-                        }
-                        else
-                        {
-                            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_ROLLOFF_FACTOR, _distanceFactor);
-                        }
+                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_DISTANCE, SoundSource.MaxDistanceM);
+                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_REFERENCE_DISTANCE, SoundSource.ReferenceDistanceM);
+                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_GAIN, 1f);
+                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_ROLLOFF_FACTOR, RolloffFactor);
 
                         if (_Active)
                             SetVolume(_Volume);
@@ -517,7 +507,7 @@ namespace ORTS
                             SetVolume(0);
 
                         OpenAL.alSourcef(SoundSourceID, OpenAL.AL_PITCH, _PlaybackSpeed);
-                        OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, _isLooping ? OpenAL.AL_TRUE : OpenAL.AL_FALSE);
+                        OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, Looping ? OpenAL.AL_TRUE : OpenAL.AL_FALSE);
                     }
                     else if (_MustWarn)
                     {
@@ -531,16 +521,6 @@ namespace ORTS
         private void SetVolume(float volume)
         {
             OpenAL.alSourcef(SoundSourceID, OpenAL.AL_GAIN, volume);
-        }
-
-        public void SetPosition(float[] position)
-        {
-            OpenAL.alSourcefv(SoundSourceID, OpenAL.AL_POSITION, position);
-        }
-
-        public void SetVelocity(float[] velocity)
-        {
-            OpenAL.alSourcefv(SoundSourceID, OpenAL.AL_VELOCITY, velocity);
         }
 
         public void Set2D(bool sound2D)
@@ -1016,17 +996,17 @@ namespace ORTS
 
         private void EnterLoop()
         {
-            if (_isLooping)
+            if (Looping)
                 return;
 
             OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, OpenAL.AL_TRUE);
-            _isLooping = true;
+            Looping = true;
         }
 
         private void LeaveLoop()
         {
             OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, OpenAL.AL_FALSE);
-            _isLooping = false;
+            Looping = false;
         }
 
         private static bool _Muted;

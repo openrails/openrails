@@ -63,8 +63,9 @@ namespace ORTS
         public readonly string WagFilePath;
 		public string RealWagFilePath; //we are substituting missing remote cars in MP, so need to remember this
 
-        // Some housekeeping
+        // sound related variables
         public bool IsPartOfActiveTrain = true;
+        public List<int> SoundSourceIDs = new List<int>();
 
         // some properties of this car
         public float LengthM = 40;       // derived classes must overwrite these defaults
@@ -217,6 +218,7 @@ namespace ORTS
 
                 _PrevSpeedMpS = _SpeedMpS;
             }
+            UpdateSoundPosition();
         }
 
         /// <summary>
@@ -730,6 +732,38 @@ namespace ORTS
             if (maxV > 1 || Math.Abs(tz) > 0.02 || Math.Abs(AccelerationMpSS)>0.5) { accumedAcceTime = 1f; return max; }
             accumedAcceTime += interval/5;
             return max / accumedAcceTime;//otherwise slowly decrease the value
+        }
+
+        public float[] Velocity = new float[] { 0, 0, 0 };
+        WorldLocation SoundLocation;
+        public void UpdateSoundPosition()
+        {
+            if (SoundSourceIDs.Count == 0 || Program.Simulator.Confirmer.Viewer == null || Program.Simulator.Confirmer.Viewer.Camera == null)
+                return;
+            
+            if (Train != null)
+            {
+                Vector3 directionVector = Vector3.Multiply(GetXNAMatrix().Forward, SpeedMpS);
+                Velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
+            }
+            else
+                Velocity = new float[] { 0, 0, 0 };
+
+            SoundLocation = WorldPosition.WorldLocation;
+            SoundLocation.NormalizeTo(
+                Program.Simulator.Confirmer.Viewer.Camera.CameraWorldLocation.TileX,
+                Program.Simulator.Confirmer.Viewer.Camera.CameraWorldLocation.TileZ);
+            float[] position = new float[] {
+                SoundLocation.Location.X,
+                SoundLocation.Location.Y,
+                SoundLocation.Location.Z};
+
+            var soundSourceIDs = SoundSourceIDs.ToArray();
+            foreach (var soundSourceID in soundSourceIDs)
+            {
+                OpenAL.alSourcefv(soundSourceID, OpenAL.AL_POSITION, position);
+                OpenAL.alSourcefv(soundSourceID, OpenAL.AL_VELOCITY, Velocity);
+            }
         }
     }
 

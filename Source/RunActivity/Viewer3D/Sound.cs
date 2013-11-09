@@ -41,7 +41,6 @@
 #define PLAYENVSOUNDS
 //#define DEBUGSCR
 #define STEREOCAB
-#define DOPPLER
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -206,6 +205,11 @@ namespace ORTS
     public class SoundSource : SoundSourceBase
     {
         private const int CUTOFFDISTANCE = 100000;
+        public const float MaxDistanceM = 316f; // (float)Math.Sqrt(CUTOFFDISTANCE)
+        public const float GainAtMaxDistance = 0.01f;
+        public const float ReferenceDistanceM = 5f; // below is no attenuation
+        public float RolloffFactor;
+
         /// <summary>
         /// Construct a SoundSource attached to a train car.
         /// </summary>
@@ -246,11 +250,11 @@ namespace ORTS
         /// <param name="viewer"></param>
         /// <param name="worldLocation"></param>
         /// <param name="smsFilePath"></param>
-        /// <param name="isSlowRolloff"></param>
-        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath, bool isSlowRolloff)
+        /// <param name="slowRolloff"></param>
+        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath, bool slowRolloff)
         {
             IsEnvSound = true;
-            _isSlowRolloff = isSlowRolloff;
+            SlowRolloff = slowRolloff;
             Initialize(viewer, worldLocation, eventSource, smsFilePath);
         }
 
@@ -280,7 +284,7 @@ namespace ORTS
 
         public float DistanceSquared = CUTOFFDISTANCE + 1;
         private bool WasOutOfDistance = true;
-        private bool _isSlowRolloff;
+        private bool SlowRolloff;
 
         public List<SoundStream> SoundStreams = new List<SoundStream>();
 
@@ -310,11 +314,16 @@ namespace ORTS
                 Volume = mstsScalabiltyGroup.Volume;
                 Ignore3D = mstsScalabiltyGroup.Ignore3D | mstsScalabiltyGroup.Stereo;
                 IsExternal = ActivationConditions.ExternalCam;
+
+                var maxDistanceM = DeactivationConditions.Distance == 0 ? MaxDistanceM : Math.Min(MaxDistanceM, DeactivationConditions.Distance);
+
+                // OpenAL distance model is based on formula
+                // Gain = AL_REFERENCE_DISTANCE / ( AL_REFERENCE_DISTANCE + AL_ROLLOFF_FACTOR * ( Distance - AL_REFERENCE_DISTANCE ) )
+                RolloffFactor = SlowRolloff ? 0.4f : ReferenceDistanceM * (1f / GainAtMaxDistance - 1f) / (maxDistanceM - ReferenceDistanceM);
                 
-                int cou = 1;
                 foreach (MSTS.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
                 {
-                    SoundStreams.Add(new SoundStream(mstsStream, eventSource, this, cou++, _isSlowRolloff, ActivationConditions.Distance));
+                    SoundStreams.Add(new SoundStream(mstsStream, eventSource, this));
                 }
             }
         }
@@ -343,6 +352,9 @@ namespace ORTS
             {
                 if (!WasOutOfDistance)
                 {
+                    if (Car != null)
+                        Car.SoundSourceIDs.Clear();
+
                     foreach (SoundStream stream in SoundStreams)
                         stream.HardDeactivate();
                 }
@@ -376,6 +388,9 @@ namespace ORTS
                             }
                         }
                         stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D || !IsExternal);
+
+                        if (Car != null)
+                            Car.SoundSourceIDs.Add(stream.ALSoundSource.SoundSourceID);
                     }
                 }
                 WasOutOfDistance = false;
@@ -416,38 +431,17 @@ namespace ORTS
 
             bool needsFrequentUpdate = false;
 
-            // Must start and stop by triggers - by GeorgeS
-            //if (Active)
-            if (WorldLocation != null && !Ignore3D && IsExternal)
+            if (Car == null && WorldLocation != null && !Ignore3D && IsExternal)
             {
-                float[] velocity = new float[] {0, 0, 0};
-
-#if DOPPLER
-                // Stationary or otherwise invalid Car
-                if (Car != null && Car.Train != null)
-                {
-                    if (Viewer.Camera.AttachedCar != null && Viewer.Camera.AttachedCar.Train != null 
-                        && Car.Train == Viewer.Camera.AttachedCar.Train
-                        && !(Viewer.Camera is TracksideCamera) && !(Viewer.Camera is FreeRoamCamera))
-                    {
-                        Vector3 directionVector = Vector3.Multiply(Viewer.Camera.AttachedCar.GetXNAMatrix().Forward, Viewer.Camera.AttachedCar.SpeedMpS);
-                        velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
-                    }
-                    else
-                    {
-                        Vector3 directionVector = Vector3.Multiply(Car.GetXNAMatrix().Forward, Car.SpeedMpS);
-                        velocity = new float[] { directionVector.X, directionVector.Y, -directionVector.Z };
-                    }
-                }
-#endif
+                WorldLocation.NormalizeTo(Viewer.Camera.CameraWorldLocation.TileX, Viewer.Camera.CameraWorldLocation.TileZ);
                 float[] position = new float[] {
-                    WorldLocation.Location.X + 2048 * WorldLocation.TileX,
+                    WorldLocation.Location.X,
                     WorldLocation.Location.Y,
-                    WorldLocation.Location.Z + 2048 * WorldLocation.TileZ};
+                    WorldLocation.Location.Z};
 
                 foreach (SoundStream stream in SoundStreams)
                 {
-                    stream.Update(position, velocity);
+                    stream.Update(position);
                     needsFrequentUpdate |= stream.NeedsFrequentUpdate;
                 }
             }
@@ -604,7 +598,6 @@ namespace ORTS
     public class SoundStream : IDisposable
     {
         public SoundSource SoundSource;
-        public int Index;
         
         public float Volume;
 
@@ -625,14 +618,13 @@ namespace ORTS
         List<ORTSTrigger> VariableTriggers;
         IEnumerable<ORTSTrigger> TriggersList;
 
-        public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, int index, bool isSlowRolloff, float factor)
+        public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource)
         {
-            Index = index;
             SoundSource = soundSource;
             MSTSStream = mstsStream;
             Volume = MSTSStream.Volume;
 
-            ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, isSlowRolloff, factor);
+            ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, soundSource.RolloffFactor);
 
             if (mstsStream.Triggers != null) 
                 foreach( MSTS.Trigger trigger in mstsStream.Triggers )
@@ -678,10 +670,9 @@ namespace ORTS
                                 select t).ToList();
         }
 
-        public void Update(float[] position, float[] velocity)
+        public void Update(float[] position)
         {
-            ALSoundSource.SetPosition(position);
-            ALSoundSource.SetVelocity(velocity);
+            OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_POSITION, position);
             Update();
         }
 
