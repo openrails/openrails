@@ -30,6 +30,7 @@
     <OutputPath>..\..\Program\</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.81.0.1407, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">

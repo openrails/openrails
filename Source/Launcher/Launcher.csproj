@@ -27,6 +27,7 @@
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\Program\OpenRails.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
