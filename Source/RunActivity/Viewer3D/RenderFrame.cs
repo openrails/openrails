@@ -466,7 +466,7 @@ namespace ORTS
             if (RenderProcess.Viewer.SaveActivityThumbnail)
             {
                 RenderProcess.Viewer.SaveActivityThumbnail = false;
-                SaveScreenshot(graphicsDevice, Path.Combine(Program.UserDataFolder, RenderProcess.Viewer.SaveActivityFileStem + ".png"), true);
+				SaveScreenshot(graphicsDevice, Path.Combine(UserSettings.UserDataFolder, RenderProcess.Viewer.SaveActivityFileStem + ".png"), true);
                 RenderProcess.Viewer.MessagesWindow.AddMessage("Game saved", 5);
             }
         }

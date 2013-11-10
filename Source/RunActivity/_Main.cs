@@ -47,8 +47,6 @@ namespace ORTS
     static class Program
     {
         public static string[] Arguments;
-        public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
-        public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static Random Random = new Random();  // primary random number generator used throughout the program
         public static Simulator Simulator;
 
@@ -76,11 +74,6 @@ namespace ORTS
         /// </summary>
         static void Main(string[] args)
         {
-            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
-            if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
-
-            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-
             // Look for an action to perform.
             var action = "";
             var actions = new[] { "start", "resume", "test", "testall", "replay", "replay_from_save" };
@@ -98,7 +91,7 @@ namespace ORTS
             if ((action.Length == 0) && (data.Length > 0))
                 action = "start";
 
-            var settings = GetSettings(options);
+            var settings = new UserSettings(options);
             InputSettings.Initialize(options);
 
             Action doAction = () => 
@@ -259,7 +252,7 @@ namespace ORTS
             // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
             var fileStem = String.Format("{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName : Simulator.RoutePathName, DateTime.Now);
 
-            using (BinaryWriter outf = new BinaryWriter(new FileStream(UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
+            using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
             {
                 // Save some version identifiers so we can validate on load.
                 outf.Write(VersionInfo.Version);
@@ -283,10 +276,10 @@ namespace ORTS
 
                 // The Save command is the only command that doesn't take any action. It just serves as a marker.
                 new SaveCommand( Viewer.Log, fileStem );
-                Viewer.Log.SaveLog( Path.Combine(UserDataFolder, fileStem + ".replay" ) );
+				Viewer.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".replay"));
 
                 // Copy the logfile to the save folder
-                CopyLog( Path.Combine( UserDataFolder, fileStem + ".txt" ) );
+				CopyLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".txt"));
 
                 Simulator.Save(outf);
                 Viewer.Save(outf, fileStem);
@@ -394,7 +387,7 @@ namespace ORTS
                 var c = log.CommandList[i];
                 if( c is SaveCommand ) {
                     string f = ((SaveCommand)c).FileStem;
-                    f = Path.Combine( Program.UserDataFolder, f );
+					f = Path.Combine(UserSettings.UserDataFolder, f);
                     if( !f.EndsWith( ".save" ) ) { f += ".save"; }
                     if( System.IO.File.Exists( f ) ) {
                         previousSaveFile = f;
@@ -453,7 +446,7 @@ namespace ORTS
         /// </summary>
         static void TestAll(string[] args)
         {
-            var settings = GetSettings(new[] { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" });
+            var settings = new UserSettings(new[] { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" });
             InitLogging(settings, args);
             var folders = args.Length == 0 ? ORTS.Menu.Folder.GetFolders() : args.Select(a => new ORTS.Menu.Folder(Path.GetFileName(a), a));
             var activities = (from f in folders
@@ -537,7 +530,7 @@ namespace ORTS
         static void ExportTestSummary(UserSettings settings, string[] args, bool passed, double loadTime)
         {
             // Append to CSV file in format suitable for Excel
-            var summaryFileName = Path.Combine(Program.UserDataFolder, "TestingSummary.csv");
+			var summaryFileName = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
             // Could fail if already opened by Excel
             try
             {
@@ -556,11 +549,6 @@ namespace ORTS
                 }
             }
             catch { } // Ignore any errors
-        }
-
-        static UserSettings GetSettings(IEnumerable<string> options)
-        {
-			return UserSettings.GetSettings(RegistryKey, Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "OpenRails.ini"), options);
         }
 
         static void InitLogging( UserSettings settings, string[] args ) {
@@ -744,11 +732,11 @@ namespace ORTS
             }
             string saveFile = args[0];
             if( !saveFile.EndsWith( ".save" ) ) { saveFile += ".save"; }
-            return Path.Combine( Program.UserDataFolder, saveFile );
+			return Path.Combine(UserSettings.UserDataFolder, saveFile);
         }
 
         private static string GetMostRecentSave() {
-            var directory = new DirectoryInfo( UserDataFolder );
+			var directory = new DirectoryInfo(UserSettings.UserDataFolder);
             var file = directory.GetFiles( "*.save" )
              .OrderByDescending( f => f.LastWriteTime )
              .First();

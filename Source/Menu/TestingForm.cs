@@ -59,8 +59,8 @@ namespace ORTS
         Task<int> TestActivitiesRunner;
         bool ClearedLogs;
 
-        readonly string SummaryFilePath = Path.Combine(Program.UserDataFolder, "TestingSummary.csv");
-        readonly string LogFilePath = Path.Combine(Program.UserDataFolder, "TestingLog.txt");
+		readonly string SummaryFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
+		readonly string LogFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingLog.txt");
 
         public TestingForm()
         {

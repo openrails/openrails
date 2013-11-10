@@ -172,7 +172,7 @@ namespace ORTS
             SaveLoader = new Task<List<Save>>(this, () =>
             {
                 var saves = new List<Save>();
-                var directory = Program.UserDataFolder;
+				var directory = UserSettings.UserDataFolder;
                 var build = VersionInfo.Build.Contains(" ") ? VersionInfo.Build.Substring(VersionInfo.Build.IndexOf(" ") + 1) : null;
                 var prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
                 if (Directory.Exists(directory))
@@ -267,7 +267,7 @@ namespace ORTS
             }
 
             buttonDeleteInvalid.Enabled = Saves.Any(s => !s.Valid);
-            buttonUndelete.Enabled = Directory.Exists(Program.DeletedSaveFolder) && Directory.GetFiles(Program.DeletedSaveFolder).Length > 0;
+			buttonUndelete.Enabled = Directory.Exists(UserSettings.DeletedSaveFolder) && Directory.GetFiles(UserSettings.DeletedSaveFolder).Length > 0;
         }
 
         void gridSaves_DoubleClick(object sender, EventArgs e)
@@ -292,8 +292,8 @@ namespace ORTS
             {
                 gridSaves.ClearSelection();
 
-                if (!Directory.Exists(Program.DeletedSaveFolder))
-                    Directory.CreateDirectory(Program.DeletedSaveFolder);
+				if (!Directory.Exists(UserSettings.DeletedSaveFolder))
+					Directory.CreateDirectory(UserSettings.DeletedSaveFolder);
 
                 for (var i = 0; i < selectedRows.Count; i++)
                 {
@@ -302,7 +302,7 @@ namespace ORTS
                     {
                         try
                         {
-                            File.Move(Path.Combine(Program.UserDataFolder, fileName), Path.Combine(Program.DeletedSaveFolder, fileName));
+							File.Move(Path.Combine(UserSettings.UserDataFolder, fileName), Path.Combine(UserSettings.DeletedSaveFolder, fileName));
                         }
                         catch { }
                     }
@@ -314,18 +314,18 @@ namespace ORTS
 
         void buttonUndelete_Click(object sender, EventArgs e)
         {
-            if (Directory.Exists(Program.DeletedSaveFolder))
+			if (Directory.Exists(UserSettings.DeletedSaveFolder))
             {
-                foreach (var filePath in Directory.GetFiles(Program.DeletedSaveFolder))
+				foreach (var filePath in Directory.GetFiles(UserSettings.DeletedSaveFolder))
                 {
                     try
                     {
-                        File.Move(filePath, Path.Combine(Program.UserDataFolder, Path.GetFileName(filePath)));
+						File.Move(filePath, Path.Combine(UserSettings.UserDataFolder, Path.GetFileName(filePath)));
                     }
                     catch { }
                 }
 
-                Directory.Delete(Program.DeletedSaveFolder);
+				Directory.Delete(UserSettings.DeletedSaveFolder);
 
                 LoadSaves();
             }

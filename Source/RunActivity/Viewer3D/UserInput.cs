@@ -89,9 +89,9 @@ namespace ORTS
 
                 if (UserInput.IsPressed(UserCommands.DebugDumpKeymap))
                 {
-                    InputSettings.DumpToText("Keyboard.txt");
+					InputSettings.DumpToText("Keyboard.txt");
                     viewer.MessagesWindow.AddMessage("Keyboard command list saved to 'keyboard.txt'.", 10);
-                    InputSettings.DumpToGraphic("Keyboard.png");
+					InputSettings.DumpToGraphic("Keyboard.png");
                     viewer.MessagesWindow.AddMessage("Keyboard map saved to 'keyboard.png'.", 10);
                 }
             }

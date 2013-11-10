@@ -90,7 +90,7 @@ namespace ORTS
         void MainForm_Shown(object sender, EventArgs e)
         {
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
-            Settings = UserSettings.GetSettings(Program.RegistryKey, System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "OpenRails.ini"), options);
+            Settings = new UserSettings(options);
 
             LoadOptions();
 
@@ -114,11 +114,11 @@ namespace ORTS
                 PathLoader.Cancel();
 
             // Remove any deleted saves
-            if (Directory.Exists(Program.DeletedSaveFolder))
-                Directory.Delete(Program.DeletedSaveFolder, true);   // true removes all contents as well as folder
+			if (Directory.Exists(UserSettings.DeletedSaveFolder))
+				Directory.Delete(UserSettings.DeletedSaveFolder, true);   // true removes all contents as well as folder
 
             // Tidy up after versions which used SAVE.BIN
-            var file = Program.UserDataFolder + @"\SAVE.BIN";
+			var file = UserSettings.UserDataFolder + @"\SAVE.BIN";
             if (File.Exists(file))
                 File.Delete(file);
         }
@@ -336,7 +336,7 @@ namespace ORTS
             if (!File.Exists(Folder.FolderDataFile))
             {
                 // Handle name change that occured at version 0021
-                var oldFolderDataFileName = Program.UserDataFolder + @"\..\ORTS\folder.dat";
+				var oldFolderDataFileName = UserSettings.UserDataFolder + @"\..\ORTS\folder.dat";
                 try
                 {
                     if (File.Exists(oldFolderDataFileName))

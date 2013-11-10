@@ -65,10 +65,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Win32;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 
 namespace ORTS
@@ -239,7 +239,7 @@ namespace ORTS
 
     public static class InputSettings
     {
-        public static string RegistryKey { get { return Program.RegistryKey + @"\Keys"; } }
+        public static string RegistryKey { get { return UserSettings.RegistryKey + @"\Keys"; } }
 
         public static UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
         public static UserSettings.Source[] Sources = new UserSettings.Source[Enum.GetNames(typeof(UserCommands)).Length];

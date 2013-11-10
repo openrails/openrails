@@ -41,7 +41,7 @@ namespace ORTS.Menu
         {
             get
             {
-                return Program.UserDataFolder + @"\folder.dat";
+				return UserSettings.UserDataFolder + @"\folder.dat";
             }
         }
 

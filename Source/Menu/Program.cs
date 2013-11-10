@@ -27,21 +27,10 @@ namespace ORTS
     {
         public const string RunActivityProgram = "runactivity.exe";
 
-        public static string RegistryKey;     // ie @"SOFTWARE\OpenRails\ORTS"
-        public static string UserDataFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
-        public static string DeletedSaveFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Deleted Saves"
-        public static string SavePackFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Save Packs"
-
         [STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
         static void Main(string[] args)
         {
             Application.EnableVisualStyles();
-
-            RegistryKey = @"SOFTWARE\OpenRails\ORTS";
-            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
-            DeletedSaveFolder = Path.Combine(UserDataFolder, "Deleted Saves");
-            SavePackFolder = Path.Combine(UserDataFolder, "Save Packs");
-            if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
 
             try
             {

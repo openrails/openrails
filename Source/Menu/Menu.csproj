@@ -79,6 +79,12 @@
     <Compile Include="..\MSTS\_STF.cs">
       <Link>MSTS\_STF.cs</Link>
     </Compile>
+    <Compile Include="..\ORTS\Common\Settings.cs">
+      <Link>ORTS\Common\Settings.cs</Link>
+    </Compile>
+    <Compile Include="..\ORTS\Common\SettingStore.cs">
+      <Link>ORTS\Common\SettingStore.cs</Link>
+    </Compile>
     <Compile Include="..\ORTS\Common\VersionInfo.cs">
       <Link>ORTS\Common\VersionInfo.cs</Link>
     </Compile>
