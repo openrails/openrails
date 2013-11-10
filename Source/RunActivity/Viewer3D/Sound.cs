@@ -387,10 +387,15 @@ namespace ORTS
                                     trigger.SoundCommand.Run();
                             }
                         }
-                        stream.ALSoundSource.Set2D(WorldLocation == null || Ignore3D || !IsExternal);
-
-                        if (Car != null)
+                        if (WorldLocation == null || Ignore3D || !IsExternal)
+                        {
+                            stream.ALSoundSource.Set2D(true);
+                        }
+                        else if (Car != null)
+                        {
                             Car.SoundSourceIDs.Add(stream.ALSoundSource.SoundSourceID);
+                        }
+
                     }
                 }
                 WasOutOfDistance = false;
