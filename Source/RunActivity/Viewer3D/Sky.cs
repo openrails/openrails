@@ -164,7 +164,8 @@ namespace ORTS
                 }
                 try
                 {
-                    MultiPlayer.MPManager.Instance().weatherChanged = false;
+                    if (MultiPlayer.MPManager.Instance().overCast >= 0 || MultiPlayer.MPManager.Instance().newFog > 0) 
+                        MultiPlayer.MPManager.Instance().weatherChanged = false;
                 }
                 catch { }
 

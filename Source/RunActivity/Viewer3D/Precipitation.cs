@@ -87,13 +87,14 @@ namespace ORTS
 			if (MultiPlayer.MPManager.IsClient())
 			{
 				//received message about weather change
-				if (MultiPlayer.MPManager.Instance().weatherChanged && MultiPlayer.MPManager.Instance().newWeather>=0 &&
+				if (MultiPlayer.MPManager.Instance().weatherChanged && MultiPlayer.MPManager.Instance().newWeather >=0 &&
                     MultiPlayer.MPManager.Instance().newWeather != (int)Viewer.Simulator.Weather)
 				{
 					Viewer.Simulator.Weather = (WeatherType)MultiPlayer.MPManager.Instance().newWeather;
                     Viewer.World.WeatherControl.SetWeatherParams();
 					try
 					{
+                        if ( MultiPlayer.MPManager.Instance().newWeather >=0 )
 						MultiPlayer.MPManager.Instance().weatherChanged = false;
 					}
 					catch { }
