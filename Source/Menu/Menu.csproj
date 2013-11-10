@@ -30,6 +30,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\Menu.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86">
