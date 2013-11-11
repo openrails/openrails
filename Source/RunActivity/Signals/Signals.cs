@@ -3290,19 +3290,6 @@ namespace ORTS
                     }
                 }
             }
-
-        // update valid route list
-
-            if (reqTrain.Train.ValidRoute[reqTrain.TrainRouteDirectionIndex] != null)
-            {
-                for (int ielement = (reqTrain.Train.ValidRoute[reqTrain.TrainRouteDirectionIndex].Count - 1); ielement > 0; ielement--)
-                {
-                    Train.TCRouteElement thisElement = reqTrain.Train.ValidRoute[reqTrain.TrainRouteDirectionIndex][ielement];
-                    TrackCircuitSection thisSection = TrackCircuitList[thisElement.TCSectionIndex];
-                    if (thisSection.CircuitState.TrainReserved == null) reqTrain.Train.ValidRoute[reqTrain.TrainRouteDirectionIndex].RemoveAt(ielement);
-                }
-            }
-
         }
 
         //================================================================================================//
@@ -9066,7 +9053,7 @@ namespace ORTS
                 int signalRouteIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, 0);
                 if (signalRouteIndex >= 0)
                 {
-                    signalRef.BreakDownRoute(TCNextTC, enabledTrain);
+                    signalRef.BreakDownRouteList(enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex], signalRouteIndex, enabledTrain);
                     ResetSignal(true);
                     holdState = HoldState.ManualLock;
                     returnValue[0] = true;
