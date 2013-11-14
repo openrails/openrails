@@ -436,7 +436,7 @@ namespace ORTS
         /// Build a w filename from tile X and Z coordinates.
         /// Returns a string eg "w-011283+014482.w"
         /// </summary>
-        static string WorldFileNameFromTileCoordinates(int tileX, int tileZ)
+        public static string WorldFileNameFromTileCoordinates(int tileX, int tileZ)
         {
             var filename = "w" + FormatTileCoordinate(tileX) + FormatTileCoordinate(tileZ) + ".w";
             return filename;

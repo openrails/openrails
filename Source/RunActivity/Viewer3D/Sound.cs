@@ -23,7 +23,6 @@
 /// create a SoundSource object, passing it the MSTS SMS file that specifies the sound.
 /// SoundSource objects
 ///  - have a physical location in the world, 
-///  - assume the listener is located at the same location as the 3D viewer
 ///  - may be attached to a railcar in which case it moves with the car
 ///  - railcar-attached sounds can poll control variables in the simulator
 ///  - have one or more SoundStreams
@@ -37,10 +36,9 @@
 ///  SoundCommands
 ///  - used by triggers to control the SoundStream
 ///  - ie play a sound, stop a sound etc
-#define PLAYSOUNDS
-#define PLAYENVSOUNDS
+
 //#define DEBUGSCR
-#define STEREOCAB
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -56,15 +54,32 @@ namespace ORTS
 /// SOUND SOURCE
 /////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Represents an sms file,
+    /// may have a physical location in the world,
+    /// may be attached to a railcar in which case it moves with the car,
+    /// owns one or more SoundStreams
+    /// </summary>
     public abstract class SoundSourceBase : IDisposable
     {
         public abstract void InitInitials();
         public abstract bool Update();
 
-        public MSTSWagon Car;                   // the sound may be from a train car
-        public Viewer3D Viewer;                 // the listener is connected to this viewer
-        public float Volume = 1;                // Volume of the ScalabiltyGroup
-
+        /// <summary>
+        /// The sound may be from a train car
+        /// </summary>
+        public MSTSWagon Car;
+        /// <summary>
+        /// The listener is connected to this viewer
+        /// </summary>
+        public Viewer3D Viewer;
+        /// <summary>
+        /// Volume of the ScalabiltyGroup
+        /// </summary>
+        public float Volume = 1;
+        /// <summary>
+        /// If needs active management or can be left to OpenAL to deal with sound properties
+        /// </summary>
         public bool NeedsFrequentUpdate;
 
         public abstract void Dispose();
@@ -202,12 +217,30 @@ namespace ORTS
         }
     }
     
+    /// <summary>
+    /// Represents an sms file
+    /// </summary>
     public class SoundSource : SoundSourceBase
     {
-        private const int CUTOFFDISTANCE = 100000;
-        public const float MaxDistanceM = 316f; // (float)Math.Sqrt(CUTOFFDISTANCE)
-        public const float GainAtMaxDistance = 0.01f;
-        public const float ReferenceDistanceM = 5f; // below is no attenuation
+        /// <summary>
+        /// Squeared cutoff distance. No sound is audible above that
+        /// </summary>
+        private const int CUTOFFDISTANCE = 250000;
+        /// <summary>
+        /// Max distance for OpenAL inverse distance model. Equals to Math.Sqrt(CUTOFFDISTANCE)
+        /// </summary>
+        public const float MaxDistanceM = 500f;
+        /// <summary>
+        /// Desired max gain at max distance for OpenAL inverse distance model
+        /// </summary>
+        public const float GainAtMaxDistance = 0.025f;
+        /// <summary>
+        /// Below this distance there is no attenuation. Used by OpenAL inverse distance model
+        /// </summary>
+        public const float ReferenceDistanceM = 8f;
+        /// <summary>
+        /// Sound attenuation factor. Calculated to achieve goal set by <see cref="GainAtMaxDistance"/>
+        /// </summary>
         public float RolloffFactor;
 
         /// <summary>
@@ -223,7 +256,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Initializes a SoundSource which has no specific loaction - like ingame.sms
+        /// Initializes a SoundSource which has no specific location - like ingame.sms
         /// </summary>
         /// <param name="viewer"></param>
         /// <param name="smsFilePath"></param>
@@ -271,9 +304,15 @@ namespace ORTS
             }
         }
         
-        public WorldLocation WorldLocation;   // current location for the sound source
+        /// <summary>
+        /// Current location of the sound source
+        /// </summary>
+        public WorldLocation WorldLocation;
 
-        public string SMSFolder;              // the wave files will be relative to this folder
+        /// <summary>
+        /// The wave files will be relative to this folder
+        /// </summary>
+        public string SMSFolder;
         public string SMSFileName;
         public bool Active;
         private MSTS.Activation ActivationConditions;
@@ -282,12 +321,31 @@ namespace ORTS
         public bool IsExternal = true;
         public bool Ignore3D;
 
+        /// <summary>
+        /// Current distance to camera, squared meter. Is used for comparision to <see cref="CUTOFFDISTANCE"/>, to determine if is out-of-scope
+        /// </summary>
         public float DistanceSquared = CUTOFFDISTANCE + 1;
+        /// <summary>
+        /// Out-of-scope state in previous <see cref="Update"/> loop
+        /// </summary>
         private bool WasOutOfDistance = true;
+        /// <summary>
+        /// Different rolloff factor is used for track sounds not to attenuate so fast. As a bargain they are not silenced at cutoff distance
+        /// </summary>
         private bool SlowRolloff;
 
+        /// <summary>
+        /// List of Streams in sms
+        /// </summary>
         public List<SoundStream> SoundStreams = new List<SoundStream>();
 
+        /// <summary>
+        /// Set properties of this SoundSource based on parsing the sms file, and generate SoundStreams
+        /// </summary>
+        /// <param name="viewer">Current <see cref="Viewer"/></param>
+        /// <param name="worldLocation">World location of <see cref="SoundSource"/></param>
+        /// <param name="eventSource">Type of game part sms belongs to, to determine how to interpret discrete trigger numbers</param>
+        /// <param name="smsFilePath">Full path for sms file</param>
         public void Initialize(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
         {
             Viewer = viewer;
@@ -315,9 +373,10 @@ namespace ORTS
                 Ignore3D = mstsScalabiltyGroup.Ignore3D | mstsScalabiltyGroup.Stereo;
                 IsExternal = ActivationConditions.ExternalCam;
 
-                var maxDistanceM = DeactivationConditions.Distance == 0 ? MaxDistanceM : Math.Min(MaxDistanceM, DeactivationConditions.Distance);
+                var deactivationDistance = DeactivationConditions != null && DeactivationConditions.Distance != 0 ? DeactivationConditions.Distance : MaxDistanceM;
+                var maxDistanceM = Math.Min(MaxDistanceM, deactivationDistance);
 
-                // OpenAL distance model is based on formula
+                // OpenAL inverse distance model is based on formula
                 // Gain = AL_REFERENCE_DISTANCE / ( AL_REFERENCE_DISTANCE + AL_ROLLOFF_FACTOR * ( Distance - AL_REFERENCE_DISTANCE ) )
                 RolloffFactor = SlowRolloff ? 0.4f : ReferenceDistanceM * (1f / GainAtMaxDistance - 1f) / (maxDistanceM - ReferenceDistanceM);
                 
@@ -328,6 +387,10 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Check if an event needs action from one of discrete triggers
+        /// </summary>
+        /// <param name="eventID">Occured event</param>
         public void HandleEvent(Event eventID)
         {
             foreach (var ss in SoundStreams)
@@ -463,6 +526,10 @@ namespace ORTS
             return true;
         } // Update
 
+        /// <summary>
+        /// Calculate current distance to camera, and compare it to <see cref="CUTOFFDISTANCE"/>
+        /// </summary>
+        /// <returns>True, if is now out-of-scope</returns>
         public bool isOutOfDistance()
         {
             if (WorldLocation == null)
@@ -485,10 +552,10 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Return true if activation conditions are met,
+        /// Check if activation conditions are met,
         /// ie PassengerCam, CabCam, Distance etc
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True, if conditions were met</returns>
         public bool Activate()
         {
             if (ActivationConditions == null)
@@ -510,10 +577,10 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Return true if deactivation conditions are met
+        /// Check if deactivation conditions are met
         /// ie PassengerCam, CabCam, Distance etc
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True, if conditions were met</returns>
         public bool DeActivate()
         {
             if (DeactivationConditions == null)
@@ -532,7 +599,10 @@ namespace ORTS
             return false;
         }
 
-        public bool IsntThisCabView
+        /// <summary>
+        /// Returns true if SoundSource belongs to a cabview of a vehicle not currently watched. Used at <see cref="ConditionsMet"/> check
+        /// </summary>
+        private bool IsntThisCabView
         {
             get
             {
@@ -540,10 +610,13 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Returns true if SoundSource is a weather sound. Used at <see cref="ConditionsMet"/> check
+        /// </summary>
         private bool WeatherSound { get { return Viewer.World.WeatherControl.WeatherSounds.Contains(this); } }
 
         /// <summary>
-        /// Hack for enabling additional cab sounds (like radio sounds) of an attached (maybe invisible) car.
+        /// Hack for enabling additional cab sounds (like radio sounds) of an attached (maybe invisible) car. Used at <see cref="ConditionsMet"/> check
         /// </summary>
         /// <returns></returns>
         private bool IsInvisibleSoundCar
@@ -600,27 +673,65 @@ namespace ORTS
 /// SOUND STREAM
 /////////////////////////////////////////////////////////
         
+    /// <summary>
+    /// Owned by a <see cref="SoundSource"/>,
+    /// can play only one sound at a time,
+    /// the sound played is controlled by the various triggers
+    /// </summary>
     public class SoundStream : IDisposable
     {
+        /// <summary>
+        /// Owner SoundSource
+        /// </summary>
         public SoundSource SoundSource;
-        
+        /// <summary>
+        /// Stream's volume can be controlled independently of the SoundSource's
+        /// </summary>
         public float Volume;
-
+        /// <summary>
+        /// List of triggers controlling this stream
+        /// </summary>
         public List<ORTSTrigger> Triggers = new List<ORTSTrigger>();
-
+        /// <summary>
+        /// OpenAL compatible representation of SoundStream.
+        /// By OpenAL terminilogy our SoundStream is called as "SoundSource"
+        /// </summary>
         public ALSoundSource ALSoundSource { get; private set; }
-
-        private int DiscreteTriggers;
-
+        /// <summary>
+        /// A stream as is represented in sms file
+        /// </summary>
         protected MSTS.SMSStream MSTSStream;
-
+        /// <summary>
+        /// Each stream can contain only one initial trigger, which should be audible
+        /// in case the SoundSource is in scope, and no other variable trigger is active
+        /// </summary>
         private ORTSInitialTrigger _InitialTrigger;
-
+        /// <summary>
+        /// If soundstream needs active management by sound process, or can be left to OpenAL
+        /// </summary>
         public bool NeedsFrequentUpdate;
+        /// <summary>
+        /// If stream contains a release trigger with jump, looping cannot be handled fully by OpenAL.
+        /// Sound process needs to watch carefully for jump command
+        /// </summary>
         public bool IsReleasedWithJump;
+        /// <summary>
+        /// Store trigger used last time for being able to check if trigger got repeated
+        /// </summary>
         public ORTSTrigger LastTriggered = new ORTSTrigger();
+        /// <summary>
+        /// True if the same trigger was used repeatedly.
+        /// Needs for avoiding to queue same sound multiple times
+        /// in case the player keeps hitting the keyboard
+        /// </summary>
         public bool RepeatedTrigger;
+        /// <summary>
+        /// List of owned variable triggers. Used at determining if initial trigger is to be audible
+        /// </summary>
         List<ORTSTrigger> VariableTriggers;
+        /// <summary>
+        /// Helper object for determining if initial trigger is to be audible
+        /// </summary>
         IEnumerable<ORTSTrigger> TriggersList;
 
         public SoundStream(MSTS.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource)
@@ -665,7 +776,6 @@ namespace ORTS
                     {
                         ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (MSTS.Discrete_Trigger)trigger);
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
-                        DiscreteTriggers++;
                     }
                     IsReleasedWithJump |= (Triggers.Last().SoundCommand is ORTSReleaseLoopReleaseWithJump);
                 }  // for each mstsStream.Trigger
@@ -675,6 +785,11 @@ namespace ORTS
                                 select t).ToList();
         }
 
+        /// <summary>
+        /// Update OpenAL sound source position, then calls the main <see cref="Update"/> function
+        /// Position is relative to camera tile's center
+        /// </summary>
+        /// <param name="position"></param>
         public void Update(float[] position)
         {
             OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_POSITION, position);
@@ -682,8 +797,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Update frequency and volume relative to curves.
-        /// Position is the absolute world position
+        /// Try triggers, update frequency and volume according to curves, call queue management
         /// </summary>
         public void Update()
         {
@@ -730,7 +844,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Separated Frequency and Volume calculations to prevent glitches - by GeorgeS
+        /// Calculate frequency and volume according to curves defined in sms file
         /// </summary>
         private void SetFreqAndVolume()
         {
@@ -807,7 +921,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Read a variable from the car data in the simulator.
+        /// Read a variable from the attached TrainCar data
         /// </summary>
         /// <param name="control"></param>
         /// <param name="car"></param>
@@ -825,6 +939,9 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Stop OpenAL playing this stream, and flush buffers
+        /// </summary>
         public void Stop()
         {
             if (ALSoundSource != null)
@@ -857,6 +974,9 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Allocates a new sound source ID in OpenAL, if one is not allocated yet.
+        /// </summary>
         public void HardActivate()
         {
             if (ALSoundSource != null)
@@ -865,6 +985,9 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Frees up the allocated sound source ID, and tries to unload wave file data from memory, if it is not used by an other stream
+        /// </summary>
         public void HardDeactivate()
         {
             if (ALSoundSource != null)
@@ -885,6 +1008,9 @@ namespace ORTS
             Sweep();
         }
 
+        /// <summary>
+        /// Tries to unload wave file data from memory, if it is not used by an other stream
+        /// </summary>
         private void Sweep()
         {
             foreach (var trigger in Triggers)
@@ -899,16 +1025,34 @@ namespace ORTS
 /// SOUND TRIGGERS
 /////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Trigger is defined in the SMS file as members of a SoundStream.
+    /// They are activated by various events.
+    /// When triggered, executes a SoundCommand
+
+    /// </summary>
     public class ORTSTrigger
     {
-        public bool Enabled = true;  // set by the DisableTrigger, EnableTrigger sound commands
+        /// <summary>
+        /// Set by the DisableTrigger, EnableTrigger sound commands
+        /// </summary>
+        public bool Enabled = true;
+        /// <summary>
+        /// True if trigger activation conditions are met
+        /// </summary>
         public bool Signaled;
-
-        // SoundCommand moved here from all descendants in order to support loops - by GeorgeS
+        /// <summary>
+        /// Represents a sound command to be executed, when trigger is activated
+        /// </summary>
         public ORTSSoundCommand SoundCommand;
 
+        /// <summary>
+        /// Check in every update loop whether to activate the trigger
+        /// </summary>
         public virtual void TryTrigger() { }
-
+        /// <summary>
+        /// Executed in constructors, or when sound source gets into scope, or for InitialTrigger when other VariableTriggers stop working
+        /// </summary>
         public virtual void Initialize() { }
     }
 
@@ -918,9 +1062,17 @@ namespace ORTS
     /// </summary>
     public class ORTSDiscreteTrigger: ORTSTrigger, EventHandler
     {
+        /// <summary>
+        /// Event this trigger listens to
+        /// </summary>
         public Event TriggerID;
-        // Added in order to check the activeness of the SoundSource - by GeorgeS
+        /// <summary>
+        /// Store the owning SoundStream
+        /// </summary>
         private SoundStream SoundStream;
+        /// <summary>
+        /// This flag is set by Updater process, and is used by Sound process to activate the trigger
+        /// </summary>
         private bool Triggered;
 
         public ORTSDiscreteTrigger(SoundStream soundStream, Events.Source eventSound, MSTS.Discrete_Trigger smsData)
@@ -930,6 +1082,10 @@ namespace ORTS
             SoundStream = soundStream;
         }
 
+        /// <summary>
+        /// Check if this trigger listens to an event
+        /// </summary>
+        /// <param name="eventID">Occured event</param>
         public void HandleEvent(Event eventID)
         {
             if (eventID == TriggerID)
@@ -1008,6 +1164,9 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Calculate a new random distance to travel till the next trigger action
+        /// </summary>
         private void UpdateTriggerDistance()
         {
             if (SMS.Dist_Max != SMS.Dist_Min)
@@ -1023,7 +1182,7 @@ namespace ORTS
     } // class ORTSDistanceTravelledTrigger
 
     /// <summary>
-    /// Play this sound immediately when this SoundSource becomes active
+    /// Play this sound immediately when this SoundSource becomes active, or in case no other VariableTriggers are active
     /// </summary>
     public class ORTSInitialTrigger: ORTSTrigger
     {
@@ -1098,6 +1257,9 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Calculate new random time till the next triggering action
+        /// </summary>
         private void UpdateTriggerAtSeconds()
         {
             double interval = Program.Random.NextDouble() * (SMS.Delay_Max - SMS.Delay_Min) + SMS.Delay_Min;
@@ -1209,8 +1371,12 @@ namespace ORTS
                 }
 #endif
             }
-        } // TryTrigger
+        }
 
+        /// <summary>
+        /// Read the desired variable either from the attached TrainCar, or the distance to sound source
+        /// </summary>
+        /// <returns></returns>
         private float ReadValue()
         {
             switch (SMS.Event)
@@ -1244,7 +1410,7 @@ namespace ORTS
     
 
     /// <summary>
-    /// Play a sound file once.
+    /// Start playing the whole sound stream once, then stop
     /// </summary>
     public class ORTSPlayOneShot : ORTSSoundPlayCommand
     {
@@ -1264,7 +1430,7 @@ namespace ORTS
     } 
 
     /// <summary>
-    /// Start a repeating sound
+    /// Start looping the whole stream, release it only at the end
     /// </summary>
     public class ORTSStartLoop : ORTSSoundPlayCommand
     {
@@ -1285,12 +1451,10 @@ namespace ORTS
     } 
 
     /// <summary>
-    /// Stop a repeating sound.
+    /// Release the sound by playing the looped sustain part till its end, then play the last part
     /// </summary>
     public class ORTSReleaseLoopRelease : ORTSSoundCommand
     {
-        public override string FileName { get;  set; }
-
         public ORTSReleaseLoopRelease(SoundStream ortsStream)
             : base(ortsStream)
         {
@@ -1304,7 +1468,7 @@ namespace ORTS
     }
 
     /// <summary>
-    /// Start a looping sound that uses repeat markers
+    /// Start by playing the first part, then start looping the sustain part of the stream
     /// </summary>
     public class ORTSStartLoopRelease : ORTSSoundPlayCommand
     {
@@ -1326,11 +1490,10 @@ namespace ORTS
     }
 
     /// <summary>
-    /// Jump to the exit portion of a looping sound with repeat markers   
+    /// Release the sound by playing the looped sustain part till the next cue point, then jump to the last part and play that  
     /// </summary>
     public class ORTSReleaseLoopReleaseWithJump : ORTSSoundCommand
     {
-        public override string FileName { get; set; }
         public ORTSReleaseLoopReleaseWithJump(SoundStream ortsStream)
             : base(ortsStream)
         {
@@ -1384,7 +1547,7 @@ namespace ORTS
     }
 
     /// <summary>
-    /// Set Volume Command
+    /// Set Volume of Stream
     /// </summary>
     public class ORTSSetStreamVolume : ORTSSoundCommand
     {
@@ -1418,10 +1581,13 @@ namespace ORTS
 
     /// <summary>
     /// A base class for all sound commands
-    /// Defines that they all have a stream and a 'run()' function
+    /// Defines that they all have a stream and a 'Run()' function
     /// </summary>
     public abstract class ORTSSoundCommand
     {
+        /// <summary>
+        /// The Stream in .sms file it belongs to
+        /// </summary>
         protected SoundStream ORTSStream;
 
         public ORTSSoundCommand(SoundStream ortsStream)
@@ -1429,13 +1595,14 @@ namespace ORTS
             ORTSStream = ortsStream;
         }
 
-        public virtual string FileName { get; set; }
-
+        /// <summary>
+        /// Put the command into stream's queue, or set its volume, or enable/disable other commands
+        /// </summary>
         public abstract void Run();
 
 
         /// <summary>
-        /// Create a sound command based on the sound command variable in an SMS file.
+        /// Create a sound command based on the sound command variable of a trigger in an SMS file.
         /// </summary>
         /// <param name="mstsSoundCommand"></param>
         /// <param name="soundStream"></param>
@@ -1490,8 +1657,17 @@ namespace ORTS
     /// </summary>
     public abstract class ORTSSoundPlayCommand : ORTSSoundCommand
     {
+        /// <summary>
+        /// File names to select from for playing
+        /// </summary>
         public String[] Files;
+        /// <summary>
+        /// How to select from available files
+        /// </summary>
         protected MSTS.SoundCommand.SelectionMethods SelectionMethod;
+        /// <summary>
+        /// Index of the file to play inside <see cref="Files"/> vector
+        /// </summary>
         protected int iFile;
 
         public ORTSSoundPlayCommand(SoundStream ortsStream, MSTS.SoundPlayCommand mstsSoundPlayCommand)
@@ -1501,6 +1677,10 @@ namespace ORTS
             SelectionMethod = mstsSoundPlayCommand.SelectionMethod;
         }
 
+        /// <summary>
+        /// Select a file from the Files list using the SelectionMethod
+        /// </summary>
+        /// <returns>File name with full path </returns>
         protected string GetNextFile()
         {
             if (SelectionMethod == MSTS.SoundCommand.SelectionMethods.SequentialSelection)
@@ -1514,7 +1694,6 @@ namespace ORTS
                 iFile = Program.Random.Next(Files.Length);
             }
 
-#if PLAYSOUNDS
             //<CJComment>SMSFolder is often same as BasePath, which means this searches the more general folder 
             // before the more specific folder. This is surely not intended.</CJComment>
             string[] pathArray = {ORTSStream.SoundSource.SMSFolder, 
@@ -1522,19 +1701,8 @@ namespace ORTS
                                      Program.Simulator.BasePath + @"\SOUND"};
             var fullPath = ORTSPaths.GetFileFromFolders(pathArray, Files[iFile]);
             return (fullPath != null) ? fullPath : "";
-#else
-            return "";
-#endif
         }
-
-        public override string FileName
-        {
-            get
-            {
-                return Files[iFile];
-            }
-        }
-    } // ORTSSoundPlayCommand 
+    }
 
     public class WorldSounds
     {
@@ -1711,15 +1879,14 @@ namespace ORTS
 
         public void AddByTile(int TileX, int TileZ)
         {
-            string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
-#if PLAYENVSOUNDS
+            string name = Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s";
             WSFile wf = new WSFile(name);
             if (wf.TR_WorldSoundFile != null)
             {
                 string[] pathArray = {Viewer.Simulator.RoutePath, Viewer.Simulator.BasePath};
                 
                 ls = new List<SoundSourceBase>();
-                foreach (WorldSoundSource fss in wf.TR_WorldSoundFile.SoundSources)
+                foreach (var fss in wf.TR_WorldSoundFile.SoundSources)
                 {
                     WorldLocation wl = new WorldLocation(TileX, TileZ, fss.X, fss.Y, fss.Z);
                     var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"Sound\" + fss.SoundSourceFileName);
@@ -1740,12 +1907,11 @@ namespace ORTS
                     }
                 }
             }
-#endif
         }
 
         public void RemoveByTile(int TileX, int TileZ)
         {
-            string name = WorldFileNameFromTileCoordinates(TileX, TileZ);
+            string name = Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(TileX, TileZ) + "s";
             Viewer.SoundProcess.RemoveSoundSource(name);
             lock (SoundRegions)
             {
@@ -1754,33 +1920,6 @@ namespace ORTS
                     SoundRegions.Remove(name);
                 }
             }
-        }
-
-        /// <summary>
-        /// Build a w filename from tile X and Z coordinates.
-        /// Returns a string eg "w-011283+014482.w"
-        /// </summary>
-        private string WorldFileNameFromTileCoordinates(int tileX, int tileZ)
-        {
-            string filename = Viewer.Simulator.RoutePath + @"\WORLD\";
-            filename += "w" + FormatTileCoordinate(tileX) + FormatTileCoordinate(tileZ) + ".ws";
-            return filename;
-        }
-
-        /// <summary>
-        /// For building a filename from tile X and Z coordinates.
-        /// Returns the string representation of a coordinate
-        /// eg "+014482"
-        /// </summary>
-        static string FormatTileCoordinate(int tileCoord)
-        {
-            string sign = "+";
-            if (tileCoord < 0)
-            {
-                sign = "-";
-                tileCoord *= -1;
-            }
-            return sign + tileCoord.ToString("000000");
         }
     }
 
