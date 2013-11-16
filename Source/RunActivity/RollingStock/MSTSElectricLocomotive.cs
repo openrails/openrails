@@ -213,6 +213,7 @@ namespace ORTS
             //Variable2 = Variable1 * 100F ;
             //Variable2 = Math.Abs(MotiveForceN) / MaxForceN * 100F ;
 
+            Variable1 = ThrottlePercent / 100f;
             if ( ThrottlePercent == 0f ) Variable2 = 0;
             else 
             {

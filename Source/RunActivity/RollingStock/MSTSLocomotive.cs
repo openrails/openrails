@@ -780,12 +780,6 @@ namespace ORTS
             }// end AI locomotive
 #endif
 
-            // Variable1 is wheel rotation in m/sec for steam locomotives
-            //Variable2 = Math.Abs(MotiveForceN) / MaxForceN;   // force generated
-            Variable1 = ThrottlePercent / 100f;   // throttle setting
-            //Variable2 = Math.Abs(WheelSpeedMpS);
-            //Variable3 = DynamicBrakePercent / 100f;
-
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, currentSpeedMpS);
@@ -2596,11 +2590,6 @@ namespace ORTS
         private static Dictionary<string, Texture2D[]> PNightTextures = new Dictionary<string, Texture2D[]>();
         private static Dictionary<string, Texture2D[]> PLightTextures = new Dictionary<string, Texture2D[]>();
 
-        /// <summary>
-        /// Loads a texture, day night and cablight
-        /// </summary>
-        /// <param name="viewer">Viver3D</param>
-        /// <param name="FileName">Name of the Texture</param>
         /// <summary>
         /// Loads a texture, day night and cablight
         /// </summary>
