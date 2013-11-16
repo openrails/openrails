@@ -298,6 +298,8 @@ namespace ORTS
         {
             foreach (SoundStream ss in SoundStreams)
             {
+                if (Car != null)
+                    Car.SoundSourceIDs.Remove(ss.ALSoundSource.SoundSourceID);
                 ss.Stop();
                 ss.HardDeactivate();
                 WasOutOfDistance = true;
@@ -465,6 +467,7 @@ namespace ORTS
             }
         }
         
+        static WorldLocation CameraWorldLocation;
         public override bool Update()
         {
             if (Car != null && !Car.IsPartOfActiveTrain)
@@ -501,7 +504,8 @@ namespace ORTS
 
             if (Car == null && WorldLocation != null && !Ignore3D && IsExternal)
             {
-                WorldLocation.NormalizeTo(Viewer.Camera.CameraWorldLocation.TileX, Viewer.Camera.CameraWorldLocation.TileZ);
+                CameraWorldLocation = Viewer.Camera.CameraWorldLocation;
+                WorldLocation.NormalizeTo(CameraWorldLocation.TileX, CameraWorldLocation.TileZ);
                 float[] position = new float[] {
                     WorldLocation.Location.X,
                     WorldLocation.Location.Y,
