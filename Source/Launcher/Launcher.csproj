@@ -47,8 +47,10 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>echo $Revision: 000 $&gt;revision.txt
-date /t&gt;&gt;revision.txt
-time /t&gt;&gt;revision.txt</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>if not $(ConfigurationName) == Release echo $Revision: 000 $&gt;Revision.txt
+if not $(ConfigurationName) == Release date /t&gt;&gt;Revision.txt
+if not $(ConfigurationName) == Release time /t&gt;&gt;Revision.txt</PostBuildEvent>
   </PropertyGroup>
 </Project>
