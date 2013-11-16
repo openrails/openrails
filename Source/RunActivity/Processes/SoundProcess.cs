@@ -165,6 +165,8 @@ namespace ORTS
             Profiler.Start();
 			try
 			{
+                OpenAL.alListenerf(OpenAL.AL_GAIN, Program.Simulator.Paused ? 0 : (float)Program.Simulator.Settings.SoundVolumePercent / 100f);
+                
 				// Update activity sounds
                 if (Viewer.Simulator.SoundNotify != Event.None)
 				{
