@@ -195,9 +195,9 @@ namespace ORTS
 
                 // Get the position of the scenery object into ORTS coordinate space.
                 WorldPosition worldMatrix;
-                if (worldObject.Matrix3x3 != null)
+                if (worldObject.Matrix3x3 != null && worldObject.Position != null)
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.Matrix3x3);
-                else if (worldObject.QDirection != null)
+                else if (worldObject.QDirection != null && worldObject.Position != null)
                     worldMatrix = WorldPositionFromMSTSLocation(WFile.TileX, WFile.TileZ, worldObject.Position, worldObject.QDirection);
                 else
                 {
