@@ -127,11 +127,11 @@ namespace ORTS
         /// <summary>
         /// Returns whether this traveller is currently on a section of track which is curved.
         /// </summary>
-        public bool IsTrackCurved { get { return IsTrack && trackSection.SectionCurve != null; } }
+        public bool IsTrackCurved { get { return IsTrack && trackSection != null && trackSection.SectionCurve != null; } }
         /// <summary>
         /// Returns whether this traveller is currently on a section of track which is straight.
         /// </summary>
-        public bool IsTrackStraight { get { return IsTrack && trackSection.SectionCurve == null; } }
+        public bool IsTrackStraight { get { return IsTrack && (trackSection == null || trackSection.SectionCurve == null); } }
         /// <summary>
         /// Returns the pin index number, for the current track node, identifying the route travelled into this track node.
         /// </summary>
