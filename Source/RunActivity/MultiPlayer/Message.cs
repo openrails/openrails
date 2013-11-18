@@ -2970,27 +2970,30 @@ namespace ORTS.MultiPlayer
 		public  int weather;
 		public float overcast;
         public float fog;
+        public float precipintensity;
 		public MSGWeather(string m)
 		{
-            weather = -1; overcast = fog = -1f;
+            weather = -1; overcast = fog = -1f; precipintensity = -1f;
 			var tmp = m.Split(' ');
 			weather = int.Parse(tmp[0]);
 			overcast = float.Parse(tmp[1], CultureInfo.InvariantCulture);
             fog = float.Parse(tmp[2], CultureInfo.InvariantCulture);
+            precipintensity = float.Parse(tmp[3], CultureInfo.InvariantCulture);
 		}
 
-		public MSGWeather(int w, float o, float f)
+		public MSGWeather(int w, float o, float f, float pri)
 		{
-            weather = -1; overcast = -1f; fog = -1;
+            weather = -1; overcast = -1f; fog = -1; precipintensity = -1;
 			if (w >= 0) weather = w;
 			if (o > 0) overcast = o;
             if (f > 0) fog = f;
+            if (pri > 0) precipintensity = pri;
 		}
 
 		public override string ToString()
 		{
 
-			string tmp = "WEATHER " + weather + " " + overcast.ToString(CultureInfo.InvariantCulture) + " " + fog.ToString(CultureInfo.InvariantCulture);
+            string tmp = "WEATHER " + weather + " " + overcast.ToString(CultureInfo.InvariantCulture) + " " + fog.ToString(CultureInfo.InvariantCulture) + " " + precipintensity.ToString(CultureInfo.InvariantCulture);
 			return " " + tmp.Length + ": " + tmp;
 		}
 
@@ -3008,6 +3011,10 @@ namespace ORTS.MultiPlayer
             if (fog > 0)
             {
                 MPManager.Instance().newFog = fog;
+            }
+            if (precipintensity > 0)
+            {
+                MPManager.Instance().precipIntensity = precipintensity;
             }
             MPManager.Instance().weatherChanged = true;
 		}

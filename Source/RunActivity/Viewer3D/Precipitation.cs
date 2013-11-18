@@ -95,10 +95,26 @@ namespace ORTS
 					try
 					{
                         if ( MultiPlayer.MPManager.Instance().newWeather >=0 )
-						MultiPlayer.MPManager.Instance().weatherChanged = false;
+						{
+                            MultiPlayer.MPManager.Instance().weatherChanged = false;
+                            MultiPlayer.MPManager.Instance().newWeather = -1;
+                        }
 					}
 					catch { }
 				}
+                if (MultiPlayer.MPManager.Instance().weatherChanged && MultiPlayer.MPManager.Instance().precipIntensity >= 0)
+                {
+                    precipMesh.intensity = MultiPlayer.MPManager.Instance().precipIntensity;
+                    try
+                    {
+                        if (MultiPlayer.MPManager.Instance().precipIntensity >= 0)
+                        {
+                            MultiPlayer.MPManager.Instance().weatherChanged = false;
+                            MultiPlayer.MPManager.Instance().precipIntensity = -1;
+                        }
+                    }
+                    catch { }
+                }
 				precipMesh.Initialize(Viewer.Simulator);
 			}
             if (UserInput.IsPressed(UserCommands.DebugWeatherChange) && !MultiPlayer.MPManager.IsClient())
@@ -123,9 +139,23 @@ namespace ORTS
 				if (MultiPlayer.MPManager.IsServer())
 				{
 					MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather((int)Viewer.Simulator.Weather, 
-                        -1, -1)).ToString());//server notify others the weather has changed
+                        -1, -1, -1)).ToString());//server notify others the weather has changed
 				}
             }
+            if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) && !MultiPlayer.MPManager.IsClient())
+            {
+                precipMesh.intensity = MathHelper.Clamp(precipMesh.intensity * 1.05f, PrecipMesh.MinPrecipIntensity, PrecipMesh.MaxPrecipIntensity);
+                Viewer.World.WeatherControl.SetPrecipVolume(precipMesh.intensity / PrecipMesh.MaxPrecipIntensity);
+            }
+            if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease) && !MultiPlayer.MPManager.IsClient())
+            {
+                precipMesh.intensity = MathHelper.Clamp(precipMesh.intensity / 1.05f, PrecipMesh.MinPrecipIntensity, PrecipMesh.MaxPrecipIntensity);
+                Viewer.World.WeatherControl.SetPrecipVolume(precipMesh.intensity / PrecipMesh.MaxPrecipIntensity);
+            }
+            if (MultiPlayer.MPManager.IsServer() && 
+                (UserInput.IsReleased(UserCommands.DebugPrecipitationDecrease) || UserInput.IsReleased(UserCommands.DebugPrecipitationIncrease)))
+                  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1,
+                        -1, -1, (int)precipMesh.intensity)).ToString());//server notifies others precipitation intensity has changed
 
 ////////////////////////////////////////////////////////////////////
 
@@ -153,7 +183,9 @@ namespace ORTS
     #region PrecipMesh
     public class PrecipMesh: RenderPrimitive 
     {
-		const int MaxParticleCount = 100000;
+		const int MaxParticleCount = 250000;
+        public const float MinPrecipIntensity = 100;
+        public const float MaxPrecipIntensity = 15000;
 
         Random Random;
 		VertexDeclaration VertexDeclaration;

@@ -165,7 +165,11 @@ namespace ORTS
                 try
                 {
                     if (MultiPlayer.MPManager.Instance().overCast >= 0 || MultiPlayer.MPManager.Instance().newFog > 0) 
+                    {
                         MultiPlayer.MPManager.Instance().weatherChanged = false;
+                        MultiPlayer.MPManager.Instance().overCast = -1 ;
+                        MultiPlayer.MPManager.Instance().newFog = -1 ;
+                    }
                 }
                 catch { }
 
@@ -212,7 +216,7 @@ namespace ORTS
                     || UserInput.IsReleased(UserCommands.DebugOvercastDecrease) || UserInput.IsReleased(UserCommands.DebugOvercastIncrease))
                 {
                     MultiPlayer.MPManager.Instance().SetEnvInfo(overcast, fogCoeff);
-                    MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast, fogCoeff)).ToString());//server notify others the weather has changed
+                    MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast, fogCoeff, -1)).ToString());//server notify others the weather has changed
                 }
             }
 

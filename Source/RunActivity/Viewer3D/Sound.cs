@@ -352,6 +352,10 @@ namespace ORTS
         {
             Viewer = viewer;
             WorldLocation = worldLocation;
+
+            if (smsFilePath == null)
+                return;
+
             SMSFolder = Path.GetDirectoryName(smsFilePath);
             SMSFileName = Path.GetFileName(smsFilePath);
             MSTS.SMSFile smsFile = MSTS.SharedSMSFileManager.Get(smsFilePath);
@@ -595,7 +599,7 @@ namespace ORTS
 
             if (WorldLocation != null)
             {
-                if (DistanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance ||
+                if (DeactivationConditions.Distance != 0 && DistanceSquared > DeactivationConditions.Distance * DeactivationConditions.Distance ||
                     DistanceSquared > CUTOFFDISTANCE)
                     return true;
             }

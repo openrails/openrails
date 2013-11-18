@@ -92,6 +92,18 @@ namespace ORTS
             }
         }
 
+        public void SetPrecipVolume(float volume)
+        {
+            foreach (var soundSource in RainSound)
+            {
+                soundSource.Volume = volume;
+            }
+            foreach (var soundSource in SnowSound)
+            {
+                soundSource.Volume = volume;
+            }
+        }
+
         // TODO: Add several other weather conditions, such as PartlyCloudy, LightRain, 
         // HeavySnow, etc. to the Options dialog as dropdown list boxes. Transfer user's
         // selection to RunActivity and make appropriate adjustments to the weather here.

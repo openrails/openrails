@@ -58,6 +58,7 @@ namespace ORTS.MultiPlayer
 		public int newWeather = -1;
         public float newFog = -1f;
         public float overCast = -1f;
+        public float precipIntensity = -1f;
         public double serverTimeDifference = 0;
 
         public double lastPlayerAddedTime;
@@ -442,7 +443,7 @@ namespace ORTS.MultiPlayer
         //create weather message
         public string GetEnvInfo()
         {
-            return (new MSGWeather(-1, overCast, newFog)).ToString();//update weather
+            return (new MSGWeather(-1, overCast, newFog, precipIntensity)).ToString();//update weather
 
         }
 
