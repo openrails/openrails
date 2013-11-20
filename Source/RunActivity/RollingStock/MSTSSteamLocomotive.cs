@@ -1106,7 +1106,7 @@ namespace ORTS
             {
                 // Steam Output (kg/h) = ( Boiler Rating (kW) * 3600 s/h ) / Energy added kJ/kg, Energy added = energy (at Boiler Pressure - Feedwater energy)
                 // Allow a small increase if superheater is installed
-                EvaporationLBpS = (W.FromKW(BoilerKW) / W.FromBTUpS(BoilerSteamHeatBTUpLB)) * SuperheaterSteamProductionFactor;  // convert kW,  1kW = 0.94781712 BTU/s - fudge factor required - 1.1
+                EvaporationLBpS = Kg.ToLb(BoilerKW / W.ToKW(W.FromBTUpS(BoilerSteamHeatBTUpLB))) * SuperheaterSteamProductionFactor;
             }
 
             // Cap Steam Generation rate if excessive
