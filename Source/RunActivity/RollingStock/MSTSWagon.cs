@@ -1196,7 +1196,7 @@ namespace ORTS
         /// <summary>
         /// Unload and release the car - its not longer being displayed
         /// </summary>
-        public virtual void Unload()
+        public override void Unload()
         {
             // Removing sound sources from sound update thread
             _Viewer3D.SoundProcess.RemoveSoundSource(this);

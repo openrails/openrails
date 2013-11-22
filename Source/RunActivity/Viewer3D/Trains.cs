@@ -64,7 +64,15 @@ namespace ORTS
                     }
                 }
                 Cars = newCars;
-            }
+				//for those cars not visible now, will unload them (to remove attached sound)
+				foreach (var car in cars)
+				{
+					if (!visibleCars.Contains(car.Key))
+					{
+						car.Value.Unload();
+					}
+				}
+			}
 
             // Ensure the player locomotive has a cab view loaded and anything else they need.
             if (PlayerCar != null && cars.ContainsKey(PlayerCar))

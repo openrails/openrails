@@ -887,6 +887,11 @@ namespace ORTS
         /// </summary>
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
 
+		/// <summary>
+		/// Unload and release the car - its not longer being displayed
+		/// </summary>
+		public abstract void Unload();
+
         [CallOnThread("Loader")]
         internal virtual void LoadForPlayer() { }
 

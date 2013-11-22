@@ -106,8 +106,8 @@ namespace ORTS
             // Uninitialize its sounds
             if (ls != null)
             {
-                foreach (SoundSource ss in ls)
-                    ss.Uninitialize();
+                foreach (var ss in ls)
+					ss.Uninitialize();
             }
         }
         

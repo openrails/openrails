@@ -1089,7 +1089,8 @@ namespace ORTS
                     CheckRouteActions(elapsedClockSeconds);                                     // check routepath (AI check at other point) //
                 }
                 UpdateRouteClearanceAhead(SignalObjIndex, movedBackward, elapsedClockSeconds);  // update route clearance  //
-                UpdateSignalState(movedBackward);                                               // update signal state     //
+				if (!(TrainType == TRAINTYPE.REMOTE && MultiPlayer.MPManager.IsClient()))
+					UpdateSignalState(movedBackward);                                               // update signal state     //
             }
         } // end Update
 

@@ -225,7 +225,7 @@ namespace ORTS
             {
                 if (Sound != null)
                 {
-                    Viewer.SoundProcess.RemoveSoundSource(Sound);
+                    Viewer.SoundProcess.RemoveSoundSource(this);
                     Sound.Dispose();
                 }
             }

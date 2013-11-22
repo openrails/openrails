@@ -63,7 +63,8 @@ namespace ORTS
     public abstract class SoundSourceBase : IDisposable
     {
         public abstract void InitInitials();
-        public abstract bool Update();
+		public abstract void Uninitialize();
+		public abstract bool Update();
 
         /// <summary>
         /// The sound may be from a train car
@@ -129,6 +130,8 @@ namespace ORTS
             else
                 _outSources.Add(new SoundSource(Viewer, Car, fullPath));
         }
+
+		public override void Uninitialize() { }
 
         public override void InitInitials()
         {
@@ -294,7 +297,7 @@ namespace ORTS
         /// <summary>
         /// No need to play the sounds, stop them
         /// </summary>
-        public void Uninitialize()
+        public override void Uninitialize()
         {
             foreach (SoundStream ss in SoundStreams)
             {
