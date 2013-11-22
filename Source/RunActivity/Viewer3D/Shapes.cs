@@ -550,9 +550,9 @@ namespace ORTS
 
     public class LevelCrossingShape : PoseableShape, IDisposable
     {
-        LevelCrossingObj CrossingObj;
-        SoundSource Sound;
-        LevelCrossing Crossing;
+        readonly LevelCrossingObj CrossingObj;
+		readonly SoundSource Sound;
+		readonly LevelCrossing Crossing;
 
         readonly int AnimationFrames;
         bool Opening = true;
@@ -595,10 +595,7 @@ namespace ORTS
             {
                 Viewer.SoundProcess.RemoveSoundSource(this);
                 Sound.Dispose();
-				Sound = null;
             }
-			CrossingObj = null;
-			Crossing = null;
         }
 
         #endregion
