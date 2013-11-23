@@ -97,7 +97,7 @@
             this.comboBoxSeparators = new System.Windows.Forms.ComboBox();
             this.label19 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
-            this.checkBoxDataLoggerMiscelanous = new System.Windows.Forms.CheckBox();
+            this.checkBoxDataLoggerMiscellaneous = new System.Windows.Forms.CheckBox();
             this.checkBoxDataLoggerPerformance = new System.Windows.Forms.CheckBox();
             this.checkBoxDataLoggerStart = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
@@ -1050,7 +1050,7 @@
             this.tabPageDataLogger.Controls.Add(this.comboBoxSeparators);
             this.tabPageDataLogger.Controls.Add(this.label19);
             this.tabPageDataLogger.Controls.Add(this.label18);
-            this.tabPageDataLogger.Controls.Add(this.checkBoxDataLoggerMiscelanous);
+            this.tabPageDataLogger.Controls.Add(this.checkBoxDataLoggerMiscellaneous);
             this.tabPageDataLogger.Controls.Add(this.checkBoxDataLoggerPerformance);
             this.tabPageDataLogger.Controls.Add(this.checkBoxDataLoggerStart);
             this.tabPageDataLogger.Controls.Add(this.label17);
@@ -1115,16 +1115,16 @@
             this.label18.Text = "Use DataLogger to record your simulation data (in-game command: F12).\r\nPlease rem" +
                 "ember that the size of the dump file grows with the simulation time!";
             // 
-            // checkBoxDataLoggerMiscelanous
+            // checkBoxDataLoggerMiscellaneous
             // 
-            this.checkBoxDataLoggerMiscelanous.AutoSize = true;
-            this.checkBoxDataLoggerMiscelanous.Location = new System.Drawing.Point(8, 193);
-            this.checkBoxDataLoggerMiscelanous.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.checkBoxDataLoggerMiscelanous.Name = "checkBoxDataLoggerMiscelanous";
-            this.checkBoxDataLoggerMiscelanous.Size = new System.Drawing.Size(168, 21);
-            this.checkBoxDataLoggerMiscelanous.TabIndex = 8;
-            this.checkBoxDataLoggerMiscelanous.Text = "Log miscelanous data";
-            this.checkBoxDataLoggerMiscelanous.UseVisualStyleBackColor = true;
+            this.checkBoxDataLoggerMiscellaneous.AutoSize = true;
+            this.checkBoxDataLoggerMiscellaneous.Location = new System.Drawing.Point(8, 193);
+            this.checkBoxDataLoggerMiscellaneous.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.checkBoxDataLoggerMiscellaneous.Name = "checkBoxDataLoggerMiscellaneous";
+            this.checkBoxDataLoggerMiscellaneous.Size = new System.Drawing.Size(168, 21);
+            this.checkBoxDataLoggerMiscellaneous.TabIndex = 8;
+            this.checkBoxDataLoggerMiscellaneous.Text = "Log miscellaneous data";
+            this.checkBoxDataLoggerMiscellaneous.UseVisualStyleBackColor = true;
             // 
             // checkBoxDataLoggerPerformance
             // 
@@ -1292,7 +1292,7 @@
         private System.Windows.Forms.CheckBox checkBoxDataLoggerPhysics;
         private System.Windows.Forms.CheckBox checkBoxDataLoggerPerformance;
         private System.Windows.Forms.CheckBox checkBoxDataLoggerStart;
-        private System.Windows.Forms.CheckBox checkBoxDataLoggerMiscelanous;
+        private System.Windows.Forms.CheckBox checkBoxDataLoggerMiscellaneous;
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox comboBoxDataLoggerSpeedUnits;
         private System.Windows.Forms.Label label19;

@@ -106,7 +106,7 @@ namespace ORTS
             comboBoxSeparators.Text = settings.DataLoggerSeparator;
             checkBoxDataLoggerPhysics.Checked = settings.DataLogPhysics;
             checkBoxDataLoggerPerformance.Checked = settings.DataLogPerformance;
-            checkBoxDataLoggerMiscelanous.Checked = settings.DataLogMisc;
+            checkBoxDataLoggerMiscellaneous.Checked = settings.DataLogMisc;
             checkBoxDataLoggerStart.Checked = Settings.DataLogger;
             comboBoxDataLoggerSpeedUnits.Text = settings.DataLogSpeedUnits;
             numericUpDownAdhesionFilterSize.Value = settings.AdhesionMovingAverageFilterSize;
@@ -331,7 +331,7 @@ namespace ORTS
             Settings.LoadingDelay = (int)numericUpDownLoadingDelay.Value;
             Settings.DataLogPhysics = checkBoxDataLoggerPhysics.Checked;
             Settings.DataLogPerformance = checkBoxDataLoggerPerformance.Checked;
-            Settings.DataLogMisc = checkBoxDataLoggerMiscelanous.Checked;
+            Settings.DataLogMisc = checkBoxDataLoggerMiscellaneous.Checked;
             Settings.DataLogger = checkBoxDataLoggerStart.Checked;
             Settings.DataLoggerSeparator = comboBoxSeparators.Text;
             Settings.DataLogSpeedUnits = comboBoxDataLoggerSpeedUnits.Text;

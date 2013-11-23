@@ -238,7 +238,7 @@ namespace ORTS
 
         // Values from previous iteration to use in UpdateFiring() and show in HUD
         float PreviousBoilerHeatOutBTUpS = 0.0f;
-        float PreviousTotalSteamUsageLBpS;
+        public float PreviousTotalSteamUsageLBpS;
         float Injector1WaterDelTempF;   // Injector 1 water delivery temperature - F
         float Injector2WaterDelTempF;   // Injector 1 water delivery temperature - F
         float Injector1TempFraction;    // Find the fraction above the min temp of water delivery
@@ -2324,6 +2324,33 @@ namespace ORTS
                 SteamLocomotive.SetCutoffPercent(UserInput.RDState.DirectionPercent);
 
             base.HandleUserInput(elapsedTime);
+
+#if DEBUG_DUMP_STEAM_POWER_CURVE
+            // For power curve tests
+            if (Viewer.Settings.DataLogger
+                && !Viewer.Settings.DataLogPerformanceeous
+                && !Viewer.Settings.DataLogPhysics
+                && !Viewer.Settings.DataLogMisc)
+            {
+                var loco = SteamLocomotive;
+                // If we're using more steam than the boiler can make ...
+                if (loco.PreviousTotalSteamUsageLBpS > loco.EvaporationLBpS)
+                {
+                    // Reduce the cut-off gradually as far as 15%
+                    if (loco.CutoffController.CurrentValue > 0.15)
+                    {
+                        float? target = MathHelper.Clamp(loco.CutoffController.CurrentValue - 0.01f, 0.15f, 0.75f);
+                        loco.StartReverseDecrease(target);
+                    }
+                    else
+                    {
+                        // Reduce the throttle also
+                        float? target = SteamLocomotive.ThrottleController.CurrentValue - 0.01f;
+                        loco.StartThrottleDecrease(target);
+                    }
+                }
+            }
+#endif
         }
 
         /// <summary>

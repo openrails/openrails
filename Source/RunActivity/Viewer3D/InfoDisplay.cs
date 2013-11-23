@@ -19,6 +19,16 @@
 
 #define GEARBOX_DEBUG_LOG
 
+#define DEBUG_DUMP_STEAM_POWER_CURVE
+// Uses the DataLogger to record power curve data for steam locos when no other option is chosen.
+// To use this, on the Menu, check the Logging box and cancel all Options > DataLogger.
+// The data logger records data in the file "Program\dump.csv".
+// For steam locomotives only this replaces the default data with a record for each speed increment (mph).
+// Collect the data by starting from rest and accelerating the loco to maximum speed.
+// Only horsepower and mph available currently.
+// Analyse the data using a spreadsheet and graph with an XY chart.
+
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -55,6 +65,10 @@ namespace ORTS
         Matrix Identity = Matrix.Identity;
         int FrameNumber;
         double LastUpdateRealTime;   // update text message only 10 times per second
+
+#if DEBUG_DUMP_STEAM_POWER_CURVE
+        float previousLoggedSpeedMpH = -1.0f;
+#endif
 
         [StructLayout(LayoutKind.Sequential, Size = 40)]
         struct PROCESS_MEMORY_COUNTERS
@@ -132,6 +146,34 @@ namespace ORTS
             }
         }
 
+#if DEBUG_DUMP_STEAM_POWER_CURVE
+        public bool IsRecordingSteamPowerCurve { get 
+            {
+                return Viewer.Settings.DataLogger
+                && !Viewer.Settings.DataLogPerformance
+                && !Viewer.Settings.DataLogPhysics
+                && !Viewer.Settings.DataLogMisc
+                && Viewer.PlayerLocomotive.GetType() == typeof(MSTSSteamLocomotive);
+            }
+        }
+
+        void RecordSteamPowerCurve()
+        {
+            MSTSSteamLocomotive loco = (MSTSSteamLocomotive)Viewer.PlayerLocomotive;
+            float speedMpH = MpS.ToMpH(loco.SpeedMpS);
+            if (speedMpH >= previousLoggedSpeedMpH + 1) // Add a new record every time speed increases by 1 mph
+            {
+                previousLoggedSpeedMpH = (float)(int)speedMpH; // Keep speed records close to whole numbers
+                Logger.Data(speedMpH.ToString("F1"));
+                float power = W.ToHp(loco.MotiveForceN * loco.SpeedMpS);
+                Logger.Data(power.ToString("F1"));
+                Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).ThrottlePercent.ToString("F0"));
+                Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Train.MUReverserPercent.ToString("F0"));
+                Logger.End();
+            }
+        }
+#endif
+
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             FrameNumber++;
@@ -143,152 +185,161 @@ namespace ORTS
                 Profile(elapsedRealSeconds);
             }
 
-            //Here's where the logger stores the data from each frame
-            if (Viewer.Settings.DataLogger)
+#if DEBUG_DUMP_STEAM_POWER_CURVE
+            if (IsRecordingSteamPowerCurve)
             {
-                Logger.Separator = (DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Viewer.Settings.DataLoggerSeparator);
-                if (Viewer.Settings.DataLogPerformance)
+                RecordSteamPowerCurve();
+            }
+            else
+            {
+#endif
+            //Here's where the logger stores the data from each frame
+                if (Viewer.Settings.DataLogger)
                 {
-                    Logger.Data(VersionInfo.Version);
-                    Logger.Data(FrameNumber.ToString("F0"));
-                    Logger.Data(GetWorkingSetSize().ToString("F0"));
-                    Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
-                    Logger.Data(GC.CollectionCount(0).ToString("F0"));
-                    Logger.Data(GC.CollectionCount(1).ToString("F0"));
-                    Logger.Data(GC.CollectionCount(2).ToString("F0"));
-                    Logger.Data(ProcessorCount.ToString("F0"));
-                    Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
-                    Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
-                    Logger.Data(Viewer.RenderProcess.FrameTime.P95.ToString("F4"));
-                    Logger.Data(Viewer.RenderProcess.FrameTime.P99.ToString("F4"));
-                    Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
-                    Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
-                    Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
-                    Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
-                    Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
-                    Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
-                }
-                if (Viewer.Settings.DataLogPhysics)
-                {
-                    Logger.Data(FormattedPreciseTime(Viewer.Simulator.ClockTime));
-                    Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
-                    Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
-                    Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
-                    Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
-                    Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.AxleForceN.ToString("F2"));
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F1"));
+                    Logger.Separator = (DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Viewer.Settings.DataLoggerSeparator);
+                    if (Viewer.Settings.DataLogPerformance)
+                    {
+                        Logger.Data(VersionInfo.Version);
+                        Logger.Data(FrameNumber.ToString("F0"));
+                        Logger.Data(GetWorkingSetSize().ToString("F0"));
+                        Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
+                        Logger.Data(GC.CollectionCount(0).ToString("F0"));
+                        Logger.Data(GC.CollectionCount(1).ToString("F0"));
+                        Logger.Data(GC.CollectionCount(2).ToString("F0"));
+                        Logger.Data(ProcessorCount.ToString("F0"));
+                        Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
+                        Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
+                        Logger.Data(Viewer.RenderProcess.FrameTime.P95.ToString("F4"));
+                        Logger.Data(Viewer.RenderProcess.FrameTime.P99.ToString("F4"));
+                        Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
+                        Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
+                        Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
+                        Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
+                        Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
+                        Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
+                    }
+                    if (Viewer.Settings.DataLogPhysics)
+                    {
+                        Logger.Data(FormattedPreciseTime(Viewer.Simulator.ClockTime));
+                        Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
+                        Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
+                        Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
+                        Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
+                        Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.AxleForceN.ToString("F2"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F1"));
 #if !NEW_SIGNALLING
-                Logger.Data(TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+                    Logger.Data(TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
 #else
-                    switch (Viewer.Settings.DataLogSpeedUnits)
-                    {
-                        case "route":
-                            Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-                            break;
-                        case "mps":
-                            Logger.Data(Viewer.PlayerLocomotive.SpeedMpS.ToString("F1"));
-                            break;
-                        case "mph":
-                            Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, false).ToString("F1"));
-                            break;
-                        case "kmph":
-                            Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, true).ToString("F1"));
-                            break;
-                        default:
-                            Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-                            break;
-                    }
+                        switch (Viewer.Settings.DataLogSpeedUnits)
+                        {
+                            case "route":
+                                Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+                                break;
+                            case "mps":
+                                Logger.Data(Viewer.PlayerLocomotive.SpeedMpS.ToString("F1"));
+                                break;
+                            case "mph":
+                                Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, false).ToString("F1"));
+                                break;
+                            case "kmph":
+                                Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, true).ToString("F1"));
+                                break;
+                            default:
+                                Logger.Data(FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
+                                break;
+                        }
 #endif
-                    Logger.Data((Viewer.PlayerLocomotive.DistanceM.ToString("F0")));
-                    Logger.Data((Viewer.PlayerLocomotive.GravityForceN.ToString("F0")));
+                        Logger.Data((Viewer.PlayerLocomotive.DistanceM.ToString("F0")));
+                        Logger.Data((Viewer.PlayerLocomotive.GravityForceN.ToString("F0")));
 
-                    if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController != null)
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController.CurrentValue.ToString("F2"));
-                    else
-                        Logger.Data("null");
+                        if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController != null)
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeController.CurrentValue.ToString("F2"));
+                        else
+                            Logger.Data("null");
 
-                    if ((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController != null)
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController.CurrentValue.ToString("F2"));
-                    else
-                        Logger.Data("null");
+                        if ((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController != null)
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeController.CurrentValue.ToString("F2"));
+                        else
+                            Logger.Data("null");
 
-                    Logger.Data(Viewer.PlayerLocomotive.BrakeSystem.GetCylPressurePSI().ToString("F0"));
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI.ToString("F0"));
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn.ToString());
+                        Logger.Data(Viewer.PlayerLocomotive.BrakeSystem.GetCylPressurePSI().ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI.ToString("F0"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn.ToString());
 #if GEARBOX_DEBUG_LOG
-                    if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSDieselLocomotive))
-                    {
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].RealRPM.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].DemandedRPM.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].LoadPercent.ToString("F0"));
-                        if ((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines.HasGearBox)
+                        if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSDieselLocomotive))
                         {
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.CurrentGearIndex.ToString());
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.NextGearIndex.ToString());
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.ClutchPercent.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].RealRPM.ToString("F0"));
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].DemandedRPM.ToString("F0"));
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].LoadPercent.ToString("F0"));
+                            if ((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines.HasGearBox)
+                            {
+                                Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.CurrentGearIndex.ToString());
+                                Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.NextGearIndex.ToString());
+                                Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselEngines[0].GearBox.ClutchPercent.ToString());
+                            }
+                            else
+                            {
+                                Logger.Data("null");
+                                Logger.Data("null");
+                                Logger.Data("null");
+                            }
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselFlowLps.ToString("F2"));
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselLevelL.ToString("F0"));
+                            Logger.Data("null");
+                            Logger.Data("null");
+                            Logger.Data("null");
                         }
-                        else
+                        if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSElectricLocomotive))
                         {
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pan1Up.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pan2Up.ToString());
+                            Logger.Data("null");
+                            Logger.Data("null");
+                            Logger.Data("null");
+                            Logger.Data("null");
+                            Logger.Data("null");
+                            Logger.Data("null");
                             Logger.Data("null");
                             Logger.Data("null");
                             Logger.Data("null");
                         }
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselFlowLps.ToString("F2"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSDieselLocomotive).DieselLevelL.ToString("F0"));
-                        Logger.Data("null");
-                        Logger.Data("null");
-                        Logger.Data("null");
-                    }
-                    if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSElectricLocomotive))
-                    {
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pan1Up.ToString());
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pan2Up.ToString());
-                        Logger.Data("null");
-                        Logger.Data("null");
-                        Logger.Data("null");
-                        Logger.Data("null");
-                        Logger.Data("null");
-                        Logger.Data("null");
-                        Logger.Data("null");
-                        Logger.Data("null");
-                        Logger.Data("null");
-                    }
-                    if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSSteamLocomotive))
-                    {
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerSteamUsageLBpS.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BoilerPressurePSI.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderCocksAreOpen.ToString());
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).EvaporationLBpS.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FireMassKG.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderSteamUsageLBpS.ToString("F0"));
-                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerController != null)
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerController.CurrentValue.ToString("F0"));
-                        else
-                            Logger.Data("null");
+                        if (Viewer.PlayerLocomotive.GetType() == typeof(MSTSSteamLocomotive))
+                        {
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerSteamUsageLBpS.ToString("F0"));
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BoilerPressurePSI.ToString("F0"));
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderCocksAreOpen.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).EvaporationLBpS.ToString("F0"));
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FireMassKG.ToString("F0"));
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).CylinderSteamUsageLBpS.ToString("F0"));
+                            if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerController != null)
+                                Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).BlowerController.CurrentValue.ToString("F0"));
+                            else
+                                Logger.Data("null");
 
-                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController != null)
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController.CurrentValue.ToString("F0"));
-                        else
-                            Logger.Data("null");
-                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FiringRateController != null)
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FiringRateController.CurrentValue.ToString("F0"));
-                        else
-                            Logger.Data("null");
-                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector1Controller != null)
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector1Controller.CurrentValue.ToString("F0"));
-                        else
-                            Logger.Data("null");
-                        if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector2Controller != null)
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector2Controller.CurrentValue.ToString("F0"));
-                        else
-                            Logger.Data("null");
-                    }
-
+                            if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController != null)
+                                Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).DamperController.CurrentValue.ToString("F0"));
+                            else
+                                Logger.Data("null");
+                            if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FiringRateController != null)
+                                Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).FiringRateController.CurrentValue.ToString("F0"));
+                            else
+                                Logger.Data("null");
+                            if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector1Controller != null)
+                                Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector1Controller.CurrentValue.ToString("F0"));
+                            else
+                                Logger.Data("null");
+                            if ((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector2Controller != null)
+                                Logger.Data((Viewer.PlayerLocomotive as MSTSSteamLocomotive).Injector2Controller.CurrentValue.ToString("F0"));
+                            else
+                                Logger.Data("null");
+                        }
 #endif
-                }
-
+                    }
                 Logger.End();
+#if DEBUG_DUMP_STEAM_POWER_CURVE
+                }
+#endif
             }
             if (DrawSiding == true || DrawPlatform == true)
             {
@@ -481,6 +532,21 @@ namespace ORTS
                 //        "null"});
                 //}
 
+#if DEBUG_DUMP_STEAM_POWER_CURVE
+                if (!settings.DataLogPerformance
+                && !settings.DataLogPhysics
+                && !settings.DataLogMisc)
+                {
+                    headerLine = String.Join(Convert.ToString((char)separator),
+                        new string[] 
+                            {    
+                                "speed (mph)",
+                                "power (hp)",
+                                "throttle (%)",
+                                "cut-off (%)"
+                            });
+                }
+#endif
                 file.WriteLine(headerLine);
 
                 file.Close();
