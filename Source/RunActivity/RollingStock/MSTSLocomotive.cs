@@ -1739,7 +1739,6 @@ namespace ORTS
             SignalEvent(Wiper ? Event.WiperOff : Event.WiperOn);
         }
 
-        //CJ
         public virtual void Refuel()
         {
             // Electric locos do nothing. Diesel and steam override this.
@@ -2476,7 +2475,6 @@ namespace ORTS
             }
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) 
                 Locomotive.ShowCab = !Locomotive.ShowCab;
-            //CJ
             if (UserInput.IsPressed(UserCommands.ControlRefuel))
                 new RefuelCommand(Viewer.Log);
 

@@ -398,7 +398,6 @@ namespace ORTS
             if( PlayerLocomotive is MSTSElectricLocomotive ) {
                 PantographCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
             }
-            //CJ
             RefuelCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             SanderCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             AlerterCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;

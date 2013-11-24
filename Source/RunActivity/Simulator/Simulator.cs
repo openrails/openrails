@@ -270,10 +270,6 @@ namespace ORTS
                 }
             if (PlayerLocomotive == null)
                 throw new InvalidDataException("Can't find player locomotive in activity");
-
-            //CJ Provoke out of fuel
-            ((MSTSDieselLocomotive)PlayerLocomotive).DieselLevelL = 2;
-
             return PlayerLocomotive;
         }
 

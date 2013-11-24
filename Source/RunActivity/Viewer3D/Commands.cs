@@ -833,7 +833,6 @@ namespace ORTS {
         }
     }
     
-    //CJ
     [Serializable()]
     public class RefuelCommand : Command
     {

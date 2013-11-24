@@ -329,12 +329,8 @@ namespace ORTS
             SuperheaterSteamReductionPSItoX = SteamTable.SuperheaterSteamReductionInterpolatorPSItoX();
             SuperheaterCoalReductionPSItoX = SteamTable.SuperheaterCoalReductionInterpolatorPSItoX();
             BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
-            //CJ
             RefillTenderWithCoal();
             RefillTenderWithWater();
-            //CJ Provoke coal is exhausted
-            TenderCoalMassLB = 2;
-            TenderWaterVolumeUKG = 2;
 
             // Computed Values
             // Read alternative OR Value for calculation of Ideal Fire Mass
@@ -872,8 +868,6 @@ namespace ORTS
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Tender coal supply is empty. Your loco will fail.");
                 }
             }
-            //CJ
-            //TenderWaterVolumeUKG = (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) - (InjectorBoilerInputLB / WaterLBpUKG); // Current water mass determined by injector input rate, assume 10 lb steam = 1 Gal water
             TenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG; // Current water volume determined by injector input rate
             TenderWaterVolumeUKG = MathHelper.Clamp(TenderWaterVolumeUKG, 0, (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG)); // Clamp value so that it doesn't go out of bounds
             if (TenderWaterVolumeUKG < 1.0)
@@ -2154,15 +2148,11 @@ namespace ORTS
         public void ToggleManualFiring()
         {
             FiringIsManual = !FiringIsManual;
-            //Simulator.Confirmer.Confirm( CabControl.FiringIsManual, FiringIsManual ? CabSetting.On : CabSetting.Off );
         }
 
-        //CJ
         public override void Refuel()
         {
             RefillTenderWithCoal();
-            //Simulator.Confirmer.Message(ConfirmLevel.Information, "Tender coal and water are now replenished.");
-            //CJ
             Simulator.Confirmer.Confirm(CabControl.TenderCoal, CabSetting.On);
             RefillTenderWithWater();
             Simulator.Confirmer.Confirm(CabControl.TenderWater, CabSetting.On);

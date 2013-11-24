@@ -807,7 +807,6 @@ namespace ORTS
             DieselLevelL = MaxDieselLevelL;
         }
 
-        //CJ
         public override void Refuel()
         {
             RefillWithDiesel();
