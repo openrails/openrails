@@ -1714,8 +1714,6 @@ namespace ORTS
             }
         }
 
-        
-
         public void SetTrainRetainers( bool apply ) {
             Train.SetRetainers( apply );
             Simulator.Confirmer.ConfirmWithPerCent( CabControl.Retainers, CabSetting.Increase, Train.RetainerPercent, (int)CabSetting.Range1 + (int)Train.RetainerSetting );
@@ -1741,6 +1739,11 @@ namespace ORTS
             SignalEvent(Wiper ? Event.WiperOff : Event.WiperOn);
         }
 
+        //CJ
+        public virtual void Refuel()
+        {
+            // Electric locos do nothing. Diesel and steam override this.
+        }
 #if NEW_SIGNALLING
         public override bool GetCabFlipped()
         {
@@ -2471,7 +2474,11 @@ namespace ORTS
                     new ToggleCabLightCommand( Viewer.Log );    // and cab lights on other locos.
                 }
             }
-            if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) Locomotive.ShowCab = !Locomotive.ShowCab;
+            if (UserInput.IsPressed(UserCommands.CameraToggleShowCab)) 
+                Locomotive.ShowCab = !Locomotive.ShowCab;
+            //CJ
+            if (UserInput.IsPressed(UserCommands.ControlRefuel))
+                new RefuelCommand(Viewer.Log);
 
             // By Matej Pacha
             if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); }

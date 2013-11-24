@@ -832,6 +832,27 @@ namespace ORTS {
             // Report();
         }
     }
+    
+    //CJ
+    [Serializable()]
+    public class RefuelCommand : Command
+    {
+        //public static MSTSSteamLocomotive Receiver { get; set; }
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public RefuelCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.Refuel();
+            // Report();
+        }
+    }
 
     [Serializable()]
     public class ToggleCylinderCocksCommand : Command {

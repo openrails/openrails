@@ -329,9 +329,13 @@ namespace ORTS
             SuperheaterSteamReductionPSItoX = SteamTable.SuperheaterSteamReductionInterpolatorPSItoX();
             SuperheaterCoalReductionPSItoX = SteamTable.SuperheaterCoalReductionInterpolatorPSItoX();
             BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
+            //CJ
+            RefillTenderWithCoal();
+            RefillTenderWithWater();
+            //CJ Provoke coal is exhausted
+            TenderCoalMassLB = 2;
+            TenderWaterVolumeUKG = 2;
 
-            TenderCoalMassLB = Kg.ToLb(MaxTenderCoalMassKG); // Convert to work in lbs
-            TenderWaterVolumeUKG = Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG;  // Convert to gals - 10lb = 1 gal (water)
             // Computed Values
             // Read alternative OR Value for calculation of Ideal Fire Mass
             if (GrateAreaM2 == 0)  // Calculate Grate Area if not present in ENG file
@@ -520,7 +524,19 @@ namespace ORTS
 
             ApplyBoilerPressure();
         }
-        
+
+        public void RefillTenderWithCoal()
+        {
+            TenderCoalMassLB = Kg.ToLb(MaxTenderCoalMassKG); // Convert to work in lbs
+            CoalIsExhausted = false;
+        }
+
+        public void RefillTenderWithWater()
+        {
+            TenderWaterVolumeUKG = Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG;  // Convert to gals - 10lb = 1 gal (water)
+            WaterIsExhausted = false;
+        } 
+       
         public static bool ZeroError(float v, string name, string wagFile)
         {
             if (v > 0)
@@ -856,7 +872,9 @@ namespace ORTS
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Tender coal supply is empty. Your loco will fail.");
                 }
             }
-            TenderWaterVolumeUKG = (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) - (InjectorBoilerInputLB / WaterLBpUKG); // Current water mass determined by injector input rate, assume 10 lb steam = 1 Gal water
+            //CJ
+            //TenderWaterVolumeUKG = (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG) - (InjectorBoilerInputLB / WaterLBpUKG); // Current water mass determined by injector input rate, assume 10 lb steam = 1 Gal water
+            TenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG; // Current water volume determined by injector input rate
             TenderWaterVolumeUKG = MathHelper.Clamp(TenderWaterVolumeUKG, 0, (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG)); // Clamp value so that it doesn't go out of bounds
             if (TenderWaterVolumeUKG < 1.0)
             {
@@ -1444,6 +1462,7 @@ namespace ORTS
                 InjectorFlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
             }
 
+            InjectorBoilerInputLB = 0; // Used by UpdateTender() later in the cycle
             if (WaterIsExhausted)
             {
                 // don't fill boiler with injectors
@@ -1464,13 +1483,13 @@ namespace ORTS
                         Injector1WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - ((InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - InjDelWaterTempMaxPressureFtoPSI[BoilerPressurePSI]) * Injector1TempFraction);
                         Injector1WaterDelTempF = MathHelper.Clamp(Injector1WaterDelTempF, 65.0f, 500.0f);
                     }
-         
+
                     Injector1WaterTempPressurePSI = WaterTempFtoPSI[Injector1WaterDelTempF]; // calculate the pressure of the delivery water
-                    
+
                     // Calculate amount of steam used to inject water
                     MaxInject1SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at boiler pressure
                     ActInject1SteamUsedLbpS = (Injector1Fraction * InjectorFlowRateLBpS) / MaxInject1SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
-                    
+
                     // Calculate heat loss for steam injection
                     Inject1SteamHeatLossBTU = ActInject1SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
 
@@ -1497,11 +1516,11 @@ namespace ORTS
                         Injector2WaterDelTempF = MathHelper.Clamp(Injector2WaterDelTempF, 65.0f, 500.0f);
                     }
                     Injector2WaterTempPressurePSI = WaterTempFtoPSI[Injector2WaterDelTempF]; // calculate the pressure of the delivery water
-                    
+
                     // Calculate amount of steam used to inject water
                     MaxInject2SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at boiler pressure
                     ActInject2SteamUsedLbpS = (Injector2Fraction * InjectorFlowRateLBpS) / MaxInject2SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
-                    
+
                     // Calculate heat loss for steam injection
                     Inject2SteamHeatLossBTU = ActInject2SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
 
@@ -2135,7 +2154,18 @@ namespace ORTS
         public void ToggleManualFiring()
         {
             FiringIsManual = !FiringIsManual;
-            Simulator.Confirmer.Confirm( CabControl.FiringIsManual, FiringIsManual ? CabSetting.On : CabSetting.Off );
+            //Simulator.Confirmer.Confirm( CabControl.FiringIsManual, FiringIsManual ? CabSetting.On : CabSetting.Off );
+        }
+
+        //CJ
+        public override void Refuel()
+        {
+            RefillTenderWithCoal();
+            //Simulator.Confirmer.Message(ConfirmLevel.Information, "Tender coal and water are now replenished.");
+            //CJ
+            Simulator.Confirmer.Confirm(CabControl.TenderCoal, CabSetting.On);
+            RefillTenderWithWater();
+            Simulator.Confirmer.Confirm(CabControl.TenderWater, CabSetting.On);
         }
 
 		public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2)

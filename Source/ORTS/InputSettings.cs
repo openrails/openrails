@@ -228,6 +228,8 @@ namespace ORTS
         ControlFireShovelFull,
         ControlCylinderCocks,
         ControlFiring,
+        //CJ
+        ControlRefuel,
     }
 
     [Flags]
@@ -563,8 +565,11 @@ namespace ORTS
             Commands[(int)UserCommands.ControlFireShovelFull] = new UserCommandKeyInput(0x13, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlCylinderCocks] = new UserCommandKeyInput(0x2E);
             Commands[(int)UserCommands.ControlFiring] = new UserCommandKeyInput(0x21, KeyModifiers.Control);
+            //CJ
+            Commands[(int)UserCommands.ControlRefuel] = new UserCommandKeyInput(0x14);
             Commands[(int)UserCommands.GameMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
-            Commands[(int)UserCommands.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14);
+            //CJ
+            Commands[(int)UserCommands.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14, KeyModifiers.Control);
 
 #if NEW_SIGNALLING
             Commands[(int)UserCommands.GameSwitchManualMode] = new UserCommandKeyInput(0x32, KeyModifiers.Control);

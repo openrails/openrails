@@ -31,14 +31,17 @@ namespace ORTS {
     public enum CabControl {
         None
         // Power
-      , Power
-      , Pantograph1
-      , Pantograph2
-      , PlayerDiesel
-      , HelperDiesel
       , Reverser
       , Throttle
       , Wheelslip
+        // Electric Power
+      , Power
+      , Pantograph1
+      , Pantograph2
+        // Diesel Power
+      , PlayerDiesel
+      , HelperDiesel
+      , DieselFuel
       // Steam power
       , Regulator
       , Injector1
@@ -50,6 +53,8 @@ namespace ORTS {
       , FiringIsManual
       , FireShovelfull
       , CylinderCocks
+      , TenderCoal
+      , TenderWater
       // Braking
       , TrainBrake
       , EngineBrake
@@ -115,14 +120,17 @@ namespace ORTS {
         readonly string[][] ConfirmText = { 
               new string [] { "<none>" } 
             // Power
-            , new string [] { "Power", "off", null, "on" } 
-            , new string [] { "Pantograph 1", "lower", null, "raise" } 
-            , new string [] { "Pantograph 2", "lower", null, "raise" }
-            , new string [] { "Player Diesel Power", "off", null, "on", null, null, "locked. Close throttle then re-try." }
-            , new string [] { "Helper Diesel Power", "off", null, "on" }
             , new string [] { "Reverser",  "reverse", "neutral", "forward", null, null, "locked. Close throttle, stop train then re-try." } 
             , new string [] { "Throttle", null, null, null, "close", "open", "locked. Release dynamic brake then re-try." } 
             , new string [] { "Wheelslip", "over", null, "occurring. Tractive power greatly reduced.", null, null, "warning" } 
+            // Electric power
+            , new string [] { "Power", "off", null, "on" }
+            , new string [] { "Pantograph 1", "lower", null, "raise" } 
+            , new string [] { "Pantograph 2", "lower", null, "raise" }
+            // Diesel power
+            , new string [] { "Player Diesel Power", "off", null, "on", null, null, "locked. Close throttle then re-try." }
+            , new string [] { "Helper Diesel Power", "off", null, "on" }
+            , new string [] { "Diesel Tank", null, null, "re-fuelled" } 
             // Steam power
             , new string [] { "Regulator", null, null, null, "close", "open" }    // Throttle for steam locomotives
             , new string [] { "Injector 1", "off", null, "on", "close", "open" } 
@@ -134,6 +142,8 @@ namespace ORTS {
             , new string [] { "Manual Firing", "off", null, "on" } 
             , new string [] { "Fire", null, null, "add shovelfull" } 
             , new string [] { "Cylinder Cocks", "close", null, "open" } 
+            , new string [] { "Tender Coal", null, null, "re-filled", null, "level" } 
+            , new string [] { "Tender Water", null, null, "re-filled", null, "level" } 
             // Braking
             , new string [] { "Train Brake", null, null, null, "release", "apply" } 
             , new string [] { "Engine Brake", null, null, null, "release", "apply" } 

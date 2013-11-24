@@ -802,6 +802,17 @@ namespace ORTS
             base.SetPower(ToState);
         }
 
+        public void RefillWithDiesel()
+        {
+            DieselLevelL = MaxDieselLevelL;
+        }
+
+        //CJ
+        public override void Refuel()
+        {
+            RefillWithDiesel();
+            Simulator.Confirmer.Confirm(CabControl.DieselFuel, CabSetting.On);
+        }
     } // class DieselLocomotive
 
     ///////////////////////////////////////////////////
