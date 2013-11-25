@@ -282,8 +282,12 @@ namespace ORTS
         float CylinderClearanceIn;        // Cylinder clearance in inches 
         float CylinderStrokeClearanceIn; // Clinder stroke + clearance
         float MeanPressureStrokePSI;
+        float SteamChestPressurePSI;    // Pressure in steam chest - input to cylinder
         float InitialPressurePSI;
         float TractiveEffortLbsF;
+        float CylinderStrokespM;      // Number of cylinder strokes per minute
+        float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
+        float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
   #endregion 
 
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
@@ -435,7 +439,7 @@ namespace ORTS
                 BackPressureLBpStoPSI[0] = 0;
                 BackPressureLBpStoPSI[1] = 14;
                 BackPressureLBpStoPSI[1.2f] = 30;
-                BackPressureLBpStoPSI.ScaleX(ExhaustLimitLBpH);
+               // BackPressureLBpStoPSI.ScaleX(ExhaustLimitLBpH);
                 // BackPressureLBpStoPSI.ScaleX(1 / 3600f);
                 BackPressureLBpStoPSI.ScaleX(TheoreticalMaxSteamOutputLBpS);
 
@@ -1264,7 +1268,9 @@ namespace ORTS
             // Expressed as a fraction of stroke R = (1 + c) / (cutoff + c)
             RatioOfExpansion = (1.0f + CylinderClearance) / (cutoff + CylinderClearance);
             // Absolute Mean Pressure = Ratio of Expansion
-            InitialPressurePSI = (throttle * BoilerPressurePSI);
+            SteamChestPressurePSI = (throttle * BoilerPressurePSI); // pressure applied to steam cylinder
+            InitialPressurePSI = SteamChestPressurePSI;
+            
             // AbsoluteInitialPressurePSI = (throttle * BoilerPressurePSI) + OneAtmospherePSI; // This is the gauge pressure + atmospheric pressure to find the absolute pressure.
             MeanPressurePSI = InitialPressurePSI * (1.0f + (float)Math.Log(RatioOfExpansion)) / RatioOfExpansion;
 
@@ -1308,6 +1314,17 @@ namespace ORTS
             TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI;
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
             MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
+            
+            // Calculate IHP
+            // Cylinder strokes, number of wheel revolutions at speed x 2 cylinder strokes per revolution
+            // Wheel revolutions = speed in ft/s / drive wheel circumference
+            CylinderStrokespM = 2.0f * pS.TopM(Me.ToFt(absSpeedMpS)) /  ( 2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM));
+         //   Trace.TraceWarning("Speed {0} Strokes {1}", absSpeedMpS, CylinderStrokespM);
+
+            // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
+            IndicatedHorsePowerHP = NumCylinders * ((MeanEffectivePressurePSI * Me.ToFt(CylinderStrokeM) * ((float)Math.PI * (Me.ToIn(CylinderDiameterM) / 2.0f) * (Me.ToIn(CylinderDiameterM) / 2.0f)) * (CylinderStrokespM) / 33000.0f));
+            // DHP = (Tractive Effort x velocity) / 550.0 - velocity in ft-sec
+            DrawbarHorsePowerHP = (TractiveEffortLbsF * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
 
             // Derate when needed.
             if (BoilerIsPriming)
@@ -1698,7 +1715,7 @@ namespace ORTS
                     data = ConvertFromPSI(cvc, BoilerPressurePSI);
                     break;
                 case CABViewControlTypes.STEAMCHEST_PR:
-                    data = ConvertFromPSI(cvc, CylinderPressurePSI);
+                    data = ConvertFromPSI(cvc, SteamChestPressurePSI);
                     break;
                 case CABViewControlTypes.CUTOFF:
                 case CABViewControlTypes.REVERSER_PLATE:
@@ -1819,9 +1836,10 @@ namespace ORTS
                 pS.TopH(CylCockSteamUsageLBpS), 
                 pS.TopH(GeneratorSteamUsageLBpS),
                 pS.TopH(StokerSteamUsageLBpS));
-            status.AppendFormat("Press.:\tChest\t{0:N0} psi\t\tBack\t{1:N0} psi\n",
-                CylinderPressurePSI,
-                BackPressurePSI);
+            status.AppendFormat("Press.:\tChest\t{0:N0} psi\t\tBack\t{1:N0} psi\t\tMEP\t{2:N0} psi\n",
+                SteamChestPressurePSI,
+                BackPressurePSI,
+                MeanEffectivePressurePSI);
             status.AppendFormat("Status.:\tSafety\t{0}\tFusePlug\t{1}\tPrime\t{2}\tBoil. Heat\t{3}",
                 SafetyIsOn,
                 FusiblePlugIsBlown,
@@ -1862,9 +1880,11 @@ namespace ORTS
                 FuelBoost);   
                 
             status.AppendFormat("\n\t\t === Pulling Performance === \n");
-            status.AppendFormat("Pulling:\tForce\t{0:N0} lbf\t\t(smooth)\t{1:N0} lbf\t\tPower\t{2:N0} hp\t\t(smooth)\t{3:F0} hp\n",
+            status.AppendFormat("Pulling:\tForce\t{0:N0} lbf\t\t(smooth)\t{1:N0} lbf\t\tIHP\t{2:N0} hp\t\tDHP\t{3:N0} hp\t\tPower\t{4:N0} hp\t\t(smooth)\t{5:F0} hp\n",
                 N.ToLbf(MotiveForceN),
                 N.ToLbf(MotiveForceSmoothedN.SmoothedValue),
+                IndicatedHorsePowerHP,
+                DrawbarHorsePowerHP,
                 W.ToHp(MotiveForceN * SpeedMpS),
                 W.ToHp(MotiveForceSmoothedN.SmoothedValue * SpeedMpS));
             status.AppendFormat("Beta:\tStart TE\t{0:N0} lbf",
