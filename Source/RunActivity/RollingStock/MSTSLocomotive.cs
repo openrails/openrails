@@ -3213,10 +3213,18 @@ namespace ORTS
     public class CabViewDialRenderer : CabViewControlRenderer
     {
         readonly CVCDial ControlDial;
+        /// <summary>
+        /// Rotation center point, in unscaled texture coordinates
+        /// </summary>
         readonly Vector2 Origin;
+        /// <summary>
+        /// Scale factor. Only downscaling is allowed by MSTS, so the value is in 0-1 range
+        /// </summary>
         readonly float Scale = 1;
-
-        float Rotation;   // 0' is 12 o'clock, 90' is 3 0'clock
+        /// <summary>
+        /// 0° is 12 o'clock, 90° is 3 o'clock
+        /// </summary>
+        float Rotation;
         float ScaleToScreen = 1;
 
         public CabViewDialRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CVCDial control, CabShader shader)
@@ -3225,11 +3233,9 @@ namespace ORTS
             ControlDial = control;
 
             Texture = CABTextureManager.GetTexture(Control.ACEFile, false, false, out IsNightTexture);
-            Scale = (float)(ControlDial.Height / Texture.Height);
-            ControlDial.Width /= Scale;
-            ControlDial.Center /= Scale;
-            ControlDial.Height /= Scale;
-            Origin = new Vector2((float)ControlDial.Width / 2, ControlDial.Center);
+            if (ControlDial.Height < Texture.Height)
+                Scale = (float)(ControlDial.Height / Texture.Height);
+            Origin = new Vector2((float)Texture.Width / 2, ControlDial.Center / Scale);
         }
 
         public override void PrepareFrame(RenderFrame frame)
