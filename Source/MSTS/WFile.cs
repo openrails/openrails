@@ -197,7 +197,11 @@ namespace MSTS
                     // TODO: Add real handling for pickup objects.
                     Add(new BaseObj(subBlock, currentWatermark));
                     break;
-                case TokenID.Signal:
+				case TokenID.Hazard:
+				//case (TokenID)359:
+					Add(new HazardObj(subBlock, currentWatermark));
+					break;
+				case TokenID.Signal:
                     Add(new SignalObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Speedpost:
@@ -803,6 +807,45 @@ namespace MSTS
         }
 
     }
+
+
+	//hazard data
+	public class HazardObj : WorldObject
+	{
+		public int itemId;
+		public HazardObj(SBR block, int detailLevel)
+		{
+
+			StaticDetailLevel = detailLevel;
+
+			while (!block.EndOfBlock())
+			{
+				using (SBR subBlock = block.ReadSubBlock())
+				{
+					switch (subBlock.ID)
+					{
+						case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+						case TokenID.TrItemId: itemId = DecodeTrItemId(subBlock); break;
+						case TokenID.FileName: FileName = subBlock.ReadString(); break;
+						case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+						case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+						default: subBlock.Skip(); break;
+					}
+				}
+			}
+		}
+
+		public int DecodeTrItemId(SBR block)
+		{
+			block.VerifyID(TokenID.TrItemId);
+			int db = block.ReadInt();
+			int dbID = block.ReadInt();
+			block.VerifyEndOfBlock();
+			return dbID;
+		}
+
+	}
 
 
     //Car Spawner data

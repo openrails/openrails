@@ -1322,7 +1322,36 @@ namespace MSTS
             return defaultValue;
         }
 
-        /// <summary>Read a Vector4 object in the STF format '( {X} {Y} {Z} {W} ... )'
+		/// <summary>Read a Vector3 object in the STF format '( {X} {Y} ... )'
+		/// </summary>
+		/// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
+		/// <param name="defaultValue">The default vector if any of the values are not specified</param>
+		/// <returns>The STF block as a Vector2</returns>
+		public Vector2 ReadVector2Block(UNITS validUnits, Vector2 defaultValue)
+		{
+			if (Eof)
+			{
+				STFException.TraceWarning(this, "Unexpected end of file");
+				return defaultValue;
+			}
+			string s = ReadItem();
+			if (s == ")")
+			{
+				StepBackOneItem();
+				return defaultValue;
+			}
+			if (s == "(")
+			{
+				defaultValue.X = ReadFloat(validUnits, defaultValue.X);
+				defaultValue.Y = ReadFloat(validUnits, defaultValue.Y);
+				SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
+				return defaultValue;
+			}
+			STFException.TraceWarning(this, "Block Not Found - instead found " + s);
+			return defaultValue;
+		}
+
+		/// <summary>Read a Vector4 object in the STF format '( {X} {Y} {Z} {W} ... )'
         /// </summary>
         /// <param name="validUnits">Any combination of the UNITS enumeration, to limit the available suffixes to reasonable values.</param>
         /// <param name="defaultValue">The default vector if any of the values are not specified</param>

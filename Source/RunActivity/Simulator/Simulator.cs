@@ -104,7 +104,7 @@ namespace ORTS
         public string PathName = "<unknown>";
         public float InitialTileX;
         public float InitialTileZ;
-
+		public HazzardManager HazzardManager;
         public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
         /// <summary>
         /// Reference to the InterlockingSystem object, responsible for
@@ -170,6 +170,7 @@ namespace ORTS
                 CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\");
             }
 
+			HazzardManager = new HazzardManager(this);
         }
         public void SetActivity(string activityPath)
         {
@@ -349,6 +350,7 @@ namespace ORTS
                 RailDriver.Update(PlayerLocomotive);
             }
 
+			if (HazzardManager != null) HazzardManager.Update(elapsedClockSeconds);
             if (MPManager.IsMultiPlayer()) MPManager.Instance().Update(GameTime);
 
         }

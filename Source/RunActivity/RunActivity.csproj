@@ -184,7 +184,9 @@
     <Compile Include="..\ORTS\UserSettings.cs">
       <Link>ORTS\UserSettings.cs</Link>
     </Compile>
+    <Compile Include="MSTS\HAZFile.cs" />
     <Compile Include="Popups\CarOperationsWindow.cs" />
+    <Compile Include="Simulator\Hazzard.cs" />
     <Compile Include="_Main.cs" />
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />

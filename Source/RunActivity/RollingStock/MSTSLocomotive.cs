@@ -2452,7 +2452,7 @@ namespace ORTS
             // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJComment>
             if( UserInput.IsPressed( UserCommands.ControlSander ) ) new SanderCommand( Viewer.Log, Locomotive.Sander );
             if( UserInput.IsPressed( UserCommands.ControlWiper ) ) new ToggleWipersCommand( Viewer.Log );
-            if( UserInput.IsPressed( UserCommands.ControlHorn ) ) new HornCommand( Viewer.Log, true );
+			if (UserInput.IsPressed(UserCommands.ControlHorn)) { new HornCommand(Viewer.Log, true); this.Car.Simulator.HazzardManager.Horn(); }
             if( UserInput.IsReleased( UserCommands.ControlHorn ) ) new HornCommand( Viewer.Log, false );
             if( UserInput.IsPressed( UserCommands.ControlBell ) ) new BellCommand( Viewer.Log, !Locomotive.Bell );
             if (UserInput.IsPressed(UserCommands.ControlAlerter)) new AlerterCommand(Viewer.Log, true);  // z

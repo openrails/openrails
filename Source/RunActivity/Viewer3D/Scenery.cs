@@ -207,10 +207,10 @@ namespace ORTS
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
                 var animated = (worldObject.StaticFlags & (uint)StaticFlag.Animate) != 0;
-                var global = (worldObject is TrackObj) || (worldObject.StaticFlags & (uint)StaticFlag.Global) != 0;
+                var global = (worldObject is TrackObj) || (worldObject is HazardObj) || (worldObject.StaticFlags & (uint)StaticFlag.Global) != 0;
 
                 // TransferObj have a FileName but it is not a shape, so we need to avoid sanity-checking it as if it was.
-                var fileNameIsNotShape = (worldObject is TransferObj);
+                var fileNameIsNotShape = (worldObject is TransferObj || worldObject is HazardObj);
 
                 // Determine the file path to the shape file for this scenery object and check it exists as expected.
                 var shapeFilePath = fileNameIsNotShape || String.IsNullOrEmpty(worldObject.FileName) ? null : global ? viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName : viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName;
@@ -287,7 +287,12 @@ namespace ORTS
                     {
                         sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject));
                     }
-                    else if (worldObject.GetType() == typeof(MSTS.SpeedPostObj))
+					else if (worldObject.GetType() == typeof(MSTS.HazardObj))
+					{
+						var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject);
+						if (h != null) sceneryObjects.Add(h);
+					}
+					else if (worldObject.GetType() == typeof(MSTS.SpeedPostObj))
                     {
                         sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
                     }

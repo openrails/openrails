@@ -637,6 +637,83 @@ namespace ORTS
         }
     }
 
+	public class HazzardShape : PoseableShape, IDisposable
+	{
+		readonly HazardObj HazardObj;
+		readonly Hazzard Hazzard;
+
+		readonly int AnimationFrames;
+		float Moved = 0f;
+		float AnimationKey;
+
+		public static HazzardShape CreateHazzard(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
+		{
+			var h = viewer.Simulator.HazzardManager.AddHazzardIntoGame(hObj.itemId, hObj.FileName);
+			if (h == null) return null;
+			return new HazzardShape(viewer, viewer.Simulator.BasePath + @"\Global\Shapes\" + h.HazFile.Tr_HazardFile.FileName + "\0" + viewer.Simulator.BasePath + @"\Global\Textures", position, shapeFlags, hObj, h);
+
+		}
+		public HazzardShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, Hazzard h)
+			: base(viewer, path, position, shapeFlags)
+		{
+			HazardObj = hObj;
+			Hazzard = h;
+			AnimationFrames = SharedShape.Animations[0].FrameCount;
+		}
+
+		#region IDisposable Members
+
+		public void Dispose()
+		{
+			Viewer.Simulator.HazzardManager.RemoveHazzardFromGame(HazardObj.itemId);
+		}
+
+		#endregion
+
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+		{
+			if (Hazzard == null) return;
+			Vector2 CurrentRange;
+			AnimationKey += elapsedTime.ClockSeconds* 24f;
+			switch (Hazzard.state)
+			{
+				case Hazzard.State.Idle1:
+					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key; break;
+				case Hazzard.State.Idle2:
+					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Idle_Key2; break;
+				case Hazzard.State.LookLeft:
+					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Left; break;
+				case Hazzard.State.LookRight:
+					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Surprise_Key_Right; break;
+				case Hazzard.State.Scared:
+				default:
+					CurrentRange = Hazzard.HazFile.Tr_HazardFile.Success_Scarper_Key;
+					if (Moved < Hazzard.HazFile.Tr_HazardFile.Distance)
+					{
+						var m = Hazzard.HazFile.Tr_HazardFile.Speed * elapsedTime.ClockSeconds;
+						Moved += m;
+						this.HazardObj.Position.Move(this.HazardObj.QDirection, m);
+						Location.Location = new Vector3(this.HazardObj.Position.X, this.HazardObj.Position.Y, this.HazardObj.Position.Z);
+					}
+					else { Moved = 0; Hazzard.state = Hazzard.State.Idle1; }
+					break;
+			}
+			if (AnimationKey < CurrentRange.X) AnimationKey = CurrentRange.X;
+			if (AnimationKey > CurrentRange.Y)
+			{
+				AnimationKey = CurrentRange.X;
+				if (Hazzard.state == Hazzard.State.LookLeft || Hazzard.state == Hazzard.State.LookRight) Hazzard.state = Hazzard.State.Scared;
+			}
+
+			for (var i = 0; i < SharedShape.Matrices.Length; ++i)
+				AnimateMatrix(i, AnimationKey);
+			
+			var pos = this.HazardObj.Position;
+			
+			SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+		}
+	}
+
     public class RoadCarShape : AnimatedShape
     {
         public RoadCarShape(Viewer3D viewer, string path)
