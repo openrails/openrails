@@ -70,6 +70,7 @@ namespace ORTS
         bool StokerIsMechanical = false;
         bool HotStart = true;
         bool BoilerHeat = false;
+        bool HasSuperheater = false;
 
         // state variables
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
@@ -172,6 +173,7 @@ namespace ORTS
         Interpolator BoilerEfficiencyGrateAreaLBpFT2toX;      //  Table to determine boiler efficiency based upon lbs of coal per sq ft of Grate Area
         Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
         Interpolator WaterTempFtoPSI;  // Table to convert water temp to pressure
+        Interpolator CylinderCondensationFractionX;  // Table to find the cylinder condensation fraction per cutoff for the cylinder - saturated steam
 
         float CylinderPressurePSI;
         float BackPressurePSI;
@@ -259,8 +261,7 @@ namespace ORTS
         float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
         
         float StartTractiveEffortN = 0.0f;      // Record starting tractive effort
-        float Superheater = 1.0f;               // Currently 2 values respected: 1.0 for no superheat (default), > 1.0 for typical superheat
-        float SuperheaterSteamProductionFactor = 1.0f;  // Above 1.0, increases steam production due to superheater, currently by 3%
+        float SuperheaterFactor = 1.0f;               // Currently 2 values respected: 1.0 for no superheat (default), > 1.0 for typical superheat
         float SuperheaterSteamUsageFactor = 1.0f;       // Below 1.0, reduces steam usage due to superheater
         float SuperheaterCoalUsageFactor = 1.0f;        // Below 1.0, reduces coal usage due to superheater
         float Stoker = 0.0f;                // Currently 2 values respected: 0.0 for no mechanical stoker (default), = 1.0 for typical mechanical stoker
@@ -281,6 +282,7 @@ namespace ORTS
         float MeanPressurePSI;
         float CylinderClearanceIn;        // Cylinder clearance in inches 
         float CylinderStrokeClearanceIn; // Clinder stroke + clearance
+        float CylinderPistonShaftFt3;   // Volume taken up by the cylinder piston shaft
         float MeanPressureStrokePSI;
         float SteamChestPressurePSI;    // Pressure in steam chest - input to cylinder
         float InitialPressurePSI;
@@ -333,7 +335,9 @@ namespace ORTS
             SuperheaterSteamReductionPSItoX = SteamTable.SuperheaterSteamReductionInterpolatorPSItoX();
             SuperheaterCoalReductionPSItoX = SteamTable.SuperheaterCoalReductionInterpolatorPSItoX();
             BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.BoilerEfficiencyGrateAreaInterpolatorLbstoX();
-            RefillTenderWithCoal();
+            CylinderCondensationFractionX = SteamTable.CylinderCondensationFractionInterpolatorX();            
+
+			RefillTenderWithCoal();
             RefillTenderWithWater();
 
             // Computed Values
@@ -357,14 +361,12 @@ namespace ORTS
                 EvaporationAreaM2 = Me2.FromFt2(((NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(DriverWheelRadiusM * 2.0f) * EvapAreaDesignFactor));
 
             // Determine if Superheater in use
-            if (Superheater > 1.0)
-            {
-                SuperheaterSteamProductionFactor = 1.03f;  // if superheated, set superheating values
-            }
+            if (SuperheaterFactor > 1.0)
+                HasSuperheater = true;
 
             CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
             WaterFraction = 0.9f;
-            TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * 15.0f * SuperheaterSteamProductionFactor); // set max boiler theoretical steam output
+            TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * 15.0f); // set max boiler theoretical steam output
 
             MaxBoilerHeatPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 5.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
             MaxBoilerPressHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerHeatPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerHeatPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerHeatPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerHeatPressurePSI];  // calculate the maximum possible heat in the boiler, assuming safety valve and a small margin
@@ -379,8 +381,10 @@ namespace ORTS
             // SweptVolumeToTravelRatioFT3pFT = strokes_per_cycle * no_of_cylinders * pi*CylRad^2 * stroke_length / 2*pi*WheelRad
             // "pi"s cancel out
             const int strokesPerCycle = 2;  // each cylinder does 2 strokes for every wheel rotation, within each stroke, ie there will be a forward and back steam injection
-            SweptVolumeToTravelRatioFT3pFT = strokesPerCycle * NumCylinders * Me.ToFt(CylinderDiameterM / 2) * Me.ToFt(CylinderDiameterM / 2) * Me.ToFt(CylinderStrokeM) / Me.ToFt(2 * DriverWheelRadiusM);
-
+            // Cylinder piston shaft volume needs to be calculated and deducted from sweptvolume - assume diameter of the cylinder minus one-half of the piston-rod area. Let us assume that the latter is 3 square inches
+            CylinderPistonShaftFt3 = Me3.ToFt3(Me3.FromIn3(3.0f * Me.ToIn(CylinderStrokeM)));
+            SweptVolumeToTravelRatioFT3pFT = strokesPerCycle * NumCylinders * ((Me.ToFt(CylinderDiameterM / 2) * Me.ToFt(CylinderDiameterM / 2) * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3) / Me.ToFt(2 * DriverWheelRadiusM);
+            
             // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
             // lbs/s                = ft3/ft                                  x   ft/s  x  lbs/ft3
 
@@ -578,7 +582,7 @@ namespace ORTS
                 case "engine(enginecontrollers(firedoor": FireboxDoorController.Parse(stf); break;
                 case "engine(effects(steamspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "engine(ortsgratearea": GrateAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
-                case "engine(superheater": Superheater = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(superheater": SuperheaterFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsevaporationarea": EvaporationAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(ortsfuelcalorific": FuelCalorificKJpKG = stf.ReadFloatBlock(STFReader.UNITS.EnergyDensity, null); break;
                 case "engine(ortsburnratemultiplier": BurnRateMultiplier = stf.ReadIntBlock(null); break;
@@ -627,7 +631,7 @@ namespace ORTS
             FiringRateController = (MSTSNotchController)locoCopy.FiringRateController.Clone();
             FireboxDoorController = (MSTSNotchController)locoCopy.FireboxDoorController.Clone();
             GrateAreaM2 = locoCopy.GrateAreaM2;
-            Superheater = locoCopy.Superheater;
+            SuperheaterFactor = locoCopy.SuperheaterFactor;
             EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
             FuelCalorificKJpKG = locoCopy.FuelCalorificKJpKG;
             BurnRateMultiplier = locoCopy.BurnRateMultiplier;
@@ -1086,20 +1090,6 @@ namespace ORTS
                 SafetyValveUsageLBpS = 0.0f;
             }
 
-            // Determine if Superheater in use
-            if (Superheater > 1.0)
-            {
-                SuperheaterSteamProductionFactor = 1.03f;  // if superheated, set superheating values
-                SuperheaterCoalUsageFactor = SuperheaterCoalReductionPSItoX[BoilerPressurePSI]; // set coal reduction based on boiler Presseure
-                SuperheaterSteamUsageFactor = SuperheaterSteamReductionPSItoX[BoilerPressurePSI]; // set steam reduction based on boiler Presseure
-            }
-            else
-            {
-                SuperheaterSteamProductionFactor = 1.0f; // if saturated set to default
-                SuperheaterCoalUsageFactor = 1.0f; // set coal reduction back to default
-                SuperheaterSteamUsageFactor = 1.0f; // set steam reduction back to default
-            }
-
             // Adjust blower impacts on heat and boiler mass
             if (BlowerIsOn)
             {
@@ -1142,7 +1132,7 @@ namespace ORTS
             {
                 // Steam Output (kg/h) = ( Boiler Rating (kW) * 3600 s/h ) / Energy added kJ/kg, Energy added = energy (at Boiler Pressure - Feedwater energy)
                 // Allow a small increase if superheater is installed
-                EvaporationLBpS = Kg.ToLb(BoilerKW / W.ToKW(W.FromBTUpS(BoilerSteamHeatBTUpLB))) * SuperheaterSteamProductionFactor;  // convert kW,  1kW = 0.94781712 BTU/s - fudge factor required - 1.1
+                EvaporationLBpS = Kg.ToLb(BoilerKW / W.ToKW(W.FromBTUpS(BoilerSteamHeatBTUpLB)));  // convert kW,  1kW = 0.94781712 BTU/s - fudge factor required - 1.1
             }
 
             // Cap Steam Generation rate if excessive
@@ -1263,6 +1253,17 @@ namespace ORTS
 
         private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS)
         {
+            // Determine if Superheater in use
+            if (HasSuperheater)
+            {
+                SuperheaterCoalUsageFactor = SuperheaterCoalReductionPSItoX[BoilerPressurePSI]; // set coal reduction based on boiler Presseure
+                SuperheaterSteamUsageFactor = SuperheaterSteamReductionPSItoX[BoilerPressurePSI]; // set steam reduction based on boiler Presseure
+            }
+            else
+            {
+                SuperheaterCoalUsageFactor = 1.0f; // set coal reduction back to default
+                SuperheaterSteamUsageFactor = 1.0f + CylinderCondensationFractionX[cutoff]; // calculate steam usage factor for saturated steam locomotive according to cylinder condensation fraction 
+            }
             // Calculate Ratio of expansion, with cylinder clearance
             // R (ratio of Expansion) = (length of stroke + clearance) / (length of stroke to point of cut-on + clearance)
             // Expressed as a fraction of stroke R = (1 + c) / (cutoff + c)
@@ -1296,7 +1297,6 @@ namespace ORTS
             CylinderPressurePSI = MathHelper.Clamp(CylinderPressurePSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
             BackPressurePSI = BackPressureLBpStoPSI[CylinderSteamUsageLBpS - CylCockSteamUsageLBpS];
             MeanEffectivePressurePSI = CylinderPressurePSI - BackPressurePSI;
-
             // Cylinder steam usage = (volume of steam in cylinder @ cutoff value) * number of cylinder strokes based on speed - assume 2 stroke per wheel rev per cylinder. Note CylinderSteamDensity is in lbs/ft3
             float CalculatedCylinderSteamUsageLBpS = Me.ToFt(absSpeedMpS) * SweptVolumeToTravelRatioFT3pFT * (cutoff + CylinderClearance) * (CylinderSteamDensityPSItoLBpFT3[MeanEffectivePressurePSI]);
             // usage calculated as moving average to minimize chance of oscillation.
@@ -1802,7 +1802,7 @@ namespace ORTS
                 Me2.ToFt2(GrateAreaM2),
                 BoilerVolumeFT3,
                 MaxBoilerOutputLBpH,
-                Superheater);
+                SuperheaterFactor);
             status.AppendFormat("Boiler:\tPressure\t{0:N1} psi\t\tPower\t{1:N0} bhp\t\tMass\t{2:N0} lb\t\tEff. \t{3:N2}\n",
                 BoilerPressurePSI,
                 BoilerKW * BoilerKWtoBHP,

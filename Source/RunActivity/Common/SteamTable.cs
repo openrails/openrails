@@ -187,6 +187,25 @@ namespace ORTS
         {
             0.366f, 0.395f, 0.419f, 0.454f, 0.509f
         };
+        
+        // cutoff fraction
+        static float[] CutOffFractionTableX = new float[]
+        {
+            0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.35f, 0.4f, 0.45f, 0.5f, 0.55f
+        };
+        
+        // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
+        static float[] CylinderCondensationFractionTableX = new float[]
+        {
+            0.42f, 0.345f, 0.29f, 0.245f, 0.213f, 0.181f, 0.159f, 0.141f, 0.125f, 0.11f
+        };
+
+        // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
+        public static Interpolator CylinderCondensationFractionInterpolatorX()
+        {
+            return new Interpolator(CutOffFractionTableX, CylinderCondensationFractionTableX);
+        }    
+
 
         // Injector factor to determine the min capacity of the injector
         public static Interpolator InjCapMinFactorInterpolatorX()
