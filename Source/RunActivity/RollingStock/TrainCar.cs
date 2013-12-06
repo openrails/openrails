@@ -131,14 +131,14 @@ namespace ORTS
         { 
             get
             {
-                if (AcceptMUSignals)
+                if (AcceptMUSignals && Train != null)
                     return Train.MUThrottlePercent;
                 else
                     return LocalThrottlePercent;
             }
             set
             {
-                if (AcceptMUSignals)
+                if (AcceptMUSignals && Train != null)
                     Train.MUThrottlePercent = value;
                 else
                     LocalThrottlePercent = value;
