@@ -165,7 +165,14 @@ namespace ORTS.Popups {
         private string _text;
         public Color Color;
         protected WindowTextFont Font;
+        /// <summary>
+        /// Lines of text to draw prepared by Updater process
+        /// </summary>
         List<string> Lines;
+        /// <summary>
+        /// Copy of Lines to iterate through by Render process
+        /// </summary>
+        List<string> DrawnLines;
 
         public TextFlow(int x, int y, int width, string text)
             : base(x, y, width, 0) {
@@ -215,7 +222,8 @@ namespace ORTS.Popups {
         }
 
         internal override void Draw(SpriteBatch spriteBatch, Point offset) {
-            foreach (var line in Lines) {
+            DrawnLines = Lines;
+            foreach (var line in DrawnLines) {
                 Font.Draw(spriteBatch, Position, offset, line, LabelAlignment.Left, Color);
                 offset.Y += Font.Height;
             }
