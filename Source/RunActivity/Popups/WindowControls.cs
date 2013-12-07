@@ -172,7 +172,7 @@ namespace ORTS.Popups {
         /// <summary>
         /// Copy of Lines to iterate through by Render process
         /// </summary>
-        List<string> DrawnLines;
+        string[] DrawnLines;
 
         public TextFlow(int x, int y, int width, string text)
             : base(x, y, width, 0) {
@@ -222,7 +222,7 @@ namespace ORTS.Popups {
         }
 
         internal override void Draw(SpriteBatch spriteBatch, Point offset) {
-            DrawnLines = Lines;
+            DrawnLines = Lines.ToArray();
             foreach (var line in DrawnLines) {
                 Font.Draw(spriteBatch, Position, offset, line, LabelAlignment.Left, Color);
                 offset.Y += Font.Height;
