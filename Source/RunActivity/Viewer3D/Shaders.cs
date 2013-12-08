@@ -72,6 +72,7 @@ namespace ORTS
         readonly EffectParameter sideVector;
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
+        readonly EffectParameter referenceAlpha;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
@@ -164,6 +165,8 @@ namespace ORTS
 
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
+        public byte ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
+
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
         {
@@ -194,6 +197,7 @@ namespace ORTS
             sideVector = Parameters["SideVector"];
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
+            referenceAlpha = Parameters["ReferenceAlpha"];
         }
     }
 

@@ -50,6 +50,7 @@ float    HalfNightColorModifier;
 float    VegetationAmbientModifier;
 float4   EyeVector;
 float3   SideVector;
+float ReferenceAlpha;
 texture  ImageTexture;
 texture  OverlayTexture;
 
@@ -142,11 +143,11 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
 	Out.TexCoords.xy = In.TexCoords;
-	Out.Normal_Light.xyz = mul(In.Normal, World).xyz;
+	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
-	Out.Normal_Light.w = dot(normalize(Out.Normal_Light.xyz), LightVector) * 0.5 + 0.5;
+	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
 }
 
 void _VSSignalProjection(in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
@@ -261,7 +262,7 @@ float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 float _PSGetSpecularEffect(in VERTEX_OUTPUT In)
 {
 	float3 halfVector = normalize(-In.RelPosition.xyz) + LightVector;
-	return In.Normal_Light.w * ZBias_Lighting.w * pow(saturate(dot(normalize(In.Normal_Light.xyz), normalize(halfVector))), ZBias_Lighting.z);
+	return In.Normal_Light.w * ZBias_Lighting.w * pow(saturate(dot(In.Normal_Light.xyz, normalize(halfVector))), ZBias_Lighting.z);
 }
 
 // Gets the shadow effect.
@@ -350,12 +351,11 @@ float3 _PSGetOvercastColor(in float4 Color, in VERTEX_OUTPUT In)
 // fade-in/fade-out animations.
 void _PSApplyHeadlights(inout float3 Color, in float3 OriginalColor, in VERTEX_OUTPUT In)
 {
-	float3 surfaceNormal = normalize(In.Normal_Light.xyz);
 	float3 headlightToSurface = normalize(In.LightDir_Fog.xyz);
 	float coneDot = dot(headlightToSurface, HeadlightDirection.xyz);
 
 	float shading = step(0, coneDot);
-	shading *= step(0, dot(surfaceNormal, -headlightToSurface));
+	shading *= step(0, dot(In.Normal_Light.xyz, -headlightToSurface));
 	shading *= saturate(HeadlightDirection.w / (1 - coneDot));
 	shading *= saturate(1 - length(In.LightDir_Fog.xyz) * HeadlightRcpDistance);
 	shading *= HeadlightPosition.w;
@@ -374,6 +374,8 @@ float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	const float ShadowBrightness = 0.5;
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
+    // Alpha testing:
+    clip(Color.a - ReferenceAlpha);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
 	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
 	// Specular effect next.
@@ -393,6 +395,8 @@ float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = tex2D(Image, In.TexCoords.xy);
+    // Alpha testing:
+    clip(Color.a - ReferenceAlpha);
 	// Ambient effect applies first; no shadow effect for vegetation; night-time textures cancel out all normal lighting.
 	float3 litColor = Color.rgb * VegetationAmbientModifier;
 	// No specular effect for vegetation.
@@ -435,6 +439,8 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 	const float ShadowBrightness = 0.5;
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
+    // Alpha testing:
+    clip(Color.a - ReferenceAlpha);
 	// Fixed ambient and shadow effects at darkest level.
 	float3 litColor = Color.rgb * ShadowBrightness;
 	// No specular effect for dark shade.
@@ -454,6 +460,8 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	const float HalfShadowBrightness = 0.75;
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
+    // Alpha testing:
+    clip(Color.a - ReferenceAlpha);
 	// Fixed ambient and shadow effects at mid-dark level.
 	float3 litColor = Color.rgb * HalfShadowBrightness;
 	// No specular effect for half-bright.
@@ -471,6 +479,8 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = tex2D(Image, In.TexCoords.xy);
+    // Alpha testing:
+    clip(Color.a - ReferenceAlpha);
 	// Fixed ambient and shadow effects at brightest level.
 	float3 litColor = Color.rgb;
 	// No specular effect for full-bright.
@@ -486,6 +496,8 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = tex2D(Image, In.TexCoords.xy);
+    // Alpha testing:
+    clip(Color.a - ReferenceAlpha);
 	// No ambient and shadow effects for signal lights.
 	// Apply signal coloring effect.
 	float3 litColor = lerp(Color.rgb, In.Color.rgb, Color.r);

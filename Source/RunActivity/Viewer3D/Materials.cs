@@ -427,8 +427,6 @@ namespace ORTS
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
-            rs.AlphaFunction = CompareFunction.Always;
-            rs.AlphaTestEnable = false;
             rs.DepthBufferEnable = true;
             rs.DestinationBlend = Blend.Zero;
             rs.SourceBlend = Blend.One;
@@ -525,19 +523,17 @@ namespace ORTS
             if (GetBlending())
             {
                 // Skip blend for near transparent alpha's (eliminates sorting issues for many simple alpha'd textures )
-                rs.AlphaTestEnable = true;
-                rs.AlphaFunction = CompareFunction.GreaterEqual;
                 if (previousMaterial == null  // Search for opaque pixels in alpha blended polygons
                     && (Options & SceneryMaterialOptions.AlphaBlendingMask) != SceneryMaterialOptions.AlphaBlendingAdd)
                 {
                     rs.AlphaBlendEnable = false;
-                    rs.ReferenceAlpha = 250;
+                    shader.ReferenceAlpha = 250;
                     rs.DepthBufferWriteEnable = true;
                     rs.DepthBufferFunction = CompareFunction.LessEqual;
                 }
                 else // Alpha blended pixels only
                 {
-                    rs.ReferenceAlpha = 10;  // ie default lightcone's are 9 in full transparent areas
+                    shader.ReferenceAlpha = 10;  // ie default lightcone's are 9 in full transparent areas
 
                     // Set up for blending
                     rs.AlphaBlendEnable = true;
@@ -566,13 +562,11 @@ namespace ORTS
                 if ((Options & SceneryMaterialOptions.AlphaTest) != 0)
                 {
                     // Transparency testing is enabled
-                    rs.AlphaTestEnable = true;
-                    rs.AlphaFunction = CompareFunction.GreaterEqual;        // if alpha < reference, then skip processing this pixel
-                    rs.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
+                    shader.ReferenceAlpha = 200;  // setting this to 128, chain link fences become solid at distance, at 200, they become
                 }
                 else
                 {
-                    rs.AlphaTestEnable = false;
+                    shader.ReferenceAlpha = 0;
                 }
             }
 
@@ -666,17 +660,15 @@ namespace ORTS
             shader.ImageTextureIsNight = false;
             shader.LightingDiffuse = 1;
             shader.LightingSpecular = 0;
+            shader.ReferenceAlpha = 0;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
             rs.AlphaDestinationBlend = Blend.Zero;
-            rs.AlphaFunction = CompareFunction.Always;
             rs.AlphaSourceBlend = Blend.One;
-            rs.AlphaTestEnable = false;
             rs.DepthBufferFunction = CompareFunction.LessEqual;
             rs.DepthBufferWriteEnable = true;
             rs.DestinationBlend = Blend.Zero;
-            rs.ReferenceAlpha = 0;
             rs.SeparateAlphaBlendEnabled = false;
             rs.SourceBlend = Blend.One;
         }
@@ -1206,13 +1198,9 @@ namespace ORTS
             shader.CurrentTechnique = shader.Techniques["Forest"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
             shader.ImageTexture = TreeTexture;
+            shader.ReferenceAlpha = 200;
 
             graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
-
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaFunction = CompareFunction.GreaterEqual;
-            rs.AlphaTestEnable = true;
-            rs.ReferenceAlpha = 200;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -1240,10 +1228,7 @@ namespace ORTS
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaFunction = CompareFunction.Always;
-            rs.AlphaTestEnable = false;
-            rs.ReferenceAlpha = 0;
+            Viewer.MaterialManager.SceneryShader.ReferenceAlpha = 0;
         }
 
         public override Texture2D GetShadowTexture()
