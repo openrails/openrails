@@ -200,12 +200,45 @@ namespace ORTS
             0.42f, 0.345f, 0.29f, 0.245f, 0.213f, 0.181f, 0.159f, 0.141f, 0.125f, 0.11f
         };
 
+
+        // Steam to Cylinders - lbs per sec - from BTC Test Results for Std 8
+        static float[] CylinderSteamTableLbpH = new float[]
+        {
+            10000.0f, 12000f, 14000f, 16000f, 18000f, 20000f, 22000f, 24000f, 26000f, 28000f, 30000f,
+            32000f, 34000f
+        };
+        
+        // Superheat Temp - deg F - from BTC Test Results for Std 8
+        static float[] SuperheatTempTableDegF = new float[]
+        {
+            164.0f, 195.0f, 220.0f, 242.0f, 260.0f, 278.0f, 290.0f, 304.0f, 320.0f, 335.0f, 348.0f,
+            360.0f, 375.0f
+        };
+
+        // Superheat required to prevent cylinder condensation fraction per cutoff fraction - Ref Elseco Superheater manual
+        static float[] SuperheatCondenstationLimitTableDegF = new float[]
+        {
+            250.0f, 218.0f, 190.0f, 168.0f, 145.0f, 129.0f, 113.0f, 98.0f, 84.0f, 70.0f
+        };
+
+
+        // Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
+        public static Interpolator SuperheatTempLimitInterpolatorXtoDegF()
+        {
+            return new Interpolator(CutOffFractionTableX, SuperheatCondenstationLimitTableDegF);
+        }    
+
+        // Superheat temp per lbs of steam to cylinder - from BTC Test Results for Std 8
+        public static Interpolator SuperheatTempInterpolatorLbpHtoDegF()
+        {
+            return new Interpolator(CylinderSteamTableLbpH, SuperheatTempTableDegF);
+        }    
+
         // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
         public static Interpolator CylinderCondensationFractionInterpolatorX()
         {
             return new Interpolator(CutOffFractionTableX, CylinderCondensationFractionTableX);
         }    
-
 
         // Injector factor to determine the min capacity of the injector
         public static Interpolator InjCapMinFactorInterpolatorX()
@@ -248,7 +281,6 @@ namespace ORTS
         {
             return new Interpolator(SuperheatFactorPressureTablePSI, SuperheaterCoalReductionTable);
         }
-        
 
         // Saturated pressure of steam (psi) @ water temperature (K)
         public static Interpolator SaturationPressureInterpolatorKtoPSI()
