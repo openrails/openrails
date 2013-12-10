@@ -113,6 +113,44 @@ namespace MSTS
                     return i;
             throw new InvalidOperationException("Program Bug: Can't Find Track Node");
         }
+
+		//add speed restriction zone after the activity is loaded
+		public void AddRestrictZone(TSectionDatFile TSection, ActivityRestrictedSpeedZones zone)
+		{
+			if (zone.ActivityRestrictedSpeedZoneList.Count < 1) return;
+			TrItem[] tmpTable = new TrItem[TrItemTable.Length + zone.ActivityRestrictedSpeedZoneList.Count * 2];//create new table to hold two speedpostitem per zone
+			for (int i = 0; i < TrItemTable.Length; i++) tmpTable[i] = TrItemTable[i];
+			var idx = (uint)TrItemTable.Length;
+			foreach (var z in zone.ActivityRestrictedSpeedZoneList)
+			{
+				tmpTable[idx] = new SpeedPostItem(z.StartPosition, idx, true);
+				ModifyItems(z.StartPosition, TSection, (int)idx);
+				idx++;
+				tmpTable[idx] = new SpeedPostItem(z.EndPosition, idx, false);
+				ModifyItems(z.EndPosition, TSection, (int)idx);
+				idx++;
+			}
+			TrItemTable = tmpTable;
+		}
+
+		//add restriction zone to the tracknode, so it can be viewed as a signal
+		void ModifyItems(Position z, TSectionDatFile TDB, int s)
+		{
+			try
+			{
+				var t = new Traveller(TDB, this.TrackNodes, z.TileX, z.TileZ, z.X, z.Z);
+				var n = this.TrackNodes[t.TrackNodeIndex];//find the track node
+				if (n.TrVectorNode != null)
+				{
+					var tmp = new int[n.TrVectorNode.noItemRefs + 1];
+					n.TrVectorNode.TrItemRefs.CopyTo(tmp, 0);
+					tmp[n.TrVectorNode.noItemRefs] = s;
+					n.TrVectorNode.TrItemRefs = tmp; //use the new item lists for the track node
+					n.TrVectorNode.noItemRefs += 1;
+				}
+			}
+			catch { }
+		}
     }
 
 
@@ -620,6 +658,45 @@ namespace MSTS
                 }),
             });
         }
+
+
+		void CreateRPData(Position s) //create R P data of trItem
+		{
+			X = PX = s.X;
+			Z = PZ = s.Z;
+			Y = 0;
+			TileX = TilePX = s.TileX;
+			TileZ = TilePZ = s.TileZ;
+		}
+
+		//a special one to create speedpost from activity restriction zone
+		public SpeedPostItem(Position s, uint idx, bool start)
+		{
+			ItemType = trItemType.trSPEEDPOST;
+			TrItemId = idx;
+			CreateRPData(s);
+
+			IsMilePost = false;
+			IsLimit = true;
+			IsFreight = IsPassenger = true;
+
+			if (!start) { IsLimit = true; IsResume = true; }//end zone
+			var speed = Program.Simulator.TRK.Tr_RouteFile.TempRestrictedSpeed;
+			if (speed < 0) speed = 6.9444f;
+			if (Program.Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric == true)
+			{
+				this.IsMPH = false;
+				SpeedInd = (int)(Program.Simulator.TRK.Tr_RouteFile.TempRestrictedSpeed * 3.6f) + 1;
+			}
+			else
+			{
+				this.IsMPH = true;
+				SpeedInd = (int)(Program.Simulator.TRK.Tr_RouteFile.TempRestrictedSpeed * 2.236936f) + 1;
+			}
+
+			Angle = 0;
+		}
+
     }
 
     public class SoundRegionItem : TrItem

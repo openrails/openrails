@@ -891,7 +891,8 @@ namespace ORTS
             lookAtPosition = Vector3.Transform(lookAtPosition, attachedCar.GetXNAMatrix());
             if (tiltingLand && Program.Simulator.CabRotating > 0)
             {
-				if (attachedCar.HasFreightAnim)//cars with freight animation will rotate only camera, the land will rotate with the camera, so the FA can follow
+				if (attachedCar.HasFreightAnim && !attachedCar.HasInsideView && !attachedCar.HasPassengerCapacity)
+				//cars with freight animation  will rotate only camera (except passenger motor units), the land will rotate with the camera, so the FA can follow
 				{
 					var up = (Matrix.CreateRotationZ( Program.Simulator.CabRotating * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
 					return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));

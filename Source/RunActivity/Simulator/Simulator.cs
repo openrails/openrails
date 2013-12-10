@@ -185,6 +185,10 @@ namespace ORTS
             ClockTime = StartTime.TotalSeconds;
             Season = Activity.Tr_Activity.Tr_Activity_Header.Season;
             Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
+			if (Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
+			{
+				TDB.TrackDB.AddRestrictZone(TSectionDat, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
+			}
         }
         public void SetExplore(string path, string consist, string start, string season, string weather)
         {
@@ -320,7 +324,18 @@ namespace ORTS
 
             foreach (Train train in movingTrains)
             {
-                train.Update(elapsedClockSeconds);
+				if (MPManager.IsMultiPlayer())
+				{
+					try
+					{
+						train.Update(elapsedClockSeconds);
+					}
+					catch (Exception e) { Trace.TraceWarning(e.Message); }
+				}
+				else
+				{
+					train.Update(elapsedClockSeconds);
+				}
             }
 
             foreach (Train train in movingTrains)

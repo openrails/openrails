@@ -74,6 +74,8 @@ namespace ORTS
         public bool IsDriveable;
         public bool IsFreight;           // indication freight wagon or passenger car
         public bool HasFreightAnim = false;
+		public bool HasPassengerCapacity = false;
+        public bool HasInsideView = false;
 
         public LightCollection Lights;
         public int Headlight;

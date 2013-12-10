@@ -1043,10 +1043,10 @@ namespace MSTS {
     }
 
     public class Position {
-        int TileX;
-        int TileZ;
-        float X;
-        float Z;
+        public int TileX;
+        public int TileZ;
+        public float X;
+        public float Z;
 
         public Position(int tileX, int tileZ, int x, int z) {
             TileX = tileX;

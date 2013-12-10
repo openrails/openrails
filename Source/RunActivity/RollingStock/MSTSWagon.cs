@@ -236,8 +236,9 @@ namespace ORTS
                     else
                         stf.SkipBlock();
                     break;
-                case "wagon(inside": ParseWagonInside(stf); break;
+				case "wagon(inside": ParseWagonInside(stf); HasInsideView = true; break;
                 case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
+				case "wagon(passengercapacity": HasPassengerCapacity = true; break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);

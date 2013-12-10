@@ -85,7 +85,7 @@ namespace ORTS
 					return Hazzards[itemID];//successfully added the hazard with associated haz file
 				}
 			}
-			catch { };
+			catch { }
 			return null;
 		}
 

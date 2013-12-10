@@ -87,6 +87,7 @@ namespace MSTS
                 new STFReader.TokenProcessor("defaultdieseltowersms", ()=>{ DefaultDieselTowerSMS = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("defaultwatertowersms", ()=>{ DefaultWaterTowerSMS = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("defaultsignalsms", ()=>{ DefaultSignalSMS = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("temprestrictedspeed", ()=>{ TempRestrictedSpeed = stf.ReadFloatBlock(STFReader.UNITS.Speed, -1f); }),
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -111,6 +112,7 @@ namespace MSTS
         public string DefaultDieselTowerSMS;
         public string DefaultWaterTowerSMS;
         public string DefaultSignalSMS;
+		public float TempRestrictedSpeed = -1f;
     }
 
 
