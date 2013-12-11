@@ -811,21 +811,21 @@ namespace ORTS.MultiPlayer
 			foreach (string name in allEngines)
 			{
 				double len = 0.0f;
+				Microsoft.Xna.Framework.Vector3 def = new Microsoft.Xna.Framework.Vector3();
+
 				try
 				{
-					using (STFReader stf = new STFReader(Program.Simulator.BasePath + "\\trains\\trainset\\" + name, true))
-						while (!stf.Eof)
-						{
-							stf.ReadItem();
-							if (stf.Tree.ToLower() == "wagon(size")
-							{
-								stf.MustMatch("(");
-								stf.ReadFloat(STFReader.UNITS.Distance, null);
-								stf.ReadFloat(STFReader.UNITS.Distance, null);
-								len = stf.ReadFloat(STFReader.UNITS.Distance, null);
-								break;
-							}
-						}
+					using (var stf = new STFReader(Program.Simulator.BasePath + "\\trains\\trainset\\" + name, false))
+						stf.ParseFile(new STFReader.TokenProcessor[] {
+							new STFReader.TokenProcessor("wagon", ()=>{
+								stf.ReadString();
+								stf.ParseBlock(new STFReader.TokenProcessor[] {
+									new STFReader.TokenProcessor("size", ()=>{ def = stf.ReadVector3Block(STFReader.UNITS.Distance, def); }),
+								});
+							}),
+						});
+
+					len = def.Z;
 					carList.Add(len + Program.Random.NextDouble() / 10.0f, name);
 				}
 				catch { }
