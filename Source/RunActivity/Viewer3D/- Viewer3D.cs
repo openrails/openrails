@@ -741,38 +741,24 @@ namespace ORTS
                 CheckReplaying();
                 new UseHeadOutBackCameraCommand( Log );
             }
-#if !NEW_SIGNALLING
-            if( UserInput.IsPressed( UserCommands.GameSwitchAhead ) )
-                if( Simulator.SwitchTrackAhead( PlayerTrain ) )
-                    new ToggleSwitchAheadCommand( Log );
-            if( UserInput.IsPressed( UserCommands.GameSwitchBehind ) )
-                if( Simulator.SwitchTrackBehind( PlayerTrain ) )
-                    new ToggleSwitchBehindCommand( Log );
-#else
             if (UserInput.IsPressed(UserCommands.GameSwitchAhead))
             {
-                if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
-                    new ToggleSwitchAheadCommand(Log);
-                else
+                if (PlayerTrain.PathedTrain)
                     Simulator.Confirmer.Warning(CabControl.SwitchAhead, CabSetting.Warn1);
+                else if (MPManager.IsClient())
+                    Simulator.Confirmer.Warning(CabControl.SwitchClient, CabSetting.Warn1);
+                else
+                    new ToggleSwitchAheadCommand(Log);
             }
             if (UserInput.IsPressed(UserCommands.GameSwitchBehind))
             {
-                if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
-                    new ToggleSwitchBehindCommand(Log);
-                else
+                if (PlayerTrain.PathedTrain)
                     Simulator.Confirmer.Warning(CabControl.SwitchBehind, CabSetting.Warn1);
+                else if (MPManager.IsClient())
+                    Simulator.Confirmer.Warning(CabControl.SwitchClient, CabSetting.Warn1);
+                else
+                    new ToggleSwitchBehindCommand(Log);
             }
-#endif
-
-#if !NEW_SIGNALLING
-			if (UserInput.IsPressed(UserCommands.DebugResetSignal))
-			{
-				if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) MPManager.Instance().RequestSignalReset();
-				else PlayerTrain.ResetSignal(true);
-			}
-
-#else
             if (UserInput.IsPressed(UserCommands.GameResetSignalForward)) PlayerTrain.RequestSignalPermission(Direction.Forward);
 			if (UserInput.IsPressed(UserCommands.GameResetSignalBackward)) PlayerTrain.RequestSignalPermission(Direction.Reverse);
 			if (UserInput.IsPressed(UserCommands.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
@@ -780,82 +766,9 @@ namespace ORTS
 			if (UserInput.IsPressed(UserCommands.GameShuntLockAOff)) PlayerTrain.RequestShuntLock(1,0);
 			if (UserInput.IsPressed(UserCommands.GameShuntLockBOn)) PlayerTrain.RequestShuntLock(2,1);
 			if (UserInput.IsPressed(UserCommands.GameShuntLockBOff)) PlayerTrain.RequestShuntLock(2,0);
-#endif
 
 			if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
-            if (UserInput.IsPressed(UserCommands.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
-#if !NEW_SIGNALLING
-			if (UserInput.IsPressed(UserCommands.GameSwitchPicked) && (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer()))
-			{
-				if (Program.DebugViewer != null && Program.DebugViewer.Enabled && Program.DebugViewer.switchPickedItem != null)
-				{
-
-					TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem.Item.TrJunctionNode;
-					if (nextSwitchTrack != null && !Simulator.SwitchIsOccupied(nextSwitchTrack))
-					{
-						if (nextSwitchTrack.SelectedRoute == 0)
-							nextSwitchTrack.SelectedRoute = 1;
-						else
-							nextSwitchTrack.SelectedRoute = 0;
-						//if (MPManager.IsMultiPlayer() && MPManager.IsServer()) MPManager.BroadCast((new MultiPlayer.MSGSwitchStatus()).ToString());
-
-					}
-				}
-				//Program.DebugViewer.switchPickedItemHandled = true;
-            }
-
-			if (UserInput.IsPressed(UserCommands.GameSignalPicked) && (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer()))
-			{
-				if (Program.DebugViewer != null && Program.DebugViewer.Enabled && Program.DebugViewer.signalPickedItem != null)
-				{
-
-					var signal = Program.DebugViewer.signalPickedItem.Signal;
-					if (signal != null)
-					{
-						if (signal.forcedTime > 0)
-						{//a signal was set by the dispatcher before, so will need to reset it so that system will control it.
-							signal.canUpdate = true;
-							signal.forcedTime = 0;
-						}
-						else if (Program.DebugViewer.signalPickedItem.IsProceed <= 1)
-						{
-							signal.enabled = false;
-							signal.canUpdate = false;
-							foreach (var head in signal.SignalHeads)
-							{
-								head.SetMostRestrictiveAspect();
-								head.Update();
-							}
-							signal.forcedTime = Simulator.GameTime;
-						}
-						else
-						{
-							signal.canUpdate = false;
-							signal.enabled = true; //force it to be green,
-							//signal.
-							foreach (var head in signal.SignalHeads)
-							{
-								//first try to set as approach, if not defined, set as the least
-								var drawstate1 = head.def_draw_state(SignalHead.SIGASP.APPROACH_1);
-								var drawstate2 = head.def_draw_state(SignalHead.SIGASP.APPROACH_2);
-								var drawstate3 = head.def_draw_state(SignalHead.SIGASP.APPROACH_3);
-								if (drawstate1 > 0) { head.state = SignalHead.SIGASP.APPROACH_1; }
-								else if (drawstate2 > 0) { head.state = SignalHead.SIGASP.APPROACH_2; }
-								else if (drawstate3 > 0) { head.state = SignalHead.SIGASP.APPROACH_3; }
-								else head.SetLeastRestrictiveAspect();
-								//head.state = SignalHead.SIGASP.CLEAR_2;
-								head.draw_state = head.def_draw_state(head.state);
-								//head.Update();
-							}
-							signal.forcedTime = Simulator.GameTime;
-						}
-						//if (MPManager.IsMultiPlayer() && MPManager.IsServer()) MPManager.BroadCast((new MultiPlayer.MSGSignalStatus()).ToString());
-
-					}
-				}
-				//Program.DebugViewer.signalPickedItemHandled = true;
-			}
-#endif
+			if (UserInput.IsPressed(UserCommands.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 
 			if (UserInput.IsPressed(UserCommands.CameraJumpSeeSwitch))
 			{
@@ -1102,12 +1015,7 @@ namespace ORTS
         /// </summary>
         void TryThrowSwitchAt()
         {
-#if !NEW_SIGNALLING
-            TrJunctionNode bestNode = null;
-            int index = 0;
-#else
             TrackNode bestTn = null;
-#endif
             float bestD = 10;
             // check each switch
             for (int j = 0; j < Simulator.TDB.TrackDB.TrackNodes.Count(); j++)
@@ -1119,7 +1027,6 @@ namespace ORTS
                     Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z));
                     float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, UserInput.NearPoint, UserInput.FarPoint);
 
-#if NEW_SIGNALLING
                     if (bestD > d)
                     {
                         bestTn = tn;
@@ -1131,38 +1038,14 @@ namespace ORTS
             {
                 new ToggleAnySwitchCommand(Log, bestTn.TCCrossReference[0].CrossRefIndex);
             }
-#else
-                    if (bestD > d && !Simulator.SwitchIsOccupied(j))
-                    {
-                        bestNode = tn.TrJunctionNode;
-                        bestD = d;
-                        index = j;
-                    }
-                }
-            }
-            if (bestNode != null)
-            {
-                new ToggleAnySwitchCommand(Log, index);
-            }
-#endif
         }
 
-#if NEW_SIGNALLING
         public void ToggleAnySwitch(int index)
         {
             Simulator.Signals.RequestSetSwitch(index);
         }
-#else
-        public void ToggleAnySwitch(int index)
-        {
-            TrackNode tn = Simulator.TDB.TrackDB.TrackNodes[index];
-            TrJunctionNode bestNode = tn.TrJunctionNode;
-            bestNode.SelectedRoute = 1 - bestNode.SelectedRoute;
-        }
-#endif
         public void ToggleSwitchAhead()
         {
-#if NEW_SIGNALLING
             if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
             {
                 PlayerTrain.ProcessRequestManualSetSwitch(Direction.Forward);
@@ -1171,14 +1054,10 @@ namespace ORTS
             {
                 PlayerTrain.ProcessRequestExplorerSetSwitch(Direction.Forward);
             }
-#else
-            Simulator.ToggleSwitchTrackAhead(PlayerTrain);
-#endif
         }
 
         public void ToggleSwitchBehind()
         {
-#if NEW_SIGNALLING
             if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
             {
                 PlayerTrain.ProcessRequestManualSetSwitch(Direction.Reverse);
@@ -1187,9 +1066,6 @@ namespace ORTS
             {
                 PlayerTrain.ProcessRequestExplorerSetSwitch(Direction.Reverse);
             }
-#else
-            Simulator.ToggleSwitchTrackBehind(PlayerTrain);
-#endif
         }
         
         internal void UncoupleBehind(int carPosition)

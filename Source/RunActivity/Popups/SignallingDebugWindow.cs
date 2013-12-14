@@ -301,7 +301,7 @@ namespace ORTS
                 int direction = (int)trackNode.Direction;
 
                 tn.TCCrossReference.GetTCPosition(offset, direction, ref thisPosition);
-				Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex, thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, false);
+				Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex, thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, false, false);
 
                 ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextObject_InRoute(null, tempRoute, 0,
                     thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.Signal, thisPosition);

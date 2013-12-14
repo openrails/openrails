@@ -131,7 +131,7 @@ namespace ORTS
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
 
-				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
+				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true, false);
             }
         }
 
@@ -154,7 +154,7 @@ namespace ORTS
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
 
-				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true);
+				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true, false);
             }
         }
 
@@ -463,8 +463,8 @@ namespace ORTS
             switch (MovementState)
             {
                 case AI_MOVEMENT_STATE.STOPPED:
-                    ProcessEndOfPath();
-                    UpdateStoppedState();
+                    bool stillExist = ProcessEndOfPath();
+                    if (stillExist) UpdateStoppedState();
                     break;
                 case AI_MOVEMENT_STATE.INIT:
                     UpdateStoppedState();
@@ -1292,7 +1292,7 @@ namespace ORTS
                      thisStation.HoldSignal)
                 {
                     HoldingSignals.Remove(thisStation.ExitSignal);
-                    SignalObject nextSignal = signalRef.SignalObjects[thisStation.ExitSignal];
+                    var nextSignal = signalRef.SignalObjects[thisStation.ExitSignal];
 
                     if (CheckTrain)
                     {
@@ -1319,7 +1319,7 @@ namespace ORTS
             if (thisStation.ExitSignal >= 0)
             {
                 HoldingSignals.Remove(thisStation.ExitSignal);
-                SignalObject nextSignal = signalRef.SignalObjects[thisStation.ExitSignal];
+                var nextSignal = signalRef.SignalObjects[thisStation.ExitSignal];
                 nextSignal.requestClearSignal(ValidRoute[0], routedForward, 0, false, null); // for AI always use direction 0
             }
 
@@ -2882,7 +2882,7 @@ namespace ORTS
 
                 prevSection = waitingPoint[1];  // save
 
-                SignalObject exitSignal = null;
+                int exitSignalReference = -1;
                 float offset = 0.0f;
                 bool endSectionFound = false;
 
@@ -2895,7 +2895,7 @@ namespace ORTS
                 {
                     endSectionFound = true;
                     offset = thisSection.Length - clearingDistanceM - 1.0f; // 1 m short to force as first action
-                    exitSignal = thisSection.EndSignals[direction];
+                    exitSignalReference = thisSection.EndSignals[direction] == null ? -1 : thisSection.EndSignals[direction].thisRef;
                 }
 
                 // check if next section is junction
@@ -2919,7 +2919,7 @@ namespace ORTS
                         endSectionFound = true;
                         lastIndex = nextIndex;
                         offset = nextSection.Length - clearingDistanceM - 1.0f; // 1 m short to force as first action
-                        exitSignal = nextSection.EndSignals[direction];
+                        exitSignalReference = thisSection.EndSignals[direction] == null ? -1 : thisSection.EndSignals[direction].thisRef;
                     }
                     else if (nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
                     {
@@ -2962,8 +2962,7 @@ namespace ORTS
 
                 // build station stop
 
-                bool HoldSignal = exitSignal != null;
-                int exitSignalReference = exitSignal != null ? exitSignal.thisRef : -1;
+                bool HoldSignal = exitSignalReference >= 0;
 
                 int DepartTime = waitingPoint[2] > 0 ? -waitingPoint[2] : waitingPoint[3];
 
@@ -3001,6 +3000,10 @@ namespace ORTS
                     }
                 }
             }
+
+            // rebuild loop info
+            TCRoute.LoopEnd.Clear();
+            TCRoute.LoopSearch();
         }
 
         //================================================================================================//
@@ -3023,16 +3026,17 @@ namespace ORTS
         //================================================================================================//
         /// <summary>
         /// Process end of path 
+        /// returns false if train has been removed and no longer exists
         /// <\summary>
 
-        public void ProcessEndOfPath()
+        public bool ProcessEndOfPath()
         {
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
             int positionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
 
             bool[] nextPart = UpdateRouteActions(0);
 
-            if (!nextPart[0]) return;   // not at end
+            if (!nextPart[0]) return(true);   // not at end
 
             if (nextPart[1])   // next route available
             {
@@ -3114,7 +3118,9 @@ namespace ORTS
                          Number.ToString() + " removed\n");
                 }
                 RemoveTrain();
+                return (false);
             }
+            return (true);
         }
 
         //================================================================================================//
@@ -3560,7 +3566,7 @@ namespace ORTS
             else if (thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
                 if (thisItem.ActiveItem.signal_state == SignalHead.MstsSignalAspect.STOP &&
-                    thisItem.ActiveItem.ObjectDetails.holdState == SignalObject.HoldState.StationStop)
+                    thisItem.ActiveItem.ObjectDetails.station_holdState == SignalObject.HoldstateStation.StationStop)
                 {
                     actionValid = false;
 

@@ -201,7 +201,7 @@ namespace ORTS
 
 
 #if DEBUG_PRINT_PROCESS
-            TDB_debug_ref = new int[3] { 993, 986, 3674 };   /* signal tdb ref.no selected for print-out */
+            TDB_debug_ref = new int[2] { 540, 536 };   /* signal tdb ref.no selected for print-out */
 #endif
 
 #if DEBUG_PRINT_IN
@@ -3358,7 +3358,7 @@ namespace ORTS
                     if (TDB_debug_ref.Contains(thisHead.TDBIndex))
                     {
                         SignalObject foundSignal = null;
-                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.SIGFN)parameter1_value, ref foundSignal);
+                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.MstsSignalFunction)parameter1_value, ref foundSignal);
                         int foundRef = foundSignal != null ? foundSignal.thisRef : -1;
                         File.AppendAllText(dpr_fileLoc + @"printproc.txt",
                                 " OPP_SIG_LR : Located signal : " + foundRef.ToString() + "\n");

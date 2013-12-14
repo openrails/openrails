@@ -327,11 +327,8 @@ namespace ORTS.Popups
             {
                 TableAddLabelValue(table, "Replay", InfoDisplay.FormattedTime(Viewer.Log.ReplayEndsAt - Viewer.Simulator.ClockTime));
             }
-#if !NEW_SIGNALLING
-            TableAddLabelValue(table, "Speed", TrackMonitorWindow.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-#else
+
             TableAddLabelValue(table, "Speed", FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
-#endif
             TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
             TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
@@ -364,16 +361,7 @@ namespace ORTS.Popups
             TableAddLine(table);
             TableAddLabelValue(table, "FPS", "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
             TableAddLine(table);
-#if !NEW_SIGNALLING
-            locomotiveStatus = Viewer.Simulator.AI.GetStatus();
-            if (locomotiveStatus != null)
-            {
-                var lines = locomotiveStatus.Split('\n');
-                foreach (var line in lines.Where(s => s.Length > 0))
-                    if (line.Length > 0)
-                        TableAddLine(table, line);
-            }
-#endif
+
             if (Viewer.PlayerTrain.IsWheelSlip)
                 TableAddLine(table, "Wheel slip");
             else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
@@ -539,7 +527,7 @@ namespace ORTS.Popups
 #else
             foreach (var thisTrain in Viewer.Simulator.Trains)
             {
-                if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER)
+                if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER || (thisTrain.TrainType == Train.TRAINTYPE.REMOTE && MultiPlayer.MPManager.IsServer()))
                 {
                     var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
                     for (var iCell = 0; iCell < status.Length; iCell++)

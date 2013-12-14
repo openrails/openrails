@@ -61,6 +61,15 @@ namespace ORTS.Popups
 			{ Train.TRAIN_CONTROL.UNDEFINED, "Unknown" },
 		};
 
+        readonly Dictionary<Train.MP_CONTROL, string> MPControlModeLabels =
+            new Dictionary<Train.MP_CONTROL, string> {
+            { Train.MP_CONTROL.DISPATCH , "Dispatch" },
+            { Train.MP_CONTROL.PATHED , "Pathed" },
+            { Train.MP_CONTROL.ROAM , "MP Roam" },
+            { Train.MP_CONTROL.WAITDISPATCH , "WaitDisp" },
+            { Train.MP_CONTROL.UNDEFINED , "Unknown" },
+        };
+
         static readonly Dictionary<Train.END_AUTHORITY, string> AuthorityLabels =
             new Dictionary<Train.END_AUTHORITY, string> {
 			{ Train.END_AUTHORITY.END_OF_TRACK, "End Trck" },
@@ -70,6 +79,7 @@ namespace ORTS.Popups
 			{ Train.END_AUTHORITY.TRAIN_AHEAD, "TrainAhd" },
 			{ Train.END_AUTHORITY.MAX_DISTANCE, "Max Dist" },
 			{ Train.END_AUTHORITY.NO_PATH_RESERVED, "No Path" },
+            { Train.END_AUTHORITY.SIGNAL, "Signal" },
             { Train.END_AUTHORITY.END_OF_AUTHORITY, "End Auth" },
 		};
 
@@ -170,7 +180,18 @@ namespace ORTS.Popups
 
                 // control mode
                 string ControlText = ControlModeLabels[thisInfo.ControlMode];
-                if (thisInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE)
+                string MPControlText = MPControlModeLabels[thisInfo.MpControlMode];
+
+                if (thisInfo.MpControlMode == Train.MP_CONTROL.DISPATCH ||
+                    thisInfo.MpControlMode == Train.MP_CONTROL.ROAM )
+                {
+                    ControlText = String.Concat(MPControlText, " ", FindAuthorityInfo(thisInfo.ObjectInfoForward, ControlText));
+                }
+                else if (thisInfo.MpControlMode == Train.MP_CONTROL.WAITDISPATCH)
+                {
+                    ControlText = String.Copy(MPControlText);
+                }
+                else if (thisInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE)
                 {
                     ControlText = FindAuthorityInfo(thisInfo.ObjectInfoForward, ControlText);
                 }
@@ -310,7 +331,10 @@ namespace ORTS.Popups
             // track lines
             drawTrack(spriteBatch, offset, validInfo.speedMpS, validInfo.allowedSpeedMpS);
 
-            if (MultiPlayer.MPManager.IsMultiPlayer()) drawMPInfo(spriteBatch, offset);
+            if (MultiPlayer.MPManager.IsMultiPlayer())
+            {
+                drawMPInfo(spriteBatch, offset);
+            }
             // info in AUTO node
             else if (validInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || validInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
             {
@@ -371,7 +395,8 @@ namespace ORTS.Popups
             // draw as red line if no info for reverse move available
 
             var lineColor = Color.White;
-            if (validInfo.ObjectInfoBackward[0].ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.AUTHORITY &&
+            if (validInfo.ObjectInfoBackward != null && validInfo.ObjectInfoBackward.Count > 0 &&
+                validInfo.ObjectInfoBackward[0].ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.AUTHORITY &&
                 validInfo.ObjectInfoBackward[0].AuthorityType == Train.END_AUTHORITY.NO_PATH_RESERVED)
             {
                 lineColor = Color.Red;

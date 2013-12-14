@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+// COPYRIGHT 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -137,9 +137,12 @@ namespace ORTS.MultiPlayer
 			p.con = Program.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
 			p.path = Program.Simulator.RoutePath + "\\PATHS\\" + player.path;
 			Train train = new Train(Program.Simulator);
+            AIPath aiPath = null;
 			train.TrainType = Train.TRAINTYPE.REMOTE;
 			if (MPManager.IsServer()) //server needs to worry about correct train number
 			{
+                train.ControlMode = (Train.TRAIN_CONTROL)player.cmode;
+                train.MpControlMode = (Train.MP_CONTROL)player.mpcmode;
 			}
 			else
 			{
@@ -149,27 +152,22 @@ namespace ORTS.MultiPlayer
 			int direction = player.dir;
 			train.travelled = player.Travelled;
 
-			if (MPManager.IsServer())
+			if (MPManager.IsServer() && train.MpControlMode == Train.MP_CONTROL.PATHED)
 			{
-				try
-				{
-					PATFile patFile = new PATFile(p.path);
-					AIPath aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
-#if !NEW_SIGNALLING
-					train.Path = aiPath;
-#endif
-
-				}
-#if !NEW_SIGNALLING
-                    catch (Exception) { train.Path = null; MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
-#else 
-                    catch (Exception) {MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Server does not have path file provided, signals may always be red for you.")).ToString()); }
-#endif
+                try
+                {
+                    PATFile patFile = new PATFile(p.path);
+                    aiPath = new AIPath(patFile, Program.Simulator.TDB, Program.Simulator.TSectionDat, p.path);
+                }
+                catch (Exception)
+                {
+                    if (train.MpControlMode == Train.MP_CONTROL.PATHED)
+                    {
+                        train.MpControlMode = Train.MP_CONTROL.WAITDISPATCH;
+                        MPManager.BroadCast((new MSGMessage(player.user, "Warning", "Path is not available at server - mode is set to WaitDispatch")).ToString());
+                    }
+                }
             }
-
-#if !NEW_SIGNALLING
-			else train.Path = null;
-#endif
 
 			try
 			{
@@ -220,7 +218,6 @@ namespace ORTS.MultiPlayer
 			}
 
 			p.Username = player.user;
-            train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
             train.CheckFreight();
             train.InitializeBrakes();
             bool canPlace = true;
@@ -235,8 +232,15 @@ namespace ORTS.MultiPlayer
             train.CalculatePositionOfCars(0);
             train.ResetInitialTrainRoute(tempRoute);
 
+            train.InitialTrainPlacement();
             train.CalculatePositionOfCars(0);
             train.AITrainBrakePercent = 100;
+
+            if (train.MpControlMode == Train.MP_CONTROL.PATHED)
+            {
+                train.SetRoutePath(aiPath, Program.Simulator.Signals);
+                train.BuildWaitingPointList(0.0f);
+            }
 
 			//if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
 			foreach (var car in train.Cars) {
@@ -250,20 +254,6 @@ namespace ORTS.MultiPlayer
 			}
 			p.Train = train;
 			
-			if (MPManager.IsServer() && MPManager.PreferGreen == false) //prefer red light always, thus need to have path included
-			{
-#if !NEW_SIGNALLING
-				if (train.Path != null)
-				{
-					train.TrackAuthority = new TrackAuthority(train, train.Number + 100000, 10, train.Path);
-					Program.Simulator.AI.Dispatcher.TrackAuthorities.Add(train.TrackAuthority);
-					Program.Simulator.AI.Dispatcher.RequestAuth(train, true, 0);
-					//train.Path.AlignInitSwitches(train.RearTDBTraveller, -1, 500);
-				}
-				else train.TrackAuthority = null;
-#endif
-			}
-			 
 			Players.Add(player.user, p);
 			MPManager.Instance().AddOrRemoveTrain(train, true);
 

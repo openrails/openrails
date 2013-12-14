@@ -2162,16 +2162,7 @@ namespace ORTS
                 sectionIndex = -1;
             }
 
-            //           if (section.OriginalIndex == firstSectionOriginalIndex)  // if correct circuit found (part of original tracknode)
-            //           {
             return (sectionIndex);
-            //           }
-            //           else                                                     // if not, return first section (is wrong but best we have)
-            //           {
-            //               Trace.TraceInformation("Cannot locate proper section for CrossOver {0} in Section {1}",
-            //                   CrossOver.ItemIndex[0], CrossOver.SectionIndex[0]);
-            //               return (firstSectionIndex);
-            //           }
         }
 
         //================================================================================================//
@@ -2748,7 +2739,6 @@ namespace ORTS
 
         public void setSwitch(int nodeIndex, int switchPos, TrackCircuitSection thisSection)
         {
-            if (MultiPlayer.MPManager.NoAutoSwitch()) return;
             TrackNode thisNode = trackDB.TrackNodes[nodeIndex];
             thisNode.TrJunctionNode.SelectedRoute = switchPos;
             thisSection.JunctionLastRoute = switchPos;
@@ -3323,11 +3313,13 @@ namespace ORTS
         // Used for trains without path (eg stationary constists), manual operation
         //
 
-        public Train.TCSubpathRoute BuildTempRoute(Train thisTrain, int firstSectionIndex, float firstOffset, int firstDirection, float routeLength, bool overrideManualSwitchState, bool autoAlign)
+        public Train.TCSubpathRoute BuildTempRoute(Train thisTrain,
+                int firstSectionIndex, float firstOffset, int firstDirection,
+                float routeLength, bool overrideManualSwitchState, bool autoAlign, bool stopAtFacingSignal)
         {
             bool honourManualSwitchState = !overrideManualSwitchState;
             List<int> sectionList = ScanRoute(thisTrain, firstSectionIndex, firstOffset, firstDirection,
-                    true, routeLength, honourManualSwitchState, autoAlign, false, false, true, false, false, false, false, false);
+                    true, routeLength, honourManualSwitchState, autoAlign, stopAtFacingSignal, false, true, false, false, false, false, false);
             Train.TCSubpathRoute tempRoute = new Train.TCSubpathRoute();
             int lastIndex = -1;
 
@@ -3342,7 +3334,74 @@ namespace ORTS
                 lastIndex = thisSectionIndex;
             }
 
+            // set pin references for junction sections
+            for (int iElement = 0; iElement < tempRoute.Count - 1; iElement++) // do not process last element as next element is required
+            {
+                Train.TCRouteElement thisElement = tempRoute[iElement];
+                TrackCircuitSection thisSection = TrackCircuitList[thisElement.TCSectionIndex];
+
+                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
+                {
+                    if (thisElement.OutPin[0] == 1) // facing switch
+                    {
+                        thisElement.OutPin[1] = thisSection.Pins[1, 0].Link == tempRoute[iElement + 1].TCSectionIndex ? 0 : 1;
+                    }
+                }
+            }
+
             return (tempRoute);
+        }
+
+
+        //================================================================================================//
+        //
+        // Build temp route for train in MP Roam mode
+        // Use signal route if available
+        // Used for trains without path (eg stationary constists), manual operation
+        // returns next normal signal or null if none found
+        //
+
+        public SignalObject BuildRoamRoute(SignalObject signal, Train.TrainRouted thisTrain)
+        {
+            // if first element in train route, clear train route from that point
+            int firstSectionIndex = signal.TCNextTC;
+            if (firstSectionIndex >= 0 && thisTrain.Train.ValidRoute[0] != null)
+            {
+                int firstIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(firstSectionIndex, 0);
+                if (firstIndex >= 0)
+                {
+                    BreakDownRouteList(thisTrain.Train.ValidRoute[0], firstIndex, thisTrain);
+                    thisTrain.Train.ValidRoute[0].RemoveRange(firstIndex, thisTrain.Train.ValidRoute[0].Count - firstIndex);
+                }
+            }
+
+            // build signal route
+            // build route upto next signal
+            Train.TCSubpathRoute tempRoute = BuildTempRoute(thisTrain.Train, signal.TCNextTC, 0, signal.TCNextDirection, 0.0f, false, true, true);
+
+            // copy to signal route and train route, if route set manual set to reserve for train
+            signal.signalRoute = new Train.TCSubpathRoute(tempRoute);
+
+            Train.TCRouteElement lastElement = null;
+            
+            foreach (Train.TCRouteElement thisElement in signal.signalRoute)
+            {
+                thisTrain.Train.ValidRoute[0].Add(thisElement);
+                lastElement = thisElement;
+                if (signal.manualRouteSet)
+                {
+                    TrackCircuitSection thisSection = TrackCircuitList[thisElement.TCSectionIndex];
+                    thisSection.ReserveFromManual(thisTrain);
+                }
+            }
+
+            if (lastElement == null)
+            {
+                return (null);
+            }
+            
+            TrackCircuitSection lastSection = TrackCircuitList[lastElement.TCSectionIndex];
+            return (lastSection.EndSignals[lastElement.Direction]);
         }
 
         //================================================================================================//
@@ -4165,80 +4224,66 @@ namespace ORTS
         public bool RequestSetSwitch(int trackCircuitIndex)
         {
             TrackCircuitSection switchSection = TrackCircuitList[trackCircuitIndex];
-            Train thisTrain = switchSection.CircuitState.TrainReserved == null ? null : switchSection.CircuitState.TrainReserved.Train;
-            bool switchReserved = (switchSection.CircuitState.SignalReserved >= 0 || switchSection.CircuitState.TrainClaimed.Count > 0);
-            bool switchSet = false;
 
-            // set physical state
-
-            if (switchReserved)
+            // if is MP client, send request to Server - request is processed there
+            if (MultiPlayer.MPManager.IsClient())
             {
-                switchSet = false;
+                int newSetting = switchSection.JunctionLastRoute == 0 ? 1 : 0;
+
+                Program.Simulator.Confirmer.Information("Switching Request Sent to the Server");
+                MultiPlayer.MPManager.Notify((new MultiPlayer.MSGTCSwitch(MultiPlayer.MPManager.GetUserName(),
+                    switchSection.Index, "D", newSetting).ToString() ));
+
+                return (false);
             }
-
-            else if (!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
+            else
             {
-                switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
-                setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
-                switchSet = true;
-            }
+                Train thisTrain = switchSection.CircuitState.TrainReserved == null ? null : switchSection.CircuitState.TrainReserved.Train;
+                bool switchReserved = (switchSection.CircuitState.SignalReserved >= 0 || switchSection.CircuitState.TrainClaimed.Count > 0);
+                bool switchSet = false;
 
-            // if switch reserved by manual train then notify train
+                // set physical state
 
-            else if (thisTrain != null && thisTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
-            {
-                switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
-                switchSet = thisTrain.ProcessRequestManualSetSwitch(switchSection.Index);
-            }
-            else if (thisTrain != null && thisTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
-            {
-                switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
-                switchSet = thisTrain.ProcessRequestExplorerSetSwitch(switchSection.Index);
-            }
-
-            return (switchSet);
-        }
-
-        //only used by MP to manually set a switch to a desired position
-        public bool RequestSetSwitch(TrackNode switchNode, int desiredState)
-        {
-            TrackCircuitSection switchSection = TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
-            bool switchReserved = (switchSection.CircuitState.SignalReserved >= 0 || switchSection.CircuitState.TrainClaimed.Count > 0);
-            bool switchSet = false;
-
-            if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return (false);
-            // set physical state
-
-            if (!MultiPlayer.MPManager.IsServer()) if (switchReserved) return (false);
-            //this should not be enforced in MP, as a train may need to be allowed to go out of the station from the side line
-
-            if (!switchSection.CircuitState.HasTrainsOccupying())
-            {
-                switchSection.JunctionSetManual = desiredState;
-                trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
-                switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
-                switchSet = true;
-                /*if (switchSection.SignalsPassingRoutes != null)
+                // switch reserved
+                if (switchReserved)
                 {
-                    foreach (var thisSignalIndex in switchSection.SignalsPassingRoutes)
-                    {
-                        var signal = switchSection.signalRef.SignalObjects[thisSignalIndex];
-                        if (signal != null) signal.ResetRoute(switchSection.Index);
-                    }
-                    switchSection.SignalsPassingRoutes.Clear();
-                }*/
-                var temptrains = Program.Simulator.Trains.ToArray();
-
-                foreach (var t in temptrains)
-                {
-                    try
-                    {
-                        t.ProcessRequestExplorerSetSwitch(switchSection.Index);
-                    }
-                    catch { }
+                    switchSet = false;
                 }
+
+                // switch locked by dispatcher
+                else if (switchSection.DispatchInfo.DispatchFacingLockAll ||
+                         switchSection.DispatchInfo.DispatchFacingLockNP ||
+                         switchSection.DispatchInfo.DispatchTrailingLock)
+                {
+                    switchSet = false;
+                }
+
+                // switch clear and not in path
+                else if (!switchSection.CircuitState.HasTrainsOccupying() && thisTrain == null)
+                {
+                    switchSection.DispatchInfo.DispatchRoute = -1;
+                    switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
+                    setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
+                    switchSet = true;
+                }
+
+                // if switch reserved by manual train then notify train
+
+                else if (thisTrain != null && thisTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                {
+                    switchSection.DispatchInfo.DispatchRoute = -1;
+                    switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
+                    switchSet = thisTrain.ProcessRequestManualSetSwitch(switchSection.Index);
+                }
+                else if (thisTrain != null && thisTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+                {
+                    switchSection.DispatchInfo.DispatchRoute = -1;
+                    switchSection.JunctionSetManual = switchSection.JunctionLastRoute == 0 ? 1 : 0;
+                    switchSet = thisTrain.ProcessRequestExplorerSetSwitch(switchSection.Index);
+                }
+
+                return (switchSet);
             }
-            return (switchSet);
         }
 
         //================================================================================================//
@@ -4278,6 +4323,9 @@ namespace ORTS
         public int JunctionLastRoute = -1;                        // jn last route, value is out-pin         //
         public int JunctionSetManual = -1;                        // jn set manual, value is out-pin         //
         public bool AILock;                                       // jn is locked agains AI trains           //
+
+        public TCDispatcherInfo DispatchInfo = new TCDispatcherInfo();   // dispatcher info                  //
+
         public List<int> SignalsPassingRoutes;                    // list of signals reading passed junction //
 
         public SignalObject[] EndSignals = new SignalObject[2];   // signals at either end      //
@@ -4521,6 +4569,7 @@ namespace ORTS
             AILock = inf.ReadBoolean();
 
             CircuitState.Restore(inf);
+            DispatchInfo.Restore(inf);
 
             // if physical junction, throw switch
 
@@ -4581,6 +4630,7 @@ namespace ORTS
             outf.Write(AILock);
 
             CircuitState.Save(outf);
+            DispatchInfo.Save(outf);
 
             outf.Write(DeadlockTraps.Count);
             foreach (KeyValuePair<int, List<int>> thisTrap in DeadlockTraps)
@@ -4679,16 +4729,17 @@ namespace ORTS
         //
         // Check available state for train
         //
-
         public bool IsAvailable(Train.TrainRouted thisTrain)    // using routed train
         {
 
             // if train in this section, return true; if other train in this section, return false
+            // check if train is in section in expected direction - otherwise return false
 
             if (CircuitState.ThisTrainOccupying(thisTrain))
             {
                 return (true);
             }
+
             if (CircuitState.HasOtherTrainsOccupying(thisTrain))
             {
                 return (false);
@@ -4791,7 +4842,6 @@ namespace ORTS
 
             if (!CircuitState.ThisTrainOccupying(thisTrain.Train))
             {
-                //if (!MultiPlayer.MPManager.IsMultiPlayer())
                 CircuitState.TrainReserved = thisTrain;
             }
 
@@ -4823,6 +4873,7 @@ namespace ORTS
                 // set active pins for leading section
 
                 JunctionSetManual = -1;  // reset manual setting (will have been honoured in route definition if applicable)
+                if (DispatchInfo.DispatchRoute != -1) JunctionSetManual = DispatchInfo.DispatchRoute; // keep setting if set by dispatcher
 
                 int leadSectionIndex = -1;
                 if (thisIndex > 0)
@@ -4895,6 +4946,117 @@ namespace ORTS
                 {
                     endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
                 }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Reserve : set reserve state - for signal reserve
+        //
+
+        public void Reserve(int signalIndex, Train.TCSubpathRoute thisRoute)
+        {
+
+#if DEBUG_REPORTS
+			File.AppendAllText(@"C:\temp\printproc.txt",
+				String.Format("Reserve section {0} for signal {1}\n",
+				this.Index,
+				signalRef));
+#endif
+
+            Train.TCRouteElement thisElement;
+
+            if (!CircuitState.HasTrainsOccupying())
+            {
+                CircuitState.SignalReserved = signalIndex;
+            }
+
+            // get element in routepath to find required alignment
+
+            int thisIndex = -1;
+
+            for (int iElement = 0; iElement < thisRoute.Count && thisIndex < 0; iElement++)
+            {
+                thisElement = thisRoute[iElement];
+                if (thisElement.TCSectionIndex == Index)
+                {
+                    thisIndex = iElement;
+                }
+            }
+
+            // if junction or crossover, align pins
+            // also reset manual set (path will have followed setting)
+
+            if (CircuitType == TrackCircuitType.Junction || CircuitType == TrackCircuitType.Crossover)
+            {
+                // set active pins for leading section
+
+                JunctionSetManual = -1;  // reset manual setting (will have been honoured in route definition if applicable)
+                if (DispatchInfo.DispatchRoute != -1) JunctionSetManual = DispatchInfo.DispatchRoute; // keep setting if set by dispatcher
+
+                int leadSectionIndex = -1;
+                if (thisIndex > 0)
+                {
+                    thisElement = thisRoute[thisIndex - 1];
+                    leadSectionIndex = thisElement.TCSectionIndex;
+
+                    alignSwitchPins(leadSectionIndex);
+                }
+
+                // set active pins for trailing section
+
+                int trailSectionIndex = -1;
+                if (thisIndex <= thisRoute.Count - 2)
+                {
+                    thisElement = thisRoute[thisIndex + 1];
+                    trailSectionIndex = thisElement.TCSectionIndex;
+
+                    alignSwitchPins(trailSectionIndex);
+                }
+
+                // reset signals which routed through this junction
+
+                foreach (int thisSignalIndex in SignalsPassingRoutes)
+                {
+                    SignalObject thisSignal = signalRef.SignalObjects[thisSignalIndex];
+                    thisSignal.ResetRoute(Index);
+                }
+                SignalsPassingRoutes.Clear();
+            }
+
+            // enable all signals along section in direction of train
+            // do not enable those signals who are part of NORMAL signal
+
+            if (thisIndex < 0) return; //Added by JTang
+            thisElement = thisRoute[thisIndex];
+            int direction = thisElement.Direction;
+
+            for (int fntype = 0; fntype < (int)SignalHead.MstsSignalFunction.UNKNOWN; fntype++)
+            {
+                TrackCircuitSignalList thisSignalList = CircuitItems.TrackCircuitSignals[direction, fntype];
+                foreach (TrackCircuitSignalItem thisItem in thisSignalList.TrackCircuitItem)
+                {
+                    SignalObject thisSignal = thisItem.SignalRef;
+                    if (!thisSignal.isSignalNormal())
+                    {
+                        thisSignal.manualRouteSet = true;
+                    }
+                }
+            }
+        }
+
+
+        //================================================================================================//
+        //
+        // Set manual route as train route
+        //
+
+        public void ReserveFromManual(Train.TrainRouted thisTrain)
+        {
+            if (CircuitState.SignalReserved >= 0)
+            {
+                CircuitState.SignalReserved = -1;
+                Reserve(thisTrain, thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex]);
             }
         }
 
@@ -5127,6 +5289,23 @@ namespace ORTS
                 JunctionSetManual = -1;
             }
 
+            // reset dispatcher junction setting
+            // if locked, reset switch state
+            // else reset dispatcher state
+
+            if (DispatchInfo.DispatchRoute != -1)
+            {
+                if (DispatchInfo.DispatchFacingLockAll || DispatchInfo.DispatchFacingLockNP || DispatchInfo.DispatchTrailingLock)
+                {
+                    JunctionSetManual = DispatchInfo.DispatchRoute;
+                    alignSwitchPins(Pins[1,DispatchInfo.DispatchRoute].Link);
+                }
+                else
+                {
+                    DispatchInfo.DispatchRoute = -1;
+                }
+            }
+
             // if no longer occupied and pre-reserved not empty, promote first entry of prereserved
 
             if (CircuitState.TrainOccupy.Count <= 0 && CircuitState.TrainPreReserved.Count > 0)
@@ -5248,6 +5427,16 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // Remove all reservations from section if signal not enabled for train
+        //
+
+        public void Unreserve()
+        {
+            CircuitState.SignalReserved = -1;
+        }
+
+        //================================================================================================//
+        //
         // Remove specified train from queue
         //
 
@@ -5287,7 +5476,6 @@ namespace ORTS
 
         public void alignSwitchPins(int linkedSectionIndex)
         {
-            if (MultiPlayer.MPManager.NoAutoSwitch()) return;
             int alignDirection = -1;  // pin direction for leading section
             int alignLink = -1;       // link index for leading section
 
@@ -5375,6 +5563,7 @@ namespace ORTS
         // Get state of single section
         //
 
+        // check for train
         public SignalObject.InternalBlockstate getSectionState(Train.TrainRouted thisTrain, int direction,
                         SignalObject.InternalBlockstate passedBlockstate, Train.TCSubpathRoute thisRoute)
         {
@@ -5443,6 +5632,33 @@ namespace ORTS
                         }
                     }
                 }
+                // switch is under dispatcher control
+                else if (DispatchInfo.DispatchRoute != -1 && thisTrain != null && thisRoute != null) // dispatcher route and setting for routed train
+                {
+                    // trailing lock
+                    if (DispatchInfo.DispatchTrailingLock)
+                    {
+                        int revDirection = direction == 0 ? 1 : 0;
+                        if (Pins[revDirection, 1].Link >= 0) // trailing switch
+                        {
+                            if (thisRoute.GetRouteIndex(ActivePins[revDirection, DispatchInfo.DispatchRoute].Link, 0) < 0) // selected link is not on route
+                            {
+                                localBlockstate = SignalObject.InternalBlockstate.Locked;
+                            }
+                        }
+                    }
+                    // facing lock (note : for Explorer or Manual, route will have been aligned to lock)
+                    else if (DispatchInfo.DispatchFacingLockAll)
+                    {
+                        if (Pins[direction, 1].Link >= 0) // facing switch
+                        {
+                            if (thisRoute.GetRouteIndex(ActivePins[direction, DispatchInfo.DispatchRoute].Link, 0) <= 0) // selected link is not on route
+                            {
+                                localBlockstate = SignalObject.InternalBlockstate.Locked;
+                            }
+                        }
+                    }
+                }
             }
 
             // track reserved - check direction
@@ -5457,34 +5673,16 @@ namespace ORTS
                 }
                 else
                 {
-                    if (MultiPlayer.MPManager.IsMultiPlayer())
-                    {
-                        var reservedTrainStillThere = false;
-                        foreach (var s in this.EndSignals)
-                        {
-                            if (s != null && s.enabledTrain != null && s.enabledTrain.Train == reservedTrain.Train) reservedTrainStillThere = true;
-                        }
-
-                        if (reservedTrainStillThere == true && reservedTrain.Train.GetDistanceToTrain(this.Index, 0.0f) > 0)
-                            localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
-                        else
-                        {
-                            //if (reservedTrain.Train.RearTDBTraveller.DistanceTo(this.
-                            thisState.TrainReserved = thisTrain;
-                            localBlockstate = SignalObject.InternalBlockstate.Reserved;
-                        }
-                    }
-                    else
-                        localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
+                    localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
                 }
             }
 
-            // signal reserved
+            // signal reserved - reserved for other
 
             if (thisState.SignalReserved >= 0)
             {
-                localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
-                stateSet = true;
+                    localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
+                    stateSet = true;
             }
 
             // track claimed
@@ -5507,6 +5705,98 @@ namespace ORTS
             return (thisBlockstate);
         }
 
+        // check for signal
+        public SignalObject.InternalBlockstate getSectionState(int thisSignal, int direction,
+                        SignalObject.InternalBlockstate passedBlockstate, Train.TCSubpathRoute thisRoute)
+        {
+            SignalObject.InternalBlockstate thisBlockstate;
+            SignalObject.InternalBlockstate localBlockstate = SignalObject.InternalBlockstate.Reservable;  // default value
+            bool stateSet = false;
+
+            TrackCircuitState thisState = CircuitState;
+
+            // track occupied - check speed and direction - only for normal sections
+
+            if (thisState.HasTrainsOccupying())
+            {
+                    localBlockstate = SignalObject.InternalBlockstate.Blocked;
+                    stateSet = true;
+            }
+
+            // for junctions or cross-overs, check route selection
+
+            if (CircuitType == TrackCircuitType.Junction || CircuitType == TrackCircuitType.Crossover)
+            {
+                if (thisState.HasTrainsOccupying())    // there is a train on the switch
+                {
+                        localBlockstate = SignalObject.InternalBlockstate.Blocked;
+                        stateSet = true;
+                }
+                // switch is under dispatcher control
+                else if (DispatchInfo.DispatchRoute != -1 && thisRoute != null) // dispatcher route and setting for routed train
+                {
+                    // trailing lock
+                    if (DispatchInfo.DispatchTrailingLock)
+                    {
+                        int revDirection = direction == 0 ? 1 : 0;
+                        if (Pins[revDirection, 1].Link >= 0) // trailing switch
+                        {
+                            if (thisRoute.GetRouteIndex(ActivePins[revDirection, DispatchInfo.DispatchRoute].Link, 0) < 0) // selected link is not on route
+                            {
+                                localBlockstate = SignalObject.InternalBlockstate.Locked;
+                            }
+                        }
+                    }
+                    // facing lock (note : for Explorer or Manual, route will have been aligned to lock)
+                    else if (DispatchInfo.DispatchFacingLockAll)
+                    {
+                        if (Pins[direction, 1].Link >= 0) // facing switch
+                        {
+                            if (thisRoute.GetRouteIndex(ActivePins[direction, DispatchInfo.DispatchRoute].Link, 0) <= 0) // selected link is not on route
+                            {
+                                localBlockstate = SignalObject.InternalBlockstate.Locked;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // track reserved
+
+            if (thisState.TrainReserved != null && !stateSet)
+            {
+                    localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
+            }
+
+            // track claimed
+
+            if (!stateSet && thisState.TrainClaimed.Count > 0)
+            {
+                localBlockstate = SignalObject.InternalBlockstate.Blocked;
+                stateSet = true;
+            }
+
+            // signal reserved - if for this signal than valid, otherwise blocked
+
+            if (!stateSet)
+            {
+                if (thisState.SignalReserved == -1)
+                {
+                    localBlockstate = SignalObject.InternalBlockstate.Reservable;
+                }
+                else if (thisState.SignalReserved == thisSignal)
+                {
+                    localBlockstate = SignalObject.InternalBlockstate.Reserved;
+                }
+                else
+                {
+                    localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
+                }
+            }
+
+            thisBlockstate = localBlockstate > passedBlockstate ? localBlockstate : passedBlockstate;
+            return (thisBlockstate);
+        }
 
         //================================================================================================//
         //
@@ -5764,6 +6054,14 @@ namespace ORTS
                         {
                             return (false);
                         }
+                        else
+                        {
+                            var trainPosition = trainAhead.Key.PresentPosition[trainAhead.Key.MUDirection == Direction.Forward ? 0 : 1];
+                            if (trainPosition.TCSectionIndex == Index && trainAhead.Key.SpeedMpS > 0 && trainPosition.TCDirection != thisTrain.PresentPosition[0].TCDirection)
+                            {
+                                return (false);   // train is moving towards us
+                            }
+                        }
                     }
                 }
 
@@ -5794,6 +6092,173 @@ namespace ORTS
             }
 
             return (true);
+        }
+
+        //================================================================================================//
+        //
+        // process request to set switch from dispatcher
+        // only called by MP server or in SP
+        //
+
+        public bool ProcessDispatchRequestSwitch(TCDispatcherInfo dInfo)
+        {
+            bool switchAllowed = true;
+
+            if (dInfo.DispatchRoute != -1)
+            {
+                switchAllowed = RequestSetSwitchDispatcher(dInfo.DispatchRoute);
+            }
+
+            if (switchAllowed)
+            {
+                ProcessDispatchSetSwitch(dInfo);
+            }
+
+            return (switchAllowed);
+        }
+
+        //================================================================================================//
+        //
+        // process request to set switch from dispatcher
+        // called by MP server, client or in SP
+        //
+
+        public void ProcessDispatchSetSwitch(TCDispatcherInfo dInfo)
+        {
+            // set switch
+
+            JunctionSetManual = dInfo.DispatchRoute;
+            DispatchInfo = dInfo;
+
+            if (dInfo.DispatchRoute >= 0)
+            {
+                JunctionLastRoute = dInfo.DispatchRoute;
+                alignSwitchPins(Pins[1, JunctionSetManual].Link);
+
+                // if switch in reserved path, process selection
+
+                if (CircuitState.TrainReserved != null)
+                {
+                    Train reservedTrain = CircuitState.TrainReserved.Train;
+                    if (reservedTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+                    {
+                        reservedTrain.ProcessRequestExplorerSetSwitch(Index);
+                    }
+                    else if (reservedTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                    {
+                        reservedTrain.ProcessRequestManualSetSwitch(Index);
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Check if switch may be thrown by dispatcher
+        //
+
+        private bool RequestSetSwitchDispatcher(int desiredState)
+        {
+            // if switch allready set to required route return true
+            if (JunctionLastRoute == desiredState) return (true);
+
+            // if switch reserved by train in AUTO mode return false
+            if (CircuitState.TrainReserved != null)
+            {
+                if (CircuitState.TrainReserved.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE ||
+                    CircuitState.TrainReserved.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
+                {
+                    return (false);
+                }
+            }
+
+            // if switch has train occupying return false
+            if (CircuitState.HasTrainsOccupying()) return (false);
+
+            // switch is allowed to change
+            return (true);
+        }
+
+
+        //================================================================================================//
+        //
+        // Compress switch state for MP message
+        //
+
+        public byte CompressSwitchState()
+        {
+            int thisState;
+            thisState = 0;
+
+            if (JunctionLastRoute == 1) thisState = thisState | 0x80;
+            if (JunctionSetManual != 1) thisState = thisState | 0x40;
+            if (ActivePins[1, 0].Link > 0 || ActivePins[1, 1].Link > 0) thisState = thisState | 0x20;
+
+            if (DispatchInfo.DispatchRoute == -1) thisState = thisState | 0x10;
+            if (DispatchInfo.DispatchRoute == 1) thisState = thisState | 0x08;
+            if (DispatchInfo.DispatchFacingLockAll) thisState = thisState | 0x04;
+            if (DispatchInfo.DispatchFacingLockNP) thisState = thisState | 0x02;
+            if (DispatchInfo.DispatchTrailingLock) thisState = thisState | 0x01;
+
+            return (Convert.ToByte(thisState));
+        }
+
+        //================================================================================================//
+        //
+        // Decompress and set state from MP message
+        //
+
+        public void ProcessCompressState(byte state)
+        {
+            int oldState = JunctionLastRoute;
+
+            int istate = (int)state;
+            JunctionLastRoute = 0;
+            if ((istate & 0x80) == 0x80) JunctionLastRoute = 1;
+
+            JunctionSetManual = -1;
+            if ((istate & 0x40) == 0x40) JunctionSetManual = JunctionLastRoute;
+            bool alignPins = ((istate & 0x020) == 0x20);
+
+            DispatchInfo.DispatchRoute = 0;
+            if ((istate & 0x10) == 0x10) DispatchInfo.DispatchRoute = -1;
+            if ((istate & 0x08) == 0x08) DispatchInfo.DispatchRoute = 1;
+
+            DispatchInfo.DispatchFacingLockAll = ((istate & 0x04) == 0x04);
+            DispatchInfo.DispatchFacingLockNP = ((istate & 0x02) == 0x02);
+            DispatchInfo.DispatchTrailingLock = ((istate & 0x01) == 0x01);
+
+            if (oldState != JunctionLastRoute)
+            {
+                if (alignPins)
+                {
+                    alignSwitchPins(Pins[1, JunctionLastRoute].Link);
+                }
+                else
+                {
+                    signalRef.setSwitch(Index, JunctionLastRoute, this);
+                }
+
+                Train thisTrain = CircuitState.TrainReserved == null ? null : CircuitState.TrainReserved.Train;
+
+                // if switch reserved by manual train then notify train
+
+                if (thisTrain != null && thisTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                {
+                    DispatchInfo.DispatchRoute = -1;
+                    thisTrain.ProcessRequestManualSetSwitch(Index);
+                }
+                else if (thisTrain != null && thisTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+                {
+                    DispatchInfo.DispatchRoute = -1;
+                    thisTrain.ProcessRequestExplorerSetSwitch(Index);
+                }
+            }
+            else if (alignPins)
+            {
+                alignSwitchPins(Pins[1, JunctionLastRoute].Link);
+            }
+
         }
 
         //================================================================================================//
@@ -6055,6 +6520,44 @@ namespace ORTS
             return (ContainsKey(thisTrain.routedForward) || ContainsKey(thisTrain.routedBackward));
         }
 
+        public Dictionary<bool, int> ContainsTrainDirected(Train.TrainRouted thisTrain)
+        {
+            Dictionary<bool, int> returnValue = new Dictionary<bool, int>();
+            return (ContainsTrainDirected(thisTrain.Train));
+        }
+
+        public Dictionary<bool, int> ContainsTrainDirected(Train thisTrain)
+        {
+            Dictionary<bool, int> returnValue = new Dictionary<bool, int>();
+            bool trainFound = false;
+
+            if (thisTrain != null)
+            {
+                trainFound = ContainsKey(thisTrain.routedForward) || ContainsKey(thisTrain.routedBackward);
+            }
+
+            if (!trainFound)
+            {
+                returnValue.Add(false, 0);
+            }
+
+            else
+            {
+                int trainDirection = 0;
+                if (ContainsKey(thisTrain.routedForward))
+                {
+                    trainDirection = this[thisTrain.routedForward];
+                }
+                else
+                {
+                    trainDirection = this[thisTrain.routedBackward];
+                }
+
+                returnValue.Add(true, trainDirection);
+            }
+            return (returnValue);
+        }
+
         // Remove
         public void RemoveTrain(Train.TrainRouted thisTrain)
         {
@@ -6104,6 +6607,7 @@ namespace ORTS
         public TrainQueue TrainClaimed;                            // trains with normal claims     //
         public bool RemoteAvailable;                               // remote info available         //
         public bool RemoteOccupied;                                // remote occupied state         //
+        public bool RemoteClaimed;                                 // remote claimed state          //
         public bool RemoteSignalReserved;                          // remote signal reserved        //
         public int RemoteReserved;                                 // remote reserved (number only) //
 
@@ -6115,6 +6619,7 @@ namespace ORTS
         public TrackCircuitState()
         {
             TrainOccupy = new TrainOccupyState();
+            TrainReserved = null;
             SignalReserved = -1;
             TrainPreReserved = new TrainQueue();
             TrainClaimed = new TrainQueue();
@@ -6219,7 +6724,6 @@ namespace ORTS
                 if (reservedTrain != null)
                 {
                     int reservedDirection = TrainReserved.TrainRouteDirectionIndex;
-                    //if (!MultiPlayer.MPManager.IsMultiPlayer())
                     TrainReserved = reservedDirection == 0 ? reservedTrain.routedForward : reservedTrain.routedBackward;
                 }
                 else
@@ -6400,7 +6904,75 @@ namespace ORTS
         {
             return (TrainOccupy.ContainsTrain(thisTrain));
         }
+    }
 
+    //================================================================================================//
+    //
+    // class DispatchInfo
+    //
+    //================================================================================================//
+    //
+    // Class for dispatcher info
+    //
+
+    public class TCDispatcherInfo
+    {
+        public bool DispatchFacingLockAll;                    // jn is locked facing for all trains, value is out-pin        //
+        public bool DispatchFacingLockNP;                     // jn is locked facing for non-pathed trains, value is out-pin //
+        public bool DispatchTrailingLock;                     // jn is locked trailing, value is out-pin                     //
+        public int DispatchRoute;                            // jn route set through dispatcher; if -1 : system control      //
+
+        //================================================================================================//
+        //
+        // empty constructor
+        //
+
+        public TCDispatcherInfo()
+        {
+            DispatchRoute = -1;
+            DispatchFacingLockAll = false;
+            DispatchFacingLockNP = false;
+            DispatchTrailingLock = false;
+        }
+
+        //================================================================================================//
+        //
+        // constructor with preset values
+        //
+
+        public TCDispatcherInfo(int dRoute, bool dFacingLockAll, bool dFacingLockNP, bool dTrailingLock)
+        {
+            DispatchRoute = dRoute;
+            DispatchFacingLockAll = dFacingLockAll;
+            DispatchFacingLockNP = dFacingLockNP;
+            DispatchTrailingLock = dTrailingLock;
+        }
+
+        //================================================================================================//
+        //
+        // restore
+        //
+
+        public void Restore(BinaryReader inf)
+        {
+            DispatchRoute = inf.ReadInt32();
+            DispatchFacingLockAll = inf.ReadBoolean();
+            DispatchFacingLockNP = inf.ReadBoolean();
+            DispatchTrailingLock = inf.ReadBoolean();
+        }
+
+        //================================================================================================//
+        //
+        // constructor with preset values
+        //
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(DispatchRoute);
+            outf.Write(DispatchFacingLockAll);
+            outf.Write(DispatchFacingLockNP);
+            outf.Write(DispatchTrailingLock);
+        }
     }
 
     //================================================================================================//
@@ -6571,8 +7143,7 @@ namespace ORTS
 
     public class SignalObject
     {
-        [SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
-        [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
+
         public enum MstsBlockState
         {
             CLEAR,         // Block ahead is clear and accesible
@@ -6588,6 +7159,7 @@ namespace ORTS
             ReservedOther,              // reserved for other train                        //
             OccupiedOppositeDirection,  // occupied by train moving in opposite direction  //
             Open,                       // sections are claimed and not accesible          //
+            Locked,                     // switch manually locked against train            //
             Blocked,                    // switch locked against train                     //
         }
 
@@ -6598,35 +7170,39 @@ namespace ORTS
             Denied,
         }
 
-        public enum HoldState                // signal is locked in hold
+        public enum HoldstateStation           // signal is locked in hold
         {
-            None,                            // signal is clear
-            StationStop,                     // because of station stop
-            ManualLock,                      // because of manual lock. 
-            ManualPass,                      // Sometime you want to set a light green, especially in MP
-            ManualApproach,                  // Sometime to set approach, in MP again
-            //PLEASE DO NOT CHANGE THE ORDER OF THESE ENUMS
+            None,                              // signal is clear
+            StationStop,                       // because of station stop
         }
 
-        //
-        // for future extention
-        //
-        //              public enum CONTROLSTATE
-        //              {
-        //                      AUTO,                           // signal is in AUTO mode
-        //                      AUTO_PATHED,                    // signal is in AUTO mode but will revert to MANUAL for unpathed train
-        //                      MANUAL_RESTRICT,                // signal is under MANUAL control - for restricted access
-        //                      MANUAL_FULL,                    // signal is under MANUAL control - full route only
-        //                      MANUAL_REPEAT,                  // signal is under MANUAL control - repeated clearance
-        //                      MANUAL_PATHED                   // signal is under MANUAL control - follow pathed route if available
-        //              }
-        //
-        //              public enum MANUALREQUESTRESPONSE
-        //              {
-        //                      ALLREADY_ENABLED,               // request rejected as signal is allready enabled by train
-        //                      ROUTE_NOT_AVAILABLE             // request rejected as route is not available
-        //              }
+        public enum HoldstateDispatch          // signal is locked in hold
+        {
+            None,                              // signal is clear
+            ManualLock,                        // because of manual lock.
+            ManualLockNP,                      // because of manual lock for none-pathed trains only
+            ClearOnceLock,                     // cleared once from manual lock
+            ClearOnceLockNP,                   // cleared once from manual lock for none-pathed trains
+        }
 
+        public enum Controlstate
+        {
+            Auto,                               // signal is in AUTO mode
+            Manual,                             // signal is in MANUAL mode
+            ManualPending,                      // signal is in AUTO mode but will be set to MANUAL on reset enabled
+            ManualClearOnce,                    // signal is in MANUAL mode for single clearance
+        }
+
+        public enum ControlCommand
+        {
+            SetSystemControl,                   // set signal to system control
+            Hold,                               // set signal to hold state
+            HoldNP,                             // set signal to hold for none-pathed
+            ClearOnce,                          // request to clear signal once only
+            ClearOnceOverrule,                  // request to clear signal once only, overrule switch locks
+            GrantPermission,                    // request to grant permission for waiting train
+        }
+        
         public Signals signalRef;               // reference to overlaying Signal class
         public static SignalObject[] signalObjects;
         public static TrackNode[] trackNodes;
@@ -6661,11 +7237,11 @@ namespace ORTS
 
         private InternalBlockstate internalBlockState = InternalBlockstate.Open;    // internal blockstate
         public Permission hasPermission = Permission.Denied;  // Permission to pass red signal
-        public HoldState holdState = HoldState.None;
-        //              public CONTROLSTATE controlState = CONTROLSTATE.AUTO;   // future extension
-        //              public Train.TCSubpathRoute manualRoute = new Train.TCSubpathRoute();
-        //              public bool manualRouteSet = false;
-        //              public int manualRouteState = 0;
+        public HoldstateStation station_holdState = HoldstateStation.None;          // signal held for station stop
+        public HoldstateDispatch dispatch_holdState = HoldstateDispatch.None;       // signal held by dispatcher
+        public bool dispatch_overrule = false;                                        // signal cleared by dispatcher with switch lock overrule
+        public Controlstate controlState = Controlstate.Auto;                         // signal control state : auto or dispatcher
+        public bool manualRouteSet = false;                                           // manual cleared route is valid
 
         public int[] sigfound = new int[(int)SignalHead.MstsSignalFunction.UNKNOWN];  // active next signal - used for signals with NORMAL heads only
         private int[] defaultNextSignal = new int[(int)SignalHead.MstsSignalFunction.UNKNOWN];  // default next signal
@@ -6685,20 +7261,17 @@ namespace ORTS
         {
             get
             {
-                if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.PreferGreen == true) return true;
-                return (enabledTrain != null);
+                if (enabledTrain != null)
+                {
+                   return (true);
+                }
 
-                // future extension when manual is included : replace above with :
-                //
-                // if (enabledTrain != null)
-                // {
-                //    return (true);
-                // }
-                // else if (manualRouteSet)
-                // {
-                //    return (true);
-                // {
-                // return (false);
+                if (manualRouteSet)
+                {
+                    return (true);
+                }
+
+                return (false);
             }
         }
 
@@ -6810,7 +7383,10 @@ namespace ORTS
             }
 
             thisTrainRouteIndex = inf.ReadInt32();
-            holdState = (HoldState)inf.ReadInt32();
+            station_holdState = (HoldstateStation)inf.ReadInt32();
+            dispatch_holdState = (HoldstateDispatch)inf.ReadInt32();
+            controlState = (Controlstate)inf.ReadInt32();
+            manualRouteSet = inf.ReadBoolean();
 
             int totalJnPassed = inf.ReadInt32();
 
@@ -6835,20 +7411,6 @@ namespace ORTS
                 Train.TrainRouted thisTrainRouted = new Train.TrainRouted(thisTrain, 0);
                 enabledTrain = thisTrainRouted;
             }
-
-            // restore for manual settings
-
-            // controlState = (CONTROLSTATE) inf.ReadInt32();
-            // bool validManualRoute = inf.ReadBoolean();
-            // if (validManualRoute)
-            // {
-            //     manualRoute = new Train.TCSubpathRoute(inf);
-            // }
-            //
-            // manualRouteSet = inf.ReadBoolean();
-            // manualRouteState = inf.ReadInt32();
-            //
-
         }
 
         //================================================================================================//
@@ -6918,6 +7480,10 @@ namespace ORTS
                     StateUpdate();
                 }
             }
+            else if (manualRouteSet)
+            {
+                getBlockState(signalRoute, thisRef);
+            }
         }
 
         //================================================================================================//
@@ -6952,7 +7518,10 @@ namespace ORTS
             }
 
             outf.Write(thisTrainRouteIndex);
-            outf.Write((int)holdState);
+            outf.Write((int)station_holdState);
+            outf.Write((int)dispatch_holdState);
+            outf.Write((int)controlState);
+            outf.Write(manualRouteSet);
 
             outf.Write(JunctionsPassed.Count);
             if (JunctionsPassed.Count > 0)
@@ -6967,21 +7536,6 @@ namespace ORTS
             outf.Write(propagated);
             outf.Write(isPropagated);
             outf.Write(ReqNumClearAhead);
-
-            //  outf.Write((int) ControlState);
-            //  if (manualRoute == null)
-            //  {
-            //     outf.Write(false);
-            //  }
-            //  else
-            //  {
-            //     outf.Write(true);
-            //     manualRoute.Save(outf);
-            //  }
-            //
-            //  outf.Write(manualRouteSet);
-            //  outf.Write(manualRouteState);
-            //
         }
 
         //================================================================================================//
@@ -7373,9 +7927,37 @@ namespace ORTS
 
             // if signal is enabled for a train, check if required section is in train route path
 
-            if (enabledTrain != null && !MultiPlayer.MPManager.IsMultiPlayer())
+            if (enabledTrain != null)
             {
                 Train.TCSubpathRoute RoutePart = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex];
+
+                TrackNode thisNode = signalRef.trackDB.TrackNodes[req_mainnode];
+                for (int iSection = 0; iSection <= thisNode.TCCrossReference.Count - 1 && !routeset; iSection++)
+                {
+                    int sectionIndex = thisNode.TCCrossReference[iSection].CrossRefIndex;
+
+                    for (int iElement = 0; iElement < RoutePart.Count && !routeset; iElement++)
+                    {
+                        routeset = (sectionIndex == RoutePart[iElement].TCSectionIndex);
+                    }
+                }
+
+                // if not found in trainroute, try signalroute
+
+                if (!routeset && signalRoute != null)
+                {
+                    for (int iElement = 0; iElement <= signalRoute.Count - 1 && !routeset; iElement++)
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[signalRoute[iElement].TCSectionIndex];
+                        routeset = (thisSection.OriginalIndex == req_mainnode);
+                    }
+                }
+            }
+
+            // if manual : try signal route
+            else if (manualRouteSet)
+            {
+                Train.TCSubpathRoute RoutePart = new Train.TCSubpathRoute(signalRoute);
 
                 TrackNode thisNode = signalRef.trackDB.TrackNodes[req_mainnode];
                 for (int iSection = 0; iSection <= thisNode.TCCrossReference.Count - 1 && !routeset; iSection++)
@@ -7390,7 +7972,7 @@ namespace ORTS
             }
 
             // not enabled, follow set route but only if not normal signal (normal signal will not clear if not enabled)
-            else if (!isSignalNormal() || MultiPlayer.MPManager.IsMultiPlayer())
+            else if (!isSignalNormal())
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
                 int curDirection = TCDirection;
@@ -7537,7 +8119,7 @@ namespace ORTS
                 }
             }
 
-            if (signalFound < 0 && enabledTrain != null) // if signal not found following switches use signal route
+            if (signalFound < 0 && signalRoute != null) // if signal not found following switches use signal route
             {
                 for (int iSection = 0; iSection <= (signalRoute.Count - 1) && signalFound < 0; iSection++)
                 {
@@ -7611,9 +8193,9 @@ namespace ORTS
                         direction = thisSection.ActivePins[pinIndex, 1].Direction;
                     }
 
-                    // if no active link but signal has train and route allocated, use train route to find next section
+                    // if no active link but signal has route allocated, use train route to find next section
 
-                    if (thisTC == -1 && enabledTrain != null)
+                    if (thisTC == -1 && signalRoute != null)
                     {
                         int thisIndex = signalRoute.GetRouteIndex(thisSection.Index, 0);
                         if (thisIndex >= 0 && thisIndex <= signalRoute.Count - 2)
@@ -7707,15 +8289,23 @@ namespace ORTS
             {
                 // if in hold, set to most restrictive for each head
 
-                if (holdState != HoldState.None)
+                if (station_holdState != HoldstateStation.None)
                 {
                     foreach (SignalHead sigHead in SignalHeads)
                     {
-                        if (holdState == HoldState.ManualLock || holdState == HoldState.StationStop) sigHead.SetMostRestrictiveAspect();
+                        sigHead.SetMostRestrictiveAspect();
                     }
                     return;
                 }
 
+                if (dispatch_holdState != HoldstateDispatch.None)
+                {
+                    foreach (SignalHead sigHead in SignalHeads)
+                    {
+                        if (dispatch_holdState == HoldstateDispatch.ManualLock) sigHead.SetMostRestrictiveAspect();
+                    }
+                    return;
+                }
 
                 // if enabled - perform full update and propagate if not yet done
 
@@ -7743,6 +8333,14 @@ namespace ORTS
                     {
                         propagateRequest();
                     }
+                }
+
+        // manual - check manual route
+
+                else if (manualRouteSet)
+                {
+                    checkRouteState(false, signalRoute, null);
+                    StateUpdate();
                 }
 
         // fixed route - check route and update
@@ -7790,6 +8388,7 @@ namespace ORTS
             // reset train information
 
             enabledTrain = null;
+            manualRouteSet = false;
             trainRouteDirectionIndex = 0;
             signalRoute.Clear();
             fullRoute = hasFixedRoute;
@@ -7819,6 +8418,22 @@ namespace ORTS
 
             hasPermission = Permission.Denied;
 
+            // restore lock state //
+
+            if (dispatch_holdState == HoldstateDispatch.ClearOnceLock)
+            {
+                dispatch_holdState = HoldstateDispatch.ManualLock;
+            }
+            else if (dispatch_holdState == HoldstateDispatch.ClearOnceLockNP)
+            {
+                dispatch_holdState = HoldstateDispatch.ManualLockNP;
+            }
+            dispatch_overrule = false;
+
+            // set pending manual state or reset single manual state
+            if (controlState == Controlstate.ManualPending) controlState = Controlstate.Manual;
+            if (controlState == Controlstate.ManualClearOnce) controlState = Controlstate.Auto;
+
             StateUpdate();
 
         }
@@ -7835,9 +8450,6 @@ namespace ORTS
             if (MultiPlayer.MPManager.IsMultiPlayer())
             {
                 if (MultiPlayer.MPManager.IsClient()) return; //client won't handle signal update
-
-                //if there were hold manually, will not update
-                if (holdState == HoldState.ManualApproach || holdState == HoldState.ManualLock || holdState == HoldState.ManualPass) return;
             }
 
             foreach (SignalHead sigHead in SignalHeads)
@@ -8127,13 +8739,21 @@ namespace ORTS
             isPropagated = requestIsPropagated;
             propagated = false;   // always pass on request
 
-            // check if signal not yet enabled - if it is, give warning and quit
+            // check if signal not yet enabled - if it is, give warning, reset signal and set both trains to node control, and quit
 
             if (enabledTrain != null && enabledTrain != thisTrain)
             {
                 Trace.TraceWarning("Request to clear signal {0} from train {1}, signal already enabled for train {2}",
                                        thisRef, thisTrain.Train.Number, enabledTrain.Train.Number);
-                thisTrain.Train.ControlMode = Train.TRAIN_CONTROL.AUTO_NODE; // keep train in NODE control mode
+                Train.TrainRouted otherTrain = enabledTrain;
+                ResetSignal(true);
+                int routeListIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+                signalRef.BreakDownRouteList(thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex], routeListIndex, thisTrain);
+                routeListIndex = otherTrain.Train.PresentPosition[otherTrain.TrainRouteDirectionIndex].RouteListIndex;
+                signalRef.BreakDownRouteList(otherTrain.Train.ValidRoute[otherTrain.TrainRouteDirectionIndex], routeListIndex, otherTrain);
+
+                thisTrain.Train.SwitchToNodeControl(thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex);
+                otherTrain.Train.SwitchToNodeControl(otherTrain.Train.PresentPosition[otherTrain.TrainRouteDirectionIndex].TCSectionIndex);
                 procstate = -1;
                 return;
             }
@@ -8149,74 +8769,84 @@ namespace ORTS
                 enabledTrain = thisTrain;
             }
 
-            // find section in route part which follows signal
+            // if MP client or in MP Roam mode, build list upto next signal
 
-            if (procstate == 0)
+            if (MultiPlayer.MPManager.IsClient() || thisTrain.Train.MpControlMode == Train.MP_CONTROL.ROAM)
             {
-                signalRoute.Clear();
-
-                int firstIndex = -1;
-                if (lastSignal != null)
-                {
-                    firstIndex = lastSignal.thisTrainRouteIndex;
-                }
-                if (firstIndex < 0)
-                {
-                    firstIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
-                }
-
-                if (firstIndex >= 0)
-                {
-                    for (int iNode = firstIndex;
-                             iNode < RoutePart.Count && foundFirstSection < 0;
-                             iNode++)
-                    {
-                        Train.TCRouteElement thisElement = RoutePart[iNode];
-                        if (thisElement.TCSectionIndex == TCNextTC)
-                        {
-                            foundFirstSection = iNode;
-                            thisTrainRouteIndex = iNode;
-                        }
-                    }
-                }
-
-                if (foundFirstSection < 0)
-                {
-                    // no route from this signal - reset enable and exit
-                    enabledTrain = null;
-
-                    // if signal on holding list, set hold state
-                    if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HoldState.None) holdState = HoldState.StationStop;
-                    return;
-                }
+                nextSignal = signalRef.BuildRoamRoute(this, thisTrain);
             }
 
-            // copy sections upto next normal signal
-            // check for loop
+            // find section in route part which follows signal
 
-
-            if (procstate == 0)
+            else
             {
-                List<int> sectionsInRoute = new List<int>();
-
-                for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
+                if (procstate == 0)
                 {
-                    Train.TCRouteElement thisElement = RoutePart[iNode];
-                    if (sectionsInRoute.Contains(thisElement.TCSectionIndex))
+                    signalRoute.Clear();
+
+                    int firstIndex = -1;
+                    if (lastSignal != null)
                     {
-                        foundLastSection = iNode;  // loop
+                        firstIndex = lastSignal.thisTrainRouteIndex;
                     }
-                    else
+                    if (firstIndex < 0)
                     {
-                        signalRoute.Add(thisElement);
-                        sectionsInRoute.Add(thisElement.TCSectionIndex);
+                        firstIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+                    }
 
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-
-                        if (thisSection.EndSignals[thisElement.Direction] != null)
+                    if (firstIndex >= 0)
+                    {
+                        for (int iNode = firstIndex;
+                                 iNode < RoutePart.Count && foundFirstSection < 0;
+                                 iNode++)
                         {
-                            foundLastSection = iNode;
-                            nextSignal = thisSection.EndSignals[thisElement.Direction];
+                            Train.TCRouteElement thisElement = RoutePart[iNode];
+                            if (thisElement.TCSectionIndex == TCNextTC)
+                            {
+                                foundFirstSection = iNode;
+                                thisTrainRouteIndex = iNode;
+                            }
+                        }
+                    }
+
+                    if (foundFirstSection < 0)
+                    {
+                        // no route from this signal - reset enable and exit
+                        enabledTrain = null;
+
+                        // if signal on holding list, set hold state
+                        if (thisTrain.Train.HoldingSignals.Contains(thisRef) && station_holdState == HoldstateStation.None) station_holdState = HoldstateStation.StationStop;
+                        return;
+                    }
+                }
+
+                // copy sections upto next normal signal
+                // check for loop
+
+
+                if (procstate == 0)
+                {
+                    List<int> sectionsInRoute = new List<int>();
+
+                    for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
+                    {
+                        Train.TCRouteElement thisElement = RoutePart[iNode];
+                        if (sectionsInRoute.Contains(thisElement.TCSectionIndex))
+                        {
+                            foundLastSection = iNode;  // loop
+                        }
+                        else
+                        {
+                            signalRoute.Add(thisElement);
+                            sectionsInRoute.Add(thisElement.TCSectionIndex);
+
+                            TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+
+                            if (thisSection.EndSignals[thisElement.Direction] != null)
+                            {
+                                foundLastSection = iNode;
+                                nextSignal = thisSection.EndSignals[thisElement.Direction];
+                            }
                         }
                     }
                 }
@@ -8270,15 +8900,33 @@ namespace ORTS
                 }
             }
 
-            // perform route check
+            // if MP Client and signal has cleared, set all sections upto next signal to reserved and request clear next signal if any
 
-            checkRouteState(isPropagated, signalRoute, thisTrain);
-
-            // propagate request
-
-            if (!isPropagated)
+            if (MultiPlayer.MPManager.IsClient() && this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) != SignalHead.MstsSignalAspect.STOP)
             {
-                propagateRequest();
+                foreach (Train.TCRouteElement thisElement in signalRoute)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    thisSection.Reserve(thisTrain, signalRoute);
+                }
+
+                if (nextSignal != null)
+                {
+                    nextSignal.requestClearSignal(thisTrain.Train.ValidRoute[0], thisTrain, 0, true, this);
+                }
+            }
+
+            // normal mode : check route availability
+            else
+            {
+                checkRouteState(isPropagated, signalRoute, thisTrain);
+
+                // propagate request
+
+                if (!isPropagated)
+                {
+                    propagateRequest();
+                }
             }
         }
 
@@ -8292,20 +8940,52 @@ namespace ORTS
 
             // check if signal must be hold
 
-            bool signalHold = (holdState != HoldState.None);
-            if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && holdState < HoldState.ManualLock)
+            bool signalHold = false;
+
+            // station hold
+            if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && station_holdState == HoldstateStation.None)
             {
-                holdState = HoldState.StationStop;
+                station_holdState = HoldstateStation.StationStop;
                 signalHold = true;
             }
-            else if (holdState == HoldState.StationStop)
+            else if (station_holdState == HoldstateStation.StationStop)
             {
                 if (enabledTrain == null || !enabledTrain.Train.HoldingSignals.Contains(thisRef))
                 {
-                    holdState = HoldState.None;
-                    signalHold = false;
+                    station_holdState = HoldstateStation.None;
+                }
+                else
+                {
+                    signalHold = true;
                 }
             }
+
+            // dispatch hold
+            if (dispatch_holdState == HoldstateDispatch.ManualLock)
+            {
+                signalHold = true;
+            }
+            else if (dispatch_holdState == HoldstateDispatch.ManualLockNP)
+            {
+                if (enabledTrain != null && !enabledTrain.Train.PathedTrain)
+                {
+                    signalHold = true;
+                }
+                else if (enabledTrain == null)
+                {
+                    signalHold = true;
+                }
+            }
+
+            // check if has permission
+
+            if ((dispatch_holdState == HoldstateDispatch.ManualLock || dispatch_holdState == HoldstateDispatch.ManualLockNP) && hasPermission == Permission.Requested)
+            {
+                hasPermission = Permission.Granted;
+                Program.Simulator.SoundNotify = Event.PermissionGranted;
+                signalHold = false;
+            }
+
 
             // test clearance for full route section
 
@@ -8323,6 +9003,10 @@ namespace ORTS
                 else if (enabledTrain != null && !isPropagated)
                 {
                     getPartBlockState(thisRoute);
+                }
+                else if (manualRouteSet)
+                {
+                    getBlockState(thisRoute, thisRef);
                 }
             }
 
@@ -8353,15 +9037,10 @@ namespace ORTS
                 hasPermission = Permission.Granted;
                 Program.Simulator.SoundNotify = Event.PermissionGranted;
             }
-            else if (MultiPlayer.MPManager.IsMultiPlayer() && enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.EXPLORER
-                && signalState == SignalHead.MstsSignalAspect.STOP && internalBlockState <= InternalBlockstate.OccupiedSameDirection && hasPermission == Permission.Requested)
-            {//added by JTang
-                hasPermission = Permission.Granted;
-                Program.Simulator.SoundNotify = Event.PermissionGranted;
-            }
             else if (hasPermission == Permission.Requested)
             {
                 Program.Simulator.SoundNotify = Event.PermissionDenied;
+                hasPermission = Permission.Denied;
             }
 
             // reserve full section if allowed
@@ -8417,7 +9096,7 @@ namespace ORTS
 
                     // set pre-reserved or reserved for all other sections
 
-                    for (int iSection = lastSectionIndex++; iSection < thisRoute.Count; iSection++)
+                    for (int iSection = lastSectionIndex++; iSection < thisRoute.Count && reservable; iSection++)
                     {
                         Train.TCRouteElement thisElement = thisRoute[iSection];
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
@@ -8433,6 +9112,10 @@ namespace ORTS
                         else if (thisSection.CircuitState.TrainReserved == null || thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train)
                         {
                             thisSection.PreReserve(enabledTrain);
+                        }
+                        else
+                        {
+                            reservable = false;
                         }
                     }
                     enabledTrain.Train.ClaimState = false;
@@ -8454,6 +9137,17 @@ namespace ORTS
                             thisSection.Claim(enabledTrain);
                         }
                     }
+                }
+            }
+
+            // no train - check manual set
+
+            else if (manualRouteSet)
+            {
+                foreach ( Train.TCRouteElement thisElement in thisRoute)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    thisSection.Reserve(thisRef, signalRoute);
                 }
             }
         }
@@ -8617,6 +9311,7 @@ namespace ORTS
         // returns true if train set to use alternative route
         //
 
+        // check for train
         private bool getBlockState(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
         {
 
@@ -8784,6 +9479,30 @@ namespace ORTS
             return (returnvalue);
         }
 
+        
+        // check for signal
+        private void getBlockState(Train.TCSubpathRoute thisRoute, int thisSignal)
+        {
+            InternalBlockstate blockstate = InternalBlockstate.Reserved;  // preset to lowest possible state //
+
+            // loop through all sections in route list
+
+            Train.TCRouteElement lastElement = null;
+
+            foreach (Train.TCRouteElement thisElement in thisRoute)
+            {
+                lastElement = thisElement;
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                int direction = thisElement.Direction;
+                blockstate = thisSection.getSectionState(thisSignal, direction, blockstate, thisRoute);
+                if (blockstate > InternalBlockstate.Reservable)
+                    break;           // break on first non-reservable section //
+
+            }
+
+            internalBlockState = blockstate;
+        }
+
         //================================================================================================//
         //
         // Get part block state
@@ -8933,13 +9652,19 @@ namespace ORTS
                     }
                     foreach (TrackCircuitSection thisSection in sectionsToClear)
                     {
-                        thisSection.RemoveTrain(thisTrain, false);
+                        if (thisTrain != null)
+                        {
+                            thisSection.RemoveTrain(thisTrain, false);
+                        }
+                        else
+                        {
+                            thisSection.Unreserve();
+                        }
                     }
                 }
 
                 nextSignal.resetSignalEnabled();
             }
-
         }
 
         //================================================================================================//
@@ -9003,22 +9728,42 @@ namespace ORTS
         // Set HOLD state for dispatcher control
         //
         // Parameter : bool, if set signal must be reset if set (and train position allows)
+        //             bool, if set hold applied to non-pathed trains only
         //
         // Returned : bool[], dimension 2,
         //            field [0] : if true, hold state is set
         //            field [1] : if true, signal is reset (always returns false if reset not requested)
         //
 
-        public bool[] requestHoldSignalDispatcher(bool requestResetSignal)
+        public bool[] requestHoldSignalDispatcher(bool requestResetSignal, bool apply_nonePathed_only)
         {
             bool[] returnValue = new bool[2] { false, false };
             SignalHead.MstsSignalAspect thisAspect = this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
 
+            // signal cleared manually : reset signal
+            if (manualRouteSet)
+            {
+                ResetSignal(true);
+                manualRouteSet = false;
+                returnValue[0] = true;
+                returnValue[1] = true;
+            }
+
             // signal not enabled - set lock, reset if cleared (auto signal can clear without enabling)
 
-            if (enabledTrain == null || enabledTrain.Train == null)
+            else if (enabledTrain == null || enabledTrain.Train == null)
             {
-                holdState = HoldState.ManualLock;
+                controlState = Controlstate.Manual;
+
+                if (apply_nonePathed_only)
+                {
+                    dispatch_holdState = HoldstateDispatch.ManualLockNP;
+                }
+                else
+                {
+                    dispatch_holdState = HoldstateDispatch.ManualLock;
+                }
+
                 if (thisAspect > SignalHead.MstsSignalAspect.STOP) ResetSignal(true);
                 returnValue[0] = true;
             }
@@ -9027,7 +9772,17 @@ namespace ORTS
 
             else if (!requestResetSignal && thisAspect > SignalHead.MstsSignalAspect.STOP)
             {
-                holdState = HoldState.ManualLock; //just in case this one later will be set to green by the system
+                //just in case this one later will be set to green by the system
+                controlState = Controlstate.ManualPending;
+                if (apply_nonePathed_only)
+                {
+                    dispatch_holdState = HoldstateDispatch.ClearOnceLockNP;
+                }
+                else
+                {
+                    dispatch_holdState = HoldstateDispatch.ClearOnceLock;
+                }
+
                 returnValue[0] = true;
             }
 
@@ -9035,35 +9790,95 @@ namespace ORTS
 
             else if (thisAspect == SignalHead.MstsSignalAspect.STOP)
             {
-                holdState = HoldState.ManualLock;
+                controlState = Controlstate.Manual;
+                if (apply_nonePathed_only)
+                {
+                    dispatch_holdState = HoldstateDispatch.ManualLockNP;
+                }
+                else
+                {
+                    dispatch_holdState = HoldstateDispatch.ManualLock;
+                }
+
+                if (enabledTrain != null)
+                {
+                    TrackCircuitSection nextSection = signalRef.TrackCircuitList[TCNextTC];
+                    if (nextSection.CircuitState.TrainClaimed.Contains(enabledTrain))
+                    {
+                        enabledTrain.Train.BreakdownClaim(nextSection, enabledTrain.TrainRouteDirectionIndex, enabledTrain);
+                    }
+                }
+                
                 returnValue[0] = true;
             }
 
             // enabled, cleared , reset required : check train speed
             // if train is moving : no action
             //temporarily removed by JTang, before the full revision is ready
-//          else if (Math.Abs(enabledTrain.Train.SpeedMpS) > 0.1f)
-//          {
-//          }
+            //          else if (Math.Abs(enabledTrain.Train.SpeedMpS) > 0.1f)
+            //          {
+            //          }
 
             // if train is stopped : reset signal, breakdown train route, set holdstate
+            // if only applied to non-pathed trains, check train control type
 
             else
             {
-                int signalRouteIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, 0);
-                if (signalRouteIndex >= 0)
+                if (!apply_nonePathed_only || !enabledTrain.Train.PathedTrain)
                 {
-                    signalRef.BreakDownRouteList(enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex], signalRouteIndex, enabledTrain);
-                    ResetSignal(true);
-                    holdState = HoldState.ManualLock;
-                    returnValue[0] = true;
-                    returnValue[1] = true;
+                    int signalRouteIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, 0);
+
+                    // if not found, try reverse route
+                    if (signalRouteIndex < 0)
+                    {
+                        int revDirection = enabledTrain.TrainRouteDirectionIndex == 0 ? 1 : 0;
+                        signalRouteIndex = enabledTrain.Train.ValidRoute[revDirection].GetRouteIndex(TCNextTC, 0);
+                    }
+
+                    // breakdown route
+                    if (signalRouteIndex >= 0)
+                    {
+                        signalRef.BreakDownRouteList(enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex],
+                            signalRouteIndex, enabledTrain);
+                        ResetSignal(true);
+                        controlState = Controlstate.Manual;
+                        if (apply_nonePathed_only)
+                        {
+                            dispatch_holdState = HoldstateDispatch.ManualLockNP;
+                        }
+                        else
+                        {
+                            dispatch_holdState = HoldstateDispatch.ManualLock;
+                        }
+                        returnValue[0] = true;
+                        returnValue[1] = true;
+                    }
+                    else //hopefully this does not happen
+                    {
+                        controlState = Controlstate.Manual;
+                        if (apply_nonePathed_only)
+                        {
+                            dispatch_holdState = HoldstateDispatch.ManualLockNP;
+                        }
+                        else
+                        {
+                            dispatch_holdState = HoldstateDispatch.ManualLock;
+                        }
+                        returnValue[0] = true;
+                    }
                 }
-                else //hopefully this does not happen
+                else
                 {
-                    holdState = HoldState.ManualLock;
-                    returnValue[0] = true;
+                    controlState = Controlstate.Manual;
+                    dispatch_holdState = HoldstateDispatch.ManualLockNP;
                 }
+            }
+
+            // reset signal route if signal is reset
+
+            if (returnValue[1])
+            {
+                signalRoute.Clear();
             }
 
             return (returnValue);
@@ -9080,7 +9895,171 @@ namespace ORTS
 
         public void clearHoldSignalDispatcher()
         {
-            holdState = HoldState.None;
+            dispatch_holdState = HoldstateDispatch.None;
+            controlState = Controlstate.Auto;
+        }
+
+        //================================================================================================//
+        //
+        // Process dispatcher request
+        //
+        // Request from dispatcher for :
+        //   - clear once
+        //   - clear once, overrule switch locks
+        //   - grant permission
+        //   - test route
+        //   - set signal to automatic
+        //
+        // Parameters :
+        //   - optional : user ident (originating user)
+        //   - required command
+
+        public void ProcessDispatcherRequest(string User, ControlCommand command)
+        {
+            bool returnstate = ProcessDispatcherRequest(command);
+        }
+
+        public bool ProcessDispatcherRequest(ControlCommand command)
+        {
+            // switch on command
+            switch (command)
+            {
+                // set to system control
+                case ControlCommand.SetSystemControl:
+                    clearHoldSignalDispatcher();
+                    break;
+
+                // set to hold (all)
+                case ControlCommand.Hold:
+                    requestHoldSignalDispatcher(true, false);
+                    break;
+
+                // set to hold (none-pathed)
+                case ControlCommand.HoldNP:
+                    requestHoldSignalDispatcher(true, true);
+                    break;
+
+                // set to clear once
+                case ControlCommand.ClearOnce:
+                case ControlCommand.ClearOnceOverrule:
+                    // if signal in hold, set clear-once state
+                    if (dispatch_holdState == HoldstateDispatch.ManualLock)
+                    {
+                        dispatch_holdState = HoldstateDispatch.ClearOnceLock;
+                    }
+                    else if (dispatch_holdState == HoldstateDispatch.ManualLockNP)
+                    {
+                        dispatch_holdState = HoldstateDispatch.ClearOnceLockNP;
+                    }
+                    else if (controlState == Controlstate.Auto)
+                    {
+                        controlState = Controlstate.ManualClearOnce;
+                    }
+
+                    if (command == ControlCommand.ClearOnceOverrule) dispatch_overrule = true;
+
+                    if (enabledTrain != null)
+                    {
+                        ClearSignalManualOnce();
+                    }
+                    else
+                    {
+                        ReleaseSignalManualOnce();
+                    }
+
+                    break;
+
+                // grant permission (one-of only, no change in state)
+                case ControlCommand.GrantPermission:
+                    ProcessDispatcherPermissionRequest();
+                    break;
+
+                default:
+                    break;
+            }
+
+            return (true);
+        }
+
+        //================================================================================================//
+        //
+        // Process dispatcher request for Clear Once
+        //
+
+        public void ClearSignalManualOnce()
+        {
+            Train thisTrain = enabledTrain.Train;
+            if (thisTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)  // explorer mode
+            {
+                requestClearSignalExplorer(thisTrain.ValidRoute[enabledTrain.TrainRouteDirectionIndex],
+                    thisTrain.minCheckDistanceM, enabledTrain, false, 0);
+            }
+            else if (thisTrain.ControlMode != Train.TRAIN_CONTROL.MANUAL)  // manual mode is processed special in train update
+            {
+                requestClearSignal(thisTrain.ValidRoute[0], thisTrain.routedForward, 0, false, null);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Process dispatcher request for Clear Once without enabled train
+        //
+
+        public void ReleaseSignalManualOnce()
+        {
+            Train.TCSubpathRoute newRoute = new Train.TCSubpathRoute();
+
+            if (fixedRoute != null && fixedRoute.Count > 0)
+            {
+                newRoute = new Train.TCSubpathRoute(fixedRoute);
+            }
+            else
+            {
+                newRoute = signalRef.BuildTempRoute(null, TCNextTC, 0.0f, TCNextDirection, 0.0f, false, true, true);
+            }
+
+            if (newRoute != null)
+            {
+                signalRoute = newRoute;
+                manualRouteSet = true;
+                checkRouteState(false, newRoute, null);
+
+                // check if route ends with signal
+
+                TrackCircuitSection lastSection = signalRef.TrackCircuitList[newRoute[newRoute.Count - 1].TCSectionIndex];
+                int lastDirection = newRoute[newRoute.Count - 1].Direction;
+                if (lastSection.EndSignals[lastDirection] != null)
+                {
+                    sigfound[(int)SignalHead.MstsSignalFunction.NORMAL] = lastSection.EndSignals[lastDirection].thisRef;
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Process dispatcher request for Grant Permission
+        //
+
+        public void ProcessDispatcherPermissionRequest()
+        {
+            if (enabledTrain != null && enabledTrain.Train != null)
+            {
+                if (enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                {
+                    enabledTrain.Train.RequestManualSignalPermission(ref enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex],
+                                                                         enabledTrain.TrainRouteDirectionIndex);
+                }
+                else if (enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
+                {
+                    enabledTrain.Train.RequestExplorerSignalPermission(ref enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex],
+                                                                         enabledTrain.TrainRouteDirectionIndex);
+                }
+                else
+                {
+                    hasPermission = SignalObject.Permission.Requested;
+                    requestClearSignal(enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex], enabledTrain, 0, false, null);
+                }
+            }
         }
 
     }  // SignalObject
@@ -9094,8 +10073,6 @@ namespace ORTS
 
     public class SignalHead
     {
-        [SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
-        [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
         public enum MstsSignalAspect
         {
             STOP,
@@ -9109,8 +10086,6 @@ namespace ORTS
             UNKNOWN,
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA1707:IdentifiersShouldNotContainUnderscores")]
-        [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly")]
         public enum MstsSignalFunction
         {
             NORMAL,
@@ -9351,7 +10326,6 @@ namespace ORTS
                 thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[(int)sigFN1]];
 
                 MstsSignalAspect thisState = thisSignal.this_sig_mr(sigFN1);
-                foundState = foundState < thisState ? foundState : thisState;
 
                 if (dumpfile.Length > 1)
                 {
@@ -9361,13 +10335,15 @@ namespace ORTS
                 }
 
                 // ensure correct next signals are located
-                thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
-                thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
+
+                if (sigFN1 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
+                if (sigFN2 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
 
                 if (sig2Index >= 0 && thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
                 {
                     return (foundState);
                 }
+                foundState = foundState < thisState ? foundState : thisState;
             }
 
             return (foundValid ? foundState : MstsSignalAspect.STOP);   // no type 2 or running out of signals before finding type 2
@@ -9451,24 +10427,6 @@ namespace ORTS
             if (TrackJunctionNode > 0)
             {
                 juncfound = mainSignal.route_set(JunctionMainNode, TrackJunctionNode);
-            }
-            //added by JTang
-            else if (MultiPlayer.MPManager.IsMultiPlayer())
-            {
-                var node = mainSignal.signalRef.trackDB.TrackNodes[mainSignal.trackNode];
-                if (node.TrJunctionNode == null && node.TrPins != null && mainSignal.TCDirection < node.TrPins.Length)
-                {
-                    node = mainSignal.signalRef.trackDB.TrackNodes[node.TrPins[mainSignal.TCDirection].Link];
-                    if (node.TrJunctionNode == null) return 0;
-                    for (var pin = node.Inpins; pin < node.Inpins + node.Outpins; pin++)
-                    {
-                        if (node.TrPins[pin].Link == mainSignal.trackNode && pin - node.Inpins != node.TrJunctionNode.SelectedRoute)
-                        {
-                            juncfound = false;
-                            break;
-                        }
-                    }
-                }
             }
             if (juncfound)
             {
