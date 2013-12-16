@@ -830,7 +830,8 @@ namespace ORTS
                         TriggersList = from ORTSVariableTrigger t in VariableTriggers
                                                 where t.IsBellow
                                                 select t as ORTSTrigger;
-                        if (TriggersList.Count() == VariableTriggers.Count && _InitialTrigger.SoundCommand is ORTSSoundPlayCommand)
+                        if (TriggersList.Count() == VariableTriggers.Count && _InitialTrigger.SoundCommand is ORTSSoundPlayCommand
+                            && !(_InitialTrigger.SoundCommand is ORTSPlayOneShot && _InitialTrigger.Signaled))
                         {
                             _InitialTrigger.Initialize();
                         }
