@@ -569,7 +569,7 @@ namespace ORTS
             lodItem.LightModelName = "OptSpecular0";
             lodItem.AlphaTestMode = 0;
             lodItem.TexAddrModeName = "Wrap";
-            lodItem.ESD_Alternative_Texture = 1;
+            lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = -1f;
             LODItem.LoadMaterial(RenderProcess, lodItem);
 
