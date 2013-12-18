@@ -371,69 +371,55 @@ namespace ORTS
 
             // get all filesnames in World directory
 
-            Trace.Write("\n");
-            string WFilePath = simulator.RoutePath + @"\WORLD\";
-            string[] FileEntries = Directory.GetFiles(WFilePath);
+            var WFilePath = simulator.RoutePath + @"\WORLD\";
 
-            List<TokenID> Tokens = new List<TokenID>();
+            var Tokens = new List<TokenID>();
             Tokens.Add(TokenID.Signal);
 
             // loop through files, use only extention .w, skip w+1000000+1000000.w file
 
-            foreach (string fileName in FileEntries)
+            foreach (var fileName in Directory.GetFiles(WFilePath, "*.w"))
             {
-                string[] fparts = fileName.Split('.');
-                if (fparts.Length < 2)
+                // validate file name a little bit
+
+                if (Path.GetFileName(fileName).Length != 17)
                     continue;
 
-                // check if valid file
+                // read w-file, get SignalObjects only
 
+                Trace.Write("W");
+                WFile WFile;
                 try
                 {
-                    int p = fileName.LastIndexOf("\\WORLD\\W", StringComparison.OrdinalIgnoreCase);
-                    int TileX = int.Parse(fileName.Substring(p + 8, 7), CultureInfo.InvariantCulture);
-                    int TileZ = int.Parse(fileName.Substring(p + 15, 7), CultureInfo.InvariantCulture);
+                    WFile = new WFile(fileName, Tokens);
                 }
-                catch (Exception)
+                catch (Exception error)
                 {
+                    Trace.WriteLine(new FileLoadException(fileName, error));
                     continue;
                 }
 
-                if (string.CompareOrdinal(fparts[fparts.Length - 1], "w") == 0)
+                // loop through all signals
+
+                foreach (var worldObject in WFile.Tr_Worldfile)
                 {
-
-                    // read w-file, get SignalObjects only
-
-                    Trace.Write("W");
-                    WFile WFile = new WFile(fileName, Tokens);
-
-                    // loop through all signals
-
-                    foreach (WorldObject worldObject in WFile.Tr_Worldfile)
+                    if (worldObject.GetType() == typeof(MSTS.SignalObj))
                     {
-                        if (worldObject.GetType() == typeof(MSTS.SignalObj))
+                        var thisWorldObject = worldObject as MSTS.SignalObj;
+                        var SignalWorldSignal = new SignalWorldObject(thisWorldObject, sigcfg);
+                        SignalWorldList.Add(SignalWorldSignal);
+                        foreach (var thisref in SignalWorldSignal.HeadReference)
                         {
-                            MSTS.SignalObj thisWorldObject = worldObject as MSTS.SignalObj;
-                            SignalWorldObject SignalWorldSignal = new SignalWorldObject(thisWorldObject, sigcfg);
-                            SignalWorldList.Add(SignalWorldSignal);
-                            foreach (KeyValuePair<uint, uint> thisref in SignalWorldSignal.HeadReference)
+                            var thisSignalCount = SignalWorldList.Count() - 1;    // Index starts at 0
+                            var thisRefObject = new SignalRefObject(thisSignalCount, thisref.Value);
+                            if (!SignalRefList.ContainsKey(thisref.Key))
                             {
-                                int thisSignalCount = SignalWorldList.Count() - 1;    // Index starts at 0
-                                SignalRefObject thisRefObject = new SignalRefObject(thisSignalCount, thisref.Value);
-                                if (!SignalRefList.ContainsKey(thisref.Key))
-                                {
-                                    SignalRefList.Add(thisref.Key, thisRefObject);
-                                }
+                                SignalRefList.Add(thisref.Key, thisRefObject);
                             }
                         }
                     }
-
-                    // clear worldfile info
-
-                    WFile = null;
                 }
             }
-            Trace.Write("\n");
 
 #if DEBUG_PRINT
 			var srlb = new StringBuilder();

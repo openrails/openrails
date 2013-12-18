@@ -209,7 +209,7 @@ namespace ORTS
             // sample resolution or not.
             var x = ux * tile.SampleSize;
             var z = 2048 * tile.Size - uz * tile.SampleSize;
-            var otherTile = GetTile(tile.TileX + (int)Math.Floor(x / 2048), tile.TileZ + (int)Math.Floor((z - 1) / 2048)); 
+            var otherTile = GetTile(tile.TileX + (int)Math.Floor(x / 2048), tile.TileZ + (int)Math.Floor((z - 1) / 2048));
             if (otherTile != null)
             {
                 var ux2 = (int)((x + 2048 * (tile.TileX - otherTile.TileX)) / otherTile.SampleSize);
@@ -258,7 +258,7 @@ namespace ORTS
             /// Stores tiles in load order, so eviction is predictable and reasonable.
             /// </summary>
             public readonly List<Tile> List;
-            
+
             /// <summary>
             /// Stores tiles by their TileX, TileZ location, so lookup is fast.
             /// </summary>
@@ -330,17 +330,31 @@ namespace ORTS
                 return;
             }
 
+            // T and Y files are expected to exist; F files are optional.
             try
             {
-                // T and Y files are expected to exist; F files are optional.
                 TFile = new TFile(fileName + ".t");
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(new FileLoadException(fileName + ".t", error));
+            }
+            try
+            {
                 YFile = new YFile(fileName + "_y.raw", SampleCount);
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(new FileLoadException(fileName + "_y.raw", error));
+            }
+            try
+            {
                 if (File.Exists(fileName + "_f.raw"))
                     FFile = new FFile(fileName + "_f.raw", SampleCount);
             }
             catch (Exception error)
             {
-                Trace.WriteLine(error);
+                Trace.WriteLine(new FileLoadException(fileName + "_f.raw", error));
             }
         }
 
@@ -355,3 +369,4 @@ namespace ORTS
         }
     }
 }
+
