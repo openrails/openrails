@@ -9017,16 +9017,27 @@ namespace ORTS
                 hasPermission = Permission.Granted;
                 Program.Simulator.SoundNotify = Event.PermissionGranted;
             }
-            else if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && signalState == SignalHead.MstsSignalAspect.STOP &&
+            else
+            {
+                if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL &&
+                    internalBlockState <= InternalBlockstate.OccupiedSameDirection && hasPermission == Permission.Requested)
+                {
+                    Program.Simulator.SoundNotify = Event.PermissionGranted;
+                }
+                else if (hasPermission == Permission.Requested)
+                {
+                    Program.Simulator.SoundNotify = Event.PermissionDenied;
+                }
+
+                if (enabledTrain != null && enabledTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && signalState == SignalHead.MstsSignalAspect.STOP &&
                 internalBlockState <= InternalBlockstate.OccupiedSameDirection && hasPermission == Permission.Requested)
-            {
-                hasPermission = Permission.Granted;
-                Program.Simulator.SoundNotify = Event.PermissionGranted;
-            }
-            else if (hasPermission == Permission.Requested)
-            {
-                Program.Simulator.SoundNotify = Event.PermissionDenied;
-                hasPermission = Permission.Denied;
+                {
+                    hasPermission = Permission.Granted;
+                }
+                else if (hasPermission == Permission.Requested)
+                {
+                    hasPermission = Permission.Denied;
+                }
             }
 
             // reserve full section if allowed
