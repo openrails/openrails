@@ -6728,7 +6728,7 @@ namespace ORTS
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Cannot change to Manual Mode while in Explorer Mode");
             }
-            else if (MpControlMode == MP_CONTROL.WAITDISPATCH)
+            else if (MultiPlayer.MPManager.IsMultiPlayer() && MpControlMode == MP_CONTROL.WAITDISPATCH)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Cannot change to Manual Mode while in Wait Dispatch Mode");
