@@ -162,7 +162,7 @@ namespace ORTS
             else
                 Trace.TraceWarning("Skipped unknown lighting model index {1} in shape {0}", lod.Name, lod.LightModelName);
 
-            if ((lod.ESD_Alternative_Texture & 0x1) != 0)
+            if ((lod.ESD_Alternative_Texture & (int)TextureFlags.Night) != 0)
                 options |= SceneryMaterialOptions.NightTexture;
 
             return options;
