@@ -27,6 +27,7 @@ using System.Xml.Schema;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
+using ORTS.Processes;
 
 namespace ORTS
 {
@@ -147,11 +148,11 @@ namespace ORTS
                 // First to need a track profile creates it
                 Trace.Write(" TRP");
                 // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer.RenderProcess, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
+                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
             }
 
             // Instantiate classes
-            dtrackMesh = new DynatrackMesh(Viewer.RenderProcess, dtrack, worldPosition, endPosition);
+            dtrackMesh = new DynatrackMesh(Viewer, dtrack, worldPosition, endPosition);
         } // end DynatrackDrawer constructor
 
         /// <summary>
@@ -258,24 +259,24 @@ namespace ORTS
         /// <param name="renderProcess">Render process.</param>
         /// <param name="routePath">Path to route.</param>
         /// <param name="trpFile">TRPFile created (out).</param>
-        public static void CreateTrackProfile(RenderProcess renderProcess, string routePath, out TRPFile trpFile)
+        public static void CreateTrackProfile(Viewer3D viewer, string routePath, out TRPFile trpFile)
         {
             string path = routePath + @"\TrackProfiles";
             //Establish default track profile
             if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.xml"))
             {
                 // XML-style
-                trpFile = new TRPFile(renderProcess, path + @"\TrProfile.xml");
+                trpFile = new TRPFile(viewer, path + @"\TrProfile.xml");
             }
             else if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.stf"))
             {
                 // MSTS-style
-                trpFile = new TRPFile(renderProcess, path + @"\TrProfile.stf");
+                trpFile = new TRPFile(viewer, path + @"\TrProfile.stf");
             }
             else
             {
                 // default
-                trpFile = new TRPFile(renderProcess, "");
+                trpFile = new TRPFile(viewer, "");
             }
             // FOR DEBUGGING: Writes XML file from current TRP
             //TRP.TrackProfile.SaveAsXML(@"C:/Users/Walt/Desktop/TrProfile.xml");
@@ -285,21 +286,21 @@ namespace ORTS
         /// Create TrackProfile from a track profile file.  
         /// (Defaults on empty or nonexistent filespec.)
         /// </summary>
-        /// <param name="renderProcess">Render process.</param>
+        /// <param name="viewer">Viewer 3D.</param>
         /// <param name="filespec">Complete filepath string to track profile file.</param>
-        public TRPFile(RenderProcess renderProcess, string filespec)
+        public TRPFile(Viewer3D viewer, string filespec)
         {
             if (filespec == "")
             {
                 // No track profile provided, use default
-                TrackProfile = new TrProfile(renderProcess);
+                TrackProfile = new TrProfile(viewer);
                 Trace.Write("(default)");
                 return;
             }
             FileInfo fileInfo = new FileInfo(filespec);
             if (!fileInfo.Exists)
             {
-                TrackProfile = new TrProfile(renderProcess); // Default profile if no file
+                TrackProfile = new TrProfile(viewer); // Default profile if no file
                 Trace.Write("(default)");
             }
             else
@@ -315,26 +316,26 @@ namespace ORTS
                             if (stf.SimisSignature != "SIMISA@@@@@@@@@@JINX0p0t______")
                             {
                                 STFException.TraceWarning(stf, "Invalid header - file will not be processed. Using DEFAULT profile.");
-                                TrackProfile = new TrProfile(renderProcess); // Default profile if no file
+                                TrackProfile = new TrProfile(viewer); // Default profile if no file
                             }
                             else
                                 try
                                 {
                                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                                        new STFReader.TokenProcessor("trprofile", ()=>{ TrackProfile = new TrProfile(renderProcess, stf); }),
+                                        new STFReader.TokenProcessor("trprofile", ()=>{ TrackProfile = new TrProfile(viewer, stf); }),
                                     });
                                 }
                                 catch (Exception e)
                                 {
                                     STFException.TraceWarning(stf, "Track profile STF constructor failed because " + e.Message + ". Using DEFAULT profile.");
-                                    TrackProfile = new TrProfile(renderProcess); // Default profile if no file
+                                    TrackProfile = new TrProfile(viewer); // Default profile if no file
                                 }
                                 finally
                                 {
                                     if (TrackProfile == null)
                                     {
                                         STFException.TraceWarning(stf, "Track profile STF constructor failed. Using DEFAULT profile.");
-                                        TrackProfile = new TrProfile(renderProcess); // Default profile if no file
+                                        TrackProfile = new TrProfile(viewer); // Default profile if no file
                                     }
                                 }
                         }
@@ -360,14 +361,14 @@ namespace ORTS
                         // Create an XML reader for the .xml file
                         using (XmlReader reader = XmlReader.Create(filespec, settings))
                         {
-                            TrackProfile = new TrProfile(renderProcess, reader);
+                            TrackProfile = new TrProfile(viewer, reader);
                         }
                         Trace.Write("(.XML)");
                         break;
 
                     default:
                         // File extension not supported; create a default track profile
-                        TrackProfile = new TrProfile(renderProcess);
+                        TrackProfile = new TrProfile(viewer);
                         Trace.Write("(default)");
                         break;
                 } // end switch
@@ -402,7 +403,6 @@ namespace ORTS
     public class TrProfile
     {
         #region Class Variables
-        RenderProcess RenderProcess;
 
         public string Name; // e.g., "Default track profile"
         public int ReplicationPitch; //TBD: Replication pitch alternative
@@ -466,10 +466,9 @@ namespace ORTS
         /// TrProfile constructor (default - builds from self-contained data)
         /// <param name="renderProcess">RenderProcess.</param>
         /// </summary>
-        public TrProfile(RenderProcess renderProcess)
+        public TrProfile(Viewer3D viewer)
         {
             // Default TrProfile constructor
-            RenderProcess = renderProcess;
 
             Name = "Default Dynatrack profile";
             LODMethod = LODMethods.ComponentAdditive;
@@ -494,8 +493,8 @@ namespace ORTS
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
-            LODItem.LoadMaterial(RenderProcess, lodItem);
-            var gauge = renderProcess.Viewer.Simulator.SuperElevationGauge;
+            LODItem.LoadMaterial(viewer, lodItem);
+            var gauge = viewer.Simulator.SuperElevationGauge;
             var inner = gauge / 2f;
             var outer = inner + 0.15f * gauge / 1.435f;
 
@@ -541,7 +540,7 @@ namespace ORTS
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
-            LODItem.LoadMaterial(RenderProcess, lodItem);
+            LODItem.LoadMaterial(viewer, lodItem);
 
             pl = new Polyline(this, "right", 2);
             pl.DeltaTexCoord = new Vector2(.0744726f, 0f);
@@ -571,7 +570,7 @@ namespace ORTS
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = (int)Helpers.TextureFlags.SnowTrack; // Match MSTS global road/track behaviour.
             lodItem.MipMapLevelOfDetailBias = -1f;
-            LODItem.LoadMaterial(RenderProcess, lodItem);
+            LODItem.LoadMaterial(viewer, lodItem);
 
             pl = new Polyline(this, "ballast", 2);
             pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
@@ -588,7 +587,7 @@ namespace ORTS
         /// <summary>
         /// TrProfile constructor from STFReader-style profile file
         /// </summary>
-        public TrProfile(RenderProcess renderProcess, STFReader stf)
+        public TrProfile(Viewer3D viewer, STFReader stf)
         {
             Name = "Default Dynatrack profile";
 
@@ -599,7 +598,7 @@ namespace ORTS
                 new STFReader.TokenProcessor("chordspan", ()=>{ ChordSpan = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("pitchcontrol", ()=> { PitchControl = GetPitchControl(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("pitchcontrolscalar", ()=>{ PitchControlScalar = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("lod", ()=> { LODs.Add(new LOD(renderProcess, stf)); }),
+                new STFReader.TokenProcessor("lod", ()=> { LODs.Add(new LOD(viewer, stf)); }),
             });
 
             if (LODs.Count == 0) throw new Exception("missing LODs");
@@ -609,7 +608,7 @@ namespace ORTS
         /// <summary>
         /// TrProfile constructor from XML profile file
         /// </summary>
-        public TrProfile(RenderProcess renderProcess, XmlReader reader)
+        public TrProfile(Viewer3D viewer, XmlReader reader)
         {
             if (reader.IsStartElement())
             {
@@ -654,7 +653,7 @@ namespace ORTS
                             lodItem.ESD_Alternative_Texture = int.Parse(reader.GetAttribute("ESD_Alternative_Texture"));
                             lodItem.MipMapLevelOfDetailBias = float.Parse(reader.GetAttribute("MipMapLevelOfDetailBias"));
 
-                            LODItem.LoadMaterial(renderProcess, lodItem);
+                            LODItem.LoadMaterial(viewer, lodItem);
                             lod.LODItems.Add(lodItem);
                             break;
                         case "Polyline":
@@ -686,13 +685,12 @@ namespace ORTS
 
         /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
-        /// <param name="renderProcess">RenderProcess.</param>
+        /// <param name="viewer">Viewer3D.</param>
         /// <param name="x">Parameter x is a placeholder.</param>
         /// </summary>
-        public TrProfile(RenderProcess renderProcess, int x)
+        public TrProfile(Viewer3D viewer, int x)
         {
             // Default TrProfile constructor
-            RenderProcess = renderProcess;
             Name = "Default Dynatrack profile";
         } // end TrProfile() constructor for inherited class
 
@@ -767,13 +765,13 @@ namespace ORTS
             CutoffRadius = cutoffRadius;
         }
 
-        public LOD(RenderProcess renderProcess, STFReader stf)
+        public LOD(Viewer3D viewer, STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("cutoffradius", ()=>{ CutoffRadius = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("loditem", ()=>{
-                    LODItem lodItem = new LODItem(renderProcess, stf);
+                    LODItem lodItem = new LODItem(viewer, stf);
                     LODItems.Add(lodItem); // Append to Polylines array
                     }),
             });
@@ -828,7 +826,7 @@ namespace ORTS
         /// <summary>
         /// LODITem constructor (used for STF-style profile)
         /// </summary>
-        public LODItem(RenderProcess renderProcess, STFReader stf)
+        public LODItem(Viewer3D viewer, STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -852,7 +850,7 @@ namespace ORTS
             // MipMapLevelOfDetail bias initializes to 0.
             if (Polylines.Count == 0) throw new Exception("missing Polylines");
 
-            LoadMaterial(renderProcess, this);
+            LoadMaterial(viewer, this);
         } // end LODItem() constructor
 
         #endregion
@@ -867,10 +865,10 @@ namespace ORTS
             NumSegments += (uint)count - 1;
         } // end Accum
 
-        public static void LoadMaterial(RenderProcess renderProcess, LODItem lod)
+        public static void LoadMaterial(Viewer3D viewer, LODItem lod)
         {
             var options = Helpers.EncodeMaterialOptions(lod);
-            lod.LODMaterial = renderProcess.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(renderProcess.Viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), (int)options, lod.MipMapLevelOfDetailBias);
+            lod.LODMaterial = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), (int)options, lod.MipMapLevelOfDetailBias);
         }
 
         [CallOnThread("Loader")]
@@ -1052,7 +1050,7 @@ namespace ORTS
         /// <summary>
         /// Constructor.
         /// </summary>
-        public DynatrackMesh(RenderProcess renderProcess, DyntrackObj dtrack, WorldPosition worldPosition,
+        public DynatrackMesh(Viewer3D viewer, DyntrackObj dtrack, WorldPosition worldPosition,
                                 WorldPosition endPosition)
         {
             // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
@@ -1080,7 +1078,7 @@ namespace ORTS
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 
-            TrProfile = renderProcess.Viewer.Simulator.TRP.TrackProfile;
+            TrProfile = viewer.Simulator.TRP.TrackProfile;
             // Count all of the LODItems in all the LODs
             int count = 0;
             for (int i = 0; i < TrProfile.LODs.Count; i++)
@@ -1100,7 +1098,7 @@ namespace ORTS
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildMesh(viewer, worldPosition, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD

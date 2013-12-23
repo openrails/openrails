@@ -487,12 +487,12 @@ namespace ORTS
         {
             Options = options;
             MipMapBias = mipMapBias;
-            Texture = Viewer.RenderProcess.Viewer.TextureManager.Get(texturePath);
+            Texture = Viewer.TextureManager.Get(texturePath);
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0)
             {
-                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.RenderProcess.Viewer.Simulator, texturePath);
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
-                    NightTexture = Viewer.RenderProcess.Viewer.TextureManager.Get(nightTexturePath.ToLower());
+                    NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
             }
 
             // Record the number of bits in the alpha channel of the original ace file

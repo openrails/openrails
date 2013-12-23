@@ -18,10 +18,9 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
-using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using System.Windows.Forms;
+using Microsoft.Xna.Framework;
+using ORTS.Processes;
 
 namespace ORTS.Popups
 {
@@ -63,12 +62,12 @@ namespace ORTS.Popups
 
         void buttonQuit_Click(Control arg1, Point arg2)
         {
-            Owner.Viewer.Stop();
+            Owner.Viewer.Game.PopState();
         }
 
         void buttonSave_Click(Control arg1, Point arg2)
         {
-            Program.Save();
+            GameStateRunActivity.Save();
         }
 
         void buttonContinue_Click(Control arg1, Point arg2)

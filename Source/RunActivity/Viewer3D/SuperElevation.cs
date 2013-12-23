@@ -24,13 +24,12 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
+using ORTS.Processes;
 
 namespace ORTS
 {
@@ -639,7 +638,7 @@ namespace ORTS
             : base(viewer, position, endPosition)
         {
             // Instantiate classes
-            dtrackMesh = new SuperElevationMesh(viewer.RenderProcess, position, endPosition, radius, angle, s, e, m, dir);
+            dtrackMesh = new SuperElevationMesh(viewer, position, endPosition, radius, angle, s, e, m, dir);
         } // end DynatrackDrawer constructor
 
 
@@ -648,7 +647,7 @@ namespace ORTS
     public class SuperElevationMesh : DynatrackMesh
     {
         float StartElev, MaxElev, EndElv;
-        public SuperElevationMesh(RenderProcess renderProcess, WorldPosition worldPosition,
+        public SuperElevationMesh(Viewer3D viewer, WorldPosition worldPosition,
         WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir)
             : base()
         {
@@ -679,14 +678,14 @@ namespace ORTS
             }
             DTrackData.deltaY = 0;
 
-            if (renderProcess.Viewer.Simulator.TRP == null)
+            if (viewer.Simulator.TRP == null)
             {
                 // First to need a track profile creates it
                 Trace.Write(" TRP");
                 // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(renderProcess, renderProcess.Viewer.Simulator.RoutePath, out renderProcess.Viewer.Simulator.TRP);
+                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.Simulator.TRP);
             }
-            TrProfile = renderProcess.Viewer.Simulator.TRP.TrackProfile;
+            TrProfile = viewer.Simulator.TRP.TrackProfile;
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 
@@ -709,7 +708,7 @@ namespace ORTS
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildMesh(viewer, worldPosition, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD

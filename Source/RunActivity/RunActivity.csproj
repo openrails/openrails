@@ -5,7 +5,7 @@
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
     <AssemblyName>RunActivity</AssemblyName>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProjectGuid>{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}</ProjectGuid>
     <RootNamespace>ORTS</RootNamespace>
@@ -184,10 +184,15 @@
     <Compile Include="..\ORTS\UserSettings.cs">
       <Link>ORTS\UserSettings.cs</Link>
     </Compile>
+    <Compile Include="Common\ElapsedTime.cs" />
     <Compile Include="MSTS\HAZFile.cs" />
     <Compile Include="Popups\CarOperationsWindow.cs" />
+    <Compile Include="Processes\Game.cs" />
+    <Compile Include="Processes\GameState.cs" />
+    <Compile Include="Processes\GameStateRunActivity.cs" />
+    <Compile Include="Processes\GameStateViewer3D.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Simulator\Hazzard.cs" />
-    <Compile Include="_Main.cs" />
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />
     <Compile Include="AI\AITrain.cs" />
@@ -378,6 +383,9 @@
     <Content Include="Content\Clouds01.tga">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\Loading.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\DebugShader.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -388,6 +396,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\LightGlowShader.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Loading.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\MoonMap.tga">

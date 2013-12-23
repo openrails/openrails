@@ -27,12 +27,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Processes;
+using Game = ORTS.Processes.Game;
 
 namespace ORTS
 {
@@ -145,6 +144,8 @@ namespace ORTS
 
     public class RenderFrame
     {
+        readonly Game Game;
+
         // Shared shadow map data.
         static Texture2D[] ShadowMap;
         static RenderTarget2D[] ShadowMapRenderTarget;
@@ -160,54 +161,52 @@ namespace ORTS
         Vector3 ShadowMapY;
         Vector3[] ShadowMapCenter;
 
-        readonly RenderProcess RenderProcess;
         readonly Material DummyBlendedMaterial;
-        readonly ShadowMapMaterial ShadowMapMaterial;
         readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[(int)RenderPrimitiveSequence.Sentinel];
         readonly List<RenderItem>[] RenderShadowItems;
 
-        Matrix XNAViewMatrix;
-        Matrix XNAProjectionMatrix;
+        public bool IsScreenChanged { get; internal set; }
+        ShadowMapMaterial ShadowMapMaterial;
+        Vector3 SolarDirection;
+        Camera Camera;
+        Vector3 CameraLocation;
+        Vector3 XNACameraLocation;
+        Matrix XNACameraView;
+        Matrix XNACameraProjection;
 
-        enum VisibilityState {
-            Visible,
-            Hidden,
-            ScreenshotPending,
-        };
-
-        VisibilityState Visibility = VisibilityState.Visible;
-
-        public RenderFrame(RenderProcess owner)
+        public RenderFrame(Game game)
         {
-            RenderProcess = owner;
-            DummyBlendedMaterial = new EmptyMaterial(owner.Viewer);
-            ShadowMapMaterial = (ShadowMapMaterial)owner.Viewer.MaterialManager.Load("ShadowMap");
+            Game = game;
+            DummyBlendedMaterial = new EmptyMaterial(null);
 
             for (int i = 0; i < RenderItems.Length; i++)
                 RenderItems[i] = new Dictionary<Material, List<RenderItem>>();
 
-            if (RenderProcess.Viewer.Settings.DynamicShadows)
+            if (Game.Settings.DynamicShadows)
             {
                 if (ShadowMap == null)
                 {
-                    var shadowMapSize = RenderProcess.Viewer.Settings.ShadowMapResolution;
+                    var shadowMapSize = Game.Settings.ShadowMapResolution;
                     ShadowMap = new Texture2D[RenderProcess.ShadowMapCount];
                     ShadowMapRenderTarget = new RenderTarget2D[RenderProcess.ShadowMapCount];
                     for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                        ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, RenderProcess.ShadowMapMipCount, SurfaceFormat.Rg32, RenderTargetUsage.PreserveContents);
-                    ShadowMapStencilBuffer = new DepthStencilBuffer(RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, DepthFormat.Depth16);
-                    NormalStencilBuffer = RenderProcess.GraphicsDevice.DepthStencilBuffer;
+                        ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, RenderProcess.ShadowMapMipCount, SurfaceFormat.Rg32, RenderTargetUsage.PreserveContents);
+                    ShadowMapStencilBuffer = new DepthStencilBuffer(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, DepthFormat.Depth16);
+                    NormalStencilBuffer = Game.RenderProcess.GraphicsDevice.DepthStencilBuffer;
                 }
 
                 ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
                 ShadowMapLightProj = new Matrix[RenderProcess.ShadowMapCount];
                 ShadowMapLightViewProjShadowProj = new Matrix[RenderProcess.ShadowMapCount];
-                ShadowMapCenter= new Vector3[RenderProcess.ShadowMapCount];
+                ShadowMapCenter = new Vector3[RenderProcess.ShadowMapCount];
 
                 RenderShadowItems = new List<RenderItem>[RenderProcess.ShadowMapCount];
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                     RenderShadowItems[shadowMapIndex] = new List<RenderItem>();
             }
+
+            XNACameraView = Matrix.Identity;
+            XNACameraProjection = Matrix.CreateOrthographic(game.RenderProcess.DisplaySize.X, game.RenderProcess.DisplaySize.Y, 1, 100);
         }
 
         public void Clear()
@@ -217,15 +216,25 @@ namespace ORTS
                     RenderItems[i][mat].Clear();
             for (int i = 0; i < RenderItems.Length; i++)
                 RenderItems[i].Clear();
-            if (RenderProcess.Viewer.Settings.DynamicShadows)
+            if (Game.Settings.DynamicShadows)
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                     RenderShadowItems[shadowMapIndex].Clear();
         }
 
-        public void SetCamera(ref Matrix xnaViewMatrix, ref Matrix xnaProjectionMatrix)
+        public void PrepareFrame(Viewer3D viewer)
         {
-            XNAViewMatrix = xnaViewMatrix;
-            XNAProjectionMatrix = xnaProjectionMatrix;
+            SolarDirection = viewer.World.Sky.solarDirection;
+            if (ShadowMapMaterial == null)
+                ShadowMapMaterial = (ShadowMapMaterial)viewer.MaterialManager.Load("ShadowMap");
+        }
+
+        public void SetCamera(Camera camera)
+        {
+            Camera = camera;
+            XNACameraLocation = CameraLocation = Camera.Location;
+            XNACameraLocation.Z *= -1;
+            XNACameraView = Camera.XNAView;
+            XNACameraProjection = Camera.XNAProjection;
         }
 
         static bool LockShadows;
@@ -235,18 +244,17 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.DebugLockShadows))
                 LockShadows = !LockShadows;
 
-            if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && !LockShadows)
+            if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && !LockShadows)
             {
-                var solarDirection = RenderProcess.Viewer.World.Sky.solarDirection;
+                var solarDirection = SolarDirection;
                 solarDirection.Normalize();
                 if (Vector3.Dot(SteppedSolarDirection, solarDirection) < 0.99999)
                     SteppedSolarDirection = solarDirection;
 
-                var cameraLocation = RenderProcess.Viewer.Camera.Location;
+                var cameraLocation = XNACameraLocation;
                 cameraLocation.Z *= -1;
 
-                var xnaCameraView = RenderProcess.Viewer.Camera.XNAView;
-                var cameraDirection = new Vector3(-xnaCameraView.M13, -xnaCameraView.M23, -xnaCameraView.M33);
+                var cameraDirection = new Vector3(-XNACameraView.M13, -XNACameraView.M23, -XNACameraView.M33);
                 cameraDirection.Normalize();
 
                 var shadowMapAlignAxisX = Vector3.Cross(SteppedSolarDirection, Vector3.UnitY);
@@ -258,14 +266,14 @@ namespace ORTS
 
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                 {
-                    var viewingDistance = RenderProcess.Viewer.Settings.ViewingDistance;
+                    var viewingDistance = Game.Settings.ViewingDistance;
                     var shadowMapDiameter = RenderProcess.ShadowMapDiameter[shadowMapIndex];
-                    var shadowMapLocation = cameraLocation + RenderProcess.ShadowMapDistance[shadowMapIndex] * cameraDirection;
+                    var shadowMapLocation = XNACameraLocation + RenderProcess.ShadowMapDistance[shadowMapIndex] * cameraDirection;
 
                     // Align shadow map location to grid so it doesn't "flutter" so much. This basically means aligning it along a
                     // grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
                     // and up/left.
-                    var shadowMapAlignmentGrid = (float)shadowMapDiameter / RenderProcess.Viewer.Settings.ShadowMapResolution;
+                    var shadowMapAlignmentGrid = (float)shadowMapDiameter / Game.Settings.ShadowMapResolution;
                     var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
                     var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
                     shadowMapLocation.X -= shadowMapAlignAxisX.X * adjustX;
@@ -297,12 +305,12 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void AddAutoPrimitive(Vector3 mstsLocation, float objectRadius, float objectViewingDistance, Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            if (float.IsPositiveInfinity(objectViewingDistance) || RenderProcess.Viewer.Camera.InRange(mstsLocation, objectRadius, objectViewingDistance))
+            if (float.IsPositiveInfinity(objectViewingDistance) || (Camera != null && Camera.InRange(mstsLocation, objectRadius, objectViewingDistance)))
             {
-                if (RenderProcess.Viewer.Camera.InFOV(mstsLocation, objectRadius))
+                if (Camera != null && Camera.InFOV(mstsLocation, objectRadius))
                     AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
 
-                if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
+                if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
                     for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                         if (IsInShadowMap(shadowMapIndex, mstsLocation, objectRadius, objectViewingDistance))
                             AddShadowPrimitive(shadowMapIndex, material, primitive, ref xnaMatrix, flags);
@@ -352,7 +360,7 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void Sort()
         {
-            var renderItemComparer = new RenderItem.Comparer(RenderProcess.Viewer.Camera.Location);
+            var renderItemComparer = new RenderItem.Comparer(CameraLocation);
             foreach (var sequence in RenderItems)
             {
                 foreach (var sequenceMaterial in sequence.Where(kvp => kvp.Value.Count > 0))
@@ -418,93 +426,19 @@ namespace ORTS
                 Console.WriteLine("Draw {");
             }
 
-            RenderProcess.Viewer.MaterialManager.UpdateShaders();
-
-            if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
+            if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ShadowMapMaterial != null)
                 DrawShadows(graphicsDevice, logging);
 
             DrawSimple(graphicsDevice, logging);
 
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
-                RenderProcess.PrimitiveCount[i] = RenderItems[i].Values.Sum(l => l.Count);
+                Game.RenderProcess.PrimitiveCount[i] = RenderItems[i].Values.Sum(l => l.Count);
 
             if (logging)
             {
                 Console.WriteLine("}");
                 Console.WriteLine();
             }
-
-            // VisibilityState is used to delay calling SaveScreenshot() by one render cycle. 
-            // We want the hiding of the MessageWindow to take effect on the screen before the screen content is saved.
-            if( Visibility == VisibilityState.Hidden )  // Test for Hidden state must come before setting Hidden state.
-            {
-                Visibility = VisibilityState.ScreenshotPending;  // Next state else this path would be taken more than once.
-                if( !Directory.Exists(RenderProcess.Viewer.Settings.ScreenshotPath) )
-                    Directory.CreateDirectory(RenderProcess.Viewer.Settings.ScreenshotPath);
-                var fileName = Path.Combine(RenderProcess.Viewer.Settings.ScreenshotPath, Application.ProductName + " " + DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss")) + ".png";
-                SaveScreenshot(graphicsDevice, fileName);
-                RenderProcess.Viewer.SaveScreenshot = false; // cancel trigger
-            }
-            if (RenderProcess.Viewer.SaveScreenshot)
-            {
-                Visibility = VisibilityState.Hidden;
-                // Hide MessageWindow
-                RenderProcess.Viewer.MessagesWindow.Visible = false;
-                // Audible confirmation that screenshot taken
-                if (RenderProcess.Viewer.World.GameSounds != null) RenderProcess.Viewer.World.GameSounds.HandleEvent(Event.ControlError);
-            }
-
-            // Use IsDown() not IsPressed() so users can take multiple screenshots as fast as possible by holding down the key.
-            if (UserInput.IsDown(UserCommands.GameScreenshot)
-                && Visibility == VisibilityState.Visible) // Ensure we only get one screenshot.
-                new SaveScreenshotCommand(RenderProcess.Viewer.Log);
-
-            // SaveActivityThumbnail and FileStem set by Viewer3D
-            // <CJComment> Intended to save a thumbnail-sized image but can't find a way to do this.
-            // Currently saving a full screen image and then showing it in Menu.exe at a thumbnail size.
-            // </CJComment>
-            if (RenderProcess.Viewer.SaveActivityThumbnail)
-            {
-                RenderProcess.Viewer.SaveActivityThumbnail = false;
-				SaveScreenshot(graphicsDevice, Path.Combine(UserSettings.UserDataFolder, RenderProcess.Viewer.SaveActivityFileStem + ".png"), true);
-                RenderProcess.Viewer.MessagesWindow.AddMessage("Game saved", 5);
-            }
-        }
-    
-        [CallOnThread("Render")]
-        public void SaveScreenshot( GraphicsDevice graphicsDevice, string fileName )
-        {
-            SaveScreenshot(graphicsDevice, fileName, false);
-        }
-        public void SaveScreenshot(GraphicsDevice graphicsDevice, string fileName, bool silent)
-        {
-            var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color);
-            graphicsDevice.ResolveBackBuffer(screenshot);
-            new Thread(() =>
-            {
-                try
-                {
-                    // Unfortunately, the back buffer includes an alpha channel. Although saving this might seem okay,
-                    // it actually ruins the picture - nothing in the back buffer is seen on-screen according to its
-                    // alpha, it's only used for blending (if at all). We'll remove the alpha here.
-                    var data = new uint[screenshot.Width * screenshot.Height];
-                    screenshot.GetData(data);
-                    for (var i = 0; i < data.Length; i++)
-                        data[i] |= 0xFF000000;
-                    screenshot.SetData(data);
-                    
-                    // Now save the modified image.
-                    screenshot.Save(fileName, ImageFileFormat.Png);
-                    screenshot.Dispose();
-                    if (!silent)
-                        RenderProcess.Viewer.MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
-
-                    Visibility = VisibilityState.Visible;
-                    // Reveal MessageWindow
-                    RenderProcess.Viewer.MessagesWindow.Visible = true;
-                }
-                catch { }
-            }).Start();
         }
 
         void DrawShadows( GraphicsDevice graphicsDevice, bool logging )
@@ -513,7 +447,7 @@ namespace ORTS
             for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                 DrawShadows(graphicsDevice, logging, shadowMapIndex);
             for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                RenderProcess.ShadowPrimitiveCount[shadowMapIndex] = RenderShadowItems[shadowMapIndex].Count;
+                Game.RenderProcess.ShadowPrimitiveCount[shadowMapIndex] = RenderShadowItems[shadowMapIndex].Count;
             if (logging) Console.WriteLine("  }");
         }
 
@@ -567,7 +501,7 @@ namespace ORTS
             ShadowMap[shadowMapIndex] = ShadowMapRenderTarget[shadowMapIndex].GetTexture();
 
             // Blur the shadow map.
-            if (RenderProcess.Viewer.Settings.ShadowMapBlur)
+            if (Game.Settings.ShadowMapBlur)
             {
                 ShadowMap[shadowMapIndex] = ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex], ShadowMapStencilBuffer, NormalStencilBuffer);
 #if DEBUG_RENDER_STATE
@@ -585,7 +519,7 @@ namespace ORTS
         /// <param name="logging"></param>
         void DrawSimple(GraphicsDevice graphicsDevice, bool logging)
         {
-            if (RenderProcess.Viewer.Settings.DistantMountains)
+            if (Game.Settings.DistantMountains)
             {
                 if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
                 graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
@@ -607,9 +541,9 @@ namespace ORTS
 
         void DrawSequences(GraphicsDevice graphicsDevice, bool logging)
         {
-            if (RenderProcess.Viewer.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
+            if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
             {
-                RenderProcess.Viewer.MaterialManager.SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
+                //Viewer.MaterialManager.SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, Viewer3D.ShadowMapLimit);
             }
 
             var renderItems = new List<RenderItem>();
@@ -632,7 +566,7 @@ namespace ORTS
                                 if (renderItems.Count > 0)
                                 {
                                     if (logging) Console.WriteLine("      {0,-5} * {1}", renderItems.Count, lastMaterial);
-                                    lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                                    lastMaterial.Render(graphicsDevice, renderItems, ref XNACameraView, ref XNACameraProjection);
                                     renderItems.Clear();
                                 }
                                 if (lastMaterial != null)
@@ -649,7 +583,7 @@ namespace ORTS
                         if (renderItems.Count > 0)
                         {
                             if (logging) Console.WriteLine("      {0,-5} * {1}", renderItems.Count, lastMaterial);
-                            lastMaterial.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                            lastMaterial.Render(graphicsDevice, renderItems, ref XNACameraView, ref XNACameraProjection);
                             renderItems.Clear();
                         }
                         if (lastMaterial != null)
@@ -661,12 +595,12 @@ namespace ORTS
                     }
                     else
                     {
-                        if (RenderProcess.Viewer.Settings.DistantMountains && (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial))
+                        if (Game.Settings.DistantMountains && (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial))
                             continue;
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
                         if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
-                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref XNACameraProjection);
                         sequenceMaterial.Key.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 						DebugRenderState(graphicsDevice.RenderState, sequenceMaterial.Key.ToString());
@@ -692,7 +626,7 @@ namespace ORTS
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
                         if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
-                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNAViewMatrix, ref Camera.XNADMProjection);
+                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref Camera.XNADMProjection);
                         sequenceMaterial.Key.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 						DebugRenderState(graphicsDevice.RenderState, sequenceMaterial.Key.ToString());

@@ -19,50 +19,24 @@
 
 using System;
 using System.Diagnostics;
-using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ORTS
+namespace ORTS.Processes
 {
-    public class ElapsedTime
-    {
-        public float ClockSeconds;
-        public float RealSeconds;
-
-        public static ElapsedTime Zero = new ElapsedTime();
-
-        public static ElapsedTime operator +(ElapsedTime a, ElapsedTime b)
-        {
-            return new ElapsedTime(a.ClockSeconds + b.ClockSeconds, a.RealSeconds + b.RealSeconds);
-        }
-
-        public ElapsedTime()
-            : this(0, 0)
-        {
-        }
-
-        public ElapsedTime(float clockSeconds, float realSeconds)
-        {
-            ClockSeconds = clockSeconds;
-            RealSeconds = realSeconds;
-        }
-
-        public void Reset()
-        {
-            ClockSeconds = 0;
-            RealSeconds = 0;
-        }
-    }
-
     [CallOnThread("Render")]
-    public class RenderProcess : Microsoft.Xna.Framework.Game
+    public class RenderProcess
     {
         public const int ShadowMapCountMaximum = 4;
         public const int ShadowMapMipCount = 1;
 
+        public Point DisplaySize;
+        public GraphicsDevice GraphicsDevice { get { return Game.GraphicsDevice; } }
+        public bool IsActive { get { return Game.IsActive; } }
+        public Viewer3D Viewer { get { return Game.State is GameStateViewer3D ? (Game.State as GameStateViewer3D).Viewer : null; } }
+
         public readonly Profiler Profiler = new Profiler("Render");
-        public readonly Viewer3D Viewer;
+        public readonly Game Game;
 
         public Vector2 WindowSize = new Vector2(1024, 768);
 
@@ -73,7 +47,7 @@ namespace ORTS
 
         public bool Stopped;        // use for shutdown
 
-        public new bool IsMouseVisible;  // handles cross thread issues by signalling RenderProcess of a change
+        public bool IsMouseVisible;  // handles cross thread issues by signalling RenderProcess of a change
 
         // Diagnostic information
         public readonly SmoothedData FrameRate = new SmoothedData();
@@ -89,26 +63,29 @@ namespace ORTS
         public static int[] ShadowMapDiameter; // diameter of shadow map
         public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
 
-        public RenderProcess(Viewer3D viewer)
+        internal RenderProcess(Game game)
         {
-            Viewer = viewer;
+            Game = game;
             Profiler.SetThread();
 
-            Window.Title = "Open Rails";
-            GraphicsDeviceManager = Viewer.GDM = new GraphicsDeviceManager(this);
+            Game.Window.Title = "Open Rails";
+            GraphicsDeviceManager = new GraphicsDeviceManager(game);
 
-            var windowSizeParts = Viewer.Settings.WindowSize.Split(new[] { 'x' }, 2);
+            var windowSizeParts = Game.Settings.WindowSize.Split(new[] { 'x' }, 2);
             WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
             WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
 
-            IsFixedTimeStep = false;
-            TargetElapsedTime = TimeSpan.FromMilliseconds(1);
-            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Viewer.Settings.VerticalSync;
+            Game.IsFixedTimeStep = false;
+            Game.TargetElapsedTime = TimeSpan.FromMilliseconds(1);
+            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Game.Settings.VerticalSync;
             GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
             GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;
             GraphicsDeviceManager.IsFullScreen = false;
             GraphicsDeviceManager.PreferMultiSampling = true;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
+
+            if (Game.Settings.FullScreen)
+                ToggleFullScreen();
         }
 
         void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
@@ -127,28 +104,35 @@ namespace ORTS
             // This stops ResolveBackBuffer() clearing the back buffer.
             e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
             e.GraphicsDeviceInformation.PresentationParameters.AutoDepthStencilFormat = DepthFormat.Depth24Stencil8;
-            Viewer.UpdateAdapterInformation(e.GraphicsDeviceInformation.Adapter);
         }
 
-        /// <summary>
-        /// Allows the game to perform any initialization it needs after the graphics device has started
-        /// </summary>
-        [ThreadName("Render")]
-        protected override void Initialize()
+        internal void Start()
         {
-            Viewer.Initialize();
+            DisplaySize.X = GraphicsDevice.Viewport.Width;
+            DisplaySize.Y = GraphicsDevice.Viewport.Height;
 
-            ShadowMapCount = Viewer.Settings.ShadowMapCount;
-            if (!Viewer.Settings.DynamicShadows)
+            if (Game.Settings.ShaderModel == 0)
+                Game.Settings.ShaderModel = GraphicsDevice.GraphicsDeviceCapabilities.PixelShaderVersion.Major;
+            else if (Game.Settings.ShaderModel < 2)
+                Game.Settings.ShaderModel = 2;
+            else if (Game.Settings.ShaderModel > 3)
+                Game.Settings.ShaderModel = 3;
+
+            if (Game.Settings.ShadowMapDistance == 0)
+                Game.Settings.ShadowMapDistance = Game.Settings.ViewingDistance / 2;
+
+            ShadowMapCount = Game.Settings.ShadowMapCount;
+            if (!Game.Settings.DynamicShadows)
                 ShadowMapCount = 0;
-            else if ((ShadowMapCount > 1) && (Viewer.Settings.ShaderModel < 3))
+            else if ((ShadowMapCount > 1) && (Game.Settings.ShaderModel < 3))
                 ShadowMapCount = 1;
             else if (ShadowMapCount < 0)
                 ShadowMapCount = 0;
             else if (ShadowMapCount > ShadowMapCountMaximum)
                 ShadowMapCount = ShadowMapCountMaximum;
             if (ShadowMapCount < 1)
-                Viewer.Settings.DynamicShadows = false;
+                Game.Settings.DynamicShadows = false;
+
             ShadowMapDistance = new int[ShadowMapCount];
             ShadowMapDiameter = new int[ShadowMapCount];
             ShadowMapLimit = new float[ShadowMapCount];
@@ -156,22 +140,20 @@ namespace ORTS
             ShadowPrimitiveCount = new int[ShadowMapCount];
             ShadowPrimitivePerFrame = new int[ShadowMapCount];
 
-            InitializeShadowMapLocations(Viewer);
+            InitializeShadowMapLocations();
 
-            CurrentFrame = new RenderFrame(this);
-            NextFrame = new RenderFrame(this);
-            base.Initialize();
-            Viewer.Simulator.Paused = false;
+            CurrentFrame = new RenderFrame(Game);
+            NextFrame = new RenderFrame(Game);
         }
 
-        internal static void InitializeShadowMapLocations(Viewer3D viewer)
+        void InitializeShadowMapLocations()
         {
-            var ratio = (float)viewer.DisplaySize.X / viewer.DisplaySize.Y;
-            var fov = MathHelper.ToRadians(viewer.Settings.ViewingFOV);
+            var ratio = (float)DisplaySize.X / DisplaySize.Y;
+            var fov = MathHelper.ToRadians(Game.Settings.ViewingFOV);
             var n = (float)0.5;
-            var f = (float)viewer.Settings.ShadowMapDistance;
+            var f = (float)Game.Settings.ShadowMapDistance;
             if (f == 0)
-                f = viewer.Settings.ViewingDistance / 2;
+                f = Game.Settings.ViewingDistance / 2;
 
             var m = (float)ShadowMapCount;
             var LastC = n;
@@ -217,15 +199,10 @@ namespace ORTS
             }
         }
 
-        /// <summary>
-        /// Called regularly.   Used to update the simulator class when
-        /// the window is minimized.
-        /// </summary>
-        [ThreadName("Render")]
-        protected override void Update(GameTime gameTime)
+        internal void Update(GameTime gameTime)
         {
-            if (IsMouseVisible != base.IsMouseVisible)
-                base.IsMouseVisible = IsMouseVisible;
+            if (IsMouseVisible != Game.IsMouseVisible)
+                Game.IsMouseVisible = IsMouseVisible;
 
             if (ToggleFullScreenRequested)
             {
@@ -235,66 +212,84 @@ namespace ORTS
 
             if (Stopped)
             {
-                Exit();
+                // Exit();
             }
             else if (gameTime.TotalRealTime.TotalSeconds > 0.001)
             {
-                Viewer.UpdaterProcess.WaitTillFinished();
+                Game.UpdaterProcess.WaitTillFinished();
 
                 // Must be done in XNA Game thread.
-                UserInput.Update(Viewer);
+                UserInput.Update(Game);
 
                 // Swap frames and start the next update (non-threaded updater does the whole update).
                 SwapFrames(ref CurrentFrame, ref NextFrame);
-                Viewer.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalRealTime.TotalSeconds);
+                Game.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalRealTime.TotalSeconds);
             }
-
-            base.Update(gameTime);
         }
 
-        /// <summary>
-        /// This is called once per frame when the game should draw itself.
-        /// In a multiprocessor environement, it starts the background UpdateProcessor
-        /// task preparing the next frame, while it renders this frame.
-        /// In a single processor environment, it does the update/draw in
-        /// sequence using this thread alone.
-        /// </summary>
         int ProfileFrames = 0;
-        [ThreadName("Render")]
-        protected override void Draw(GameTime gameTime)
+
+        internal void BeginDraw()
         {
-            if (Viewer.Settings.Profiling)
-                if ((Viewer.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Viewer.Settings.ProfilingFrameCount) || (Viewer.Settings.ProfilingTime > 0 && Viewer.RealTime >= Viewer.Settings.ProfilingTime))
-                    Exit();
+            if (Game.Settings.Profiling)
+                if ((Game.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Game.Settings.ProfilingFrameCount) || (Game.Settings.ProfilingTime > 0 && Viewer.RealTime >= Game.Settings.ProfilingTime))
+                    Game.PopState();
+
+            if (Game.State == null)
+                return;
 
             Profiler.Start();
 
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
             GraphicsDevice.RenderState.DepthBufferEnable = true;
 
-            if ((Viewer.DisplaySize.X != GraphicsDevice.Viewport.Width) || (Viewer.DisplaySize.Y != GraphicsDevice.Viewport.Height))
+            CurrentFrame.IsScreenChanged = (DisplaySize.X != GraphicsDevice.Viewport.Width) || (DisplaySize.Y != GraphicsDevice.Viewport.Height);
+            if (CurrentFrame.IsScreenChanged)
             {
-                Viewer.DisplaySize.X = GraphicsDevice.Viewport.Width;
-                Viewer.DisplaySize.Y = GraphicsDevice.Viewport.Height;
-                Viewer.WindowManager.ScreenChanged();
+                DisplaySize.X = GraphicsDevice.Viewport.Width;
+                DisplaySize.Y = GraphicsDevice.Viewport.Height;
+                InitializeShadowMapLocations();
             }
 
+            Game.State.BeginRender(CurrentFrame);
+        }
+
+        [ThreadName("Render")]
+        internal void Draw()
+        {
             if (Debugger.IsAttached)
             {
-                Draw();
-                base.Draw(gameTime);
+                CurrentFrame.Draw(Game.GraphicsDevice);
             }
             else
             {
                 try
                 {
-                    Draw();
-                    base.Draw(gameTime);
+                    CurrentFrame.Draw(Game.GraphicsDevice);
                 }
                 catch (Exception error)
                 {
-                    Viewer.ProcessReportError(error);
+                    Game.ProcessReportError(error);
                 }
+            }
+        }
+
+        internal void EndDraw()
+        {
+            if (Game.State == null)
+                return;
+
+            Game.State.EndRender(CurrentFrame);
+
+            for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
+            {
+                PrimitivePerFrame[i] = PrimitiveCount[i];
+                PrimitiveCount[i] = 0;
+            }
+            for (var shadowMapIndex = 0; shadowMapIndex < ShadowMapCount; shadowMapIndex++)
+            {
+                ShadowPrimitivePerFrame[shadowMapIndex] = ShadowPrimitiveCount[shadowMapIndex];
+                ShadowPrimitiveCount[shadowMapIndex] = 0;
             }
 
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
@@ -303,20 +298,10 @@ namespace ORTS
             Profiler.Stop();
         }
 
-        void Draw()
+        internal void Stop()
         {
-            CurrentFrame.Draw(GraphicsDevice);
-
-            for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
-            {
-                PrimitivePerFrame[i] = PrimitiveCount[i];
-                PrimitiveCount[i] = 0;
-            }
-            for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-            {
-                ShadowPrimitivePerFrame[shadowMapIndex] = ShadowPrimitiveCount[shadowMapIndex];
-                ShadowPrimitiveCount[shadowMapIndex] = 0;
-            }
+            if (Game.Settings.Profiling)
+                Game.Settings.ProfilingFrameCount = ProfileFrames;
         }
 
         static void SwapFrames(ref RenderFrame frame1, ref RenderFrame frame2)
@@ -330,7 +315,7 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void ToggleFullScreen()
         {
-            bool IsFullScreen = !GraphicsDeviceManager.IsFullScreen;
+            var IsFullScreen = !GraphicsDeviceManager.IsFullScreen;
             if (IsFullScreen)
             {
                 System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.PrimaryScreen;
@@ -344,38 +329,7 @@ namespace ORTS
                 GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
                 GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;
             }
-            Viewer.AdjustCabHeight( GraphicsDeviceManager.PreferredBackBufferWidth, GraphicsDeviceManager.PreferredBackBufferHeight );
             ToggleFullScreenRequested = true;
-        }
-
-        /// <summary>
-        /// Internal method - do not call! Use Viewer3D.Stop() instead.
-        /// </summary>
-        internal void Stop()
-        {
-            // Do not put shutdown code in here! Use RenderProcess.Terminate() instead.
-            Stopped = true;
-        }
-
-        [ThreadName("Render")]
-        void Terminate()
-        {
-            if (Viewer.Settings.Profiling)
-                Viewer.Settings.ProfilingFrameCount = ProfileFrames;
-            Viewer.UpdaterProcess.Stop();
-            Viewer.LoaderProcess.Stop();
-            Viewer.SoundProcess.Stop();
-            Viewer.Terminate();
-        }
-
-        /// <summary>
-        /// User closed the window without pressing the exit key
-        /// </summary>
-        [ThreadName("Render")]
-        protected override void OnExiting(object sender, EventArgs args)
-        {
-            Terminate();
-            base.OnExiting(sender, args);
         }
 
         [CallOnThread("Render")]

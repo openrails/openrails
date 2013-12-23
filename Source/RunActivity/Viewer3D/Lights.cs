@@ -31,6 +31,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
+using ORTS.Processes;
 
 namespace ORTS
 {

@@ -31,6 +31,7 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
+using ORTS.Processes;
 
 namespace ORTS
 {
@@ -317,7 +318,7 @@ namespace ORTS
         {
 
             // Instantiate classes
-            dtrackMesh = new WireMesh(viewer.RenderProcess, position, endPosition, radius, angle);
+            dtrackMesh = new WireMesh(viewer, position, endPosition, radius, angle);
         } // end DynatrackDrawer constructor
 
 
@@ -365,8 +366,8 @@ namespace ORTS
         /// <summary>
         /// WireProfile constructor (default - builds from self-contained data)
         /// </summary>
-        public WireProfile(RenderProcess RenderProcess) // Nasty: void return type is not allowed. (See MSDN for compiler error CS0542.)
-            : base(RenderProcess, 0)//call the dummy base constructor so that no data is pre-populated
+        public WireProfile(Viewer3D viewer) // Nasty: void return type is not allowed. (See MSDN for compiler error CS0542.)
+            : base(viewer, 0)//call the dummy base constructor so that no data is pre-populated
         {
             LODMethod = LODMethods.ComponentAdditive;
             LODWire lod; // Local LOD instance 
@@ -378,11 +379,11 @@ namespace ORTS
 
             lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
             lodItem = new LODItemWire("Wire");
-            if (File.Exists(RenderProcess.Viewer.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
+            if (File.Exists(viewer.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
                 lodItem.TexName = "overheadwire.ace";
             else
             {
-                Trace.TraceInformation("Ignored missing overheadwire.ace, using default. You can copy the overheadwire.ace from OR\'s AddOns folder to {0}\\Textures", RenderProcess.Viewer.Simulator.RoutePath);
+                Trace.TraceInformation("Ignored missing overheadwire.ace, using default. You can copy the overheadwire.ace from OR\'s AddOns folder to {0}\\Textures", viewer.Simulator.RoutePath);
                 lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
             }
             lodItem.ShaderName = "TexDiff";
@@ -391,9 +392,9 @@ namespace ORTS
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
-            LODItem.LoadMaterial(RenderProcess, lodItem);
+            LODItem.LoadMaterial(viewer, lodItem);
 
-            float topHeight = (float)RenderProcess.Viewer.Simulator.TRK.Tr_RouteFile.OverheadWireHeight;
+            float topHeight = (float)viewer.Simulator.TRK.Tr_RouteFile.OverheadWireHeight;
 
             float u1 = 0.25f, v1 = 0.25f;
             pl = new Polyline(this, "TopWire", 5);
@@ -407,7 +408,7 @@ namespace ORTS
             lodItem.Polylines.Add(pl); 
             lodItem.Accum(pl.Vertices.Count);
 
-            if (RenderProcess.Viewer.Settings.DoubleWire)
+            if (viewer.Settings.DoubleWire)
             {
                 pl = new Polyline(this, "TopWire1", 5);
                 pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
@@ -449,7 +450,7 @@ namespace ORTS
     public class WireMesh : DynatrackMesh
     {
         static WireProfile WireProfile;
-        public WireMesh(RenderProcess renderProcess, WorldPosition worldPosition,
+        public WireMesh(Viewer3D viewer, WorldPosition worldPosition,
         WorldPosition endPosition, float radius, float angle)
             : base()
         {
@@ -481,7 +482,7 @@ namespace ORTS
 
             if (WireProfile == null)
             {
-                WireProfile = new WireProfile(renderProcess);
+                WireProfile = new WireProfile(viewer);
             }
             TrProfile = WireProfile;
 
@@ -506,7 +507,7 @@ namespace ORTS
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildMesh(renderProcess.Viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildMesh(viewer, worldPosition, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD

@@ -17,40 +17,21 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-/* 3D Viewer
-
-    /// This a 3D viewer.  It connects to a simulator engine, rendering the route content and
-    /// rolling stock.
-    /// 
-    /// When the 3D viewer is constructed its passed a reference to the simulator engine, and a flag
-    /// indicating if it should operate in fullscreen mode or windowed mode.   After construction, 
-    /// LookAt attaches the viewer a TrainCar in the simulator.
-    /// 
- *  
- *  The Viewer class actually represents the screen window on which the camera is rendered.
- * 
- * TODO, add note re abandoning Viewer.Components
- *      - control over render order - ie sorting by material to minimize state changes
- *      - multitasking issues
- *      - multipass techniques, such as shadow mapping 
- * 
- * 
- */
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Management;
-using System.Runtime.CompilerServices;
-using Microsoft.Win32;
+using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MSTS;
-using ORTS.Popups;
 using ORTS.MultiPlayer;
+using ORTS.Popups;
+using ORTS.Processes;
+
 namespace ORTS
 {
     public class Viewer3D
@@ -63,14 +44,14 @@ namespace ORTS
         public RenderProcess RenderProcess;
         public SoundProcess SoundProcess;
         // Access to the XNA Game class
-        public GraphicsDeviceManager GDM;
         public GraphicsDevice GraphicsDevice;
         public readonly string ContentPath;
         public SharedTextureManager TextureManager;
         public SharedMaterialManager MaterialManager;
         public SharedShapeManager ShapeManager;
-        public Point DisplaySize;
+        public Point DisplaySize { get { return RenderProcess.DisplaySize; } }
         // Components
+        public readonly ORTS.Processes.Game Game;
         public readonly Simulator Simulator;
         public World World;
         /// <summary>
@@ -146,10 +127,21 @@ namespace ORTS
         public bool SaveScreenshot;
         public bool SaveActivityThumbnail;
         public string SaveActivityFileStem;
-        private BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
+        public BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
+
+        public Vector3 NearPoint;
+        public Vector3 FarPoint;
 
         public bool DebugViewerEnabled;
         public bool SoundDebugFormEnabled;
+
+        enum VisibilityState {
+            Visible,
+            Hidden,
+            ScreenshotPending,
+        };
+
+        VisibilityState Visibility = VisibilityState.Visible;
 
         // MSTS cab views are images with aspect ratio 4:3.
         // OR can use cab views with other aspect ratios where these are available.
@@ -205,11 +197,15 @@ namespace ORTS
         /// and the graphics device is not ready to accept content.
         /// </summary>
         /// <param name="simulator"></param>
-        [CallOnThread("Render")]
-        public Viewer3D(Simulator simulator)
+        [CallOnThread("Loader")]
+        public Viewer3D(Simulator simulator, ORTS.Processes.Game game)
         {
             Simulator = simulator;
+            Game = game;
             Settings = simulator.Settings;
+            RenderProcess = game.RenderProcess;
+            UpdaterProcess = game.UpdaterProcess;
+            LoaderProcess = game.LoaderProcess;
 
             WellKnownCameras = new List<Camera>();
             WellKnownCameras.Add(CabCamera = new CabCamera(this));
@@ -222,7 +218,7 @@ namespace ORTS
             WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
             WellKnownCameras.Add(new FreeRoamCamera( this, FrontCamera ) ); // Any existing camera will suffice to satisfy .Save() and .Restore()
 
-            ContentPath = Path.Combine(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
+            ContentPath = Game.ContentPath;
             Trace.Write(" ENV");
             ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
 
@@ -235,6 +231,8 @@ namespace ORTS
             Tiles = new TileManager(Simulator.RoutePath + @"\TILES\", false);
             LoTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\", true);
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
+
+            Initialize();
         }
 
         [CallOnThread("Updater")]
@@ -278,38 +276,18 @@ namespace ORTS
 
         }
 
-        [ThreadName( "Render" )]
-        public void Run( BinaryReader inf )
-        {
-            this.inf = inf;
-            LoaderProcess = new LoaderProcess( this );
-            UpdaterProcess = new UpdaterProcess( this );
-            RenderProcess = new RenderProcess( this );
-            RenderProcess.Run();
-        }
-
         /// <summary>
         /// Called once after the graphics device is ready
         /// to load any static graphics content, background 
         /// processes haven't started yet.
         /// </summary>
-        [CallOnThread("Render")]
+        [CallOnThread("Loader")]
         internal void Initialize()
         {
             GraphicsDevice = RenderProcess.GraphicsDevice;
-            DisplaySize.X = GraphicsDevice.Viewport.Width;
-            DisplaySize.Y = GraphicsDevice.Viewport.Height;
+            UpdateAdapterInformation(GraphicsDevice.CreationParameters.Adapter);
 
             AdjustCabHeight( DisplaySize.X, DisplaySize.Y );
-
-            if (Settings.ShaderModel == 0)
-                Settings.ShaderModel = GraphicsDevice.GraphicsDeviceCapabilities.PixelShaderVersion.Major;
-            else if (Settings.ShaderModel < 2)
-                Settings.ShaderModel = 2;
-            else if (Settings.ShaderModel > 3)
-                Settings.ShaderModel = 3;
-            if (Settings.ShadowMapDistance == 0)
-                Settings.ShadowMapDistance = Settings.ViewingDistance / 2;
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
@@ -333,7 +311,7 @@ namespace ORTS
             ActivityWindow = new ActivityWindow(WindowManager);
             TracksDebugWindow = new TracksDebugWindow(WindowManager);
             SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
-			ComposeMessageWindow = new ComposeMessage(WindowManager);
+            ComposeMessageWindow = new ComposeMessage(WindowManager);
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
@@ -353,14 +331,10 @@ namespace ORTS
             // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that
             // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
-            LoaderProcess.StartLoad();
-            LoaderProcess.WaitTillFinished();
+            Load();
 
             // MUST be after loading is done! (Or we try and load shapes on the main thread.)
             PlayerLocomotiveViewer = World.Trains.GetViewer(PlayerLocomotive);
-
-            if (Settings.FullScreen)
-                RenderProcess.ToggleFullScreen();
 
             SetCommandReceivers();
             InitReplay();
@@ -492,17 +466,6 @@ namespace ORTS
             }
         }
 
-        internal void ProcessReportError(Exception error)
-        {
-            // Log the error first in case we're burning.
-            Trace.WriteLine(new FatalException(error));
-            // Stop the world!
-            RenderProcess.Exit();
-            // Show the user that it's all gone horribly wrong.
-            if (Settings.ShowErrorDialogs)
-                System.Windows.Forms.MessageBox.Show(error.ToString());
-        }
-
         [CallOnThread("Loader")]
         public void Load()
         {
@@ -511,10 +474,16 @@ namespace ORTS
         }
 
         [CallOnThread("Updater")]
-        public void Update(float elapsedRealTime, RenderFrame frame)
+        public void Update(RenderFrame frame, float elapsedRealTime)
         {
             RealTime += elapsedRealTime;
             var elapsedTime = new ElapsedTime(Simulator.GetElapsedClockSeconds(elapsedRealTime), elapsedRealTime);
+
+            if (ComposeMessageWindow.Visible == true)
+            {
+                UserInput.Handled();
+                ComposeMessageWindow.AppendMessage(UserInput.KeyboardState.GetPressedKeys(), UserInput.LastKeyboardState.GetPressedKeys());
+            }
 
             Simulator.Update(elapsedTime.ClockSeconds);
             HandleUserInput(elapsedTime);
@@ -538,11 +507,8 @@ namespace ORTS
                 Log.ReplayComplete = false;
             }
 
-            if (ScreenHasChanged())
-            {
+            if (frame.IsScreenChanged)
                 Camera.ScreenChanged();
-                RenderProcess.InitializeShadowMapLocations(RenderProcess.Viewer);
-            }
 
             // Update camera first...
             Camera.Update(elapsedTime);
@@ -582,14 +548,7 @@ namespace ORTS
 
             World.Update(elapsedTime);
 
-            // Every 250ms, check for new things to load and kick off the loader.
-            if (LastLoadRealTime + 0.25 < RealTime && LoaderProcess.Finished)
-            {
-                LastLoadRealTime = RealTime;
-                World.LoadPrep();
-                LoaderProcess.StartLoad();
-            }
-
+            frame.PrepareFrame(this);
             Camera.PrepareFrame(frame, elapsedTime);
             frame.PrepareFrame(elapsedTime);
             World.PrepareFrame(frame, elapsedTime);
@@ -599,11 +558,19 @@ namespace ORTS
 
             WindowManager.PrepareFrame(frame, elapsedTime);
         }
-        double LastLoadRealTime;
 
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
         {
+            if (UserInput.IsMouseLeftButtonDown())
+            {
+                Vector3 nearsource = new Vector3((float)UserInput.MouseState.X, (float)UserInput.MouseState.Y, 0f);
+                Vector3 farsource = new Vector3((float)UserInput.MouseState.X, (float)UserInput.MouseState.Y, 1f);
+                Matrix world = Matrix.CreateTranslation(0, 0, 0);
+                NearPoint = GraphicsDevice.Viewport.Unproject(nearsource, Camera.XNAProjection, Camera.XNAView, world);
+                FarPoint = GraphicsDevice.Viewport.Unproject(farsource, Camera.XNAProjection, Camera.XNAView, world);
+            }
+
             if (UserInput.IsPressed(UserCommands.CameraReset))
                 Camera.Reset();
 
@@ -640,7 +607,7 @@ namespace ORTS
                 Simulator.GameSpeed = 1;
                 Simulator.Confirmer.ConfirmWithPerCent( CabControl.SimulationSpeed, CabSetting.Off, Simulator.GameSpeed * 100 );
             }
-            if (UserInput.IsPressed(UserCommands.GameSave)) { Program.Save(); }
+            if (UserInput.IsPressed(UserCommands.GameSave)) { GameStateRunActivity.Save(); }
             if (UserInput.IsPressed(UserCommands.DisplayHelpWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayHUD)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HUDWindow.TabAction(); else HUDWindow.Visible = !HUDWindow.Visible;
@@ -801,6 +768,14 @@ namespace ORTS
 				}
 			}
 
+            if (UserInput.IsPressed(UserCommands.DebugDumpKeymap))
+            {
+                InputSettings.DumpToText("Keyboard.txt");
+                MessagesWindow.AddMessage("Keyboard command list saved to 'keyboard.txt'.", 10);
+                InputSettings.DumpToGraphic("Keyboard.png");
+                MessagesWindow.AddMessage("Keyboard map saved to 'keyboard.png'.", 10);
+            }
+
 			//in the dispatcher window, when one clicks a train and "See in Game", will jump to see that train
 			if (Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true)
 			{
@@ -915,34 +890,12 @@ namespace ORTS
             WindowManager.Mark();
         }
 
-        /// <summary>
-        /// Call this method to request a normal shutdown of the game.
-        /// </summary>
-        public void Stop()
-        {
-            // Do not put shutdown code in here! Use Viewer3D.Terminate() instead.
-            RenderProcess.Stop();
-        }
-
         [CallOnThread("Render")]
         internal void Terminate()
         {
             InfoDisplay.Terminate();
             SoundProcess.RemoveAllSources();
-        }
-
-        /// <summary>
-        /// Return true if the screen has changed dimensions
-        /// </summary>
-        /// <returns></returns>
-        bool ScreenHasChanged()
-        {
-            if (RenderProcess.GraphicsDeviceManager.IsFullScreen != isFullScreen)
-            {
-                isFullScreen = RenderProcess.GraphicsDeviceManager.IsFullScreen;
-                return true;
-            }
-            return false;
+            SoundProcess.Stop();
         }
 
         private int trainCount;
@@ -973,7 +926,6 @@ namespace ORTS
 			}
             CameraActivate();
 		}
-        bool isFullScreen;
 
         /// <summary>
         /// The user has left-clicked with U pressed.   
@@ -982,9 +934,9 @@ namespace ORTS
         void TryUncoupleAt()
         {
             // Create a ray from the near clip plane to the far clip plane.
-            Vector3 direction = UserInput.FarPoint - UserInput.NearPoint;
+            Vector3 direction = FarPoint - NearPoint;
             direction.Normalize();
-            Ray pickRay = new Ray(UserInput.NearPoint, direction);
+            Ray pickRay = new Ray(NearPoint, direction);
 
             // check each car
             Traveller traveller = new Traveller(PlayerTrain.FrontTDBTraveller, Traveller.TravellerDirection.Backward);
@@ -1025,7 +977,7 @@ namespace ORTS
                 {
 
                     Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z));
-                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, UserInput.NearPoint, UserInput.FarPoint);
+                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
 
                     if (bestD > d)
                     {
@@ -1074,6 +1026,94 @@ namespace ORTS
             //make the camera train to be the player train
             if (PlayerLocomotive != null && PlayerLocomotive.Train != null) this.SelectedTrain = PlayerLocomotive.Train;
             CameraActivate();
+        }
+
+        internal void BeginRender(RenderFrame frame)
+        {
+            if (frame.IsScreenChanged)
+            {
+                WindowManager.ScreenChanged();
+                AdjustCabHeight(RenderProcess.GraphicsDeviceManager.PreferredBackBufferWidth, RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight);
+            }
+            
+            MaterialManager.UpdateShaders();
+        }
+
+        internal void EndRender(RenderFrame frame)
+        {
+            // VisibilityState is used to delay calling SaveScreenshot() by one render cycle. 
+            // We want the hiding of the MessageWindow to take effect on the screen before the screen content is saved.
+            if( Visibility == VisibilityState.Hidden )  // Test for Hidden state must come before setting Hidden state.
+            {
+                Visibility = VisibilityState.ScreenshotPending;  // Next state else this path would be taken more than once.
+                if( !Directory.Exists(Settings.ScreenshotPath) )
+                    Directory.CreateDirectory(Settings.ScreenshotPath);
+                var fileName = Path.Combine(Settings.ScreenshotPath, System.Windows.Forms.Application.ProductName + " " + DateTime.Now.ToString("yyyy-MM-dd hh-mm-ss")) + ".png";
+                SaveScreenshotToFile(Game.GraphicsDevice, fileName, false);
+                SaveScreenshot = false; // cancel trigger
+            }
+            if (SaveScreenshot)
+            {
+                Visibility = VisibilityState.Hidden;
+                // Hide MessageWindow
+                MessagesWindow.Visible = false;
+                // Audible confirmation that screenshot taken
+                if (World.GameSounds != null) World.GameSounds.HandleEvent(Event.ControlError);
+            }
+
+            // Use IsDown() not IsPressed() so users can take multiple screenshots as fast as possible by holding down the key.
+            if (UserInput.IsDown(UserCommands.GameScreenshot)
+                && Visibility == VisibilityState.Visible) // Ensure we only get one screenshot.
+                new SaveScreenshotCommand(Log);
+
+            // SaveActivityThumbnail and FileStem set by Viewer3D
+            // <CJComment> Intended to save a thumbnail-sized image but can't find a way to do this.
+            // Currently saving a full screen image and then showing it in Menu.exe at a thumbnail size.
+            // </CJComment>
+            if (SaveActivityThumbnail)
+            {
+                SaveActivityThumbnail = false;
+                SaveScreenshotToFile(Game.GraphicsDevice, Path.Combine(UserSettings.UserDataFolder, SaveActivityFileStem + ".png"), true);
+                MessagesWindow.AddMessage("Game saved", 5);
+            }
+        }
+
+        [CallOnThread("Render")]
+        void SaveScreenshotToFile(GraphicsDevice graphicsDevice, string fileName, bool silent)
+        {
+            var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color);
+            graphicsDevice.ResolveBackBuffer(screenshot);
+            new Thread(() =>
+            {
+                try
+                {
+                    // Unfortunately, the back buffer includes an alpha channel. Although saving this might seem okay,
+                    // it actually ruins the picture - nothing in the back buffer is seen on-screen according to its
+                    // alpha, it's only used for blending (if at all). We'll remove the alpha here.
+                    var data = new uint[screenshot.Width * screenshot.Height];
+                    screenshot.GetData(data);
+                    for (var i = 0; i < data.Length; i++)
+                        data[i] |= 0xFF000000;
+                    screenshot.SetData(data);
+
+                    // Now save the modified image.
+                    screenshot.Save(fileName, ImageFileFormat.Png);
+                    screenshot.Dispose();
+
+                    if (!silent)
+                        MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
+
+                    Visibility = VisibilityState.Visible;
+                    // Reveal MessageWindow
+                    MessagesWindow.Visible = true;
+                }
+                catch { }
+            }).Start();
+        }
+
+        internal void Run()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -20,42 +20,37 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Windows.Forms;
 
-namespace ORTS
+namespace ORTS.Processes
 {
     public class LoaderProcess
     {
-        public readonly bool Threaded;
         public readonly Profiler Profiler = new Profiler("Loader");
-        readonly Viewer3D Viewer;
+        readonly ProcessState State = new ProcessState("Loader");
+        readonly Game Game;
         readonly Thread Thread;
-        readonly ProcessState State;
 
-        public LoaderProcess(Viewer3D viewer)
+        public LoaderProcess(Game game)
         {
-            Threaded = true;
-            Viewer = viewer;
-            if (Threaded)
-            {
-                State = new ProcessState("Loader");
-                Thread = new Thread(LoaderThread);
-                Thread.Start();
-            }
+            Game = game;
+            Thread = new Thread(LoaderThread);
+        }
+
+        public void Start()
+        {
+            Thread.Start();
         }
 
         public void Stop()
         {
-            if (Threaded)
-                Thread.Abort();
+            Thread.Abort();
         }
 
         public bool Finished
         {
             get
             {
-                // Non-threaded updater is always "finished".
-                return !Threaded || State.Finished;
+                return State.Finished;
             }
         }
 
@@ -87,13 +82,10 @@ namespace ORTS
         }
 
         [CallOnThread("Updater")]
-        public void StartLoad()
+        internal void StartLoad()
         {
-            Debug.Assert(Finished);
-            if (Threaded)
-                State.SignalStart();
-            else
-                DoLoad();
+            Debug.Assert(State.Finished);
+            State.SignalStart();
         }
 
         [ThreadName("Loader")]
@@ -114,9 +106,8 @@ namespace ORTS
                     if (!(error is ThreadAbortException))
                     {
                         // Unblock anyone waiting for us, report error and die.
-                        if (Threaded)
-                            State.SignalFinish();
-                        Viewer.ProcessReportError(error);
+                        State.SignalFinish();
+                        Game.ProcessReportError(error);
                         return false;
                     }
                 }
@@ -130,7 +121,7 @@ namespace ORTS
             Profiler.Start();
             try
             {
-                Viewer.Load();
+                Game.State.Load();
             }
             finally
             {

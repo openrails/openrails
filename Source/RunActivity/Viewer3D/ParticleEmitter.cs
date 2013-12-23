@@ -22,6 +22,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using MSTS;
+using ORTS.Processes;
 
 namespace ORTS
 {

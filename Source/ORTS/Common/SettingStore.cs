@@ -52,12 +52,12 @@ namespace ORTS.Common
 
 		public abstract void DeleteUserValue(string name);
 
-		public static SettingStore GetSettingStore(string filePath, string registryKey, string section, IEnumerable<string> options)
+		public static SettingStore GetSettingStore(string filePath, string registryKey, string section)
 		{
 			if (!String.IsNullOrEmpty(filePath) && File.Exists(filePath))
-				return new SettingStoreLocalIni(filePath, section, options);
+				return new SettingStoreLocalIni(filePath, section);
 			if (!String.IsNullOrEmpty(registryKey))
-				return new SettingStoreRegistry(registryKey, section, options);
+				return new SettingStoreRegistry(registryKey, section);
 			throw new ArgumentException("Neither 'filePath' nor 'registryKey' arguments are valid.");
 		}
 	}
@@ -70,7 +70,7 @@ namespace ORTS.Common
 		readonly string RegistryKey;
 		readonly RegistryKey Key;
 
-		internal SettingStoreRegistry(string registryKey, string section, IEnumerable<string> options)
+		internal SettingStoreRegistry(string registryKey, string section)
 			: base(section)
 		{
 			RegistryKey = String.IsNullOrEmpty(section) ? registryKey : registryKey + @"\" + section;
@@ -122,7 +122,7 @@ namespace ORTS.Common
 
 		readonly string FilePath;
 
-		internal SettingStoreLocalIni(string filePath, string section, IEnumerable<string> options)
+		internal SettingStoreLocalIni(string filePath, string section)
 			: base(String.IsNullOrEmpty(section) ? DefaultSection : section)
 		{
 			FilePath = filePath;

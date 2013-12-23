@@ -15,22 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// <summary>
-/// This application runs an activity.  After loading the activity, main
-/// sets up the simulator engine and connects a 3D viewer 
-/// 
-/// The simulator engine contains all the elements that represent the operations on a route including 
-/// signal conditions, switch track alignment, rolling stock location and movement, track paths, 
-/// AI logic, physics calculations, essentially everything except the 3d representation of the objects.  
-/// It is intended that the simulator engine could run in separate thread, or even on a separate computer.
-/// 
-/// There can be multiple viewers looking at the simulator - ie straight down activity editor type views,
-/// or full 3D viewers or potentially viewers on a different computer.   The 3D viewer is responsible for 
-/// loading and rendering all the shape files in the scene.  It also handles movement of wheels and other 
-/// animations as directed by values stored in the simulator engine.
-/// 
-/// </summary>
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -38,45 +22,66 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using ORTS.Debugging;
 using ORTS.MultiPlayer;
 
-namespace ORTS
+namespace ORTS.Processes
 {
-    static class Program
+    public class GameStateRunActivity : GameState
     {
-        public static string[] Arguments;
-        public static Random Random = new Random();  // primary random number generator used throughout the program
-        public static Simulator Simulator;
+        static string[] Arguments;
+        static Random Random { get { return Program.Random; } set { Program.Random = value; } }  // primary random number generator used throughout the program
+        static Simulator Simulator { get { return Program.Simulator; } set { Program.Simulator = value; } }
 
 		//for Multiplayer
-		public static Server Server;
-		public static ClientComm Client;
-		public static string UserName;
-		public static string Code;
+		static Server Server { get { return Program.Server; } set { Program.Server = value; } }
+		static ClientComm Client { get { return Program.Client; } set { Program.Client = value; } }
+		static string UserName { get { return Program.UserName; } set { Program.UserName = value; } }
+		static string Code { get { return Program.Code; } set { Program.Code = value; } }
 
-        static Viewer3D Viewer;
-        static ORTraceListener ORTraceListener;
-        static string logFileName = "";
+        static Viewer3D Viewer { get { return Program.Viewer; } set { Program.Viewer = value; } }
+        static ORTraceListener ORTraceListener { get { return Program.ORTraceListener; } set { Program.ORTraceListener = value; } }
+        static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
 
-        private struct savedValues {
+        struct savedValues {
             public float initialTileX;
             public float initialTileZ;
             public string[] args;
         }
 
-        public static Debugging.DispatchViewer DebugViewer;
-        public static Debugging.SoundDebugForm SoundDebugForm;
+        static Debugging.DispatchViewer DebugViewer { get { return Program.DebugViewer; } set { Program.DebugViewer = value; } }
+        static Debugging.SoundDebugForm SoundDebugForm { get { return Program.SoundDebugForm; } set { Program.SoundDebugForm = value; } }
 
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        static void Main(string[] args)
+        LoadingPrimitive Loading;
+        Matrix LoadingMatrix = Matrix.Identity;
+
+        public GameStateRunActivity(string[] args)
         {
+            Arguments = args;
+        }
+
+        internal override void Update(RenderFrame frame, double totalRealSeconds)
+        {
+            if (Loading != null)
+                frame.AddPrimitive(Loading.Material, Loading, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
+
+            base.Update(frame, totalRealSeconds);
+        }
+
+        internal override void Load()
+        {
+            // Load loading image first!
+            if (Loading == null)
+                Loading = new LoadingPrimitive(Game);
+
+            var args = Arguments;
+
             // Look for an action to perform.
             var action = "";
-            var actions = new[] { "start", "resume", "test", "testall", "replay", "replay_from_save" };
+            var actions = new[] { "start", "resume", "replay", "replay_from_save" };
             foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
                     action = possibleAction;
@@ -91,8 +96,7 @@ namespace ORTS
             if ((action.Length == 0) && (data.Length > 0))
                 action = "start";
 
-            var settings = new UserSettings(options);
-            InputSettings.Initialize(options);
+            var settings = Game.Settings;
 
             Action doAction = () => 
             {
@@ -108,14 +112,6 @@ namespace ORTS
                         InitLogging(settings, args);
                         Resume(settings, data);
                         break;
-                    case "test":
-                        InitLogging(settings, args, true);
-                        Test(settings, data);
-                        break;
-                    case "testall":
-                        InitLogging(settings, args);
-                        TestAll(data);
-                        break;
                     case "replay":
                         InitLogging(settings, args);
                         Replay(settings, data);
@@ -125,11 +121,10 @@ namespace ORTS
                         ReplayFromSave(settings, data);
                         break;
                     default:
-                        Console.WriteLine("Supply missing activity file name");
-                        Console.WriteLine("   i.e.: RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA1\\ACTIVITIES\\xxx.act\"");
-                        Console.WriteLine();
-                        Console.WriteLine("or launch the program OpenRails.exe and select from the menu.");
-                        Console.ReadKey();
+                        MessageBox.Show("Supply missing activity file name\n"
+                            + "   i.e.: RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA1\\ACTIVITIES\\xxx.act\"\n"
+                            + "\n"
+                            + "or launch the program OpenRails.exe and select from the menu.");
                         break;
                 }
             };
@@ -202,12 +197,12 @@ namespace ORTS
         /// <summary>
         /// Run the specified activity from the beginning.
         /// </summary>
-        static void Start(UserSettings settings, string[] args)
+        void Start(UserSettings settings, string[] args)
         {
             InitSimulator(settings, args);
             Simulator.Start();
 
-            Viewer = new Viewer3D(Simulator);
+            Viewer = new Viewer3D(Simulator, Game);
             Viewer.Log = new CommandLog( Viewer );
 
 			if (Client != null)
@@ -228,11 +223,8 @@ namespace ORTS
             SoundDebugForm.Hide();
             Viewer.SoundDebugFormEnabled = false;
 
-            Viewer.Run(null);
-
-            Simulator.Stop();
-
-            if (MPManager.IsMultiPlayer()) DebugViewer.Dispose();
+            Game.ReplaceState(new GameStateRunActivityEnd());
+            Game.PushState(new GameStateViewer3D(Viewer));
         }
 
         /// <summary>
@@ -291,7 +283,7 @@ namespace ORTS
         /// <summary>
         /// Resume a saved game.
         /// </summary>
-        static void Resume(UserSettings settings, string[] args)
+        void Resume(UserSettings settings, string[] args)
         {
             // If "-resume" also specifies a save file then use it
             // E.g. RunActivity.exe -resume "yard_two 2012-03-20 22.07.36"
@@ -306,7 +298,7 @@ namespace ORTS
                 savedValues values = GetSavedValues( inf );
                 InitSimulator( settings, values.args, "Resume" );
                 Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
-                Viewer = new Viewer3D( Simulator );
+                Viewer = new Viewer3D(Simulator, Game);
                 //Viewer.SetCommandReceivers();
 
                 // Reload the command log
@@ -322,17 +314,16 @@ namespace ORTS
 					Viewer.DebugViewerEnabled = false;
 				}
 
-				Viewer.Run(inf);
-	
-				if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
-					if (DebugViewer != null && !DebugViewer.IsDisposed) DebugViewer.Dispose();
+                Viewer.inf = inf;
+                Game.ReplaceState(new GameStateRunActivityEnd());
+                Game.PushState(new GameStateViewer3D(Viewer));
             }
         }
 
         /// <summary>
         /// Replay a saved game.
         /// </summary>
-        static void Replay( UserSettings settings, string[] args ) {
+        void Replay( UserSettings settings, string[] args ) {
             // If "-replay" also specifies a save file then use it
             // E.g. RunActivity.exe -replay "yard_two 2012-03-20 22.07.36"
             // else use most recently changed *.save
@@ -346,7 +337,7 @@ namespace ORTS
                 savedValues values = GetSavedValues( inf );
                 InitSimulator( settings, values.args, "Replay" );
                 Simulator.Start();
-                Viewer = new Viewer3D( Simulator );
+                Viewer = new Viewer3D(Simulator, Game);
             }
 
             Viewer.Log = new CommandLog( Viewer );
@@ -360,14 +351,14 @@ namespace ORTS
             Viewer.Log.CommandList.Clear();
             CommandLog.ReportReplayCommands( Viewer.ReplayCommandList );
 
-            Viewer.Run( null );
-            Simulator.Stop();
+            Game.ReplaceState(new GameStateRunActivityEnd());
+            Game.PushState(new GameStateViewer3D(Viewer));
         }
 
         /// <summary>
         /// Replay the last segment of a saved game.
         /// </summary>
-        static void ReplayFromSave( UserSettings settings, string[] args ) {
+        void ReplayFromSave( UserSettings settings, string[] args ) {
             BinaryReader inf;
 
             // E.g. RunActivity.exe -replay_from_save "yard_two 2012-03-20 22.07.36"
@@ -411,7 +402,7 @@ namespace ORTS
                 inf = null; // else Viewer.Initialize() will trigger Viewer.Restore()
                 InitSimulator( settings, values.args, "Replay" );
                 Simulator.Start();
-                Viewer = new Viewer3D( Simulator );
+                Viewer = new Viewer3D(Simulator, Game);
             } else {
                 // Resume from previousSaveFile
                 // and then replay
@@ -421,7 +412,7 @@ namespace ORTS
                 savedValues values = GetSavedValues( inf );
                 InitSimulator( settings, values.args, "Resume" );
                 Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
-                Viewer = new Viewer3D( Simulator );
+                Viewer = new Viewer3D(Simulator, Game);
             }
 
             // Now Viewer exists, link the log to it in both directions
@@ -432,79 +423,15 @@ namespace ORTS
             Viewer.ReplayCommandList = replayCommandList;
             CommandLog.ReportReplayCommands( Viewer.ReplayCommandList );
 
-            Viewer.Run( inf );
-            Simulator.Stop();
-        }
-
-        /// <summary>
-        /// Tests OR against every activity in every route in every folder.
-        /// <CJComment>
-        /// From v974 (and probably much before) this method fails on the second activity, raising a fatal error InvalidOperationException in MSTSLocomotive.cs:DisassembleFrames()
-        /// (Tried on just the JAPAN2 activities and on just the USA2 activities.)
-        /// Superseded by the Test() method.
-        /// </CJ>
-        /// </summary>
-        static void TestAll(string[] args)
-        {
-            var settings = new UserSettings(new[] { "ShowErrorDialogs=no", "Profiling", "ProfilingFrameCount=0" });
-            InitLogging(settings, args);
-            var folders = args.Length == 0 ? ORTS.Menu.Folder.GetFolders() : args.Select(a => new ORTS.Menu.Folder(Path.GetFileName(a), a));
-            var activities = (from f in folders
-                              from r in ORTS.Menu.Route.GetRoutes(f)
-                              from a in ORTS.Menu.Activity.GetActivities(f, r)
-                              where !(a is ORTS.Menu.ExploreActivity)
-                              orderby a.FilePath.ToLowerInvariant()
-                              select a).ToList();
-            var results = new bool[activities.Count];
-            Action<int> run = (i) =>
-            {
-                InitSimulator(settings, new[] { activities[i].FilePath}, "");
-                Simulator.Start();
-                Viewer = new Viewer3D(Simulator);
-                Viewer.Log = new CommandLog(Viewer);
-                Viewer.Run(null);
-                results[i] = true;
-                Simulator.Stop();
-            };
-            for (var i = 0; i < activities.Count; i++)
-            {
-                if (Debugger.IsAttached)
-                {
-                    run(i);
-                }
-                else
-                {
-                    try
-                    {
-                        run(i);
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.WriteLine(error);
-                    }
-                }
-                Console.WriteLine();
-                Console.WriteLine();
-
-                // Force a cleanup.
-                Viewer = null;
-                Simulator = null;
-                GC.Collect();
-            }
-
-            Console.WriteLine();
-            for (var i = 0; i < activities.Count; i++)
-            {
-                Console.WriteLine("{0,-4}  {1}", results[i] ? "PASS" : "fail", activities[i].FilePath);
-            }
-            Console.WriteLine();
-            Console.WriteLine("Tested {0} activities; {1} passed, {2} failed.", results.Length, results.Count(r => r), results.Count(r => !r));
+            Viewer.inf = inf;
+            Game.ReplaceState(new GameStateRunActivityEnd());
+            Game.PushState(new GameStateViewer3D(Viewer));
         }
 
         /// <summary>
         /// Tests that RunActivity.exe can launch a specific activity or explore.
         /// </summary>
-        public static void Test(UserSettings settings, string[] args)
+        void Test(UserSettings settings, string[] args)
         {
             var passed = false;
             var startTime = DateTime.Now;
@@ -513,10 +440,10 @@ namespace ORTS
             {
                 InitSimulator(settings, args, "Test");
                 Simulator.Start();
-                Viewer = new Viewer3D(Simulator);
+                Viewer = new Viewer3D(Simulator, Game);
                 Viewer.Log = new CommandLog(Viewer);
-                Viewer.Run(null);
-                Simulator.Stop();
+                Game.ReplaceState(new GameStateRunActivityEnd());
+                Game.PushState(new GameStateViewer3D(Viewer));
                 loadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
                 passed = true;
             }
@@ -527,7 +454,7 @@ namespace ORTS
             }
         }
 
-        static void ExportTestSummary(UserSettings settings, string[] args, bool passed, double loadTime)
+        void ExportTestSummary(UserSettings settings, string[] args, bool passed, double loadTime)
         {
             // Append to CSV file in format suitable for Excel
 			var summaryFileName = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
@@ -551,11 +478,11 @@ namespace ORTS
             catch { } // Ignore any errors
         }
 
-        static void InitLogging( UserSettings settings, string[] args ) {
+        void InitLogging( UserSettings settings, string[] args ) {
             InitLogging( settings, args, false );
         }
 
-        static void InitLogging( UserSettings settings, string[] args, bool appendLog ) {
+        void InitLogging( UserSettings settings, string[] args, bool appendLog ) {
             if( settings.LoggingPath == "" ) {
                 settings.LoggingPath = Environment.GetFolderPath( Environment.SpecialFolder.Desktop );
             }
@@ -607,12 +534,12 @@ namespace ORTS
 			File.Copy(logFileName, toFile, true);
         }
 
-        static void InitSimulator(UserSettings settings, string[] args)
+        void InitSimulator(UserSettings settings, string[] args)
         {
             InitSimulator(settings, args, "");
         }
 
-        static void InitSimulator(UserSettings settings, string[] args, string mode)
+        void InitSimulator(UserSettings settings, string[] args, string mode)
         {
             Console.WriteLine(mode.Length > 0 ? "Mode       = {0} {1}" : "Mode       = {1}", mode, args.Length == 1 ? "Activity" : "Explore");
             if (args.Length == 1)
@@ -695,12 +622,12 @@ namespace ORTS
             }
         }
 
-        static void LogSeparator()
+        void LogSeparator()
         {
             Console.WriteLine(new String('-', 80));
         }
         
-        private static void ValidateSave(string fileName, BinaryReader inf) {
+        void ValidateSave(string fileName, BinaryReader inf) {
             // Read in validation data.
             var version = "<unknown>";
             var build = "<unknown>";
@@ -726,7 +653,7 @@ namespace ORTS
             }
         }
 
-        private static string GetSaveFile( string[] args ) {
+        string GetSaveFile( string[] args ) {
             if( args.Length == 0 ) {
                 return GetMostRecentSave();
             }
@@ -735,7 +662,7 @@ namespace ORTS
 			return Path.Combine(UserSettings.UserDataFolder, saveFile);
         }
 
-        private static string GetMostRecentSave() {
+        string GetMostRecentSave() {
 			var directory = new DirectoryInfo(UserSettings.UserDataFolder);
             var file = directory.GetFiles( "*.save" )
              .OrderByDescending( f => f.LastWriteTime )
@@ -745,7 +672,7 @@ namespace ORTS
             return file.FullName;
         }
         
-        private static savedValues GetSavedValues( BinaryReader inf ) {
+        savedValues GetSavedValues( BinaryReader inf ) {
             savedValues values = default( savedValues );
             // Skip the heading data used in Menu.exe
             inf.ReadString();    // Route name
@@ -765,6 +692,107 @@ namespace ORTS
                 savedArgs[i] = inf.ReadString();
             values.args = savedArgs;
             return values;
+        }
+
+        class LoadingPrimitive : RenderPrimitive
+        {
+            public readonly LoadingMaterial Material;
+            readonly VertexDeclaration VertexDeclaration;
+            readonly VertexBuffer VertexBuffer;
+
+            public LoadingPrimitive(Game game)
+            {
+                Material = new LoadingMaterial(game);
+                var dd = (float)Material.Texture.Width / 2 + 0.5f;
+                var verticies = new[] {
+				    new VertexPositionTexture(new Vector3(-dd, +dd, -1), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(+dd, +dd, -1), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(+dd, -dd, -1), new Vector2(1, 1)),
+				    new VertexPositionTexture(new Vector3(-dd, -dd, -1), new Vector2(0, 1)),
+			    };
+
+                VertexDeclaration = new VertexDeclaration(game.GraphicsDevice, VertexPositionTexture.VertexElements);
+                VertexBuffer = new VertexBuffer(game.GraphicsDevice, VertexPositionTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
+                VertexBuffer.SetData(verticies);
+            }
+
+            public override void Draw(GraphicsDevice graphicsDevice)
+            {
+                graphicsDevice.VertexDeclaration = VertexDeclaration;
+                graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionTexture.SizeInBytes);
+                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, 2);
+            }
+        }
+
+        class LoadingMaterial : Material
+        {
+            public readonly LoadingShader Shader;
+            public readonly Texture2D Texture;
+
+            public LoadingMaterial(Game game)
+                : base(null, null)
+            {
+                Shader = new LoadingShader(game.RenderProcess.GraphicsDevice);
+                Texture = Texture2D.FromFile(game.RenderProcess.GraphicsDevice, Path.Combine(game.ContentPath, "Loading.png"));
+            }
+
+            public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+            {
+                Shader.CurrentTechnique = Shader.Techniques["Loading"];
+                Shader.LoadingTexture = Texture;
+
+                graphicsDevice.RenderState.AlphaBlendEnable = true;
+                graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
+                graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+            }
+
+            public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+            {
+                Shader.Begin();
+                Shader.CurrentTechnique.Passes[0].Begin();
+                foreach (var item in renderItems)
+                {
+                    Shader.WorldViewProjection = item.XNAMatrix * XNAViewMatrix * XNAProjectionMatrix;
+                    Shader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                Shader.CurrentTechnique.Passes[0].End();
+                Shader.End();
+            }
+
+            public override void ResetState(GraphicsDevice graphicsDevice)
+            {
+                graphicsDevice.RenderState.AlphaBlendEnable = false;
+                graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
+                graphicsDevice.RenderState.SourceBlend = Blend.One;
+            }
+        }
+
+        class LoadingShader : Shader
+        {
+            readonly EffectParameter worldViewProjection;
+            readonly EffectParameter loadingTexture;
+
+            public Matrix WorldViewProjection { set { worldViewProjection.SetValue(value); } }
+
+            public Texture2D LoadingTexture { set { loadingTexture.SetValue(value); } }
+
+            public LoadingShader(GraphicsDevice graphicsDevice)
+                : base(graphicsDevice, "Loading")
+            {
+                worldViewProjection = Parameters["WorldViewProjection"];
+                loadingTexture = Parameters["LoadingTexture"];
+            }
+        }
+    }
+
+    public class GameStateRunActivityEnd : GameState
+    {
+        internal override void Load()
+        {
+            Program.Simulator.Stop();
+            if (Program.DebugViewer != null) Program.DebugViewer.Dispose();
+            Game.PopState();
         }
     }
 

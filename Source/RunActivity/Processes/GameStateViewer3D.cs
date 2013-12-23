@@ -1,0 +1,102 @@
+﻿// COPYRIGHT 2013 by the Open Rails project.
+// 
+// This file is part of Open Rails.
+// 
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+
+// This file is the responsibility of the 3D & Environment Team. 
+
+
+namespace ORTS.Processes
+{
+    public class GameStateViewer3D : GameState
+    {
+        internal readonly Viewer3D Viewer;
+
+        public GameStateViewer3D(Viewer3D viewer)
+        {
+            Viewer = viewer;
+            Viewer.Simulator.Paused = false;
+        }
+
+        internal override void BeginRender(RenderFrame frame)
+        {
+            Viewer.BeginRender(frame);
+        }
+
+        internal override void EndRender(RenderFrame frame)
+        {
+            Viewer.EndRender(frame);
+        }
+
+        double LastLoadRealTime;
+        double LastTotalRealSeconds = -1;
+        double[] AverageElapsedRealTime = new double[10];
+        int AverageElapsedRealTimeIndex;
+
+        internal override void Update(RenderFrame frame, double totalRealSeconds)
+        {
+            // Every 250ms, check for new things to load and kick off the loader.
+            if (LastLoadRealTime + 0.25 < totalRealSeconds && Game.LoaderProcess.Finished)
+            {
+                LastLoadRealTime = totalRealSeconds;
+                Viewer.World.LoadPrep();
+                Game.LoaderProcess.StartLoad();
+            }
+
+            // The first time we update, the TotalRealSeconds will be ~time
+            // taken to load everything. We'd rather not skip that far through
+            // the simulation so the first time we deliberately have an
+            // elapsed real and clock time of 0.0s.
+            if (LastTotalRealSeconds == -1)
+                LastTotalRealSeconds = totalRealSeconds;
+            // We would like to avoid any large jumps in the simulation, so
+            // this is a 4FPS minimum, 250ms maximum update time.
+            else if (totalRealSeconds - LastTotalRealSeconds > 0.25f)
+                LastTotalRealSeconds = totalRealSeconds;
+
+            var elapsedRealTime = totalRealSeconds - LastTotalRealSeconds;
+            LastTotalRealSeconds = totalRealSeconds;
+
+            if (elapsedRealTime > 0)
+            {
+                // Store the elapsed real time, but also loop through overwriting any blank entries.
+                do
+                {
+                    AverageElapsedRealTime[AverageElapsedRealTimeIndex] = elapsedRealTime;
+                    AverageElapsedRealTimeIndex = (AverageElapsedRealTimeIndex + 1) % AverageElapsedRealTime.Length;
+                } while (AverageElapsedRealTime[AverageElapsedRealTimeIndex] == 0);
+
+                // Elapsed real time is now the average.
+                elapsedRealTime = 0;
+                for (var i = 0; i < AverageElapsedRealTime.Length; i++)
+                    elapsedRealTime += AverageElapsedRealTime[i] / AverageElapsedRealTime.Length;
+            }
+
+            // TODO: ComputeFPS should be called in UpdaterProcess.Update() but needs delta time.
+            Game.RenderProcess.ComputeFPS((float)elapsedRealTime);
+            Viewer.Update(frame, (float)elapsedRealTime);
+        }
+
+        internal override void Load()
+        {
+            Viewer.Load();
+        }
+
+        internal override void Dispose()
+        {
+            Viewer.Terminate();
+        }
+    }
+}

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -21,48 +21,34 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace ORTS
+namespace ORTS.Processes
 {
     public class UpdaterProcess
     {
-        public readonly bool Threaded;
         public readonly Profiler Profiler = new Profiler("Updater");
-        readonly Viewer3D Viewer;
+        readonly ProcessState State = new ProcessState("Updater");
+        readonly Game Game;
         readonly Thread Thread;
-        readonly ProcessState State;
 
-        public UpdaterProcess(Viewer3D viewer)
+        public UpdaterProcess(Game game)
         {
-            Threaded = System.Environment.ProcessorCount > 1;
-            Viewer = viewer;
-            if (Threaded)
-            {
-                State = new ProcessState("Updater");
-                Thread = new Thread(UpdaterThread);
-                Thread.Start();
-            }
+            Game = game;
+            Thread = new Thread(UpdaterThread);
+        }
+
+        public void Start()
+        {
+            Thread.Start();
         }
 
         public void Stop()
         {
-            if (Threaded)
-                Thread.Abort();
-        }
-
-        public bool Finished
-        {
-            get
-            {
-                // Non-threaded updater is always "finished".
-                return !Threaded || State.Finished;
-            }
+            Thread.Abort();
         }
 
         public void WaitTillFinished()
         {
-            // Non-threaded updater never waits.
-            if (Threaded)
-                State.WaitTillFinished();
+            State.WaitTillFinished();
         }
 
         [ThreadName("Updater")]
@@ -87,18 +73,16 @@ namespace ORTS
             }
         }
 
-        [CallOnThread("Render")]
-        public void StartUpdate(RenderFrame frame, double totalRealSeconds)
-        {
-            if (!Finished)
-                throw new InvalidOperationException("Can't overlap updates.");
+        RenderFrame CurrentFrame;
+        double TotalRealSeconds;
 
+        [CallOnThread("Render")]
+        internal void StartUpdate(RenderFrame frame, double totalRealSeconds)
+        {
+            Debug.Assert(State.Finished);
             CurrentFrame = frame;
             TotalRealSeconds = totalRealSeconds;
-            if (Threaded)
-                State.SignalStart();
-            else
-                DoUpdate();
+            State.SignalStart();
         }
 
         [ThreadName("Updater")]
@@ -119,9 +103,8 @@ namespace ORTS
                     if (!(error is ThreadAbortException))
                     {
                         // Unblock anyone waiting for us, report error and die.
-                        if (Threaded)
-                            State.SignalFinish();
-                        Viewer.ProcessReportError(error);
+                        State.SignalFinish();
+                        Game.ProcessReportError(error);
                         return false;
                     }
                 }
@@ -129,51 +112,14 @@ namespace ORTS
             return true;
         }
 
-        RenderFrame CurrentFrame;
-        double TotalRealSeconds;
-        double LastTotalRealSeconds = -1;
-		double[] AverageElapsedRealTime = new double[10];
-		int AverageElapsedRealTimeIndex;
-
         [CallOnThread("Updater")]
         public void Update()
         {
             Profiler.Start();
-
-            // The first time we update, the TotalRealSeconds will be ~time
-            // taken to load everything. We'd rather not skip that far through
-            // the simulation so the first time we deliberately have an
-            // elapsed real and clock time of 0.0s.
-            if (LastTotalRealSeconds == -1)
-                LastTotalRealSeconds = TotalRealSeconds;
-            // We would like to avoid any large jumps in the simulation, so
-            // this is a 4FPS minimum, 250ms maximum update time.
-            else if (TotalRealSeconds - LastTotalRealSeconds > 0.25f)
-                LastTotalRealSeconds = TotalRealSeconds;
-
-            var elapsedRealTime = TotalRealSeconds - LastTotalRealSeconds;
-            LastTotalRealSeconds = TotalRealSeconds;
-
-			if (elapsedRealTime > 0)
-			{
-				// Store the elapsed real time, but also loop through overwriting any blank entries.
-				do
-				{
-					AverageElapsedRealTime[AverageElapsedRealTimeIndex] = elapsedRealTime;
-					AverageElapsedRealTimeIndex = (AverageElapsedRealTimeIndex + 1) % AverageElapsedRealTime.Length;
-				} while (AverageElapsedRealTime[AverageElapsedRealTimeIndex] == 0);
-
-				// Elapsed real time is now the average.
-				elapsedRealTime = 0;
-				for (var i = 0; i < AverageElapsedRealTime.Length; i++)
-					elapsedRealTime += AverageElapsedRealTime[i] / AverageElapsedRealTime.Length;
-			}
-
             try
             {
                 CurrentFrame.Clear();
-                Viewer.RenderProcess.ComputeFPS((float)elapsedRealTime);
-				Viewer.Update((float)elapsedRealTime, CurrentFrame);
+                Game.State.Update(CurrentFrame, TotalRealSeconds);
                 CurrentFrame.Sort();
             }
             finally

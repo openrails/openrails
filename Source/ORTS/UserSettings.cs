@@ -264,7 +264,7 @@ namespace ORTS
 		#endregion
 
 		public UserSettings(IEnumerable<string> options)
-			: base(SettingStore.GetSettingStore(SettingsFilePath, RegistryKey, null, options))
+			: base(SettingStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
 		{
 			CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 			CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);

@@ -22,7 +22,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Microsoft.Xna.Framework;
 
 namespace ORTS
 {
@@ -151,7 +150,7 @@ namespace ORTS
                     if (!(error is ThreadAbortException))
                     {
                         // Report error and die.
-                        Viewer.ProcessReportError(error);
+                        Viewer.Game.ProcessReportError(error);
                         return false;
                     }
                 }

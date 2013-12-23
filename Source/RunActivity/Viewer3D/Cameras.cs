@@ -171,7 +171,7 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             xnaView = GetCameraView();
-            frame.SetCamera(ref xnaView, ref xnaProjection);
+            frame.SetCamera(this);
             frustumLeft.X = -xnaView.M11 * frustumRightProjected.X + xnaView.M13 * frustumRightProjected.Z;
             frustumLeft.Y = -xnaView.M21 * frustumRightProjected.X + xnaView.M23 * frustumRightProjected.Z;
             frustumLeft.Z = -xnaView.M31 * frustumRightProjected.X + xnaView.M33 * frustumRightProjected.Z;
