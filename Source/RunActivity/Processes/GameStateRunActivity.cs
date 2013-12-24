@@ -190,6 +190,8 @@ namespace ORTS.Processes
                             // and leaves you with garbage. Plus, landing straight on a login page might confuse some people.
                         }
                     }
+                    // Make sure we quit after handling an error.
+                    Game.Exit();
                 }
             }
         }
@@ -209,19 +211,6 @@ namespace ORTS.Processes
 			{
                 Client.Send( (new MSGPlayer( Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL )).ToString() );
 			}
-
-            if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
-            {
-                // prepare to show debug output in a separate window
-                DebugViewer = new DispatchViewer(Simulator, Viewer);
-                DebugViewer.Show();
-                DebugViewer.Hide();
-                Viewer.DebugViewerEnabled = false;
-            }
-
-            SoundDebugForm = new SoundDebugForm(Simulator, Viewer);
-            SoundDebugForm.Hide();
-            Viewer.SoundDebugFormEnabled = false;
 
             Game.ReplaceState(new GameStateRunActivityEnd());
             Game.PushState(new GameStateViewer3D(Viewer));
@@ -305,14 +294,6 @@ namespace ORTS.Processes
                 Viewer.Log = new CommandLog( Viewer );
                 string replayFile = Path.ChangeExtension( saveFile, "replay" );
                 Viewer.Log.LoadLog( replayFile );
-				if (MPManager.IsMultiPlayer() || Viewer.Settings.ViewDispatcher)
-				{
-					// prepare to show debug output in a separate window
-					DebugViewer = new DispatchViewer(Simulator, Viewer);
-					DebugViewer.Show();
-					DebugViewer.Hide();
-					Viewer.DebugViewerEnabled = false;
-				}
 
                 Viewer.inf = inf;
                 Game.ReplaceState(new GameStateRunActivityEnd());
@@ -790,8 +771,12 @@ namespace ORTS.Processes
     {
         internal override void Load()
         {
-            Program.Simulator.Stop();
-            if (Program.DebugViewer != null) Program.DebugViewer.Dispose();
+            if (Program.Simulator != null)
+                Program.Simulator.Stop();
+            if (Program.DebugViewer != null)
+                Program.DebugViewer.Dispose();
+            if (Program.SoundDebugForm != null)
+                Program.SoundDebugForm.Dispose();
             Game.PopState();
         }
     }

@@ -17,12 +17,16 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using ORTS.Debugging;
+using ORTS.MultiPlayer;
 
 namespace ORTS.Processes
 {
     public class GameStateViewer3D : GameState
     {
         internal readonly Viewer3D Viewer;
+
+        bool FirstFrame = true;
 
         public GameStateViewer3D(Viewer3D viewer)
         {
@@ -32,6 +36,23 @@ namespace ORTS.Processes
 
         internal override void BeginRender(RenderFrame frame)
         {
+            if (FirstFrame)
+            {
+                // We must create these forms on the main thread (Render) or they won't pump events correctly.
+
+                if (MPManager.IsMultiPlayer() || Game.Settings.ViewDispatcher)
+                {
+                    Program.DebugViewer = new DispatchViewer(Viewer.Simulator, Viewer);
+                    Program.DebugViewer.Hide();
+                    Viewer.DebugViewerEnabled = false;
+                }
+
+                Program.SoundDebugForm = new SoundDebugForm(Viewer.Simulator, Viewer);
+                Program.SoundDebugForm.Hide();
+                Viewer.SoundDebugFormEnabled = false;
+
+                FirstFrame = false;
+            }
             Viewer.BeginRender(frame);
         }
 
