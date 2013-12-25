@@ -30,7 +30,6 @@ namespace ORTS.Debugging
 {
     public partial class SoundDebugForm : Form
     {
-        private readonly Simulator Simulator;
         Viewer3D Viewer;
 
         private Timer UITimer;
@@ -41,15 +40,10 @@ namespace ORTS.Debugging
         private Dictionary<object, List<SoundSourceBase>> SoundSources;
         private SoundSource selectedSoundSource;
 
-        public SoundDebugForm(Simulator simulator, Viewer3D viewer)
+        public SoundDebugForm(Viewer3D viewer)
         {
             InitializeComponent();
 
-            if (simulator == null)
-            {
-                throw new ArgumentNullException("simulator", "Simulator object cannot be null.");
-            }
-            Simulator = simulator;
             Viewer = viewer;
 
             ActiveSoundSources = new List<SoundSource>();
@@ -177,7 +171,17 @@ namespace ORTS.Debugging
 
                 if (selectedSoundSource.WorldLocation != null && selectedSoundSource.SoundStreams.Count > 0)
                 {
-                    distance.Text = Math.Sqrt(selectedSoundSource.DistanceSquared).ToString("F1");
+                    //Source distance:
+                    //distance.Text = Math.Sqrt(selectedSoundSource.DistanceSquared).ToString("F1");
+
+                    //Stream distance:
+                    float[] pos = new float[3];
+                    OpenAL.alGetSource3f(soundSourceID, OpenAL.AL_POSITION, out pos[0], out pos[1], out pos[2]);
+                    float[] lpos = new float[3];
+                    OpenAL.alGetListener3f(OpenAL.AL_POSITION, out lpos[0], out lpos[1], out lpos[2]);
+                    for (var j = 0; j < 3; j++)
+                        pos[j] -= lpos[j];
+                    distance.Text = Math.Sqrt(pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2]).ToString("F1");
                 }
                 else
                 {

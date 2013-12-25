@@ -688,8 +688,8 @@ namespace ORTS.Processes
                 var verticies = new[] {
 				    new VertexPositionTexture(new Vector3(-dd, +dd, -1), new Vector2(0, 0)),
 				    new VertexPositionTexture(new Vector3(+dd, +dd, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(+dd, -dd, -1), new Vector2(1, 1)),
 				    new VertexPositionTexture(new Vector3(-dd, -dd, -1), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(+dd, -dd, -1), new Vector2(1, 1)),
 			    };
 
                 VertexDeclaration = new VertexDeclaration(game.GraphicsDevice, VertexPositionTexture.VertexElements);
@@ -701,7 +701,7 @@ namespace ORTS.Processes
             {
                 graphicsDevice.VertexDeclaration = VertexDeclaration;
                 graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionTexture.SizeInBytes);
-                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, 2);
+                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
             }
         }
 

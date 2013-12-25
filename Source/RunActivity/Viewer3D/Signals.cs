@@ -424,8 +424,8 @@ namespace ORTS
             var verticies = new[] {
 				new VertexPositionColorTexture(new Vector3(position.X - radius, position.Y + radius, position.Z), color, new Vector2(u1, v0)),
 				new VertexPositionColorTexture(new Vector3(position.X + radius, position.Y + radius, position.Z), color, new Vector2(u0, v0)),
-				new VertexPositionColorTexture(new Vector3(position.X + radius, position.Y - radius, position.Z), color, new Vector2(u0, v1)),
 				new VertexPositionColorTexture(new Vector3(position.X - radius, position.Y - radius, position.Z), color, new Vector2(u1, v1)),
+				new VertexPositionColorTexture(new Vector3(position.X + radius, position.Y - radius, position.Z), color, new Vector2(u0, v1)),
 			};
 
             VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColorTexture.VertexElements);
@@ -437,7 +437,7 @@ namespace ORTS
         {
             graphicsDevice.VertexDeclaration = VertexDeclaration;
             graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColorTexture.SizeInBytes);
-            graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, 2);
+            graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
         }
     }
 

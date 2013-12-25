@@ -47,7 +47,7 @@ namespace ORTS.Processes
                     Viewer.DebugViewerEnabled = false;
                 }
 
-                Program.SoundDebugForm = new SoundDebugForm(Viewer.Simulator, Viewer);
+                Program.SoundDebugForm = new SoundDebugForm(Viewer);
                 Program.SoundDebugForm.Hide();
                 Viewer.SoundDebugFormEnabled = false;
 

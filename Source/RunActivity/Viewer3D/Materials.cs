@@ -1456,9 +1456,9 @@ namespace ORTS
             BlurVertexBuffer = new VertexBuffer(Viewer.RenderProcess.GraphicsDevice, typeof(VertexPositionNormalTexture), 4, BufferUsage.WriteOnly);
             BlurVertexBuffer.SetData(new[] {
 				new VertexPositionNormalTexture(new Vector3(-1, +1, 0), Vector3.Zero, new Vector2(0, 0)),
+				new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, shadowMapResolution)),
 				new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(shadowMapResolution, 0)),
 				new VertexPositionNormalTexture(new Vector3(+1, -1, 0), Vector3.Zero, new Vector2(shadowMapResolution, shadowMapResolution)),
-				new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, shadowMapResolution)),
 			});
         }
 
@@ -1533,7 +1533,7 @@ namespace ORTS
                 shader.CommitChanges();
 
                 ShaderPassesBlur.Current.Begin();
-                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleFan, 0, 2);
+                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
                 ShaderPassesBlur.Current.End();
 
                 graphicsDevice.SetRenderTarget(0, null);
