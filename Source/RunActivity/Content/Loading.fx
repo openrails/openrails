@@ -27,7 +27,7 @@ float4x4 WorldViewProjection;  // model -> world -> view -> projection
 
 texture LoadingTexture;
 
-sampler Loading = sampler_state
+sampler LoadingSampler = sampler_state
 {
 	Texture = (LoadingTexture);
 };
@@ -64,7 +64,7 @@ VERTEX_OUTPUT VSLoading(in VERTEX_INPUT In)
 
 float4 PSLoading(in VERTEX_OUTPUT In) : COLOR0
 {
-	return tex2D(Loading, In.TexCoords);
+	return tex2D(LoadingSampler, In.TexCoords);
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
