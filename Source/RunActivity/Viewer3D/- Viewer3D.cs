@@ -127,7 +127,6 @@ namespace ORTS
         public bool SaveScreenshot;
         public bool SaveActivityThumbnail;
         public string SaveActivityFileStem;
-        public BinaryReader inf;   // (In File) = Null indicates not resuming from a save.
 
         public Vector3 NearPoint;
         public Vector3 FarPoint;
@@ -320,10 +319,6 @@ namespace ORTS
 
             SoundProcess = new SoundProcess(this);
             Simulator.Confirmer = new Confirmer(this, 1.5);
-
-            // Now everything is ready to use, changed to saved values if available. 
-            if (inf != null)
-                Restore(inf);
 
             CameraActivate();
 

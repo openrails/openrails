@@ -294,22 +294,20 @@ namespace ORTS.Processes
             // E.g. RunActivity.exe -resume
 
             // First use the .save file to check the validity and extract the route and activity.
-            string saveFile = GetSaveFile( args );
-            using( BinaryReader inf = new BinaryReader(
-                    new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) ) {
+            var saveFile = GetSaveFile(args);
+            using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
+            {
                 ValidateSave(saveFile, inf);
-                savedValues values = GetSavedValues( inf );
-                InitSimulator( settings, values.args, "Resume" );
-                Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
+                var values = GetSavedValues(inf);
+                InitSimulator(settings, values.args, "Resume");
+                Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
                 Viewer = new Viewer3D(Simulator, Game);
-                //Viewer.SetCommandReceivers();
+                Viewer.Restore(inf);
 
                 // Reload the command log
-                Viewer.Log = new CommandLog( Viewer );
-                string replayFile = Path.ChangeExtension( saveFile, "replay" );
-                Viewer.Log.LoadLog( replayFile );
+                Viewer.Log = new CommandLog(Viewer);
+                Viewer.Log.LoadLog(Path.ChangeExtension(saveFile, "replay"));
 
-                Viewer.inf = inf;
                 Game.ReplaceState(new GameStateViewer3D(Viewer));
             }
         }
@@ -351,61 +349,70 @@ namespace ORTS.Processes
         /// <summary>
         /// Replay the last segment of a saved game.
         /// </summary>
-        void ReplayFromSave( UserSettings settings, string[] args ) {
-            BinaryReader inf;
-
+        void ReplayFromSave(UserSettings settings, string[] args)
+        {
             // E.g. RunActivity.exe -replay_from_save "yard_two 2012-03-20 22.07.36"
-            string saveFile = GetSaveFile( args );
+            var saveFile = GetSaveFile(args);
 
             // Find previous save file and move commands to be replayed into replay list.
-            CommandLog log = new CommandLog();
-            string logFile = saveFile.Replace( ".save", ".replay" );
-            log.LoadLog( logFile );
-            List<ICommand> replayCommandList = new List<ICommand>();
+            var log = new CommandLog();
+            var logFile = saveFile.Replace(".save", ".replay");
+            log.LoadLog(logFile);
+            var replayCommandList = new List<ICommand>();
 
             // Scan backwards to find previous saveFile (ignore any that user has deleted).
-            int count = log.CommandList.Count;
-            string previousSaveFile = "";
-            for( int i = count - 2; // -2 so we skip over the final save command
-                    i >= 0; i-- ) {
-                var c = log.CommandList[i];
-                if( c is SaveCommand ) {
-                    string f = ((SaveCommand)c).FileStem;
-					f = Path.Combine(UserSettings.UserDataFolder, f);
-                    if( !f.EndsWith( ".save" ) ) { f += ".save"; }
-                    if( System.IO.File.Exists( f ) ) {
+            var count = log.CommandList.Count;
+            var previousSaveFile = "";
+            for (int i = count - 2; // -2 so we skip over the final save command
+                    i >= 0; i--)
+            {
+                var c = log.CommandList[i] as SaveCommand;
+                if (c != null)
+                {
+                    var f = Path.Combine(UserSettings.UserDataFolder, c.FileStem);
+                    if (!f.EndsWith(".save"))
+                        f += ".save";
+                    if (File.Exists(f))
+                    {
                         previousSaveFile = f;
                         // Move commands after this to the replay command list.
-                        for( int j = i + 1; j < count; j++ ) {
-                            replayCommandList.Add( log.CommandList[i + 1] );
-                            log.CommandList.RemoveAt( i + 1 );
+                        for (var j = i + 1; j < count; j++)
+                        {
+                            replayCommandList.Add(log.CommandList[i + 1]);
+                            log.CommandList.RemoveAt(i + 1);
                         }
                         break;
                     }
                 }
             }
-            if( previousSaveFile == "" ) {  // No save file found so just replay from start
+            if (previousSaveFile == "")
+            {
+                // No save file found so just replay from start
                 replayCommandList.AddRange(log.CommandList);    // copy the commands before deleting them.
                 log.CommandList.Clear();
                 // But we have no args, so have to get these from the Save
-                inf = new BinaryReader(
-                        new FileStream( saveFile, FileMode.Open, FileAccess.Read ) );
-                ValidateSave(saveFile, inf);
-                savedValues values = GetSavedValues( inf );
-                inf = null; // else Viewer.Initialize() will trigger Viewer.Restore()
-                InitSimulator( settings, values.args, "Replay" );
+                using (var inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
+                {
+                    ValidateSave(saveFile, inf);
+                    var values = GetSavedValues(inf);
+                    InitSimulator(settings, values.args, "Replay");
+                }
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator, Game);
-            } else {
+            }
+            else
+            {
                 // Resume from previousSaveFile
                 // and then replay
-                inf = new BinaryReader(
-                        new FileStream( previousSaveFile, FileMode.Open, FileAccess.Read ) );
-                ValidateSave(previousSaveFile, inf);
-                savedValues values = GetSavedValues( inf );
-                InitSimulator( settings, values.args, "Resume" );
-                Simulator.Restore( inf, values.initialTileX, values.initialTileZ );
-                Viewer = new Viewer3D(Simulator, Game);
+                using (var inf = new BinaryReader(new FileStream(previousSaveFile, FileMode.Open, FileAccess.Read)))
+                {
+                    ValidateSave(previousSaveFile, inf);
+                    savedValues values = GetSavedValues(inf);
+                    InitSimulator(settings, values.args, "Resume");
+                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
+                    Viewer = new Viewer3D(Simulator, Game);
+                    Viewer.Restore(inf);
+                }
             }
 
             // Now Viewer exists, link the log to it in both directions
@@ -414,9 +421,8 @@ namespace ORTS.Processes
             // Now Simulator exists, link the viewer to it
             Viewer.Log.Simulator = Simulator;
             Viewer.ReplayCommandList = replayCommandList;
-            CommandLog.ReportReplayCommands( Viewer.ReplayCommandList );
+            CommandLog.ReportReplayCommands(Viewer.ReplayCommandList);
 
-            Viewer.inf = inf;
             Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
 
