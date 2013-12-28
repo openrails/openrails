@@ -57,6 +57,7 @@ namespace ORTS.MultiPlayer
 			decoder = new Decoder();
 
 			listenThread = new Thread(new ParameterizedThreadStart(this.Receive));
+            listenThread.Name = "Multiplayer Client-Server";
 			listenThread.Start(client);
 
 		}

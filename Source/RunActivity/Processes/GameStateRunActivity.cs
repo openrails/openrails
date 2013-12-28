@@ -196,6 +196,21 @@ namespace ORTS.Processes
             }
         }
 
+        internal override void Dispose()
+        {
+            if (Program.Server != null)
+                Program.Server.Stop();
+            if (Program.Client != null)
+                Program.Client.Stop();
+            if (Program.Simulator != null)
+                Program.Simulator.Stop();
+            if (Program.DebugViewer != null)
+                Program.DebugViewer.Dispose();
+            if (Program.SoundDebugForm != null)
+                Program.SoundDebugForm.Dispose();
+            base.Dispose();
+        }
+
         /// <summary>
         /// Run the specified activity from the beginning.
         /// </summary>
@@ -212,8 +227,7 @@ namespace ORTS.Processes
                 Client.Send( (new MSGPlayer( Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL )).ToString() );
 			}
 
-            Game.ReplaceState(new GameStateRunActivityEnd());
-            Game.PushState(new GameStateViewer3D(Viewer));
+            Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
 
         /// <summary>
@@ -296,8 +310,7 @@ namespace ORTS.Processes
                 Viewer.Log.LoadLog( replayFile );
 
                 Viewer.inf = inf;
-                Game.ReplaceState(new GameStateRunActivityEnd());
-                Game.PushState(new GameStateViewer3D(Viewer));
+                Game.ReplaceState(new GameStateViewer3D(Viewer));
             }
         }
 
@@ -332,8 +345,7 @@ namespace ORTS.Processes
             Viewer.Log.CommandList.Clear();
             CommandLog.ReportReplayCommands( Viewer.ReplayCommandList );
 
-            Game.ReplaceState(new GameStateRunActivityEnd());
-            Game.PushState(new GameStateViewer3D(Viewer));
+            Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
 
         /// <summary>
@@ -405,8 +417,7 @@ namespace ORTS.Processes
             CommandLog.ReportReplayCommands( Viewer.ReplayCommandList );
 
             Viewer.inf = inf;
-            Game.ReplaceState(new GameStateRunActivityEnd());
-            Game.PushState(new GameStateViewer3D(Viewer));
+            Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
 
         /// <summary>
@@ -423,8 +434,7 @@ namespace ORTS.Processes
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator, Game);
                 Viewer.Log = new CommandLog(Viewer);
-                Game.ReplaceState(new GameStateRunActivityEnd());
-                Game.PushState(new GameStateViewer3D(Viewer));
+                Game.ReplaceState(new GameStateViewer3D(Viewer));
                 loadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
                 passed = true;
             }
@@ -764,20 +774,6 @@ namespace ORTS.Processes
                 worldViewProjection = Parameters["WorldViewProjection"];
                 loadingTexture = Parameters["LoadingTexture"];
             }
-        }
-    }
-
-    public class GameStateRunActivityEnd : GameState
-    {
-        internal override void Load()
-        {
-            if (Program.Simulator != null)
-                Program.Simulator.Stop();
-            if (Program.DebugViewer != null)
-                Program.DebugViewer.Dispose();
-            if (Program.SoundDebugForm != null)
-                Program.SoundDebugForm.Dispose();
-            Game.PopState();
         }
     }
 
