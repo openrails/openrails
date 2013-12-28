@@ -167,6 +167,7 @@ namespace ORTS
 
         public bool IsScreenChanged { get; internal set; }
         ShadowMapMaterial ShadowMapMaterial;
+        SceneryShader SceneryShader;
         Vector3 SolarDirection;
         Camera Camera;
         Vector3 CameraLocation;
@@ -226,6 +227,8 @@ namespace ORTS
             SolarDirection = viewer.World.Sky.solarDirection;
             if (ShadowMapMaterial == null)
                 ShadowMapMaterial = (ShadowMapMaterial)viewer.MaterialManager.Load("ShadowMap");
+            if (SceneryShader == null)
+                SceneryShader = viewer.MaterialManager.SceneryShader;
         }
 
         public void SetCamera(Camera camera)
@@ -250,9 +253,6 @@ namespace ORTS
                 solarDirection.Normalize();
                 if (Vector3.Dot(SteppedSolarDirection, solarDirection) < 0.99999)
                     SteppedSolarDirection = solarDirection;
-
-                var cameraLocation = XNACameraLocation;
-                cameraLocation.Z *= -1;
 
                 var cameraDirection = new Vector3(-XNACameraView.M13, -XNACameraView.M23, -XNACameraView.M33);
                 cameraDirection.Normalize();
@@ -541,10 +541,8 @@ namespace ORTS
 
         void DrawSequences(GraphicsDevice graphicsDevice, bool logging)
         {
-            if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0))
-            {
-                //Viewer.MaterialManager.SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, Viewer3D.ShadowMapLimit);
-            }
+            if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && SceneryShader != null)
+                SceneryShader.SetShadowMap(ShadowMapLightViewProjShadowProj, ShadowMap, RenderProcess.ShadowMapLimit);
 
             var renderItems = new List<RenderItem>();
             for (var i = 0; i < (int)RenderPrimitiveSequence.Sentinel; i++)
