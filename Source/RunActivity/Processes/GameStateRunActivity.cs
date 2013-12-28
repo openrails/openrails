@@ -15,17 +15,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// Define this to include extra data on loading performance and progress indications.
+//#define DEBUG_LOADING
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
-using ORTS.Debugging;
 using ORTS.MultiPlayer;
 
 namespace ORTS.Processes
@@ -36,17 +41,18 @@ namespace ORTS.Processes
         static Random Random { get { return Program.Random; } set { Program.Random = value; } }  // primary random number generator used throughout the program
         static Simulator Simulator { get { return Program.Simulator; } set { Program.Simulator = value; } }
 
-		//for Multiplayer
-		static Server Server { get { return Program.Server; } set { Program.Server = value; } }
-		static ClientComm Client { get { return Program.Client; } set { Program.Client = value; } }
-		static string UserName { get { return Program.UserName; } set { Program.UserName = value; } }
-		static string Code { get { return Program.Code; } set { Program.Code = value; } }
+        //for Multiplayer
+        static Server Server { get { return Program.Server; } set { Program.Server = value; } }
+        static ClientComm Client { get { return Program.Client; } set { Program.Client = value; } }
+        static string UserName { get { return Program.UserName; } set { Program.UserName = value; } }
+        static string Code { get { return Program.Code; } set { Program.Code = value; } }
 
         static Viewer3D Viewer { get { return Program.Viewer; } set { Program.Viewer = value; } }
         static ORTraceListener ORTraceListener { get { return Program.ORTraceListener; } set { Program.ORTraceListener = value; } }
         static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
 
-        struct savedValues {
+        struct savedValues
+        {
             public float initialTileX;
             public float initialTileZ;
             public string[] args;
@@ -56,6 +62,7 @@ namespace ORTS.Processes
         static Debugging.SoundDebugForm SoundDebugForm { get { return Program.SoundDebugForm; } set { Program.SoundDebugForm = value; } }
 
         LoadingPrimitive Loading;
+        LoadingBarPrimitive LoadingBar;
         Matrix LoadingMatrix = Matrix.Identity;
 
         public GameStateRunActivity(string[] args)
@@ -65,8 +72,18 @@ namespace ORTS.Processes
 
         internal override void Update(RenderFrame frame, double totalRealSeconds)
         {
+            UpdateLoading();
+
             if (Loading != null)
+            {
                 frame.AddPrimitive(Loading.Material, Loading, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
+            }
+
+            if (LoadingBar != null && LoadedPercent >= 0)
+            {
+                LoadingBar.Material.Shader.LoadingPercent = LoadedPercent;
+                frame.AddPrimitive(LoadingBar.Material, LoadingBar, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
+            }
 
             base.Update(frame, totalRealSeconds);
         }
@@ -76,6 +93,8 @@ namespace ORTS.Processes
             // Load loading image first!
             if (Loading == null)
                 Loading = new LoadingPrimitive(Game);
+            if (LoadingBar == null)
+                LoadingBar = new LoadingBarPrimitive(Game);
 
             var args = Arguments;
 
@@ -98,7 +117,7 @@ namespace ORTS.Processes
 
             var settings = Game.Settings;
 
-            Action doAction = () => 
+            Action doAction = () =>
             {
                 // Do the action specified or write out some help.
                 switch (action)
@@ -106,18 +125,22 @@ namespace ORTS.Processes
                     case "start":
                     case "start-profile":
                         InitLogging(settings, args);
+                        InitLoading(args);
                         Start(settings, data);
                         break;
                     case "resume":
                         InitLogging(settings, args);
+                        InitLoading(args);
                         Resume(settings, data);
                         break;
                     case "replay":
                         InitLogging(settings, args);
+                        InitLoading(args);
                         Replay(settings, data);
                         break;
                     case "replay_from_save":
                         InitLogging(settings, args);
+                        InitLoading(args);
                         ReplayFromSave(settings, data);
                         break;
                     default:
@@ -194,6 +217,7 @@ namespace ORTS.Processes
                     Game.Exit();
                 }
             }
+            UninitLoading();
         }
 
         internal override void Dispose()
@@ -220,12 +244,12 @@ namespace ORTS.Processes
             Simulator.Start();
 
             Viewer = new Viewer3D(Simulator, Game);
-            Viewer.Log = new CommandLog( Viewer );
+            Viewer.Log = new CommandLog(Viewer);
 
-			if (Client != null)
-			{
-                Client.Send( (new MSGPlayer( Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL )).ToString() );
-			}
+            if (Client != null)
+            {
+                Client.Send((new MSGPlayer(Program.UserName, Program.Code, Program.Simulator.conFileName, Program.Simulator.patFileName, Program.Simulator.Trains[0], 0, Program.Simulator.Settings.AvatarURL)).ToString());
+            }
 
             Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
@@ -258,23 +282,23 @@ namespace ORTS.Processes
                 outf.Write(Simulator.PathName);
 
                 outf.Write((int)Simulator.GameTime);
-                outf.Write( DateTime.Now.ToBinary() );
+                outf.Write(DateTime.Now.ToBinary());
                 outf.Write(Simulator.Trains[0].FrontTDBTraveller.TileX + (Simulator.Trains[0].FrontTDBTraveller.X / 2048));
-                outf.Write( Simulator.Trains[0].FrontTDBTraveller.TileZ + (Simulator.Trains[0].FrontTDBTraveller.Z / 2048) );
-                outf.Write( Simulator.InitialTileX );
-                outf.Write( Simulator.InitialTileZ );
+                outf.Write(Simulator.Trains[0].FrontTDBTraveller.TileZ + (Simulator.Trains[0].FrontTDBTraveller.Z / 2048));
+                outf.Write(Simulator.InitialTileX);
+                outf.Write(Simulator.InitialTileZ);
 
                 // Now save the data used by RunActivity.exe
                 outf.Write(Arguments.Length);
-                foreach( var argument in Arguments )
+                foreach (var argument in Arguments)
                     outf.Write(argument);
 
                 // The Save command is the only command that doesn't take any action. It just serves as a marker.
-                new SaveCommand( Viewer.Log, fileStem );
-				Viewer.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".replay"));
+                new SaveCommand(Viewer.Log, fileStem);
+                Viewer.Log.SaveLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".replay"));
 
                 // Copy the logfile to the save folder
-				CopyLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".txt"));
+                CopyLog(Path.Combine(UserSettings.UserDataFolder, fileStem + ".txt"));
 
                 Simulator.Save(outf);
                 Viewer.Save(outf, fileStem);
@@ -315,33 +339,36 @@ namespace ORTS.Processes
         /// <summary>
         /// Replay a saved game.
         /// </summary>
-        void Replay( UserSettings settings, string[] args ) {
+        void Replay(UserSettings settings, string[] args)
+        {
             // If "-replay" also specifies a save file then use it
             // E.g. RunActivity.exe -replay "yard_two 2012-03-20 22.07.36"
             // else use most recently changed *.save
             // E.g. RunActivity.exe -replay
 
             // First use the .save file to check the validity and extract the route and activity.
-            string saveFile = GetSaveFile( args );
-            using( BinaryReader inf = new BinaryReader( new FileStream( saveFile, FileMode.Open, FileAccess.Read ) ) ) {
+            string saveFile = GetSaveFile(args);
+            using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
+            {
                 inf.ReadString();    // Revision
                 inf.ReadString();    // Build
-                savedValues values = GetSavedValues( inf );
-                InitSimulator( settings, values.args, "Replay" );
+                savedValues values = GetSavedValues(inf);
+                InitSimulator(settings, values.args, "Replay");
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator, Game);
             }
 
-            Viewer.Log = new CommandLog( Viewer );
+            Viewer.Log = new CommandLog(Viewer);
             // Load command log to replay
             Viewer.ReplayCommandList = new List<ICommand>();
-            string replayFile = Path.ChangeExtension( saveFile, "replay" );
-            Viewer.Log.LoadLog( replayFile );
-            foreach( var c in Viewer.Log.CommandList ) {
-                Viewer.ReplayCommandList.Add( c );
+            string replayFile = Path.ChangeExtension(saveFile, "replay");
+            Viewer.Log.LoadLog(replayFile);
+            foreach (var c in Viewer.Log.CommandList)
+            {
+                Viewer.ReplayCommandList.Add(c);
             }
             Viewer.Log.CommandList.Clear();
-            CommandLog.ReportReplayCommands( Viewer.ReplayCommandList );
+            CommandLog.ReportReplayCommands(Viewer.ReplayCommandList);
 
             Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
@@ -454,7 +481,7 @@ namespace ORTS.Processes
         void ExportTestSummary(UserSettings settings, string[] args, bool passed, double loadTime)
         {
             // Append to CSV file in format suitable for Excel
-			var summaryFileName = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
+            var summaryFileName = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
             // Could fail if already opened by Excel
             try
             {
@@ -475,16 +502,21 @@ namespace ORTS.Processes
             catch { } // Ignore any errors
         }
 
-        void InitLogging( UserSettings settings, string[] args ) {
-            InitLogging( settings, args, false );
+        void InitLogging(UserSettings settings, string[] args)
+        {
+            InitLogging(settings, args, false);
         }
 
-        void InitLogging( UserSettings settings, string[] args, bool appendLog ) {
-            if( settings.LoggingPath == "" ) {
-                settings.LoggingPath = Environment.GetFolderPath( Environment.SpecialFolder.Desktop );
+        void InitLogging(UserSettings settings, string[] args, bool appendLog)
+        {
+            if (settings.LoggingPath == "")
+            {
+                settings.LoggingPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             }
-            if( settings.Logging ) {
-                if( (settings.LoggingPath.Length > 0) && Directory.Exists( settings.LoggingPath ) ) {
+            if (settings.Logging)
+            {
+                if ((settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
+                {
                     var fileName = settings.LoggingFilename;
                     try
                     {
@@ -494,14 +526,14 @@ namespace ORTS.Processes
                     foreach (var ch in Path.GetInvalidFileNameChars())
                         fileName = fileName.Replace(ch, '.');
 
-                    logFileName = Path.Combine( settings.LoggingPath, fileName );
+                    logFileName = Path.Combine(settings.LoggingPath, fileName);
                     // Ensure we start with an empty file.
                     if (!appendLog)
                         File.Delete(logFileName);
                     // Make Console.Out go to the log file AND the output stream.
-                    Console.SetOut( new FileTeeLogger( logFileName, Console.Out ) );
+                    Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
                     // Make Console.Error go to the new Console.Out.
-                    Console.SetError( Console.Out );
+                    Console.SetError(Console.Out);
                 }
             }
 
@@ -511,7 +543,7 @@ namespace ORTS.Processes
             // Trace.Listeners and Debug.Listeners are the same list.
             Trace.Listeners.Add(ORTraceListener);
 
-            Console.WriteLine( "{0} is starting...", Application.ProductName ); { int i = 0; foreach( var a in args ) { Console.WriteLine( String.Format( "Argument {0} = {1}", i++, a ) ); } }
+            Console.WriteLine("{0} is starting...", Application.ProductName); { int i = 0; foreach (var a in args) { Console.WriteLine(String.Format("Argument {0} = {1}", i++, a)); } }
 
             Console.WriteLine("Version    = {0}", VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>");
             Console.WriteLine("Build      = {0}", VersionInfo.Build);
@@ -520,15 +552,167 @@ namespace ORTS.Processes
             LogSeparator();
             settings.Log();
             LogSeparator();
-            if( !settings.Logging ) {
-                Console.WriteLine( "Logging is disabled, only fatal errors will appear here." );
+            if (!settings.Logging)
+            {
+                Console.WriteLine("Logging is disabled, only fatal errors will appear here.");
                 LogSeparator();
             }
         }
 
-        static void CopyLog( string toFile ) {
-			if (logFileName.Length == 0) return;
-			File.Copy(logFileName, toFile, true);
+        #region Loading progress indication calculations
+
+        const int LoadingSampleCount = 100;
+
+        string LoadingDataKey;
+        string LoadingDataFilePath;
+        long LoadingBytesInitial;
+        int LoadingTime;
+        DateTime LoadingStart;
+        long[] LoadingBytesExpected;
+        List<long> LoadingBytesActual;
+        TimeSpan LoadingBytesSampleRate;
+        DateTime LoadingNextSample = DateTime.MinValue;
+        float LoadedPercent = -1;
+
+        void InitLoading(string[] args)
+        {
+            // Get the initial bytes; this is subtracted from all further uses of GetProcessBytesLoaded().
+            LoadingBytesInitial = GetProcessBytesLoaded();
+
+            // We hash together all the arguments to the program as the key for the loading cache file.
+            LoadingDataKey = String.Join(" ", args);
+            var hash = new MD5CryptoServiceProvider();
+            hash.ComputeHash(Encoding.Default.GetBytes(LoadingDataKey));
+            var loadingHash = String.Join("", hash.Hash.Select(h => h.ToString("x2")).ToArray());
+            var dataPath = Path.Combine(UserSettings.UserDataFolder, "Load Cache");
+            LoadingDataFilePath = Path.Combine(dataPath, loadingHash + ".dat");
+
+            if (!Directory.Exists(dataPath))
+                Directory.CreateDirectory(dataPath);
+
+            var loadingTime = 0;
+            var bytesExpected = new long[LoadingSampleCount];
+            var bytesActual = new List<long>(LoadingSampleCount);
+            // The loading of the cached data doesn't matter if anything goes wrong; we'll simply have no progress bar.
+            try
+            {
+                using (var data = File.OpenRead(LoadingDataFilePath))
+                {
+                    using (var reader = new BinaryReader(data))
+                    {
+                        reader.ReadString();
+                        loadingTime = reader.ReadInt32();
+                        for (var i = 0; i < LoadingSampleCount; i++)
+                            bytesExpected[i] = reader.ReadInt64();
+                    }
+                }
+            }
+            catch { }
+
+            LoadingTime = loadingTime;
+            LoadingStart = DateTime.Now;
+            LoadingBytesExpected = bytesExpected;
+            LoadingBytesActual = bytesActual;
+            // Using the cached loading time, pick a sample rate that will get us ~100 samples. Clamp to 100ms < x < 10,000ms.
+            LoadingBytesSampleRate = new TimeSpan(0, 0, 0, 0, (int)MathHelper.Clamp(loadingTime / LoadingSampleCount, 100, 10000));
+            LoadingNextSample = LoadingStart + LoadingBytesSampleRate;
+
+#if DEBUG_LOADING
+            Console.WriteLine("Loader: Cache key  = {0}", LoadingDataKey);
+            Console.WriteLine("Loader: Cache file = {0}", LoadingDataFilePath);
+            Console.WriteLine("Loader: Expected   = {0:N0} bytes", LoadingBytesExpected[LoadingSampleCount - 1]);
+            Console.WriteLine("Loader: Sampler    = {0:N0} ms", LoadingBytesSampleRate);
+            LogSeparator();
+#endif
+        }
+
+        void UpdateLoading()
+        {
+            if (LoadingBytesActual == null)
+                return;
+
+            var bytes = GetProcessBytesLoaded() - LoadingBytesInitial;
+
+            // -1 indicates no progress data; this happens if the loaded bytes exceeds the cached maximum expected bytes.
+            LoadedPercent = -1;
+            for (var i = 1; i < LoadingSampleCount; i++)
+            {
+                // Find the first expected sample with more bytes. This means we're currently in the (i - 1) to (i) range.
+                if (bytes <= LoadingBytesExpected[i])
+                {
+                    // Calculate the position within the (i - 1) to (i) range using straight interpolation.
+                    var index = (float)i - 1;
+                    index += (float)(bytes - LoadingBytesExpected[i - 1]) / (LoadingBytesExpected[i] - LoadingBytesExpected[i - 1]);
+                    LoadedPercent = index / LoadingBytesExpected.Length;
+                    break;
+                }
+            }
+
+            if (DateTime.Now > LoadingNextSample)
+            {
+                // Record a sample every time we should.
+                LoadingBytesActual.Add(bytes);
+                LoadingNextSample += LoadingBytesSampleRate;
+            }
+        }
+
+        void UninitLoading()
+        {
+            var loadingTime = DateTime.Now - LoadingStart;
+            var bytes = GetProcessBytesLoaded() - LoadingBytesInitial;
+            LoadingBytesActual.Add(bytes);
+
+            // Convert from N samples to 100 samples.
+            var bytesActual = new long[LoadingSampleCount];
+            for (var i = 0; i < LoadingSampleCount; i++)
+            {
+                var index = (float)(i + 1) / LoadingSampleCount * (LoadingBytesActual.Count - 1);
+                var indexR = index - Math.Floor(index);
+                bytesActual[i] = (int)(LoadingBytesActual[(int)Math.Floor(index)] * indexR + LoadingBytesActual[(int)Math.Ceiling(index)] * (1 - indexR));
+            }
+
+            var bytesExpected = LoadingBytesExpected;
+            var expected = bytesExpected[LoadingSampleCount - 1];
+            var difference = bytes - expected;
+
+            Console.WriteLine("Loader: Time       = {0:N0} ms", loadingTime);
+            Console.WriteLine("Loader: Expected   = {0:N0} bytes", expected);
+            Console.WriteLine("Loader: Actual     = {0:N0} bytes", bytes);
+            Console.WriteLine("Loader: Difference = {0:N0} bytes ({1:P1})", difference, (float)difference / expected);
+#if DEBUG_LOADING
+            for (var i = 0; i < LoadingSampleCount; i++)
+                Console.WriteLine("Loader: Sample {0,2}  = {1,13:N0} / {2,13:N0} ({3:N0})", i, bytesExpected[i], bytesActual[i], bytesActual[i] - bytesExpected[i]);
+#endif
+            Console.WriteLine();
+
+            // Smoothly move all expected values towards actual values, by 10% each run. First run will just copy actual values.
+            for (var i = 0; i < LoadingSampleCount; i++)
+                bytesExpected[i] = bytesExpected[i] > 0 ? bytesExpected[i] * 9 / 10 + bytesActual[i] / 10 : bytesActual[i];
+
+            // Like loading, saving the loading cache data doesn't matter if it fails. We'll just have no data to show progress with.
+            try
+            {
+                using (var data = File.OpenWrite(LoadingDataFilePath))
+                {
+                    data.SetLength(0);
+                    using (var writer = new BinaryWriter(data))
+                    {
+                        writer.Write(LoadingDataKey);
+                        writer.Write((int)loadingTime.TotalMilliseconds);
+                        for (var i = 0; i < LoadingSampleCount; i++)
+                            writer.Write(bytesExpected[i]);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        #endregion
+
+        static void CopyLog(string toFile)
+        {
+            if (logFileName.Length == 0) return;
+            File.Copy(logFileName, toFile, true);
         }
 
         void InitSimulator(UserSettings settings, string[] args)
@@ -603,13 +787,13 @@ namespace ORTS.Processes
             {
                 try
                 {
-					MPManager.Instance().MPUpdateInterval = settings.Multiplayer_UpdateInterval;
-					Client = new ClientComm(settings.Multiplayer_Host, settings.Multiplayer_Port, settings.Multiplayer_User + " 1234");
+                    MPManager.Instance().MPUpdateInterval = settings.Multiplayer_UpdateInterval;
+                    Client = new ClientComm(settings.Multiplayer_Host, settings.Multiplayer_Port, settings.Multiplayer_User + " 1234");
                     UserName = Client.UserName;
                     Debug.Assert(UserName.Length >= 4 && UserName.Length <= 10 && !UserName.Contains('\"') && !UserName.Contains('\'') && !char.IsDigit(UserName[0]),
                         "Error in the user name: should not start with digits, be 4-10 characters long and no special characters");
                     Code = Client.Code;
-				}
+                }
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
@@ -623,19 +807,23 @@ namespace ORTS.Processes
         {
             Console.WriteLine(new String('-', 80));
         }
-        
-        void ValidateSave(string fileName, BinaryReader inf) {
+
+        void ValidateSave(string fileName, BinaryReader inf)
+        {
             // Read in validation data.
             var version = "<unknown>";
             var build = "<unknown>";
             var versionOkay = false;
-            try {
-                version = inf.ReadString().Replace( "\0", "" );
-                build = inf.ReadString().Replace( "\0", "" );
+            try
+            {
+                version = inf.ReadString().Replace("\0", "");
+                build = inf.ReadString().Replace("\0", "");
                 versionOkay = (version == VersionInfo.Version) && (build == VersionInfo.Build);
-            } catch { }
+            }
+            catch { }
 
-            if( !versionOkay ) {
+            if (!versionOkay)
+            {
                 if (Debugger.IsAttached)
                 {
                     // Only if debugging, then allow user to continue as
@@ -644,33 +832,39 @@ namespace ORTS.Processes
                     // RunActivity > Properties > Debug > Command line arguments = "-resume")
                     Trace.WriteLine(new IncompatibleSaveException(fileName, version, build, VersionInfo.Version, VersionInfo.Build));
                     LogSeparator();
-                } else {
+                }
+                else
+                {
                     throw new IncompatibleSaveException(fileName, version, build, VersionInfo.Version, VersionInfo.Build);
                 }
             }
         }
 
-        string GetSaveFile( string[] args ) {
-            if( args.Length == 0 ) {
+        string GetSaveFile(string[] args)
+        {
+            if (args.Length == 0)
+            {
                 return GetMostRecentSave();
             }
             string saveFile = args[0];
-            if( !saveFile.EndsWith( ".save" ) ) { saveFile += ".save"; }
-			return Path.Combine(UserSettings.UserDataFolder, saveFile);
+            if (!saveFile.EndsWith(".save")) { saveFile += ".save"; }
+            return Path.Combine(UserSettings.UserDataFolder, saveFile);
         }
 
-        string GetMostRecentSave() {
-			var directory = new DirectoryInfo(UserSettings.UserDataFolder);
-            var file = directory.GetFiles( "*.save" )
-             .OrderByDescending( f => f.LastWriteTime )
+        string GetMostRecentSave()
+        {
+            var directory = new DirectoryInfo(UserSettings.UserDataFolder);
+            var file = directory.GetFiles("*.save")
+             .OrderByDescending(f => f.LastWriteTime)
              .First();
-            if( file == null ) throw new FileNotFoundException( String.Format(
-                "Activity Save file '*.save' not found in folder {0}", directory ) );
+            if (file == null) throw new FileNotFoundException(String.Format(
+               "Activity Save file '*.save' not found in folder {0}", directory));
             return file.FullName;
         }
-        
-        savedValues GetSavedValues( BinaryReader inf ) {
-            savedValues values = default( savedValues );
+
+        savedValues GetSavedValues(BinaryReader inf)
+        {
+            savedValues values = default(savedValues);
             // Skip the heading data used in Menu.exe
             inf.ReadString();    // Route name
             inf.ReadString();    // Path name
@@ -685,10 +879,19 @@ namespace ORTS.Processes
 
             // Read in the real data...
             var savedArgs = new string[inf.ReadInt32()];
-            for( var i = 0; i < savedArgs.Length; i++ )
+            for (var i = 0; i < savedArgs.Length; i++)
                 savedArgs[i] = inf.ReadString();
             values.args = savedArgs;
             return values;
+        }
+
+        long GetProcessBytesLoaded()
+        {
+            NativeMathods.IO_COUNTERS counters;
+            if (NativeMathods.GetProcessIoCounters(Process.GetCurrentProcess().Handle, out counters))
+                return (long)counters.ReadTransferCount;
+
+            return 0;
         }
 
         class LoadingPrimitive : RenderPrimitive
@@ -699,18 +902,27 @@ namespace ORTS.Processes
 
             public LoadingPrimitive(Game game)
             {
-                Material = new LoadingMaterial(game);
+                Material = GetMaterial(game);
+                var verticies = GetVerticies(game);
+                VertexDeclaration = new VertexDeclaration(game.GraphicsDevice, VertexPositionTexture.VertexElements);
+                VertexBuffer = new VertexBuffer(game.GraphicsDevice, VertexPositionTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
+                VertexBuffer.SetData(verticies);
+            }
+
+            virtual protected LoadingMaterial GetMaterial(Game game)
+            {
+                return new LoadingMaterial(game);
+            }
+
+            virtual protected VertexPositionTexture[] GetVerticies(Game game)
+            {
                 var dd = (float)Material.Texture.Width / 2 + 0.5f;
-                var verticies = new[] {
+                return new[] {
 				    new VertexPositionTexture(new Vector3(-dd, +dd, -1), new Vector2(0, 0)),
 				    new VertexPositionTexture(new Vector3(+dd, +dd, -1), new Vector2(1, 0)),
 				    new VertexPositionTexture(new Vector3(-dd, -dd, -1), new Vector2(0, 1)),
 				    new VertexPositionTexture(new Vector3(+dd, -dd, -1), new Vector2(1, 1)),
 			    };
-
-                VertexDeclaration = new VertexDeclaration(game.GraphicsDevice, VertexPositionTexture.VertexElements);
-                VertexBuffer = new VertexBuffer(game.GraphicsDevice, VertexPositionTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
-                VertexBuffer.SetData(verticies);
             }
 
             public override void Draw(GraphicsDevice graphicsDevice)
@@ -718,6 +930,34 @@ namespace ORTS.Processes
                 graphicsDevice.VertexDeclaration = VertexDeclaration;
                 graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionTexture.SizeInBytes);
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            }
+        }
+
+        class LoadingBarPrimitive : LoadingPrimitive
+        {
+            public LoadingBarPrimitive(Game game)
+                : base(game)
+            {
+            }
+
+            protected override LoadingMaterial GetMaterial(Game game)
+            {
+                return new LoadingBarMaterial(game);
+            }
+
+            protected override VertexPositionTexture[] GetVerticies(Game game)
+            {
+                var margin = 10;
+                var w = game.RenderProcess.DisplaySize.X - 2 * margin;
+                var h = 2 * margin;
+                var x = -w / 2 + 0.5f;
+                var y = game.RenderProcess.DisplaySize.Y / 2 - h - margin + 0.5f;
+                return new[] {
+				    new VertexPositionTexture(new Vector3(x, -y, -1), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(x + w, -y, -1), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(x, -y - h, -1), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(x + w, -y - h, -1), new Vector2(1, 1)),
+			    };
             }
         }
 
@@ -765,12 +1005,29 @@ namespace ORTS.Processes
             }
         }
 
+        class LoadingBarMaterial : LoadingMaterial
+        {
+            public LoadingBarMaterial(Game game)
+                : base(game)
+            {
+            }
+
+            public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+            {
+                base.SetState(graphicsDevice, previousMaterial);
+                Shader.CurrentTechnique = Shader.Techniques["LoadingBar"];
+            }
+        }
+
         class LoadingShader : Shader
         {
             readonly EffectParameter worldViewProjection;
+            readonly EffectParameter loadingPercent;
             readonly EffectParameter loadingTexture;
 
             public Matrix WorldViewProjection { set { worldViewProjection.SetValue(value); } }
+
+            public float LoadingPercent { set { loadingPercent.SetValue(value); } }
 
             public Texture2D LoadingTexture { set { loadingTexture.SetValue(value); } }
 
@@ -778,8 +1035,26 @@ namespace ORTS.Processes
                 : base(graphicsDevice, "Loading")
             {
                 worldViewProjection = Parameters["WorldViewProjection"];
+                loadingPercent = Parameters["LoadingPercent"];
                 loadingTexture = Parameters["LoadingTexture"];
             }
+        }
+
+        static class NativeMathods
+        {
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool GetProcessIoCounters(IntPtr hProcess, out IO_COUNTERS lpIoCounters);
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct IO_COUNTERS
+            {
+                public UInt64 ReadOperationCount;
+                public UInt64 WriteOperationCount;
+                public UInt64 OtherOperationCount;
+                public UInt64 ReadTransferCount;
+                public UInt64 WriteTransferCount;
+                public UInt64 OtherTransferCount;
+            };
         }
     }
 

@@ -25,6 +25,8 @@
 
 float4x4 WorldViewProjection;  // model -> world -> view -> projection
 
+float LoadingPercent;
+
 texture LoadingTexture;
 
 sampler LoadingSampler = sampler_state
@@ -60,11 +62,31 @@ VERTEX_OUTPUT VSLoading(in VERTEX_INPUT In)
 	return Out;
 }
 
+VERTEX_OUTPUT VSLoadingBar(in VERTEX_INPUT In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	
+	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.TexCoords = In.TexCoords;
+	
+	return Out;
+}
+
 ////////////////////    P I X E L   S H A D E R S    ///////////////////////////
 
 float4 PSLoading(in VERTEX_OUTPUT In) : COLOR0
 {
 	return tex2D(LoadingSampler, In.TexCoords);
+}
+
+float4 PSLoadingBar(in VERTEX_OUTPUT In) : COLOR0
+{
+	const float4 ColorBack = float4(0.5, 0.5, 0.5, 1);
+	const float4 ColorFore = float4(1.0, 1.0, 1.0, 1);
+	if (LoadingPercent - In.TexCoords.x > 0)
+		return ColorFore;
+	else
+		return ColorBack;
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
@@ -79,5 +101,12 @@ technique Loading {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSLoading();
 		PixelShader = compile ps_2_0 PSLoading();
+	}
+}
+
+technique LoadingBar {
+	pass Pass_0 {
+		VertexShader = compile vs_2_0 VSLoadingBar();
+		PixelShader = compile ps_2_0 PSLoadingBar();
 	}
 }
