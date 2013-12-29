@@ -100,7 +100,7 @@ namespace ORTS.Processes
 
             // Look for an action to perform.
             var action = "";
-            var actions = new[] { "start", "resume", "replay", "replay_from_save" };
+            var actions = new[] { "start", "resume", "replay", "replay_from_save", "test" };
             foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
                     action = possibleAction;
@@ -142,6 +142,11 @@ namespace ORTS.Processes
                         InitLogging(settings, args);
                         InitLoading(args);
                         ReplayFromSave(settings, data);
+                        break;
+                    case "test":
+                        InitLogging(settings, args, true);
+                        InitLoading(args);
+                        Test(settings, data);
                         break;
                     default:
                         MessageBox.Show("Supply missing activity file name\n"
@@ -458,48 +463,73 @@ namespace ORTS.Processes
         /// </summary>
         void Test(UserSettings settings, string[] args)
         {
-            var passed = false;
             var startTime = DateTime.Now;
-            var loadTime = 0d;
+            var exitGameState = new GameStateViewer3DTest(args);
             try
             {
                 InitSimulator(settings, args, "Test");
                 Simulator.Start();
                 Viewer = new Viewer3D(Simulator, Game);
                 Viewer.Log = new CommandLog(Viewer);
-                Game.ReplaceState(new GameStateViewer3D(Viewer));
-                loadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
-                passed = true;
+                Game.ReplaceState(exitGameState);
+                Game.PushState(new GameStateViewer3D(Viewer));
+                exitGameState.LoadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
+                exitGameState.Passed = true;
             }
-            finally
+            catch
             {
-                ExportTestSummary(settings, args, passed, loadTime);
-                Environment.ExitCode = passed ? 0 : 1;
+                Game.ReplaceState(exitGameState);
             }
         }
 
-        void ExportTestSummary(UserSettings settings, string[] args, bool passed, double loadTime)
+        class GameStateViewer3DTest : GameState
         {
-            // Append to CSV file in format suitable for Excel
-            var summaryFileName = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
-            // Could fail if already opened by Excel
-            try
+            public bool Passed;
+            public double LoadTime;
+
+            readonly string[] Args;
+
+            public GameStateViewer3DTest(string[] args)
             {
-                using (var writer = File.AppendText(summaryFileName))
-                {
-                    // Route, Activity, Passed, Errors, Warnings, Infos, Load Time, Frame Rate
-                    writer.WriteLine("{0},{1},{2},{3},{4},{5},{6:F1},{7:F1}",
-                        Simulator != null && Simulator.TRK != null && Simulator.TRK.Tr_RouteFile != null ? Simulator.TRK.Tr_RouteFile.Name.Replace(",", ";") : "",
-                        Simulator != null && Simulator.Activity != null && Simulator.Activity.Tr_Activity != null && Simulator.Activity.Tr_Activity.Tr_Activity_Header != null ? Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.Replace(",", ";") : "",
-                        passed ? "Yes" : "No",
-                        ORTraceListener != null ? ORTraceListener.Counts[0] + ORTraceListener.Counts[1] : 0,
-                        ORTraceListener != null ? ORTraceListener.Counts[2] : 0,
-                        ORTraceListener != null ? ORTraceListener.Counts[3] : 0,
-                        loadTime,
-                        Viewer != null && Viewer.RenderProcess != null ? Viewer.RenderProcess.FrameRate.SmoothedValue : 0);
-                }
+                Args = args;
             }
-            catch { } // Ignore any errors
+
+            internal override void Load()
+            {
+                Game.PopState();
+            }
+
+            internal override void Dispose()
+            {
+                ExportTestSummary(Game.Settings, Args, Passed, LoadTime);
+                Environment.ExitCode = Passed ? 0 : 1;
+
+                base.Dispose();
+            }
+
+            static void ExportTestSummary(UserSettings settings, string[] args, bool passed, double loadTime)
+            {
+                // Append to CSV file in format suitable for Excel
+                var summaryFileName = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
+                // Could fail if already opened by Excel
+                try
+                {
+                    using (var writer = File.AppendText(summaryFileName))
+                    {
+                        // Route, Activity, Passed, Errors, Warnings, Infos, Load Time, Frame Rate
+                        writer.WriteLine("{0},{1},{2},{3},{4},{5},{6:F1},{7:F1}",
+                            Simulator != null && Simulator.TRK != null && Simulator.TRK.Tr_RouteFile != null ? Simulator.TRK.Tr_RouteFile.Name.Replace(",", ";") : "",
+                            Simulator != null && Simulator.Activity != null && Simulator.Activity.Tr_Activity != null && Simulator.Activity.Tr_Activity.Tr_Activity_Header != null ? Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.Replace(",", ";") : "",
+                            passed ? "Yes" : "No",
+                            ORTraceListener != null ? ORTraceListener.Counts[0] + ORTraceListener.Counts[1] : 0,
+                            ORTraceListener != null ? ORTraceListener.Counts[2] : 0,
+                            ORTraceListener != null ? ORTraceListener.Counts[3] : 0,
+                            loadTime,
+                            Viewer != null && Viewer.RenderProcess != null ? Viewer.RenderProcess.FrameRate.SmoothedValue : 0);
+                    }
+                }
+                catch { } // Ignore any errors
+            }
         }
 
         void InitLogging(UserSettings settings, string[] args)
@@ -579,8 +609,10 @@ namespace ORTS.Processes
             // Get the initial bytes; this is subtracted from all further uses of GetProcessBytesLoaded().
             LoadingBytesInitial = GetProcessBytesLoaded();
 
-            // We hash together all the arguments to the program as the key for the loading cache file.
-            LoadingDataKey = String.Join(" ", args);
+            // We hash together all the appropriate arguments to the program as the key for the loading cache file.
+            // Arguments without a '.' in them and those starting '/' are ignored, since they are explore activity
+            // configuration (time, season, etc.) or flags like /test which we don't want to change on.
+            LoadingDataKey = String.Join(" ", args.Where(a => a.Contains('.') && !a.StartsWith("-") && !a.StartsWith("/")).ToArray()).ToLowerInvariant();
             var hash = new MD5CryptoServiceProvider();
             hash.ComputeHash(Encoding.Default.GetBytes(LoadingDataKey));
             var loadingHash = String.Join("", hash.Hash.Select(h => h.ToString("x2")).ToArray());

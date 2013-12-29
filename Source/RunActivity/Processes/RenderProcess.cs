@@ -232,7 +232,7 @@ namespace ORTS.Processes
         internal void BeginDraw()
         {
             if (Game.Settings.Profiling)
-                if ((Game.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Game.Settings.ProfilingFrameCount) || (Game.Settings.ProfilingTime > 0 && Viewer.RealTime >= Game.Settings.ProfilingTime))
+                if ((Game.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Game.Settings.ProfilingFrameCount) || (Game.Settings.ProfilingTime > 0 && Viewer != null && Viewer.RealTime >= Game.Settings.ProfilingTime))
                     Game.PopState();
 
             if (Game.State == null)
