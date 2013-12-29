@@ -75,8 +75,9 @@ namespace ORTS.Processes
             WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
             WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
 
-            Game.IsFixedTimeStep = false;
-            Game.TargetElapsedTime = TimeSpan.FromMilliseconds(1);
+            Game.IsFixedTimeStep = true;
+            Game.TargetElapsedTime = TimeSpan.FromMilliseconds(100);
+            Game.InactiveSleepTime = TimeSpan.FromMilliseconds(100);
             GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Game.Settings.VerticalSync;
             GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
             GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;

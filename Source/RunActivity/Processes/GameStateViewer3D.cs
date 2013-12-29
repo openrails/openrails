@@ -17,6 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
 using ORTS.Debugging;
 using ORTS.MultiPlayer;
 
@@ -38,6 +39,8 @@ namespace ORTS.Processes
         {
             if (FirstFrame)
             {
+                Game.IsFixedTimeStep = false;
+
                 // We must create these forms on the main thread (Render) or they won't pump events correctly.
 
                 if (MPManager.IsMultiPlayer() || Game.Settings.ViewDispatcher)
