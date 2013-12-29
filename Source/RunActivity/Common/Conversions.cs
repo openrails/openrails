@@ -176,6 +176,8 @@ namespace ORTS
     {
         public static float FromFt2(float f) { return f / 10.764f; } // ft^2 => m^2
         public static float   ToFt2(float m) { return m * 10.764f; } // m^2 => ft^2
+        public static float FromIn2(float f) { return f / 1550.0031f; } // In^2 => m^2
+        public static float   ToIn2(float m) { return m * 1550.0031f; } // m^2 => In^2
     }
     
     /// <summary>

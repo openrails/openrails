@@ -221,6 +221,50 @@ namespace ORTS
             250.0f, 218.0f, 190.0f, 168.0f, 145.0f, 129.0f, 113.0f, 98.0f, 84.0f, 70.0f
         };
 
+        // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
+        static float[] WheelRotationRpM = new float[]
+        {
+            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
+        };
+
+        // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
+        static float[] InitialPressureDropRatio = new float[]
+        {
+            0.98f, 0.95f, 0.927f, 0.90f, 0.874f, 0.85f, 0.82f, 0.81f
+        };
+        
+                // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+        static float[] CutoffPressureDropRatio = new float[]
+        {
+         //     1.0f, 0.90f,   0.85f,   0.8125f, 0.78f,  0.76f,   0.73f, 0.72f    //   - 0.5
+            1.0f, 0.88f,   0.825f,   0.785f, 0.755f,  0.735f,   0.715f, 0.685f    //   - 0.4
+     //         1.0f, 0.8775f, 0.8125f, 0.7725f, 0.7425f, 0.725f,  0.70f,   0.6775f   //    - 0.35
+    //        1.0f, 0.865f,   0.80f,   0.76f,  0.73f,   0.715f,   0.685f, 0.67f  // - 0.3
+        };
+
+                // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+        static float[] SteamChestPressureDropRatio = new float[]
+        {
+            0.99f, 0.97f, 0.95f, 0.94f, 0.93f, 0.92f, 0.91f, 0.90f
+        };
+
+       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+        public static Interpolator SteamChestPressureDropRatioInterpolatorRpMtoX()
+        {
+            return new Interpolator(WheelRotationRpM, SteamChestPressureDropRatio);
+        }       
+
+       // Allowance for pressure drop in Cut-off pressure compared to Initial Pressure - NB only curve for 50% cutoff done - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+        public static Interpolator CutoffPressureDropRatioInterpolatorRpMtoX()
+        {
+            return new Interpolator(WheelRotationRpM, CutoffPressureDropRatio);
+        }            
+        
+        // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
+        public static Interpolator InitialPressureDropRatioInterpolatorRpMtoX()
+        {
+            return new Interpolator(WheelRotationRpM, InitialPressureDropRatio);
+        }    
 
         // Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
         public static Interpolator SuperheatTempLimitInterpolatorXtoDegF()
