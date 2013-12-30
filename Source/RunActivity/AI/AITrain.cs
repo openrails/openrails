@@ -3002,8 +3002,40 @@ namespace ORTS
             }
 
             // rebuild loop info
-            TCRoute.LoopEnd.Clear();
-            TCRoute.LoopSearch();
+            // retest for loop ends
+
+            for (int iLoop = TCRoute.TCRouteSubpaths.Count - 1; iLoop >= 0; iLoop--)
+            {
+                int loopSection = TCRoute.LoopEnd[iLoop];
+                if (loopSection >= 0)
+                {
+                    // if no longer on this subpath, test if on any of the following subpaths
+                    if (TCRoute.TCRouteSubpaths[iLoop].GetRouteIndex(loopSection, 0) < 0)
+                    {
+                        for (int iLoop2 = iLoop + 1; iLoop2 <= TCRoute.TCRouteSubpaths.Count - 1; iLoop2++)
+                        {
+                            if (TCRoute.TCRouteSubpaths[iLoop2].GetRouteIndex(loopSection, 0) >= 0)
+                            {
+                                if (iLoop2 <= TCRoute.TCRouteSubpaths.Count - 2 && TCRoute.TCRouteSubpaths[iLoop2 + 1].GetRouteIndex(loopSection, 0) >= 0) // must also be on next subpath
+                                {
+                                    TCRoute.LoopEnd[iLoop2] = loopSection;
+                                    Trace.TraceInformation("Loop section " + loopSection + " moved to " + iLoop2 + "\n");
+                                }
+                            }
+                        }
+
+                        TCRoute.LoopEnd[iLoop] = -1;
+
+                    }
+                    else
+                    {
+                        if (iLoop > TCRoute.TCRouteSubpaths.Count - 2 || TCRoute.TCRouteSubpaths[iLoop + 1].GetRouteIndex(loopSection, 0) < 0) // check if also still on next subpath
+                        {
+                            TCRoute.LoopEnd[iLoop] = -1;
+                        }
+                    }
+                }
+            }
         }
 
         //================================================================================================//
@@ -3566,7 +3598,7 @@ namespace ORTS
             else if (thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
                 if (thisItem.ActiveItem.signal_state == SignalHead.MstsSignalAspect.STOP &&
-                    thisItem.ActiveItem.ObjectDetails.station_holdState == SignalObject.HoldstateStation.StationStop)
+                    thisItem.ActiveItem.ObjectDetails.holdState == SignalObject.HoldState.StationStop)
                 {
                     actionValid = false;
 

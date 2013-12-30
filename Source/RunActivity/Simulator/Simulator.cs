@@ -210,6 +210,7 @@ namespace ORTS
             if (playerTrain != null)
                 playerTrain.PostInit();  // place player train after pre-running of AI trains
             MPManager.Instance().RememberOriginalSwitchState();
+
         }
 
         public void Stop()
@@ -316,10 +317,6 @@ namespace ORTS
                 if (train.SpeedMpS != 0 &&
                     train.GetType() != typeof(AITrain) &&
                     (PlayerLocomotive == null || train != PlayerLocomotive.Train))
-                {
-                    movingTrains.Add(train);
-                }
-                else if (MPManager.IsServer() && train.TrainType == Train.TRAINTYPE.REMOTE)
                 {
                     movingTrains.Add(train);
                 }
@@ -641,7 +638,7 @@ namespace ORTS
 
             train.CheckFreight();
 
-            if (Activity != null) // activity is defined
+            if (Activity != null && !MPManager.IsMultiPlayer()) // activity is defined
             {
                 train.SetRoutePath(aiPath, Signals);
                 train.BuildWaitingPointList(0.0f);
@@ -861,6 +858,7 @@ namespace ORTS
             TrainCar lead = train.LeadLocomotive;
             // move rest of cars to the new train
             Train train2 = new Train(this, train);
+            if (MPManager.IsMultiPlayer()) train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
 
             for (int k = i; k < train.Cars.Count; ++k)
             {
@@ -914,6 +912,7 @@ namespace ORTS
 
             train.UpdateTrackActionsUncoupling(true);
             train2.UpdateTrackActionsUncoupling(false);
+            if (MPManager.IsMultiPlayer()) { train.ControlMode = train2.ControlMode = Train.TRAIN_CONTROL.EXPLORER; }
 
             if (MPManager.IsMultiPlayer() && !MPManager.IsServer())
             {
@@ -921,6 +920,7 @@ namespace ORTS
                 if (PlayerLocomotive != null && PlayerLocomotive.Train == train2) MPManager.Instance().AddUncoupledTrains(train);
                 else if (PlayerLocomotive != null && PlayerLocomotive.Train == train) MPManager.Instance().AddUncoupledTrains(train2);
             }
+
 
             train.CheckFreight();
             train2.CheckFreight();

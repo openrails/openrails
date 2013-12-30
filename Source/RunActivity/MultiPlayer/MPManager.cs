@@ -202,8 +202,7 @@ namespace ORTS.MultiPlayer
 				if (switchStatus.OKtoSend) BroadCast(switchStatus.ToString());
 				var signalStatus = new MSGSignalStatus();
 				if (signalStatus.OKtoSend) BroadCast(signalStatus.ToString());
-                var sectionStatus = new MSGSectionState();
-                if (sectionStatus.OKtoSend) BroadCast(sectionStatus.ToString());
+
 			}
 			
 			//client updates itself
@@ -291,6 +290,17 @@ namespace ORTS.MultiPlayer
 			var speed = Math.Abs(Locomotive.SpeedMpS);
 			if (speed > maxSpeed) spad = true;
 			//if (train.TMaspect == ORTS.Popups.TrackMonitorSignalAspect.Stop && Math.Abs(train.distanceToSignal) < 2*speed && speed > 5) spad = true; //red light and cannot stop within 2 seconds, if the speed is large
+
+#if !NEW_SIGNALLING
+			if (spad == true || train.spad2)
+			{
+				Locomotive.SetEmergency();
+				Program.Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
+				train.spad2 = false;
+			}
+#endif
+
+
 		}
 		//check if it is in the server mode
 		public static bool IsServer()
@@ -337,7 +347,7 @@ namespace ORTS.MultiPlayer
 		static public void Notify(string m)
 		{
 			if (m == null) return;
-                        if (Program.Client != null && Program.Server == null) Program.Client.Send(m); //client notify server
+			if (Program.Client != null && Program.Server == null) Program.Client.Send(m); //client notify server
 			if (Program.Server != null) Program.Server.BroadCast(m); //server notify everybody else
 		}
 
@@ -345,6 +355,13 @@ namespace ORTS.MultiPlayer
 		{
 			if (m!= null && Program.Client != null) Program.Client.Send(m);
 		}
+
+#if !NEW_SIGNALLING
+		static public void BroadcastSignal(Signal s)
+		{
+
+		}
+#endif
 
 		public static void StopDispatcher()
 		{
@@ -556,6 +573,16 @@ namespace ORTS.MultiPlayer
 						//player is not in this train
 						if (p.Train != null && p.Train != Program.Simulator.PlayerLocomotive.Train)
 						{
+#if !NEW_SIGNALLING
+							if (p.Train.TrackAuthority != null)
+							{
+								Program.Simulator.AI.Dispatcher.SetAuthorization(p.Train.TrackAuthority, null, null, 0);
+								Program.Simulator.AI.Dispatcher.Unreserve(p.Train.Number + 100000);
+								Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(p.Train.TrackAuthority);
+								p.Train.TrackAuthority = null;
+							}
+#endif
+
 							//make sure this train has no other player on it
 							bool hasOtherPlayer = false;
 							foreach (var p1 in OnlineTrains.Players)
@@ -615,6 +642,19 @@ namespace ORTS.MultiPlayer
 							if (t1.Number == t.Number) { hasIt = true; break; }
 						}
 						if (!hasIt) Program.Simulator.Trains.Add(t);
+#if !NEW_SIGNALLING
+						if (IsServer())
+						{
+							if (t.Path != null && !PreferGreen)
+							{
+								t.TrackAuthority = new TrackAuthority(t, t.Number + 100000, 10, t.Path);
+								Program.Simulator.AI.Dispatcher.TrackAuthorities.Add(t.TrackAuthority);
+								Program.Simulator.AI.Dispatcher.RequestAuth(t, true, 0);
+								//t.Path.AlignInitSwitches(t.RearTDBTraveller, -1, 500);
+							}
+							else t.TrackAuthority = null;
+						}
+#endif
 					}
 					addedTrains.Clear();
 				}
@@ -629,6 +669,15 @@ namespace ORTS.MultiPlayer
 					{
                         t.RemoveFromTrack();
 						Program.Simulator.Trains.Remove(t);
+#if !NEW_SIGNALLING
+						if (t.TrackAuthority != null)
+						{
+							Program.Simulator.AI.Dispatcher.SetAuthorization(t.TrackAuthority, null, null, 0);
+							Program.Simulator.AI.Dispatcher.Unreserve(t.Number + 100000);
+							Program.Simulator.AI.Dispatcher.TrackAuthorities.Remove(t.TrackAuthority);
+							t.TrackAuthority = null;
+						}
+#endif
 					}
 					removedTrains.Clear();
 				}

@@ -89,7 +89,6 @@ namespace ORTS {
       , Labels
       , GearBox
       , SignalMode
-      , SwitchClient
     }
 
     public enum CabSetting {
@@ -180,7 +179,6 @@ namespace ORTS {
             , new string [] { "Location labels", "none", "sidings", "stations", "stations and sidings" } 
             , new string [] { "Gearbox", null, null, null, "down", "up", "locked. Use shaft before changing gear." } 
             , new string [] { "Signal mode", "manual", null, "auto", null, null, "locked. Stop train, then re-try." } 
-            , new string [] { "Switch in Client Mode", null, null, "change", null, null, "locked. Use ALT+Left-Mouse or Dispatcher window to set switch." }
             };
 
         public readonly Viewer3D Viewer;

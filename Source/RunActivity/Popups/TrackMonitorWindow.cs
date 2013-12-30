@@ -61,15 +61,6 @@ namespace ORTS.Popups
 			{ Train.TRAIN_CONTROL.UNDEFINED, "Unknown" },
 		};
 
-        readonly Dictionary<Train.MP_CONTROL, string> MPControlModeLabels =
-            new Dictionary<Train.MP_CONTROL, string> {
-            { Train.MP_CONTROL.DISPATCH , "Dispatch" },
-            { Train.MP_CONTROL.PATHED , "Pathed" },
-            { Train.MP_CONTROL.ROAM , "MP Roam" },
-            { Train.MP_CONTROL.WAITDISPATCH , "WaitDisp" },
-            { Train.MP_CONTROL.UNDEFINED , "Unknown" },
-        };
-
         static readonly Dictionary<Train.END_AUTHORITY, string> AuthorityLabels =
             new Dictionary<Train.END_AUTHORITY, string> {
 			{ Train.END_AUTHORITY.END_OF_TRACK, "End Trck" },
@@ -180,18 +171,7 @@ namespace ORTS.Popups
 
                 // control mode
                 string ControlText = ControlModeLabels[thisInfo.ControlMode];
-                string MPControlText = MPControlModeLabels[thisInfo.MpControlMode];
-
-                if (thisInfo.MpControlMode == Train.MP_CONTROL.DISPATCH ||
-                    thisInfo.MpControlMode == Train.MP_CONTROL.ROAM )
-                {
-                    ControlText = String.Concat(MPControlText, " ", FindAuthorityInfo(thisInfo.ObjectInfoForward, ControlText));
-                }
-                else if (thisInfo.MpControlMode == Train.MP_CONTROL.WAITDISPATCH)
-                {
-                    ControlText = String.Copy(MPControlText);
-                }
-                else if (thisInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE)
+                if (thisInfo.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE)
                 {
                     ControlText = FindAuthorityInfo(thisInfo.ObjectInfoForward, ControlText);
                 }

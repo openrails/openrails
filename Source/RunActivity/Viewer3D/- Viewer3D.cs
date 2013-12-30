@@ -705,21 +705,17 @@ namespace ORTS
             }
             if (UserInput.IsPressed(UserCommands.GameSwitchAhead))
             {
-                if (PlayerTrain.PathedTrain)
-                    Simulator.Confirmer.Warning(CabControl.SwitchAhead, CabSetting.Warn1);
-                else if (MPManager.IsClient())
-                    Simulator.Confirmer.Warning(CabControl.SwitchClient, CabSetting.Warn1);
-                else
+                if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
                     new ToggleSwitchAheadCommand(Log);
+                else
+                    Simulator.Confirmer.Warning(CabControl.SwitchAhead, CabSetting.Warn1);
             }
             if (UserInput.IsPressed(UserCommands.GameSwitchBehind))
             {
-                if (PlayerTrain.PathedTrain)
-                    Simulator.Confirmer.Warning(CabControl.SwitchBehind, CabSetting.Warn1);
-                else if (MPManager.IsClient())
-                    Simulator.Confirmer.Warning(CabControl.SwitchClient, CabSetting.Warn1);
-                else
+                if (PlayerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL || PlayerTrain.ControlMode == Train.TRAIN_CONTROL.EXPLORER)
                     new ToggleSwitchBehindCommand(Log);
+                else
+                    Simulator.Confirmer.Warning(CabControl.SwitchBehind, CabSetting.Warn1);
             }
             if (UserInput.IsPressed(UserCommands.GameResetSignalForward)) PlayerTrain.RequestSignalPermission(Direction.Forward);
 			if (UserInput.IsPressed(UserCommands.GameResetSignalBackward)) PlayerTrain.RequestSignalPermission(Direction.Reverse);
