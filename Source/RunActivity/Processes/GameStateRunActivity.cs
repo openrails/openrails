@@ -62,6 +62,7 @@ namespace ORTS.Processes
         static Debugging.SoundDebugForm SoundDebugForm { get { return Program.SoundDebugForm; } set { Program.SoundDebugForm = value; } }
 
         LoadingPrimitive Loading;
+        LoadingScreenPrimitive LoadingScreen;
         LoadingBarPrimitive LoadingBar;
         Matrix LoadingMatrix = Matrix.Identity;
 
@@ -74,9 +75,17 @@ namespace ORTS.Processes
         {
             UpdateLoading();
 
+            if (LoadingScreen == null && Simulator != null)
+                LoadingScreen = new LoadingScreenPrimitive(Game);
+
             if (Loading != null)
             {
                 frame.AddPrimitive(Loading.Material, Loading, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
+            }
+
+            if (LoadingScreen != null)
+            {
+                frame.AddPrimitive(LoadingScreen.Material, LoadingScreen, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
             }
 
             if (LoadingBar != null && LoadedPercent >= 0)
@@ -707,7 +716,7 @@ namespace ORTS.Processes
             var expected = bytesExpected[LoadingSampleCount - 1];
             var difference = bytes - expected;
 
-            Console.WriteLine("Loader: Time       = {0:N0} ms", loadingTime);
+            Console.WriteLine("Loader: Time       = {0:N0} ms", loadingTime.ToString());
             Console.WriteLine("Loader: Expected   = {0:N0} bytes", expected);
             Console.WriteLine("Loader: Actual     = {0:N0} bytes", bytes);
             Console.WriteLine("Loader: Difference = {0:N0} bytes ({1:P1})", difference, (float)difference / expected);
@@ -956,12 +965,53 @@ namespace ORTS.Processes
 				    new VertexPositionTexture(new Vector3(+dd, -dd, -1), new Vector2(1, 1)),
 			    };
             }
-
+            
             public override void Draw(GraphicsDevice graphicsDevice)
             {
                 graphicsDevice.VertexDeclaration = VertexDeclaration;
                 graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionTexture.SizeInBytes);
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
+            }
+        }
+
+        class LoadingScreenPrimitive : LoadingPrimitive
+        {
+            public LoadingScreenPrimitive(Game game)
+                : base(game)
+            {
+            }
+
+            protected override LoadingMaterial GetMaterial(Game game)
+            {
+                return new LoadingScreenMaterial(game);
+            }
+
+            protected override VertexPositionTexture[] GetVerticies(Game game)
+            {
+                float w, h;
+                float offset = 0;
+
+                if (Material.Texture == null)
+                {
+                    w = h = 0;
+                }
+                else
+                {
+                    w = (float)Material.Texture.Width;
+                    h = (float)Material.Texture.Height;
+                    var scaleX = (float)game.RenderProcess.DisplaySize.X / w;
+                    var scaleY = (float)game.RenderProcess.DisplaySize.Y / h;
+                    var scale = scaleX > scaleY ? scaleX : scaleY;
+                    offset = ((float)game.RenderProcess.DisplaySize.Y - h * scale) / 2f;
+                    w = w * scale / 2 + 0.5f;
+                    h = h * scale / 2 + 0.5f;
+                }
+                return new[] {
+				    new VertexPositionTexture(new Vector3(-w, +h + offset, -1), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(+w, +h + offset, -1), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(-w, -h + offset, -1), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(+w, -h + offset, -1), new Vector2(1, 1)),
+			    };
             }
         }
 
@@ -1002,7 +1052,12 @@ namespace ORTS.Processes
                 : base(null, null)
             {
                 Shader = new LoadingShader(game.RenderProcess.GraphicsDevice);
-                Texture = Texture2D.FromFile(game.RenderProcess.GraphicsDevice, Path.Combine(game.ContentPath, "Loading.png"));
+                Texture = GetTexture(game);
+            }
+
+            virtual protected Texture2D GetTexture(Game game)
+            {
+                return Texture2D.FromFile(game.RenderProcess.GraphicsDevice, Path.Combine(game.ContentPath, "Loading.png"));
             }
 
             public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -1034,6 +1089,22 @@ namespace ORTS.Processes
                 graphicsDevice.RenderState.AlphaBlendEnable = false;
                 graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
                 graphicsDevice.RenderState.SourceBlend = Blend.One;
+            }
+        }
+
+        class LoadingScreenMaterial : LoadingMaterial
+        {
+            public LoadingScreenMaterial(Game game)
+                : base(game)
+            {
+            }
+
+            protected override Texture2D GetTexture(Game game)
+            {
+                var path = Path.Combine(Simulator.RoutePath, "load.ace");
+                if (File.Exists(path))
+                    return MSTS.ACEFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, Path.Combine(Simulator.RoutePath, "load.ace"));
+                return null;
             }
         }
 
