@@ -832,23 +832,27 @@ namespace ORTS {
             // Report();
         }
     }
-    
-    [Serializable()]
-    public class RefuelCommand : Command
-    {
-        //public static MSTSSteamLocomotive Receiver { get; set; }
-        public static MSTSLocomotive Receiver { get; set; }
 
-        public RefuelCommand(CommandLog log)
-            : base(log)
+    //CJ
+    /// <summary>
+    /// Continuous command to re-fuel and re-water locomotive or tender.
+    /// </summary>
+    [Serializable()]
+    public class RefillCommand : ContinuousCommand
+    {
+        public static MSTSLocomotiveViewer Receiver { get; set; }
+
+        public RefillCommand(CommandLog log, float? target, double startTime)
+            : base(log, true, target, startTime)
         {
-            Redo();
+            Target = target;        // Fraction from 0 to 1.0
+            this.Time = startTime;  // Continuous commands are created at end of change, so overwrite time when command was created
         }
 
         public override void Redo()
         {
             if (Receiver == null) return;
-            Receiver.Refuel();
+            Receiver.RefillChangeTo(Target);
             // Report();
         }
     }

@@ -63,10 +63,16 @@ namespace ORTS
         float EngineRPMold;
         float EngineRPMRatio; // used to compute Variable1 and Variable2
 
+        //CJ
+        public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.1f);
         public float MaxDieselLevelL = 5000.0f;
+        public float DieselLevelL
+        {
+            get { return FuelController.CurrentValue * MaxDieselLevelL; }
+            set { FuelController.CurrentValue = value / MaxDieselLevelL; }
+        }
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
         public float DieselUsedPerHourAtIdleL = 1.0f;
-        public float DieselLevelL = 5000.0f;
         public float DieselFlowLps;
         float DieselWeightKgpL = 0.8f; //per liter
         float InitialMassKg = 100000.0f;
@@ -86,6 +92,7 @@ namespace ORTS
         {
             PowerOn = true;
             InitialMassKg = MassKG;
+            RefillImmediately();
         }
 
         /// <summary>
@@ -120,9 +127,6 @@ namespace ORTS
                 PercentChangePerSec = MaxRPMChangeRate / (MaxRPM - IdleRPM);
                 EngineRPM = IdleRPM;
             }
-
-            if (MaxDieselLevelL != DieselLevelL)
-                DieselLevelL = MaxDieselLevelL;
         }
 
         public override void Initialize()
@@ -724,6 +728,11 @@ namespace ORTS
             if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
                 TrainControlSystem.Update();
 
+            //CJ
+            FuelController.Update(elapsedClockSeconds);
+            if (FuelController.UpdateValue > 0.0)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);
+
             PrevMotiveForceN = MotiveForceN;
             base.UpdateParent(elapsedClockSeconds); // Calls the Update() method in the parent class MSTSLocomotive which calls Update() on its parent MSTSWagon which calls ...
         }
@@ -802,15 +811,39 @@ namespace ORTS
             base.SetPower(ToState);
         }
 
-        public void RefillWithDiesel()
+        /// <summary>
+        /// Returns the controller which refills from the matching pickup point.
+        /// </summary>
+        /// <param name="type">Pickup type</param>
+        /// <returns>Matching controller or null</returns>
+        public override MSTSNotchController GetRefillController(uint type)
         {
-            DieselLevelL = MaxDieselLevelL;
+            MSTSNotchController controller = null;
+            if (type == (uint)MSTSLocomotiveViewer.PickupType.FuelDiesel) return FuelController;
+            return controller;
         }
 
-        public override void Refuel()
+        /// <summary>
+        /// Sets coal and water supplies to full immediately.
+        /// Provided in case route lacks pickup points for diesel oil.
+        /// </summary>
+        public override void RefillImmediately()
         {
-            RefillWithDiesel();
-            Simulator.Confirmer.Confirm(CabControl.DieselFuel, CabSetting.On);
+            FuelController.CurrentValue = 1.0f;
+        }
+
+        /// <summary>
+        /// Returns the fraction of diesel oil already in tank.
+        /// </summary>
+        /// <param name="pickupType">Pickup type</param>
+        /// <returns>0.0 to 1.0. If type is unknown, returns 0.0</returns>
+        public override float GetFilledFraction(uint pickupType)
+        {
+            if (pickupType == (uint)MSTSLocomotiveViewer.PickupType.FuelDiesel)
+            {
+                return FuelController.CurrentValue;
+            }
+            return 0f;
         }
     } // class DieselLocomotive
 

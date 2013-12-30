@@ -91,6 +91,9 @@ namespace ORTS
         public float SlipWarningThresholdPercent = 70;
         public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
 
+        //CJ
+        public List<IntakePoint> IntakePointList = new List<IntakePoint>();
+
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
         public MSTSWagon(Simulator simulator, string wagFilePath)
@@ -236,9 +239,10 @@ namespace ORTS
                     else
                         stf.SkipBlock();
                     break;
-				case "wagon(inside": ParseWagonInside(stf); HasInsideView = true; break;
+                case "wagon(inside": ParseWagonInside(stf); break;
                 case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
-				case "wagon(passengercapacity": HasPassengerCapacity = true; break;
+                //CJ
+                case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
@@ -629,6 +633,33 @@ namespace ORTS
                 MSTSBrakeSystem.SetHandbrakePercent(100);
             else
                 MSTSBrakeSystem.SetHandbrakePercent(0);
+        }
+    }
+
+    //CJ
+    /// <summary>
+    /// An IntakePoint object is created for any engine or wagon having a 
+    /// IntakePoint block in its ENG/WAG file. 
+    /// Called from within the MSTSWagon class.
+    /// </summary>
+    public class IntakePoint
+    {
+        public float OffsetM = 0f;   // distance forward? from the centre of the vehicle as defined by LengthM/2.
+        public float WidthM = 10f;   // of the filling point. Is the maximum positioning error allowed equal to this or half this value? 
+        public string Type;          // 'fuelcoal', 'fuelwater', 'fueldiesel', 'fuelwood'
+        public float? DistanceFromFrontOfTrainM;
+
+        public IntakePoint()
+        {
+        }
+        
+        public IntakePoint(STFReader stf)
+        {
+            stf.MustMatch("(");
+            OffsetM = stf.ReadFloat(STFReader.UNITS.None, 0f);
+            WidthM = stf.ReadFloat(STFReader.UNITS.None, 10f);
+            Type = stf.ReadString().ToLower();
+            stf.SkipRestOfBlock();
         }
     }
 

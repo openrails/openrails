@@ -2236,7 +2236,51 @@ namespace ORTS
                 data *= 2.04177f;
             return data;
         }
+        
+        /// <summary>
+        /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
+        /// </summary>
+        public virtual void RefillImmediately()
+        {
+        }
 
+        /// <summary>
+        /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
+        /// </summary>
+        public virtual MSTSNotchController GetRefillController(uint type)
+        {
+            return null;
+        }
+
+        //CJ
+        /// <summary>
+        /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
+        /// </summary>
+        public virtual float GetFilledFraction(uint pickupType)
+        {
+            return 0f;
+        }
+
+        /// <summary>
+        /// Starts a continuous increase in controlled value.
+        /// </summary>
+        /// <param name="type">Pickup point</param>
+        public void StartRefilling(uint type)
+        {
+            var controller = GetRefillController(type);
+            controller.CommandStartTime = Simulator.ClockTime;  // for Replay to use 
+            controller.StartIncrease(controller.MaximumValue);
+        }
+
+        /// <summary>
+        /// Ends a continuous increase in controlled value.
+        /// </summary>
+        public void StopRefilling(uint type, CommandLog log)
+        {
+            var controller = GetRefillController(type);
+            new RefillCommand(log, controller.CurrentValue, controller.CommandStartTime);  // for Replay to use
+            controller.StopIncrease();
+        }
     } // End Class MSTSLocomotive
 
     public class CabView
@@ -2610,8 +2654,6 @@ namespace ORTS
             }
             if (UserInput.IsPressed(UserCommands.CameraToggleShowCab))
                 Locomotive.ShowCab = !Locomotive.ShowCab;
-            if (UserInput.IsPressed(UserCommands.ControlRefuel))
-                new RefuelCommand(Viewer.Log);
 
             // By Matej Pacha
             if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); }
@@ -2654,7 +2696,11 @@ namespace ORTS
                         Locomotive.Headlight--;
                 }
             }
-
+            //CJ
+            if (UserInput.IsPressed(UserCommands.ControlRefill)) AttemptToRefill();
+            if (UserInput.IsReleased(UserCommands.ControlRefill))
+                if (MatchedWagonAndPickup != null)
+                    Locomotive.StopRefilling((uint)MatchedWagonAndPickup.Pickup.PickupType, Viewer.Log);
             base.HandleUserInput(elapsedTime);
         }
 
@@ -2719,6 +2765,205 @@ namespace ORTS
             base.Unload();
         }
 
+        //CJ
+        /// <summary>
+        /// Finds the pickup point which is closest to the loco or tender that uses coal, water or diesel oil.
+        /// Uses that pickup to refill the loco or tender.
+        /// Not implemented yet:
+        /// 1. allowing for the position of the intake on the wagon/loco.
+        /// 2. allowing for the rate at with the pickup can supply.
+        /// 3. refilling any but the first loco in the player's train.
+        /// 4. refilling AI trains.
+        /// 5. animation, e.g. of water columns.
+        /// 6. currently ignores locos and tenders without intake points.
+        /// </summary>
+        #region Refill loco or tender from pickup points
+
+        WagonAndMatchingPickup MatchedWagonAndPickup;
+
+        /// <summary>
+        /// Supply types for locos. Could perhaps be extended to freight wagons?
+        /// </summary>
+        public enum PickupType
+        {
+            FuelWater = 5,
+            FuelCoal = 6,
+            FuelDiesel = 7,
+            FuelWood = 8    // Think this is new to OR and not recognised by MSTS
+        }
+
+        /// <summary>
+        /// Converts from enum to words for user messages.  
+        /// </summary>
+        public Dictionary<uint, string> PickupTypeDictionary = new Dictionary<uint, string>()
+        {
+            {(uint)PickupType.FuelWater, "water"},
+            {(uint)PickupType.FuelCoal, "coal"},
+            {(uint)PickupType.FuelDiesel, "diesel oil"},
+            {(uint)PickupType.FuelWood, "wood"}
+        };
+
+        /// <summary>
+        /// Holds data for an intake point on a wagon (e.g. tender) or loco and a pickup point which can supply that intake. 
+        /// </summary>
+        public class WagonAndMatchingPickup
+        {
+            public PickupObj Pickup;
+            public MSTSWagon Wagon;
+            public IntakePoint IntakePoint;
+        }
+
+        /// <summary>
+        /// Scans the train's cars for intake points and the world files for pickup refilling points of the same type.
+        /// (e.g. "fuelwater").
+        /// TODO: Allow for position of intake point within the car. Currently all intake points are assumed to be at the back of the car.
+        /// </summary>
+        /// <param name="train"></param>
+        /// <returns>a combination of intake point and pickup that are closest</returns>
+        // <CJComment> Might be better in the MSTSLocomotive class, but can't see the World objects from there. </CJComment>
+        WagonAndMatchingPickup GetMatchingPickup(Train train)
+        {
+            var worldFiles = Viewer.World.Scenery.WorldFiles;
+            var shortestD2 = float.MaxValue;
+            WagonAndMatchingPickup nearestPickup = null;
+            float distanceFromFrontOfTrainM = 0f;
+            foreach (var car in train.Cars)
+            {
+                if (car is MSTSWagon)
+                {
+                    MSTSWagon wagon = (MSTSWagon)car;
+                    foreach (var intake in wagon.IntakePointList)
+                    {
+                        // TODO Use the value calculated below
+                        //if (intake.DistanceFromFrontOfTrainM == null)
+                        //{
+                        //    intake.DistanceFromFrontOfTrainM = distanceFromFrontOfTrainM + (wagon.LengthM / 2) - intake.OffsetM;
+                        //}
+                        foreach (var worldFile in worldFiles)
+                        {
+                            foreach (var pickup in worldFile.PickupList)
+                            {
+                                if (pickup.Location == null)
+                                    pickup.Location = new WorldLocation(
+                                        worldFile.TileX, worldFile.TileZ,
+                                        pickup.Position.X, pickup.Position.Y, pickup.Position.Z);
+                                if (intake.Type == "fuelcoal" && pickup.PickupType == (uint)PickupType.FuelCoal
+                                 || intake.Type == "fuelwater" && pickup.PickupType == (uint)PickupType.FuelWater
+                                 || intake.Type == "fueldiesel" && pickup.PickupType == (uint)PickupType.FuelDiesel
+                                 || intake.Type == "fuelwood" && pickup.PickupType == (uint)PickupType.FuelWood)
+                                {
+                                    var intakePosition = car.WorldPosition; //TODO Convert this into the position of the intake.
+
+                                    var intakeLocation = new WorldLocation(
+                                        car.WorldPosition.TileX, car.WorldPosition.TileZ,
+                                        car.WorldPosition.Location.X, car.WorldPosition.Location.Y, car.WorldPosition.Location.Z);
+
+                                    var d2 = WorldLocation.GetDistanceSquared(intakeLocation, pickup.Location);
+                                    if (d2 < shortestD2)
+                                    {
+                                        shortestD2 = d2;
+                                        nearestPickup = new WagonAndMatchingPickup();
+                                        nearestPickup.Pickup = pickup;
+                                        nearestPickup.Wagon = wagon;
+                                        nearestPickup.IntakePoint = intake;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    distanceFromFrontOfTrainM += wagon.LengthM;
+                }
+            }
+            return nearestPickup;
+        }
+
+        /// <summary>
+        /// Returns 
+        /// TODO Allow for position of intake point within the car. Currently all intake points are assumed to be at the back of the car.
+        /// </summary>
+        /// <param name="match"></param>
+        /// <returns></returns>
+        float GetDistanceToM(WagonAndMatchingPickup match)
+        {
+            var intakePosition = match.Wagon.WorldPosition; //TODO Convert this into the position of the intake.
+
+            var intakeLocation = new WorldLocation(
+                match.Wagon.WorldPosition.TileX, match.Wagon.WorldPosition.TileZ,
+                match.Wagon.WorldPosition.Location.X, match.Wagon.WorldPosition.Location.Y, match.Wagon.WorldPosition.Location.Z);
+
+            return (float)Math.Sqrt(WorldLocation.GetDistanceSquared(intakeLocation, match.Pickup.Location));
+        }
+
+        /// <summary>
+        /// Prompts if cannot refill yet, else starts continuous refilling.
+        /// Tries to find the nearest supply (pickup point) which can refill the locos and tenders in the train.  
+        /// </summary>
+        public void AttemptToRefill()
+        {
+            MatchedWagonAndPickup = null;   // Ensures that releasing the T key doesn't do anything unless there is something to do.
+
+            var loco = this.Locomotive;
+
+            // Electric locos do nothing.
+            if (loco is MSTSElectricLocomotive) return;
+
+            var match = GetMatchingPickup(loco.Train);
+            if (match == null)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, "Refill: No suitable pick-up point anywhere, so refilling immediately.");
+                loco.RefillImmediately();
+                return;
+            }
+
+            float distanceToPickupM = GetDistanceToM(match) - 1f; // Deduct an extra 1 meter as pickups are never on the centre line of the track.
+            if (distanceToPickupM > match.IntakePoint.WidthM / 2)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: Distance to {0} supply is {1:F0} meters.",
+                    PickupTypeDictionary[(uint)match.Pickup.PickupType], distanceToPickupM));
+                return;
+            }
+            if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MinMpS == 0f)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: Loco must be stationary to refill {0}.",
+                    PickupTypeDictionary[(uint)match.Pickup.PickupType]));
+                return;
+            }
+            if (loco.SpeedMpS < match.Pickup.SpeedRange.MinMpS)
+            {
+                var speedLimitMpH = MpS.ToMpH(match.Pickup.SpeedRange.MinMpS);
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: Loco speed must exceed {0:F0} mph.", speedLimitMpH));
+                return;
+            }
+            if (loco.SpeedMpS > match.Pickup.SpeedRange.MinMpS)
+            {
+                var speedLimitMpH = MpS.ToMpH(match.Pickup.SpeedRange.MaxMpS);
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: Loco speed must not exceed {0} mph.", speedLimitMpH));
+                return;
+            }
+            float fraction = loco.GetFilledFraction(match.Pickup.PickupType);
+            if (fraction > 0.99)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: {0} supply now replenished.",
+                    PickupTypeDictionary[(uint)match.Pickup.PickupType]));
+                return;
+            }
+            Locomotive.StartRefilling((uint)match.Pickup.PickupType);
+            MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
+        }
+
+        /// <summary>
+        /// Called by RefillCommand during replay.
+        /// </summary>
+        public void RefillChangeTo(float? target)
+        {
+            var matchedWagonAndPickup = GetMatchingPickup(Locomotive.Train);   // Save away for RefillCommand to use.
+            if (matchedWagonAndPickup != null)
+            {
+                var controller = Locomotive.GetRefillController((uint)matchedWagonAndPickup.Pickup.PickupType);
+                controller.StartIncrease(target);
+            }
+        }
+        #endregion
     } // Class LocomotiveViewer
 
     // By GeorgeS

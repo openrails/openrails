@@ -56,6 +56,10 @@ namespace ORTS
         public MSTSNotchController DamperController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController FiringRateController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController FireboxDoorController = new MSTSNotchController(0, 1, 0.1f);
+        //CJ
+        public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.01f); // Could be coal, wood, oil or even peat !
+        public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
+
         bool Injector1IsOn;
         bool Injector2IsOn;
         public bool CylinderCocksAreOpen;
@@ -199,10 +203,19 @@ namespace ORTS
         float FuelDensityKGpM3 = 864.5f;    // Anthracite Coal : 50 - 58 (lb/ft3), 800 - 929 (kg/m3)
         float DamperFactorManual = 1.0f;    // factor to control draft through fire when locomotive is running in Manual mode
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
-        float MaxTenderCoalMassKG;          // Tender coal mass read from Eng File
-        float MaxTenderWaterMassKG;         // Tender water mass read from Eng file
-        float TenderCoalMassLB;             // Tender coal mass calculated from coal usage
-        float TenderWaterVolumeUKG;         // Tender water mass calculated from water usage
+        float MaxTenderCoalMassKG;          // Maximum read from Eng File
+        float MaxTenderWaterMassKG;         // Maximum read from Eng file
+        //CJ
+        float TenderCoalMassLB              // Decreased by firing and increased by refilling
+        {
+            get { return FuelController.CurrentValue * Kg.ToLb(MaxTenderCoalMassKG); }
+            set { FuelController.CurrentValue = value / Kg.ToLb(MaxTenderCoalMassKG); }
+        }
+        float TenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
+        {
+            get { return WaterController.CurrentValue * Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG; }
+            set { WaterController.CurrentValue = value / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG); }
+        }
         float DamperBurnEffect;             // Effect of the Damper control
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
@@ -590,16 +603,21 @@ namespace ORTS
             ApplyBoilerPressure();
         }
 
+        //CJ
+        /// <summary>
+        /// Sets the coal level to maximum.
+        /// </summary>
         public void RefillTenderWithCoal()
         {
-            TenderCoalMassLB = Kg.ToLb(MaxTenderCoalMassKG); // Convert to work in lbs
-            CoalIsExhausted = false;
+            FuelController.CurrentValue = 1.0f;
         }
 
+        /// <summary>
+        /// Sets the water level to maximum.
+        /// </summary>
         public void RefillTenderWithWater()
         {
-            TenderWaterVolumeUKG = Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG;  // Convert to gals - 10lb = 1 gal (water)
-            WaterIsExhausted = false;
+            WaterController.CurrentValue = 1.0f;
         } 
        
         public static bool ZeroError(float v, string name, string wagFile)
@@ -648,7 +666,7 @@ namespace ORTS
                 case "engine(ortssuperheatarea": SuperheatAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(ortsfuelcalorific": FuelCalorificKJpKG = stf.ReadFloatBlock(STFReader.UNITS.EnergyDensity, null); break;
                 case "engine(ortsburnratemultiplier": BurnRateMultiplier = stf.ReadIntBlock(null); break;
-                case "engine(ortsboilereavporationrate": BoilerEvapRateLbspFt2 = stf.ReadIntBlock(null); break;
+                case "engine(ortsboilerevaporationrate": BoilerEvapRateLbspFt2 = stf.ReadIntBlock(null); break;
                 case "engine(ortsforcefactor1": ForceFactor1Npcutoff = new Interpolator(stf); break;
                 case "engine(ortsforcefactor2": ForceFactor2Npcutoff = new Interpolator(stf); break;
                 case "engine(ortscylinderpressuredrop": CylinderPressureDropLBpStoPSI = new Interpolator(stf); break;
@@ -927,6 +945,14 @@ namespace ORTS
                 SignalEvent(Event.FireboxDoorOpen);
             else if (oldFireboxDoorValue > 0 && FireboxDoorController.CurrentValue == 0)
                 SignalEvent(Event.FireboxDoorClose);
+
+            //CJ
+            FuelController.Update(elapsedClockSeconds);
+            if (FuelController.UpdateValue > 0.0)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.TenderCoal, CabSetting.Increase, FuelController.CurrentValue * 100);
+            WaterController.Update(elapsedClockSeconds);
+            if (WaterController.UpdateValue > 0.0)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.TenderWater, CabSetting.Increase, WaterController.CurrentValue * 100);
         }
 
         private void UpdateTender(float elapsedClockSeconds)
@@ -937,9 +963,13 @@ namespace ORTS
             {
                 if (!CoalIsExhausted)
                 {
-                    CoalIsExhausted = true; // if tender coal is empty
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Tender coal supply is empty. Your loco will fail.");
                 }
+                CoalIsExhausted = true;
+            }
+            else
+            {
+                CoalIsExhausted = false;
             }
             TenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG; // Current water volume determined by injector input rate
             TenderWaterVolumeUKG = MathHelper.Clamp(TenderWaterVolumeUKG, 0, (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG)); // Clamp value so that it doesn't go out of bounds
@@ -947,9 +977,13 @@ namespace ORTS
             {
                 if (!WaterIsExhausted)
                 {
-                    WaterIsExhausted = true; // if tender water is empty
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Tender water supply is empty. Your loco will fail.");
                 }
+                WaterIsExhausted = true;
+            }
+            else
+            {
+                WaterIsExhausted = false;
             }
         }
 
@@ -2286,12 +2320,46 @@ namespace ORTS
             FiringIsManual = !FiringIsManual;
         }
 
-        public override void Refuel()
+        //CJ
+        /// <summary>
+        /// Returns the controller which refills from the matching pickup point.
+        /// </summary>
+        /// <param name="type">Pickup type</param>
+        /// <returns>Matching controller or null</returns>
+        public override MSTSNotchController GetRefillController(uint type)
+        {
+            MSTSNotchController controller;
+            if (type == (uint)MSTSLocomotiveViewer.PickupType.FuelCoal) return FuelController;
+            if (type == (uint)MSTSLocomotiveViewer.PickupType.FuelWater) return WaterController;
+            return null;
+        }
+
+        /// <summary>
+        /// Sets coal and water supplies to full immediately.
+        /// Provided in case route lacks pickup points for coal and especially water.
+        /// </summary>
+        public override void RefillImmediately()
         {
             RefillTenderWithCoal();
-            Simulator.Confirmer.Confirm(CabControl.TenderCoal, CabSetting.On);
             RefillTenderWithWater();
-            Simulator.Confirmer.Confirm(CabControl.TenderWater, CabSetting.On);
+        }
+
+        /// <summary>
+        /// Returns the fraction of coal or water already in tender.
+        /// </summary>
+        /// <param name="pickupType">Pickup type</param>
+        /// <returns>0.0 to 1.0. If type is unknown, returns 0.0</returns>
+        public override float GetFilledFraction(uint pickupType)
+        {
+            if (pickupType == (uint)MSTSLocomotiveViewer.PickupType.FuelWater)
+            {
+                return WaterController.CurrentValue;
+            }
+            if (pickupType == (uint)MSTSLocomotiveViewer.PickupType.FuelCoal)
+            {
+                return FuelController.CurrentValue;
+            }
+            return 0f;
         }
 
 		public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2)

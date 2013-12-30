@@ -194,8 +194,8 @@ namespace MSTS
                     break;
                 case TokenID.Pickup:
                 case (TokenID)359:
-                    // TODO: Add real handling for pickup objects.
-                    Add(new BaseObj(subBlock, currentWatermark));
+                    //CJ
+                    Add(new PickupObj(subBlock, currentWatermark));
                     break;
 				case TokenID.Hazard:
 				//case (TokenID)359:
@@ -226,6 +226,9 @@ namespace MSTS
 
     public class BaseObj : WorldObject
     {
+        public BaseObj()
+        {}
+           
         public BaseObj(SBR block, int detailLevel)
         {
             //f.VerifyID(TokenID.Static); it could be CollideObject or Static object
@@ -262,6 +265,91 @@ namespace MSTS
         }
     }
 
+    //CJ
+    /// <summary>
+    /// Pickup objects supply fuel (diesel, coal) or water.
+    /// </summary>
+    public class PickupObj : BaseObj
+    {
+        public uint PickupType;
+        public SpeedRangeItem SpeedRange;
+        public PickupCapacityItem PickupCapacity;
+        public List<TrItemId> TrItemIDList = new List<TrItemId>();
+        public uint CollideFlags;
+        public ORTS.WorldLocation Location = null;
+
+        /// <summary>
+        /// Creates the object, but currently skips the animation field.
+        /// </summary>
+        /// <param name="block"></param>
+        /// <param name="detailLevel"></param>
+        public PickupObj(SBR block, int detailLevel)
+        {
+            StaticDetailLevel = detailLevel;
+
+            while (!block.EndOfBlock())
+            {
+                using (SBR subBlock = block.ReadSubBlock())
+                {
+                    switch (subBlock.ID)
+                    {
+                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+                        case TokenID.SpeedRange: SpeedRange = new SpeedRangeItem(subBlock); break;
+                        case TokenID.PickupType: PickupType = subBlock.ReadUInt();
+                            subBlock.Skip(); // Discard the 2nd value (0 or 1 but significance is not known)
+                            break;
+                        //case TokenID.PickupAnimData: PickupAnimData = subBlock.ReadUInt(); break; // Need more background. Is always 2 integers?
+                        case TokenID.PickupCapacity: PickupCapacity = new PickupCapacityItem(subBlock); break;
+                        case TokenID.TrItemId: TrItemIDList.Add(new TrItemId(subBlock)); break;
+                        case TokenID.CollideFlags: CollideFlags = subBlock.ReadUInt(); break;
+                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                        case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                        default: subBlock.Skip(); break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// SpeedRangeItem specifies the acceptable range of speeds (meters/sec) for using a pickup.
+        /// Presumably non-zero speeds are intended for water troughs or, perhaps, merry-go-round freight.
+        /// </summary>
+        public class SpeedRangeItem
+        {
+            public readonly float MinMpS;
+            public readonly float MaxMpS;
+
+            internal SpeedRangeItem(SBR block)
+            {
+                block.VerifyID(TokenID.SpeedRange);
+                MinMpS = block.ReadFloat();
+                MaxMpS = block.ReadFloat();
+                block.VerifyEndOfBlock();
+            }
+        }
+
+        /// <summary>
+        /// Creates the object.
+        /// The units of measure have been assumed and, once parsed, the values are not currently used.
+        /// </summary>
+        public class PickupCapacityItem
+        {
+            public readonly float QuantityAvailableKG;
+            public readonly float FeedRateKGpS;
+
+            internal PickupCapacityItem(SBR block)
+            {
+                block.VerifyID(TokenID.SpeedRange);
+                QuantityAvailableKG = block.ReadFloat();
+                FeedRateKGpS = block.ReadFloat();
+                block.VerifyEndOfBlock();
+            }
+        }
+    }
+    
     public class TransferObj : WorldObject
     {
         public float Width;
@@ -686,21 +774,21 @@ namespace MSTS
             }
             return -1;
         }
-
-        public class TrItemId
-        {
-            public int db, dbID;
-            public TrItemId(SBR block)
-            {
-                block.VerifyID(TokenID.TrItemId);
-                db = block.ReadInt();
-                dbID = block.ReadInt();
-                block.VerifyEndOfBlock();
-            }
-        }
-
     }
 
+    //CJ
+    public class TrItemId
+    {
+        public int db, dbID;
+        public TrItemId(SBR block)
+        {
+            block.VerifyID(TokenID.TrItemId);
+            db = block.ReadInt();
+            dbID = block.ReadInt();
+            block.VerifyEndOfBlock();
+        }
+    }
+    
     //level crossing data
     public class LevelCrossingObj : WorldObject
     {
