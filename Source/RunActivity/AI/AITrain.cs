@@ -2943,6 +2943,7 @@ namespace ORTS
                     TCRoute.TCRouteSubpaths.Add(nextRoute);
                     TCReversalInfo nextReversalPoint = new TCReversalInfo(); // also add dummy reversal info to match total number
                     TCRoute.ReversalInfo.Add(nextReversalPoint);
+                    TCRoute.LoopEnd.Add(-1); // also add dummy loop end
                 }
                 else
                 {
