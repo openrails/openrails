@@ -63,7 +63,6 @@ namespace ORTS
         float EngineRPMold;
         float EngineRPMRatio; // used to compute Variable1 and Variable2
 
-        //CJ
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.1f);
         public float MaxDieselLevelL = 5000.0f;
         public float DieselLevelL
@@ -728,7 +727,6 @@ namespace ORTS
             if (Train.TrainType == Train.TRAINTYPE.PLAYER && this.IsLeadLocomotive())
                 TrainControlSystem.Update();
 
-            //CJ
             FuelController.Update(elapsedClockSeconds);
             if (FuelController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);

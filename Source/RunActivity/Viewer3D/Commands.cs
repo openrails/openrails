@@ -833,7 +833,6 @@ namespace ORTS {
         }
     }
 
-    //CJ
     /// <summary>
     /// Continuous command to re-fuel and re-water locomotive or tender.
     /// </summary>

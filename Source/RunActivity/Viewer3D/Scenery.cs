@@ -155,7 +155,6 @@ namespace ORTS
         public List<RoadCarSpawner> carSpawners = new List<RoadCarSpawner>();
         public List<TrItemLabel> sidings = new List<TrItemLabel>();
         public List<TrItemLabel> platforms = new List<TrItemLabel>();
-        //CJ
         public List<MSTS.PickupObj> PickupList = new List<MSTS.PickupObj>();
 
         readonly Viewer3D Viewer;
@@ -317,7 +316,6 @@ namespace ORTS
                         else
                             sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                     }
-                    //CJ
                     else if (worldObject.GetType() == typeof(MSTS.PickupObj))
                     {
                         if (animated)

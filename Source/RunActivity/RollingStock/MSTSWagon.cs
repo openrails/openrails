@@ -91,7 +91,6 @@ namespace ORTS
         public float SlipWarningThresholdPercent = 70;
         public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
 
-        //CJ
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
@@ -241,7 +240,6 @@ namespace ORTS
                     break;
                 case "wagon(inside": ParseWagonInside(stf); break;
                 case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
-                //CJ
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
                 default:
                     if (MSTSBrakeSystem != null)
@@ -636,7 +634,6 @@ namespace ORTS
         }
     }
 
-    //CJ
     /// <summary>
     /// An IntakePoint object is created for any engine or wagon having a 
     /// IntakePoint block in its ENG/WAG file. 

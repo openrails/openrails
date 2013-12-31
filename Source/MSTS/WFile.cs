@@ -194,7 +194,6 @@ namespace MSTS
                     break;
                 case TokenID.Pickup:
                 case (TokenID)359:
-                    //CJ
                     Add(new PickupObj(subBlock, currentWatermark));
                     break;
 				case TokenID.Hazard:
@@ -265,7 +264,6 @@ namespace MSTS
         }
     }
 
-    //CJ
     /// <summary>
     /// Pickup objects supply fuel (diesel, coal) or water.
     /// </summary>
@@ -776,7 +774,6 @@ namespace MSTS
         }
     }
 
-    //CJ
     public class TrItemId
     {
         public int db, dbID;

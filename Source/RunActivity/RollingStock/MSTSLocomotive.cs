@@ -2252,7 +2252,6 @@ namespace ORTS
             return null;
         }
 
-        //CJ
         /// <summary>
         /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
         /// </summary>
@@ -2696,7 +2695,7 @@ namespace ORTS
                         Locomotive.Headlight--;
                 }
             }
-            //CJ
+            
             if (UserInput.IsPressed(UserCommands.ControlRefill)) AttemptToRefill();
             if (UserInput.IsReleased(UserCommands.ControlRefill))
                 if (MatchedWagonAndPickup != null)
@@ -2765,7 +2764,6 @@ namespace ORTS
             base.Unload();
         }
 
-        //CJ
         /// <summary>
         /// Finds the pickup point which is closest to the loco or tender that uses coal, water or diesel oil.
         /// Uses that pickup to refill the loco or tender.
@@ -2776,6 +2774,8 @@ namespace ORTS
         /// 4. refilling AI trains.
         /// 5. animation, e.g. of water columns.
         /// 6. currently ignores locos and tenders without intake points.
+        /// Note that the activity class currently parses the initial level of diesel oil, coal and water
+        /// but does not use it yet.
         /// </summary>
         #region Refill loco or tender from pickup points
 

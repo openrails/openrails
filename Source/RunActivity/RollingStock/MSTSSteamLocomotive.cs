@@ -56,7 +56,6 @@ namespace ORTS
         public MSTSNotchController DamperController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController FiringRateController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController FireboxDoorController = new MSTSNotchController(0, 1, 0.1f);
-        //CJ
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.01f); // Could be coal, wood, oil or even peat !
         public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
 
@@ -205,7 +204,6 @@ namespace ORTS
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float MaxTenderCoalMassKG;          // Maximum read from Eng File
         float MaxTenderWaterMassKG;         // Maximum read from Eng file
-        //CJ
         float TenderCoalMassLB              // Decreased by firing and increased by refilling
         {
             get { return FuelController.CurrentValue * Kg.ToLb(MaxTenderCoalMassKG); }
@@ -603,7 +601,6 @@ namespace ORTS
             ApplyBoilerPressure();
         }
 
-        //CJ
         /// <summary>
         /// Sets the coal level to maximum.
         /// </summary>
@@ -946,7 +943,6 @@ namespace ORTS
             else if (oldFireboxDoorValue > 0 && FireboxDoorController.CurrentValue == 0)
                 SignalEvent(Event.FireboxDoorClose);
 
-            //CJ
             FuelController.Update(elapsedClockSeconds);
             if (FuelController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.TenderCoal, CabSetting.Increase, FuelController.CurrentValue * 100);
@@ -2320,7 +2316,6 @@ namespace ORTS
             FiringIsManual = !FiringIsManual;
         }
 
-        //CJ
         /// <summary>
         /// Returns the controller which refills from the matching pickup point.
         /// </summary>
