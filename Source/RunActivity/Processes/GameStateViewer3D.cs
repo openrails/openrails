@@ -121,6 +121,18 @@ namespace ORTS.Processes
         internal override void Dispose()
         {
             Viewer.Terminate();
+            if (Program.Server != null)
+                Program.Server.Stop();
+            if (Program.Client != null)
+                Program.Client.Stop();
+            if (Program.Simulator != null)
+                Program.Simulator.Stop();
+            if (Program.DebugViewer != null)
+                Program.DebugViewer.Dispose();
+            if (Program.SoundDebugForm != null)
+                Program.SoundDebugForm.Dispose();
+            base.Dispose();
         }
+
     }
 }

@@ -128,8 +128,11 @@ namespace ORTS.Processes
         [CallOnThread("Loader")]
         internal void ReplaceState(GameState state)
         {
-            State.Dispose();
-            States.Pop();
+            if (State != null)
+            {
+                State.Dispose();
+                States.Pop();
+            }
             state.Game = this;
             States.Push(state);
             Trace.TraceInformation("Game.ReplaceState({0})  {1}", state.GetType().Name, String.Join(" | ", States.Select(s => s.GetType().Name).ToArray()));
