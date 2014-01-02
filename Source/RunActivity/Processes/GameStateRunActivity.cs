@@ -974,7 +974,6 @@ namespace ORTS.Processes
             protected override VertexPositionTexture[] GetVerticies(Game game)
             {
                 float w, h;
-                float offset = 0;
 
                 if (Material.Texture == null)
                 {
@@ -986,16 +985,15 @@ namespace ORTS.Processes
                     h = (float)Material.Texture.Height;
                     var scaleX = (float)game.RenderProcess.DisplaySize.X / w;
                     var scaleY = (float)game.RenderProcess.DisplaySize.Y / h;
-                    var scale = scaleX > scaleY ? scaleX : scaleY;
-                    offset = ((float)game.RenderProcess.DisplaySize.Y - h * scale) / 2f;
+                    var scale = scaleX < scaleY ? scaleX : scaleY;
                     w = w * scale / 2 + 0.5f;
                     h = h * scale / 2 + 0.5f;
                 }
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-w, +h + offset, -1), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+w, +h + offset, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-w, -h + offset, -1), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+w, -h + offset, -1), new Vector2(1, 1)),
+				    new VertexPositionTexture(new Vector3(-w, +h, -1), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(+w, +h, -1), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(-w, -h, -1), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(+w, -h, -1), new Vector2(1, 1)),
 			    };
             }
         }
