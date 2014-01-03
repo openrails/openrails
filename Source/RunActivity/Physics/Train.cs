@@ -9559,7 +9559,8 @@ namespace ORTS
                     lastPathNode.Location.Location.Z);
 
                 // only add last section if end point is in different tracknode as last added item
-                if (thisNode.Index != orgSignals.TrackCircuitList[thisSubpath[thisSubpath.Count - 1].TCSectionIndex].OriginalIndex)
+                if (thisSubpath.Count <= 0 || 
+                    thisNode.Index != orgSignals.TrackCircuitList[thisSubpath[thisSubpath.Count - 1].TCSectionIndex].OriginalIndex)
                 {
                     if (currentDir == 0)
                     {
@@ -9570,7 +9571,8 @@ namespace ORTS
                             {
                                 TCRouteElement thisElement =
                                     new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                                if (thisSubpath.Count <= 0 || thisSubpath[thisSubpath.Count - 1].TCSectionIndex != thisElement.TCSectionIndex) thisSubpath.Add(thisElement); // only add if not yet set
+                                if (thisSubpath.Count <= 0 || thisSubpath[thisSubpath.Count - 1].TCSectionIndex != thisElement.TCSectionIndex)
+                                    thisSubpath.Add(thisElement); // only add if not yet set
                             }
                         }
                     }

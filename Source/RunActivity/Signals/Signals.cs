@@ -8131,25 +8131,33 @@ namespace ORTS
 
             // check if signal not yet enabled - if it is, give warning and quit
 
+            // check if signal not yet enabled - if it is, give warning, reset signal and set both trains to node control, and quit
+
             if (enabledTrain != null && enabledTrain != thisTrain)
             {
                 Trace.TraceWarning("Request to clear signal {0} from train {1}, signal already enabled for train {2}",
                                        thisRef, thisTrain.Train.Number, enabledTrain.Train.Number);
-                thisTrain.Train.ControlMode = Train.TRAIN_CONTROL.AUTO_NODE; // keep train in NODE control mode
+                Train.TrainRouted otherTrain = enabledTrain;
+                ResetSignal(true);
+                int routeListIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+                signalRef.BreakDownRouteList(thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex], routeListIndex, thisTrain);
+                routeListIndex = otherTrain.Train.PresentPosition[otherTrain.TrainRouteDirectionIndex].RouteListIndex;
+                signalRef.BreakDownRouteList(otherTrain.Train.ValidRoute[otherTrain.TrainRouteDirectionIndex], routeListIndex, otherTrain);
+
+                thisTrain.Train.SwitchToNodeControl(thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex);
+                otherTrain.Train.SwitchToNodeControl(otherTrain.Train.PresentPosition[otherTrain.TrainRouteDirectionIndex].TCSectionIndex);
                 procstate = -1;
                 return;
             }
-            else
+            
+            if (enabledTrain != thisTrain) // new allocation - reset next signals
             {
-                if (enabledTrain != thisTrain) // new allocation - reset next signals
+                for (int fntype = 0; fntype < (int)SignalHead.MstsSignalFunction.UNKNOWN; fntype++)
                 {
-                    for (int fntype = 0; fntype < (int)SignalHead.MstsSignalFunction.UNKNOWN; fntype++)
-                    {
-                        sigfound[fntype] = defaultNextSignal[fntype];
-                    }
+                    sigfound[fntype] = defaultNextSignal[fntype];
                 }
-                enabledTrain = thisTrain;
             }
+            enabledTrain = thisTrain;
 
             // find section in route part which follows signal
 
