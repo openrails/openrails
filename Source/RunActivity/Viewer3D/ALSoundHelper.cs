@@ -342,6 +342,9 @@ namespace ORTS
         /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
         public static void Sweep(string name, bool isExternal, bool isReleasedWithJump)
         {
+            if (name == string.Empty)
+                return;
+
             string key = GetKey(name, isExternal, isReleasedWithJump);
             if (AllPieces.ContainsKey(key) && AllPieces[key].RefCount < 1)
             {
@@ -544,6 +547,16 @@ namespace ORTS
         public bool NeedsFrequentUpdate;
 
         /// <summary>
+        /// Attached TrainCar
+        /// </summary>
+        private TrainCar Car;
+
+        /// <summary>
+        /// Whether world position should be ignored
+        /// </summary>
+        private bool Ignore3D;
+
+        /// <summary>
         /// Constructs a new AL sound source
         /// </summary>
         /// <param name="isEnv">True if environment sound</param>
@@ -555,66 +568,60 @@ namespace ORTS
             RolloffFactor = rolloffFactor;
         }
 
-        private bool _nxtUpdate;
-        private bool _MustActivate;
-
-        public static int _ActiveCount;
-        private static bool _MustWarn = true;
+        private bool MustActivate;
+        public static int ActiveCount;
+        private static bool MustWarn = true;
         /// <summary>
         /// Tries allocating a new OpenAL SoundSourceID, warns if failed, and sets OpenAL attenuation parameters
         /// </summary>
         private void TryActivate()
         {
-            if (_MustActivate)
+            if (!MustActivate || SoundSourceID != -1)
+                return;
+
+            OpenAL.alGenSources(1, out SoundSourceID);
+
+            if (SoundSourceID == -1)
             {
-                if (SoundSourceID == -1)
+                if (MustWarn)
                 {
-                    OpenAL.alGenSources(1, out SoundSourceID);
-                    // Reset state
-                    if (SoundSourceID != -1)
-                    {
-                        _ActiveCount++;
-                        _MustActivate = false;
-                        _MustWarn = true;
-
-                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_DISTANCE, SoundSource.MaxDistanceM);
-                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_REFERENCE_DISTANCE, SoundSource.ReferenceDistanceM);
-                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_GAIN, 1f);
-                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_ROLLOFF_FACTOR, RolloffFactor);
-
-                        if (_Active)
-                            SetVolume(_Volume);
-                        else
-                            SetVolume(0);
-
-                        OpenAL.alSourcef(SoundSourceID, OpenAL.AL_PITCH, _PlaybackSpeed);
-                        OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, Looping ? OpenAL.AL_TRUE : OpenAL.AL_FALSE);
-                    }
-                    else if (_MustWarn)
-                    {
-                        Trace.TraceWarning("Sound stream activation failed at number {0}", _ActiveCount);
-                        _MustWarn = false;
-                    }
+                    Trace.TraceWarning("Sound stream activation failed at number {0}", ActiveCount);
+                    MustWarn = false;
                 }
+                return;
             }
+
+            ActiveCount++;
+            MustActivate = false;
+            MustWarn = true;
+
+            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_DISTANCE, SoundSource.MaxDistanceM);
+            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_REFERENCE_DISTANCE, SoundSource.ReferenceDistanceM);
+            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_MAX_GAIN, 1f);
+            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_ROLLOFF_FACTOR, RolloffFactor);
+            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_PITCH, _PlaybackSpeed);
+            OpenAL.alSourcei(SoundSourceID, OpenAL.AL_LOOPING, Looping ? OpenAL.AL_TRUE : OpenAL.AL_FALSE);
+
+            InitPosition();
+            SetVolume();
         }
 
         /// <summary>
         /// Set OpenAL gain
         /// </summary>
         /// <param name="volume"></param>
-        private void SetVolume(float volume)
+        private void SetVolume()
         {
-            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_GAIN, volume);
+            OpenAL.alSourcef(SoundSourceID, OpenAL.AL_GAIN, Active ? Volume : 0);
         }
 
         /// <summary>
-        /// Set to ignore 3D position of the sound source
+        /// Set whether to ignore 3D position of sound source
         /// </summary>
         /// <param name="sound2D"></param>
-        public void Set2D(bool sound2D)
+        public void InitPosition()
         {
-            if (sound2D)
+            if (Ignore3D)
             {
                 OpenAL.alSourcei(SoundSourceID, OpenAL.AL_SOURCE_RELATIVE, OpenAL.AL_TRUE);
                 OpenAL.alSourcef(SoundSourceID, OpenAL.AL_DOPPLER_FACTOR, 0);
@@ -625,56 +632,47 @@ namespace ORTS
             {
                 OpenAL.alSourcei(SoundSourceID, OpenAL.AL_SOURCE_RELATIVE, OpenAL.AL_FALSE);
                 OpenAL.alSourcef(SoundSourceID, OpenAL.AL_DOPPLER_FACTOR, 1);
+
+                if (Car != null && !Car.SoundSourceIDs.Contains(SoundSourceID))
+                    Car.SoundSourceIDs.Add(SoundSourceID);
             }
         }
 
         /// <summary>
-        /// If set to true, queries a new <see cref="SoundSourceID"/> from OpenAL, if one is not allocated yet.
-        /// If set to false, frees up the allocated sound source ID.
-        /// Returns true if sound source ID is allocated, otherwise false
+        /// Queries a new <see cref="SoundSourceID"/> from OpenAL, if one is not allocated yet.
         /// </summary>
-        public bool HardActive
+        /// <param name="ignore3D"></param>
+        /// <param name="car"></param>
+        public void HardActivate(bool ignore3D, TrainCar car)
         {
-            get
-            {
-                return SoundSourceID != -1;
-            }
-            set
-            {
-                if (SoundSourceID == -1 && value)
-                {
-                    _MustActivate = true;
-                    TryActivate();
-                }
-                else if (SoundSourceID != -1 && !value)
-                {
-                    Stop();
-                    OpenAL.alDeleteSources(1, ref SoundSourceID);
-                    SoundSourceID = -1;
-                    _ActiveCount--;
-                }
+            Ignore3D = ignore3D;
+            Car = car;
+            MustActivate = true;
+            TryActivate();
 
-                if (SoundSourceID == -1)
-                    HardCleanQueue();
+            if (SoundSourceID == -1)
+                HardCleanQueue();
+        }
+
+        /// <summary>
+        /// Frees up the allocated <see cref="SoundSourceID"/>, and cleans the playing queue.
+        /// </summary>
+        public void HardDeactivate()
+        {
+            if (SoundSourceID != -1)
+            {
+                Stop();
+                OpenAL.alDeleteSources(1, ref SoundSourceID);
+                SoundSourceID = -1;
+                ActiveCount--;
             }
+
+            if (SoundSourceID == -1)
+                HardCleanQueue();
         }
 
         private bool _Active;
-        public bool Active
-        {
-            get
-            {
-                return _Active;
-            }
-            set
-            {
-                _Active = value;
-                if (_Active)
-                    SetVolume(_Volume);
-                else
-                    SetVolume(0);
-            }
-        }
+        public bool Active { get { return _Active; } set { _Active = value; SetVolume(); } }
 
         private float _Volume = 1f;
         public float Volume
@@ -690,10 +688,7 @@ namespace ORTS
                 if (_Volume != newval)
                 {
                     _Volume = newval;
-                    if (_Active)
-                    {
-                        SetVolume(_Volume);
-                    }
+                    SetVolume();
                     XCheckVolumeAndState();
                 }
             }
@@ -731,16 +726,8 @@ namespace ORTS
                 if (SoundSourceID == -1)
                 {
                     TryActivate();
-
-                    if (_nxtUpdate)
-                    {
-                        _nxtUpdate = false;
-                    }
-                    else
-                    {
-                        NeedsFrequentUpdate = false;
-                        return;
-                    }
+                    NeedsFrequentUpdate = false;
+                    return;
                 }
 
                 SkipProcessed();

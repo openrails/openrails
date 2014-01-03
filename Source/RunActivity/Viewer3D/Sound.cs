@@ -437,9 +437,11 @@ namespace ORTS
             {
                 if (WasOutOfDistance)
                 {
+                    var ignore3D = WorldLocation == null | Ignore3D | !IsExternal;
                     foreach (SoundStream stream in SoundStreams)
                     {
-                        stream.HardActivate();
+                        stream.HardActivate(ignore3D);
+
                         bool released = false;
                         // run the initial triggers
                         foreach (ORTSTrigger trigger in stream.Triggers)
@@ -459,15 +461,6 @@ namespace ORTS
                                     trigger.SoundCommand.Run();
                             }
                         }
-                        if (WorldLocation == null || Ignore3D || !IsExternal)
-                        {
-                            stream.ALSoundSource.Set2D(true);
-                        }
-                        else if (Car != null)
-                        {
-                            Car.SoundSourceIDs.Add(stream.ALSoundSource.SoundSourceID);
-                        }
-
                     }
                 }
                 WasOutOfDistance = false;
@@ -989,11 +982,12 @@ namespace ORTS
         /// <summary>
         /// Allocates a new sound source ID in OpenAL, if one is not allocated yet.
         /// </summary>
-        public void HardActivate()
+        /// <param name="ignore3D">Whether the stream's world position should be ignored</param>
+        public void HardActivate(bool ignore3D)
         {
             if (ALSoundSource != null)
             {
-                ALSoundSource.HardActive = true;
+                ALSoundSource.HardActivate(ignore3D, SoundSource.Car);
             }
         }
 
@@ -1004,7 +998,7 @@ namespace ORTS
         {
             if (ALSoundSource != null)
             {
-                ALSoundSource.HardActive = false;
+                ALSoundSource.HardDeactivate();
             }
             Sweep();
         }
@@ -1013,7 +1007,7 @@ namespace ORTS
         {
             if (ALSoundSource != null)
             {
-                ALSoundSource.HardActive = false;
+                ALSoundSource.HardDeactivate();
                 ALSoundSource.Dispose();
                 ALSoundSource = null;
             }
