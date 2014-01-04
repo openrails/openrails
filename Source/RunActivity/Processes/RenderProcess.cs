@@ -75,9 +75,12 @@ namespace ORTS.Processes
             WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
             WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
 
+            // Run the game initially at 10FPS fixed-time-step. Do not change this! It affects the loading performance.
             Game.IsFixedTimeStep = true;
             Game.TargetElapsedTime = TimeSpan.FromMilliseconds(100);
             Game.InactiveSleepTime = TimeSpan.FromMilliseconds(100);
+
+            // Set up the rest of the graphics according to the settings.
             GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Game.Settings.VerticalSync;
             GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
             GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;

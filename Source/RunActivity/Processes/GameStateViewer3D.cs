@@ -39,7 +39,9 @@ namespace ORTS.Processes
         {
             if (FirstFrame)
             {
+                // Turn off the 10FPS fixed-time-step and return to running as fast as we can.
                 Game.IsFixedTimeStep = false;
+                Game.InactiveSleepTime = TimeSpan.Zero;
 
                 // We must create these forms on the main thread (Render) or they won't pump events correctly.
 
