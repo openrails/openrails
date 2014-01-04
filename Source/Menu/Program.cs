@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
+using ORTS.Common;
 
 namespace ORTS
 {
@@ -100,7 +101,7 @@ namespace ORTS
             }
             catch (Exception error)
             {
-                MessageBox.Show(error.ToString());
+                MessageBox.Show(error.ToString(), Application.ProductName + " " + VersionInfo.VersionOrBuild);
             }
         }
     }

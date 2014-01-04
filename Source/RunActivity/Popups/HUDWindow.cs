@@ -317,7 +317,7 @@ namespace ORTS.Popups
             var bunched = !stretched && playerTrain.Cars.Count > 1 && playerTrain.NPush == playerTrain.Cars.Count - 1;
 
             TableSetLabelValueColumns(table, 0, 2);
-            TableAddLabelValue(table, "Version", VersionInfo.Version.Length > 0 ? VersionInfo.Version : VersionInfo.Build);
+            TableAddLabelValue(table, "Version", VersionInfo.VersionOrBuild);
 
             if (MultiPlayer.MPManager.IsClient()) //client and server may have time difference
                 TableAddLabelValue(table, "Time", InfoDisplay.FormattedTime(Viewer.Simulator.ClockTime + MultiPlayer.MPManager.Instance().serverTimeDifference));

@@ -213,7 +213,7 @@ namespace ORTS
                 gridSaves_SelectionChanged(null, null);
                 // Show warning after the list has been updated as this is more useful.
                 if (warning != "")
-                    MessageBox.Show(warning);
+                    MessageBox.Show(warning, Application.ProductName + " " + VersionInfo.VersionOrBuild);
             });
         }
 

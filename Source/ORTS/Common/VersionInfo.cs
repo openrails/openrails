@@ -32,6 +32,7 @@ namespace ORTS.Common
         static readonly string Revision = GetRevision("Revision.txt");
         public static readonly string Version = GetVersion("Version.txt");
         public static readonly string Build = GetBuild("OpenRails.exe", "Menu.exe", "RunActivity.exe");
+        public static readonly string VersionOrBuild = GetVersionOrBuild();
 
         static string GetRevision(string fileName)
         {
@@ -88,6 +89,11 @@ namespace ORTS.Common
                 return String.Format("{0} ({1:u})", builds[timespan], datetime + timespan);
             }
             return "";
+        }
+
+        static string GetVersionOrBuild()
+        {
+            return Version.Length > 0 ? Version : Build;
         }
     }
 }

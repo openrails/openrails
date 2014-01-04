@@ -261,7 +261,7 @@ namespace ORTS
 			string tmp = text;
 			if (tmp.Length < 4 || tmp.Length > 10 || tmp.Contains("\"") || tmp.Contains("\'") || tmp.Contains(" ") || tmp.Contains("-") || Char.IsDigit(tmp, 0))
 			{
-				MessageBox.Show("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit.");
+				MessageBox.Show("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit.", Application.ProductName);
 				return false;
 			}
 			return true;

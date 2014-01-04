@@ -21,6 +21,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows.Forms;
+using ORTS.Common;
 
 namespace ORTS.Processes
 {
@@ -149,7 +151,7 @@ namespace ORTS.Processes
             Exit();
             // Show the user that it's all gone horribly wrong.
             if (Settings.ShowErrorDialogs)
-                System.Windows.Forms.MessageBox.Show(error.ToString());
+                System.Windows.Forms.MessageBox.Show(error.ToString(), Application.ProductName + " " + VersionInfo.VersionOrBuild);
         }
     }
 }

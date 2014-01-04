@@ -156,14 +156,16 @@ namespace ORTS.Processes
                         Test(settings, data);
                         break;
                     default:
-                        MessageBox.Show("Supply missing activity file name\n"
-                            + "   i.e.: RunActivity \"C:\\Program Files\\Microsoft Games\\Train Simulator\\ROUTES\\USA1\\ACTIVITIES\\xxx.act\"\n"
-                            + "\n"
-                            + "or launch the program OpenRails.exe and select from the menu.");
+                        MessageBox.Show("To start " + Application.ProductName + ", please run 'OpenRails.exe'.\n\n"
+                                + "If you are attempting to debug this component, please run 'OpenRails.exe' and execute the scenario you are interested in. "
+                                + "In the log file, the command-line arguments used will be listed at the top. "
+                                + "You should then configure your debug environment to execute this component with those command-line arguments.",
+                                Application.ProductName + " " + VersionInfo.VersionOrBuild);
+                        Game.Exit();
                         break;
                 }
             };
-            if (Debugger.IsAttached && false) // Separate code path during debugging, so IDE stops at the problem and not at the message.
+            if (Debugger.IsAttached) // Separate code path during debugging, so IDE stops at the problem and not at the message.
             {
                 doAction();
             }
@@ -189,7 +191,7 @@ namespace ORTS.Processes
 
                         if (error is IncompatibleSaveException)
                         {
-                            MessageBox.Show(error.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(error.Message, Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         else if (error is FileNotFoundException)
                         {
@@ -197,7 +199,7 @@ namespace ORTS.Processes
                                     "An essential file is missing and {0} cannot continue.\n\n" +
                                     "    {1}",
                                     Application.ProductName, (error as FileNotFoundException).FileName),
-                                    Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         else if (error is DirectoryNotFoundException)
                         {
@@ -208,7 +210,7 @@ namespace ORTS.Processes
                                     "An essential folder is missing and {0} cannot continue.\n\n" +
                                     "    {1}",
                                     Application.ProductName, fileName),
-                                    Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         else
                         {
@@ -220,7 +222,7 @@ namespace ORTS.Processes
                                     "This error may be due to bad data or a bug. You can help improve {0} by reporting this error in our bug tracker at http://launchpad.net/or and attaching the log file {2}.\n\n" +
                                     ">>> Please report this error to the {0} bug tracker <<<",
                                     Application.ProductName, errorSummary, logFile),
-                                    Application.ProductName, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
+                                    Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
                             if (openTracker == DialogResult.OK)
                                 Process.Start("http://launchpad.net/or");
                             // James Ross would prefer to do this:
@@ -546,7 +548,7 @@ namespace ORTS.Processes
                     var fileName = settings.LoggingFilename;
                     try
                     {
-                        fileName = String.Format(fileName, Application.ProductName, VersionInfo.Version.Length > 0 ? VersionInfo.Version : VersionInfo.Build, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
+                        fileName = String.Format(fileName, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
                     }
                     catch { }
                     foreach (var ch in Path.GetInvalidFileNameChars())
@@ -687,6 +689,9 @@ namespace ORTS.Processes
 
         void UninitLoading()
         {
+            if (LoadingDataKey == null)
+                return;
+
             var loadingTime = DateTime.Now - LoadingStart;
             var bytes = GetProcessBytesLoaded() - LoadingBytesInitial;
             LoadingBytesActual.Add(bytes);
