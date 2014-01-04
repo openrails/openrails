@@ -201,6 +201,7 @@ namespace ORTS
         ControlWiper,
         ControlHorn,
         ControlBell,
+        ControlBellToggle,
         ControlDoorLeft,
         ControlDoorRight,
         ControlMirror,
@@ -469,7 +470,7 @@ namespace ORTS
             Commands[(int)UserCommands.DebugSignalling] = new UserCommandKeyInput(0x57, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugResetWheelSlip] = new UserCommandKeyInput(0x2D, KeyModifiers.Control);
             Commands[(int)UserCommands.DebugToggleAdvancedAdhesion] = new UserCommandKeyInput(0x2D, KeyModifiers.Control | KeyModifiers.Alt);
-            Commands[(int)UserCommands.DebugSoundForm] = new UserCommandKeyInput(0x14, KeyModifiers.Shift);
+            Commands[(int)UserCommands.DebugSoundForm] = new UserCommandKeyInput(0x1F, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugPrecipitationIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugPrecipitationDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Alt);
 
@@ -536,6 +537,7 @@ namespace ORTS
             Commands[(int)UserCommands.ControlHorn] = new UserCommandKeyInput(0x39);
 
             Commands[(int)UserCommands.ControlBell] = new UserCommandKeyInput(0x30);
+            Commands[(int)UserCommands.ControlBellToggle] = new UserCommandKeyInput(0x30, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlDoorLeft] = new UserCommandKeyInput(0x10);
             Commands[(int)UserCommands.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
 

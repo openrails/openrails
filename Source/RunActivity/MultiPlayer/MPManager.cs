@@ -722,9 +722,13 @@ namespace ORTS.MultiPlayer
 
 			if (UserInput.IsPressed(UserCommands.ControlPantograph1)) Notify((new MSGEvent(GetUserName(), "PANTO1", (++PantoFirstCount)%2)).ToString());
 
-			if (UserInput.IsPressed(UserCommands.ControlBell)) Notify((new MSGEvent(GetUserName(), "BELL", (++BellCount)%2)).ToString());
+			if (UserInput.IsPressed(UserCommands.ControlBell)) Notify((new MSGEvent(GetUserName(), "BELL", 1)).ToString());
 
-			if (UserInput.IsPressed(UserCommands.ControlWiper)) Notify((new MSGEvent(GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
+            if (UserInput.IsReleased(UserCommands.ControlBell)) Notify((new MSGEvent(GetUserName(), "BELL", 0)).ToString());
+
+            if (UserInput.IsPressed(UserCommands.ControlBellToggle)) Notify((new MSGEvent(GetUserName(), "BELL", (++BellCount) % 2)).ToString());
+
+            if (UserInput.IsPressed(UserCommands.ControlWiper)) Notify((new MSGEvent(GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
 
 			if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
 			{

@@ -2628,7 +2628,9 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.ControlWiper)) new ToggleWipersCommand(Viewer.Log);
             if (UserInput.IsPressed(UserCommands.ControlHorn)) { new HornCommand(Viewer.Log, true); this.Car.Simulator.HazzardManager.Horn(); }
             if (UserInput.IsReleased(UserCommands.ControlHorn)) new HornCommand(Viewer.Log, false);
-            if (UserInput.IsPressed(UserCommands.ControlBell)) new BellCommand(Viewer.Log, !Locomotive.Bell);
+            if (UserInput.IsPressed(UserCommands.ControlBell)) new BellCommand(Viewer.Log, true);
+            if (UserInput.IsReleased(UserCommands.ControlBell)) new BellCommand(Viewer.Log, false);
+            if (UserInput.IsPressed(UserCommands.ControlBellToggle)) new BellCommand(Viewer.Log, !Locomotive.Bell);
             if (UserInput.IsPressed(UserCommands.ControlAlerter)) new AlerterCommand(Viewer.Log, true);  // z
             if (UserInput.IsReleased(UserCommands.ControlAlerter)) new AlerterCommand(Viewer.Log, false);  // z
 

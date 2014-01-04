@@ -85,7 +85,7 @@ namespace ORTS.Debugging
             this.inactiveSoundList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.inactiveSoundList.Location = new System.Drawing.Point(0, 0);
             this.inactiveSoundList.Name = "inactiveSoundList";
-            this.inactiveSoundList.Size = new System.Drawing.Size(252, 162);
+            this.inactiveSoundList.Size = new System.Drawing.Size(288, 289);
             this.inactiveSoundList.TabIndex = 3;
             this.inactiveSoundList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.inactiveSoundList_KeyDown);
             this.inactiveSoundList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.inactiveSoundList_KeyPress);
@@ -95,7 +95,7 @@ namespace ORTS.Debugging
             this.activeSoundList.Dock = System.Windows.Forms.DockStyle.Fill;
             this.activeSoundList.Location = new System.Drawing.Point(0, 0);
             this.activeSoundList.Name = "activeSoundList";
-            this.activeSoundList.Size = new System.Drawing.Size(252, 295);
+            this.activeSoundList.Size = new System.Drawing.Size(288, 519);
             this.activeSoundList.TabIndex = 4;
             this.activeSoundList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.activeSoundList_KeyDown);
             this.activeSoundList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.activeSoundList_KeyPress);
@@ -114,8 +114,8 @@ namespace ORTS.Debugging
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.inactiveSoundList);
-            this.splitContainer1.Size = new System.Drawing.Size(252, 461);
-            this.splitContainer1.SplitterDistance = 295;
+            this.splitContainer1.Size = new System.Drawing.Size(288, 812);
+            this.splitContainer1.SplitterDistance = 519;
             this.splitContainer1.TabIndex = 5;
             // 
             // splitContainer2
@@ -133,7 +133,7 @@ namespace ORTS.Debugging
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.splitContainer1);
-            this.splitContainer2.Size = new System.Drawing.Size(398, 461);
+            this.splitContainer2.Size = new System.Drawing.Size(434, 812);
             this.splitContainer2.SplitterDistance = 142;
             this.splitContainer2.TabIndex = 6;
             // 
@@ -145,7 +145,7 @@ namespace ORTS.Debugging
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(142, 461);
+            this.groupBox1.Size = new System.Drawing.Size(142, 812);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Current SMS";
@@ -341,9 +341,10 @@ namespace ORTS.Debugging
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(398, 461);
+            this.ClientSize = new System.Drawing.Size(434, 812);
             this.Controls.Add(this.splitContainer2);
             this.Name = "SoundDebugForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "SoundDebugForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SoundDebugForm_FormClosing);
             this.splitContainer1.Panel1.ResumeLayout(false);
