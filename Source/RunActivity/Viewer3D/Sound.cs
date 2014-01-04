@@ -476,7 +476,16 @@ namespace ORTS
             InitInitials();
 
             if (WasOutOfDistance)
+            {
+                // It is still needed to try out-of-distance variable triggers, to handle their start and release events, so they will be in
+                // correct state when get into scope again. Discrete triggers have their HandleEvent() function to achieve this,
+                // but there is no such thing for variable triggers.
+                foreach (var stream in SoundStreams)
+                    foreach (var trigger in stream.VariableTriggers)
+                        trigger.TryTrigger();
+
                 return true;
+            }
 
             if (!Active)
             {
@@ -732,7 +741,7 @@ namespace ORTS
         /// <summary>
         /// List of owned variable triggers. Used at determining if initial trigger is to be audible
         /// </summary>
-        List<ORTSTrigger> VariableTriggers;
+        public List<ORTSTrigger> VariableTriggers = new List<ORTSTrigger>();
         /// <summary>
         /// Helper object for determining if initial trigger is to be audible
         /// </summary>
@@ -1035,7 +1044,6 @@ namespace ORTS
     /// Trigger is defined in the SMS file as members of a SoundStream.
     /// They are activated by various events.
     /// When triggered, executes a SoundCommand
-
     /// </summary>
     public class ORTSTrigger
     {
