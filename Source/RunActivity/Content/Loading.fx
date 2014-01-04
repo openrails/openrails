@@ -83,7 +83,10 @@ float4 PSLoadingBar(in VERTEX_OUTPUT In) : COLOR0
 {
 	const float4 ColorBack = float4(0.5, 0.5, 0.5, 1);
 	const float4 ColorFore = float4(1.0, 1.0, 1.0, 1);
-	if (LoadingPercent - In.TexCoords.x > 0)
+	if (LoadingPercent < 0 || LoadingPercent > 1) {
+		float c = sin(frac(In.TexCoords.x + LoadingPercent) * 3.14159);
+		return lerp(ColorFore, ColorBack, c);
+	} else if (LoadingPercent - In.TexCoords.x > 0)
 		return ColorFore;
 	else
 		return ColorBack;

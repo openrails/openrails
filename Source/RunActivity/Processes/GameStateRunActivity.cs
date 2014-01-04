@@ -27,6 +27,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -75,9 +76,6 @@ namespace ORTS.Processes
         {
             UpdateLoading();
 
-            if (LoadingScreen == null && Simulator != null)
-                LoadingScreen = new LoadingScreenPrimitive(Game);
-
             if (Loading != null)
             {
                 frame.AddPrimitive(Loading.Material, Loading, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
@@ -88,7 +86,7 @@ namespace ORTS.Processes
                 frame.AddPrimitive(LoadingScreen.Material, LoadingScreen, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
             }
 
-            if (LoadingBar != null && LoadedPercent >= 0)
+            if (LoadingBar != null)
             {
                 LoadingBar.Material.Shader.LoadingPercent = LoadedPercent;
                 frame.AddPrimitive(LoadingBar.Material, LoadingBar, RenderPrimitiveGroup.Overlay, ref LoadingMatrix);
@@ -165,7 +163,7 @@ namespace ORTS.Processes
                         break;
                 }
             };
-            if (Debugger.IsAttached) // Separate code path during debugging, so IDE stops at the problem and not at the message.
+            if (Debugger.IsAttached && false) // Separate code path during debugging, so IDE stops at the problem and not at the message.
             {
                 doAction();
             }
@@ -174,6 +172,10 @@ namespace ORTS.Processes
                 try
                 {
                     doAction();
+                }
+                catch (ThreadAbortException)
+                {
+                    // This occurs if we're aborting the loading. Don't report this.
                 }
                 catch (Exception error)
                 {
@@ -659,17 +661,18 @@ namespace ORTS.Processes
 
             var bytes = GetProcessBytesLoaded() - LoadingBytesInitial;
 
-            // -1 indicates no progress data; this happens if the loaded bytes exceeds the cached maximum expected bytes.
-            LoadedPercent = -1;
-            for (var i = 1; i < LoadingSampleCount; i++)
+            // Negative indicates no progress data; this happens if the loaded bytes exceeds the cached maximum expected bytes.
+            LoadedPercent = -(float)(DateTime.Now - LoadingStart).TotalSeconds / 15;
+            for (var i = 0; i < LoadingSampleCount; i++)
             {
                 // Find the first expected sample with more bytes. This means we're currently in the (i - 1) to (i) range.
                 if (bytes <= LoadingBytesExpected[i])
                 {
                     // Calculate the position within the (i - 1) to (i) range using straight interpolation.
-                    var index = (float)i - 1;
-                    index += (float)(bytes - LoadingBytesExpected[i - 1]) / (LoadingBytesExpected[i] - LoadingBytesExpected[i - 1]);
-                    LoadedPercent = index / LoadingBytesExpected.Length;
+                    var expectedP = i == 0 ? 0 : LoadingBytesExpected[i - 1];
+                    var expectedC = LoadingBytesExpected[i];
+                    var index = i + (float)(bytes - expectedP) / (expectedC - expectedP);
+                    LoadedPercent = index / LoadingSampleCount;
                     break;
                 }
             }
@@ -785,6 +788,10 @@ namespace ORTS.Processes
 
             Arguments = args;
             Simulator = new Simulator(settings, args[0]);
+
+            if (LoadingScreen == null)
+                LoadingScreen = new LoadingScreenPrimitive(Game);
+
             if (args.Length == 1)
                 Simulator.SetActivity(args[0]);
             else if (args.Length == 5)
@@ -1086,7 +1093,7 @@ namespace ORTS.Processes
             {
                 var path = Path.Combine(Simulator.RoutePath, "load.ace");
                 if (File.Exists(path))
-                    return MSTS.ACEFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, Path.Combine(Simulator.RoutePath, "load.ace"));
+                    return MSTS.ACEFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
                 return null;
             }
         }
