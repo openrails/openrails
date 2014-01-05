@@ -293,9 +293,12 @@ namespace ORTS
         {
             SetPantographFirst(ToState);
             if (!ToState)
-                Pan1Up = Pan2Up = Pan = ToState;
+            {
+                if (Pan1Up) SignalEvent(Event.Pantograph1Down);
+                if (Pan2Up) SignalEvent(Event.Pantograph2Down);
+            }
             else
-                Pan1Up = ToState;
+                SignalEvent(Event.Pantograph1Up);
             base.SetPower(ToState);
         }
 

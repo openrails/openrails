@@ -799,11 +799,13 @@ namespace ORTS
             {
                 foreach (DieselEngine engine in DieselEngines)
                     engine.Start();
+                SignalEvent(Event.EnginePowerOn);
             }
             else
             {
                 foreach (DieselEngine engine in DieselEngines)
                     engine.Stop();
+                SignalEvent(Event.EnginePowerOff);
             }
 
             base.SetPower(ToState);
@@ -915,7 +917,7 @@ namespace ORTS
                 foreach (var car in DieselLocomotive.Train.Cars)
                 {
                     var mstsDieselLocomotive = car as MSTSDieselLocomotive;
-                    if (mstsDieselLocomotive != null)
+                    if (mstsDieselLocomotive != null && mstsDieselLocomotive.AcceptMUSignals)
                     {
                         if (mstsDieselLocomotive.DieselEngines.Count > 0)
                         {
