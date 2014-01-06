@@ -165,7 +165,7 @@ void _VSTransferProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
 	Out.TexCoords.xy = In.TexCoords;
-	Out.Normal_Light = EyeVector;
+	Out.Normal_Light.w = 1;
 }
 
 void _VSLightsAndShadows(uniform bool ShaderModel3, in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)

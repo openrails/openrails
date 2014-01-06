@@ -468,8 +468,6 @@ namespace ORTS
         {
             Matrix viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
-            // With the GPU configured, now we can draw the primitive
-            SceneryShader.SetViewMatrix(ref XNAViewMatrix);
             SceneryShader.Begin();
             foreach (EffectPass pass in SceneryShader.CurrentTechnique.Passes)
             {

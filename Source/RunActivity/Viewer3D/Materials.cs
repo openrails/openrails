@@ -636,7 +636,6 @@ namespace ORTS
             var shader = Viewer.MaterialManager.SceneryShader;
             var viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
-            shader.SetViewMatrix(ref XNAViewMatrix);
             shader.Begin();
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
@@ -759,7 +758,6 @@ namespace ORTS
             var shader = Viewer.MaterialManager.SceneryShader;
             var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
-            shader.SetViewMatrix(ref XNAViewMatrix);
             shader.Begin();
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
@@ -1393,7 +1391,6 @@ namespace ORTS
             var shader = Viewer.MaterialManager.SceneryShader;
             var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
-            shader.SetViewMatrix(ref XNAViewMatrix);
             shader.Begin();
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
