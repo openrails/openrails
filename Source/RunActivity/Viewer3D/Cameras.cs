@@ -73,9 +73,6 @@ namespace ORTS
         const int SpeedFactorFastSlow = 8;  // Use by GetSpeed
         protected const float SpeedAdjustmentForRotation = 0.1f;
 
-        // Sound related properties
-        public Vector3 Velocity { get; protected set; }
-
         protected Camera(Viewer3D viewer)
         {
             Viewer = viewer;
@@ -117,6 +114,7 @@ namespace ORTS
             Viewer.Camera = this;
             Update(ElapsedTime.Zero);
             xnaView = GetCameraView();
+            SoundBaseTile = new Point(cameraLocation.TileX, cameraLocation.TileZ);
         }
 
         /// <summary>
@@ -278,12 +276,27 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// All OpenAL sound positions are normalized to this tile.
+        /// Cannot be (0, 0) constantly, because some routes use extremely large tile coordinates,
+        /// which would lead to imprecise absolute world coordinates, thus stuttering.
+        /// </summary>
+        public static Point SoundBaseTile = new Point(0, 0);
+        /// <summary>
+        /// CameraWorldLocation normalized to SoundBaseTile
+        /// </summary>
+        WorldLocation ListenerLocation;
+        /// <summary>
+        /// Set OpenAL listener position based on CameraWorldLocation normalized to SoundBaseTile
+        /// </summary>
         public void UpdateListener()
         {
+            ListenerLocation = new WorldLocation(CameraWorldLocation);
+            ListenerLocation.NormalizeTo(SoundBaseTile.X, SoundBaseTile.Y);
             float[] cameraPosition = new float[] {
-                        CameraWorldLocation.Location.X,
-                        CameraWorldLocation.Location.Y,
-                        CameraWorldLocation.Location.Z};
+                        ListenerLocation.Location.X,
+                        ListenerLocation.Location.Y,
+                        ListenerLocation.Location.Z};
 
             float[] cameraVelocity = new float[] { 0, 0, 0 };
 

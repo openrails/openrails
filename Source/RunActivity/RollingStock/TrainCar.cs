@@ -738,7 +738,6 @@ namespace ORTS
 
         public float[] Velocity = new float[] { 0, 0, 0 };
         WorldLocation SoundLocation;
-        static WorldLocation CameraWorldLocation;
         public void UpdateSoundPosition()
         {
             if (SoundSourceIDs.Count == 0 || Program.Simulator.Confirmer.Viewer == null || Program.Simulator.Confirmer.Viewer.Camera == null)
@@ -752,9 +751,8 @@ namespace ORTS
             else
                 Velocity = new float[] { 0, 0, 0 };
 
-            SoundLocation = WorldPosition.WorldLocation;
-            CameraWorldLocation = Program.Simulator.Confirmer.Viewer.Camera.CameraWorldLocation;
-            SoundLocation.NormalizeTo(CameraWorldLocation.TileX, CameraWorldLocation.TileZ);
+            SoundLocation = new WorldLocation(WorldPosition.WorldLocation);
+            SoundLocation.NormalizeTo(Camera.SoundBaseTile.X, Camera.SoundBaseTile.Y);
             float[] position = new float[] {
                 SoundLocation.Location.X,
                 SoundLocation.Location.Y,

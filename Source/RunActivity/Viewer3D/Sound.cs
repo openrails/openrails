@@ -463,7 +463,6 @@ namespace ORTS
             }
         }
         
-        static WorldLocation CameraWorldLocation;
         public override bool Update()
         {
             if (Car != null && !Car.IsPartOfActiveTrain)
@@ -509,8 +508,7 @@ namespace ORTS
 
             if (Car == null && WorldLocation != null && !Ignore3D && IsExternal)
             {
-                CameraWorldLocation = Viewer.Camera.CameraWorldLocation;
-                WorldLocation.NormalizeTo(CameraWorldLocation.TileX, CameraWorldLocation.TileZ);
+                WorldLocation.NormalizeTo(Camera.SoundBaseTile.X, Camera.SoundBaseTile.Y);
                 float[] position = new float[] {
                     WorldLocation.Location.X,
                     WorldLocation.Location.Y,
