@@ -661,6 +661,9 @@ namespace ORTS
         {
             if (SoundSourceID != -1)
             {
+                if (Car != null)
+                    Car.SoundSourceIDs.Remove(SoundSourceID);
+
                 Stop();
                 OpenAL.alDeleteSources(1, ref SoundSourceID);
                 SoundSourceID = -1;

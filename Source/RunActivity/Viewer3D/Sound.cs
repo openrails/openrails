@@ -295,17 +295,16 @@ namespace ORTS
         }
 
         /// <summary>
-        /// No need to play the sounds, stop them
+        /// Stop the streams, free up OpenAL sound source IDs and try to unload wave data from memory
         /// </summary>
         public override void Uninitialize()
         {
             foreach (SoundStream ss in SoundStreams)
             {
-                if (Car != null)
-                    Car.SoundSourceIDs.Remove(ss.ALSoundSource.SoundSourceID);
                 ss.Stop();
                 ss.HardDeactivate();
                 WasOutOfDistance = true;
+                NeedsFrequentUpdate = false;
             }
         }
         
@@ -424,9 +423,6 @@ namespace ORTS
             {
                 if (!WasOutOfDistance)
                 {
-                    if (Car != null)
-                        Car.SoundSourceIDs.Clear();
-
                     foreach (SoundStream stream in SoundStreams)
                         stream.HardDeactivate();
                 }
