@@ -548,6 +548,7 @@ namespace ORTS
                 }
                 else
                 {
+                    dRPM = 0;
                     ExhaustColor = ExhaustSteadyColor;
                 }
             }
@@ -732,7 +733,6 @@ namespace ORTS
             IdleRPM = loco.IdleRPM;
             MaxRPM = loco.MaxRPM;
             InitialExhaust = loco.InitialExhaust;
-            ExhaustDynamics = loco.ExhaustDynamics;
             ExhaustMagnitude = loco.ExhaustMagnitude;
             MaxExhaust = loco.MaxExhaust;
             IdleExhaust = loco.InitialExhaust;
@@ -769,7 +769,6 @@ namespace ORTS
 
             IdleExhaust = loco.IdleExhaust;
             MaxExhaust = loco.MaxExhaust;
-            ExhaustDynamics = loco.ExhaustDynamics;
             locomotive = loco;
         }
 

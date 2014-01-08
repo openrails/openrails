@@ -56,9 +56,8 @@ namespace ORTS
         public float PercentChangePerSec = .2f;
         public float IdleExhaust;
         public float InitialExhaust;
-        public float ExhaustMagnitude = 4.0f;
         public float MaxExhaust = 50.0f;
-        public float ExhaustDynamics = 4.0f;
+        public float ExhaustMagnitude = 4.0f;
         public float EngineRPMderivation;
         float EngineRPMold;
         float EngineRPMRatio; // used to compute Variable1 and Variable2
@@ -159,7 +158,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// This initializer is called when we are making a new copy of a car already
+        /// This initializer is called when we are making a new copy of a locomotive already
         /// loaded in memory.  We use this one to speed up loading by eliminating the
         /// need to parse the wag file multiple times.
         /// NOTE:  you must initialize all the same variables as you parsed above
@@ -167,31 +166,36 @@ namespace ORTS
         public override void InitializeFromCopy(MSTSWagon copy)
         {
             MSTSDieselLocomotive locoCopy = (MSTSDieselLocomotive)copy;
+            EngineRPM = locoCopy.EngineRPM;
             IdleRPM = locoCopy.IdleRPM;
             MaxRPM = locoCopy.MaxRPM;
             MaxRPMChangeRate = locoCopy.MaxRPMChangeRate;
-            PercentChangePerSec = locoCopy.PercentChangePerSec;
             IdleExhaust = locoCopy.IdleExhaust;
+            InitialExhaust = locoCopy.InitialExhaust;
             MaxExhaust = locoCopy.MaxExhaust;
-            ExhaustDynamics = locoCopy.ExhaustDynamics;
+            ExhaustMagnitude = locoCopy.ExhaustMagnitude;
+            ExhaustParticles = locoCopy.ExhaustParticles;
+            ExhaustSteadyColor = locoCopy.ExhaustSteadyColor;
+            ExhaustTransientColor = locoCopy.ExhaustTransientColor;
+            DieselEngines = locoCopy.DieselEngines;
+            PercentChangePerSec = locoCopy.PercentChangePerSec;
+
+            MaxExhaust = locoCopy.MaxExhaust;
             EngineRPMderivation = locoCopy.EngineRPMderivation;
             EngineRPMold = locoCopy.EngineRPMold;
 
             MaxDieselLevelL = locoCopy.MaxDieselLevelL;
             DieselUsedPerHourAtMaxPowerL = locoCopy.DieselUsedPerHourAtMaxPowerL;
             DieselUsedPerHourAtIdleL = locoCopy.DieselUsedPerHourAtIdleL;
+
+            DieselFlowLps = 0.0f;
+            InitialMassKg = MassKG;
+
             if (this.CarID.StartsWith("0"))
                 DieselLevelL = locoCopy.DieselLevelL;
             else
                 DieselLevelL = locoCopy.MaxDieselLevelL;
-            DieselFlowLps = 0.0f;
-            InitialMassKg = MassKG;
 
-            EngineRPM = locoCopy.EngineRPM;
-            ExhaustParticles = locoCopy.ExhaustParticles;
-            ExhaustSteadyColor = locoCopy.ExhaustSteadyColor;
-            ExhaustTransientColor = locoCopy.ExhaustTransientColor;
-            DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
             if (locoCopy.GearBoxController != null)
                 GearBoxController = new MSTSNotchController(locoCopy.GearBoxController);
             Initialize();
@@ -408,33 +412,9 @@ namespace ORTS
 
             ExhaustColor = ExhaustSteadyColor;
             
-            //if (EngineRPM == IdleRPM)
-            //{
-            //    ExhaustParticles = IdleExhaust;
-            //    ExhaustDynamics = InitialExhaust;
-            //    ExhaustColor = ExhaustSteadyColor;
-            //}
-            //else if (EngineRPMderivation > 0.0f)
-            //{
-            //    ExhaustParticles = IdleExhaust + (e * MaxExhaust);
-            //    ExhaustDynamics = InitialExhaust + (e * ExhaustMagnitude);
-            //    ExhaustColor = ExhaustTransientColor;               
-            //}
-            //else if (EngineRPMderivation < 0.0f)
-            //{
-            //        ExhaustParticles = IdleExhaust + (e * MaxExhaust);
-            //        ExhaustDynamics = InitialExhaust + (e * ExhaustMagnitude);
-            //    if (t == 0f)
-            //    {
-            //        ExhaustColor = ExhaustDecelColor;
-            //    }
-            //    else
-            //    {
-            //        ExhaustColor = ExhaustSteadyColor;
-            //    }
-            //}
+
             ExhaustParticles = DieselEngines[0].ExhaustParticles;
-            ExhaustDynamics = DieselEngines[0].ExhaustDynamics;
+            ExhaustMagnitude = DieselEngines[0].ExhaustMagnitude;
             ExhaustColor = DieselEngines[0].ExhaustColor;
 
             if (PowerOn = DieselEngines.PowerOn)
@@ -877,7 +857,7 @@ namespace ORTS
             {
                 drawer.SetTexture(viewer.TextureManager.Get(dieselTexture));
                 drawer.SetEmissionRate(car.ExhaustParticles);
-                drawer.SetParticleDuration(car.ExhaustDynamics);
+                drawer.SetParticleDuration(car.ExhaustMagnitude);
             }
         }
 
@@ -986,7 +966,7 @@ namespace ORTS
             {
                 drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
                 drawer.SetEmissionColor(((MSTSDieselLocomotive)this.Car).ExhaustColor);
-                drawer.SetParticleDuration(((MSTSDieselLocomotive)this.Car).ExhaustDynamics);
+                drawer.SetParticleDuration(((MSTSDieselLocomotive)this.Car).ExhaustMagnitude);
             }
             base.PrepareFrame(frame, elapsedTime);
         }
