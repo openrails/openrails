@@ -170,17 +170,9 @@ namespace ORTS
             IdleRPM = locoCopy.IdleRPM;
             MaxRPM = locoCopy.MaxRPM;
             MaxRPMChangeRate = locoCopy.MaxRPMChangeRate;
-            IdleExhaust = locoCopy.IdleExhaust;
-            InitialExhaust = locoCopy.InitialExhaust;
-            MaxExhaust = locoCopy.MaxExhaust;
-            ExhaustMagnitude = locoCopy.ExhaustMagnitude;
-            ExhaustParticles = locoCopy.ExhaustParticles;
-            ExhaustSteadyColor = locoCopy.ExhaustSteadyColor;
-            ExhaustTransientColor = locoCopy.ExhaustTransientColor;
-            DieselEngines = locoCopy.DieselEngines;
+
             PercentChangePerSec = locoCopy.PercentChangePerSec;
 
-            MaxExhaust = locoCopy.MaxExhaust;
             EngineRPMderivation = locoCopy.EngineRPMderivation;
             EngineRPMold = locoCopy.EngineRPMold;
 
@@ -198,6 +190,9 @@ namespace ORTS
 
             if (locoCopy.GearBoxController != null)
                 GearBoxController = new MSTSNotchController(locoCopy.GearBoxController);
+
+            DieselEngines = new DieselEngines(locoCopy.DieselEngines, this);
+
             Initialize();
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }

@@ -357,6 +357,13 @@ namespace ORTS
             DieselTorqueTab = new Interpolator(copy.DieselTorqueTab);
             DieselUsedPerHourAtMaxPowerL = copy.DieselUsedPerHourAtMaxPowerL;
             DieselUsedPerHourAtIdleL = copy.DieselUsedPerHourAtIdleL;
+            IdleExhaust = copy.IdleExhaust;
+            InitialExhaust = copy.InitialExhaust;
+            MaxExhaust = copy.MaxExhaust;
+            ExhaustMagnitude = copy.ExhaustMagnitude;
+            ExhaustParticles = copy.ExhaustParticles;
+
+
             if (copy.GearBox != null)
             {
                 GearBox = new GearBox(copy.GearBox, this);
@@ -418,6 +425,8 @@ namespace ORTS
         public float ExhaustMagnitude = 4.0f;
         public float MaxExhaust = 50.0f;
         public float IdleExhaust = 10;
+        public float ExhaustDecelReduction = 50f; //Represents the percentage that exhaust will be reduced while engine is decreasing RPMs.
+        public float ExhaustAccelIncrease = 200f; //Represents the percentage that exhaust will be increased while engine is increasing RPMs.
 
         public float LoadPercent
         {
@@ -450,6 +459,8 @@ namespace ORTS
                 case "engine(orts(diesel(exhaustdynamics": ExhaustDynamics = stf.ReadFloatBlock(STFReader.UNITS.None, 1); initLevel++; break;
                 case "engine(orts(diesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); initLevel++; break;
                 case "engine(orts(diesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); initLevel++; break;
+                case "engine(orts(diesel(exhaustdecelreductionpercent": ExhaustDecelReduction = stf.ReadFloatBlock(STFReader.UNITS.None, 50); initLevel++; break;
+                case "engine(orts(diesel(exhaustaccelincreasepercent": ExhaustAccelIncrease = stf.ReadFloatBlock(STFReader.UNITS.None, 200); initLevel++; break;
                 default: break;
             }
         }
@@ -524,12 +535,7 @@ namespace ORTS
                 }
             }
 
-            //ExhaustParticles = ((MaxExhaust - IdleExhaust) * ThrottlePercent / 100f + IdleExhaust);
-            //if (ExhaustParticles < 5.0f)
-                //ExhaustParticles = 5.0f;
-            //Rate of change decission
-
-            if (RealRPM == IdleRPM)
+            if (dRPM == 0)
             {
                 ExhaustParticles = IdleExhaust;
                 ExhaustDynamics = InitialExhaust;
@@ -542,7 +548,7 @@ namespace ORTS
                 {
                     //ExhaustParticles *= ExhaustDynamics * MaxExhaust;
                     //ExhaustColor = ExhaustTransientColor;
-                    ExhaustParticles = IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust);
+                    ExhaustParticles = ( ExhaustAccelIncrease / 100f ) * IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust);
                     ExhaustDynamics = InitialExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * ExhaustMagnitude);
                     ExhaustColor = ExhaustTransientColor; 
                 }
@@ -557,7 +563,7 @@ namespace ORTS
                 if (RealRPM > (DemandedRPM))
                 {
                     dRPM = (float)Math.Max(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
-                    ExhaustParticles = IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust);
+                    ExhaustParticles = ( ExhaustDecelReduction / 100f ) * (IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust));
                     ExhaustDynamics = InitialExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * ExhaustMagnitude);
                     ExhaustColor = ExhaustDecelColor;
                     //ExhaustParticles = 3.0f;
