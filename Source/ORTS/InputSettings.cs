@@ -755,33 +755,33 @@ namespace ORTS
             return String.Format(" [sc=0x{0:X2}]", scanCode);
         }
 
-        public static string KeyAssignmentAsString(bool ctrl, bool alt, bool shift)
+        public static string KeyAssignmentAsString(bool shift, bool control, bool alt)
         {
-            return KeyAssignmentAsString(ctrl, alt, shift, 0, Keys.None, false, false, false);
+            return KeyAssignmentAsString(shift, control, alt, 0, Keys.None, false, false, false);
         }
 
-        public static string KeyAssignmentAsString(bool ctrl, bool alt, bool shift, int scanCode, Keys vkey)
+        public static string KeyAssignmentAsString(bool shift, bool control, bool alt, int scanCode, Keys key)
         {
-            return KeyAssignmentAsString(ctrl, alt, shift, scanCode, vkey, false, false, false);
+            return KeyAssignmentAsString(shift, control, alt, scanCode, key, false, false, false);
         }
 
-        public static string KeyAssignmentAsString(bool ctrl, bool alt, bool shift, int scanCode, Keys vkey, bool ictrl, bool ialt, bool ishift)
+        public static string KeyAssignmentAsString(bool shift, bool control, bool alt, int scanCode, Keys virtualKey, bool ignoreShift, bool ignoreControl, bool ignoreAlt)
         {
             var key = new StringBuilder();
 
             if (shift) key = key.Append("Shift + ");
-            if (ctrl) key = key.Append("Control + ");
+            if (control) key = key.Append("Control + ");
             if (alt) key = key.Append("Alt + ");
-            if (scanCode == 0 && vkey == Keys.None && key.Length > 0) key.Length -= 3; //command modifiers don't end in +
+            if (scanCode == 0 && virtualKey == Keys.None && key.Length > 0) key.Length -= 3; //command modifiers don't end in +
 
             if (scanCode != 0)
                 key.Append(InputSettings.GetScanCodeKeyName(scanCode));
-            else if (vkey != Keys.None)
-                key.Append(vkey);
+            else if (virtualKey != Keys.None)
+                key.Append(virtualKey);
 
-            if (ishift) key.Append(" (+ Shift)");
-            if (ictrl) key.Append(" (+ Control)");
-            if (ialt) key.Append(" (+ Alt)");
+            if (ignoreShift) key.Append(" (+ Shift)");
+            if (ignoreControl) key.Append(" (+ Control)");
+            if (ignoreAlt) key.Append(" (+ Alt)");
 
             return key.ToString();
         }
@@ -796,11 +796,11 @@ namespace ORTS
 
         public abstract void SetFromRegString(string specifier); // ie scancode,vkey,ctrl,alt,shift  "45", or "45,0,0,1,0"  
 
-        public abstract void SetFromValues(int scanCode, Keys key, bool control, bool alt, bool shift);
+        public abstract void SetFromValues(int scanCode, Keys virtualKey, bool shift, bool control, bool alt);
 
-        public abstract void ToValue(out int scanCode, out Keys key, out bool control, out bool alt, out bool shift);
+        public abstract void ToValue(out int scanCode, out Keys virtualKey, out bool shift, out bool control, out bool alt);
 
-        public abstract void ToValue(out int scanCode, out Keys key, out bool control, out bool alt, out bool shift, out bool ignoreControl, out bool ignoreAlt, out bool ignoreShift);
+        public abstract void ToValue(out int scanCode, out Keys virtualKey, out bool shift, out bool control, out bool alt, out bool ignoreShift, out bool ignoreControl, out bool ignoreAlt);
 
         public abstract string ToRegString(); // reverses of SetFrom ,ie produces string like "45,0,0,0,1"
 
@@ -855,6 +855,7 @@ namespace ORTS
 
         public override void SetFromRegString(string specifier) // ie 0,ctrl,alt,shift  "0,0,0,1,0"  
         {
+            // Note: The order here is different to all the code: it is control, alt, shift.
             var v = ((string)specifier).Split(',').Select(s => int.Parse(s)).ToArray();
             if (true || false)
                 if (v[0] != 0 || v[1] != 0) throw new System.Exception("First two params of a CommandModifier must be 0");
@@ -863,26 +864,26 @@ namespace ORTS
             Shift = (v[4] != 0);
         }
 
-        public override void ToValue(out int scancode, out Keys vkey, out bool ctrl, out bool alt, out bool shift, out bool ictrl, out bool ialt, out bool ishift)
+        public override void ToValue(out int scanCode, out Keys virtualKey, out bool shift, out bool control, out bool alt, out bool ignoreShift, out bool ignoreControl, out bool ignoreAlt)
         {
-            ictrl = false;
-            ialt = false;
-            ishift = false;
-            ToValue(out scancode, out vkey, out ctrl, out alt, out shift);
+            ignoreShift = false;
+            ignoreControl = false;
+            ignoreAlt = false;
+            ToValue(out scanCode, out virtualKey, out shift, out control, out alt);
         }
 
-        public override void ToValue(out int scancode, out Keys vkey, out bool ctrl, out bool alt, out bool shift)
+        public override void ToValue(out int scanCode, out Keys virtualKey, out bool shift, out bool control, out bool alt)
         {
-            scancode = 0;
-            vkey = 0;
-            ctrl = Control;
-            alt = Alt;
+            scanCode = 0;
+            virtualKey = 0;
             shift = Shift;
+            control = Control;
+            alt = Alt;
         }
 
-        public override void SetFromValues(int scancode, Keys vkey, bool ctrl, bool alt, bool shift)
+        public override void SetFromValues(int scanCode, Keys virtualKey, bool shift, bool control, bool alt)
         {
-            Control = ctrl;
+            Control = control;
             Alt = alt;
             Shift = shift;
         }
@@ -926,10 +927,10 @@ namespace ORTS
         public bool Control;
         public bool Alt;
 
-        protected UserCommandKeyInput(int scancode, Keys virtualKey, bool shift, bool control, bool alt)
+        protected UserCommandKeyInput(int scanCode, Keys virtualKey, bool shift, bool control, bool alt)
         {
-            Debug.Assert((scancode >= 1 && scancode <= 127) || (virtualKey != Keys.None), "Scan code for keyboard input is outside the allowed range of 1-127.");
-            ScanCode = scancode;
+            Debug.Assert((scanCode >= 1 && scanCode <= 127) || (virtualKey != Keys.None), "Scan code for keyboard input is outside the allowed range of 1-127.");
+            ScanCode = scanCode;
             VirtualKey = virtualKey;
             Shift = shift;
             Control = control;
@@ -1005,30 +1006,30 @@ namespace ORTS
             if (v.Length > 3) Shift = (v[4] != 0);
         }
 
-        public override void SetFromValues(int scancode, Keys vkey, bool ctrl, bool alt, bool shift)
+        public override void SetFromValues(int scanCode, Keys virtualKey, bool shift, bool control, bool alt)
         {
-            ScanCode = scancode;
-            VirtualKey = vkey;
-            Control = ctrl;
-            Alt = alt;
+            ScanCode = scanCode;
+            VirtualKey = virtualKey;
             Shift = shift;
+            Control = control;
+            Alt = alt;
         }
 
-        public override void ToValue(out int scancode, out Keys vkey, out bool ctrl, out bool alt, out bool shift, out bool ictrl, out bool ialt, out bool ishift)
+        public override void ToValue(out int scanCode, out Keys virtualKey, out bool shift, out bool control, out bool alt, out bool ignoreShift, out bool ignoreControl, out bool ignoreAlt)
         {
-            ictrl = false;
-            ialt = false;
-            ishift = false;
-            ToValue(out scancode, out vkey, out ctrl, out alt, out shift);
+            ignoreShift = false;
+            ignoreControl = false;
+            ignoreAlt = false;
+            ToValue(out scanCode, out virtualKey, out shift, out control, out alt);
         }
 
-        public override void ToValue(out int scancode, out Keys vkey, out bool ctrl, out bool alt, out bool shift)
+        public override void ToValue(out int scanCode, out Keys virtualKey, out bool shift, out bool control, out bool alt)
         {
-            scancode = ScanCode;
-            vkey = VirtualKey;
-            ctrl = Control;
-            alt = Alt;
+            scanCode = ScanCode;
+            virtualKey = VirtualKey;
             shift = Shift;
+            control = Control;
+            alt = Alt;
         }
 
         public override string ToRegString()  // ie scanCode,ctrl,alt,shift  ie "45,0,1,0"
@@ -1159,12 +1160,12 @@ namespace ORTS
             return s.ToString();
         }
 
-        public override void ToValue(out int scancode, out Keys vkey, out bool ctrl, out bool alt, out bool shift, out bool ictrl, out bool ialt, out bool ishift)
+        public override void ToValue(out int scanCode, out Keys virtualKey, out bool shift, out bool control, out bool alt, out bool ignoreShift, out bool ignoreControl, out bool ignoreAlt)
         {
-            ictrl = IgnoreControl;
-            ialt = IgnoreAlt;
-            ishift = IgnoreShift;
-            ToValue(out scancode, out vkey, out ctrl, out alt, out shift);
+            ignoreShift = IgnoreShift;
+            ignoreControl = IgnoreControl;
+            ignoreAlt = IgnoreAlt;
+            ToValue(out scanCode, out virtualKey, out shift, out control, out alt);
         }
 
         public override string ToEditString()
