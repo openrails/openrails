@@ -473,9 +473,6 @@
     <Content Include="Readme.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Revision.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Version.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -491,8 +488,8 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>if not $(ConfigurationName) == Release echo $Revision: 000 $&gt;Revision.txt
-if not $(ConfigurationName) == Release date /t&gt;&gt;Revision.txt
-if not $(ConfigurationName) == Release time /t&gt;&gt;Revision.txt</PostBuildEvent>
+    <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
+date /t&gt;&gt;Revision.txt
+time /t&gt;&gt;Revision.txt</PostBuildEvent>
   </PropertyGroup>
 </Project>
