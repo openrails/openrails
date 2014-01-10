@@ -37,73 +37,68 @@ namespace ORTS
     public class Viewer3D
     {
         // User setups.
-        public readonly UserSettings Settings;
+        public UserSettings Settings { get; private set; }
         // Multi-threaded processes
-        public LoaderProcess LoaderProcess;
-        public UpdaterProcess UpdaterProcess;
-        public RenderProcess RenderProcess;
-        public SoundProcess SoundProcess;
+        public LoaderProcess LoaderProcess { get; private set; }
+        public UpdaterProcess UpdaterProcess { get; private set; }
+        public RenderProcess RenderProcess { get; private set; }
+        public SoundProcess SoundProcess { get; private set; }
         // Access to the XNA Game class
-        public GraphicsDevice GraphicsDevice;
-        public readonly string ContentPath;
-        public SharedTextureManager TextureManager;
-        public SharedMaterialManager MaterialManager;
-        public SharedShapeManager ShapeManager;
+        public GraphicsDevice GraphicsDevice { get; private set; }
+        public string ContentPath { get; private set; }
+        public SharedTextureManager TextureManager { get; private set; }
+        public SharedMaterialManager MaterialManager { get; private set; }
+        public SharedShapeManager ShapeManager { get; private set; }
         public Point DisplaySize { get { return RenderProcess.DisplaySize; } }
         // Components
-        public readonly ORTS.Processes.Game Game;
-        public readonly Simulator Simulator;
-        public World World;
+        public ORTS.Processes.Game Game { get; private set; }
+        public Simulator Simulator { get; private set; }
+        public World World { get; private set; }
         /// <summary>
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
-        public double RealTime;
+        public double RealTime { get; private set; }
         InfoDisplay InfoDisplay;
-        public WindowManager WindowManager;
-        public QuitWindow QuitWindow; // Escape window
-        public MessagesWindow MessagesWindow; // Game message window (special, always visible)
-        public PauseWindow PauseWindow; // Game paused window (special)
-        public HelpWindow HelpWindow; // F1 window
-        public TrackMonitorWindow TrackMonitorWindow; // F4 window
-        public HUDWindow HUDWindow; // F5 hud
-        public SwitchWindow SwitchWindow; // F8 window
-        public TrainOperationsWindow TrainOperationsWindow; // F9 window
-        public CarOperationsWindow CarOperationsWindow; // Car operation window
-        public NextStationWindow NextStationWindow; // F10 window
-        public CompassWindow CompassWindow; // 0 window
-        public ActivityWindow ActivityWindow; // pop-up window
-		public TracksDebugWindow TracksDebugWindow; // Control-Alt-F6
-		public SignallingDebugWindow SignallingDebugWindow; // Control-Alt-F11 window
-		public ComposeMessage ComposeMessageWindow; // Control-Alt-F11 window
+        public WindowManager WindowManager { get; private set; }
+        public QuitWindow QuitWindow { get; private set; } // Escape window
+        public MessagesWindow MessagesWindow { get; private set; } // Game message window (special, always visible)
+        public PauseWindow PauseWindow { get; private set; } // Game paused window (special)
+        public HelpWindow HelpWindow { get; private set; } // F1 window
+        public TrackMonitorWindow TrackMonitorWindow { get; private set; } // F4 window
+        public HUDWindow HUDWindow { get; private set; } // F5 hud
+        public SwitchWindow SwitchWindow { get; private set; } // F8 window
+        public TrainOperationsWindow TrainOperationsWindow { get; private set; } // F9 window
+        public CarOperationsWindow CarOperationsWindow { get; private set; } // Car operation window
+        public NextStationWindow NextStationWindow { get; private set; } // F10 window
+        public CompassWindow CompassWindow { get; private set; } // 0 window
+        public ActivityWindow ActivityWindow { get; private set; } // pop-up window
+        public TracksDebugWindow TracksDebugWindow { get; private set; } // Control-Alt-F6
+        public SignallingDebugWindow SignallingDebugWindow { get; private set; } // Control-Alt-F11 window
+        public ComposeMessage ComposeMessageWindow { get; private set; } // Control-Alt-F11 window
 		// Route Information
-        public TileManager Tiles;
-        public TileManager LoTiles;
-        public ENVFile ENVFile;
-        public SIGCFGFile SIGCFG;
-        public TTypeDatFile TTypeDatFile;
-        public bool MilepostUnitsMetric;
+        public TileManager Tiles { get; private set; }
+        public TileManager LoTiles { get; private set; }
+        public ENVFile ENVFile { get; private set; }
+        public SIGCFGFile SIGCFG { get; private set; }
+        public TTypeDatFile TrackTypes { get; private set; }
+        public bool MilepostUnitsMetric { get; private set; }
         // Cameras
-        public Camera Camera; // Current camera
-        public Camera AboveGroundCamera; // Previous camera for when automatically switching to cab.
-        public CabCamera CabCamera; // Camera 1
-        public HeadOutCamera HeadOutForwardCamera; // Camera 1+Up
-        public HeadOutCamera HeadOutBackCamera; // Camera 2+Down
-        public TrackingCamera FrontCamera; // Camera 2
-        public TrackingCamera BackCamera; // Camera 3
-        public TracksideCamera TracksideCamera; // Camera 4
-        public PassengerCamera PassengerCamera; // Camera 5
-        public BrakemanCamera BrakemanCamera; // Camera 6
+        public Camera Camera { get; set; } // Current camera
+        public Camera AbovegroundCamera { get; private set; } // Previous camera for when automatically switching to cab.
+        public CabCamera CabCamera { get; private set; } // Camera 1
+        public HeadOutCamera HeadOutForwardCamera { get; private set; } // Camera 1+Up
+        public HeadOutCamera HeadOutBackCamera { get; private set; } // Camera 2+Down
+        public TrackingCamera FrontCamera { get; private set; } // Camera 2
+        public TrackingCamera BackCamera { get; private set; } // Camera 3
+        public TracksideCamera TracksideCamera { get; private set; } // Camera 4
+        public PassengerCamera PassengerCamera { get; private set; } // Camera 5
+        public BrakemanCamera BrakemanCamera { get; private set; } // Camera 6
         public List<FreeRoamCamera> FreeRoamCameraList = new List<FreeRoamCamera>();
-        public FreeRoamCamera FreeRoamCamera // Camera 8
-        {
-            get
-            { return FreeRoamCameraList[0]; }
-            set {}
-        }
+        public FreeRoamCamera FreeRoamCamera { get { return FreeRoamCameraList[0]; } } // Camera 8
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
 
-        public TrainCarViewer PlayerLocomotiveViewer;  // we are controlling this loco, or null if we aren't controlling any
-        private MouseState originalMouseState;      // Current mouse coordinates.
+        public TrainCarViewer PlayerLocomotiveViewer { get; private set; }  // we are controlling this loco, or null if we aren't controlling any
+        MouseState originalMouseState;      // Current mouse coordinates.
 
         // This is the train we are controlling
         public TrainCar PlayerLocomotive { get { return Simulator.PlayerLocomotive; } set { Simulator.PlayerLocomotive = value; } }
@@ -120,19 +115,19 @@ namespace ORTS
         }
 
         // Mouse visibility by timer - GeorgeS
-        private bool isMouseShouldVisible;
-        private bool isMouseTimerVisible;
-        private double MouseShownAtRealTime;
+        bool isMouseShouldVisible;
+        bool isMouseTimerVisible;
+        double MouseShownAtRealTime;
 
-        public bool SaveScreenshot;
-        public bool SaveActivityThumbnail;
-        public string SaveActivityFileStem;
+        public bool SaveScreenshot { get; set; }
+        public bool SaveActivityThumbnail { get; private set; }
+        public string SaveActivityFileStem { get; private set; }
 
-        public Vector3 NearPoint;
-        public Vector3 FarPoint;
+        public Vector3 NearPoint { get; private set; }
+        public Vector3 FarPoint { get; private set; }
 
-        public bool DebugViewerEnabled;
-        public bool SoundDebugFormEnabled;
+        public bool DebugViewerEnabled { get; set; }
+        public bool SoundDebugFormEnabled { get; set; }
 
         enum VisibilityState {
             Visible,
@@ -150,13 +145,13 @@ namespace ORTS
         // Setting.Cab2DStretch controls the amount of stretch and clip. 0 is entirely clipped and 100 is entirely stretched.
         // No difference is seen on screens with 4:3 aspect ratio.
         // This adjustment assumes that the cab view is 4:3. Where the cab view matches the aspect ratio of the screen, use an adjustment of 100.
-        public int CabHeightPixels;
-        public int CabYOffsetPixels; // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
+        public int CabHeightPixels { get; private set; }
+        public int CabYOffsetPixels { get; set; } // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
 
         public CommandLog Log { get; set; }
-        public List<ICommand> ReplayCommandList;
-        public bool CameraReplaySuspended { get; set; }
-        public Camera SuspendedCamera { get; set; }
+        public List<ICommand> ReplayCommandList { get; set; }
+        public bool CameraReplaySuspended { get; private set; }
+        public Camera SuspendedCamera { get; private set; }
 
         /// <summary>
         /// True if a replay is in progress.
@@ -225,7 +220,7 @@ namespace ORTS
             SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat");
 
             Trace.Write(" TTYPE");
-            TTypeDatFile = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
+            TrackTypes = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");
 
             Tiles = new TileManager(Simulator.RoutePath + @"\TILES\", false);
             LoTiles = new TileManager(Simulator.RoutePath + @"\LO_TILES\", true);
@@ -509,9 +504,9 @@ namespace ORTS
             Camera.Update(elapsedTime);
 
             // No above camera means we're allowed to auto-switch to cab view.
-            if ((AboveGroundCamera == null) && Camera.IsUnderground)
+            if ((AbovegroundCamera == null) && Camera.IsUnderground)
             {
-                AboveGroundCamera = Camera;
+                AbovegroundCamera = Camera;
                 bool ViewingPlayer = true;
                 
                 if (Camera.AttachedCar!=null) ViewingPlayer = Camera.AttachedCar.Train == Simulator.PlayerLocomotive.Train;
@@ -525,19 +520,19 @@ namespace ORTS
                     Simulator.Confirmer.Warning("Cab view not available");
                 }
             }
-			else if (AboveGroundCamera != null 
+			else if (AbovegroundCamera != null 
                 && Camera.AttachedCar != null 
                 && Camera.AttachedCar.Train == Simulator.PlayerLocomotive.Train)
 			{
 				// Make sure to keep the old camera updated...
-				AboveGroundCamera.Update(elapsedTime);
+				AbovegroundCamera.Update(elapsedTime);
 				// ...so we can tell when to come back to it.
-				if (!AboveGroundCamera.IsUnderground)
+				if (!AbovegroundCamera.IsUnderground)
 				{
 					// But only if the user hasn't selected another camera!
 					if (Camera == CabCamera)
-						AboveGroundCamera.Activate();
-					AboveGroundCamera = null;
+						AbovegroundCamera.Activate();
+					AbovegroundCamera = null;
 				}
 			}
 
@@ -1100,11 +1095,6 @@ namespace ORTS
                 }
                 catch { }
             }).Start();
-        }
-
-        internal void Run()
-        {
-            throw new NotImplementedException();
         }
     }
 }

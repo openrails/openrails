@@ -102,7 +102,7 @@ namespace ORTS
             _inSources = new List<SoundSource>();
             _outSources = new List<SoundSource>();
 
-            foreach (MSTS.TTypeDatFile.TrackType ttdf in viewer.TTypeDatFile)
+            foreach (MSTS.TTypeDatFile.TrackType ttdf in viewer.TrackTypes)
             {
                 MSTSLocomotive loco = Car as MSTSLocomotive;
 
