@@ -236,8 +236,8 @@ namespace ORTS
             Camera = camera;
             XNACameraLocation = CameraLocation = Camera.Location;
             XNACameraLocation.Z *= -1;
-            XNACameraView = Camera.XNAView;
-            XNACameraProjection = Camera.XNAProjection;
+            XNACameraView = Camera.XnaView;
+            XNACameraProjection = Camera.XnaProjection;
         }
 
         static bool LockShadows;
@@ -307,7 +307,7 @@ namespace ORTS
         {
             if (float.IsPositiveInfinity(objectViewingDistance) || (Camera != null && Camera.InRange(mstsLocation, objectRadius, objectViewingDistance)))
             {
-                if (Camera != null && Camera.InFOV(mstsLocation, objectRadius))
+                if (Camera != null && Camera.InFov(mstsLocation, objectRadius))
                     AddPrimitive(material, primitive, group, ref xnaMatrix, flags);
 
                 if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
@@ -624,7 +624,7 @@ namespace ORTS
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
                         if (logging) Console.WriteLine("      {0,-5} * {1}", sequenceMaterial.Value.Count, sequenceMaterial.Key);
-                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref Camera.XNADMProjection);
+                        sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref Camera.XnaDistantMountainProjection);
                         sequenceMaterial.Key.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 						DebugRenderState(graphicsDevice.RenderState, sequenceMaterial.Key.ToString());

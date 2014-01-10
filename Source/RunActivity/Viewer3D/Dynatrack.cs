@@ -184,7 +184,7 @@ namespace ORTS
             dtrackMesh.MSTSLODCenter = new Vector3(xnaLODCenter.X, xnaLODCenter.Y, -xnaLODCenter.Z);
 
             // Ignore any mesh not in field-of-view
-            if (!Viewer.Camera.InFOV(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius)) return;
+            if (!Viewer.Camera.InFov(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius)) return;
 
             // Scan LODs in forward order, and find first LOD in-range
             LOD lod;

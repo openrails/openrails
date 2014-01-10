@@ -44,11 +44,11 @@ namespace ORTS
         protected int MouseScrollValue;
 
         protected Matrix xnaView;
-        public Matrix XNAView { get { return xnaView; } }
+        public Matrix XnaView { get { return xnaView; } }
 
         Matrix xnaProjection;
-        public Matrix XNAProjection { get { return xnaProjection; } }
-        public static Matrix XNADMProjection;
+        public Matrix XnaProjection { get { return xnaProjection; } }
+        public static Matrix XnaDistantMountainProjection;
         Vector3 frustumRightProjected;
         Vector3 frustumLeft;
         Vector3 frustumRight;
@@ -86,15 +86,15 @@ namespace ORTS
         }
 
         [CallOnThread("Updater")]
-        protected internal virtual void Save(BinaryWriter outf)
+        protected internal virtual void Save(BinaryWriter output)
         {
-            cameraLocation.Save(outf);
+            cameraLocation.Save(output);
         }
 
         [CallOnThread("Render")]
-        protected internal virtual void Restore(BinaryReader inf)
+        protected internal virtual void Restore(BinaryReader input)
         {
-            cameraLocation.Restore(inf);
+            cameraLocation.Restore(input);
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace ORTS
             var farPlaneDistance = SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
             var fovWidthRadians = MathHelper.ToRadians(Viewer.Settings.ViewingFOV);
             if (Viewer.Settings.DistantMountains)
-                XNADMProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, MathHelper.Clamp(Viewer.Settings.ViewingDistance - 500, 500, 1500), Viewer.Settings.DistantMountainsViewingDistance);
+                XnaDistantMountainProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, MathHelper.Clamp(Viewer.Settings.ViewingDistance - 500, 500, 1500), Viewer.Settings.DistantMountainsViewingDistance);
             xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, Viewer.Settings.ViewingDistance);
             XNASkyProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, farPlaneDistance);    // TODO remove? 
             frustumRightProjected.X = (float)Math.Cos(fovWidthRadians / 2 * aspectRatio);  // Precompute the right edge of the view frustrum.
@@ -181,7 +181,7 @@ namespace ORTS
         }
 
         // Cull for fov
-        public bool InFOV(Vector3 mstsObjectCenter, float objectRadius)
+        public bool InFov(Vector3 mstsObjectCenter, float objectRadius)
         {
             mstsObjectCenter.X -= cameraLocation.Location.X;
             mstsObjectCenter.Y -= cameraLocation.Location.Y;
@@ -221,7 +221,7 @@ namespace ORTS
             if (!InRange(mstsObjectCenter, objectRadius, objectViewingDistance))
                 return false;
 
-            if (!InFOV(mstsObjectCenter, objectRadius))
+            if (!InFov(mstsObjectCenter, objectRadius))
                 return false;
 
             return true;
@@ -249,7 +249,7 @@ namespace ORTS
         /// </summary>
         /// <param name="worldLocation"></param>
         /// <returns></returns>
-        public Vector3 XNALocation(WorldLocation worldLocation)
+        public Vector3 XnaLocation(WorldLocation worldLocation)
         {
             var xnaVector = worldLocation.Location;
             xnaVector.X += 2048 * (worldLocation.TileX - cameraLocation.TileX);
@@ -306,8 +306,8 @@ namespace ORTS
             }
 
             float[] cameraOrientation = new float[] { 
-                        XNAView.Backward.X, XNAView.Backward.Y, XNAView.Backward.Z,
-                        XNAView.Down.X, XNAView.Down.Y, XNAView.Down.Z };
+                        XnaView.Backward.X, XnaView.Backward.Y, XnaView.Backward.Z,
+                        XnaView.Down.X, XnaView.Down.Y, XnaView.Down.Z };
 
             OpenAL.alListenerfv(OpenAL.AL_POSITION, cameraPosition);
             OpenAL.alListenerfv(OpenAL.AL_VELOCITY, cameraVelocity);
@@ -348,7 +348,7 @@ namespace ORTS
 
         protected override Matrix GetCameraView()
         {
-            return Matrix.CreateLookAt(XNALocation(cameraLocation), XNALocation(targetLocation), Vector3.UnitY);
+            return Matrix.CreateLookAt(XnaLocation(cameraLocation), XnaLocation(targetLocation), Vector3.UnitY);
         }
     }
 
@@ -382,7 +382,7 @@ namespace ORTS
             if (previousCamera != null)
             {
                 float h, a, b;
-                ORTSMath.MatrixToAngles(previousCamera.XNAView, out h, out a, out b);
+                ORTSMath.MatrixToAngles(previousCamera.XnaView, out h, out a, out b);
                 RotationXRadians = -b;
                 RotationYRadians = -h;
             }
@@ -415,7 +415,7 @@ namespace ORTS
             lookAtPosition = Vector3.Transform(lookAtPosition, Matrix.CreateRotationY(RotationYRadians));
             lookAtPosition += cameraLocation.Location;
             lookAtPosition.Z *= -1;
-            return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
+            return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, Vector3.Up);
         }
 
         protected static float GetMouseDelta(int mouseMovementPixels)
@@ -871,17 +871,6 @@ namespace ORTS
             }
         }
 
-        private void FixCameraLocation()
-        {
-            var elevationAtCamera = Viewer.Tiles.GetElevation(cameraLocation);
-
-            Console.WriteLine(elevationAtCamera.ToString() + " : " + cameraLocation.Location.Y.ToString());
-            if (elevationAtCamera > cameraLocation.Location.Y)
-            {
-                cameraLocation.Location.Y = elevationAtCamera;
-            }
-        }
-
         protected override Matrix GetCameraView()
         {
             var flipped = IsCameraFlipped();
@@ -908,16 +897,16 @@ namespace ORTS
 				//cars with freight animation  will rotate only camera (except passenger motor units), the land will rotate with the camera, so the FA can follow
 				{
 					var up = (Matrix.CreateRotationZ( Program.Simulator.CabRotating * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
-					return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
+					return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
 				}
 				else
 				{
 					var up = (Matrix.CreateRotationZ((Program.Simulator.CabRotating - 4) * attachedCar.totalRotationZ) * attachedCar.GetXNAMatrix()).Up;
-					return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
+					return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, up);//Vector3.Transform(Vector3.Up, Matrix.CreateRotationZ(3 * attachedCar.totalRotationZ)));
 				}
             }
             else
-                return Matrix.CreateLookAt(XNALocation(cameraLocation), lookAtPosition, Vector3.Up);
+                return Matrix.CreateLookAt(XnaLocation(cameraLocation), lookAtPosition, Vector3.Up);
         }
 
         public override void Update(ElapsedTime elapsedTime)

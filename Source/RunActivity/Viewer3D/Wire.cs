@@ -44,7 +44,7 @@ namespace ORTS
         /// <param name="dTrackList">DynatrackDrawer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static int DecomposeStaticWire(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
+        public static int DecomposeStaticWire(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj,
             WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
@@ -62,13 +62,13 @@ namespace ORTS
             worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
             try
             {
-                if (viewer.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).RoadShape == true) return 1;
+                if (viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx).RoadShape == true) return 1;
             }
             catch (Exception)
             {
                 return 0;
             }
-            SectionIdx[] SectionIdxs = viewer.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx).SectionIdxs;
+            SectionIdx[] SectionIdxs = viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx).SectionIdxs;
 
             foreach (SectionIdx id in SectionIdxs)
             {
@@ -122,7 +122,7 @@ namespace ORTS
                     nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                     root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                     //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                    dTrackList.Add(new WireDrawer(viewer, root, nextRoot, radius, length));
+                    trackList.Add(new WireDrawer(viewer, root, nextRoot, radius, length));
                     localV = localProjectedV; // Next subsection
                 }
             }
@@ -136,7 +136,7 @@ namespace ORTS
         /// <param name="dTrackList">DynatrackDrawer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeConvertedDynamicWire(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
+        public static void DecomposeConvertedDynamicWire(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj,
             WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
@@ -157,7 +157,7 @@ namespace ORTS
 
             try
             {
-                path = viewer.Simulator.TSectionDat.TSectionIdx.TrackPaths[dTrackObj.SectionIdx];
+                path = viewer.Simulator.TSectionDat.TSectionIdx.TrackPaths[trackObj.SectionIdx];
             }
             catch (Exception)
             {
@@ -214,7 +214,7 @@ namespace ORTS
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                 root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                 nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new WireDrawer(viewer, root, nextRoot, radius, length));
+                trackList.Add(new WireDrawer(viewer, root, nextRoot, radius, length));
                 localV = localProjectedV; // Next subsection
             }
         } // end DecomposeStaticWire
@@ -225,7 +225,7 @@ namespace ORTS
         /// <param name="dTrackList">DynatrackDrawer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeDynamicWire(Viewer3D viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
+        public static void DecomposeDynamicWire(Viewer3D viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj,
             WorldPosition worldMatrixInput)
         {
             // DYNAMIC TRACK
@@ -254,15 +254,15 @@ namespace ORTS
             worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
 
             // Iterate through all subsections
-            for (int iTkSection = 0; iTkSection < dTrackObj.trackSections.Count; iTkSection++)
+            for (int iTkSection = 0; iTkSection < trackObj.trackSections.Count; iTkSection++)
             {
                 float length = 0, radius = -1;
 
-                length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
+                length = trackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
                 if (length == 0.0) continue; // Consider zero-length subsections vacuous
 
                 // Create new DT object copy; has only one meaningful subsection
-                DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
+                DyntrackObj subsection = new DyntrackObj(trackObj, iTkSection);
 
                 // Create a new WorldPosition for this subsection, initialized to nextRoot,
                 // which is the WorldPosition for the end of the last subsection.
@@ -304,7 +304,7 @@ namespace ORTS
 
 
                 // Create a new DynatrackDrawer for the subsection
-                dTrackList.Add(new WireDrawer(viewer, root, nextRoot, radius, length));
+                trackList.Add(new WireDrawer(viewer, root, nextRoot, radius, length));
                 localV = localProjectedV; // Next subsection
             }
         } // end DecomposeDynamicWire
@@ -326,8 +326,8 @@ namespace ORTS
 
     public class LODWire : LOD
     {
-        public LODWire(float cutoffRadius)
-            : base(cutoffRadius)
+        public LODWire(float cutOffRadius)
+            : base(cutOffRadius)
         {
         }
     }
@@ -347,7 +347,7 @@ namespace ORTS
         {
         } // end LODItem() constructor
 
-        public void VerticalAccum(int count)
+        public void VerticalAccumulate(int count)
         {
             // Accumulates total independent vertices and total line segments
             // Used for sizing of vertex and index buffers
@@ -432,7 +432,7 @@ namespace ORTS
                 vertical.Vertices.Add(new Vertex(-.008f, topHeight, .008f, 1f, 0f, 0f, u1, v1));
                 lodItem.VerticalPolylines = new ArrayList();
                 lodItem.VerticalPolylines.Add(vertical);
-                lodItem.VerticalAccum(vertical.Vertices.Count);
+                lodItem.VerticalAccumulate(vertical.Vertices.Count);
             }
 
 
@@ -507,7 +507,7 @@ namespace ORTS
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildMesh(viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildMesh(viewer, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
@@ -530,15 +530,15 @@ namespace ORTS
         /// <param name="worldPosition">WorldPosition.</param>
         /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
         /// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
-        public new ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
+        public ShapePrimitive BuildMesh(Viewer3D viewer, int lodIndex, int lodItemIndex)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();
             else CircArcGen();
 
             // Count vertices and indices
-            LODWire lod = (LODWire)TrProfile.LODs[iLOD];
-            LODItemWire lodItem = (LODItemWire)lod.LODItems[iLODItem];
+            LODWire lod = (LODWire)TrProfile.LODs[lodIndex];
+            LODItemWire lodItem = (LODItemWire)lod.LODItems[lodItemIndex];
             NumVertices = (int)(lodItem.NumVertices * (NumSections + 1) + 2 * lodItem.VerticalNumVertices * NumSections);
             NumIndices = (short)(lodItem.NumSegments * NumSections * 6 + lodItem.VerticalNumSegments * NumSections * 6);
             // (Cells x 2 triangles/cell x 3 indices/triangle)

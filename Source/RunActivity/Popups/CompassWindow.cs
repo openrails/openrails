@@ -55,7 +55,7 @@ namespace ORTS.Popups
             base.PrepareFrame(elapsedTime, updateFull);
 
             var camera = Owner.Viewer.Camera;
-            var compassDir = new Vector2(camera.XNAView.M11, camera.XNAView.M13);
+            var compassDir = new Vector2(camera.XnaView.M11, camera.XnaView.M13);
             var heading = Math.Acos(compassDir.X);
             if (compassDir.Y > 0) heading = 2 * Math.PI - heading;
             Compass.Heading = MathHelper.ToDegrees((float)heading);

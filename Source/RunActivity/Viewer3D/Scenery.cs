@@ -126,7 +126,7 @@ namespace ORTS
         {
             var worldFiles = WorldFiles;
             foreach (var worldFile in worldFiles)
-                if (Viewer.Camera.InFOV(new Vector3((worldFile.TileX - Viewer.Camera.TileX) * 2048, 0, (worldFile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
+                if (Viewer.Camera.InFov(new Vector3((worldFile.TileX - Viewer.Camera.TileX) * 2048, 0, (worldFile.TileZ - Viewer.Camera.TileZ) * 2048), 1448))
                     worldFile.PrepareFrame(frame, elapsedTime);
         }
 

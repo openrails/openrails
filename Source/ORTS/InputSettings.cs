@@ -796,11 +796,11 @@ namespace ORTS
 
         public abstract void SetFromRegString(string specifier); // ie scancode,vkey,ctrl,alt,shift  "45", or "45,0,0,1,0"  
 
-        public abstract void SetFromValues(int scancode, Keys vkey, bool ctrl, bool alt, bool shift);
+        public abstract void SetFromValues(int scanCode, Keys key, bool control, bool alt, bool shift);
 
-        public abstract void ToValue(out int scancode, out Keys vkey, out bool ctrl, out bool alt, out bool shift);
+        public abstract void ToValue(out int scanCode, out Keys key, out bool control, out bool alt, out bool shift);
 
-        public abstract void ToValue(out int scancode, out Keys vkey, out bool ctrl, out bool alt, out bool shift, out bool ictrl, out bool ialt, out bool ishift);
+        public abstract void ToValue(out int scanCode, out Keys key, out bool control, out bool alt, out bool shift, out bool ignoreControl, out bool ignoreAlt, out bool ignoreShift);
 
         public abstract string ToRegString(); // reverses of SetFrom ,ie produces string like "45,0,0,0,1"
 

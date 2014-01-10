@@ -593,12 +593,12 @@ namespace ORTS
             lineLocation3D.Y += yOffset;
             lineLocation3D.Z += (Viewer.Camera.TileZ - position.TileZ) * 2048;
 
-            var lineLocation2DStart = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity);
+            var lineLocation2DStart = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XnaProjection, Viewer.Camera.XnaView, Matrix.Identity);
             if (lineLocation2DStart.Z > 1 || lineLocation2DStart.Z < 0)
                 return; // Out of range or behind the camera
 
             lineLocation3D.Y += 10;
-            var lineLocation2DEndY = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XNAProjection, Viewer.Camera.XNAView, Matrix.Identity).Y;
+            var lineLocation2DEndY = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XnaProjection, Viewer.Camera.XnaView, Matrix.Identity).Y;
 
             var labelLocation2D = Material.GetTextLocation((int)lineLocation2DStart.X, (int)lineLocation2DEndY - Material.Font.Height, text);
             lineLocation2DEndY = labelLocation2D.Y + Material.Font.Height;

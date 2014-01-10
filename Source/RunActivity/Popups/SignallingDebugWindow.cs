@@ -404,7 +404,7 @@ namespace ORTS
 
         protected static Vector3 Project3D(Vector3 position, Viewport viewport, Camera camera)
         {
-            return viewport.Project(position, camera.XNAProjection, camera.XNAView, Matrix.Identity);
+            return viewport.Project(position, camera.XnaProjection, camera.XnaView, Matrix.Identity);
         }
 
         protected static Vector2 Flatten(Vector3 position)

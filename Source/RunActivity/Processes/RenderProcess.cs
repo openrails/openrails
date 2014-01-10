@@ -30,32 +30,30 @@ namespace ORTS.Processes
         public const int ShadowMapCountMaximum = 4;
         public const int ShadowMapMipCount = 1;
 
-        public Point DisplaySize;
+        public Point DisplaySize { get; private set; }
         public GraphicsDevice GraphicsDevice { get { return Game.GraphicsDevice; } }
         public bool IsActive { get { return Game.IsActive; } }
         public Viewer3D Viewer { get { return Game.State is GameStateViewer3D ? (Game.State as GameStateViewer3D).Viewer : null; } }
 
-        public readonly Profiler Profiler = new Profiler("Render");
-        public readonly Game Game;
+        public Profiler Profiler { get; private set; }
+        public Game Game { get; private set; }
 
-        public Vector2 WindowSize = new Vector2(1024, 768);
+        public Vector2 WindowSize { get; private set; }
 
-        public GraphicsDeviceManager GraphicsDeviceManager;
+        public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
 
         RenderFrame CurrentFrame;   // a frame contains a list of primitives to draw at a specified time
         RenderFrame NextFrame;      // we prepare the next frame in the background while the current one is rendering,
 
-        public bool Stopped;        // use for shutdown
-
-        public bool IsMouseVisible;  // handles cross thread issues by signalling RenderProcess of a change
+        public bool IsMouseVisible { get; set; }  // handles cross thread issues by signalling RenderProcess of a change
 
         // Diagnostic information
-        public readonly SmoothedData FrameRate = new SmoothedData();
-        public readonly SmoothedDataWithPercentiles FrameTime = new SmoothedDataWithPercentiles();
-        public int[] PrimitiveCount = new int[(int)RenderPrimitiveSequence.Sentinel];
-        public int[] PrimitivePerFrame = new int[(int)RenderPrimitiveSequence.Sentinel];
-        public int[] ShadowPrimitiveCount;
-        public int[] ShadowPrimitivePerFrame;
+        public SmoothedData FrameRate { get; private set; }
+        public SmoothedDataWithPercentiles FrameTime { get; private set; }
+        public int[] PrimitiveCount { get; private set; }
+        public int[] PrimitivePerFrame { get; private set; }
+        public int[] ShadowPrimitiveCount { get; private set; }
+        public int[] ShadowPrimitivePerFrame { get; private set; }
 
         // Dynamic shadow map setup.
         public static int ShadowMapCount = -1; // number of shadow maps
@@ -65,6 +63,7 @@ namespace ORTS.Processes
 
         internal RenderProcess(Game game)
         {
+            Profiler = new Profiler("Render");
             Game = game;
             Profiler.SetThread();
 
@@ -72,8 +71,12 @@ namespace ORTS.Processes
             GraphicsDeviceManager = new GraphicsDeviceManager(game);
 
             var windowSizeParts = Game.Settings.WindowSize.Split(new[] { 'x' }, 2);
-            WindowSize.X = Convert.ToInt32(windowSizeParts[0]);
-            WindowSize.Y = Convert.ToInt32(windowSizeParts[1]);
+            WindowSize = new Vector2(Convert.ToInt32(windowSizeParts[0]), Convert.ToInt32(windowSizeParts[1]));
+
+            FrameRate = new SmoothedData();
+            FrameTime = new SmoothedDataWithPercentiles();
+            PrimitiveCount = new int[(int)RenderPrimitiveSequence.Sentinel];
+            PrimitivePerFrame = new int[(int)RenderPrimitiveSequence.Sentinel];
 
             // Run the game initially at 10FPS fixed-time-step. Do not change this! It affects the loading performance.
             Game.IsFixedTimeStep = true;
@@ -112,8 +115,7 @@ namespace ORTS.Processes
 
         internal void Start()
         {
-            DisplaySize.X = GraphicsDevice.Viewport.Width;
-            DisplaySize.Y = GraphicsDevice.Viewport.Height;
+            DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             if (Game.Settings.ShaderModel == 0)
                 Game.Settings.ShaderModel = GraphicsDevice.GraphicsDeviceCapabilities.PixelShaderVersion.Major;
@@ -214,11 +216,7 @@ namespace ORTS.Processes
                 ToggleFullScreenRequested = false;
             }
 
-            if (Stopped)
-            {
-                // Exit();
-            }
-            else if (gameTime.TotalRealTime.TotalSeconds > 0.001)
+            if (gameTime.TotalRealTime.TotalSeconds > 0.001)
             {
                 Game.UpdaterProcess.WaitTillFinished();
 
@@ -250,8 +248,7 @@ namespace ORTS.Processes
             CurrentFrame.IsScreenChanged = (DisplaySize.X != GraphicsDevice.Viewport.Width) || (DisplaySize.Y != GraphicsDevice.Viewport.Height);
             if (CurrentFrame.IsScreenChanged)
             {
-                DisplaySize.X = GraphicsDevice.Viewport.Width;
-                DisplaySize.Y = GraphicsDevice.Viewport.Height;
+                DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
                 InitializeShadowMapLocations();
             }
 

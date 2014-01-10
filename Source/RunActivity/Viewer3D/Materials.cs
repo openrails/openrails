@@ -329,7 +329,7 @@ namespace ORTS
             // End headlight illumination
 
             SceneryShader.Overcast = Viewer.World.Sky.overcast;
-            SceneryShader.ViewerPos = Viewer.Camera.XNALocation(Viewer.Camera.CameraWorldLocation);
+            SceneryShader.ViewerPos = Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation);
 
             if (Viewer.Settings.DistantMountains)
                 SceneryShader.SetFog(Viewer.Settings.ViewingDistance * FogCoeff * 4, ref SharedMaterialManager.FogColor);

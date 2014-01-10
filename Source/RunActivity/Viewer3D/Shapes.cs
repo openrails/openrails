@@ -1339,7 +1339,7 @@ namespace ORTS
                 // Start with the furthest away distance, then look for a nearer one in range of the camera.
                 var chosenDistanceLevelIndex = lodControl.DistanceLevels.Length - 1;
                 // If this LOD group is not in the FOV, skip the whole LOD group.
-                if (!Viewer.Camera.InFOV(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex].ViewSphereRadius))
+                if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex].ViewSphereRadius))
                     continue;
                 while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
                     chosenDistanceLevelIndex--;

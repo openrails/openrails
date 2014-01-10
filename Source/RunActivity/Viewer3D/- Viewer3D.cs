@@ -557,8 +557,8 @@ namespace ORTS
                 Vector3 nearsource = new Vector3((float)UserInput.MouseState.X, (float)UserInput.MouseState.Y, 0f);
                 Vector3 farsource = new Vector3((float)UserInput.MouseState.X, (float)UserInput.MouseState.Y, 1f);
                 Matrix world = Matrix.CreateTranslation(0, 0, 0);
-                NearPoint = GraphicsDevice.Viewport.Unproject(nearsource, Camera.XNAProjection, Camera.XNAView, world);
-                FarPoint = GraphicsDevice.Viewport.Unproject(farsource, Camera.XNAProjection, Camera.XNAView, world);
+                NearPoint = GraphicsDevice.Viewport.Unproject(nearsource, Camera.XnaProjection, Camera.XnaView, world);
+                FarPoint = GraphicsDevice.Viewport.Unproject(farsource, Camera.XnaProjection, Camera.XnaView, world);
             }
 
             if (UserInput.IsPressed(UserCommands.CameraReset))
@@ -932,7 +932,7 @@ namespace ORTS
                 float d = (car.CouplerSlackM + car.GetCouplerZeroLengthM()) / 2;
                 traveller.Move(car.LengthM + d);
 
-                Vector3 xnaCenter = Camera.XNALocation(traveller.WorldLocation);
+                Vector3 xnaCenter = Camera.XnaLocation(traveller.WorldLocation);
                 float radius = 2f;  // 2 meter click range
                 BoundingSphere boundingSphere = new BoundingSphere(xnaCenter, radius);
 
@@ -962,7 +962,7 @@ namespace ORTS
                 if (tn != null && tn.TrJunctionNode != null)
                 {
 
-                    Vector3 xnaCenter = Camera.XNALocation(new WorldLocation(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z));
+                    Vector3 xnaCenter = Camera.XnaLocation(new WorldLocation(tn.UiD.TileX, tn.UiD.TileZ, tn.UiD.X, tn.UiD.Y, tn.UiD.Z));
                     float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
 
                     if (bestD > d)
