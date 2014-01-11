@@ -38,11 +38,10 @@ namespace ORTS
         /// Decompose an MSTS multi-subsection dynamic track section into multiple single-subsection sections.
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="dTrackList">DynatrackDrawer list.</param>
-        /// <param name="dTrackObj">Dynamic track section to decompose.</param>
+        /// <param name="trackList">DynatrackDrawer list.</param>
+        /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrix">Position matrix.</param>
-        public static void Decompose(Viewer3D viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
-            WorldPosition worldMatrix)
+        public static void Decompose(Viewer3D viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix)
         {
             // DYNAMIC TRACK
             // =============
@@ -68,13 +67,13 @@ namespace ORTS
             worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
 
             // Iterate through all subsections
-            for (int iTkSection = 0; iTkSection < dTrackObj.trackSections.Count; iTkSection++)
+            for (int iTkSection = 0; iTkSection < trackObj.trackSections.Count; iTkSection++)
             {
-                float length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
+                float length = trackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
                 if (length == 0.0) continue; // Consider zero-length subsections vacuous
 
                 // Create new DT object copy; has only one meaningful subsection
-                DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
+                DyntrackObj subsection = new DyntrackObj(trackObj, iTkSection);
 
                 //uint uid = subsection.trackSections[0].UiD; // for testing
 
@@ -117,7 +116,7 @@ namespace ORTS
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
 
                 // Create a new DynatrackDrawer for the subsection
-                dTrackList.Add(new DynatrackDrawer(viewer, subsection, root, nextRoot));
+                trackList.Add(new DynatrackDrawer(viewer, subsection, root, nextRoot));
                 localV = localProjectedV; // Next subsection
             }
         } // end Decompose
@@ -256,7 +255,7 @@ namespace ORTS
         /// Creates a TRPFile instance from a track profile file (XML or STF) or canned.
         /// (Precedence is XML [.XML], STF [.DAT], default [canned]).
         /// </summary>
-        /// <param name="renderProcess">Render process.</param>
+        /// <param name="viewer">Viewer.</param>
         /// <param name="routePath">Path to route.</param>
         /// <param name="trpFile">TRPFile created (out).</param>
         public static void CreateTrackProfile(Viewer3D viewer, string routePath, out TRPFile trpFile)
@@ -464,7 +463,7 @@ namespace ORTS
 
         /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
-        /// <param name="renderProcess">RenderProcess.</param>
+        /// <param name="viewer">Viewer.</param>
         /// </summary>
         public TrProfile(Viewer3D viewer)
         {
@@ -1050,31 +1049,31 @@ namespace ORTS
         /// <summary>
         /// Constructor.
         /// </summary>
-        public DynatrackMesh(Viewer3D viewer, DyntrackObj dtrack, WorldPosition worldPosition,
+        public DynatrackMesh(Viewer3D viewer, DyntrackObj track, WorldPosition worldPosition,
                                 WorldPosition endPosition)
         {
             // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
             // serve as the beginning of the next subsection.
 
-            UiD = dtrack.trackSections[0].UiD; // Used for debugging only
+            UiD = track.trackSections[0].UiD; // Used for debugging only
 
             // The track cross section (profile) vertex coordinates are hard coded.
             // The coordinates listed here are those of default MSTS "A1t" track.
             // TODO: Read this stuff from a file. Provide the ability to use alternative profiles.
 
             // In this implementation dtrack has only 1 DT subsection.
-            if (dtrack.trackSections.Count != 1)
+            if (track.trackSections.Count != 1)
             {
                 throw new ApplicationException(
                     "DynatrackMesh Constructor detected a multiple-subsection dynamic track section. " +
-                    "(SectionIdx = " + dtrack.SectionIdx + ")");
+                    "(SectionIdx = " + track.SectionIdx + ")");
             }
             // Populate member DTrackData (a DtrackData struct)
-            DTrackData.IsCurved = (int)dtrack.trackSections[0].isCurved;
-            DTrackData.param1 = dtrack.trackSections[0].param1;
-            DTrackData.param2 = dtrack.trackSections[0].param2;
-            DTrackData.deltaY = dtrack.trackSections[0].deltaY;
+            DTrackData.IsCurved = (int)track.trackSections[0].isCurved;
+            DTrackData.param1 = track.trackSections[0].param1;
+            DTrackData.param2 = track.trackSections[0].param2;
+            DTrackData.deltaY = track.trackSections[0].deltaY;
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 
@@ -1124,17 +1123,17 @@ namespace ORTS
         /// </summary>
         /// <param name="viewer">Viewer.</param>
         /// <param name="worldPosition">WorldPosition.</param>
-        /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
-        /// <param name="iLODItem">Index of LOD mesh following LODs[iLOD]</param>
-        public ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
+        /// <param name="lodIndex">Index of LOD mesh to be generated from profile.</param>
+        /// <param name="lodItemIndex">Index of LOD mesh following LODs[iLOD]</param>
+        public ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int lodIndex, int lodItemIndex)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();
             else CircArcGen();
 
             // Count vertices and indices
-            LOD lod = (LOD)TrProfile.LODs[iLOD];
-            LODItem lodItem = (LODItem)lod.LODItems[iLODItem];
+            LOD lod = (LOD)TrProfile.LODs[lodIndex];
+            LODItem lodItem = (LODItem)lod.LODItems[lodItemIndex];
             NumVertices = (int)(lodItem.NumVertices * (NumSections + 1));
             NumIndices = (short)(lodItem.NumSegments * NumSections * 6);
             // (Cells x 2 triangles/cell x 3 indices/triangle)

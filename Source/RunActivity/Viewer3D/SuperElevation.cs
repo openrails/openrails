@@ -42,11 +42,13 @@ namespace ORTS
         /// Decompose and add a SuperElevation on top of MSTS track section
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="dTrackList">DynatrackDrawer list.</param>
-        /// <param name="dTrackObj">Dynamic track section to decompose.</param>
+        /// <param name="trackList">DynatrackDrawer list.</param>
+        /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static bool DecomposeStaticSuperElevation(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
-            WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
+        /// <param name="TileX">TileX coordinates.</param>
+        /// <param name="TileZ">TileZ coordinates.</param>
+        /// <param name="shapeFilePath">Path to the shape file.</param>
+        public static bool DecomposeStaticSuperElevation(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
         {
             if (SuperElevation.HasCheckedElevation == false)
             {
@@ -57,7 +59,7 @@ namespace ORTS
             TrackShape shape = null;
             try
             {
-                shape = viewer.Simulator.TSectionDat.TrackShapes.Get(dTrackObj.SectionIdx);
+                shape = viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx);
             
                 if (shape.RoadShape == true) return false;
             }
@@ -89,7 +91,7 @@ namespace ORTS
                         //with strait track, will remove all related sections later
                     }
                     TrVectorSection tmp = null;
-                    if (section.SectionCurve != null) tmp = FindSectionValue(shape, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
+                    if (section.SectionCurve != null) tmp = FindSectionValue(shape, viewer.Simulator, section, TileX, TileZ, trackObj.UID);
 
                     if (tmp == null) //cannot find the track for super elevation, will return 0;
                     {

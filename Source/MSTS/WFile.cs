@@ -15,11 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// Principal Author:
-///    Wayne Campbell
-/// Contributors:
-///    Rick Grout
-///     
+// Principal Author:
+//    Wayne Campbell
+// Contributors:
+//    Rick Grout
+//     
 
 using System;
 using System.Collections;

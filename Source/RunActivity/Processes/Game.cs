@@ -26,19 +26,48 @@ using ORTS.Common;
 
 namespace ORTS.Processes
 {
+    /// <summary>
+    /// Provides the foundation for running the game.
+    /// </summary>
     [CallOnThread("Render")]
     public class Game : Microsoft.Xna.Framework.Game
     {
-        public readonly UserSettings Settings;
-        public readonly string ContentPath;
-        public readonly RenderProcess RenderProcess;
-        public readonly UpdaterProcess UpdaterProcess;
-        public readonly LoaderProcess LoaderProcess;
+        /// <summary>
+        /// Gets the <see cref="UserSettings"/> for the game.
+        /// </summary>
+        public UserSettings Settings { get; private set; }
 
+        /// <summary>
+        /// Gets the directory path containing game-specific content.
+        /// </summary>
+        public string ContentPath { get; private set; }
+
+        /// <summary>
+        /// Exposes access to the <see cref="RenderProcess"/> for the game.
+        /// </summary>
+        public RenderProcess RenderProcess { get; private set; }
+
+        /// <summary>
+        /// Exposes access to the <see cref="UpdaterProcess"/> for the game.
+        /// </summary>
+        public UpdaterProcess UpdaterProcess { get; private set; }
+
+        /// <summary>
+        /// Exposes access to the <see cref="LoaderProcess"/> for the game.
+        /// </summary>
+        public LoaderProcess LoaderProcess { get; private set; }
+
+        /// <summary>
+        /// Gets the current <see cref="GameState"/>, if there is one, or <c>null</c>.
+        /// </summary>
         public GameState State { get { return States.Count > 0 ? States.Peek() : null; } }
 
         Stack<GameState> States;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Game"/> based on the specified <see cref="UserSettings"/>.
+        /// </summary>
+        /// <param name="settings">The <see cref="UserSettings"/> for the game to use.</param>
         public Game(UserSettings settings)
         {
             Settings = settings;
@@ -140,6 +169,10 @@ namespace ORTS.Processes
             Trace.TraceInformation("Game.ReplaceState({0})  {1}", state.GetType().Name, String.Join(" | ", States.Select(s => s.GetType().Name).ToArray()));
         }
 
+        /// <summary>
+        /// Reports an <see cref="Exception"/> to the log file and/or user, exiting the game in the process.
+        /// </summary>
+        /// <param name="error">The <see cref="Exception"/> to report.</param>
         [CallOnThread("Render")]
         [CallOnThread("Updater")]
         [CallOnThread("Loader")]

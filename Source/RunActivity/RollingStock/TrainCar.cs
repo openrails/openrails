@@ -707,7 +707,7 @@ namespace ORTS
             totalRotationZ = -(sz1 + z) / 4;
             totalRotationX = sx1 / 2;
             //this matrix is for the body, boggie will do an inverse to keep on track
-            SuperElevationMatrix = Matrix.CreateRotationX(sx1) /** Matrix.CreateRotationY(sy1)*/ * Matrix.CreateRotationZ(sz1);
+            SuperElevationMatrix = Matrix.CreateRotationX(sx1) /* * Matrix.CreateRotationY(sy1)*/ * Matrix.CreateRotationZ(sz1);
             //SuperElevationMatrix.Translation += new Vector3(sx1, sy1, sz1);
             WorldPosition.XNAMatrix = Matrix.CreateRotationZ(z) * SuperElevationMatrix * WorldPosition.XNAMatrix;
             try

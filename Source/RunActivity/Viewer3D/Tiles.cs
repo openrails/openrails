@@ -196,8 +196,8 @@ namespace ORTS
         /// Gets the elevation of the terrain at a specific sample point within a specific tile. Wraps to the edges of the next tile in each direction.
         /// </summary>
         /// <param name="tile">Tile for the sample coordinates</param>
-        /// <param name="x">X sample coordinate</param>
-        /// <param name="z">Z sample coordinate</param>
+        /// <param name="ux">X sample coordinate</param>
+        /// <param name="uz">Z sample coordinate</param>
         /// <returns>Elevation at the given sample coordinates</returns>
         public float GetElevation(Tile tile, int ux, int uz)
         {
@@ -226,8 +226,8 @@ namespace ORTS
         /// Gets the vertex-hidden flag of the terrain at a specific sample point within a specific tile. Wraps to the edges of the next tile in each direction.
         /// </summary>
         /// <param name="tile">Tile for the sample coordinates</param>
-        /// <param name="x">X sample coordinate</param>
-        /// <param name="z">Z sample coordinate</param>
+        /// <param name="ux">X sample coordinate</param>
+        /// <param name="uz">Z sample coordinate</param>
         /// <returns>Vertex-hidden flag at the given sample coordinates</returns>
         public bool IsVertexHidden(Tile tile, int ux, int uz)
         {

@@ -21,9 +21,9 @@
     * Solar postion equations are NOAA equations adapted from "Astronomical Algorithms," by Jean Meeus,
     * Lunar equations are adapted by Keith Burnett from the US Naval Observatory Astronomical Almanac.
 */
-/// Principal Author:
-///    Rick Grout
-///
+// Principal Author:
+//    Rick Grout
+//
   
 using System;
 using System.Collections.Generic;

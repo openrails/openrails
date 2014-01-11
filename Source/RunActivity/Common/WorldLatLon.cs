@@ -25,9 +25,9 @@
     * Adapted from code written by Jim "deanville" Jendro, which in turn was
     * adapted from code written by Dan Steinwand.
 */
-/// Principal Author:
-///    Rick Grout
-///   
+// Principal Author:
+//    Rick Grout
+//   
 
 using System;
 using System.Collections.Generic;

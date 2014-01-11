@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// Utility functions to access the various directories in an MSTS install
-
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,7 +26,7 @@ using System.IO;
 namespace MSTS
 {
     /// <summary>
-    /// Deals with the MSTS file structure.
+    /// Utility functions to access the various directories in an MSTS install.
     /// </summary>
     public class MSTSPath
     {

@@ -259,10 +259,6 @@ namespace ORTS.Processes
 
         /// <summary>
         /// Save the current game state for later resume.
-        /// Save files are stored in the user's local program storage:
-        /// e.g. "C:\Users\Wayne\AppData\Roaming\ORTS\<activity file name> <date_and_time>.save"
-        /// or
-        /// e.g. "C:\Users\Wayne\AppData\Roaming\ORTS\<route folder name> <date_and_time>.save"
         /// </summary>
         [CallOnThread("Updater")]
         public static void Save()

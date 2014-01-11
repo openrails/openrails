@@ -187,10 +187,10 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Construct a viewer.  At this time background processes are not running
-        /// and the graphics device is not ready to accept content.
+        /// Initializes a new instances of the <see cref="Viewer3D"/> class based on the specified <paramref name="simulator"/> and <paramref name="game"/>.
         /// </summary>
-        /// <param name="simulator"></param>
+        /// <param name="simulator">The <see cref="Simulator"/> with which the viewer runs.</param>
+        /// <param name="game">The <see cref="Game"/> with which the viewer runs.</param>
         [CallOnThread("Loader")]
         public Viewer3D(Simulator simulator, ORTS.Processes.Game game)
         {

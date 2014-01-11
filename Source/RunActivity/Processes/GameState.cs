@@ -20,20 +20,36 @@
 
 namespace ORTS.Processes
 {
+    /// <summary>
+    /// Represents a single state for the game to be in (e.g. loading, running, in menu).
+    /// </summary>
     public abstract class GameState
     {
         internal Game Game { get; set; }
 
+        /// <summary>
+        /// Called just before a frame is drawn.
+        /// </summary>
+        /// <param name="frame">The <see cref="RenderFrame"/> containing everything to be drawn.</param>
         [CallOnThread("Render")]
         internal virtual void BeginRender(RenderFrame frame)
         {
         }
 
+        /// <summary>
+        /// Called just after a frame is drawn.
+        /// </summary>
+        /// <param name="frame">The <see cref="RenderFrame"/> containing everything that was drawn.</param>
         [CallOnThread("Render")]
         internal virtual void EndRender(RenderFrame frame)
         {
         }
 
+        /// <summary>
+        /// Called to update the game and populate a new <see cref="RenderFrame"/>.
+        /// </summary>
+        /// <param name="frame">The new <see cref="RenderFrame"/> that needs populating.</param>
+        /// <param name="totalRealSeconds">The total number of real-world seconds which have elapsed since the game was started.</param>
         [CallOnThread("Updater")]
         internal virtual void Update(RenderFrame frame, double totalRealSeconds)
         {
@@ -42,11 +58,17 @@ namespace ORTS.Processes
                 Game.LoaderProcess.StartLoad();
         }
 
+        /// <summary>
+        /// Called to load new content as and when necessary.
+        /// </summary>
         [CallOnThread("Loader")]
         internal virtual void Load()
         {
         }
 
+        /// <summary>
+        /// Releases all resources used by the current instance of the <see cref="GameState"/> class.
+        /// </summary>
         [CallOnThread("Loader")]
         internal virtual void Dispose()
         {

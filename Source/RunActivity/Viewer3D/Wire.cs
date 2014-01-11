@@ -41,11 +41,10 @@ namespace ORTS
         /// Decompose and add a wire on top of MSTS track section
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="dTrackList">DynatrackDrawer list.</param>
-        /// <param name="dTrackObj">Dynamic track section to decompose.</param>
+        /// <param name="trackList">DynatrackDrawer list.</param>
+        /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static int DecomposeStaticWire(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj,
-            WorldPosition worldMatrixInput)
+        public static int DecomposeStaticWire(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -133,11 +132,10 @@ namespace ORTS
         /// Decompose and add a wire on top of MSTS track section converted from dynamic tracks
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="dTrackList">DynatrackDrawer list.</param>
-        /// <param name="dTrackObj">Dynamic track section to decompose.</param>
+        /// <param name="trackList">DynatrackDrawer list.</param>
+        /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeConvertedDynamicWire(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj,
-            WorldPosition worldMatrixInput)
+        public static void DecomposeConvertedDynamicWire(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -222,11 +220,10 @@ namespace ORTS
         /// Decompose and add a wire on top of MSTS track section
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="dTrackList">DynatrackDrawer list.</param>
-        /// <param name="dTrackObj">Dynamic track section to decompose.</param>
+        /// <param name="trackList">DynatrackDrawer list.</param>
+        /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeDynamicWire(Viewer3D viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj,
-            WorldPosition worldMatrixInput)
+        public static void DecomposeDynamicWire(Viewer3D viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // DYNAMIC TRACK
             // =============
@@ -527,9 +524,8 @@ namespace ORTS
         /// (Polylines (Vertices)).  All vertices and indices are built contiguously for an LOD.
         /// </summary>
         /// <param name="viewer">Viewer.</param>
-        /// <param name="worldPosition">WorldPosition.</param>
-        /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
-        /// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
+        /// <param name="lodIndex">Index of LOD mesh to be generated from profile.</param>
+        /// <param name="lodItemIndex">Index of LOD mesh to be generated from profile.</param>
         public ShapePrimitive BuildMesh(Viewer3D viewer, int lodIndex, int lodItemIndex)
         {
             // Call for track section to initialize itself
