@@ -678,40 +678,7 @@ namespace ORTS
             if (!this.Simulator.UseAdvancedAdhesion)
                 currentWheelSpeedMpS = currentSpeedMpS;
 
-            if (PowerOn)
-            {
-                if (TractiveForceCurves == null)
-                {
-                    float maxForceN = MaxForceN * t;
-                    float maxPowerW = MaxPowerW * t * t;
-
-                    if (maxForceN * currentWheelSpeedMpS > maxPowerW)
-                        maxForceN = maxPowerW / currentWheelSpeedMpS;
-                    //if (currentSpeedMpS > MaxSpeedMpS)
-                    //    maxForceN = 0;
-                    if (currentSpeedMpS > MaxSpeedMpS - 0.05f)
-                        maxForceN = 20 * (MaxSpeedMpS - currentSpeedMpS) * maxForceN;
-                    if (currentSpeedMpS > (MaxSpeedMpS))
-                        maxForceN = 0;
-                    MotiveForceN = maxForceN;
-                }
-                else
-                {
-                    MotiveForceN = TractiveForceCurves.Get(t, currentWheelSpeedMpS);
-                    if (MotiveForceN < 0)
-                        MotiveForceN = 0;
-                }
-            }
-
-
-            if (MaxForceN > 0 && MaxContinuousForceN > 0)
-            {
-                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
-                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
-                if (w < 0)
-                    w = 0;
-                AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
-            }
+            UpdateMotiveForce(elapsedClockSeconds, t, currentSpeedMpS, currentWheelSpeedMpS);
 
 #if !NEW_SIGNALLING
             if (this.IsLeadLocomotive())
@@ -896,6 +863,44 @@ namespace ORTS
             PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
         } // End Method Update
+
+        protected virtual void UpdateMotiveForce(float elapsedClockSeconds, float t, float currentSpeedMpS, float currentWheelSpeedMpS)
+        {
+            if (PowerOn)
+            {
+                if (TractiveForceCurves == null)
+                {
+                    float maxForceN = MaxForceN * t;
+                    float maxPowerW = MaxPowerW * t * t;
+
+                    if (maxForceN * currentWheelSpeedMpS > maxPowerW)
+                        maxForceN = maxPowerW / currentWheelSpeedMpS;
+                    //if (currentSpeedMpS > MaxSpeedMpS)
+                    //    maxForceN = 0;
+                    if (currentSpeedMpS > MaxSpeedMpS - 0.05f)
+                        maxForceN = 20 * (MaxSpeedMpS - currentSpeedMpS) * maxForceN;
+                    if (currentSpeedMpS > (MaxSpeedMpS))
+                        maxForceN = 0;
+                    MotiveForceN = maxForceN;
+                }
+                else
+                {
+                    MotiveForceN = TractiveForceCurves.Get(t, currentWheelSpeedMpS);
+                    if (MotiveForceN < 0)
+                        MotiveForceN = 0;
+                }
+            }
+
+
+            if (MaxForceN > 0 && MaxContinuousForceN > 0)
+            {
+                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
+                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+                if (w < 0)
+                    w = 0;
+                AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
+            }
+        }
 
         enum Wheelslip
         {

@@ -321,7 +321,21 @@ namespace ORTS
         const float FeetinMile = 5280.0f;   // Feet in a mile
         float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
         float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
+        float DrawBarPullLbsF;      // Drawbar pull in lbf
         float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler Is used to multiple boiler evaporation area by.
+
+        float SpeedFactor;      // Speed factor - factor to reduce TE due to speed increase - American locomotive company
+        float MaxTractiveEffortLbf;     // Maximum tractive effort for locomotive
+        float MaxLocoSpeedMpH;      // Speed of loco when max performance reached
+        float MaxPistonSpeedFtpM;   // Piston speed @ max performance for the locomotive
+        float MaxStrokes;     // Piston Strokes @ max performance for the locomotive
+        float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
+        float absSpeedMpS;
+        float t;
+        float currentSpeedMpS;
+        float currentWheelSpeedMpS;
+        float maxForceN;
+        float maxPowerW;
   #endregion 
 
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
@@ -864,6 +878,7 @@ namespace ORTS
             UpdateBoiler(elapsedClockSeconds);
             UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedMpS);
             UpdateMotion(elapsedClockSeconds, cutoff, absSpeedMpS);
+            UpdateMotiveForce(elapsedClockSeconds, t, currentSpeedMpS, currentWheelSpeedMpS);
             UpdateAuxiliaries(elapsedClockSeconds, absSpeedMpS);
             #endregion
 
@@ -1153,7 +1168,7 @@ namespace ORTS
 
         private void UpdateBoiler(float elapsedClockSeconds)
         {
-            float absSpeedMpS = Math.Abs(Train.SpeedMpS);
+            absSpeedMpS = Math.Abs(Train.SpeedMpS);
 
             // Safety Valve
             if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
@@ -1360,7 +1375,8 @@ namespace ORTS
 
                 if (CurrentSuperheatTeampF > SuperheatTempLimitXtoDegF[cutoff])
                 {
-                    SuperheaterSteamUsageFactor = 2.0f - SuperheatVolumeRatio; // set steam reduction based on Superheat Volume Ratio
+                //    SuperheaterSteamUsageFactor = 2.0f - SuperheatVolumeRatio; // set steam reduction based on Superheat Volume Ratio
+                    SuperheaterSteamUsageFactor = 1.0f; // Temp set to default
                 }
                 else
                 {
@@ -1431,7 +1447,7 @@ namespace ORTS
             float CylinderCompressionPressureFactor = 0.2f; // factor to increase cpmnpresion pressure by as lcomotive goes faster
             CylinderCompressionPressurePSI = 0.1f * InitialPressurePSI * (1.0f / (CylinderCompressionPressureFactor * CutoffPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]));
             float CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * ((CylinderSweptVolumeFT3pFT * CylinderSteamDensityPSItoLBpFT3[CylinderExhaustPressurePSI]) - (2.0f * CylinderClearancePC * CylinderSweptVolumeFT3pFT * CylinderSteamDensityPSItoLBpFT3[CylinderCompressionPressurePSI])) * SuperheaterSteamUsageFactor;
-           // Trace.TraceWarning("Steam {0} Cyls {1} Revs {2} Strokes {3} Density {4} Super {5} rpm {6}", CalculatedCylinderSteamUsageLBpS, NumCylinders, DrvWheelRevRpS, CylStrokesPerCycle, CylinderSteamDensityPSItoLBpFT3[MeanEffectivePressurePSI], SuperheaterSteamUsageFactor, pS.TopM(DrvWheelRevRpS));
+          //  Trace.TraceWarning("Steam {0} Cyls {1} Revs {2} Strokes {3} Density {4} Super {5} rpm {6}", CalculatedCylinderSteamUsageLBpS, NumCylinders, DrvWheelRevRpS, CylStrokesPerCycle, CylinderSteamDensityPSItoLBpFT3[MeanEffectivePressurePSI], SuperheaterSteamUsageFactor, pS.TopM(DrvWheelRevRpS));
             
             // usage calculated as moving average to minimize chance of oscillation.
             // Decrease steam usage by SuperheaterUsage factor to model superheater - very crude model - to be improved upon
@@ -1446,7 +1462,7 @@ namespace ORTS
         private void UpdateMotion(float elapsedClockSeconds, float cutoff, float absSpeedMpS)
         {
            // Caculate the piston speed
-           // Piston Speed (Ft p Min) = (Stroke x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
+           // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
             PistonSpeedFtpM = (2.0f * Me.ToFt(CylinderStrokeM)) * ((FeetinMile * MpS.ToMpH(absSpeedMpS)) / ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) );
          //   Trace.TraceWarning("Piston {0} Ft {1} Speed {2} Circum {3} Cylinder St {4}", PistonSpeedFtpM, FeetinMile, MpS.ToMpH(absSpeedMpS), Me.ToFt(CylinderStrokeM));
          //   Trace.TraceWarning("Piston {0} Ft {1} Speed {2} Circum {3} Cylinder St {4}", PistonSpeedFtpM, FeetinMile, MpS.ToMpH(absSpeedMpS), (2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)), Me.ToFt(CylinderStrokeM));
@@ -1459,7 +1475,11 @@ namespace ORTS
             IndicatedHorsePowerHP = NumCylinders * ((MeanEffectivePressurePSI * Me.ToFt(CylinderStrokeM) *  Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) * CylStrokesPerCycle / 33000.0f));
        //     Trace.TraceWarning("Steam {0} Strokes {1}", Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)), pS.TopM(DrvWheelRevRpS) * CylStrokesPerCycle);
             // DHP = (Tractive Effort x velocity) / 550.0 - velocity in ft-sec
-            DrawbarHorsePowerHP = (TractiveEffortLbsF * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
+       //     DrawbarHorsePowerHP = (TractiveEffortLbsF * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
+
+            DrawBarPullLbsF = -1.0f * N.ToLbf(CouplerForceU);
+            DrawbarHorsePowerHP = -1.0f * (N.ToLbf(CouplerForceU) * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
+
 
             // Derate when needed.
             if (BoilerIsPriming)
@@ -1490,6 +1510,49 @@ namespace ORTS
                     StartTractiveEffortN = MotiveForceN; // update to new maximum TE
         }
 
+        protected override void UpdateMotiveForce(float elapsedClockSeconds, float t, float currentSpeedMpS, float currentWheelSpeedMpS)
+    {
+       // Pass force and power information to MSTSLocomotive file
+       // Calculate "current" motive force based upon the throttle, clinders, steam pressure, etc	
+        MotiveForceN = N.FromLbf(TractiveEffortLbsF);
+ 
+       // Calculate maximum power of the locomotive, based upon the maximum IHP
+       // Maximum IHP will occur at different (piston) speed for saturated locomotives and superheated based upon the wheel revolution. Typically saturated locomotive produce maximum power @ a piston speed of 700 ft/min , and superheated will occur @ 1000ft/min
+      // Set values for piston speed
+
+	if ( HasSuperheater)
+	{
+	MaxPistonSpeedFtpM = 1000.0f; // if superheated locomotive
+    SpeedFactor = 0.445f;
+	}
+	else
+	{
+	MaxPistonSpeedFtpM = 700.0f;  // if saturated locomotive
+    SpeedFactor = 0.412f;
+	}
+
+        // Calculate max velocity of the locomotive based upon above piston speed
+
+    MaxLocoSpeedMpH = MaxPistonSpeedFtpM * ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) / (FeetinMile * (2.0f * Me.ToFt(CylinderStrokeM)));
+
+   // 
+
+       float TractiveEffortFactor = 0.85f;
+       MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor;
+
+// Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+
+       MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+
+     //  Trace.TraceWarning("Speed {0} TE {1} IHP {2} MaxPower {3}", MaxLocoSpeedMpH, MaxTractiveEffortLbf, MaxIndicatedHorsePowerHP, W.FromHp(MaxIndicatedHorsePowerHP));
+
+// Set Max Power equal to max IHP
+       MaxPowerW = W.FromHp(MaxIndicatedHorsePowerHP);
+
+
+    }
+
+        
         private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
         {
             // Calculate Air Compressor steam Usage if turned on
@@ -2031,9 +2094,11 @@ namespace ORTS
                 DrawbarHorsePowerHP,
                 W.ToHp(MotiveForceN * SpeedMpS),
                 W.ToHp(MotiveForceSmoothedN.SmoothedValue * SpeedMpS));
-            status.AppendFormat("Beta:\tStart TE\t{0:N0} lbf\t\tTE\t{1:N0} lbf\n",
+            status.AppendFormat("Beta:\tStart TE\t{0:N0} lbf\t\tTE\t{1:N0} lbf,\t\tDraw\t{2:N0} lbf\t\tMaxIHP\t{3:N0} hp\n",
                 N.ToLbf(StartTractiveEffortN),
-                TractiveEffortLbsF);
+                TractiveEffortLbsF,
+                DrawBarPullLbsF,
+                MaxIndicatedHorsePowerHP);
             status.AppendFormat("\t\t === Temp === \n");
             status.AppendFormat("Fire:\tComb\t{0:N1} lbs/ft2\t\tBoiler Eff\t{1:N2}\t\tBoost\t{2:N2}\t\tReset\t{3:N2}\t\tP. Speed\t{4:N0}ft/m\n",
             (pS.TopH(GrateCombustionRateLBpFt2)),
