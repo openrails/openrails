@@ -866,6 +866,8 @@ namespace ORTS
 
         protected virtual void UpdateMotiveForce(float elapsedClockSeconds, float t, float currentSpeedMpS, float currentWheelSpeedMpS)
         {
+            // Method to set force and power info
+            // An alternative method in the steam locomotive will override this and input force and power info for it.
             if (PowerOn)
             {
                 if (TractiveForceCurves == null)
