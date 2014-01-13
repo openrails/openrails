@@ -1549,7 +1549,7 @@ namespace ORTS
        MotiveForceN = N.FromLbf(TractiveEffortLbsF);
 
 // Set maximum force for the locomotive
-       MaxForceN = MaxTractiveEffortLbf;
+       MaxForceN = N.FromLbf(MaxTractiveEffortLbf);
 
     }
 
