@@ -31,6 +31,8 @@ namespace ORTS
         public static VertexDeclaration PatchVertexDeclaration;
 
         static KeyValuePair<float, Material>[] WaterLayers;
+        static KeyValuePair<float, float>[] WaterLayerAnim;
+
         static int PatchVertexStride;
 
         readonly Viewer3D Viewer;
@@ -57,10 +59,11 @@ namespace ORTS
         void LoadStaticData()
         {
             if (Viewer.ENVFile.WaterLayers != null)
-                WaterLayers = Viewer.ENVFile.WaterLayers.Select(layer => new KeyValuePair<float, Material>(layer.Height, Viewer.MaterialManager.Load("Water", Viewer.Simulator.RoutePath + @"\envfiles\textures\" + layer.TextureName))).ToArray();
-
+            WaterLayers = Viewer.ENVFile.WaterLayers.Select(layer => new KeyValuePair<float, Material>(layer.Height, Viewer.MaterialManager.Load("Water", Viewer.Simulator.RoutePath + @"\envfiles\textures\" + layer.TextureName))).ToArray();
+  
             PatchVertexDeclaration = new VertexDeclaration(Viewer.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
             PatchVertexStride = VertexPositionNormalTexture.SizeInBytes;
+            
         }
 
         [CallOnThread("Updater")]
@@ -133,18 +136,21 @@ namespace ORTS
             }
             indexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
             indexBuffer.SetData(indexData.ToArray());
-
-            var vertexData = new List<VertexPositionNormalTexture>(17 * 17);
+            var vertexData = new List<VertexPositionNormalTexture>(16 * 16);
             for (var z = 0; z < 17; ++z)
             {
                 for (var x = 0; x < 17; ++x)
                 {
-                    var U = (float)x / 16;
-                    var V = (float)z / 16;
+                    var U = (float)x * 4;
+                    var V = (float)z * 4;
 
-                    var e = (U - 0.5f) * 2048 * Size;
-                    var n = (V - 0.5f) * 2048 * Size;
-                    var y = ORTSMath.Interpolate2D(U, V, waterLevels);
+                    var a = (float)x / 16;
+                    var b = (float)z / 16;
+
+                    var e = (a - 0.5f) * 2048 * Size;
+                    var n = (b - 0.5f) * 2048 * Size;
+
+                    var y = ORTSMath.Interpolate2D(a, b, waterLevels);
 
                     vertexData.Add(new VertexPositionNormalTexture(new Vector3(e, y, n), Vector3.UnitY, new Vector2(U, V)));
                 }

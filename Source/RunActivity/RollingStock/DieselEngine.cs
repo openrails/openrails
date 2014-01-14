@@ -535,45 +535,40 @@ namespace ORTS
                 }
             }
 
-            if (dRPM == 0)
+            if (IdleRPM >= RealRPM - 1 && IdleRPM <= RealRPM + 1)
             {
                 ExhaustParticles = IdleExhaust;
                 ExhaustDynamics = InitialExhaust;
                 ExhaustColor = ExhaustSteadyColor;
             }
-            if (RealRPM < (DemandedRPM))
+            if (RealRPM < DemandedRPM)
             {
                 dRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (DemandedRPM - RealRPM)), ChangeUpRPMpS);
                 if (dRPM == ChangeUpRPMpS)
                 {
-                    //ExhaustParticles *= ExhaustDynamics * MaxExhaust;
-                    //ExhaustColor = ExhaustTransientColor;
-                    ExhaustParticles = ( ExhaustAccelIncrease / 100f ) * IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust);
+                    ExhaustParticles = (( ExhaustAccelIncrease / 100f ) * IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust)) * 2.0f;
                     ExhaustDynamics = InitialExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * ExhaustMagnitude);
                     ExhaustColor = ExhaustTransientColor; 
                 }
                 else
                 {
                     dRPM = 0;
+                    ExhaustParticles = (ExhaustAccelIncrease / 100f) * IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust);
                     ExhaustColor = ExhaustSteadyColor;
+                    if (RealRPM < IdleRPM)
+                    {
+                        RealRPM = IdleRPM;
+                    }
                 }
             }
-            else
-            {
-                if (RealRPM > (DemandedRPM))
+            else if (RealRPM > (DemandedRPM))
                 {
                     dRPM = (float)Math.Max(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
-                    ExhaustParticles = ( ExhaustDecelReduction / 100f ) * (IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust));
+                    ExhaustParticles = (( ExhaustDecelReduction / 100f ) * (IdleExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaxExhaust))) * 0.5f;
                     ExhaustDynamics = InitialExhaust + ((RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * ExhaustMagnitude);
                     ExhaustColor = ExhaustDecelColor;
-                    //ExhaustParticles = 3.0f;
+
                 }
-               else
-                {
-                    dRPM = 0;
-                    ExhaustColor = ExhaustSteadyColor;
-                }
-            }
 
             if ((OutputPowerW > (1.1f * MaxOutputPowerW)) && (EngineStatus == Status.Running))
                 dRPM = (MaxOutputPowerW - OutputPowerW) / MaximalPowerW * 0.01f * RateOfChangeDownRPMpSS;
