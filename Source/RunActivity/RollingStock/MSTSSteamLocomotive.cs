@@ -330,6 +330,7 @@ namespace ORTS
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
         float absSpeedMpS;
         float t;
+        float CriticalSpeedTractiveEffortLbf;  // Speed at which the piston speed reaches it maximum recommended value
         float currentSpeedMpS;
         float currentWheelSpeedMpS;
         float maxForceN;
@@ -1466,7 +1467,7 @@ namespace ORTS
          //   Trace.TraceWarning("Piston {0} Ft {1} Speed {2} Circum {3} Cylinder St {4}", PistonSpeedFtpM, FeetinMile, MpS.ToMpH(absSpeedMpS), (2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)), Me.ToFt(CylinderStrokeM));
             TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI;
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
-            MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
+       //     MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
             
             // Calculate IHP
             // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
@@ -1477,11 +1478,6 @@ namespace ORTS
 
             DrawBarPullLbsF = -1.0f * N.ToLbf(CouplerForceU);
             DrawbarHorsePowerHP = -1.0f * (N.ToLbf(CouplerForceU) * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
-
-
-            // Derate when needed.
-            if (BoilerIsPriming)
-                MotiveForceN *= BoilerPrimingDeratingFactor;
 
             MotiveForceSmoothedN.Update(elapsedClockSeconds, MotiveForceN);
             if (float.IsNaN(MotiveForceN))
@@ -1546,11 +1542,25 @@ namespace ORTS
        MaxPowerW = W.FromHp(MaxIndicatedHorsePowerHP);
      
  // Set "current" motive force based upon the throttle, clinders, steam pressure, etc	
-       MotiveForceN = N.FromLbf(TractiveEffortLbsF);
+       MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
 
 // Set maximum force for the locomotive
        MaxForceN = N.FromLbf(MaxTractiveEffortLbf);
 
+    // If "critical" speed of locomotive is reached, limit max IHP
+       CriticalSpeedTractiveEffortLbf = (MaxIndicatedHorsePowerHP * 375.0f) / MaxLocoSpeedMpH;
+    // Based upon max IHP, limit motive force.
+    if (absSpeedMpS > pS.FrompH(Me.FromMi(MaxLocoSpeedMpH)))
+    {
+    IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+    if(TractiveEffortLbsF > CriticalSpeedTractiveEffortLbf)
+        {
+        MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf);
+        }
+    }
+    // Derate when priming is occurring.
+    if (BoilerIsPriming)
+        MotiveForceN *= BoilerPrimingDeratingFactor;
     }
 
         
@@ -2095,11 +2105,12 @@ namespace ORTS
                 DrawbarHorsePowerHP,
                 W.ToHp(MotiveForceN * SpeedMpS),
                 W.ToHp(MotiveForceSmoothedN.SmoothedValue * SpeedMpS));
-            status.AppendFormat("Beta:\tStart TE\t{0:N0} lbf\t\tTE\t{1:N0} lbf,\t\tDraw\t{2:N0} lbf\t\tMaxIHP\t{3:N0} hp\n",
+            status.AppendFormat("Beta:\tStart TE\t{0:N0} lbf\t\tTE\t{1:N0} lbf,\t\tDraw\t{2:N0} lbf\t\tMaxIHP\t{3:N0} hp\t\tCrit\t{4:N0} lbf\n",
                 N.ToLbf(StartTractiveEffortN),
                 TractiveEffortLbsF,
                 DrawBarPullLbsF,
-                MaxIndicatedHorsePowerHP);
+                MaxIndicatedHorsePowerHP,
+                CriticalSpeedTractiveEffortLbf);
             status.AppendFormat("\t\t === Temp === \n");
             status.AppendFormat("Fire:\tComb\t{0:N1} lbs/ft2\t\tBoiler Eff\t{1:N2}\t\tBoost\t{2:N2}\t\tReset\t{3:N2}\t\tP. Speed\t{4:N0}ft/m\n",
             (pS.TopH(GrateCombustionRateLBpFt2)),
