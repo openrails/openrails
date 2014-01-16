@@ -925,13 +925,11 @@ namespace ORTS
         protected AnimatedPart Wipers;
 
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
-        protected Viewer3D _Viewer3D;
 
         bool HasFirstPanto;
         public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car)
             : base(viewer, car)
         {
-            _Viewer3D = viewer;
             var wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
             var shapePath = wagonFolderSlash + car.MainShapeFileName;
 
@@ -959,7 +957,7 @@ namespace ORTS
                 LoadTrackSounds();
 
             // Adding all loaded SoundSource to the main sound update thread
-            _Viewer3D.SoundProcess.AddSoundSource(this, SoundSources);
+            Viewer.SoundProcess.AddSoundSource(this, SoundSources);
 
             // Determine if it has first pantograph. So we can match unnamed panto parts correctly
             for (var i = 0; i < TrainCarShape.Hierarchy.Length; i++)
@@ -1228,7 +1226,7 @@ namespace ORTS
         public override void Unload()
         {
             // Removing sound sources from sound update thread
-            _Viewer3D.SoundProcess.RemoveSoundSource(this);
+            Viewer.SoundProcess.RemoveSoundSource(this);
             SoundSources.Clear();
         }
 

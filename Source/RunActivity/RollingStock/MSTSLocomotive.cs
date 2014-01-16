@@ -2572,7 +2572,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.ControlTrainBrakeIncrease))
             {
                 Locomotive.StartTrainBrakeIncrease(null);
-                Locomotive.TrainBrakeController.CommandStartTime = _Viewer3D.Simulator.ClockTime;
+                Locomotive.TrainBrakeController.CommandStartTime = Viewer.Simulator.ClockTime;
             }
             if (UserInput.IsReleased(UserCommands.ControlTrainBrakeIncrease))
             {
@@ -2582,7 +2582,7 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.ControlTrainBrakeDecrease))
             {
                 Locomotive.StartTrainBrakeDecrease(null);
-                Locomotive.TrainBrakeController.CommandStartTime = _Viewer3D.Simulator.ClockTime;
+                Locomotive.TrainBrakeController.CommandStartTime = Viewer.Simulator.ClockTime;
             }
             if (UserInput.IsReleased(UserCommands.ControlTrainBrakeDecrease))
             {

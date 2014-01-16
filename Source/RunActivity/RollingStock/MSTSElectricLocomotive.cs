@@ -408,11 +408,11 @@ namespace ORTS
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             if( UserInput.IsPressed( UserCommands.ControlPantograph1 ) ) {
-                new PantographCommand( _Viewer3D.Log, 1, !ElectricLocomotive.PantographFirstUp );
+                new PantographCommand(Viewer.Log, 1, !ElectricLocomotive.PantographFirstUp);
                 return; // I.e. Skip the call to base.HandleUserInput()
             }
             if( UserInput.IsPressed( UserCommands.ControlPantograph2 ) ) {
-                new PantographCommand( _Viewer3D.Log, 2, !ElectricLocomotive.PantographSecondUp );
+                new PantographCommand(Viewer.Log, 2, !ElectricLocomotive.PantographSecondUp);
                 return;
             }
 
