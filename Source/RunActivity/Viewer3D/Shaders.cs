@@ -396,7 +396,6 @@ namespace ORTS
     [CallOnThread("Render")]
     public class ParticleEmitterShader : Shader
     {
-        EffectParameter emitDirection;
         EffectParameter emitSize;
         EffectParameter tileXY;
         EffectParameter currentTime;
@@ -420,11 +419,6 @@ namespace ORTS
             set { texture.SetValue(value); }
         }
 
-        public Vector3 EmitDirection
-        {
-            set { emitDirection.SetValue(value); }
-        }
-
         public float EmitSize
         {
             set { emitSize.SetValue(value); }
@@ -438,7 +432,6 @@ namespace ORTS
         public ParticleEmitterShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "ParticleEmitterShader")
         {
-            emitDirection = Parameters["emitDirection"];
             emitSize = Parameters["emitSize"];
             currentTime = Parameters["currentTime"];
             wvp = Parameters["worldViewProjection"];

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -18,367 +18,334 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using MSTS;
-using ORTS.Processes;
 
 namespace ORTS
 {
     public struct ParticleEmitterData
     {
+        public readonly Vector3 XNALocation;
+        public readonly Vector3 XNADirection;
+        public readonly float NozzleWidth;
+        public readonly float MaxParticlesPerSecond;
+        public readonly float MaxParticleDuration;
+
         public ParticleEmitterData(STFReader stf)
         {
             stf.MustMatch("(");
-            XNAOffset.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNAOffset.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNAOffset.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNALocation.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNALocation.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNALocation.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             XNADirection.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);  // May as well go up by default.
+            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.Normalize();
             NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            MaxParticlesPerSecond = 60;
+            MaxParticleDuration = 60;
             stf.SkipRestOfBlock();
-
-            MaxParticlesPerSecond = 60f;
-            ParticlesPerSecond = 60f;
-            ParticleDuration = 60f;    // May come from the STF in the future.
-            texturePath = string.Empty; // May come from the STF in the future.
-            ParticleDurationRandomness = 1;
-            ParticleVelocitySensitivity = 0;
-            MinHorizontalVelocity = 0;
-            MaxHorizontalVelocity = 50;
-            MinVerticalVelocity = -10;
-            MaxVerticalVelocity = 50;
-            EndVelocity = 0;
-            MinRotateSpeed = -2;
-            MaxRotateSpeed = 2;
-            MinStartSize = 10;
-            MaxStartSize = 10;
-            MinStartSize = 100;
-            MinEndSize = 100;
-            MaxEndSize = 200;
         }
-
-        public Vector3 XNAOffset;
-        public Vector3 XNADirection;
-        public float NozzleWidth;
-        public float MaxParticlesPerSecond;
-        public float ParticlesPerSecond;
-        public float ParticleDuration;
-        public float ParticleDurationRandomness;
-        public float ParticleVelocitySensitivity;
-        public float MinHorizontalVelocity;
-        public float MaxHorizontalVelocity;
-        public float MinVerticalVelocity;
-        public float MaxVerticalVelocity;
-        public float EndVelocity;
-        public float MinRotateSpeed;
-        public float MaxRotateSpeed;
-        public float MinStartSize;
-        public float MaxStartSize;
-        public float MinEndSize;
-        public float MaxEndSize;
-        public string texturePath;
     }
 
     public class ParticleEmitterDrawer
     {
-        Viewer3D Viewer;
-        ParticleEmitterMaterial ParticleMaterial;
-        float ParticleEmissionHoleM3 = 1;
+        public const float VolumeScale = 1f / 100;
 
-        // Classes reqiring instantiation
-        public ParticleEmitter emitter;
-                
+        readonly Viewer3D Viewer;
+        readonly ParticleEmitterMaterial Material;
+        readonly float EmissionHoleM3 = 1;
+        readonly ParticleEmitter Emitter;
 
-        public WorldPosition WorldPosition
-        {
-            set { emitter.WorldPosition = value; }
-        }
         public ParticleEmitterDrawer(Viewer3D viewer, ParticleEmitterData data)
         {
             Viewer = viewer;
-            ParticleMaterial = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
-            ParticleEmissionHoleM3 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
-            emitter = new ParticleEmitter(Viewer.RenderProcess, data);
+            Material = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
+            EmissionHoleM3 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
+            Emitter = new ParticleEmitter(viewer.GraphicsDevice, data);
+        }
+
+        public void Initialize(Texture2D texture)
+        {
+            Material.Texture = texture;
+        }
+
+        public void SetOutput(float volumeM3pS)
+        {
+            // TODO: The values here are out by a factor of 100 here it seems. The XNAInitialVelocity should need no multiplication or division factors.
+            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM3 * 10 * VolumeScale;
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * volumeM3pS / EmissionHoleM3 * VolumeScale;
+        }
+
+        public void SetOutput(float volumeM3pS, float durationS)
+        {
+            SetOutput(volumeM3pS);
+            Emitter.ParticleDuration = durationS;
+        }
+
+        public void SetColor(Color particleColor)
+        {
+            Emitter.ParticleColor = particleColor;
+        }
+
+        public void SetWorldPosition(WorldPosition worldPosition)
+        {
+            Emitter.WorldPosition = worldPosition;
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            emitter.CameraTileXZ.X = Viewer.Camera.TileX;
-            emitter.CameraTileXZ.Y = Viewer.Camera.TileZ;
-            emitter.Update(Viewer.Simulator.GameTime, elapsedTime);
-            var XNAPrecipWorldLocation = Matrix.Identity;
+            Emitter.CameraTileXZ.X = Viewer.Camera.TileX;
+            Emitter.CameraTileXZ.Y = Viewer.Camera.TileZ;
+            Emitter.Update((float)Viewer.Simulator.GameTime, elapsedTime);
+            var XNAWorldLocation = Matrix.Identity;
 
-            if(emitter.HasParticlesToRender())
-                frame.AddPrimitive(ParticleMaterial, emitter, RenderPrimitiveGroup.Particles, ref XNAPrecipWorldLocation);
-        }
-        public void SetTexture(Texture2D texture)
-        {
-            ParticleMaterial.Texture = texture;
-        }
-        public void SetEmissionRate(float particleVolumeM3)
-        {
-            emitter.EmitterData.ParticlesPerSecond = (particleVolumeM3 / ParticleEmissionHoleM3) * .10f;
-            emitter.ParticlesPerSecond = emitter.EmitterData.ParticlesPerSecond;
-        }
-        public void SetParticleDuration(float particleDuration)
-        {
-            emitter.EmitterData.ParticleDuration = particleDuration;
-        }
-        public void SetEmissionColor(Color particleColor)
-        {
-            emitter.ParticleColor = particleColor;
+            if (Emitter.HasParticlesToRender())
+                frame.AddPrimitive(Material, Emitter, RenderPrimitiveGroup.Particles, ref XNAWorldLocation);
         }
 
         [CallOnThread("Loader")]
         internal void Mark()
         {
-            ParticleMaterial.Mark();
+            Material.Mark();
         }
     }
 
     public class ParticleEmitter : RenderPrimitive
     {
+        const int IndiciesPerParticle = 6;
+        const int VerticiesPerParticle = 4;
+        const int PrimitivesPerParticle = 2;
+
+        readonly int MaxParticles;
+        readonly ParticleVertex[] Vertices;
+        readonly VertexDeclaration VertexDeclaration;
+        readonly int VertexStride;
+        readonly DynamicVertexBuffer VertexBuffer;
+        readonly IndexBuffer IndexBuffer;
+
         struct ParticleVertex
         {
-            public Vector4 position_time;
-            public Short4 tileXY_ID;
-            public Color color_random;
-
-            public const int SizeInBytes = 32;
+            public Vector4 StartPosition_StartTime;
+            public Vector4 InitialVelocity_EndTime;
+            public Vector4 TargetVelocity_TargetTime;
+            public Short4 TileXY_Vertex_ID;
+            public Color Color_Random;
 
             public static readonly VertexElement[] VertexElements =
             {
                 new VertexElement(0, 0, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 0),
-                new VertexElement(0, 16, VertexElementFormat.Short4, VertexElementMethod.Default, VertexElementUsage.Position, 1),
-                new VertexElement(0, 24, VertexElementFormat.Color, VertexElementMethod.Default, VertexElementUsage.Position, 2)
+                new VertexElement(0, 16, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 1),
+                new VertexElement(0, 16 + 16, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 2),
+                new VertexElement(0, 16 + 16 + 16, VertexElementFormat.Short4, VertexElementMethod.Default, VertexElementUsage.Position, 3),
+                new VertexElement(0, 16 + 16 + 16 + 8, VertexElementFormat.Color, VertexElementMethod.Default, VertexElementUsage.Position, 4)
             };
         }
 
-        static int VERTICES_PER_PARTICLE = 4;
-        static int PRIMITIVES_PER_PARTICLE = 2;
-        static int INDICES_PER_PARTICLE = 6;
+        internal ParticleEmitterData EmitterData;
+        internal Vector3 XNAInitialVelocity;
+        internal Vector3 XNATargetVelocity;
+        internal float ParticlesPerSecond;
+        internal float ParticleDuration;
+        internal Color ParticleColor;
 
-        public Vector2 CameraTileXZ = Vector2.Zero;
+        internal WorldPosition WorldPosition;
+        internal Vector2 CameraTileXZ;
 
-        public Vector3 XNADirection { get; private set; }
+        int FirstActiveParticle;
+        int FirstNewParticle;
+        int FirstFreeParticle;
+        int FirstRetiredParticle;
 
-        public ParticleEmitterData EmitterData;
-        int maxParticles;
+        float ParticlesToEmit;
+        float TimeParticlesLastEmitted;
+        int DrawCounter;
 
-        float particlesPerSecond;
-        public float ParticlesPerSecond
+        public ParticleEmitter(GraphicsDevice graphicsDevice, ParticleEmitterData data)
         {
-            set { particlesPerSecond = Math.Min(value, EmitterData.MaxParticlesPerSecond); }
-            private get { return particlesPerSecond; }
-        }
+            MaxParticles = (int)(data.MaxParticlesPerSecond * data.MaxParticleDuration);
+            Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
+            VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
+            VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
+            VertexBuffer = new DynamicVertexBuffer(graphicsDevice, typeof(ParticleVertex), MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
+            IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
 
-        public Color ParticleColor { get; set; }
-
-        float particlesToEmit;
-
-        Random rng = new Random();
-        ParticleVertex[] vertices;
-
-        VertexDeclaration vd;
-        DynamicVertexBuffer vb;
-        IndexBuffer ib;
-
-        public WorldPosition WorldPosition { get; set; }
-
-        int firstActiveParticle;
-        int firstNewParticle;
-        int firstFreeParticle;
-        int firstRetiredParticle;
-
-        float timeParticlesLastEmitted;
-        int drawCounter;
-
-        public ParticleEmitter(RenderProcess renderProcess, ParticleEmitterData data)
-        {
-            ParticleColor = Color.White;
             EmitterData = data;
-            maxParticles = (int)(EmitterData.MaxParticlesPerSecond * data.ParticleDuration);
-            vd = new VertexDeclaration(renderProcess.GraphicsDevice, ParticleVertex.VertexElements);
-            InitVB(renderProcess.GraphicsDevice);
-            InitIB(renderProcess.GraphicsDevice);
+            XNAInitialVelocity = data.XNADirection;
+            XNATargetVelocity = Vector3.Up;
+            ParticlesPerSecond = 0;
+            ParticleDuration = 3;
+            ParticleColor = Color.White;
         }
 
-        void InitVB(GraphicsDevice device)
+        static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndicies)
         {
-            vb = new DynamicVertexBuffer(device, typeof(ParticleVertex), maxParticles * VERTICES_PER_PARTICLE, BufferUsage.WriteOnly);
-            vertices = new ParticleVertex[maxParticles * VERTICES_PER_PARTICLE];
-        }
-
-        void InitIB(GraphicsDevice device)
-        {
-            var numIndices = maxParticles * INDICES_PER_PARTICLE;
-            ib = new IndexBuffer(device, sizeof(ushort) * numIndices, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
-            var indices = new ushort[numIndices];
-
-            var idx = 0;
-
-            for (var i = 0; i < numIndices; i += INDICES_PER_PARTICLE)
+            var indices = new ushort[numIndicies];
+            var index = 0;
+            for (var i = 0; i < numIndicies; i += IndiciesPerParticle)
             {
-                indices[i] = (ushort)idx;
-                indices[i + 1] = (ushort)(idx + 1);
-                indices[i + 2] = (ushort)(idx + 2);
+                indices[i] = (ushort)index;
+                indices[i + 1] = (ushort)(index + 1);
+                indices[i + 2] = (ushort)(index + 2);
 
-                indices[i + 3] = (ushort)(idx + 2);
-                indices[i + 4] = (ushort)(idx + 3);
-                indices[i + 5] = (ushort)(idx);
+                indices[i + 3] = (ushort)(index + 2);
+                indices[i + 4] = (ushort)(index + 3);
+                indices[i + 5] = (ushort)(index);
 
-                idx += (ushort)VERTICES_PER_PARTICLE;
+                index += VerticiesPerParticle;
             }
-            ib.SetData<ushort>(indices);
+            var indexBuffer = new IndexBuffer(graphicsDevice, sizeof(ushort) * numIndicies, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+            indexBuffer.SetData(indices);
+            return indexBuffer;
+        }
+
+        public float EmitSize
+        {
+            get { return EmitterData.NozzleWidth; }
         }
 
         void RetireActiveParticles(float currentTime)
         {
-            var particleDuration = EmitterData.ParticleDuration;
-
-            while (firstActiveParticle != firstNewParticle)
+            while (FirstActiveParticle != FirstNewParticle)
             {
-                var firstVertexOfParticle = firstActiveParticle * VERTICES_PER_PARTICLE;
-                var particleAge = currentTime - vertices[firstVertexOfParticle].position_time.W;
+                var vertex = FirstActiveParticle * VerticiesPerParticle;
+                var expiry = Vertices[vertex].InitialVelocity_EndTime.W;
 
-                if (particleAge < particleDuration)
+                // Stop as soon as we find the first particle which hasn't expired.
+                if (expiry > currentTime)
                     break;
 
-                vertices[firstVertexOfParticle].position_time.W = (float)drawCounter;
-
-                firstActiveParticle = (firstActiveParticle + 1) % maxParticles;
+                // Expire particle.
+                Vertices[vertex].StartPosition_StartTime.W = (float)DrawCounter;
+                FirstActiveParticle = (FirstActiveParticle + 1) % MaxParticles;
             }
         }
 
         void FreeRetiredParticles()
         {
-            while (firstRetiredParticle != firstActiveParticle)
+            while (FirstRetiredParticle != FirstActiveParticle)
             {
-                var firstVertexOfParticle = firstRetiredParticle * VERTICES_PER_PARTICLE;
-                var age = drawCounter - (int)vertices[firstVertexOfParticle].position_time.W;
+                var vertex = FirstRetiredParticle * VerticiesPerParticle;
+                var age = DrawCounter - (int)Vertices[vertex].StartPosition_StartTime.W;
 
+                // Stop as soon as we find the first expired particle which hasn't been expired for at least 2 'ticks'.
                 if (age < 2)
                     break;
 
-                firstRetiredParticle = (firstRetiredParticle + 1) % maxParticles;
+                FirstRetiredParticle = (FirstRetiredParticle + 1) % MaxParticles;
             }
         }
 
-        int GetNumParticlesAvailableForEmission()
+        int GetCountFreeParticles()
         {
-            var nextFree = (firstFreeParticle + 1) % maxParticles;
+            var nextFree = (FirstFreeParticle + 1) % MaxParticles;
 
-            if (nextFree <= firstRetiredParticle)
-                return firstRetiredParticle - nextFree;
+            if (nextFree <= FirstRetiredParticle)
+                return FirstRetiredParticle - nextFree;
 
-            return (maxParticles - nextFree) + firstRetiredParticle;
+            return (MaxParticles - nextFree) + FirstRetiredParticle;
         }
 
-        public void Update(double currentTime, ElapsedTime elapsedTime)
+        public void Update(float currentTime, ElapsedTime elapsedTime)
         {
-            var rotation = WorldPosition.XNAMatrix;
-            rotation.Translation = Vector3.Zero;
-            XNADirection = Vector3.Transform(EmitterData.XNADirection, rotation);
-
-            RetireActiveParticles((float)currentTime);
+            RetireActiveParticles(currentTime);
             FreeRetiredParticles();
 
-            var time = (float)currentTime;
-
-            particlesToEmit += (elapsedTime.ClockSeconds * ParticlesPerSecond);
+            ParticlesToEmit += elapsedTime.ClockSeconds * ParticlesPerSecond;
 
             var numParticlesAdded = 0;
-
-            var numToBeEmitted = (int)particlesToEmit;
-            var numCanBeEmitted = GetNumParticlesAvailableForEmission();
+            var numToBeEmitted = (int)ParticlesToEmit;
+            var numCanBeEmitted = GetCountFreeParticles();
             var numToEmit = Math.Min(numToBeEmitted, numCanBeEmitted);
 
-            var intervalPerParticle = (time - timeParticlesLastEmitted) / numToEmit; //Change to randomize time of emission.
+            var rotation = WorldPosition.XNAMatrix;
+            rotation.Translation = Vector3.Zero;
+
+            var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
+            var initialVelocity = Vector3.Transform(XNAInitialVelocity, rotation);
+            // TODO: This should only be rotated about the Y axis and not get fully rotated.
+            var deltaVelocity = Vector3.Transform(XNATargetVelocity, rotation);
 
             for (var i = 0; i < numToEmit; i++)
             {
-                var nextFreeParticle = (firstFreeParticle + 1) % maxParticles;
-                var newParticleVertexIndex = nextFreeParticle * VERTICES_PER_PARTICLE;
-                var particleOffset = Vector3.Transform(EmitterData.XNAOffset, rotation);
-                var timeOfEmission = timeParticlesLastEmitted + intervalPerParticle;
-                var positionTime = new Vector4(WorldPosition.XNAMatrix.Translation + particleOffset, timeOfEmission);
-                var randomTextureOffset = (float)rng.Next(16); //Randomizes emissions.
-                var color_random = new Color(ParticleColor, (float)rng.NextDouble());
+                var particle = (FirstFreeParticle + 1) % MaxParticles;
+                var vertex = particle * VerticiesPerParticle;
+                var texture = (float)Program.Random.Next(16); // Randomizes emissions.
+                var color_Random = new Color(ParticleColor, (float)Program.Random.NextDouble());
 
-                for (var j = 0; j < VERTICES_PER_PARTICLE; j++)
+                for (var j = 0; j < VerticiesPerParticle; j++)
                 {
-                    vertices[newParticleVertexIndex + j].position_time = positionTime;
-                    vertices[newParticleVertexIndex + j].tileXY_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, randomTextureOffset);
-                    vertices[newParticleVertexIndex + j].color_random = color_random;
+                    Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, currentTime);
+                    Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, currentTime + ParticleDuration);
+                    Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(deltaVelocity, ParticleDuration);
+                    Vertices[vertex + j].TileXY_Vertex_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
+                    Vertices[vertex + j].Color_Random = color_Random;
                 }
 
-                firstFreeParticle = nextFreeParticle;
-                particlesToEmit--;
+                FirstFreeParticle = particle;
+                ParticlesToEmit--;
                 numParticlesAdded++;
             }
 
             if (numParticlesAdded > 0)
-                timeParticlesLastEmitted = time;
+                TimeParticlesLastEmitted = currentTime;
 
-            particlesToEmit = particlesToEmit - (int)particlesToEmit;
+            ParticlesToEmit = ParticlesToEmit - (int)ParticlesToEmit;
         }
-
 
         void AddNewParticlesToVertexBuffer()
         {
-            var stride = ParticleVertex.SizeInBytes;
-
-            if (firstNewParticle < firstFreeParticle)
+            if (FirstNewParticle < FirstFreeParticle)
             {
-                var numParticlesToAdd = firstFreeParticle - firstNewParticle;
-                vb.SetData(firstNewParticle * stride * VERTICES_PER_PARTICLE, vertices, firstNewParticle * VERTICES_PER_PARTICLE, numParticlesToAdd * VERTICES_PER_PARTICLE, stride, SetDataOptions.NoOverwrite);
+                var numParticlesToAdd = FirstFreeParticle - FirstNewParticle;
+                VertexBuffer.SetData(FirstNewParticle * VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAdd * VerticiesPerParticle, VertexStride, SetDataOptions.NoOverwrite);
             }
             else
             {
-                var numParticlesToAddAtEnd = maxParticles - firstNewParticle;
-                vb.SetData(firstNewParticle * stride * VERTICES_PER_PARTICLE, vertices, firstNewParticle * VERTICES_PER_PARTICLE, numParticlesToAddAtEnd * VERTICES_PER_PARTICLE, stride, SetDataOptions.NoOverwrite);
-                if (firstFreeParticle > 0)
-                    vb.SetData(0, vertices, 0, firstFreeParticle * VERTICES_PER_PARTICLE, stride, SetDataOptions.NoOverwrite);
+                var numParticlesToAddAtEnd = MaxParticles - FirstNewParticle;
+                VertexBuffer.SetData(FirstNewParticle * VertexStride * VerticiesPerParticle, Vertices, FirstNewParticle * VerticiesPerParticle, numParticlesToAddAtEnd * VerticiesPerParticle, VertexStride, SetDataOptions.NoOverwrite);
+                if (FirstFreeParticle > 0)
+                    VertexBuffer.SetData(0, Vertices, 0, FirstFreeParticle * VerticiesPerParticle, VertexStride, SetDataOptions.NoOverwrite);
             }
 
-            firstNewParticle = firstFreeParticle;
+            FirstNewParticle = FirstFreeParticle;
         }
 
         public bool HasParticlesToRender()
         {
-            return firstActiveParticle != firstFreeParticle;
+            return FirstActiveParticle != FirstFreeParticle;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            if (firstNewParticle != firstFreeParticle)
+            if (FirstNewParticle != FirstFreeParticle)
                 AddNewParticlesToVertexBuffer();
 
             if (HasParticlesToRender())
             {
-                graphicsDevice.Indices = ib;
-                graphicsDevice.VertexDeclaration = vd;
-                graphicsDevice.Vertices[0].SetSource(vb, 0, ParticleVertex.SizeInBytes);
+                graphicsDevice.Indices = IndexBuffer;
+                graphicsDevice.VertexDeclaration = VertexDeclaration;
+                graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexStride);
 
-                if (firstActiveParticle < firstFreeParticle)
+                if (FirstActiveParticle < FirstFreeParticle)
                 {
-                    var numParticles = firstFreeParticle - firstActiveParticle;
-                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, firstActiveParticle * VERTICES_PER_PARTICLE, numParticles * VERTICES_PER_PARTICLE, firstActiveParticle * INDICES_PER_PARTICLE, numParticles * PRIMITIVES_PER_PARTICLE);
+                    var numParticles = FirstFreeParticle - FirstActiveParticle;
+                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, FirstActiveParticle * VerticiesPerParticle, numParticles * VerticiesPerParticle, FirstActiveParticle * IndiciesPerParticle, numParticles * PrimitivesPerParticle);
                 }
                 else
                 {
-                    var numParticlesAtEnd = maxParticles - firstActiveParticle;
+                    var numParticlesAtEnd = MaxParticles - FirstActiveParticle;
                     if (numParticlesAtEnd > 0)
-                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, firstActiveParticle * VERTICES_PER_PARTICLE, numParticlesAtEnd * VERTICES_PER_PARTICLE, firstActiveParticle * INDICES_PER_PARTICLE, numParticlesAtEnd * PRIMITIVES_PER_PARTICLE);
-                    if (firstFreeParticle > 0)
-                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, firstFreeParticle * VERTICES_PER_PARTICLE, 0, firstFreeParticle * PRIMITIVES_PER_PARTICLE);
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, FirstActiveParticle * VerticiesPerParticle, numParticlesAtEnd * VerticiesPerParticle, FirstActiveParticle * IndiciesPerParticle, numParticlesAtEnd * PrimitivesPerParticle);
+                    if (FirstFreeParticle > 0)
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, FirstFreeParticle * VerticiesPerParticle, 0, FirstFreeParticle * PrimitivesPerParticle);
                 }
             }
 
-            drawCounter++;
+            DrawCounter++;
         }
     }
 }

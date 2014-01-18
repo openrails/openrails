@@ -28,7 +28,6 @@ float4x4 invView;				// inverse view
 
 float3 LightVector; // Direction vector to sun, used for day-night darkening
 
-float3 emitDirection;
 float emitSize;
 
 float2 cameraTileXY;
@@ -55,9 +54,11 @@ sampler ParticleSamp = sampler_state
 
 struct VERTEX_INPUT
 {
-	float4 Position : POSITION0;
-	float4 TileXY_Idx_AtlasPosition : POSITION1;
-	float4 Color_Random : POSITION2;
+	float4 StartPosition_StartTime : POSITION0;
+	float4 InitialVelocity_EndTime : POSITION1;
+	float4 TargetVelocity_TargetTime : POSITION2;
+	float4 TileXY_Vertex_ID : POSITION3;
+	float4 Color_Random : POSITION4;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -91,34 +92,36 @@ VERTEX_OUTPUT VSParticles(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
-	float particleSpawnTime = In.Position.w;	
-	Out.Color_Age.a = (currentTime - particleSpawnTime);
+	float age = (currentTime - In.StartPosition_StartTime.w);
+	Out.Color_Age.a = age / (In.InitialVelocity_EndTime.w - In.StartPosition_StartTime.w);
 	
-	float2 tileXY = In.TileXY_Idx_AtlasPosition.xy;
+	float2 tileXY = In.TileXY_Vertex_ID.xy;
 	float2 diff = cameraTileXY - tileXY;
 	float2 offset = diff * float2(-2048, 2048);
-	In.Position.xz += offset;
+	In.StartPosition_StartTime.xz += offset;
 	
-	In.Position.xyz += (emitDirection * Out.Color_Age.a * 3);	// Constant velocity for now.
+	float velocityAge = clamp(age, 0, In.TargetVelocity_TargetTime.w);
+	In.StartPosition_StartTime.xyz += In.InitialVelocity_EndTime.xyz * velocityAge;
+	In.StartPosition_StartTime.xyz += (In.TargetVelocity_TargetTime.xyz - In.InitialVelocity_EndTime.xyz) / In.TargetVelocity_TargetTime.w * velocityAge * velocityAge / 2;
+	In.StartPosition_StartTime.xyz += In.TargetVelocity_TargetTime.xyz * clamp(age - In.TargetVelocity_TargetTime.w, 0, age);
 	
-	Out.Color_Age.a *= 4;
-	float particleSize = (emitSize * 2) * (1 + Out.Color_Age.a);	// Start off at emitSize and increases in size.
+	float particleSize = (emitSize * 2) * (1 + age * 4);  // Start off at emitSize and increases in size.
 	
-	int vertIdx = (int)In.TileXY_Idx_AtlasPosition.z;
+	int vertIdx = (int)In.TileXY_Vertex_ID.z;
 	
 	float3 right = invView[0].xyz;
 	float3 up = invView[1].xyz;
 	
-	float2x2 rotMatrix = GetRotationMatrix(Out.Color_Age.a, In.Color_Random.a);	
+	float2x2 rotMatrix = GetRotationMatrix(age, In.Color_Random.a);	
 	float3 vertOffset = offsets[vertIdx] * particleSize;
 	vertOffset.xy = mul(vertOffset.xy, rotMatrix);
-	In.Position.xyz += right * vertOffset.x;
-	In.Position.xyz += up * vertOffset.y;
+	In.StartPosition_StartTime.xyz += right * vertOffset.x;
+	In.StartPosition_StartTime.xyz += up * vertOffset.y;
 	
-	Out.Position = mul(float4(In.Position.xyz, 1), worldViewProjection);
+	Out.Position = mul(float4(In.StartPosition_StartTime.xyz, 1), worldViewProjection);
 	
 	Out.TexCoord = texCoords[vertIdx];
-	int texAtlasPosition = In.TileXY_Idx_AtlasPosition.w;
+	int texAtlasPosition = In.TileXY_Vertex_ID.w;
 	int atlasX = texAtlasPosition % 4;
 	int atlasY = texAtlasPosition / 4;
 	Out.TexCoord += float2(0.25f * atlasX, 0.25f * atlasY);
@@ -158,8 +161,7 @@ void _PSApplyDay2Night(inout float3 Color)
 
 float4 PSParticles(in PIXEL_INPUT In) : COLOR0
 {
-	float normalizedAge = saturate(In.Color_Age.a / 12);
-	float alpha = (1 - normalizedAge);
+	float alpha = (1 - In.Color_Age.a);
 	
 	float4 tex = tex2D(ParticleSamp, In.TexCoord);
 	tex.rgb += In.Color_Age.rgb;

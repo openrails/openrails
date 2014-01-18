@@ -2722,7 +2722,7 @@ namespace ORTS
             {
                 foreach (ParticleEmitterDrawer drawer in drawers)
                 {
-                    drawer.WorldPosition = Locomotive.WorldPosition;
+                    drawer.SetWorldPosition(Locomotive.WorldPosition);
                     drawer.PrepareFrame(frame, elapsedTime);
                 }
             }

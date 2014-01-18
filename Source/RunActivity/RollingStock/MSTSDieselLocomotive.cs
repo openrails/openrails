@@ -849,11 +849,7 @@ namespace ORTS
                 Exhaust.AddRange(drawers);
             }
             foreach (var drawer in Exhaust)
-            {
-                drawer.SetTexture(viewer.TextureManager.Get(dieselTexture));
-                drawer.SetEmissionRate(car.ExhaustParticles);
-                drawer.SetParticleDuration(car.ExhaustMagnitude);
-            }
+                drawer.Initialize(viewer.TextureManager.Get(dieselTexture));
         }
 
         
@@ -957,11 +953,11 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var car = this.Car as MSTSDieselLocomotive;
             foreach (var drawer in Exhaust)
             {
-                drawer.SetEmissionRate(((MSTSDieselLocomotive)this.Car).ExhaustParticles);
-                drawer.SetEmissionColor(((MSTSDieselLocomotive)this.Car).ExhaustColor);
-                drawer.SetParticleDuration(((MSTSDieselLocomotive)this.Car).ExhaustMagnitude);
+                drawer.SetOutput(car.ExhaustParticles, car.ExhaustMagnitude);
+                drawer.SetColor(car.ExhaustColor);
             }
             base.PrepareFrame(frame, elapsedTime);
         }

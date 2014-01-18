@@ -64,6 +64,7 @@ namespace ORTS
     {
         readonly Viewer3D Viewer;
         readonly VertexDeclaration VertexDeclaration;
+        readonly int VertexStride;
         readonly VertexBuffer VertexBuffer;
         readonly int PrimitiveCount;
 
@@ -76,6 +77,7 @@ namespace ORTS
             var trees = CalculateTrees(viewer.Tiles, forest, position, out ObjectRadius);
 
             VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
+            VertexStride = VertexDeclaration.GetVertexStrideSize(0);
             VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionNormalTexture), trees.Count, BufferUsage.WriteOnly);
             VertexBuffer.SetData(trees.ToArray());
             PrimitiveCount = trees.Count / 3;
@@ -124,7 +126,7 @@ namespace ORTS
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.VertexDeclaration = VertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexDeclaration.GetVertexStrideSize(0));
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexStride);
             graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, PrimitiveCount);
         }
     }

@@ -2477,7 +2477,7 @@ namespace ORTS
                 else if (emitter.Key.ToLowerInvariant() == "whistlefx")
                     Whistle.AddRange(emitter.Value);
                 foreach (var drawer in emitter.Value)
-                    drawer.SetTexture(viewer.TextureManager.Get(steamTexture));
+                    drawer.Initialize(viewer.TextureManager.Get(steamTexture));
             }
         }
 
@@ -2641,13 +2641,13 @@ namespace ORTS
             var cocksVolumeM3pS = Kg.FromLb(cockSteamUsageLBps) * SteamVaporDensityAt100DegC1BarM3pKG;
             var safetyVolumeM3pS = Kg.FromLb(safetySteamUsageLBps) * SteamVaporDensityAt100DegC1BarM3pKG;
             foreach (var drawer in Cylinders)
-                drawer.SetEmissionRate(car.CylinderCocksAreOpen ? cocksVolumeM3pS : 0);
+                drawer.SetOutput(car.CylinderCocksAreOpen ? cocksVolumeM3pS : 0);
 
             foreach (var drawer in Drainpipe)
-                drawer.SetEmissionRate(0);
+                drawer.SetOutput(0);
 
             foreach (var drawer in SafetyValves)
-                drawer.SetEmissionRate(car.SafetyIsOn ? safetyVolumeM3pS : 0);
+                drawer.SetOutput(car.SafetyIsOn ? safetyVolumeM3pS : 0);
             
             foreach (var drawer in Stack)
             {
@@ -2664,15 +2664,13 @@ namespace ORTS
 
                 Color_Value =  ( steamVolumeM3pS * .10f )  +  ( car.Smoke.SmoothedValue / 2 ) / 256 * 100f ;
 
-                    drawer.SetEmissionRate( Steam_Rate + Burn_Rate );
-                    drawer.SetParticleDuration ( Throttlepercent );
-                    //drawer.SetEmissionColor( Color.TransparentWhite );
-                    drawer.SetEmissionColor( new Color ( Color_Value, Color_Value, Color_Value )); 
+                drawer.SetOutput(Steam_Rate + Burn_Rate, Throttlepercent);
+                drawer.SetColor(new Color(Color_Value, Color_Value, Color_Value));
                
             }
 
             foreach (var drawer in Whistle)
-                drawer.SetEmissionRate(car.Horn ? 1 : 0);
+                drawer.SetOutput(car.Horn ? 1 : 0);
 
             base.PrepareFrame(frame, elapsedTime);
         }
