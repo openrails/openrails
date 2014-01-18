@@ -335,6 +335,7 @@ namespace ORTS
         float currentWheelSpeedMpS;
         float maxForceN;
         float maxPowerW;
+        float cutoff;
   #endregion 
 
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
@@ -394,7 +395,9 @@ namespace ORTS
             // Read alternative OR Value for calculation of Ideal Fire Mass
             if (GrateAreaM2 == 0)  // Calculate Grate Area if not present in ENG file
             {
+                float MinGrateAreaSizeSqFt = 6.0f;
                 GrateAreaM2 = Me2.FromFt2(((NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(DriverWheelRadiusM * 2.0f) * GrateAreaDesignFactor));
+                GrateAreaM2 = MathHelper.Clamp(GrateAreaM2, Me2.FromFt2(MinGrateAreaSizeSqFt), GrateAreaM2); // Clamp gratearea to a minimum value of 6 sq ft
                 IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
             }
             else
@@ -852,7 +855,7 @@ namespace ORTS
             Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRate.SmoothedValue * 100;
 
             throttle = ThrottlePercent / 100;
-            float cutoff = Math.Abs(Train.MUReverserPercent / 100);
+            cutoff = Math.Abs(Train.MUReverserPercent / 100);
             if (cutoff > ForceFactor2Npcutoff.MaxX())
                 cutoff = ForceFactor2Npcutoff.MaxX();
             float absSpeedMpS = Math.Abs(Train.SpeedMpS);
@@ -1508,7 +1511,7 @@ namespace ORTS
 
     MaxLocoSpeedMpH = MaxPistonSpeedFtpM * ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) / (FeetinMile * (2.0f * Me.ToFt(CylinderStrokeM)));
 
-    float TractiveEffortFactor = 0.85f;
+            float TractiveEffortFactor = 0.85f;
     MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor;
 
    // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
@@ -1524,6 +1527,11 @@ namespace ORTS
     // Set maximum force for the locomotive
        MaxForceN = N.FromLbf(MaxTractiveEffortLbf);
 
+    // On starting allow maximum motive force to be used
+       if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f)
+       {
+           MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(MaxTractiveEffortLbf);
+       }
     // If "critical" speed of locomotive is reached, limit max IHP
        CriticalSpeedTractiveEffortLbf = (MaxIndicatedHorsePowerHP * 375.0f) / MaxLocoSpeedMpH;
     // Based upon max IHP, limit motive force.
@@ -1538,6 +1546,14 @@ namespace ORTS
     // Derate when priming is occurring.
     if (BoilerIsPriming)
         MotiveForceN *= BoilerPrimingDeratingFactor;
+    // Find the maximum TE for debug i.e. @ start and full throttle
+    if (absSpeedMpS < 2.0)
+    {
+        if (MotiveForceN > StartTractiveEffortN)
+        {
+            StartTractiveEffortN = MotiveForceN; // update to new maximum TE
+        }
+    }
     }
 
         
@@ -2068,7 +2084,8 @@ namespace ORTS
                 MaxIndicatedHorsePowerHP,
                 IndicatedHorsePowerHP,
                 DrawbarHorsePowerHP);
-            status.AppendFormat("Force:\tStart TE\t{0:N0} lbf\tTE\t{1:N0} lbf\tDraw\t{2:N0} lbf\tCritic\t{3:N0} lbf\n",
+            status.AppendFormat("Force:\tMax TE\t{0:N0}\tStart TE\t{1:N0} lbf\tTE\t{2:N0} lbf\tDraw\t{3:N0} lbf\tCritic\t{4:N0} lbf\n",
+                MaxTractiveEffortLbf,
                 N.ToLbf(StartTractiveEffortN),
                 TractiveEffortLbsF,
                 DrawBarPullLbsF,
