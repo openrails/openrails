@@ -66,7 +66,8 @@ namespace ORTS
         // wag file data
         public string MainShapeFileName;
         public string FreightShapeFileName;
-        public float FreightAnimHeightM;
+        public float FreightAnimMaxLevelM;
+        public float FreightAnimMinLevelM;
         public string InteriorShapeFileName; // passenger view shape file name
         public string MainSoundFileName;
         public string InteriorSoundFileName;
@@ -91,6 +92,11 @@ namespace ORTS
         public float SlipWarningThresholdPercent = 70;
         public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
 
+        /// <summary>
+        /// Attached steam locomotive in case this wagon is a tender
+        /// </summary>
+        public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
+        
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
@@ -149,11 +155,13 @@ namespace ORTS
 		            stf.MustMatch("(");
 		            string typeString = stf.ReadString();
 		            IsFreight = String.Compare(typeString,"Freight") == 0 ? true : false;
+		            IsTender = String.Compare(typeString,"Tender") == 0 ? true : false;
 		            break;
                 case "wagon(freightanim":
                     stf.MustMatch("(");
                     FreightShapeFileName = stf.ReadString();
-                    FreightAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null) - stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FreightAnimMaxLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FreightAnimMinLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(size":
@@ -259,7 +267,8 @@ namespace ORTS
         {
             MainShapeFileName = copy.MainShapeFileName;
             FreightShapeFileName = copy.FreightShapeFileName;
-            FreightAnimHeightM = copy.FreightAnimHeightM;
+            FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
+            FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
             IsFreight = copy.IsFreight;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             MainSoundFileName = copy.MainSoundFileName;
@@ -569,6 +578,26 @@ namespace ORTS
             if (MirrorOpen) SignalEvent(Event.MirrorOpen); // hook for sound trigger
             else SignalEvent(Event.MirrorClose);
             Simulator.Confirmer.Confirm( CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off );
+        }
+
+        public void FindTendersSteamLocomotive()
+        {
+            if (Train == null || Train.Cars == null || Train.Cars.Count < 2)
+            {
+                TendersSteamLocomotive = null;
+                return;
+            }
+
+            var tenderIndex = 0;
+            for (var i = 0; i < Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] == this)
+                    tenderIndex = i;
+            }
+            if (tenderIndex > 0 && Train.Cars[tenderIndex - 1] is MSTSSteamLocomotive)
+                TendersSteamLocomotive = Train.Cars[tenderIndex - 1] as MSTSSteamLocomotive;
+            if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1] is MSTSSteamLocomotive)
+                TendersSteamLocomotive = Train.Cars[tenderIndex + 1] as MSTSSteamLocomotive;
         }
 
         public bool GetTrainHandbrakeStatus()
@@ -939,7 +968,12 @@ namespace ORTS
             {
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
-
+                if (MSTSWagon.IsTender)
+                {
+                    // Force allowing animation:
+                    if (FreightShape.SharedShape.LodControls.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
+                        FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] = 1;
+                }
             }
             if (car.InteriorShapeFileName != null)
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition);
@@ -1189,8 +1223,14 @@ namespace ORTS
                 }
                 else FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
                 FreightShape.Location.TileX = Car.WorldPosition.TileX; FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
-                if (FreightShape.XNAMatrices.Length > 0)
-                    FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimHeightM;
+
+                if (MSTSWagon.IsTender)
+                {
+                    if (MSTSWagon.TendersSteamLocomotive == null)
+                        MSTSWagon.FindTendersSteamLocomotive();
+                    if (FreightShape.XNAMatrices.Length > 0 && MSTSWagon.TendersSteamLocomotive != null)
+                        FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + MSTSWagon.TendersSteamLocomotive.FuelController.CurrentValue * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
+                }
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
 

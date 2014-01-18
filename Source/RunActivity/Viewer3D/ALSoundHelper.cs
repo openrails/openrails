@@ -342,7 +342,7 @@ namespace ORTS
         /// <param name="isReleasedWithJump">True if sound possibly be released with jump</param>
         public static void Sweep(string name, bool isExternal, bool isReleasedWithJump)
         {
-            if (name == string.Empty)
+            if (name == null || name == string.Empty)
                 return;
 
             string key = GetKey(name, isExternal, isReleasedWithJump);
