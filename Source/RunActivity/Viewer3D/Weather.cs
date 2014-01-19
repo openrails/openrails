@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,22 +17,21 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ORTS
 {
     public class WeatherControl
     {
-        Viewer3D Viewer;
-        private int weatherType = -1;
-        public int seasonType;
-        // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
-        public float overcast = 0.1f;
-        public float intensity = 3500;
-        public float fogCoeff = 0.75f;
+        readonly Viewer3D Viewer;
+
+        // Overcast factor: 0.0 = almost no clouds; 0.1 = wispy clouds; 1.0 = total overcast.
+        public float overcastFactor = 0.1f;
+        // ???
+        public float pricipitationIntensity = 3500;
+        // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
+        public float fogDistance = 5000;
+
         public readonly List<SoundSourceBase> ClearSound;
         public readonly List<SoundSourceBase> RainSound;
         public readonly List<SoundSourceBase> SnowSound;
@@ -41,58 +40,58 @@ namespace ORTS
         public WeatherControl(Viewer3D viewer)
         {
             Viewer = viewer;
-            seasonType = (int)Viewer.Simulator.Season;
 
-            string[] pathArray = {Program.Simulator.RoutePath + @"\SOUND", 
-                                  Program.Simulator.BasePath + @"\SOUND"};
-            
+            var pathArray = new[] {
+                Program.Simulator.RoutePath + @"\SOUND",
+                Program.Simulator.BasePath + @"\SOUND",
+            };
+
             ClearSound = new List<SoundSourceBase>() {
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_in.sms")),
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_ex.sms"))}; 
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "clear_ex.sms")),
+            };
             RainSound = new List<SoundSourceBase>() {
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_in.sms")),
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_ex.sms"))};
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "rain_ex.sms")),
+            };
             SnowSound = new List<SoundSourceBase>() {
                 new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_in.sms")),
-                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_ex.sms"))};
+                new SoundSource(viewer, Events.Source.MSTSInGame, ORTSPaths.GetFileFromFolders(pathArray, "snow_ex.sms")),
+            };
 
-            WeatherSounds.AddRange(ClearSound); 
+            WeatherSounds.AddRange(ClearSound);
             WeatherSounds.AddRange(RainSound);
             WeatherSounds.AddRange(SnowSound);
 
-            SetWeatherParams();
+            SetWeather(Viewer.Simulator.Weather);
         }
 
-        public void SetWeatherParams()
+        public void SetWeather(MSTS.WeatherType weather)
         {
-            if (weatherType == (int)Viewer.Simulator.Weather)
-                return;
-
             if (Viewer.SoundProcess != null) Viewer.SoundProcess.RemoveSoundSource(this);
-            weatherType = (int)Viewer.Simulator.Weather;
-            switch (weatherType)
+            switch (weather)
             {
-                case (int)MSTS.WeatherType.Rain:
-                    overcast = 0.7f;
-                    intensity = 4500;
-                    fogCoeff = 0.5f;
+                case MSTS.WeatherType.Clear:
+                    overcastFactor = 0.05f;
+                    fogDistance = 20000;
+                    if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, ClearSound);
+                    break;
+                case MSTS.WeatherType.Rain:
+                    overcastFactor = 0.7f;
+                    pricipitationIntensity = 4500;
+                    fogDistance = 1000;
                     if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, RainSound);
                     break;
-                case (int)MSTS.WeatherType.Snow:
-                    overcast = 0.6f;
-                    intensity = 6500;
-                    fogCoeff = 0.1f;
+                case MSTS.WeatherType.Snow:
+                    overcastFactor = 0.6f;
+                    pricipitationIntensity = 6500;
+                    fogDistance = 500;
                     if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, SnowSound);
-                    break;
-                case (int)MSTS.WeatherType.Clear:
-                    overcast = 0.05f;
-                    fogCoeff = 0.9f;
-                    if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, ClearSound);
                     break;
             }
         }
 
-        public void SetPrecipVolume(float volume)
+        public void SetPricipitationVolume(float volume)
         {
             foreach (var soundSource in RainSound)
             {

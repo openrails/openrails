@@ -174,7 +174,7 @@ void _VSLightsAndShadows(uniform bool ShaderModel3, in VERTEX_INPUT In, inout VE
 	Out.LightDir_Fog.xyz = mul(In.Position, World) - HeadlightPosition.xyz;
 
 	// Fog fading
-	Out.LightDir_Fog.w = saturate(length(Out.Position.xyz) * Fog.a - 1);
+	Out.LightDir_Fog.w = (2.0 / (1.0 + exp(length(Out.Position.xyz) * Fog.a * -2.0))) - 1.0;
 
 	// Absolute position for shadow mapping
 	if (ShaderModel3) {

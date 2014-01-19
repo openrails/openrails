@@ -280,7 +280,6 @@ namespace ORTS
         }
 
         public static Color FogColor = new Color(110, 110, 110, 255);
-        public static float FogCoeff = 0.75f;
 
         internal Vector3 sunDirection;
         bool lastLightState;
@@ -328,13 +327,9 @@ namespace ORTS
             }
             // End headlight illumination
 
-            SceneryShader.Overcast = Viewer.World.Sky.overcast;
+            SceneryShader.Overcast = Viewer.World.Sky.overcastFactor;
+            SceneryShader.SetFog(Viewer.World.Sky.fogDistance, ref SharedMaterialManager.FogColor);
             SceneryShader.ViewerPos = Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation);
-
-            if (Viewer.Settings.DistantMountains)
-                SceneryShader.SetFog(Viewer.Settings.ViewingDistance * FogCoeff * 4, ref SharedMaterialManager.FogColor);
-            else
-                SceneryShader.SetFog(Viewer.Settings.ViewingDistance * FogCoeff / 2, ref SharedMaterialManager.FogColor);
         }
     }
 
@@ -863,8 +858,7 @@ namespace ORTS
             // Adjust Fog color for day-night conditions and overcast
             FogDay2Night(
                 Viewer.World.Sky.solarDirection.Y,
-                Viewer.World.Sky.overcast);
-            SharedMaterialManager.FogCoeff = Viewer.World.Sky.fogCoeff;
+                Viewer.World.Sky.overcastFactor);
 
             //if (Viewer.Settings.DistantMountains) SharedMaterialManager.FogCoeff *= (3 * (5 - Viewer.Settings.DistantMountainsFogValue) + 0.5f);
 
@@ -876,7 +870,8 @@ namespace ORTS
             SkyShader.LightVector = Viewer.World.Sky.solarDirection;
             SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyConstants.skyRadius / 20;
-            SkyShader.Overcast = Viewer.World.Sky.overcast;
+            SkyShader.Overcast = Viewer.World.Sky.overcastFactor;
+            SkyShader.SetFog(Viewer.World.Sky.fogDistance, ref SharedMaterialManager.FogColor);
             SkyShader.WindSpeed = Viewer.World.Sky.windSpeed;
             SkyShader.WindDirection = Viewer.World.Sky.windDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 

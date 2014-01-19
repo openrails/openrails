@@ -65,7 +65,7 @@ namespace ORTS
             precipMesh.windStrength = windStrength;
 
             WeatherControl weather = new WeatherControl(Viewer);
-            precipMesh.intensity = weather.intensity;
+            precipMesh.intensity = weather.pricipitationIntensity;
             precipMesh.Initialize(Viewer.Simulator);
         }
         #endregion
@@ -91,7 +91,7 @@ namespace ORTS
                     MultiPlayer.MPManager.Instance().newWeather != (int)Viewer.Simulator.Weather)
 				{
 					Viewer.Simulator.Weather = (WeatherType)MultiPlayer.MPManager.Instance().newWeather;
-                    Viewer.World.WeatherControl.SetWeatherParams();
+                    Viewer.World.WeatherControl.SetWeather(Viewer.Simulator.Weather);
 					try
 					{
                         if ( MultiPlayer.MPManager.Instance().newWeather >=0 )
@@ -134,7 +134,7 @@ namespace ORTS
                         Viewer.Simulator.Weather = WeatherType.Clear;
                         break;
                 }
-                Viewer.World.WeatherControl.SetWeatherParams();
+                Viewer.World.WeatherControl.SetWeather(Viewer.Simulator.Weather);
                 precipMesh.Initialize(Viewer.Simulator);
 				if (MultiPlayer.MPManager.IsServer())
 				{
@@ -145,12 +145,12 @@ namespace ORTS
             if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) && !MultiPlayer.MPManager.IsClient())
             {
                 precipMesh.intensity = MathHelper.Clamp(precipMesh.intensity * 1.05f, PrecipMesh.MinPrecipIntensity, PrecipMesh.MaxPrecipIntensity);
-                Viewer.World.WeatherControl.SetPrecipVolume(precipMesh.intensity / PrecipMesh.MaxPrecipIntensity);
+                Viewer.World.WeatherControl.SetPricipitationVolume(precipMesh.intensity / PrecipMesh.MaxPrecipIntensity);
             }
             if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease) && !MultiPlayer.MPManager.IsClient())
             {
                 precipMesh.intensity = MathHelper.Clamp(precipMesh.intensity / 1.05f, PrecipMesh.MinPrecipIntensity, PrecipMesh.MaxPrecipIntensity);
-                Viewer.World.WeatherControl.SetPrecipVolume(precipMesh.intensity / PrecipMesh.MaxPrecipIntensity);
+                Viewer.World.WeatherControl.SetPricipitationVolume(precipMesh.intensity / PrecipMesh.MaxPrecipIntensity);
             }
             if (MultiPlayer.MPManager.IsServer() && 
                 (UserInput.IsReleased(UserCommands.DebugPrecipitationDecrease) || UserInput.IsReleased(UserCommands.DebugPrecipitationIncrease)))

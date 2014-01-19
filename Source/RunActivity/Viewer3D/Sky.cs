@@ -70,9 +70,10 @@ namespace ORTS
         // Wind speed and direction
         public float windSpeed;
         public float windDirection;
-        // Overcast factor
-        public float overcast;
-        public float fogCoeff;
+        // Overcast level
+        public float overcastFactor;
+        // Fog distance
+        public float fogDistance;
 
         // These arrays and vectors define the position of the sun and moon in the world
         Vector3[] solarPosArray = new Vector3[72];
@@ -147,8 +148,8 @@ namespace ORTS
                 if (moonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
                     moonPhase = 3; // Moon dog only occurs in winter
                 // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
-                overcast = Viewer.World.WeatherControl.overcast;
-                fogCoeff = Viewer.World.WeatherControl.fogCoeff;
+                overcastFactor = Viewer.World.WeatherControl.overcastFactor;
+                fogDistance = Viewer.World.WeatherControl.fogDistance;
             }
 
 			if (MultiPlayer.MPManager.IsClient() && MultiPlayer.MPManager.Instance().weatherChanged)
@@ -156,12 +157,12 @@ namespace ORTS
 				//received message about weather change
 				if ( MultiPlayer.MPManager.Instance().overCast >= 0)
 				{
-					overcast = MultiPlayer.MPManager.Instance().overCast;
+					overcastFactor = MultiPlayer.MPManager.Instance().overCast;
 				}
                 //received message about weather change
                 if (MultiPlayer.MPManager.Instance().newFog > 0)
                 {
-                    fogCoeff = MultiPlayer.MPManager.Instance().newFog;
+                    fogDistance = MultiPlayer.MPManager.Instance().newFog;
                 }
                 try
                 {
@@ -178,46 +179,34 @@ namespace ORTS
 
 ////////////////////// T E M P O R A R Y ///////////////////////////
 
-            // The following keyboard commands are used for viewing sky and weather effects in "demo" mode
-            // The ( + ) key speeds the time forward, the ( - ) key reverses the time.
-            // When the Ctrl key is also pressed, the + and - keys control the amount of overcast.
+            // The following keyboard commands are used for viewing sky and weather effects in "demo" mode.
+            // Control- and Control+ for overcast, Shift- and Shift+ for fog and - and + for time.
 
-			if (UserInput.IsDown(UserCommands.DebugOvercastIncrease) && !MultiPlayer.MPManager.IsClient())
-			{
-                fogCoeff = MathHelper.Clamp(fogCoeff / 1.02f, 0.002f, 1);
-                overcast = MathHelper.Clamp(overcast + 0.005f, 0, 1);
-			}
-            if (UserInput.IsDown(UserCommands.DebugFogIncrease) && !MultiPlayer.MPManager.IsClient())
+            // Don't let multiplayer clients adjust the weather.
+            if (!MultiPlayer.MPManager.IsClient())
             {
-                fogCoeff = MathHelper.Clamp(fogCoeff / 1.05f, 0.002f, 1);
-                if (fogCoeff < 0.002f) fogCoeff = 0.002f;
+                // Overcast ranges from 0 (completely clear) to 1 (completely overcast).
+                if (UserInput.IsDown(UserCommands.DebugOvercastIncrease)) overcastFactor = MathHelper.Clamp(overcastFactor + elapsedTime.RealSeconds / 10, 0, 1);
+                if (UserInput.IsDown(UserCommands.DebugOvercastDecrease)) overcastFactor = MathHelper.Clamp(overcastFactor - elapsedTime.RealSeconds / 10, 0, 1);
+                // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
+                if (UserInput.IsDown(UserCommands.DebugFogIncrease)) fogDistance = MathHelper.Clamp(fogDistance - elapsedTime.RealSeconds * 1000, 10, 100000);
+                if (UserInput.IsDown(UserCommands.DebugFogDecrease)) fogDistance = MathHelper.Clamp(fogDistance + elapsedTime.RealSeconds * 1000, 10, 100000);
             }
-            if (UserInput.IsDown(UserCommands.DebugFogDecrease) && !MultiPlayer.MPManager.IsClient())
+            // Don't let clock shift if multiplayer.
+            if (!MultiPlayer.MPManager.IsMultiPlayer())
             {
-                fogCoeff = MathHelper.Clamp(fogCoeff * 1.05f, 0.002f, 1);
+                // Shift the clock forwards or backwards at 1h-per-second.
+                if (UserInput.IsDown(UserCommands.DebugClockForwards)) Viewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
+                if (UserInput.IsDown(UserCommands.DebugClockBackwards)) Viewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
+                if (Viewer.World.Precipitation != null && (UserInput.IsDown(UserCommands.DebugClockForwards) || UserInput.IsDown(UserCommands.DebugClockBackwards))) Viewer.World.Precipitation.Reset();
             }
-            if (UserInput.IsDown(UserCommands.DebugOvercastDecrease) && !MultiPlayer.MPManager.IsClient())
-			{
-                fogCoeff = MathHelper.Clamp(fogCoeff * 1.02f, 0.002f, 1);
-                overcast = MathHelper.Clamp(overcast - 0.005f, 0, 1);
-			}
-			if (UserInput.IsDown(UserCommands.DebugClockForwards) && !MultiPlayer.MPManager.IsMultiPlayer()) //dosen't make sense in MP mode
-			{
-				Viewer.Simulator.ClockTime += 120; // Two-minute (120 second) increments
-                if (Viewer.World.Precipitation != null) Viewer.World.Precipitation.Reset();
-			}
-			if (UserInput.IsDown(UserCommands.DebugClockBackwards) && !MultiPlayer.MPManager.IsMultiPlayer())
-			{
-				Viewer.Simulator.ClockTime -= 120;
-                if (Viewer.World.Precipitation != null) Viewer.World.Precipitation.Reset();
-			}
+            // Server needs to notify clients of weather changes.
             if (MultiPlayer.MPManager.IsServer())
             {
-                if (UserInput.IsReleased(UserCommands.DebugFogDecrease) || UserInput.IsReleased(UserCommands.DebugFogIncrease)
-                    || UserInput.IsReleased(UserCommands.DebugOvercastDecrease) || UserInput.IsReleased(UserCommands.DebugOvercastIncrease))
+                if (UserInput.IsReleased(UserCommands.DebugOvercastIncrease) || UserInput.IsReleased(UserCommands.DebugOvercastDecrease) || UserInput.IsReleased(UserCommands.DebugFogIncrease) || UserInput.IsReleased(UserCommands.DebugFogDecrease))
                 {
-                    MultiPlayer.MPManager.Instance().SetEnvInfo(overcast, fogCoeff);
-                    MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcast, fogCoeff, -1)).ToString());//server notify others the weather has changed
+                    MultiPlayer.MPManager.Instance().SetEnvInfo(overcastFactor, fogDistance);
+                    MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcastFactor, fogDistance, -1)).ToString());
                 }
             }
 

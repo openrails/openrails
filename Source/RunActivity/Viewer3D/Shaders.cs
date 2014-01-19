@@ -251,6 +251,7 @@ namespace ORTS
         readonly EffectParameter overcast;
         readonly EffectParameter windDisplacement;
         readonly EffectParameter skyColor;
+        readonly EffectParameter fog;
         readonly EffectParameter moonColor;
         readonly EffectParameter moonTexCoord;
         readonly EffectParameter cloudColor;
@@ -280,6 +281,11 @@ namespace ORTS
                 var moonColor2 = _moonPhase != 6 && value.Y < 0.13 ? -6.25f * value.Y + 0.8125f : 0;
                 moonColor.SetValue(new Vector2(moonColor1, moonColor2));
             }
+        }
+
+        public void SetFog(float depth, ref Color color)
+        {
+            fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, depth));
         }
 
         float _time;
@@ -361,6 +367,7 @@ namespace ORTS
             overcast = Parameters["Overcast"];
             windDisplacement = Parameters["WindDisplacement"];
             skyColor = Parameters["SkyColor"];
+            fog = Parameters["Fog"];
             moonColor = Parameters["MoonColor"];
             moonTexCoord = Parameters["MoonTexCoord"];
             cloudColor = Parameters["CloudColor"];

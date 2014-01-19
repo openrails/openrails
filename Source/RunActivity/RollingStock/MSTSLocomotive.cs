@@ -3476,7 +3476,7 @@ namespace ORTS
             if (_Location == 0 && _Shader != null)
             {
                 _Shader.SetData(_Viewer.MaterialManager.sunDirection,
-                    _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.Sky.overcast);
+                    _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.Sky.overcastFactor);
 
                 _Shader.SetTextureData(stretchedCab.Left, stretchedCab.Top, stretchedCab.Width, stretchedCab.Height);
                 _Shader.Begin();

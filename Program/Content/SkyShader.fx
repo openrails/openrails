@@ -29,6 +29,7 @@ float    Time;  // Used for moving textures across the sky
 float3   Overcast;  // x = alpha, y = contrast, z = brightness
 float2   WindDisplacement;
 float3   SkyColor;
+float4   Fog;
 float2   MoonColor;
 float2   MoonTexCoord;
 float    CloudColor;
@@ -175,6 +176,9 @@ float4 PSSky(VERTEX_OUTPUT In) : COLOR
 	
 	// Stars
 	skyColor = lerp(starColor, skyColor, SkyColor.y);
+	
+	// Fogging
+	skyColor.rgb = lerp(skyColor.rgb, Fog.rgb, saturate((1 - In.Normal.y) * 5000 / Fog.a));
 	
 	// Calculate angular difference between LightVector and vertex normal, radians
 	float dotproduct = dot(LightVector, In.Normal);
