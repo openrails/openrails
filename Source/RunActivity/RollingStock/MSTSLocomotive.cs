@@ -2369,7 +2369,7 @@ namespace ORTS
             Locomotive = car;
             ParticleDrawers = (from effect in Locomotive.EffectData
                                select new KeyValuePair<string, List<ParticleEmitterDrawer>>(effect.Key, new List<ParticleEmitterDrawer>(from data in effect.Value
-                                                                                                                                        select new ParticleEmitterDrawer(viewer, data)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                                                                                                                                        select new ParticleEmitterDrawer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             //if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
             //    _CabRenderer = new CabRenderer(viewer, Locomotive);
@@ -2719,13 +2719,8 @@ namespace ORTS
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             foreach (List<ParticleEmitterDrawer> drawers in ParticleDrawers.Values)
-            {
                 foreach (ParticleEmitterDrawer drawer in drawers)
-                {
-                    drawer.SetWorldPosition(Locomotive.WorldPosition);
                     drawer.PrepareFrame(frame, elapsedTime);
-                }
-            }
 
             // Wiper animation
             Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);

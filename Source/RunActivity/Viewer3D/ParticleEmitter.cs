@@ -17,7 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+// Enable this define to debug the inputs to the particle emitters from other parts of the program.
+//#define DEBUG_EMITTER_INPUT
+
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -57,15 +61,26 @@ namespace ORTS
 
         readonly Viewer3D Viewer;
         readonly ParticleEmitterMaterial Material;
-        readonly float EmissionHoleM3 = 1;
+        readonly float EmissionHoleM2 = 1;
         readonly ParticleEmitter Emitter;
 
-        public ParticleEmitterDrawer(Viewer3D viewer, ParticleEmitterData data)
+#if DEBUG_EMITTER_INPUT
+        const int InputCycleLimit = 600;
+        static int EmitterIDIndex = 0;
+        int EmitterID;
+        int InputCycle;
+#endif
+
+        public ParticleEmitterDrawer(Viewer3D viewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
             Viewer = viewer;
             Material = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
-            EmissionHoleM3 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
-            Emitter = new ParticleEmitter(viewer.GraphicsDevice, data);
+            EmissionHoleM2 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
+            Emitter = new ParticleEmitter(viewer.GraphicsDevice, data, worldPosition);
+#if DEBUG_EMITTER_INPUT
+            EmitterID = ++EmitterIDIndex;
+            InputCycle = Program.Random.Next(InputCycleLimit);
+#endif
         }
 
         public void Initialize(Texture2D texture)
@@ -76,24 +91,27 @@ namespace ORTS
         public void SetOutput(float volumeM3pS)
         {
             // TODO: The values here are out by a factor of 100 here it seems. The XNAInitialVelocity should need no multiplication or division factors.
-            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM3 * 10 * VolumeScale;
-            Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * volumeM3pS / EmissionHoleM3 * VolumeScale;
+            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * 10 * VolumeScale;
+            Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * volumeM3pS / EmissionHoleM2 * VolumeScale;
+#if DEBUG_EMITTER_INPUT
+            if (InputCycle == 0)
+                Trace.TraceInformation("Emitter{0}({1:F6}m^2) V={2,7:F3}m^3/s P={3,7:F3}p/s IV={4,7:F3}m/s", EmitterID, EmissionHoleM2, volumeM3pS, Emitter.ParticlesPerSecond, Emitter.XNAInitialVelocity.Length());
+#endif
         }
 
         public void SetOutput(float volumeM3pS, float durationS)
         {
             SetOutput(volumeM3pS);
             Emitter.ParticleDuration = durationS;
+#if DEBUG_EMITTER_INPUT
+            if (InputCycle == 0)
+                Trace.TraceInformation("Emitter{0}({1:F6}m^3) D={2,3}s", EmitterID, EmissionHoleM2, durationS);
+#endif
         }
 
         public void SetColor(Color particleColor)
         {
             Emitter.ParticleColor = particleColor;
-        }
-
-        public void SetWorldPosition(WorldPosition worldPosition)
-        {
-            Emitter.WorldPosition = worldPosition;
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -105,6 +123,11 @@ namespace ORTS
 
             if (Emitter.HasParticlesToRender())
                 frame.AddPrimitive(Material, Emitter, RenderPrimitiveGroup.Particles, ref XNAWorldLocation);
+
+#if DEBUG_EMITTER_INPUT
+            InputCycle++;
+            InputCycle %= InputCycleLimit;
+#endif
         }
 
         [CallOnThread("Loader")]
@@ -153,6 +176,7 @@ namespace ORTS
         internal Color ParticleColor;
 
         internal WorldPosition WorldPosition;
+        internal WorldPosition LastWorldPosition;
         internal Vector2 CameraTileXZ;
 
         int FirstActiveParticle;
@@ -164,7 +188,7 @@ namespace ORTS
         float TimeParticlesLastEmitted;
         int DrawCounter;
 
-        public ParticleEmitter(GraphicsDevice graphicsDevice, ParticleEmitterData data)
+        public ParticleEmitter(GraphicsDevice graphicsDevice, ParticleEmitterData data, WorldPosition worldPosition)
         {
             MaxParticles = (int)(data.MaxParticlesPerSecond * data.MaxParticleDuration);
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
@@ -179,6 +203,9 @@ namespace ORTS
             ParticlesPerSecond = 0;
             ParticleDuration = 3;
             ParticleColor = Color.White;
+
+            WorldPosition = worldPosition;
+            LastWorldPosition = new WorldPosition(worldPosition);
         }
 
         static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndicies)
@@ -251,6 +278,15 @@ namespace ORTS
 
         public void Update(float currentTime, ElapsedTime elapsedTime)
         {
+            var velocity = WorldPosition.Location - LastWorldPosition.Location;
+            velocity.X += (WorldPosition.TileX - LastWorldPosition.TileX) * 2048;
+            velocity.Z += (WorldPosition.TileZ - LastWorldPosition.TileZ) * 2048;
+            velocity.Z *= -1;
+            velocity /= elapsedTime.ClockSeconds;
+            LastWorldPosition.Location = WorldPosition.Location;
+            LastWorldPosition.TileX = WorldPosition.TileX;
+            LastWorldPosition.TileZ = WorldPosition.TileZ;
+
             RetireActiveParticles(currentTime);
             FreeRetiredParticles();
 
@@ -265,7 +301,7 @@ namespace ORTS
             rotation.Translation = Vector3.Zero;
 
             var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
-            var initialVelocity = Vector3.Transform(XNAInitialVelocity, rotation);
+            var initialVelocity = Vector3.Transform(XNAInitialVelocity, rotation) + velocity;
             // TODO: This should only be rotated about the Y axis and not get fully rotated.
             var deltaVelocity = Vector3.Transform(XNATargetVelocity, rotation);
 
