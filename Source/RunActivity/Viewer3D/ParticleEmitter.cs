@@ -91,7 +91,7 @@ namespace ORTS
         public void SetOutput(float volumeM3pS)
         {
             // TODO: The values here are out by a factor of 100 here it seems. The XNAInitialVelocity should need no multiplication or division factors.
-            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * 10 * VolumeScale;
+            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * VolumeScale * 2;
             Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * volumeM3pS / EmissionHoleM2 * VolumeScale;
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
