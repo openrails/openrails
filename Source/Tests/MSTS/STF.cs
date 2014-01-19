@@ -464,5 +464,83 @@ namespace Tests
             UnitConversionTest("1.2l", 1.2, STFReader.UNITS.Volume);
             UnitConversionTest("1.2gal", 4.5424941408, STFReader.UNITS.Volume); // Note: US gallons.
         }
+
+        [Fact]
+        public void UnitConversionDerived_MSTS_Area()
+        {
+            // TODO: UnitConversionTest("1.2mm^2", 0.0000012, STFReader.UNITS.AreaDefaultFT2);
+            // TODO: UnitConversionTest("1.2cm^2", 0.00012, STFReader.UNITS.AreaDefaultFT2);
+            UnitConversionTest("1.2m^2", 1.2, STFReader.UNITS.AreaDefaultFT2);
+            // TODO: UnitConversionTest("1.2km^2", 1200000, STFReader.UNITS.AreaDefaultFT2);
+            // TODO: UnitConversionTest("1.2\"^2", 0.000774192, STFReader.UNITS.AreaDefaultFT2);
+            // TODO: UnitConversionTest("1.2in^2", 0.000774192, STFReader.UNITS.AreaDefaultFT2);
+            // TODO: UnitConversionTest("1.2\'^2", 0.111483648, STFReader.UNITS.AreaDefaultFT2);
+            UnitConversionTest("1.2ft^2", 0.111483648, STFReader.UNITS.AreaDefaultFT2);
+            // TODO: UnitConversionTest("1.2mil^2", 3107985.7324032, STFReader.UNITS.AreaDefaultFT2);
+        }
+
+        [Fact]
+        public void UnitConversionDerived_MSTS_Damping()
+        {
+            UnitConversionTest("1.2n/m/s", 1.2, STFReader.UNITS.Resistance);
+        }
+
+        [Fact]
+        public void UnitConversionDerived_MSTS_MassRate()
+        {
+            UnitConversionTest("1.2lb/h", 1.2, STFReader.UNITS.MassRateDefaultLBpH);
+        }
+
+        [Fact]
+        public void UnitConversionDerived_MSTS_Stiffness()
+        {
+            UnitConversionTest("1.2n/m", 1.2, STFReader.UNITS.Stiffness);
+        }
+
+        [Fact]
+        public void UnitConversionDerived_MSTS_Velocity()
+        {
+            UnitConversionTest("1.2m/s", 1.2, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2km/h", 0.333333333333333, STFReader.UNITS.Speed);
+        }
+
+        [Fact]
+        public void UnitConversionDerived_MSTS_Volume()
+        {
+            // Note: This unit returns values in litres, not cubic metres.
+            const double Metre3ToLitres = 1000;
+            // TODO: UnitConversionTest("1.2mm^3", 0.0000000012 * Metre3ToLitres, STFReader.UNITS.Volume);
+            // TODO: UnitConversionTest("1.2cm^3", 0.0000012 * Metre3ToLitres, STFReader.UNITS.Volume);
+            UnitConversionTest("1.2m^3", 1.2 * Metre3ToLitres, STFReader.UNITS.Volume);
+            // TODO: UnitConversionTest("1.2km^3", 1200000000 * Metre3ToLitres, STFReader.UNITS.Volume);
+            // TODO: UnitConversionTest("1.2\"^3", 0.0000196644768 * Metre3ToLitres, STFReader.UNITS.Volume);
+            UnitConversionTest("1.2in^3", 0.0000196644768 * Metre3ToLitres, STFReader.UNITS.Volume);
+            // TODO: UnitConversionTest("1.2\'^3", 0.0339802159104 * Metre3ToLitres, STFReader.UNITS.Volume);
+            UnitConversionTest("1.2ft^3", 0.0339802159104 * Metre3ToLitres, STFReader.UNITS.Volume);
+            // TODO: UnitConversionTest("1.2mil^3", 5001818190.5286955008 * Metre3ToLitres, STFReader.UNITS.Volume);
+        }
+
+        /* The following units are currently accepted by Open Rails but have no bearing in MSTS:
+         *     amps
+         *     btu/lb
+         *     degc
+         *     degf
+         *     g/h
+         *     gals
+         *     g-uk
+         *     g-us
+         *     hz
+         *     inhg
+         *     inhg/s
+         *     kj/kg
+         *     kpa
+         *     kpa/s
+         *     kph
+         *     ns/m
+         *     rpm
+         *     rps
+         *     t-uk
+         *     t-us
+         */
     }
 }
