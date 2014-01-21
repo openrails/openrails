@@ -58,6 +58,10 @@ namespace ORTS
     public class ParticleEmitterDrawer
     {
         public const float VolumeScale = 1f / 100;
+        public const float Rate = 10;
+        public const float DecelerationTime = 0.5f;
+        public const float InitialSpreadRate = 1;
+        public const float SpreadRate = 1.5f;
 
         readonly Viewer3D Viewer;
         readonly ParticleEmitterMaterial Material;
@@ -91,7 +95,7 @@ namespace ORTS
         public void SetOutput(float volumeM3pS)
         {
             // TODO: The values here are out by a factor of 100 here it seems. The XNAInitialVelocity should need no multiplication or division factors.
-            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * VolumeScale * 2;
+            Emitter.ParticlesPerSecond = volumeM3pS / EmissionHoleM2 * VolumeScale * Rate;
             Emitter.XNAInitialVelocity = Emitter.EmitterData.XNADirection * volumeM3pS / EmissionHoleM2 * VolumeScale;
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -301,22 +305,33 @@ namespace ORTS
             rotation.Translation = Vector3.Zero;
 
             var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
-            var initialVelocity = Vector3.Transform(XNAInitialVelocity, rotation) + velocity;
+            var globalInitialVelocity = Vector3.Transform(XNAInitialVelocity, rotation) + velocity;
             // TODO: This should only be rotated about the Y axis and not get fully rotated.
-            var deltaVelocity = Vector3.Transform(XNATargetVelocity, rotation);
+            var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rotation);
 
             for (var i = 0; i < numToEmit; i++)
             {
                 var particle = (FirstFreeParticle + 1) % MaxParticles;
                 var vertex = particle * VerticiesPerParticle;
-                var texture = (float)Program.Random.Next(16); // Randomizes emissions.
+                var texture = Program.Random.Next(16); // Randomizes emissions.
                 var color_Random = new Color(ParticleColor, (float)Program.Random.NextDouble());
+
+                // Initial velocity varies in X and Z only.
+                var initialVelocity = globalInitialVelocity;
+                initialVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.InitialSpreadRate;
+                initialVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.InitialSpreadRate;
+
+                // Target/final velocity vaies in X, Y and Z.
+                var targetVelocity = globalTargetVelocity;
+                targetVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.SpreadRate;
+                targetVelocity.Y += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.SpreadRate;
+                targetVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.SpreadRate;
 
                 for (var j = 0; j < VerticiesPerParticle; j++)
                 {
                     Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, currentTime);
                     Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, currentTime + ParticleDuration);
-                    Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(deltaVelocity, ParticleDuration);
+                    Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(targetVelocity, ParticleEmitterDrawer.DecelerationTime);
                     Vertices[vertex + j].TileXY_Vertex_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
                     Vertices[vertex + j].Color_Random = color_Random;
                 }
