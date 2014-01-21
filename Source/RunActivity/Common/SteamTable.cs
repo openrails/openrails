@@ -125,27 +125,7 @@ namespace ORTS
             110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f, 
             210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f, 
         };
-        
-        // pressure tables for Superheat Factors
-        static float[] SuperheatFactorPressureTablePSI = new float[]
-        {
-            10.0f, 120.00f, 140.00f, 160.00f, 180.00f, 200.00f, 220.00f, 240.00f, 250.0f, 300.0f
-        };
-
-        // Table to calculate steam reduction due to superheating - based on figures from Goss book and test on superheating
-        // Values represent fraction of steam usage compared to a saturated locomotive, ie 
-        static float[] SuperheaterSteamReductionTable = new float[]
-        {
-            0.710f, 0.817f, 0.826f, 0.838f, 0.842f, 0.847f, 0.868f, 0.915f, 0.930f, 1.0f
-        };
-        
-         // Table to calculate coal reduction due to superheating - based on figures from Goss book and test on superheating
-        // Values represent fraction of steam usage compared to a saturated locomotive, ie 
-        static float[] SuperheaterCoalReductionTable = new float[]
-        {
-            0.710f, 0.827f, 0.841f, 0.858f, 0.860f, 0.866f, 0.890f, 0.942f, 0.956f, 1.0f
-        };
-        
+                        
         // Fire Rate - ie lbs of coal per Square Foot of Grate Area 
         static float[] CoalGrateAreaTableLbspFt2 = new float[]
         {
@@ -204,15 +184,15 @@ namespace ORTS
         // Steam to Cylinders - lbs per sec - from BTC Test Results for Std 8
         static float[] CylinderSteamTableLbpH = new float[]
         {
-            10000.0f, 12000f, 14000f, 16000f, 18000f, 20000f, 22000f, 24000f, 26000f, 28000f, 30000f,
-            32000f, 34000f
+            0.0f, 2000.0f, 4000.0f, 6000.0f, 8000.0f, 10000.0f, 12000.0f, 14000.0f, 16000.0f, 18000.0f, 20000.0f, 22000.0f, 24000.0f, 26000.0f, 28000.0f, 30000.0f,
+            32000.0f, 34000.0f, 36000.0f
         };
         
         // Superheat Temp - deg F - from BTC Test Results for Std 8
         static float[] SuperheatTempTableDegF = new float[]
         {
-            164.0f, 195.0f, 220.0f, 242.0f, 260.0f, 278.0f, 290.0f, 304.0f, 320.0f, 335.0f, 348.0f,
-            360.0f, 375.0f
+            0.0f, 40.0f, 70.0f, 100.0f, 140.0f, 164.0f, 195.0f, 220.0f, 242.0f, 260.0f, 278.0f, 290.0f, 304.0f, 320.0f, 335.0f, 348.0f,
+            360.0f, 375.0f, 384.0f
         };
 
         // Superheat required to prevent cylinder condensation fraction per cutoff fraction - Ref Elseco Superheater manual
@@ -313,19 +293,7 @@ namespace ORTS
         {
             return new Interpolator(CoalGrateAreaTableLbspFt2, BoilerEfficiencyTableX);
         }
-
-        // Reduction of Steam usage at various steam pressures due to superheating
-        public static Interpolator SuperheaterSteamReductionInterpolatorPSItoX()
-        {
-            return new Interpolator(SuperheatFactorPressureTablePSI, SuperheaterSteamReductionTable);
-        }
-        
-        // Reduction of coal usage at various steam pressures due to superheating
-        public static Interpolator SuperheaterCoalReductionInterpolatorPSItoX()
-        {
-            return new Interpolator(SuperheatFactorPressureTablePSI, SuperheaterCoalReductionTable);
-        }
-
+                   
         // Saturated pressure of steam (psi) @ water temperature (K)
         public static Interpolator SaturationPressureInterpolatorKtoPSI()
         {
