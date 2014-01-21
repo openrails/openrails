@@ -32,6 +32,9 @@ texture LoadingTexture;
 sampler LoadingSampler = sampler_state
 {
 	Texture = (LoadingTexture);
+	MagFilter = Linear;
+	MinFilter = Linear;
+	MipFilter = Linear;
 };
 
 ////////////////////    V E R T E X   I N P U T S    ///////////////////////////

@@ -950,12 +950,12 @@ namespace ORTS.Processes
 
             virtual protected VertexPositionTexture[] GetVerticies(Game game)
             {
-                var dd = (float)Material.Texture.Width / 2 + 0.5f;
+                var dd = (float)Material.Texture.Width / 2;
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-dd, +dd, -1), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+dd, +dd, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-dd, -dd, -1), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+dd, -dd, -1), new Vector2(1, 1)),
+				    new VertexPositionTexture(new Vector3(-dd - 0.5f, +dd + 0.5f, -1), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(+dd - 0.5f, +dd + 0.5f, -1), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(-dd - 0.5f, -dd + 0.5f, -1), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -1), new Vector2(1, 1)),
 			    };
             }
             
@@ -994,14 +994,14 @@ namespace ORTS.Processes
                     var scaleX = (float)game.RenderProcess.DisplaySize.X / w;
                     var scaleY = (float)game.RenderProcess.DisplaySize.Y / h;
                     var scale = scaleX < scaleY ? scaleX : scaleY;
-                    w = w * scale / 2 + 0.5f;
-                    h = h * scale / 2 + 0.5f;
+                    w = w * scale / 2;
+                    h = h * scale / 2;
                 }
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-w, +h, -1), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+w, +h, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-w, -h, -1), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+w, -h, -1), new Vector2(1, 1)),
+				    new VertexPositionTexture(new Vector3(-w - 0.5f, +h + 0.5f, -1), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(+w - 0.5f, +h + 0.5f, -1), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(-w - 0.5f, -h + 0.5f, -1), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(+w - 0.5f, -h + 0.5f, -1), new Vector2(1, 1)),
 			    };
             }
         }
