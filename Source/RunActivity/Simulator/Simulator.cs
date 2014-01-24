@@ -104,7 +104,7 @@ namespace ORTS
         public string PathName = "<unknown>";
         public float InitialTileX;
         public float InitialTileZ;
-		public HazzardManager HazzardManager;
+        public HazzardManager HazzardManager;
         public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
         /// <summary>
         /// Reference to the InterlockingSystem object, responsible for
@@ -127,7 +127,7 @@ namespace ORTS
             CarVibrating = Settings.CarVibratingLevel; //0 no vib, 1-2 mid vib, 3 max vib
             UseSuperElevation = Settings.UseSuperElevation;
             SuperElevationMinLen = Settings.SuperElevationMinLen;
-            SuperElevationGauge = (float)Settings.SuperElevationGauge/1000f;//gauge transfer from mm to m
+            SuperElevationGauge = (float)Settings.SuperElevationGauge / 1000f;//gauge transfer from mm to m
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             RoutePathName = Path.GetFileName(RoutePath);
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
@@ -170,7 +170,7 @@ namespace ORTS
                 CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\");
             }
 
-			HazzardManager = new HazzardManager(this);
+            HazzardManager = new HazzardManager(this);
         }
         public void SetActivity(string activityPath)
         {
@@ -185,10 +185,10 @@ namespace ORTS
             ClockTime = StartTime.TotalSeconds;
             Season = Activity.Tr_Activity.Tr_Activity_Header.Season;
             Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
-			if (Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
-			{
-				TDB.TrackDB.AddRestrictZone(TSectionDat, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
-			}
+            if (Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
+            {
+                TDB.TrackDB.AddRestrictZone(TSectionDat, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
+            }
         }
         public void SetExplore(string path, string consist, string start, string season, string weather)
         {
@@ -211,6 +211,15 @@ namespace ORTS
                 playerTrain.PostInit();  // place player train after pre-running of AI trains
             MPManager.Instance().RememberOriginalSwitchState();
 
+            // start activity logging if required
+            if (Settings.DataLogStationStops)
+            {
+                string stationLogFile = DeriveLogFile("Stops");
+                if (!String.IsNullOrEmpty(stationLogFile))
+                {
+                    ActivityRun.StartStationLogging(stationLogFile);
+                }
+            }
         }
 
         public void Stop()
@@ -324,18 +333,18 @@ namespace ORTS
 
             foreach (Train train in movingTrains)
             {
-				if (MPManager.IsMultiPlayer())
-				{
-					try
-					{
-						train.Update(elapsedClockSeconds);
-					}
-					catch (Exception e) { Trace.TraceWarning(e.Message); }
-				}
-				else
-				{
-					train.Update(elapsedClockSeconds);
-				}
+                if (MPManager.IsMultiPlayer())
+                {
+                    try
+                    {
+                        train.Update(elapsedClockSeconds);
+                    }
+                    catch (Exception e) { Trace.TraceWarning(e.Message); }
+                }
+                else
+                {
+                    train.Update(elapsedClockSeconds);
+                }
             }
 
             foreach (Train train in movingTrains)
@@ -345,7 +354,7 @@ namespace ORTS
 
             if (Signals != null)
             {
-				if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) Signals.Update();
+                if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) Signals.Update();
             }
 
             if (AI != null)
@@ -365,7 +374,7 @@ namespace ORTS
                 RailDriver.Update(PlayerLocomotive);
             }
 
-			if (HazzardManager != null) HazzardManager.Update(elapsedClockSeconds);
+            if (HazzardManager != null) HazzardManager.Update(elapsedClockSeconds);
             if (MPManager.IsMultiPlayer()) MPManager.Instance().Update(GameTime);
 
         }
@@ -622,6 +631,7 @@ namespace ORTS
                     else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
                     train.Cars.Add(car);
                     car.Train = train;
+                    train.Length += car.LengthM;
 
                     var mstsDieselLocomotive = car as MSTSDieselLocomotive;
                     if (Activity != null && mstsDieselLocomotive != null)
@@ -640,6 +650,19 @@ namespace ORTS
 
             if (Activity != null && !MPManager.IsMultiPlayer()) // activity is defined
             {
+                // define style of passing path and process player passing paths as required
+                if (Settings.UseLocationPassingPaths)
+                {
+                    Signals.UseLocationPassingPaths = true;
+                    int orgDirection = (train.RearTDBTraveller != null) ? (int)train.RearTDBTraveller.Direction : -2;
+                    Train.TCRoutePath dummyRoute = new Train.TCRoutePath(aiPath, orgDirection, 0, Signals, -1);
+                }
+                else
+                {
+                    Signals.UseLocationPassingPaths = false;
+                }
+
+                // create train path
                 train.SetRoutePath(aiPath, Signals);
                 train.BuildWaitingPointList(0.0f);
 
@@ -932,11 +955,49 @@ namespace ORTS
             // TODO which event should we fire
             //car.CreateEvent(62);  these are listed as alternate events
             //car.CreateEvent(63);
-			if (MPManager.IsMultiPlayer())
-			{
-				MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
-			}
+            if (MPManager.IsMultiPlayer())
+            {
+                MPManager.Notify((new MultiPlayer.MSGUncouple(train, train2, MultiPlayer.MPManager.GetUserName(), car.CarID, PlayerLocomotive)).ToString());
+            }
             if (Confirmer.Viewer.IsReplaying) Confirmer.Confirm(CabControl.Uncouple, train.LastCar.CarID);
+        }
+
+        /// <summary>
+        /// Derive log-file name from route path and activity name
+        /// </summary>
+
+        public string DeriveLogFile(string appendix)
+        {
+            string logfilebase = String.Empty;
+            string logfilefull = String.Empty;
+
+            if (!String.IsNullOrEmpty(ActivityFileName))
+            {
+                logfilebase = String.Copy(RoutePath);
+                logfilebase = String.Concat(logfilebase, "_", ActivityFileName);
+            }
+            else
+            {
+                logfilebase = String.Copy(RoutePath);
+                logfilebase = String.Concat(logfilebase, "_explorer");
+            }
+
+            logfilebase = String.Concat(logfilebase, appendix);
+            logfilefull = String.Concat(logfilebase, ".csv");
+
+            bool logExists = File.Exists(logfilefull);
+            int logCount = 0;
+
+            while (logExists && logCount < 100)
+            {
+                logCount++;
+                logfilefull = String.Concat(logfilebase, "_", logCount.ToString("00"), ".csv");
+                logExists = File.Exists(logfilefull);
+            }
+
+            if (logExists) logfilefull = String.Empty;
+
+            return (logfilefull);
         }
 
         /// <summary>

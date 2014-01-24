@@ -252,6 +252,7 @@ namespace ORTS
                 train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, conFile.Train.TrainCfg.MaxVelocity.A);
             
             // add wagons
+            train.Length = 0.0f;
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
 
@@ -268,6 +269,7 @@ namespace ORTS
                     train.Cars.Add(car);
                     car.Train = train;
                     car.SignalEvent(Event.Pantograph1Up);
+                    train.Length += car.LengthM;
                 }
                 catch (Exception error)
                 {

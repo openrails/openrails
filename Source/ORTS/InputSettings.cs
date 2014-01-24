@@ -92,15 +92,9 @@ namespace ORTS
         GameMultiPlayerDispatcher,
         GameMultiPlayerTexting,
 
-#if NEW_SIGNALLING
         GameSwitchManualMode,
-        GameShuntLockAOn,
-        GameShuntLockAOff,
-        GameShuntLockBOn,
-        GameShuntLockBOff,
         GameResetSignalForward,
         GameResetSignalBackward,
-#endif
 
         DisplayNextWindowTab,
         DisplayHelpWindow,
@@ -113,10 +107,6 @@ namespace ORTS
         DisplayNextStationWindow,
         DisplayCompassWindow,
 
-#if !NEW_SIGNALLING
-        DebugResetSignal,
-        DebugForcePlayerAuthorization,
-#endif
         DebugSpeedUp,
         DebugSpeedDown,
         DebugSpeedReset,
@@ -445,13 +435,8 @@ namespace ORTS
             Commands[(int)UserCommands.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommands.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
 
-#if !NEW_SIGNALLING
-            Commands[(int)UserCommands.DebugResetSignal] = new UserCommandKeyInput(0x0F);
-            Commands[(int)UserCommands.DebugForcePlayerAuthorization] = new UserCommandKeyInput(0x0F, KeyModifiers.Control);
-#else
             Commands[(int)UserCommands.GameResetSignalForward] = new UserCommandKeyInput(0x0F);
             Commands[(int)UserCommands.GameResetSignalBackward] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
-#endif
             Commands[(int)UserCommands.DebugSpeedUp] = new UserCommandKeyInput(0x49, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSpeedDown] = new UserCommandKeyInput(0x51, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSpeedReset] = new UserCommandKeyInput(0x47, KeyModifiers.Control | KeyModifiers.Alt);
@@ -570,13 +555,7 @@ namespace ORTS
             Commands[(int)UserCommands.GameMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
             Commands[(int)UserCommands.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14, KeyModifiers.Control);
 
-#if NEW_SIGNALLING
             Commands[(int)UserCommands.GameSwitchManualMode] = new UserCommandKeyInput(0x32, KeyModifiers.Control);
-            Commands[(int)UserCommands.GameShuntLockAOn] = new UserCommandKeyInput(0x26, KeyModifiers.Control);
-            Commands[(int)UserCommands.GameShuntLockAOff] = new UserCommandKeyInput(0x26, KeyModifiers.Control | KeyModifiers.Shift);
-            Commands[(int)UserCommands.GameShuntLockBOn] = new UserCommandKeyInput(0x26, KeyModifiers.Alt);
-            Commands[(int)UserCommands.GameShuntLockBOff] = new UserCommandKeyInput(0x26, KeyModifiers.Alt | KeyModifiers.Shift);
-#endif
 
             // for every user command
             foreach (var commandEnum in Enum.GetValues(typeof(UserCommands)))

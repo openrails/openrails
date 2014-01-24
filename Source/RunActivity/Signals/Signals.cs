@@ -72,6 +72,11 @@ namespace ORTS
         public List<PlatformDetails> PlatformDetailsList = new List<PlatformDetails>();
         public Dictionary<int, int> PlatformXRefList = new Dictionary<int, int>();
 
+        public bool UseLocationPassingPaths;                    // Use location-based style processing of passing paths (set by Simulator)
+        public Dictionary<int, DeadlockInfo> DeadlockInfoList;  // each deadlock info has unique reference
+        public int deadlockIndex;                               // last used reference index
+        public Dictionary<int, int> DeadlockReference;          // cross-reference between trackcircuitsection (key) and deadlockinforeference (value)
+
         //================================================================================================//
         ///
         /// Constructor
@@ -251,6 +256,10 @@ namespace ORTS
                     }
                 }
             }
+
+            DeadlockInfoList = new Dictionary<int, DeadlockInfo>();
+            deadlockIndex = 1;
+            DeadlockReference = new Dictionary<int, int>();
         }
 
         //================================================================================================//
@@ -261,12 +270,12 @@ namespace ORTS
         public Signals(Simulator simulator, SIGCFGFile sigcfg, BinaryReader inf)
             : this(simulator, sigcfg)
         {
-            int signalRef = inf.ReadInt32();
-            while (signalRef >= 0)
+            int signalIndex = inf.ReadInt32();
+            while (signalIndex >= 0)
             {
-                SignalObject thisSignal = SignalObjects[signalRef];
+                SignalObject thisSignal = SignalObjects[signalIndex];
                 thisSignal.Restore(inf);
-                signalRef = inf.ReadInt32();
+                signalIndex = inf.ReadInt32();
             }
 
             int tcListCount = inf.ReadInt32();
@@ -282,6 +291,28 @@ namespace ORTS
                 {
                     thisSection.Restore(inf);
                 }
+            }
+
+            UseLocationPassingPaths = inf.ReadBoolean();
+
+            DeadlockInfoList = new Dictionary<int, DeadlockInfo>();
+            int totalDeadlocks = inf.ReadInt32();
+            for (int iDeadlock = 0; iDeadlock <= totalDeadlocks - 1; iDeadlock++)
+            {
+                int thisDeadlockIndex = inf.ReadInt32();
+                DeadlockInfo thisInfo = new DeadlockInfo(this, inf);
+                DeadlockInfoList.Add(thisDeadlockIndex, thisInfo);
+            }
+
+            deadlockIndex = inf.ReadInt32();
+
+            DeadlockReference = new Dictionary<int, int>();
+            int totalReferences = inf.ReadInt32();
+            for (int iReference = 0; iReference <= totalReferences - 1; iReference++)
+            {
+                int thisSectionIndex = inf.ReadInt32();
+                int thisDeadlockIndex = inf.ReadInt32();
+                DeadlockReference.Add(thisSectionIndex, thisDeadlockIndex);
             }
         }
 
@@ -345,6 +376,24 @@ namespace ORTS
             foreach (TrackCircuitSection thisSection in TrackCircuitList)
             {
                 thisSection.Save(outf);
+            }
+
+            outf.Write(UseLocationPassingPaths);
+
+            outf.Write(DeadlockInfoList.Count);
+            foreach (KeyValuePair<int, DeadlockInfo> deadlockDetails in DeadlockInfoList)
+            {
+                outf.Write(deadlockDetails.Key);
+                deadlockDetails.Value.Save(outf);
+            }
+
+            outf.Write(deadlockIndex);
+
+            outf.Write(DeadlockReference.Count);
+            foreach (KeyValuePair<int, int> referenceDetails in DeadlockReference)
+            {
+                outf.Write(referenceDetails.Key);
+                outf.Write(referenceDetails.Value);
             }
         }
 
@@ -4284,9 +4333,15 @@ namespace ORTS
 
         public TrackCircuitItems CircuitItems;                    // all items                  //
         public TrackCircuitState CircuitState;                    // normal states              //
+
+        // old style deadlock definitions
         public Dictionary<int, List<int>> DeadlockTraps;          // deadlock traps             //
         public List<int> DeadlockActives;                         // list of trains with active deadlock traps //
-        public List<int> DeadlockAwaited;                              // train is waiting for deadlock to clear //
+        public List<int> DeadlockAwaited;                         // train is waiting for deadlock to clear //
+
+        // new style deadlock definitions
+        public int DeadlockReference;                             // index of deadlock to related deadlockinfo object for boundary //
+        public Dictionary<int, int> DeadlockBoundaries;           // list of boundaries and path index to boundary for within deadlock //
 
         //================================================================================================//
         //
@@ -4448,9 +4503,13 @@ namespace ORTS
 
             CircuitItems = new TrackCircuitItems();
             CircuitState = new TrackCircuitState();
+
             DeadlockTraps = new Dictionary<int, List<int>>();
             DeadlockActives = new List<int>();
             DeadlockAwaited = new List<int>();
+
+            DeadlockReference = -1;
+            DeadlockBoundaries = null;
         }
 
         //================================================================================================//
@@ -4489,9 +4548,13 @@ namespace ORTS
 
             CircuitItems = new TrackCircuitItems();
             CircuitState = new TrackCircuitState();
+
             DeadlockTraps = new Dictionary<int, List<int>>();
             DeadlockActives = new List<int>();
             DeadlockAwaited = new List<int>();
+
+            DeadlockReference = -1;
+            DeadlockBoundaries = null;
         }
 
         //================================================================================================//
@@ -4552,6 +4615,20 @@ namespace ORTS
                 DeadlockAwaited.Add(deadlockWaitDetails);
             }
 
+            DeadlockReference = inf.ReadInt32();
+
+            DeadlockBoundaries = null;
+            int deadlockBoundariesAvailable = inf.ReadInt32();
+            if (deadlockBoundariesAvailable > 0)
+            {
+                DeadlockBoundaries = new Dictionary<int, int>();
+                for (int iInfo = 0; iInfo <= deadlockBoundariesAvailable - 1; iInfo++)
+                {
+                    int boundaryInfo = inf.ReadInt32();
+                    int pathInfo = inf.ReadInt32();
+                    DeadlockBoundaries.Add(boundaryInfo, pathInfo);
+                }
+            }
         }
 
         //================================================================================================//
@@ -4598,6 +4675,22 @@ namespace ORTS
             foreach (int thisDeadlockWait in DeadlockAwaited)
             {
                 outf.Write(thisDeadlockWait);
+            }
+
+            outf.Write(DeadlockReference);
+
+            if (DeadlockBoundaries == null)
+            {
+                outf.Write(-1);
+            }
+            else
+            {
+                outf.Write(DeadlockBoundaries.Count);
+                foreach (KeyValuePair<int, int> thisInfo in DeadlockBoundaries)
+                {
+                    outf.Write(thisInfo.Key);
+                    outf.Write(thisInfo.Value);
+                }
             }
         }
 
@@ -4724,21 +4817,38 @@ namespace ORTS
                     DeadlockAwaited.Add(thisTrain.Train.Number); // train is waiting for deadlock to clear
                 return (false);
             }
-
             // check deadlock is in use - only if train has valid route
 
             if (thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex] != null)
             {
+
                 int routeElementIndex = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex].GetRouteIndex(Index, 0);
                 if (routeElementIndex >= 0)
                 {
                     Train.TCRouteElement thisElement = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][routeElementIndex];
-                    if (thisElement.StartAlternativePath != null)
+
+                    // check for deadlock awaited at end of passing loop - path based deadlock processing
+                    if (!signalRef.UseLocationPassingPaths)
                     {
-                        TrackCircuitSection endSection = signalRef.TrackCircuitList[thisElement.StartAlternativePath[1]];
-                        if (endSection.CheckDeadlockAwaited(thisTrain.Train.Number))
+                        // if deadlock is allready awaited set available to false to keep one track open
+                        if (thisElement.StartAlternativePath != null)
                         {
-                            return (false);
+                            TrackCircuitSection endSection = signalRef.TrackCircuitList[thisElement.StartAlternativePath[1]];
+                            if (endSection.CheckDeadlockAwaited(thisTrain.Train.Number))
+                            {
+                                return (false);
+                            }
+                        }
+                    }
+
+                    // check on available paths through deadlock area - location based deadlock processing
+                    else
+                    {
+                        if (DeadlockReference >= 0 && thisElement.FacingPoint)
+                        {
+                            DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[DeadlockReference];
+                            List<int> pathAvail = sectionDeadlockInfo.CheckDeadlockPathAvailability(this, thisTrain.Train);
+                            if (pathAvail.Count <= 0) return (false);
                         }
                     }
                 }
@@ -4877,18 +4987,46 @@ namespace ORTS
             }
 
             // if start of alternative route, set deadlock keys for other end
+            // check using path based deadlock processing
 
-            if (thisElement != null && thisElement.StartAlternativePath != null)
+            if (!signalRef.UseLocationPassingPaths)
             {
-                TrackCircuitSection endSection = signalRef.TrackCircuitList[thisElement.StartAlternativePath[1]];
-                // no deadlock yet active
-                if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
+                if (thisElement != null && thisElement.StartAlternativePath != null)
                 {
-                    endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
+                    TrackCircuitSection endSection = signalRef.TrackCircuitList[thisElement.StartAlternativePath[1]];
+
+                    // no deadlock yet active
+                    if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
+                    {
+                        endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
+                    }
+                    else if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
+                    {
+                        endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
+                    }
                 }
-                else if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
+            }
+            // search for path using location based deadlock processing
+
+            else
+            {
+                if (thisElement != null && thisElement.FacingPoint && DeadlockReference >= 0)
                 {
-                    endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
+                    DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[DeadlockReference];
+                    int trainAndSubpathIndex = sectionDeadlockInfo.GetTrainAndSubpathIndex(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath);
+                    int availableRoute = sectionDeadlockInfo.TrainReferences[trainAndSubpathIndex][0];
+                    int endSectionIndex = sectionDeadlockInfo.AvailablePathList[availableRoute].EndSectionIndex;
+                    TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+
+                    // no deadlock yet active
+                    if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
+                    {
+                        endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
+                    }
+                    else if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
+                    {
+                        endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
+                    }
                 }
             }
         }
@@ -5070,6 +5208,8 @@ namespace ORTS
 
             RemoveTrain(thisTrain, false);   // clear occupy first to prevent loop, next clear all hanging references
 
+            ClearDeadlockTrap(thisTrain.Train.Number); // clear deadlock traps
+
             // if signal at either end is still enabled for this train, reset the signal
 
             for (int iDirection = 0; iDirection <= 1; iDirection++)
@@ -5203,8 +5343,6 @@ namespace ORTS
             {
                 CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
             }
-
-            ClearDeadlockTrap(thisTrain.Train.Number);
         }
 
 
@@ -5237,8 +5375,6 @@ namespace ORTS
             {
                 CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
             }
-
-            ClearDeadlockTrap(thisTrain.Train.Number);
         }
 
         //================================================================================================//
@@ -5382,7 +5518,7 @@ namespace ORTS
 
         // check for train
         public SignalObject.InternalBlockstate getSectionState(Train.TrainRouted thisTrain, int direction,
-                        SignalObject.InternalBlockstate passedBlockstate, Train.TCSubpathRoute thisRoute, int signalRef)
+                        SignalObject.InternalBlockstate passedBlockstate, Train.TCSubpathRoute thisRoute, int signalIndex)
         {
             SignalObject.InternalBlockstate thisBlockstate;
             SignalObject.InternalBlockstate localBlockstate = SignalObject.InternalBlockstate.Reservable;  // default value
@@ -5487,7 +5623,7 @@ namespace ORTS
 
             // signal reserved - reserved for other
 
-            if (thisState.SignalReserved >= 0 && thisState.SignalReserved != signalRef)
+            if (thisState.SignalReserved >= 0 && thisState.SignalReserved != signalIndex)
             {
                 localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
                 stateSet = true;
@@ -5920,6 +6056,7 @@ namespace ORTS
             DeadlockAwaited.Remove(thisTrainNumber);
 
         }
+
         //================================================================================================//
         //
         // Check if train is waiting for deadlock
@@ -7393,7 +7530,7 @@ namespace ORTS
             // not enabled, follow set route but only if not normal signal (normal signal will not clear if not enabled)
             // also, for normal enabled signals - try and follow pins (required node may be beyond present route)
 
-            if (retry || !isSignalNormal())
+            if (retry || !isSignalNormal() || MultiPlayer.MPManager.IsMultiPlayer())
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
                 int curDirection = TCDirection;
@@ -7718,7 +7855,6 @@ namespace ORTS
                     }
                     return;
                 }
-
 
                 // if enabled - perform full update and propagate if not yet done
 
@@ -8149,7 +8285,7 @@ namespace ORTS
                 procstate = -1;
                 return;
             }
-            
+
             if (enabledTrain != thisTrain) // new allocation - reset next signals
             {
                 for (int fntype = 0; fntype < (int)SignalHead.MstsSignalFunction.UNKNOWN; fntype++)
@@ -8465,11 +8601,21 @@ namespace ORTS
                     foreach (Train.TCRouteElement thisElement in thisRoute)
                     {
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                        if (thisSection.IsAvailable(enabledTrain) && thisSection.CircuitState.TrainReserved == null)
+                        if (thisSection.DeadlockReference > 0) // do not claim into deadlock area as path may not have been resolved
                         {
-                            thisSection.Reserve(enabledTrain, thisRoute);
+                            break;
                         }
-                        else if (thisSection.CircuitState.TrainReserved == null || thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train)
+
+                        //                        if (thisSection.IsAvailable(enabledTrain) && thisSection.CircuitState.TrainReserved == null)
+                        //                        {
+                        //                            thisSection.Reserve(enabledTrain, thisRoute);
+                        //                        }
+                        //                        else if (thisSection.CircuitState.TrainReserved == null || thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train)
+                        //                        {
+                        //                            thisSection.Claim(enabledTrain);
+                        //                        }
+
+                        if (thisSection.CircuitState.TrainReserved == null || (thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train))
                         {
                             thisSection.Claim(enabledTrain);
                         }
@@ -8640,7 +8786,25 @@ namespace ORTS
         // check for train
         private bool getBlockState(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
         {
+            if (signalRef.UseLocationPassingPaths)
+            {
+                return (getBlockState_locationBased(thisRoute, thisTrain));
+            }
+            else
+            {
+                return (getBlockState_pathBased(thisRoute, thisTrain));
+            }
+        }
 
+        //================================================================================================//
+        //
+        // Get block state
+        // Get internal state of full block for normal enabled signal upto next signal for clear request
+        // returns true if train set to use alternative route
+        // based on path-based deadlock processing
+        //
+        private bool getBlockState_pathBased(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
+        {
             bool returnvalue = false;
 
             InternalBlockstate blockstate = InternalBlockstate.Reserved;  // preset to lowest possible state //
@@ -8712,7 +8876,7 @@ namespace ORTS
 
                 if (startAlternativeRoute > 0)
                 {
-                    Train.TCSubpathRoute altRoutePart = thisTrain.Train.ExtractAlternativeRoute(altRoute);
+                    Train.TCSubpathRoute altRoutePart = thisTrain.Train.ExtractAlternativeRoute_pathBased(altRoute);
 
                     // check availability of alternative route
 
@@ -8732,7 +8896,7 @@ namespace ORTS
                     if (newblockstate <= InternalBlockstate.Reservable)
                     {
                         blockstate = newblockstate;
-                        thisTrain.Train.SetAlternativeRoute(startAlternativeRoute, altRoute, this);
+                        thisTrain.Train.SetAlternativeRoute_pathBased(startAlternativeRoute, altRoute, this);
                         returnvalue = true;
                     }
                 }
@@ -8772,7 +8936,7 @@ namespace ORTS
                 if (startAlternativeRoute > 0 &&
                     (startSection.CircuitState.TrainReserved == null || startSection.CircuitState.TrainReserved.Train != thisTrain.Train))
                 {
-                    Train.TCSubpathRoute altRoutePart = thisTrain.Train.ExtractAlternativeRoute(altRoute);
+                    Train.TCSubpathRoute altRoutePart = thisTrain.Train.ExtractAlternativeRoute_pathBased(altRoute);
 
                     // check availability of alternative route
 
@@ -8792,12 +8956,81 @@ namespace ORTS
                     if (newblockstate <= InternalBlockstate.Reservable)
                     {
                         blockstate = newblockstate;
-                        thisTrain.Train.SetAlternativeRoute(startAlternativeRoute, altRoute, this);
+                        thisTrain.Train.SetAlternativeRoute_pathBased(startAlternativeRoute, altRoute, this);
                         if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
                             endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
                         returnvalue = true;
 
                     }
+                }
+            }
+
+            internalBlockState = blockstate;
+            return (returnvalue);
+        }
+
+        //================================================================================================//
+        //
+        // Get block state
+        // Get internal state of full block for normal enabled signal upto next signal for clear request
+        // returns true if train set to use alternative route
+        // based on location-based deadlock processing
+        //
+
+        private bool getBlockState_locationBased(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
+        {
+            bool returnvalue = false;
+            bool deadlockArea = false;
+
+            InternalBlockstate blockstate = InternalBlockstate.Reserved;  // preset to lowest possible state //
+
+            // loop through all sections in route list
+
+            Train.TCRouteElement lastElement = null;
+
+            foreach (Train.TCRouteElement thisElement in thisRoute)
+            {
+                lastElement = thisElement;
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                int direction = thisElement.Direction;
+
+                blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute, thisRef);
+                if (blockstate > InternalBlockstate.Reservable)
+                    break;     // exit on first none-available section
+
+                // check if this section is start of passing path area
+                // if so, select which path must be used - but only if cleared by train in AUTO mode
+
+                if (thisSection.DeadlockReference > 0 && thisElement.FacingPoint && thisTrain != null)
+                {
+                    if (thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
+                    {
+                        deadlockArea = true;
+                        break; // exits on deadlock area
+                    }
+                }
+            }
+
+            // if deadlock area : check alternative path if not yet selected
+            // if free alternative path is found, set path available otherwise set path blocked
+
+            if (deadlockArea && lastElement.UsedAlternativePath < 0)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
+                DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[thisSection.DeadlockReference];
+                List<int> availableRoutes = sectionDeadlockInfo.CheckDeadlockPathAvailability(thisSection, thisTrain.Train);
+
+                if (availableRoutes.Count >= 1)
+                {
+                    int usedRoute = sectionDeadlockInfo.SelectPath(availableRoutes, thisTrain.Train);
+
+                    thisTrain.Train.SetAlternativeRoute_locationBased(thisSection.Index, sectionDeadlockInfo, usedRoute, this);
+                    returnvalue = true;
+                    blockstate = InternalBlockstate.Reservable;
+                }
+                else
+                {
+                    blockstate = InternalBlockstate.Blocked;
                 }
             }
 
@@ -9370,7 +9603,6 @@ namespace ORTS
 
             while (thisSignal.sigfound[(int)sigFN1] >= 0)
             {
-                foundValid = true;
                 thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[(int)sigFN1]];
 
                 MstsSignalAspect thisState = thisSignal.this_sig_mr(sigFN1);
@@ -9389,8 +9621,9 @@ namespace ORTS
 
                 if (sig2Index >= 0 && thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
                 {
-                    return (foundState);
+                    return (foundValid ? foundState : MstsSignalAspect.STOP);
                 }
+                foundValid = true;
                 foundState = foundState < thisState ? foundState : thisState;
             }
 
@@ -9833,6 +10066,1190 @@ namespace ORTS
     }
 
     //================================================================================================//
+
+    //================================================================================================//
+    //
+    // DeadlockInfo Object
+    //
+    //================================================================================================//
+
+    public class DeadlockInfo
+    {
+        public enum DeadlockTrainState                                    // state of train wrt this deadlock                     
+        {
+            KeepClearThisDirection,
+            KeepClearReverseDirection,
+            Approaching,
+            StoppedAheadLoop,
+            InLoop,
+            StoppedInLoop,
+        }
+
+        protected Signals signalRef;                                       // reference to overlaying Signals class
+
+        public int DeadlockIndex;                                          // this deadlock unique index reference
+        public List<DeadlockPathInfo> AvailablePathList;                   // list of available paths
+        public Dictionary<int, List<int>> PathReferences;                  // list of paths per boundary section
+        public Dictionary<int, List<int>> TrainReferences;                 // list of paths as allowed per train/subpath index
+        public Dictionary<int, Dictionary<int, bool>> TrainLengthFit;      // list of length fit per train/subpath and per path
+        public Dictionary<int, int> TrainOwnPath;                          // train's own path per train/subpath
+        public Dictionary<int, int> InverseInfo;                           // list of paths which are each others inverse
+        public Dictionary<int, Dictionary<int, int>> TrainSubpathIndex;    // unique index per train and subpath
+        private int nextTrainSubpathIndex;                                 // counter for train/subpath index
+
+        //================================================================================================//
+        //
+        // Constructor for emtpy struct to gain access to methods
+        //
+
+        public DeadlockInfo(Signals signalReference)
+        {
+            signalRef = signalReference;
+        }
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public DeadlockInfo(Signals signalReference, TrackCircuitSection startSection, TrackCircuitSection endSection)
+        {
+            signalRef = signalReference;
+
+            DeadlockIndex = signalRef.deadlockIndex++;
+
+            AvailablePathList = new List<DeadlockPathInfo>();
+            PathReferences = new Dictionary<int, List<int>>();
+            TrainReferences = new Dictionary<int, List<int>>();
+            TrainLengthFit = new Dictionary<int, Dictionary<int, bool>>();
+            TrainOwnPath = new Dictionary<int, int>();
+            InverseInfo = new Dictionary<int, int>();
+            TrainSubpathIndex = new Dictionary<int, Dictionary<int, int>>();
+            nextTrainSubpathIndex = 0;
+
+            signalRef.DeadlockInfoList.Add(DeadlockIndex, this);
+        }
+
+        //================================================================================================//
+        //
+        // Constructor for restore
+        //
+
+        public DeadlockInfo(Signals signalReference, BinaryReader inf)
+        {
+            signalRef = signalReference;
+
+            DeadlockIndex = inf.ReadInt32();
+            AvailablePathList = new List<DeadlockPathInfo>();
+
+            int totalPaths = inf.ReadInt32();
+            for (int iPath = 0; iPath <= totalPaths - 1; iPath++)
+            {
+                DeadlockPathInfo thisPath = new DeadlockPathInfo(inf);
+                AvailablePathList.Add(thisPath);
+            }
+
+            PathReferences = new Dictionary<int, List<int>>();
+
+            int totalReferences = inf.ReadInt32();
+            for (int iReference = 0; iReference <= totalReferences - 1; iReference++)
+            {
+                int thisReference = inf.ReadInt32();
+                List<int> thisList = new List<int>();
+
+                int totalItems = inf.ReadInt32();
+                for (int iItem = 0; iItem <= totalItems - 1; iItem++)
+                {
+                    int thisItem = inf.ReadInt32();
+                    thisList.Add(thisItem);
+                }
+                PathReferences.Add(thisReference, thisList);
+            }
+
+            TrainReferences = new Dictionary<int, List<int>>();
+
+            totalReferences = inf.ReadInt32();
+            for (int iReference = 0; iReference <= totalReferences - 1; iReference++)
+            {
+                int thisReference = inf.ReadInt32();
+                List<int> thisList = new List<int>();
+
+                int totalItems = inf.ReadInt32();
+                for (int iItem = 0; iItem <= totalItems - 1; iItem++)
+                {
+                    int thisItem = inf.ReadInt32();
+                    thisList.Add(thisItem);
+                }
+                TrainReferences.Add(thisReference, thisList);
+            }
+
+            TrainLengthFit = new Dictionary<int, Dictionary<int, bool>>();
+
+            int totalFits = inf.ReadInt32();
+            for (int iFits = 0; iFits <= totalFits - 1; iFits++)
+            {
+                int thisTrain = inf.ReadInt32();
+                Dictionary<int, bool> thisLengthFit = new Dictionary<int, bool>();
+
+                int totalItems = inf.ReadInt32();
+                for (int iItem = 0; iItem <= totalItems - 1; iItem++)
+                {
+                    int itemRef = inf.ReadInt32();
+                    bool itemValue = inf.ReadBoolean();
+
+                    thisLengthFit.Add(itemRef, itemValue);
+                }
+                TrainLengthFit.Add(thisTrain, thisLengthFit);
+            }
+
+            TrainOwnPath = new Dictionary<int, int>();
+
+            int totalOwnPath = inf.ReadInt32();
+            for (int iOwnPath = 0; iOwnPath <= totalOwnPath - 1; iOwnPath++)
+            {
+                int trainIndex = inf.ReadInt32();
+                int pathIndex = inf.ReadInt32();
+                TrainOwnPath.Add(trainIndex, pathIndex);
+            }
+
+            InverseInfo = new Dictionary<int, int>();
+            int totalInverseInfo = inf.ReadInt32();
+
+            for (int iInfo = 0; iInfo <= totalInverseInfo - 1; iInfo++)
+            {
+                int infoKey = inf.ReadInt32();
+                int infoValue = inf.ReadInt32();
+                InverseInfo.Add(infoKey, infoValue);
+            }
+
+            TrainSubpathIndex = new Dictionary<int, Dictionary<int, int>>();
+            int totalTrain = inf.ReadInt32();
+
+            for (int iTrain = 0; iTrain <= totalTrain - 1; iTrain++)
+            {
+                int trainValue = inf.ReadInt32();
+                Dictionary<int, int> subpathList = new Dictionary<int, int>();
+
+                int totalSubpaths = inf.ReadInt32();
+                for (int iSubpath = 0; iSubpath <= totalSubpaths - 1; iSubpath++)
+                {
+                    int subpathValue = inf.ReadInt32();
+                    int indexValue = inf.ReadInt32();
+                    subpathList.Add(subpathValue, indexValue);
+                }
+                TrainSubpathIndex.Add(trainValue, subpathList);
+            }
+
+            nextTrainSubpathIndex = inf.ReadInt32();
+        }
+
+        //================================================================================================//
+        //
+        // save
+        //
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(DeadlockIndex);
+            outf.Write(AvailablePathList.Count);
+
+            foreach (DeadlockPathInfo thisPathInfo in AvailablePathList)
+            {
+                thisPathInfo.Save(outf);
+            }
+
+            outf.Write(PathReferences.Count);
+            foreach (KeyValuePair<int, List<int>> thisReference in PathReferences)
+            {
+                outf.Write(thisReference.Key);
+                outf.Write(thisReference.Value.Count);
+
+                foreach (int thisRefValue in thisReference.Value)
+                {
+                    outf.Write(thisRefValue);
+                }
+            }
+
+            outf.Write(TrainReferences.Count);
+            foreach (KeyValuePair<int, List<int>> thisReference in TrainReferences)
+            {
+                outf.Write(thisReference.Key);
+                outf.Write(thisReference.Value.Count);
+
+                foreach (int thisRefValue in thisReference.Value)
+                {
+                    outf.Write(thisRefValue);
+                }
+            }
+
+            outf.Write(TrainLengthFit.Count);
+            foreach (KeyValuePair<int, Dictionary<int, bool>> thisLengthFit in TrainLengthFit)
+            {
+                outf.Write(thisLengthFit.Key);
+                outf.Write(thisLengthFit.Value.Count);
+
+                foreach (KeyValuePair<int, bool> thisAvailValue in thisLengthFit.Value)
+                {
+                    outf.Write(thisAvailValue.Key);
+                    outf.Write(thisAvailValue.Value);
+                }
+            }
+
+            outf.Write(TrainOwnPath.Count);
+            foreach (KeyValuePair<int, int> ownTrainInfo in TrainOwnPath)
+            {
+                outf.Write(ownTrainInfo.Key);
+                outf.Write(ownTrainInfo.Value);
+            }
+
+            outf.Write(InverseInfo.Count);
+            foreach (KeyValuePair<int, int> thisInfo in InverseInfo)
+            {
+                outf.Write(thisInfo.Key);
+                outf.Write(thisInfo.Value);
+            }
+
+            outf.Write(TrainSubpathIndex.Count);
+            foreach (KeyValuePair<int, Dictionary<int, int>> trainInfo in TrainSubpathIndex)
+            {
+                outf.Write(trainInfo.Key);
+                outf.Write(trainInfo.Value.Count);
+
+                foreach (KeyValuePair<int, int> subpathInfo in trainInfo.Value)
+                {
+                    outf.Write(subpathInfo.Key);
+                    outf.Write(subpathInfo.Value);
+                }
+            }
+
+            outf.Write(nextTrainSubpathIndex);
+        }
+
+        //================================================================================================//
+        //
+        // Create deadlock info from alternative path or find related info
+        //
+
+        public DeadlockInfo FindDeadlockInfo(ref Train.TCSubpathRoute partPath, Train.TCSubpathRoute mainPath, int startSectionIndex, int endSectionIndex)
+        {
+            TrackCircuitSection startSection = signalRef.TrackCircuitList[startSectionIndex];
+            TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+
+            int usedStartSectionRouteIndex = mainPath.GetRouteIndex(startSectionIndex, 0);
+            int usedEndSectionRouteIndex = mainPath.GetRouteIndex(endSectionIndex, usedStartSectionRouteIndex);
+
+            // check if there is a deadlock info defined with these as boundaries
+            int startSectionDLReference = startSection.DeadlockReference;
+            int endSectionDLReference = endSection.DeadlockReference;
+
+            DeadlockInfo newDeadlockInfo = null;
+
+            // if either end is within a deadlock, try if end of deadlock matches train path
+
+            if (startSection.DeadlockBoundaries != null && startSection.DeadlockBoundaries.Count > 0)
+            {
+                int newStartSectionRouteIndex = -1;
+                foreach (KeyValuePair<int, int> startSectionInfo in startSection.DeadlockBoundaries)
+                {
+                    DeadlockInfo existDeadlockInfo = signalRef.DeadlockInfoList[startSectionInfo.Key];
+                    Train.TCSubpathRoute existPath = existDeadlockInfo.AvailablePathList[startSectionInfo.Value].Path;
+                    newStartSectionRouteIndex = mainPath.GetRouteIndexBackward(existPath[0].TCSectionIndex, usedStartSectionRouteIndex);
+                    if (newStartSectionRouteIndex < 0) // may be wrong direction - try end section
+                    {
+                        newStartSectionRouteIndex =
+                            mainPath.GetRouteIndexBackward(existDeadlockInfo.AvailablePathList[startSectionInfo.Value].EndSectionIndex, usedStartSectionRouteIndex);
+                    }
+
+                    if (newStartSectionRouteIndex >= 0)
+                    {
+                        newDeadlockInfo = existDeadlockInfo;
+                        break; // match found, stop searching
+                    }
+                }
+
+                // no match found - train path is not on existing deadlock - do not accept
+
+                if (newStartSectionRouteIndex < 0)
+                {
+                    return (null);
+                }
+                else
+                {
+                    // add sections to start of temp path
+                    for (int iIndex = usedStartSectionRouteIndex - 1; iIndex >= newStartSectionRouteIndex; iIndex--)
+                    {
+                        Train.TCRouteElement newElement = mainPath[iIndex];
+                        partPath.Insert(0, newElement);
+                    }
+                }
+            }
+
+            if (endSection.DeadlockBoundaries != null && endSection.DeadlockBoundaries.Count > 0)
+            {
+                int newEndSectionRouteIndex = -1;
+                foreach (KeyValuePair<int, int> endSectionInfo in endSection.DeadlockBoundaries)
+                {
+                    DeadlockInfo existDeadlockInfo = signalRef.DeadlockInfoList[endSectionInfo.Key];
+                    Train.TCSubpathRoute existPath = existDeadlockInfo.AvailablePathList[endSectionInfo.Value].Path;
+                    newEndSectionRouteIndex = mainPath.GetRouteIndex(existPath[0].TCSectionIndex, usedEndSectionRouteIndex);
+                    if (newEndSectionRouteIndex < 0) // may be wrong direction - try end section
+                    {
+                        newEndSectionRouteIndex =
+                            mainPath.GetRouteIndex(existDeadlockInfo.AvailablePathList[endSectionInfo.Value].EndSectionIndex, usedEndSectionRouteIndex);
+                    }
+
+                    if (newEndSectionRouteIndex >= 0)
+                    {
+                        newDeadlockInfo = existDeadlockInfo;
+                        break; // match found, stop searching
+                    }
+                }
+
+                // no match found - train path is not on existing deadlock - do not accept
+
+                if (newEndSectionRouteIndex < 0)
+                {
+                    return (null);
+                }
+                else
+                {
+                    // add sections to end of temp path
+                    for (int iIndex = usedEndSectionRouteIndex + 1; iIndex <= newEndSectionRouteIndex; iIndex++)
+                    {
+                        Train.TCRouteElement newElement = mainPath[iIndex];
+                        partPath.Add(newElement);
+                    }
+                }
+            }
+
+            // if no deadlock yet found
+
+            if (newDeadlockInfo == null)
+            {
+                // if both references are equal, use existing information
+                if (startSectionDLReference > 0 && startSectionDLReference == endSectionDLReference)
+                {
+                    newDeadlockInfo = signalRef.DeadlockInfoList[startSectionDLReference];
+                }
+
+                // if both references are null, check for existing references along route
+                else if (startSectionDLReference < 0 && endSectionDLReference < 0)
+                {
+                    if (CheckNoOverlapDeadlockPaths(partPath, signalRef))
+                    {
+                        newDeadlockInfo = new DeadlockInfo(signalRef, startSection, endSection);
+                        signalRef.DeadlockReference.Add(startSectionIndex, newDeadlockInfo.DeadlockIndex);
+                        signalRef.DeadlockReference.Add(endSectionIndex, newDeadlockInfo.DeadlockIndex);
+
+                        startSection.DeadlockReference = newDeadlockInfo.DeadlockIndex;
+                        endSection.DeadlockReference = newDeadlockInfo.DeadlockIndex;
+                    }
+                    // else : overlaps existing deadlocks - will sort that out later //TODO DEADLOCK
+                }
+            }
+
+            return (newDeadlockInfo);
+        }
+
+        //================================================================================================//
+        //
+        // add unnamed path to deadlock info
+        // return : [0] index to path
+        //          [1] > 0 : existing, < 0 : new
+
+        public int[] AddPath(Train.TCSubpathRoute thisPath, int startSectionIndex)
+        {
+            // check if equal to existing path
+
+            for (int iIndex = 0; iIndex <= AvailablePathList.Count - 1; iIndex++)
+            {
+                DeadlockPathInfo existPathInfo = AvailablePathList[iIndex];
+                if (thisPath.EqualsPath(existPathInfo.Path))
+                {
+                    return (new int[2] { iIndex, 1 });
+                }
+            }
+
+            // new path
+
+            int newPathIndex = AvailablePathList.Count;
+            DeadlockPathInfo newPathInfo = new DeadlockPathInfo(thisPath, newPathIndex);
+            AvailablePathList.Add(newPathInfo);
+
+            // add path to list of paths from this section
+            List<int> thisSectionPaths;
+
+            if (PathReferences.ContainsKey(startSectionIndex))
+            {
+                thisSectionPaths = PathReferences[startSectionIndex];
+            }
+            else
+            {
+                thisSectionPaths = new List<int>();
+                PathReferences.Add(startSectionIndex, thisSectionPaths);
+            }
+
+            thisSectionPaths.Add(newPathIndex);
+
+            // set references for intermediate sections
+            SetIntermediateReferences(thisPath, newPathIndex);
+
+            if (AvailablePathList.Count == 1) // if only one entry, set name to MAIN (first path is MAIN path)
+            {
+                newPathInfo.Name = "MAIN";
+            }
+            else
+            {
+                newPathInfo.Name = String.Concat("PASS", AvailablePathList.Count.ToString("00"));
+            }
+
+            // check for reverse path (through existing paths only)
+
+            for (int iPath = 0; iPath <= AvailablePathList.Count - 2; iPath++)
+            {
+                if (thisPath.EqualsReversePath(AvailablePathList[iPath].Path))
+                {
+                    InverseInfo.Add(newPathIndex, iPath);
+                    InverseInfo.Add(iPath, newPathIndex);
+                }
+            }
+
+            return (new int[2] { newPathIndex, -1 }); // set new path found
+        }
+
+        //================================================================================================//
+        //
+        // add named path to deadlock info
+        // return : [0] index to path
+        //          [1] > 0 : existing, < 0 : new
+        //
+
+        public int[] AddPath(Train.TCSubpathRoute thisPath, int startSectionIndex, string thisName, string thisGroupName)
+        {
+            // check if equal to existing path and has same name
+
+            for (int iIndex = 0; iIndex <= AvailablePathList.Count - 1; iIndex++)
+            {
+                DeadlockPathInfo existPathInfo = AvailablePathList[iIndex];
+                if (thisPath.EqualsPath(existPathInfo.Path) && String.Compare(existPathInfo.Name, thisName) == 0)
+                {
+                    if (!String.IsNullOrEmpty(thisGroupName))
+                    {
+                        bool groupfound = false;
+                        foreach (string groupName in existPathInfo.Groups)
+                        {
+                            if (String.Compare(groupName, thisGroupName) == 0)
+                            {
+                                groupfound = true;
+                                break;
+                            }
+                        }
+
+                        if (!groupfound) existPathInfo.Groups.Add(String.Copy(thisGroupName));
+                    }
+                    return (new int[2] { iIndex, 1 });
+                }
+            }
+
+            // new path
+
+            int newPathIndex = AvailablePathList.Count;
+            DeadlockPathInfo newPathInfo = new DeadlockPathInfo(thisPath, newPathIndex);
+            newPathInfo.Name = String.Copy(thisName);
+            if (!String.IsNullOrEmpty(thisGroupName)) newPathInfo.Groups.Add(String.Copy(thisGroupName));
+
+            AvailablePathList.Add(newPathInfo);
+
+            // add path to list of path from this section
+            List<int> thisSectionPaths;
+
+            if (PathReferences.ContainsKey(startSectionIndex))
+            {
+                thisSectionPaths = PathReferences[startSectionIndex];
+            }
+            else
+            {
+                thisSectionPaths = new List<int>();
+                PathReferences.Add(startSectionIndex, thisSectionPaths);
+            }
+
+            thisSectionPaths.Add(newPathIndex);
+
+            // set references for intermediate sections
+            SetIntermediateReferences(thisPath, newPathIndex);
+
+            // check for reverse path (through existing paths only)
+
+            for (int iPath = 0; iPath <= AvailablePathList.Count - 2; iPath++)
+            {
+                if (thisPath.EqualsReversePath(AvailablePathList[iPath].Path))
+                {
+                    InverseInfo.Add(newPathIndex, iPath);
+                    InverseInfo.Add(iPath, newPathIndex);
+                }
+            }
+
+            return (new int[2] { newPathIndex, -1 }); // return negative index to indicate new path
+        }
+
+        //================================================================================================//
+        //
+        // check if path has no conflict with overlapping deadlock paths
+        // returns false if there is an overlap
+        //
+
+        public bool CheckNoOverlapDeadlockPaths(Train.TCSubpathRoute thisPath, Signals signalRef)
+        {
+            foreach (Train.TCRouteElement thisElement in thisPath)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                if (thisSection.DeadlockReference >= 0)
+                {
+                    return (false);
+                }
+            }
+            return (true);
+        }
+
+        //================================================================================================//
+        //
+        // check if at least one valid path is available into a deadlock area
+        // returns indices of available paths
+        //
+
+        public List<int> CheckDeadlockPathAvailability(TrackCircuitSection startSection, Train thisTrain)
+        {
+            // get end section for this train
+            int endSectionIndex = GetEndSection(thisTrain);
+            TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+
+            // get list of paths which are available
+            List<int> freePaths = GetFreePaths(thisTrain);
+            List<int> useablePaths = new List<int>();
+
+            // get all possible paths from train(s) in opposite direction
+            List<int> usedRoutes = new List<int>();    // all routes allowed for any train
+            List<int> commonRoutes = new List<int>();  // routes common to all trains
+            List<int> singleRoutes = new List<int>();  // routes which are the single available route for trains which have one route only
+
+            bool firstTrain = true;
+
+            // loop through other trains
+            foreach (int otherTrainNumber in endSection.DeadlockActives)
+            {
+                Train otherTrain = thisTrain.GetOtherTrainByNumber(otherTrainNumber);
+                List<int> otherFreePaths = GetFreePaths(otherTrain);
+                foreach (int iPath in otherFreePaths)
+                {
+                    if (!usedRoutes.Contains(iPath)) usedRoutes.Add(iPath);
+                    if (firstTrain)
+                    {
+                        commonRoutes.Add(iPath);
+                    }
+                }
+
+                if (otherFreePaths.Count == 1)
+                {
+                    singleRoutes.Add(otherFreePaths[0]);
+                }
+
+                for (int cPathIndex = commonRoutes.Count - 1; cPathIndex >= 0 && !firstTrain; cPathIndex--)
+                {
+                    if (!otherFreePaths.Contains(commonRoutes[cPathIndex]))
+                    {
+                        commonRoutes.RemoveAt(cPathIndex);
+                    }
+                }
+
+                firstTrain = false;
+            }
+
+            // get inverse path indices to compare with this train's paths
+
+            List<int> inverseUsedRoutes = new List<int>();
+            List<int> inverseCommonRoutes = new List<int>();
+            List<int> inverseSingleRoutes = new List<int>();
+
+            foreach (int iPath in usedRoutes)
+            {
+                if (InverseInfo.ContainsKey(iPath))
+                    inverseUsedRoutes.Add(InverseInfo[iPath]);
+            }
+            foreach (int iPath in commonRoutes)
+            {
+                if (InverseInfo.ContainsKey(iPath))
+                    inverseCommonRoutes.Add(InverseInfo[iPath]);
+            }
+            foreach (int iPath in singleRoutes)
+            {
+                if (InverseInfo.ContainsKey(iPath))
+                    inverseSingleRoutes.Add(InverseInfo[iPath]);
+            }
+
+            // if deadlock is awaited at other end : remove paths which would cause conflict
+            if (endSection.CheckDeadlockAwaited(thisTrain.Number))
+            {
+
+                // check if this train has any route not used by trains from other end
+
+                foreach (int iPath in freePaths)
+                {
+                    if (!inverseUsedRoutes.Contains(iPath)) useablePaths.Add(iPath);
+                }
+
+                if (useablePaths.Count > 0) return (useablePaths); // unused paths available
+
+                // check if any path remains if common paths are excluded
+
+                if (inverseCommonRoutes.Count >= 1) // there are common routes, so other routes may be used
+                {
+                    foreach (int iPath in freePaths)
+                    {
+                        if (!inverseCommonRoutes.Contains(iPath)) useablePaths.Add(iPath);
+                    }
+
+                    if (useablePaths.Count > 0) return (useablePaths);
+                }
+
+                // check if any path remains if all required single paths are excluded
+
+                if (inverseSingleRoutes.Count >= 1) // there are single paths
+                {
+                    foreach (int iPath in freePaths)
+                    {
+                        if (!inverseSingleRoutes.Contains(iPath)) useablePaths.Add(iPath);
+                    }
+
+                    if (useablePaths.Count > 0) return (useablePaths);
+                }
+
+                // no path available without conflict - but if deadlock also awaited on this end, proceed anyway (otherwise everything gets stuck)
+
+                if (startSection.DeadlockAwaited.Count >= 1)
+                {
+                    return (freePaths); // may use any path in this situation
+                }
+
+                // no path available - return empty list
+
+                return (useablePaths);
+            }
+
+            // no deadlock awaited at other end : check if there is any single path set, if so exclude those to avoid conflict
+            else
+            {
+                // check if any path remains if all required single paths are excluded
+
+                if (inverseSingleRoutes.Count >= 1) // there are single paths
+                {
+                    foreach (int iPath in freePaths)
+                    {
+                        if (!inverseSingleRoutes.Contains(iPath)) useablePaths.Add(iPath);
+                    }
+
+                    if (useablePaths.Count > 0) return (useablePaths);
+                }
+
+                // no single path conflicts - so all free paths are available
+
+                return (freePaths);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // get valid list of indices related available for specific train / subpath index
+        //
+
+        public List<int> GetValidPassingPaths(int trainNumber, int sublistRef, bool allowPublic)
+        {
+            List<int> foundIndices = new List<int>();
+
+            for (int iPath = 0; iPath <= AvailablePathList.Count - 1; iPath++)
+            {
+                DeadlockPathInfo thisPathInfo = AvailablePathList[iPath];
+                int trainSubpathIndex = GetTrainAndSubpathIndex(trainNumber, sublistRef);
+                if (thisPathInfo.AllowedTrains.Contains(trainSubpathIndex) || thisPathInfo.AllowedTrains.Contains(-1))
+                {
+                    foundIndices.Add(iPath);
+                }
+            }
+
+            return (foundIndices);
+        }
+
+        //================================================================================================//
+        //
+        // check availability of passing paths
+        // return list of paths which are free
+        //
+
+        public List<int> GetFreePaths(Train thisTrain)
+        {
+            List<int> freePaths = new List<int>();
+
+            int thisTrainAndSubpathIndex = GetTrainAndSubpathIndex(thisTrain.Number, thisTrain.TCRoute.activeSubpath);
+
+            for (int iPath = 0; iPath <= TrainReferences[thisTrainAndSubpathIndex].Count - 1; iPath++)
+            {
+                int pathIndex = TrainReferences[thisTrainAndSubpathIndex][iPath];
+                DeadlockPathInfo altPathInfo = AvailablePathList[pathIndex];
+                Train.TCSubpathRoute altPath = altPathInfo.Path;
+
+                // check all sections upto and including last used index, but do not check first junction section
+
+                bool pathAvail = true;
+                for (int iElement = 1; iElement <= altPathInfo.LastUsefullSectionIndex; iElement++)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[altPath[iElement].TCSectionIndex];
+                    if (!thisSection.IsAvailable(thisTrain.routedForward))
+                    {
+                        pathAvail = false;
+                        break;
+                    }
+                }
+
+                if (pathAvail) freePaths.Add(pathIndex);
+            }
+
+            return (freePaths);
+        }
+
+        //================================================================================================//
+        //
+        // set deadlock info references for intermediate sections
+        //
+
+        public int SelectPath(List<int> availableRoutes, Train thisTrain)
+        {
+            int selectedPathNofit = -1;
+            int selectedPathFit = -1;
+
+            bool checkedMain = false;
+            bool checkedOwn = false;
+
+            int endSectionIndex = GetEndSection(thisTrain);
+            TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+
+            bool preferMain = true;
+            // if deadlock actives : main least preferred
+            if (endSection.DeadlockActives.Count > 0)
+            {
+                preferMain = false;
+                checkedMain = true; // consider main as checked
+            }
+
+            // check if own path is also main path - if so, do not check it separately
+
+            int indexTrainAndSubroute = GetTrainAndSubpathIndex(thisTrain.Number, thisTrain.TCRoute.activeSubpath);
+            int ownPathIndex = TrainOwnPath[indexTrainAndSubroute];
+
+            if (String.Compare(AvailablePathList[ownPathIndex].Name, "MAIN") == 0)
+            {
+                checkedOwn = true; // do not check own path separately
+            }
+
+            // get train fit list
+            Dictionary<int, bool> trainFitInfo = TrainLengthFit[indexTrainAndSubroute];
+
+            // loop through all available paths
+
+            for (int iPath = 0; iPath <= availableRoutes.Count - 1; iPath++)
+            {
+                int pathIndex = availableRoutes[iPath];
+                DeadlockPathInfo pathInfo = AvailablePathList[pathIndex];
+                bool trainFitsInSection = trainFitInfo[pathIndex];
+
+                // check for OWN
+                if (!checkedOwn && pathIndex == ownPathIndex)
+                {
+                    checkedOwn = true;
+                    if (trainFitsInSection)
+                    {
+                        selectedPathFit = pathIndex;
+                        break; // if train fits in own path, break
+                    }
+
+                    selectedPathNofit = pathIndex;
+                    if (checkedMain && selectedPathFit > 0) break;  // if doesnt fit but main has been checked and train fits somewhere, break
+                }
+
+                // check for MAIN
+                if (String.Compare(pathInfo.Name, "MAIN") == 0)
+                {
+                    checkedMain = true;
+                    if (trainFitsInSection)
+                    {
+                        selectedPathFit = pathIndex;
+                        if (checkedOwn && preferMain) break;  // if fits and own has been checked and main prefered - break
+                    }
+                    else
+                    {
+                        if (!checkedOwn || selectedPathNofit < 0 || preferMain)  // if own has not been checked
+                        {
+                            selectedPathNofit = pathIndex;
+                        }
+                    }
+                }
+
+                // check for others
+                else
+                {
+                    if (trainFitsInSection) // if train fits
+                    {
+                        if (checkedMain || checkedOwn)
+                        {
+                            selectedPathFit = pathIndex;
+                            break;  // main and own allready checked so no need to look further
+                        }
+                    }
+                    else
+                    {
+                        if ((!checkedOwn && !checkedMain) || !preferMain) // set as option if own and main both not checked or main not prefered
+                        {
+                            selectedPathNofit = pathIndex;
+                        }
+                    }
+                }
+            }
+
+            return (selectedPathFit >= 0 ? selectedPathFit : selectedPathNofit); // return fit path if set else no-fit path
+        }
+
+        //================================================================================================//
+        //
+        // get end section index for deadlock area for a particular train
+        //
+
+        public int GetEndSection(Train thisTrain)
+        {
+            int thisTrainAndSubpathIndex = GetTrainAndSubpathIndex(thisTrain.Number, thisTrain.TCRoute.activeSubpath);
+            int pathIndex = TrainReferences[thisTrainAndSubpathIndex][0];
+            DeadlockPathInfo pathInfo = AvailablePathList[pathIndex];
+            return (pathInfo.EndSectionIndex);
+        }
+
+        //================================================================================================//
+        //
+        // set deadlock info references for intermediate sections
+        //
+
+        public void SetIntermediateReferences(Train.TCSubpathRoute thisPath, int pathIndex)
+        {
+            for (int iElement = 1; iElement <= thisPath.Count - 2; iElement++) // loop through path excluding first and last section
+            {
+                Train.TCRouteElement thisElement = thisPath[iElement];
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                if (thisSection.DeadlockBoundaries == null)
+                {
+                    thisSection.DeadlockBoundaries = new Dictionary<int, int>();
+                }
+
+                if (!thisSection.DeadlockBoundaries.ContainsKey(DeadlockIndex))
+                {
+                    thisSection.DeadlockBoundaries.Add(DeadlockIndex, pathIndex);
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // get index value for specific train/subpath combination
+        // if set, return value
+        // if not set, generate value, set value and return value
+        //
+
+        public int GetTrainAndSubpathIndex(int trainNumber, int subpathIndex)
+        {
+            if (TrainSubpathIndex.ContainsKey(trainNumber))
+            {
+                Dictionary<int, int> subpathList = TrainSubpathIndex[trainNumber];
+                if (subpathList.ContainsKey(subpathIndex))
+                {
+                    return (subpathList[subpathIndex]);
+                }
+            }
+
+            int newIndex = ++nextTrainSubpathIndex;
+
+            Dictionary<int, int> newSubpathList;
+            if (TrainSubpathIndex.ContainsKey(trainNumber))
+            {
+                newSubpathList = TrainSubpathIndex[trainNumber];
+            }
+            else
+            {
+                newSubpathList = new Dictionary<int, int>();
+                TrainSubpathIndex.Add(trainNumber, newSubpathList);
+            }
+
+            newSubpathList.Add(subpathIndex, newIndex);
+
+            return (newIndex);
+        }
+
+        //================================================================================================//
+        //
+        // Insert train reference details
+        //
+
+        public int SetTrainDetails(int trainNumber, int subpathRef, float trainLength, Train.TCSubpathRoute subpath, int elementRouteIndex)
+        {
+            int trainSubpathIndex = GetTrainAndSubpathIndex(trainNumber, subpathRef);
+            Train.TCSubpathRoute partPath = null;  // retreived route of train through deadlock area
+
+            // search if trains path has valid equivalent
+
+            int sectionIndex = subpath[elementRouteIndex].TCSectionIndex;
+            int[] matchingPath = SearchMatchingFullPath(subpath, sectionIndex, elementRouteIndex);
+
+            // matchingPath[0] == 1 : path runs short of all available paths - train ends within area - no alternative path available
+            if (matchingPath[0] == 1)
+            {
+                return (-1);
+            }
+
+            // matchingPath[0] == 2 : path runs through area but has no match - insert path for this train only (no inverse inserted)
+            // matchingPath[1] = end section index in route
+
+            if (matchingPath[0] == 2)
+            {
+                partPath = new Train.TCSubpathRoute(subpath, elementRouteIndex, matchingPath[1]);
+                int[] pathReference = AddPath(partPath, sectionIndex);
+                DeadlockPathInfo thisPathInfo = AvailablePathList[pathReference[0]];
+
+                Dictionary<int, float> pathEndAndLengthInfo = partPath.GetUsefullLength(0.0f, signalRef, -1, -1);
+                KeyValuePair<int, float> pathEndAndLengthValue = pathEndAndLengthInfo.ElementAt(0);
+                thisPathInfo.UsefullLength = pathEndAndLengthValue.Value;
+                thisPathInfo.LastUsefullSectionIndex = pathEndAndLengthValue.Key;
+                thisPathInfo.Name = String.Empty;  // path has no name
+
+                thisPathInfo.AllowedTrains.Add(trainSubpathIndex);
+                TrainOwnPath.Add(trainSubpathIndex, pathReference[0]);
+            }
+
+            // otherwise matchingPath [1] is matching path - add track details if not yet set
+
+            else
+            {
+                DeadlockPathInfo thisPathInfo = AvailablePathList[matchingPath[1]];
+                if (!thisPathInfo.AllowedTrains.Contains(trainSubpathIndex))
+                {
+                    thisPathInfo.AllowedTrains.Add(trainSubpathIndex);
+                }
+                TrainOwnPath.Add(trainSubpathIndex, matchingPath[1]);
+            }
+
+            // set cross-references to allowed track entries for easy reference
+
+            List<int> availPathList;
+
+            if (TrainReferences.ContainsKey(trainSubpathIndex))
+            {
+                availPathList = TrainReferences[trainSubpathIndex];
+            }
+            else
+            {
+                availPathList = new List<int>();
+                TrainReferences.Add(trainSubpathIndex, availPathList);
+            }
+
+            Dictionary<int, bool> thisTrainFitList;
+            if (TrainLengthFit.ContainsKey(trainSubpathIndex))
+            {
+                thisTrainFitList = TrainLengthFit[trainSubpathIndex];
+            }
+            else
+            {
+                thisTrainFitList = new Dictionary<int, bool>();
+                TrainLengthFit.Add(trainSubpathIndex, thisTrainFitList);
+            }
+
+            for (int iPath = 0; iPath <= AvailablePathList.Count - 1; iPath++)
+            {
+                DeadlockPathInfo thisPathInfo = AvailablePathList[iPath];
+
+                if (thisPathInfo.AllowedTrains.Contains(-1) || thisPathInfo.AllowedTrains.Contains(trainSubpathIndex))
+                {
+                    if (this.PathReferences[sectionIndex].Contains(iPath)) // path from correct end
+                    {
+                        availPathList.Add(iPath);
+
+                        bool trainFit = (trainLength < thisPathInfo.UsefullLength);
+                        thisTrainFitList.Add(iPath, trainFit);
+                    }
+                }
+            }
+
+            // get end section from first valid path
+
+            partPath = new Train.TCSubpathRoute(AvailablePathList[availPathList[0]].Path);
+            int lastSection = partPath[partPath.Count - 1].TCSectionIndex;
+            int returnIndex = subpath.GetRouteIndex(lastSection, elementRouteIndex);
+            return (returnIndex);
+
+        }
+
+        //================================================================================================//
+        //
+        // Search matching path from full route path
+        //
+        // return : [0] = 0 : matching path, [1] = matching path index
+        //          [0] = 1 : no matching path and route does not contain any of the end sections (route ends within area)
+        //          [0] = 2 : no matching path but route does run through area, [1] contains end section index
+        //
+
+        public int[] SearchMatchingFullPath(Train.TCSubpathRoute fullPath, int startSectionIndex, int startSectionRouteIndex)
+        {
+            int[] matchingValue = new int[2] { 0, 0 };
+            int foundMatchingEndRouteIndex = -1;
+            int matchingPath = -1;
+
+            List<int> availablePaths = PathReferences[startSectionIndex];
+
+            // search through paths from this section
+
+            for (int iPath = 0; iPath <= availablePaths.Count - 1; iPath++)
+            {
+                // extract path, get indices in train path
+                Train.TCSubpathRoute testPath = AvailablePathList[availablePaths[iPath]].Path;
+                int endSectionIndex = AvailablePathList[availablePaths[iPath]].EndSectionIndex;
+                int endSectionRouteIndex = fullPath.GetRouteIndex(endSectionIndex, startSectionRouteIndex);
+
+                // can only be matching path if endindex > 0 and endindex != startindex (if wrong way path, endindex = startindex)
+                if (endSectionRouteIndex > 0 && endSectionRouteIndex != startSectionRouteIndex)
+                {
+                    Train.TCSubpathRoute partPath = new Train.TCSubpathRoute(fullPath, startSectionRouteIndex, endSectionRouteIndex);
+
+                    // test route
+                    if (partPath.EqualsPath(testPath))
+                    {
+                        matchingPath = availablePaths[iPath];
+                        break;
+                    }
+
+                    // set end index (if not yet found)
+                    if (foundMatchingEndRouteIndex < 0)
+                    {
+                        foundMatchingEndRouteIndex = endSectionRouteIndex;
+                    }
+                }
+            }
+
+            if (matchingPath >= 0)
+            {
+                matchingValue[0] = 0;
+                matchingValue[1] = matchingPath;
+            }
+            else if (foundMatchingEndRouteIndex >= 0)
+            {
+                matchingValue[0] = 2;
+                matchingValue[1] = foundMatchingEndRouteIndex;
+            }
+            else
+            {
+                matchingValue[0] = 1;
+                matchingValue[1] = 0;
+            }
+
+            return (matchingValue);
+        }
+
+    } // end DeadlockInfo class
+
+    //================================================================================================//
+    //
+    // DeadlockPath Info Object
+    //
+    //================================================================================================//
+
+    public class DeadlockPathInfo
+    {
+        public Train.TCSubpathRoute Path;      // actual path
+        public string Name;                    // name of path
+        public List<string> Groups;            // groups of which this path is a part
+        public float UsefullLength;            // path usefull length
+        public int EndSectionIndex;            // index of linked end section
+        public int LastUsefullSectionIndex;    // Index in Path for last section which can be used before stop position
+        public List<int> AllowedTrains;        // list of train for which path is valid (ref. is train/subpath index); -1 indicates public path
+
+        //================================================================================================//
+        //
+        // Constructor
+        //
+
+        public DeadlockPathInfo(Train.TCSubpathRoute thisPath, int pathIndex)
+        {
+            Path = new Train.TCSubpathRoute(thisPath);
+            Name = String.Empty;
+            Groups = new List<string>();
+
+            UsefullLength = 0.0f;
+            EndSectionIndex = -1;
+            LastUsefullSectionIndex = -1;
+            AllowedTrains = new List<int>();
+
+            Path[0].UsedAlternativePath = pathIndex;
+        }
+
+        //================================================================================================//
+        //
+        // Constructor for restore
+        //
+
+        public DeadlockPathInfo(BinaryReader inf)
+        {
+            Path = new Train.TCSubpathRoute(inf);
+            Name = inf.ReadString();
+
+            Groups = new List<string>();
+            int totalGroups = inf.ReadInt32();
+            for (int iGroup = 0; iGroup <= totalGroups - 1; iGroup++)
+            {
+                string thisGroup = inf.ReadString();
+                Groups.Add(thisGroup);
+            }
+
+            UsefullLength = inf.ReadSingle();
+            EndSectionIndex = inf.ReadInt32();
+            LastUsefullSectionIndex = inf.ReadInt32();
+
+            AllowedTrains = new List<int>();
+            int totalIndex = inf.ReadInt32();
+            for (int iIndex = 0; iIndex <= totalIndex - 1; iIndex++)
+            {
+                int thisIndex = inf.ReadInt32();
+                AllowedTrains.Add(thisIndex);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // save
+        //
+
+        public void Save(BinaryWriter outf)
+        {
+            Path.Save(outf);
+            outf.Write(Name);
+
+            outf.Write(Groups.Count);
+            foreach (string groupName in Groups)
+            {
+                outf.Write(groupName);
+            }
+
+            outf.Write(UsefullLength);
+            outf.Write(EndSectionIndex);
+            outf.Write(LastUsefullSectionIndex);
+
+            outf.Write(AllowedTrains.Count);
+            foreach (int thisIndex in AllowedTrains)
+            {
+                outf.Write(thisIndex);
+            }
+        }
+    }
 
 }
 

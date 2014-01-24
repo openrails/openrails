@@ -167,6 +167,10 @@ namespace ORTS
 		[Default(0)]
 		public int LoadingDelay { get; set; }
 
+        // Experimental settings for alternative path processing
+        [Default(false)]
+        public bool UseLocationPassingPaths { get; set; }
+
 		// Data Logger settings:
 		[Default("comma")]
 		public string DataLoggerSeparator { set; get; }
@@ -180,6 +184,15 @@ namespace ORTS
 		public bool DataLogPhysics { get; set; }
 		[Default(false)]
 		public bool DataLogMisc { get; set; }
+        [Default(false)]
+        public bool DataLogTrainSpeed { get; set; }
+        [Default (10)]
+        public int DataLogTSInterval { get; set; }
+        //Time, Train Speed, Max Speed, Signal Aspect, Elevation, Direction, Distance Travelled, Control Mode, Throttle, Brake, Dyn Brake, Gear
+        [Default (new [] {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0})]
+        public int[] DataLogTSContents { get; set; }
+        [Default(false)]
+        public bool DataLogStationStops { get; set; }
 
 		// Hidden settings:
 		[Default(0)]

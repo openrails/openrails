@@ -715,10 +715,6 @@ namespace ORTS
             if (UserInput.IsPressed(UserCommands.GameResetSignalForward)) PlayerTrain.RequestSignalPermission(Direction.Forward);
 			if (UserInput.IsPressed(UserCommands.GameResetSignalBackward)) PlayerTrain.RequestSignalPermission(Direction.Reverse);
 			if (UserInput.IsPressed(UserCommands.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
-			if (UserInput.IsPressed(UserCommands.GameShuntLockAOn)) PlayerTrain.RequestShuntLock(1,1);
-			if (UserInput.IsPressed(UserCommands.GameShuntLockAOff)) PlayerTrain.RequestShuntLock(1,0);
-			if (UserInput.IsPressed(UserCommands.GameShuntLockBOn)) PlayerTrain.RequestShuntLock(2,1);
-			if (UserInput.IsPressed(UserCommands.GameShuntLockBOff)) PlayerTrain.RequestShuntLock(2,0);
 
 			if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
 			if (UserInput.IsPressed(UserCommands.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }

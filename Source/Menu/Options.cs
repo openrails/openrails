@@ -108,8 +108,16 @@ namespace ORTS
             checkBoxDataLoggerPerformance.Checked = settings.DataLogPerformance;
             checkBoxDataLoggerMiscellaneous.Checked = settings.DataLogMisc;
             checkBoxDataLoggerStart.Checked = Settings.DataLogger;
+            checkBoxDataLoggerTrainSpeed.Checked = Settings.DataLogTrainSpeed;
+            for (int iItem = 0; iItem <= checkedListBoxTSLogContents.Items.Count - 1; iItem++)
+            {
+                checkedListBoxTSLogContents.SetItemChecked(iItem, (Settings.DataLogTSContents[iItem] == 1));
+            }
+            numericUpDownDataLoggerTSInterval.Value = Settings.DataLogTSInterval;
+            checkBoxDataLoggerStationStop.Checked = Settings.DataLogStationStops;
             comboBoxDataLoggerSpeedUnits.Text = settings.DataLogSpeedUnits;
             numericUpDownAdhesionFilterSize.Value = settings.AdhesionMovingAverageFilterSize;
+            checkBoxUseLocationPassingPaths.Checked = settings.UseLocationPassingPaths;
         }
 
         static string ParseCategoryFrom(string name)
@@ -335,7 +343,15 @@ namespace ORTS
             Settings.DataLogger = checkBoxDataLoggerStart.Checked;
             Settings.DataLoggerSeparator = comboBoxSeparators.Text;
             Settings.DataLogSpeedUnits = comboBoxDataLoggerSpeedUnits.Text;
+            Settings.DataLogTrainSpeed = checkBoxDataLoggerTrainSpeed.Checked;
+            Settings.DataLogTSInterval = (int)numericUpDownDataLoggerTSInterval.Value;
+            for (int iItem = 0; iItem <= checkedListBoxTSLogContents.Items.Count - 1; iItem++)
+            {
+                Settings.DataLogTSContents[iItem] = checkedListBoxTSLogContents.GetItemChecked(iItem) ? 1 : 0;
+            }
+            Settings.DataLogStationStops = checkBoxDataLoggerStationStop.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericUpDownAdhesionFilterSize.Value;
+            Settings.UseLocationPassingPaths = checkBoxUseLocationPassingPaths.Checked;
             Settings.Save();
 
             DialogResult = DialogResult.OK;

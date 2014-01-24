@@ -1732,12 +1732,7 @@ namespace ORTS
             // check ideal speed
 
             float requiredSpeedMpS = 0;
-
             float creepDistanceM = 3.0f * signalApproachDistanceM;
-            if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
-                creepDistanceM = 0.0f;
-            if (nextActionInfo == null && requiredSpeedMpS == 0)
-                creepDistanceM = clearingDistanceM;
 
             if (nextActionInfo != null)
             {
@@ -1929,6 +1924,12 @@ namespace ORTS
                 }
             }
 
+            if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
+                creepDistanceM = 0.0f;
+            if (nextActionInfo == null && requiredSpeedMpS == 0)
+                creepDistanceM = clearingDistanceM;
+
+
             // keep speed within required speed band
 
             float lowestSpeedMpS = requiredSpeedMpS;
@@ -1940,7 +1941,7 @@ namespace ORTS
             }
             else
             {
-                lowestSpeedMpS = distanceToGoM < signalApproachDistanceM ? requiredSpeedMpS :
+                lowestSpeedMpS = distanceToGoM < creepDistanceM ? requiredSpeedMpS :
                     Math.Max(creepSpeedMpS, requiredSpeedMpS);
             }
 
@@ -1966,6 +1967,8 @@ namespace ORTS
             float idealDecelMpSS = Math.Max((0.5f * MaxDecelMpSS), (deltaSpeedMpS * deltaSpeedMpS / (2.0f * distanceToGoM)));
 
             float lastDecelMpSS = elapsedClockSeconds > 0 ? ((SpeedMpS - LastSpeedMpS) / elapsedClockSeconds) : idealDecelMpSS;
+
+            float preferredBrakingDistanceM = 2 * AllowedMaxSpeedMpS / (MaxDecelMpSS * MaxDecelMpSS);
 
             if (distanceToGoM < 0f)
             {
@@ -2131,6 +2134,16 @@ namespace ORTS
                     AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
                 }
                 Alpha10 = 5;
+            }
+            else if (distanceToGoM > 4*preferredBrakingDistanceM && SpeedMpS < idealLowBandMpS)
+            {
+                AdjustControlsBrakeOff();
+                AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
+            }
+            else if (distanceToGoM > preferredBrakingDistanceM && SpeedMpS < ideal3LowBandMpS)
+            {
+                AdjustControlsBrakeOff();
+                AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
             }
             else if (requiredSpeedMpS == 0 && distanceToGoM > creepDistanceM && SpeedMpS < creepSpeedMpS)
             {
@@ -3164,72 +3177,7 @@ namespace ORTS
         public void RemoveTrain()
         {
             RemoveFromTrack();
-
-            // clear deadlocks
-            foreach (KeyValuePair<int, List<Dictionary<int, int>>> thisDeadlock in DeadlockInfo)
-            {
-#if DEBUG_DEADLOCK
-                File.AppendAllText(@"C:\Temp\deadlock.txt", "Removed Train : " + Number.ToString() + "\n");
-                File.AppendAllText(@"C:\Temp\deadlock.txt", "Deadlock at section : " + thisDeadlock.Key.ToString() + "\n");
-#endif
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisDeadlock.Key];
-                foreach (Dictionary<int, int> deadlockTrapInfo in thisDeadlock.Value)
-                {
-                    foreach (KeyValuePair<int, int> deadlockedTrain in deadlockTrapInfo)
-                    {
-                        Train otherTrain = GetOtherTrainByNumber(deadlockedTrain.Key);
-
-#if DEBUG_DEADLOCK
-                        File.AppendAllText(@"C:\Temp\deadlock.txt", "Other train index : " + deadlockedTrain.Key.ToString() + "\n");
-                        if (otherTrain == null)
-                        {
-                            File.AppendAllText(@"C:\Temp\deadlock.txt", "Other train not found!" + "\n");
-                        }
-                        else
-                        {
-                            File.AppendAllText(@"C:\Temp\deadlock.txt", "CrossRef train info : " + "\n");
-                            foreach (KeyValuePair<int, List<Dictionary<int, int>>> reverseDeadlock in otherTrain.DeadlockInfo)
-                            {
-                                File.AppendAllText(@"C:\Temp\deadlock.txt", "   " + reverseDeadlock.Key.ToString() + "\n");
-                            }
-
-                            foreach (KeyValuePair<int, List<Dictionary<int, int>>> reverseDeadlock in otherTrain.DeadlockInfo)
-                            {
-                                if (reverseDeadlock.Key == deadlockedTrain.Value)
-                                {
-                                    File.AppendAllText(@"C:\Temp\deadlock.txt", "Reverse Info : " + "\n");
-                                    foreach (Dictionary<int, int> sectorList in reverseDeadlock.Value)
-                                    {
-                                        foreach (KeyValuePair<int, int> reverseInfo in sectorList)
-                                        {
-                                            File.AppendAllText(@"C:\Temp\deadlock.txt", "   " + reverseInfo.Key.ToString() + " + " + reverseInfo.Value.ToString() + "\n");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-#endif
-                        if (otherTrain != null && otherTrain.DeadlockInfo.ContainsKey(deadlockedTrain.Value))
-                        {
-                            List<Dictionary<int, int>> otherDeadlock = otherTrain.DeadlockInfo[deadlockedTrain.Value];
-                            for (int iDeadlock = otherDeadlock.Count - 1; iDeadlock >= 0; iDeadlock--)
-                            {
-                                Dictionary<int, int> otherDeadlockInfo = otherDeadlock[iDeadlock];
-                                if (otherDeadlockInfo.ContainsKey(Number)) otherDeadlockInfo.Remove(Number);
-                                if (otherDeadlockInfo.Count <= 0) otherDeadlock.RemoveAt(iDeadlock);
-                            }
-
-                            if (otherDeadlock.Count <= 0)
-                                otherTrain.DeadlockInfo.Remove(deadlockedTrain.Value);
-
-                            if (otherTrain.DeadlockInfo.Count <= 0)
-                                thisSection.ClearDeadlockTrap(otherTrain.Number);
-                        }
-                        TrackCircuitSection otherSection = signalRef.TrackCircuitList[deadlockedTrain.Value];
-                        otherSection.ClearDeadlockTrap(Number);
-                    }
-                }
-            }
+            ClearDeadlocks();
 
 #if DEBUG_DEADLOCK
             foreach (TrackCircuitSection thisSection in Simulator.Signals.TrackCircuitList)
@@ -3330,7 +3278,7 @@ namespace ORTS
             requiredActions.InsertAction(newAction);
 
 #if DEBUG_REPORTS
-            if (thisItem != null && thisItem.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+            if (thisItem != null && thisItem.ObjectType == ObjectItemInfo.ObjectItemType.Signal)
             {
                 File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
                          Number.ToString() + ", type " +
@@ -3533,7 +3481,7 @@ namespace ORTS
             bool actionCleared = false;
 
 #if DEBUG_REPORTS
-            if (thisItem.ActiveItem != null && thisItem.ActiveItem.ObjectType == ObjectItemInfo.ObjectItemType.SIGNAL)
+            if (thisItem.ActiveItem != null && thisItem.ActiveItem.ObjectType == ObjectItemInfo.ObjectItemType.Signal)
             {
                 File.AppendAllText(@"C:\temp\printproc.txt", "Activated for train " +
                          Number.ToString() + ", type " +
@@ -4007,15 +3955,23 @@ namespace ORTS
         // Extra actions when alternative route is set
         //
 
-        public override void SetAlternativeRoute(int startElementIndex, int altRouteIndex, SignalObject nextSignal)
+        public override void SetAlternativeRoute_pathBased(int startElementIndex, int altRouteIndex, SignalObject nextSignal)
         {
-            base.SetAlternativeRoute(startElementIndex, altRouteIndex, nextSignal);
+            base.SetAlternativeRoute_pathBased(startElementIndex, altRouteIndex, nextSignal);
 
             // reset actions to recalculate distances
 
             ResetActions(true);
         }
 
+        public override void SetAlternativeRoute_locationBased(int startSectionIndex, DeadlockInfo sectionDeadlockInfo, int usedPath, SignalObject nextSignal )
+        {
+            base.SetAlternativeRoute_locationBased(startSectionIndex, sectionDeadlockInfo, usedPath, nextSignal);
+
+            // reset actions to recalculate distances
+
+            ResetActions(true);
+        }
 
         //================================================================================================//
         /// <summary>

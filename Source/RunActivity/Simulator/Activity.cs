@@ -28,9 +28,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Popups;
 
-namespace ORTS {
+namespace ORTS
+{
 
-    public enum ActivityEventType {
+    public enum ActivityEventType
+    {
         Timer,
         TrainStart,
         TrainStop,
@@ -38,7 +40,8 @@ namespace ORTS {
         Uncouple
     }
 
-    public class Activity {
+    public class Activity
+    {
         Simulator Simulator;
 
         // Passenger tasks
@@ -63,25 +66,32 @@ namespace ORTS {
         // Note: The variables above belong to the Activity, not the ActivityWindow because they run on different threads.
         // The Simulator must not monitor variables in the Window thread, but it's OK for the Window thread to monitor the Simulator.
 
+        // station stop logging flags - these are saved to resume correct logging after save
+        private string StationStopLogFile;   // logfile name
+        private bool StationStopLogActive;   // logging is active
 
-        private Activity( BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList ) {
+        private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList)
+        {
             Simulator = simulator;
-            RestoreThis( inf, simulator, oldEventList );
+            RestoreThis(inf, simulator, oldEventList);
         }
 
-        public Activity( ACTFile actFile, Simulator simulator ) {
+        public Activity(ACTFile actFile, Simulator simulator)
+        {
             Simulator = simulator;  // Save for future use.
             Player_Service_Definition sd;
             sd = actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition;
-            if( sd != null ) {
-                if( sd.Player_Traffic_Definition.Player_Traffic_List.Count > 0 ) {
+            if (sd != null)
+            {
+                if (sd.Player_Traffic_Definition.Player_Traffic_List.Count > 0)
+                {
                     PlatformItem Platform = null;
                     ActivityTask task = null;
 
                     foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List)
                     {
                         Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem ?
-                            Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem : 
+                            Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem :
                             new PlatformItem(Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as SidingItem);
 
                         if (Platform != null)
@@ -101,48 +111,64 @@ namespace ORTS {
             }
 
             // Compile list of freight events, if any, from the parsed ACT file.
-            if( actFile.Tr_Activity == null ) { return; }
-            if( actFile.Tr_Activity.Tr_Activity_File == null ) { return; }
-            if( actFile.Tr_Activity.Tr_Activity_File.Events == null ) { return; }
+            if (actFile.Tr_Activity == null) { return; }
+            if (actFile.Tr_Activity.Tr_Activity_File == null) { return; }
+            if (actFile.Tr_Activity.Tr_Activity_File.Events == null) { return; }
             var parsedEventList = actFile.Tr_Activity.Tr_Activity_File.Events.EventList;
-            foreach( var i in parsedEventList ) {
-                if( i is EventCategoryAction ) {
-                    EventList.Add( new EventCategoryActionWrapper( i, Simulator ) );
+            foreach (var i in parsedEventList)
+            {
+                if (i is EventCategoryAction)
+                {
+                    EventList.Add(new EventCategoryActionWrapper(i, Simulator));
                 }
-                if( i is EventCategoryLocation ) {
-                    EventList.Add( new EventCategoryLocationWrapper( i, Simulator ) );
+                if (i is EventCategoryLocation)
+                {
+                    EventList.Add(new EventCategoryLocationWrapper(i, Simulator));
                 }
-                if( i is EventCategoryTime ) {
-                    EventList.Add( new EventCategoryTimeWrapper( i, Simulator ) );
+                if (i is EventCategoryTime)
+                {
+                    EventList.Add(new EventCategoryTimeWrapper(i, Simulator));
                 }
                 EventWrapper eventAdded = EventList.Last();
                 eventAdded.OriginalActivationLevel = i.Activation_Level;
             }
+
+            StationStopLogActive = false;
+            StationStopLogFile = null;
         }
 
-        public ActivityTask Last {
-            get {
+        public ActivityTask Last
+        {
+            get
+            {
                 return Tasks.Count == 0 ? null : Tasks[Tasks.Count - 1];
             }
         }
 
-        public bool IsFinished {
-            get {
+        public bool IsFinished
+        {
+            get
+            {
                 return Tasks.Count == 0 ? false : Last.IsCompleted != null;
             }
         }
 
-        public void Update() {
+        public void Update()
+        {
             // Update freight events
             // Set the clock first time through. Can't set in the Activity constructor as Simulator.ClockTime is still 0 then.
-            if( !StartTimeS.HasValue ) { 
+            if (!StartTimeS.HasValue)
+            {
                 StartTimeS = (int)Simulator.ClockTime;
                 // Initialise passenger actual arrival time
-                if( Current != null ) {
-                    if( Current is ActivityTaskPassengerStopAt ) {
+                if (Current != null)
+                {
+                    if (Current is ActivityTaskPassengerStopAt)
+                    {
                         ActivityTaskPassengerStopAt task = Current as ActivityTaskPassengerStopAt;
                         // If the simulation starts with a scheduled start in the past, assume the train arrived on time.
-                        if( task.SchArrive < new DateTime().Add( TimeSpan.FromSeconds( Program.Simulator.ClockTime ) ) ) {
+                        if (task.SchArrive < new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime)))
+                        {
                             task.ActArrive = task.SchArrive;
                         }
                         // If the simulation starts with a scheduled start in the future and the player's train already
@@ -150,26 +176,36 @@ namespace ORTS {
                     }
                 }
             }
-            if( this.IsComplete == false ) {
-                foreach( var i in EventList ) {
+            if (this.IsComplete == false)
+            {
+                foreach (var i in EventList)
+                {
                     // Once an event has fired, we don't respond to any more events until that has been acknowledged.
                     // so this line needs to be inside the EventList loop.
-                    if( this.TriggeredEvent != null ) { break; }
+                    if (this.TriggeredEvent != null) { break; }
 
-                    if( i != null && i.ParsedObject.Activation_Level > 0 ) {
-                        if( i.TimesTriggered < 1 || i.ParsedObject.Reversible ) {
-                            if( i.Triggered( this ) ) {
-                                if( i.IsDisabled == false ) {
+                    if (i != null && i.ParsedObject.Activation_Level > 0)
+                    {
+                        if (i.TimesTriggered < 1 || i.ParsedObject.Reversible)
+                        {
+                            if (i.Triggered(this))
+                            {
+                                if (i.IsDisabled == false)
+                                {
                                     i.TimesTriggered += 1;
-                                    if( i.IsActivityEnded( this ) ) {
+                                    if (i.IsActivityEnded(this))
+                                    {
                                         IsComplete = true;
                                     }
                                     this.TriggeredEvent = i;    // Note this for Viewer and ActivityWindow to use.
                                     // Do this after IsActivityEnded() so values are ready for ActivityWindow
                                     LastTriggeredEvent = TriggeredEvent;
                                 }
-                            } else {
-                                if( i.ParsedObject.Reversible ) {
+                            }
+                            else
+                            {
+                                if (i.ParsedObject.Reversible)
+                                {
                                     // Reversible event is no longer triggered, so can re-enable it.
                                     i.IsDisabled = false;
                                 }
@@ -180,10 +216,10 @@ namespace ORTS {
             }
 
             // Update passenger tasks
-            if( Current == null ) return;
+            if (Current == null) return;
 
-            Current.NotifyEvent( ActivityEventType.Timer );
-            if( Current.IsCompleted != null )    // Surely this doesn't test for: 
+            Current.NotifyEvent(ActivityEventType.Timer);
+            if (Current.IsCompleted != null)    // Surely this doesn't test for: 
             //   Current.IsCompleted == false
             // More correct would be:
             //   if (Current.IsCompleted.HasValue && Current.IsCompleted == true)
@@ -192,19 +228,26 @@ namespace ORTS {
                 Current = Current.NextTask;
             }
 
-            if( Simulator.PlayerLocomotive.SpeedMpS == 0 ) {
-                if( prevTrainSpeed != 0 ) {
+            if (Simulator.PlayerLocomotive.SpeedMpS == 0)
+            {
+                if (prevTrainSpeed != 0)
+                {
                     prevTrainSpeed = 0;
-                    Current.NotifyEvent( ActivityEventType.TrainStop );
-                    if( Current.IsCompleted != null ) {
+                    Current.NotifyEvent(ActivityEventType.TrainStop);
+                    if (Current.IsCompleted != null)
+                    {
                         Current = Current.NextTask;
                     }
                 }
-            } else {
-                if( prevTrainSpeed == 0 ) {
+            }
+            else
+            {
+                if (prevTrainSpeed == 0)
+                {
                     prevTrainSpeed = Simulator.PlayerLocomotive.SpeedMpS;
-                    Current.NotifyEvent( ActivityEventType.TrainStart );
-                    if( Current.IsCompleted != null ) {
+                    Current.NotifyEvent(ActivityEventType.TrainStart);
+                    if (Current.IsCompleted != null)
+                    {
                         Current = Current.NextTask;
                     }
                 }
@@ -212,85 +255,113 @@ namespace ORTS {
         }
 
         // <CJComment> Use of static methods is clumsy. </CJComment>
-        public static void Save( BinaryWriter outf, Activity act ) {
+        public static void Save(BinaryWriter outf, Activity act)
+        {
             Int32 noval = -1;
-            if( act == null ) {
-                outf.Write( noval );
-            } else {
+            if (act == null)
+            {
+                outf.Write(noval);
+            }
+            else
+            {
                 noval = 1;
-                outf.Write( noval );
-                act.Save( outf );
+                outf.Write(noval);
+                act.Save(outf);
             }
         }
 
         // <CJComment> Re-creating the activity object seems bizarre but not ready to re-write it yet. </CJComment>
-        public static Activity Restore( BinaryReader inf, Simulator simulator, Activity oldActivity ) {
+        public static Activity Restore(BinaryReader inf, Simulator simulator, Activity oldActivity)
+        {
             Int32 rdval;
             rdval = inf.ReadInt32();
-            if( rdval == -1 ) {
+            if (rdval == -1)
+            {
                 return null;
-            } else {
+            }
+            else
+            {
                 // Retain the old EventList. It's full of static data so save and restore is a waste of effort
-                Activity act = new Activity( inf, simulator, oldActivity.EventList );
+                Activity act = new Activity(inf, simulator, oldActivity.EventList);
                 return act;
             }
         }
 
-        public void Save( BinaryWriter outf ) {
+        public void Save(BinaryWriter outf)
+        {
             Int32 noval = -1;
 
             // Save passenger activity
-            outf.Write( (Int64)StartTime.Ticks );
-            outf.Write( (Int32)Tasks.Count );
-            foreach( ActivityTask task in Tasks ) {
-                task.Save( outf );
+            outf.Write((Int64)StartTime.Ticks);
+            outf.Write((Int32)Tasks.Count);
+            foreach (ActivityTask task in Tasks)
+            {
+                task.Save(outf);
             }
-            if( Current == null ) outf.Write( noval ); else outf.Write( (Int32)(Tasks.IndexOf( Current )) );
-            outf.Write( prevTrainSpeed );
+            if (Current == null) outf.Write(noval); else outf.Write((Int32)(Tasks.IndexOf(Current)));
+            outf.Write(prevTrainSpeed);
 
             // Save freight activity
-            outf.Write( (bool)IsComplete );
-            outf.Write( (bool)IsSuccessful );
-            outf.Write( (Int32)StartTimeS );
-            foreach( EventWrapper e in EventList ) {
-                e.Save( outf );
+            outf.Write((bool)IsComplete);
+            outf.Write((bool)IsSuccessful);
+            outf.Write((Int32)StartTimeS);
+            foreach (EventWrapper e in EventList)
+            {
+                e.Save(outf);
             }
-            if( TriggeredEvent == null ) {
-                outf.Write( false );
-            } else {
-                outf.Write( true );
-                outf.Write( EventList.IndexOf( TriggeredEvent ) );
+            if (TriggeredEvent == null)
+            {
+                outf.Write(false);
             }
-            outf.Write( IsActivityWindowOpen );
-            if( LastTriggeredEvent == null ) {
-                outf.Write( false );
-            } else {
-                outf.Write( true );
-                outf.Write( EventList.IndexOf( LastTriggeredEvent ) );
+            else
+            {
+                outf.Write(true);
+                outf.Write(EventList.IndexOf(TriggeredEvent));
             }
-            outf.Write( IsActivityResumed );
+            outf.Write(IsActivityWindowOpen);
+            if (LastTriggeredEvent == null)
+            {
+                outf.Write(false);
+            }
+            else
+            {
+                outf.Write(true);
+                outf.Write(EventList.IndexOf(LastTriggeredEvent));
+            }
+            outf.Write(IsActivityResumed);
+
+            // write log details
+
+            outf.Write(StationStopLogActive);
+            if (StationStopLogActive)
+            {
+                outf.Write(StationStopLogFile);
+            }
         }
 
-        public void RestoreThis( BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList ) {
+        public void RestoreThis(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList)
+        {
             Int32 rdval;
 
             // Restore passenger activity
             ActivityTask task;
-            StartTime = new DateTime( inf.ReadInt64() );
+            StartTime = new DateTime(inf.ReadInt64());
             rdval = inf.ReadInt32();
-            for( int i = 0; i < rdval; i++ ) {
-                task = GetTask( inf );
-                task.Restore( inf );
-                Tasks.Add( task );
+            for (int i = 0; i < rdval; i++)
+            {
+                task = GetTask(inf);
+                task.Restore(inf);
+                Tasks.Add(task);
             }
             rdval = inf.ReadInt32();
             Current = rdval == -1 ? null : Tasks[rdval];
             prevTrainSpeed = inf.ReadDouble();
 
             task = null;
-            for( int i = 0; i < Tasks.Count; i++ ) {
+            for (int i = 0; i < Tasks.Count; i++)
+            {
                 Tasks[i].PrevTask = task;
-                if( task != null ) task.NextTask = Tasks[i];
+                if (task != null) task.NextTask = Tasks[i];
                 task = Tasks[i];
             }
 
@@ -300,29 +371,88 @@ namespace ORTS {
             StartTimeS = inf.ReadInt32();
 
             this.EventList = oldEventList;
-            foreach( var e in EventList ) {
-                e.Restore( inf );
+            foreach (var e in EventList)
+            {
+                e.Restore(inf);
             }
 
-            if( inf.ReadBoolean() ) TriggeredEvent = EventList[inf.ReadInt32()];
+            if (inf.ReadBoolean()) TriggeredEvent = EventList[inf.ReadInt32()];
 
             IsActivityWindowOpen = inf.ReadBoolean();
-            if( inf.ReadBoolean() ) LastTriggeredEvent = EventList[inf.ReadInt32()];
+            if (inf.ReadBoolean()) LastTriggeredEvent = EventList[inf.ReadInt32()];
             IsActivityResumed = inf.ReadBoolean();
             ReopenActivityWindow = IsActivityWindowOpen;
+
+            // restore logging info
+            StationStopLogActive = inf.ReadBoolean();
+            if (StationStopLogActive)
+            {
+                StationStopLogFile = inf.ReadString();
+
+                foreach (ActivityTask stask in Tasks)
+                {
+                    if (stask.GetType() == typeof(ActivityTaskPassengerStopAt))
+                    {
+                        ActivityTaskPassengerStopAt stoptask = stask as ActivityTaskPassengerStopAt;
+                        stoptask.LogStationLogFile = String.Copy(StationStopLogFile);
+                        stoptask.LogStationStops = true;
+                    }
+                }
+            }
+            else
+            {
+                StationStopLogFile = null;
+            }
         }
 
-        static ActivityTask GetTask( BinaryReader inf ) {
+        static ActivityTask GetTask(BinaryReader inf)
+        {
             Int32 rdval;
             rdval = inf.ReadInt32();
-            if( rdval == 1 )
+            if (rdval == 1)
                 return new ActivityTaskPassengerStopAt();
             else
                 return null;
         }
+
+        public void StartStationLogging(string stationLogFile)
+        {
+            StationStopLogFile = String.Copy(stationLogFile);
+            StationStopLogActive = true;
+
+            var stringBuild = new StringBuilder();
+
+            char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Simulator.Settings.DataLoggerSeparator);
+            stringBuild.Append("STATION");
+            stringBuild.Append(separator);
+            stringBuild.Append("BOOKED ARR");
+            stringBuild.Append(separator);
+            stringBuild.Append("BOOKED DEP");
+            stringBuild.Append(separator);
+            stringBuild.Append("ACTUAL ARR");
+            stringBuild.Append(separator);
+            stringBuild.Append("ACTUAL DEP");
+            stringBuild.Append(separator);
+            stringBuild.Append("DELAY");
+            stringBuild.Append(separator);
+            stringBuild.Append("STATE");
+            stringBuild.Append("\n");
+            File.AppendAllText(StationStopLogFile, stringBuild.ToString());
+
+            foreach (ActivityTask task in Tasks)
+            {
+                if (task.GetType() == typeof(ActivityTaskPassengerStopAt))
+                {
+                    ActivityTaskPassengerStopAt stoptask = task as ActivityTaskPassengerStopAt;
+                    stoptask.LogStationLogFile = String.Copy(StationStopLogFile);
+                    stoptask.LogStationStops = true;
+                }
+            }
+        }
     }
 
-    public class ActivityTask {
+    public class ActivityTask
+    {
         public bool? IsCompleted { get; internal set; }
         public ActivityTask PrevTask { get; internal set; }
         public ActivityTask NextTask { get; internal set; }
@@ -330,21 +460,24 @@ namespace ORTS {
         public string DisplayMessage { get; internal set; }
         public Color DisplayColor { get; internal set; }
 
-        public virtual void NotifyEvent( ActivityEventType EventType ) {
+        public virtual void NotifyEvent(ActivityEventType EventType)
+        {
         }
 
-        public virtual void Save( BinaryWriter outf ) {
+        public virtual void Save(BinaryWriter outf)
+        {
             Int32 noval = -1;
-            if( IsCompleted == null ) outf.Write( noval ); else outf.Write( IsCompleted.Value ? (Int32)1 : (Int32)0 );
-            outf.Write( (Int64)CompletedAt.Ticks );
-            outf.Write( DisplayMessage );
+            if (IsCompleted == null) outf.Write(noval); else outf.Write(IsCompleted.Value ? (Int32)1 : (Int32)0);
+            outf.Write((Int64)CompletedAt.Ticks);
+            outf.Write(DisplayMessage);
         }
 
-        public virtual void Restore( BinaryReader inf ) {
+        public virtual void Restore(BinaryReader inf)
+        {
             Int64 rdval;
             rdval = inf.ReadInt32();
             IsCompleted = rdval == -1 ? (bool?)null : rdval == 0 ? false : true;
-            CompletedAt = new DateTime( inf.ReadInt64() );
+            CompletedAt = new DateTime(inf.ReadInt64());
             DisplayMessage = inf.ReadString();
         }
     }
@@ -352,9 +485,11 @@ namespace ORTS {
     /// <summary>
     /// Helper class to calculate distances along the path
     /// </summary>
-    public class TDBTravellerDistanceCalculatorHelper {
+    public class TDBTravellerDistanceCalculatorHelper
+    {
         // Result of calculation
-        public enum DistanceResult {
+        public enum DistanceResult
+        {
             Valid,
             Behind,
             OffPath
@@ -364,27 +499,33 @@ namespace ORTS {
         Traveller refTraveller;
         float Distance;
 
-        public TDBTravellerDistanceCalculatorHelper( Traveller traveller ) {
+        public TDBTravellerDistanceCalculatorHelper(Traveller traveller)
+        {
             refTraveller = traveller;
         }
 
-        public DistanceResult CalculateToPoint( int TileX, int TileZ, float X, float Y, float Z ) {
+        public DistanceResult CalculateToPoint(int TileX, int TileZ, float X, float Y, float Z)
+        {
             Traveller poiTraveller;
-            poiTraveller = new Traveller( refTraveller );
+            poiTraveller = new Traveller(refTraveller);
 
             // Find distance once
             Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
 
             // If valid
-            if( Distance > 0 ) {
+            if (Distance > 0)
+            {
                 return DistanceResult.Valid;
-            } else {
+            }
+            else
+            {
                 // Go to opposite direction
-                poiTraveller = new Traveller( refTraveller, Traveller.TravellerDirection.Backward );
+                poiTraveller = new Traveller(refTraveller, Traveller.TravellerDirection.Backward);
 
                 Distance = poiTraveller.DistanceTo(TileX, TileZ, X, Y, Z);
                 // If valid, it is behind us
-                if( Distance > 0 ) {
+                if (Distance > 0)
+                {
                     return DistanceResult.Behind;
                 }
             }
@@ -394,7 +535,8 @@ namespace ORTS {
         }
     }
 
-    public class ActivityTaskPassengerStopAt : ActivityTask {
+    public class ActivityTaskPassengerStopAt : ActivityTask
+    {
         public DateTime SchArrive;
         public DateTime SchDepart;
         public DateTime? ActArrive;
@@ -407,19 +549,27 @@ namespace ORTS {
         int TimerChk;
         bool arrived;
         bool maydepart;
+        public bool LogStationStops;
+        public string LogStationLogFile;
 
-        public ActivityTaskPassengerStopAt( ActivityTask prev, DateTime Arrive, DateTime Depart, PlatformItem Platformend1, PlatformItem Platformend2 ) {
+        public ActivityTaskPassengerStopAt(ActivityTask prev, DateTime Arrive, DateTime Depart,
+                 PlatformItem Platformend1, PlatformItem Platformend2)
+        {
             SchArrive = Arrive;
             SchDepart = Depart;
             PlatformEnd1 = Platformend1;
             PlatformEnd2 = Platformend2;
             PrevTask = prev;
-            if( prev != null )
+            if (prev != null)
                 prev.NextTask = this;
             DisplayMessage = "";
+
+            LogStationStops = false;
+            LogStationLogFile = null;
         }
 
-        internal ActivityTaskPassengerStopAt() {
+        internal ActivityTaskPassengerStopAt()
+        {
         }
 
         /// <summary>
@@ -427,55 +577,57 @@ namespace ORTS {
         /// Tests for either the front or the rear of the train is within the platform.
         /// </summary>
         /// <returns></returns>
-        public bool IsAtStation() {
+        public bool IsAtStation()
+        {
             // Front calcs
             TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller );
+                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
 
-            distanceend1 = helper.CalculateToPoint( PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z );
-            distanceend2 = helper.CalculateToPoint( PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z );
+            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
+                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
+                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
 
             // If front between the ends of the platform
-            if( (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+            if ((distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
                 distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
                 distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind) )
+                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))
                 return true;
 
             // Rear calcs
             helper =
-                new TDBTravellerDistanceCalculatorHelper( Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller );
+                new TDBTravellerDistanceCalculatorHelper(Program.Simulator.PlayerLocomotive.Train.RearTDBTraveller);
 
-            distanceend3 = helper.CalculateToPoint( PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z );
-            distanceend4 = helper.CalculateToPoint( PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z );
+            distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
+                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
+            distanceend4 = helper.CalculateToPoint(PlatformEnd2.TileX,
+                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
 
             // If rear between the ends of the platform
-            if( (distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+            if ((distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
                 distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
                 distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind) )
+                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))
                 return true;
 
-	    // if front is beyond and rear is still in front of platform
-            if( distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind && 
+            // if front is beyond and rear is still in front of platform
+            if (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
+                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
                 distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid )
+                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid)
                 return true;
 
             // Otherwise not
             return false;
         }
 
-        public bool IsMissedStation() {
+        public bool IsMissedStation()
+        {
             // Check if station is in present train path
 
             if (Program.Simulator.PlayerLocomotive.Train.StationStops.Count == 0 ||
@@ -513,16 +665,20 @@ namespace ORTS {
                 Program.Simulator.PlayerLocomotive.Direction != Direction.N);
         }
 
-        public override void NotifyEvent( ActivityEventType EventType ) {
+        public override void NotifyEvent(ActivityEventType EventType)
+        {
 
 
             // The train is stopped.
-            if( EventType == ActivityEventType.TrainStop ) {
-                if( IsAtStation() ) {
+            if (EventType == ActivityEventType.TrainStop)
+            {
+                if (IsAtStation())
+                {
 
                     // If yes, we arrived
-                    if( ActArrive == null ) {
-                        ActArrive = new DateTime().Add( TimeSpan.FromSeconds( Program.Simulator.ClockTime ) );
+                    if (ActArrive == null)
+                    {
+                        ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
                     }
 
                     arrived = true;
@@ -534,10 +690,13 @@ namespace ORTS {
                     BoardingS = punctualBoardingS;                                     // default is leave on time
                     if (punctualBoardingS < expectedBoardingS)                         // if not enough time for boarding
                     {
-                        if( plannedBoardingS > 0 && plannedBoardingS < PlatformEnd1.PlatformMinWaitingTime ) { // and tight schedule
+                        if (plannedBoardingS > 0 && plannedBoardingS < PlatformEnd1.PlatformMinWaitingTime)
+                        { // and tight schedule
                             BoardingS = plannedBoardingS;                              // leave late with no recovery of time
-                        } else {                                                       // generous schedule
-                            BoardingS = Math.Max(                                      
+                        }
+                        else
+                        {                                                       // generous schedule
+                            BoardingS = Math.Max(
                                 punctualBoardingS,                                     // leave on time
                                 PlatformEnd1.PlatformMinWaitingTime);                  // leave late with some recovery
                         }
@@ -545,22 +704,51 @@ namespace ORTS {
                     // ActArrive is usually same as ClockTime
                     BoardingEndS = Program.Simulator.ClockTime + BoardingS;
                     // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
-                    double sinceActArriveS = (new DateTime().Add( TimeSpan.FromSeconds( Program.Simulator.ClockTime ) ) 
+                    double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime))
                                             - ActArrive).Value.TotalSeconds;
                     BoardingEndS -= sinceActArriveS;
                 }
-            } else if( EventType == ActivityEventType.TrainStart ) {
+            }
+            else if (EventType == ActivityEventType.TrainStart)
+            {
                 // Train has started, we have things to do if we arrived before
-                if( arrived ) {
-                    ActDepart = new DateTime().Add( TimeSpan.FromSeconds( Program.Simulator.ClockTime ) );
+                if (arrived)
+                {
+                    ActDepart = new DateTime().Add(TimeSpan.FromSeconds(Program.Simulator.ClockTime));
                     CompletedAt = ActDepart.Value;
                     // Completeness is depend on the elapsed waiting time
                     IsCompleted = maydepart;
                     Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
-		}
-            } else if( EventType == ActivityEventType.Timer ) {
+
+                    if (LogStationStops)
+                    {
+                        StringBuilder stringBuild = new StringBuilder();
+                        char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Program.Simulator.Settings.DataLoggerSeparator);
+                        stringBuild.Append(PlatformEnd1.Station);
+                        stringBuild.Append(separator);
+                        stringBuild.Append(SchArrive.ToString("HH:mm:ss"));
+                        stringBuild.Append(separator);
+                        stringBuild.Append(SchDepart.ToString("HH:mm:ss"));
+                        stringBuild.Append(separator);
+                        stringBuild.Append(ActArrive.HasValue ? ActArrive.Value.ToString("HH:mm:ss") : "-");
+                        stringBuild.Append(separator);
+                        stringBuild.Append(ActDepart.HasValue ? ActDepart.Value.ToString("HH:mm:ss") : "-");
+
+                        TimeSpan delay = ActDepart.HasValue ? (ActDepart - SchDepart).Value : TimeSpan.Zero;
+                        stringBuild.Append(separator);
+                        stringBuild.AppendFormat("{0}:{1}:{2}", delay.Hours.ToString("00"), delay.Minutes.ToString("00"), delay.Seconds.ToString("00"));
+                        stringBuild.Append(separator);
+                        stringBuild.Append(maydepart ? "Completed" : "NotCompleted");
+                        stringBuild.Append("\n");
+                        File.AppendAllText(LogStationLogFile, stringBuild.ToString());
+                    }
+                }
+            }
+            else if (EventType == ActivityEventType.Timer)
+            {
                 // Waiting at a station
-                if( arrived ) {
+                if (arrived)
+                {
                     var remaining = (int)Math.Ceiling(BoardingEndS - Program.Simulator.ClockTime);
                     if (remaining < 1) DisplayColor = Color.LightGreen;
                     else if (remaining < 11) DisplayColor = new Color(255, 255, 128);
@@ -568,69 +756,131 @@ namespace ORTS {
 
                     if (remaining < 120)
                     {
-                         Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
+                        Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
                     }
 
                     // Still have to wait
-                    if( remaining > 0 ) {
+                    if (remaining > 0)
+                    {
                         DisplayMessage = string.Format("Passenger boarding completes in {0:D2}:{1:D2}",
                             remaining / 60, remaining % 60);
                     }
-                        // May depart
-                    else if( !maydepart ) {
+                    // May depart
+                    else if (!maydepart)
+                    {
                         maydepart = true;
                         DisplayMessage = "Passenger boarding completed. You may depart now.";
                         Program.Simulator.SoundNotify = Event.PermissionToDepart;
 
                         // if last task, show closure window
+                        // also set times in logfile
 
                         if (NextTask == null)
                         {
+                            if (LogStationStops)
+                            {
+                                StringBuilder stringBuild = new StringBuilder();
+                                char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Program.Simulator.Settings.DataLoggerSeparator);
+                                stringBuild.Append(PlatformEnd1.Station);
+                                stringBuild.Append(separator);
+                                stringBuild.Append(SchArrive.ToString("HH:mm:ss"));
+                                stringBuild.Append(separator);
+                                stringBuild.Append("-");
+                                stringBuild.Append(separator);
+                                stringBuild.Append(ActArrive.HasValue ? ActArrive.Value.ToString("HH:mm:ss") : "-");
+                                stringBuild.Append(separator);
+                                stringBuild.Append("-");
+                                stringBuild.Append(separator);
+
+                                TimeSpan delay = ActArrive.HasValue ? (ActArrive - SchArrive).Value : TimeSpan.Zero;
+                                if (delay.CompareTo(TimeSpan.Zero) < 0)
+                                {
+                                    delay = TimeSpan.Zero - delay;
+                                    stringBuild.AppendFormat("-{0}:{1}:{2}", delay.Hours.ToString("00"), delay.Minutes.ToString("00"), delay.Seconds.ToString("00"));
+                                }
+                                else
+                                {
+                                    stringBuild.AppendFormat("{0}:{1}:{2}", delay.Hours.ToString("00"), delay.Minutes.ToString("00"), delay.Seconds.ToString("00"));
+                                }
+
+                                stringBuild.Append(separator);
+                                stringBuild.Append("Final stop");
+                                stringBuild.Append("\n");
+                                File.AppendAllText(LogStationLogFile, stringBuild.ToString());
+                            }
+
                             Program.Simulator.Confirmer.Viewer.QuitWindow.Visible = Program.Simulator.Paused = true;
                         }
                     }
-                } else {
+                }
+                else
+                {
                     // Checking missed station
                     int tmp = (int)(Program.Simulator.ClockTime % 10);
-                    if( tmp != TimerChk ) {
-                        if( IsMissedStation() ) {
+                    if (tmp != TimerChk)
+                    {
+                        if (IsMissedStation())
+                        {
                             Program.Simulator.PlayerLocomotive.Train.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId);
                             IsCompleted = false;
+
+                            if (LogStationStops)
+                            {
+                                StringBuilder stringBuild = new StringBuilder();
+                                char separator = (char)(DataLogger.Separators)Enum.Parse(typeof(DataLogger.Separators), Program.Simulator.Settings.DataLoggerSeparator);
+                                stringBuild.Append(PlatformEnd1.Station);
+                                stringBuild.Append(separator);
+                                stringBuild.Append(SchArrive.ToString("HH:mm:ss"));
+                                stringBuild.Append(separator);
+                                stringBuild.Append(SchDepart.ToString("HH:mm:ss"));
+                                stringBuild.Append(separator);
+                                stringBuild.Append("-");
+                                stringBuild.Append(separator);
+                                stringBuild.Append("-");
+                                stringBuild.Append(separator);
+                                stringBuild.Append("-");
+                                stringBuild.Append(separator);
+                                stringBuild.Append("Missed");
+                                stringBuild.Append("\n");
+                                File.AppendAllText(LogStationLogFile, stringBuild.ToString());
+                            }
                         }
                     }
                 }
             }
         }
 
-        public override void Save( BinaryWriter outf ) {
+        public override void Save(BinaryWriter outf)
+        {
             Int64 noval = -1;
-            outf.Write( (Int32)1 );
+            outf.Write((Int32)1);
 
-            base.Save( outf );
+            base.Save(outf);
 
-            outf.Write( (Int64)SchArrive.Ticks );
-            outf.Write( (Int64)SchDepart.Ticks );
-            if( ActArrive == null ) outf.Write( noval ); else outf.Write( (Int64)ActArrive.Value.Ticks );
-            if( ActDepart == null ) outf.Write( noval ); else outf.Write( (Int64)ActDepart.Value.Ticks );
-            outf.Write( (Int32)PlatformEnd1.TrItemId );
-            outf.Write( (Int32)PlatformEnd2.TrItemId );
-            outf.Write( (double)BoardingEndS );
-            outf.Write( (Int32)TimerChk );
-            outf.Write( arrived );
-            outf.Write( maydepart );
+            outf.Write((Int64)SchArrive.Ticks);
+            outf.Write((Int64)SchDepart.Ticks);
+            if (ActArrive == null) outf.Write(noval); else outf.Write((Int64)ActArrive.Value.Ticks);
+            if (ActDepart == null) outf.Write(noval); else outf.Write((Int64)ActDepart.Value.Ticks);
+            outf.Write((Int32)PlatformEnd1.TrItemId);
+            outf.Write((Int32)PlatformEnd2.TrItemId);
+            outf.Write((double)BoardingEndS);
+            outf.Write((Int32)TimerChk);
+            outf.Write(arrived);
+            outf.Write(maydepart);
         }
 
-        public override void Restore( BinaryReader inf ) {
+        public override void Restore(BinaryReader inf)
+        {
             Int64 rdval;
 
-            base.Restore( inf );
+            base.Restore(inf);
 
-            SchArrive = new DateTime( inf.ReadInt64() );
-            SchDepart = new DateTime( inf.ReadInt64() );
+            SchArrive = new DateTime(inf.ReadInt64());
+            SchDepart = new DateTime(inf.ReadInt64());
             rdval = inf.ReadInt64();
-            ActArrive = rdval == -1 ? (DateTime?)null : new DateTime( rdval );
+            ActArrive = rdval == -1 ? (DateTime?)null : new DateTime(rdval);
             rdval = inf.ReadInt64();
-            ActDepart = rdval == -1 ? (DateTime?)null : new DateTime( rdval );
+            ActDepart = rdval == -1 ? (DateTime?)null : new DateTime(rdval);
             PlatformEnd1 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
             PlatformEnd2 = Program.Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
             BoardingEndS = inf.ReadDouble();
@@ -645,25 +895,29 @@ namespace ORTS {
     /// Note: Can't add attributes to the event objects directly as ACTFile.cs is not just used by 
     /// RunActivity.exe but also by Menu.exe and MenuWPF.exe and these executables lack most of the ORTS classes.
     /// </summary>
-    public abstract class EventWrapper {
+    public abstract class EventWrapper
+    {
         public MSTS.Event ParsedObject;     // Points to object parsed from file *.act
         public int OriginalActivationLevel; // Needed to reset .ActivationLevel
         public int TimesTriggered;          // Needed for evaluation after activity ends
         public Boolean IsDisabled;          // Used for a reversible event to prevent it firing again until after it has been reset.
         protected Simulator Simulator;
 
-        public EventWrapper( MSTS.Event @event, Simulator simulator ) {
+        public EventWrapper(MSTS.Event @event, Simulator simulator)
+        {
             ParsedObject = @event;
             Simulator = simulator;
         }
 
-        public virtual void Save( BinaryWriter outf ) {
-            outf.Write( TimesTriggered );
-            outf.Write( IsDisabled );
-            outf.Write( ParsedObject.Activation_Level );
+        public virtual void Save(BinaryWriter outf)
+        {
+            outf.Write(TimesTriggered);
+            outf.Write(IsDisabled);
+            outf.Write(ParsedObject.Activation_Level);
         }
 
-        public virtual void Restore( BinaryReader inf ) {
+        public virtual void Restore(BinaryReader inf)
+        {
             TimesTriggered = inf.ReadInt32();
             IsDisabled = inf.ReadBoolean();
             ParsedObject.Activation_Level = inf.ReadInt32();
@@ -674,7 +928,8 @@ namespace ORTS {
         /// </summary>
         /// <param name="activity"></param>
         /// <returns></returns>
-        public virtual Boolean Triggered( Activity activity ) {  // To be overloaded by subclasses
+        public virtual Boolean Triggered(Activity activity)
+        {  // To be overloaded by subclasses
             return false;  // Compiler insists something is returned.
         }
 
@@ -683,45 +938,56 @@ namespace ORTS {
         /// </summary>
         /// <param name="activity"></param>
         /// <returns>true if entire activity ends here whether it succeeded or failed</returns>
-        public Boolean IsActivityEnded( Activity activity ) {
+        public Boolean IsActivityEnded(Activity activity)
+        {
 
-            if( this.ParsedObject.Reversible ) {
+            if (this.ParsedObject.Reversible)
+            {
                 // Stop this event being actioned
                 this.IsDisabled = true;
-            } else {
+            }
+            else
+            {
                 // Stop this event being monitored
                 this.ParsedObject.Activation_Level = 0;
             }
             // No further action if this reversible event has been triggered before
-            if( this.TimesTriggered > 1 ) { return false; }
+            if (this.TimesTriggered > 1) { return false; }
 
-            if( this.ParsedObject.Outcomes == null ) { return false; }
+            if (this.ParsedObject.Outcomes == null) { return false; }
 
             // Set Activation Level of each event in the Activate list to 1.
             // Uses lambda expression => for brevity.
-            foreach( int eventId in ParsedObject.Outcomes.ActivateList ) {
-                foreach( var item in activity.EventList.Where( item => item.ParsedObject.ID == eventId ) )
+            foreach (int eventId in ParsedObject.Outcomes.ActivateList)
+            {
+                foreach (var item in activity.EventList.Where(item => item.ParsedObject.ID == eventId))
                     item.ParsedObject.Activation_Level = 1;
             }
-            foreach( int eventId in ParsedObject.Outcomes.RestoreActLevelList ) {
-                foreach( var item in activity.EventList.Where( item => item.ParsedObject.ID == eventId ) )
+            foreach (int eventId in ParsedObject.Outcomes.RestoreActLevelList)
+            {
+                foreach (var item in activity.EventList.Where(item => item.ParsedObject.ID == eventId))
                     item.ParsedObject.Activation_Level = item.OriginalActivationLevel;
             }
-            foreach( int eventId in ParsedObject.Outcomes.DecActLevelList ) {
-                foreach( var item in activity.EventList.Where( item => item.ParsedObject.ID == eventId ) )
+            foreach (int eventId in ParsedObject.Outcomes.DecActLevelList)
+            {
+                foreach (var item in activity.EventList.Where(item => item.ParsedObject.ID == eventId))
                     item.ParsedObject.Activation_Level += -1;
             }
-            foreach( int eventId in ParsedObject.Outcomes.IncActLevelList ) {
-                foreach( var item in activity.EventList.Where( item => item.ParsedObject.ID == eventId ) ) {
+            foreach (int eventId in ParsedObject.Outcomes.IncActLevelList)
+            {
+                foreach (var item in activity.EventList.Where(item => item.ParsedObject.ID == eventId))
+                {
                     item.ParsedObject.Activation_Level += +1;
                 }
             }
 
-            if (this.ParsedObject.Outcomes.ActivityFail != null) {
+            if (this.ParsedObject.Outcomes.ActivityFail != null)
+            {
                 activity.IsSuccessful = false;
                 return true;
             }
-            if( this.ParsedObject.Outcomes.ActivitySuccess == true ) {
+            if (this.ParsedObject.Outcomes.ActivitySuccess == true)
+            {
                 activity.IsSuccessful = true;
                 return true;
             }
@@ -730,15 +996,18 @@ namespace ORTS {
 
     }
 
-    public class EventCategoryActionWrapper : EventWrapper {
+    public class EventCategoryActionWrapper : EventWrapper
+    {
         SidingItem SidingEnd1;
         SidingItem SidingEnd2;
         List<string> ChangeWagonIdList;   // Wagons to be assembled, picked up or dropped off.
 
-        public EventCategoryActionWrapper( MSTS.Event @event, Simulator simulator )
-            : base( @event, simulator ) {
+        public EventCategoryActionWrapper(MSTS.Event @event, Simulator simulator)
+            : base(@event, simulator)
+        {
             var e = this.ParsedObject as EventCategoryAction;
-            if( e.SidingId != null ) {
+            if (e.SidingId != null)
+            {
                 var i = e.SidingId.Value;
                 try
                 {
@@ -757,32 +1026,39 @@ namespace ORTS {
             }
         }
 
-        override public Boolean Triggered( Activity activity ) {
+        override public Boolean Triggered(Activity activity)
+        {
             Train PlayerTrain = Simulator.PlayerLocomotive.Train;
             var e = this.ParsedObject as EventCategoryAction;
-            if( e.WagonList != null ) {                     // only if event involves wagons
-                if( ChangeWagonIdList == null ) {           // populate the list only once - the first time that ActivationLevel > 0 and so this method is called.
+            if (e.WagonList != null)
+            {                     // only if event involves wagons
+                if (ChangeWagonIdList == null)
+                {           // populate the list only once - the first time that ActivationLevel > 0 and so this method is called.
                     ChangeWagonIdList = new List<string>();
-                    foreach( var item in e.WagonList.WorkOrderWagonList ) {
-                        ChangeWagonIdList.Add( String.Format( "{0} - {1}", ((int)item.UID & 0xFFFF0000) >> 16, (int)item.UID & 0x0000FFFF ) ); // form the .CarID
+                    foreach (var item in e.WagonList.WorkOrderWagonList)
+                    {
+                        ChangeWagonIdList.Add(String.Format("{0} - {1}", ((int)item.UID & 0xFFFF0000) >> 16, (int)item.UID & 0x0000FFFF)); // form the .CarID
                     }
                 }
             }
             var triggered = false;
             Train consistTrain;
-            switch( e.Type ) {
+            switch (e.Type)
+            {
                 case EventType.AllStops:
                     break;
                 case EventType.AssembleTrain:
-                    consistTrain = matchesConsist( ChangeWagonIdList );
-                    if( consistTrain != null ) {
+                    consistTrain = matchesConsist(ChangeWagonIdList);
+                    if (consistTrain != null)
+                    {
                         triggered = true;
                     }
                     break;
                 case EventType.AssembleTrainAtLocation:
-                    consistTrain = matchesConsist( ChangeWagonIdList );
-                    if( consistTrain != null ) {
-                        triggered = atSiding( consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2 );
+                    consistTrain = matchesConsist(ChangeWagonIdList);
+                    if (consistTrain != null)
+                    {
+                        triggered = atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2);
                     }
                     break;
 
@@ -796,17 +1072,18 @@ namespace ORTS {
 
                 case EventType.DropOffWagonsAtLocation:
                     // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
-                    if( atSiding( PlayerTrain.FrontTDBTraveller, PlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2 ) ) {
-                        triggered = includesWagons( PlayerTrain, ChangeWagonIdList );
+                    if (atSiding(PlayerTrain.FrontTDBTraveller, PlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                    {
+                        triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
                     }
                     break;
                 case EventType.PickUpPassengers:
                     break;
                 case EventType.PickUpWagons: // PickUpWagons is independent of location or siding
-                    triggered = includesWagons( PlayerTrain, ChangeWagonIdList );
+                    triggered = includesWagons(PlayerTrain, ChangeWagonIdList);
                     break;
                 case EventType.ReachSpeed:
-                    triggered = (Math.Abs( Simulator.PlayerLocomotive.SpeedMpS ) >= e.SpeedMpS);
+                    triggered = (Math.Abs(Simulator.PlayerLocomotive.SpeedMpS) >= e.SpeedMpS);
                     break;
             }
             return triggered;
@@ -817,15 +1094,19 @@ namespace ORTS {
         /// </summary>
         /// <param name="wagonIdList"></param>
         /// <returns>train or null</returns>
-        private Train matchesConsist( List<string> wagonIdList ) {
-            foreach( var trainItem in Simulator.Trains ) {
-                if( trainItem.Cars.Count == wagonIdList.Count ) {
+        private Train matchesConsist(List<string> wagonIdList)
+        {
+            foreach (var trainItem in Simulator.Trains)
+            {
+                if (trainItem.Cars.Count == wagonIdList.Count)
+                {
                     // Compare two lists to make sure wagons are in expected sequence.
                     bool listsMatch = true;
-                    for( int i = 0; i < trainItem.Cars.Count; i++ ) {
-                        if( trainItem.Cars.ElementAt( i ).CarID != wagonIdList.ElementAt( i ) ) { listsMatch = false; break; }
+                    for (int i = 0; i < trainItem.Cars.Count; i++)
+                    {
+                        if (trainItem.Cars.ElementAt(i).CarID != wagonIdList.ElementAt(i)) { listsMatch = false; break; }
                     }
-                    if( listsMatch ) return trainItem;
+                    if (listsMatch) return trainItem;
                 }
             }
             return null;
@@ -838,9 +1119,11 @@ namespace ORTS {
         /// <param name="train"></param>
         /// <param name="wagonIdList"></param>
         /// <returns>True if all listed wagons are part of the given train.</returns>
-        static bool includesWagons( Train train, List<string> wagonIdList ) {
-            foreach( var item in wagonIdList ) {
-                if( train.Cars.Find( car => car.CarID == item ) == null ) return false;
+        static bool includesWagons(Train train, List<string> wagonIdList)
+        {
+            foreach (var item in wagonIdList)
+            {
+                if (train.Cars.Find(car => car.CarID == item) == null) return false;
             }
             return true;
         }
@@ -853,8 +1136,10 @@ namespace ORTS {
         /// <param name="sidingEnd1"></param>
         /// <param name="sidingEnd2"></param>
         /// <returns>true if both ends of train within siding</returns>
-        static bool atSiding( Traveller frontPosition, Traveller rearPosition, SidingItem sidingEnd1, SidingItem sidingEnd2 ) {
-            if( sidingEnd1 == null || sidingEnd2 == null ) {
+        static bool atSiding(Traveller frontPosition, Traveller rearPosition, SidingItem sidingEnd1, SidingItem sidingEnd2)
+        {
+            if (sidingEnd1 == null || sidingEnd2 == null)
+            {
                 return true;
             }
 
@@ -863,34 +1148,36 @@ namespace ORTS {
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceEnd2;
 
             // Front calcs
-            helper = new TDBTravellerDistanceCalculatorHelper( frontPosition );
+            helper = new TDBTravellerDistanceCalculatorHelper(frontPosition);
 
-            distanceEnd1 = helper.CalculateToPoint( sidingEnd1.TileX,
-                    sidingEnd1.TileZ, sidingEnd1.X, sidingEnd1.Y, sidingEnd1.Z );
-            distanceEnd2 = helper.CalculateToPoint( sidingEnd2.TileX,
-                    sidingEnd2.TileZ, sidingEnd2.X, sidingEnd2.Y, sidingEnd2.Z );
+            distanceEnd1 = helper.CalculateToPoint(sidingEnd1.TileX,
+                    sidingEnd1.TileZ, sidingEnd1.X, sidingEnd1.Y, sidingEnd1.Z);
+            distanceEnd2 = helper.CalculateToPoint(sidingEnd2.TileX,
+                    sidingEnd2.TileZ, sidingEnd2.X, sidingEnd2.Y, sidingEnd2.Z);
 
             // If front between the ends of the siding
-            if( ((distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind
+            if (((distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind
                 && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid)
                 || (distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid
-                && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind)) ) {
+                && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind)))
+            {
                 return true;
             }
 
             // Rear calcs
-            helper = new TDBTravellerDistanceCalculatorHelper( rearPosition );
+            helper = new TDBTravellerDistanceCalculatorHelper(rearPosition);
 
-            distanceEnd1 = helper.CalculateToPoint( sidingEnd1.TileX,
-                    sidingEnd1.TileZ, sidingEnd1.X, sidingEnd1.Y, sidingEnd1.Z );
-            distanceEnd2 = helper.CalculateToPoint( sidingEnd2.TileX,
-                    sidingEnd2.TileZ, sidingEnd2.X, sidingEnd2.Y, sidingEnd2.Z );
+            distanceEnd1 = helper.CalculateToPoint(sidingEnd1.TileX,
+                    sidingEnd1.TileZ, sidingEnd1.X, sidingEnd1.Y, sidingEnd1.Z);
+            distanceEnd2 = helper.CalculateToPoint(sidingEnd2.TileX,
+                    sidingEnd2.TileZ, sidingEnd2.X, sidingEnd2.Y, sidingEnd2.Z);
 
             // If rear between the ends of the siding
-            if( ((distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind
+            if (((distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind
                 && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid)
                 || (distanceEnd1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid
-                && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind)) ) {
+                && distanceEnd2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind)))
+            {
                 return true;
             }
 
@@ -898,43 +1185,52 @@ namespace ORTS {
         }
     }
 
-    public class EventCategoryLocationWrapper : EventWrapper {
-        public EventCategoryLocationWrapper( MSTS.Event @event, Simulator simulator )
-            : base( @event, simulator ) {
+    public class EventCategoryLocationWrapper : EventWrapper
+    {
+        public EventCategoryLocationWrapper(MSTS.Event @event, Simulator simulator)
+            : base(@event, simulator)
+        {
         }
 
-        override public Boolean Triggered( Activity activity ) {
+        override public Boolean Triggered(Activity activity)
+        {
             var triggered = false;
             var e = this.ParsedObject as MSTS.EventCategoryLocation;
-            if( e.TriggerOnStop ) {
+            if (e.TriggerOnStop)
+            {
                 // Is train still moving?
-                if( Simulator.PlayerLocomotive.SpeedMpS != 0 ) {
+                if (Simulator.PlayerLocomotive.SpeedMpS != 0)
+                {
                     return triggered;
                 }
             }
 
-            var trainFrontPosition = new Traveller( Simulator.PlayerLocomotive.Train.FrontTDBTraveller );
-            var distance = trainFrontPosition.DistanceTo( e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z );
-            if( distance == -1 ) {
+            var trainFrontPosition = new Traveller(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+            var distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z);
+            if (distance == -1)
+            {
                 trainFrontPosition.ReverseDirection();
-                distance = trainFrontPosition.DistanceTo( e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z );
-                if( distance == -1 )
+                distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z);
+                if (distance == -1)
                     return triggered;
             }
-            if( distance < e.RadiusM ) { triggered = true; }
+            if (distance < e.RadiusM) { triggered = true; }
             return triggered;
         }
     }
 
-    public class EventCategoryTimeWrapper : EventWrapper {
+    public class EventCategoryTimeWrapper : EventWrapper
+    {
 
-        public EventCategoryTimeWrapper( MSTS.Event @event, Simulator simulator )
-            : base( @event, simulator ) {
+        public EventCategoryTimeWrapper(MSTS.Event @event, Simulator simulator)
+            : base(@event, simulator)
+        {
         }
 
-        override public Boolean Triggered( Activity activity ) {
+        override public Boolean Triggered(Activity activity)
+        {
             var e = this.ParsedObject as MSTS.EventCategoryTime;
-            if( e == null ) return false;
+            if (e == null) return false;
             var triggered = (e.Time <= (int)Simulator.ClockTime - activity.StartTimeS);
             return triggered;
         }
