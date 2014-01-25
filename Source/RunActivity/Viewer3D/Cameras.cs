@@ -1493,12 +1493,9 @@ namespace ORTS
         const int MaximumDistance = 100;
         const float SidewaysScale = MaximumDistance / 10;
         // Heights above the terrain for the camera.
-        const float CameraNormalAltitude = 2;
-        const float CameraBridgeAltitude = 8;
+        const float CameraAltitude = 2;
         // Height above the coordinate center of target.
         const float TargetAltitude = TerrainAltitudeMargin;
-        // Max altitude of terrain below coordinate center of train car before bridge-mode.
-        const float BridgeCutoffAltitude = 1;
 
         protected TrainCar attachedCar;
         public override TrainCar AttachedCar { get { return attachedCar; } }
@@ -1636,15 +1633,8 @@ namespace ORTS
                 newLocation.Normalize();
 
                 var newLocationElevation = Viewer.Tiles.GetElevation(newLocation);
-                if (newLocationElevation > newLocation.Location.Y - BridgeCutoffAltitude)
-                {
-                    cameraLocation = newLocation;
-                    cameraLocation.Location.Y = newLocationElevation + CameraNormalAltitude + CameraAltitudeOffset;
-                }
-                else
-                {
-                    cameraLocation = new WorldLocation(tdb.TileX, tdb.TileZ, tdb.X, tdb.Y + CameraBridgeAltitude + CameraAltitudeOffset, tdb.Z);
-                }
+                cameraLocation = newLocation;
+                cameraLocation.Location.Y = Math.Max(tdb.Y, newLocationElevation) + CameraAltitude + CameraAltitudeOffset;
             }
 
             targetLocation.Location.Y += TargetAltitude;
