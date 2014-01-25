@@ -166,7 +166,6 @@ float4 PSParticles(in PIXEL_INPUT In) : COLOR0
 	float4 tex = tex2D(ParticleSamp, In.TexCoord);
 	tex.rgb *= In.Color_Age.rgb;
 	_PSApplyDay2Night(tex.rgb);
-	tex.a -= 0.033f;	// Get rid of the non zero edge on the texture. No idea why it's there.
 	tex.a *= alpha;
 	return tex;
 }

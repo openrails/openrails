@@ -62,6 +62,7 @@ namespace ORTS
         public const float DecelerationTime = 0.5f;
         public const float InitialSpreadRate = 1;
         public const float SpreadRate = 1.5f;
+        public const float DurationVariation = 0.5f; // Duration varies +/-50%
 
         readonly Viewer3D Viewer;
         readonly ParticleEmitterMaterial Material;
@@ -327,10 +328,13 @@ namespace ORTS
                 targetVelocity.Y += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.SpreadRate;
                 targetVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.SpreadRate;
 
+                // Duration is variable too.
+                var duration = ParticleDuration * (1 + (float)(Program.Random.NextDouble() - 0.5f) * 2 * ParticleEmitterDrawer.DurationVariation);
+
                 for (var j = 0; j < VerticiesPerParticle; j++)
                 {
                     Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, currentTime);
-                    Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, currentTime + ParticleDuration);
+                    Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, currentTime + duration);
                     Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(targetVelocity, ParticleEmitterDrawer.DecelerationTime);
                     Vertices[vertex + j].TileXY_Vertex_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
                     Vertices[vertex + j].Color_Random = color_Random;
