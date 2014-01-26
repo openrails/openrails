@@ -54,10 +54,10 @@ namespace ORTS
         public float MaxRPM;
         public float MaxRPMChangeRate;
         public float PercentChangePerSec = .2f;
-        public float IdleExhaust;
         public float InitialExhaust;
-        public float MaxExhaust = 50.0f;
-        public float ExhaustMagnitude = 4.0f;
+        public float InitialMagnitude;
+        public float MaxExhaust = 2.8f;
+        public float MaxMagnitude = 1.5f;
         public float EngineRPMderivation;
         float EngineRPMold;
         float EngineRPMRatio; // used to compute Variable1 and Variable2
@@ -76,7 +76,7 @@ namespace ORTS
         float InitialMassKg = 100000.0f;
 
         public float EngineRPM;
-        public float ExhaustParticles = 10.0f;
+        public float ExhaustParticles = 2.0f;
         public Color ExhaustColor = Color.Gray;
         Color ExhaustSteadyColor = Color.Gray;
         Color ExhaustTransientColor = Color.Black;
@@ -105,10 +105,10 @@ namespace ORTS
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
 
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
-                case "engine(dieselsmokeeffectinitialsmokerate": IdleExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(dieselsmokeeffectinitialmagnitude": InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselsmokeeffectinitialsmokerate": InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselsmokeeffectinitialmagnitude": InitialMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(dieselsmokeeffectmaxmagnitude": ExhaustMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(dieselsmokeeffectmaxmagnitude": MaxMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsdiesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;
                 case "engine(ortsdiesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;
                 case "engine(ortsdieselengines": DieselEngines = new DieselEngines(this, stf); break;
@@ -409,7 +409,7 @@ namespace ORTS
             
 
             ExhaustParticles = DieselEngines[0].ExhaustParticles;
-            ExhaustMagnitude = DieselEngines[0].ExhaustMagnitude;
+            MaxMagnitude = DieselEngines[0].MaxMagnitude;
             ExhaustColor = DieselEngines[0].ExhaustColor;
 
             if (PowerOn = DieselEngines.PowerOn)
@@ -956,7 +956,7 @@ namespace ORTS
             var car = this.Car as MSTSDieselLocomotive;
             foreach (var drawer in Exhaust)
             {
-                drawer.SetOutput(car.ExhaustParticles, car.ExhaustMagnitude);
+                drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude);
                 drawer.SetColor(car.ExhaustColor);
             }
             base.PrepareFrame(frame, elapsedTime);

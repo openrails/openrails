@@ -49,8 +49,8 @@ namespace ORTS
             XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             XNADirection.Normalize();
             NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            MaxParticlesPerSecond = 60;
-            MaxParticleDuration = 60;
+            MaxParticlesPerSecond = 2;
+            MaxParticleDuration = 4;
             stf.SkipRestOfBlock();
         }
     }
