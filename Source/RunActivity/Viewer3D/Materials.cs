@@ -1030,7 +1030,6 @@ namespace ORTS
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.ParticleEmitterShader;
-            shader.CurrentTime = (float)Viewer.Simulator.GameTime;
             shader.LightVector = Viewer.World.Sky.solarDirection;
 
             var rs = graphicsDevice.RenderState;
@@ -1051,8 +1050,12 @@ namespace ORTS
                 ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
+                    // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
+                    shader.CameraTileXY = new Vector2(item.XNAMatrix.M21, item.XNAMatrix.M22);
+                    shader.CurrentTime = item.XNAMatrix.M11;
+                    item.XNAMatrix = Matrix.Identity;
+
                     var emitter = (ParticleEmitter)item.RenderPrimitive;
-                    shader.CameraTileXY = emitter.CameraTileXZ;
                     shader.EmitSize = emitter.EmitSize;
                     shader.Texture = Texture;
                     shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);

@@ -161,8 +161,9 @@ void _PSApplyDay2Night(inout float3 Color)
 
 float4 PSParticles(in PIXEL_INPUT In) : COLOR0
 {
-	float alpha = (1 - In.Color_Age.a);
+	clip(In.Color_Age.a);
 	
+	float alpha = (1 - In.Color_Age.a);
 	float4 tex = tex2D(ParticleSamp, In.TexCoord);
 	tex.rgb *= In.Color_Age.rgb;
 	_PSApplyDay2Night(tex.rgb);

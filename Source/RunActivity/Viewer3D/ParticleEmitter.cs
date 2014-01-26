@@ -121,10 +121,14 @@ namespace ORTS
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            Emitter.CameraTileXZ.X = Viewer.Camera.TileX;
-            Emitter.CameraTileXZ.Y = Viewer.Camera.TileZ;
-            Emitter.Update((float)Viewer.Simulator.GameTime, elapsedTime);
+            var gameTime = (float)Viewer.Simulator.GameTime;
+            Emitter.Update(gameTime, elapsedTime);
+
+            // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
             var XNAWorldLocation = Matrix.Identity;
+            XNAWorldLocation.M11 = gameTime;
+            XNAWorldLocation.M21 = Viewer.Camera.TileX;
+            XNAWorldLocation.M22 = Viewer.Camera.TileZ;
 
             if (Emitter.HasParticlesToRender())
                 frame.AddPrimitive(Material, Emitter, RenderPrimitiveGroup.Particles, ref XNAWorldLocation);
@@ -182,7 +186,11 @@ namespace ORTS
 
         internal WorldPosition WorldPosition;
         internal WorldPosition LastWorldPosition;
-        internal Vector2 CameraTileXZ;
+
+        // Particle buffer goes like this:
+        //   +--active>-----new>--+
+        //   |                    |
+        //   +--<retired---<free--+
 
         int FirstActiveParticle;
         int FirstNewParticle;
