@@ -185,13 +185,14 @@ float4 PSSky(VERTEX_OUTPUT In) : COLOR
 	float angleRcp = 1 / acos(dotproduct / (length(LightVector) * length(In.Normal)));
 	
 	// Sun glow
-	// Coefficients selected by the author to achieve the desired appearance
-	skyColor += 0.015 * angleRcp;
-	// increase orange at sunset
+	// Coefficients selected by the author to achieve the desired appearance - fot limits the effect
+	skyColor += 0.015 * angleRcp * saturate(Fog.a / 5000);
+	
+	// increase orange at sunset - fog limits the effect
 	if (LightVector.x < 0)
 	{
-		skyColor.r += SkyColor.z * angleRcp;
-		skyColor.g += 0.05 * skyColor.r;
+		skyColor.r += SkyColor.z * angleRcp * saturate(Fog.a / 10000);
+		skyColor.g += 0.05 * skyColor.r * saturate(Fog.a / 10000);
 	}
 	
 	// Keep alpha opague
@@ -208,6 +209,10 @@ float4 PSMoon(VERTEX_OUTPUT In) : COLOR
 	
 	// Fade moon during daylight
 	moonColor.a *= MoonColor.x;
+	
+	// Fogging
+	moonColor.rgb = lerp(moonColor.rgb, Fog.rgb, saturate((1 - In.Normal.y) * 5000 / Fog.a));
+	
 	// Mask stars behind dark side (mask fades in)
 	moonColor.a += moonMask.r * MoonColor.y;
 		
@@ -222,6 +227,9 @@ float4 PSClouds(VERTEX_OUTPUT In) : COLOR
 	float2 TexCoord = float2(In.TexCoord.x * 4 + WindDisplacement.x, In.TexCoord.y * 4 + WindDisplacement.y);
 	float4 cloudColor = tex2D(CloudMapSampler, TexCoord);
 	float alpha = cloudColor.a;
+	
+    // Fogging
+    cloudColor.rgb = lerp(cloudColor.rgb, Fog.rgb, saturate((1 - In.Normal.y) * 5000 / Fog.a));
 	
     // Adjust amount of overcast by adjusting alpha
     if (!Overcast.y && !Overcast.z)

@@ -189,8 +189,8 @@ namespace ORTS
                 if (UserInput.IsDown(UserCommands.DebugOvercastIncrease)) overcastFactor = MathHelper.Clamp(overcastFactor + elapsedTime.RealSeconds / 10, 0, 1);
                 if (UserInput.IsDown(UserCommands.DebugOvercastDecrease)) overcastFactor = MathHelper.Clamp(overcastFactor - elapsedTime.RealSeconds / 10, 0, 1);
                 // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
-                if (UserInput.IsDown(UserCommands.DebugFogIncrease)) fogDistance = MathHelper.Clamp(fogDistance - elapsedTime.RealSeconds * 1000, 10, 100000);
-                if (UserInput.IsDown(UserCommands.DebugFogDecrease)) fogDistance = MathHelper.Clamp(fogDistance + elapsedTime.RealSeconds * 1000, 10, 100000);
+                if (UserInput.IsDown(UserCommands.DebugFogIncrease)) fogDistance = MathHelper.Clamp(fogDistance - elapsedTime.RealSeconds * fogDistance, 10, 100000);
+                if (UserInput.IsDown(UserCommands.DebugFogDecrease)) fogDistance = MathHelper.Clamp(fogDistance + elapsedTime.RealSeconds * fogDistance, 10, 100000);
             }
             // Don't let clock shift if multiplayer.
             if (!MultiPlayer.MPManager.IsMultiPlayer())
