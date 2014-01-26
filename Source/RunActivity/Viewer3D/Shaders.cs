@@ -93,7 +93,9 @@ namespace ORTS
             world.SetValue(w);
             worldViewProjection.SetValue(w * vp);
 
-            const float FullBrightness = 1.0f;
+            int vIn = Program.Simulator.Settings.DayAmbientLight;
+            
+            float FullBrightness = (float)vIn / 20.0f ;
             //const float HalfShadowBrightness = 0.75;
             const float HalfNightBrightness = 0.6f;
             const float ShadowBrightness = 0.5f;
@@ -263,6 +265,7 @@ namespace ORTS
         readonly EffectParameter moonMaskTexture;
         readonly EffectParameter cloudMapTexture;
 
+
         public Vector3 LightVector
         {
             set
@@ -273,7 +276,7 @@ namespace ORTS
                 var skyColor1 = Day2Night(0.25f, -0.25f, -0.5f, value.Y);
                 var skyColor2 = MathHelper.Clamp(skyColor1 + 0.55f, 0, 1);
                 var skyColor3 = 0.001f / (0.8f * Math.Abs(value.Y - 0.1f));
-                skyColor.SetValue(new Vector3(skyColor1, skyColor2, skyColor3));
+                skyColor.SetValue(new Vector3(skyColor1, skyColor2, skyColor3)); 
 
                 // Fade moon during daylight
                 var moonColor1 = value.Y > 0.1f ? (1 - value.Y) / 1.5f : 1;
@@ -380,19 +383,23 @@ namespace ORTS
             cloudMapTexture = Parameters["CloudMapTexture"];
         }
         
+
         // This function dims the lighting at night, with a transition period as the sun rises or sets
         static float Day2Night(float startNightTrans, float finishNightTrans, float minDarknessCoeff, float sunDirectionY)
         {
+            int vIn = Program.Simulator.Settings.DayAmbientLight;
+            float dayAmbientLight = (float)vIn / 20.0f ;
+              
             // The following two are used to interpoate between day and night lighting (y = mx + b)
-            var slope = (1.0f - minDarknessCoeff) / (startNightTrans - finishNightTrans); // "m"
-            var incpt = 1.0f - slope * startNightTrans; // "b"
+            var slope = (dayAmbientLight - minDarknessCoeff) / (startNightTrans - finishNightTrans); // "m"
+            var incpt = dayAmbientLight - slope * startNightTrans; // "b"
             // This is the return value used to darken scenery
             float adjustment;
-            
+
             if (sunDirectionY < finishNightTrans)
                 adjustment = minDarknessCoeff;
             else if (sunDirectionY > startNightTrans)
-                adjustment = 1.0f; // Scenery is fully lit during the day
+                adjustment = dayAmbientLight; // Scenery is fully lit during the day
             else
                 adjustment = slope * sunDirectionY + incpt;
 

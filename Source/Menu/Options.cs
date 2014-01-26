@@ -118,6 +118,7 @@ namespace ORTS
             comboBoxDataLoggerSpeedUnits.Text = settings.DataLogSpeedUnits;
             numericUpDownAdhesionFilterSize.Value = settings.AdhesionMovingAverageFilterSize;
             checkBoxUseLocationPassingPaths.Checked = settings.UseLocationPassingPaths;
+            trackBarDayAmbientLight.Value = settings.DayAmbientLight;
         }
 
         static string ParseCategoryFrom(string name)
@@ -352,6 +353,8 @@ namespace ORTS
             Settings.DataLogStationStops = checkBoxDataLoggerStationStop.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericUpDownAdhesionFilterSize.Value;
             Settings.UseLocationPassingPaths = checkBoxUseLocationPassingPaths.Checked;
+            Settings.DayAmbientLight = (int)trackBarDayAmbientLight.Value;
+
             Settings.Save();
 
             DialogResult = DialogResult.OK;
@@ -407,5 +410,11 @@ namespace ORTS
         {
             labelFOVHelp.Text = String.Format("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericUpDownFOV.Value, numericUpDownFOV.Value * 4 / 3, numericUpDownFOV.Value * 16 / 9);
         }
+
+        private void trackBarDayAmbientLight_Scroll(object sender, EventArgs e)
+        {
+            toolTip1.SetToolTip(trackBarDayAmbientLight, (trackBarDayAmbientLight.Value * 5).ToString() + " %");
+        }
+        
     }
 }

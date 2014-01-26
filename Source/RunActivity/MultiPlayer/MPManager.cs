@@ -285,10 +285,10 @@ namespace ORTS.MultiPlayer
 			var train = Locomotive.Train;
 			if (train == null ||train.TrainType == Train.TRAINTYPE.REMOTE) return;//no train or is remotely controlled
 
-			var spad = false;
+			//var spad = false;
 			var maxSpeed = Math.Abs(train.AllowedMaxSpeedMpS) + 3;//allow some margin of error (about 10km/h)
 			var speed = Math.Abs(Locomotive.SpeedMpS);
-			if (speed > maxSpeed) spad = true;
+			//if (speed > maxSpeed) spad = true;
 			//if (train.TMaspect == ORTS.Popups.TrackMonitorSignalAspect.Stop && Math.Abs(train.distanceToSignal) < 2*speed && speed > 5) spad = true; //red light and cannot stop within 2 seconds, if the speed is large
 
 #if !NEW_SIGNALLING

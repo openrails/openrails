@@ -31,7 +31,6 @@ namespace ORTS
         public static VertexDeclaration PatchVertexDeclaration;
 
         static KeyValuePair<float, Material>[] WaterLayers;
-        static KeyValuePair<float, float>[] WaterLayerAnim;
 
         static int PatchVertexStride;
 

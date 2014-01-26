@@ -95,6 +95,7 @@ namespace ORTS
         public CarSpawnerFile CarSpawnerFile;
         public bool UseAdvancedAdhesion;
         public bool BreakCouplers;
+        public int DayAmbientLight;
         public int CarVibrating;
         public int CabRotating = 1;
         public int UseSuperElevation; //amount of superelevation
@@ -131,6 +132,7 @@ namespace ORTS
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             RoutePathName = Path.GetFileName(RoutePath);
             BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
+            DayAmbientLight = (int)Settings.DayAmbientLight;
 
             Trace.Write("Loading ");
 

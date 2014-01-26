@@ -171,6 +171,10 @@ namespace ORTS
         [Default(false)]
         public bool UseLocationPassingPaths { get; set; }
 
+        // Experimental settings for Ambient Lighting
+        [Default(20)]
+        public int DayAmbientLight { get; set; }
+
 		// Data Logger settings:
 		[Default("comma")]
 		public string DataLoggerSeparator { set; get; }
