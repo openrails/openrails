@@ -214,7 +214,7 @@ namespace ORTS
             MPManager.Instance().RememberOriginalSwitchState();
 
             // start activity logging if required
-            if (Settings.DataLogStationStops)
+            if (Settings.DataLogStationStops && ActivityRun != null)
             {
                 string stationLogFile = DeriveLogFile("Stops");
                 if (!String.IsNullOrEmpty(stationLogFile))
@@ -584,35 +584,21 @@ namespace ORTS
             if (conFileName.Contains("tilted")) train.tilted = true;
             train.TrainType = Train.TRAINTYPE.PLAYER;
 
-            PATFile patFile = new PATFile(patFileName);
-            PathName = patFile.Name;
+            //PATFile patFile = new PATFile(patFileName);
+            //PathName = patFile.Name;
             // This is the position of the back end of the train in the database.
-            PATTraveller patTraveller = new PATTraveller(patFileName);
-            AIPath aiPath = new AIPath(patFile, TDB, TSectionDat, patFileName);
+            //PATTraveller patTraveller = new PATTraveller(patFileName);
+            AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName);
+            PathName = aiPath.pathName;
 
             if (aiPath.Nodes == null)
             {
                 throw new InvalidDataException("Broken path " + patFileName + " for Player train - activity cannot be started");
             }
 
-            train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
-
-            // figure out if the next waypoint is forward or back
-            patTraveller.NextWaypoint();
-
-            // get distance forward
-            float fwdist = train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z);
-
-            // reverse train, get distance backward
-            train.RearTDBTraveller.ReverseDirection();
-            float bwdist = train.RearTDBTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z);
-
-            // check which way exists or is shorter (in case of loop)
-            // remember : train is now facing backward !
-
-            if (bwdist < 0 || (fwdist > 0 && bwdist > fwdist)) // no path backward or backward path is longer
-                train.RearTDBTraveller.ReverseDirection();
-
+            // place rear of train on starting location of aiPath.
+            train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
+            
             CONFile conFile = new CONFile(conFileName);
 
             // add wagons

@@ -212,31 +212,12 @@ namespace ORTS
             CONFile conFile = new CONFile(Simulator.BasePath + @"\TRAINS\CONSISTS\" + consistFileName + ".CON");
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
-            PATTraveller patTraveller = new PATTraveller(pathFileName);
-            Traveller tempTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes,
-                patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Z);
+	    // Patch Placingproblem - JeroenP
+	    // 
 
-            // figure out if the next waypoint is forward or back
-            patTraveller.NextWaypoint();
-
-            // get distance forward
-            float fwdist = tempTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z);
-
-            // reverse train, get distance backward
-            tempTraveller.ReverseDirection();
-            float bwdist = tempTraveller.DistanceTo(patTraveller.TileX, patTraveller.TileZ, patTraveller.X, patTraveller.Y, patTraveller.Z);
-
-            // check which way exists or is shorter (in case of loop)
-            // remember : train is now facing backward !
-
-            if (bwdist < 0 || (fwdist > 0 && bwdist > fwdist)) // no path backward or backward path is longer
-                tempTraveller.ReverseDirection();
-
-
-            //            PathDescription = patFile.Name;
-
-            PATFile patFile = new PATFile(pathFileName);
-            AIPath aiPath = new AIPath(patFile, Simulator.TDB, Simulator.TSectionDat, pathFileName);
+            AIPath aiPath = new AIPath(Simulator.TDB, Simulator.TSectionDat, pathFileName);
+            // End patch
+       	    
             if (aiPath.Nodes == null)
             {
                 Trace.TraceWarning("Invalid path " + pathFileName + " for AI train : " + sd.Name + " ; train not started\n");
@@ -286,7 +267,8 @@ namespace ORTS
 
             train.Cars[0].Headlight = 2;//AI train always has light on
 
-            train.RearTDBTraveller = new Traveller(tempTraveller); // create traveller
+	    // Patch placingproblem JeroenP (1 line)
+            train.RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, aiPath); // create traveller
 
             train.CreateRoute(false);  // create route without use of FrontTDBtraveller
             train.CheckFreight(); // check if train is freight or passenger
