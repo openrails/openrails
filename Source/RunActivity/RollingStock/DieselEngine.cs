@@ -418,7 +418,7 @@ namespace ORTS
         public Color ExhaustColor;
         public Color ExhaustSteadyColor = Color.LightGray;
         public Color ExhaustTransientColor = Color.Black;
-        public Color ExhaustDecelColor = Color.Orange;
+        public Color ExhaustDecelColor = Color.WhiteSmoke;
 
         public float InitialMagnitude = 1.5f;
         public float ExhaustDynamics = 1.5f;
