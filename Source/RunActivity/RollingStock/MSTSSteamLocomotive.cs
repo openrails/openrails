@@ -142,7 +142,7 @@ namespace ORTS
         float FuelCalorificKJpKG = 33400;
         float ManBlowerMultiplier = 20.0f;//25; // Blower Multipler for Manual firing
         float ShovelMassKG = 6;
-        float BurnRateMultiplier = 1.0f;
+        float BurnRateMultiplier = 1.0f; // Used to vary the rate at which fuels burns at - used as a player customisation factor.
         float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
         float PressureRatio = 0.01f;    // Ratio to control burn rate - based upon boiler pressure
         float BurnRateRawLBpS;           // Raw burnrate
@@ -317,8 +317,8 @@ namespace ORTS
         float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
         float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
         float DrawBarPullLbsF;      // Drawbar pull in lbf
-        float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler Is used to multiple boiler evaporation area by.
-
+        float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler is used to multiple boiler evaporation area by - used as a player customisation factor.
+        float CylinderEfficiencyRate = 1.0f; // Factor to vary the output power of the cylinder without changing steam usage - used as a player customisation factor.
         float SpeedFactor;      // Speed factor - factor to reduce TE due to speed increase - American locomotive company
         float MaxTractiveEffortLbf;     // Maximum tractive effort for locomotive
         float MaxLocoSpeedMpH;      // Speed of loco when max performance reached
@@ -669,8 +669,9 @@ namespace ORTS
                 case "engine(ortsevaporationarea": EvaporationAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(ortssuperheatarea": SuperheatAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(ortsfuelcalorific": FuelCalorificKJpKG = stf.ReadFloatBlock(STFReader.UNITS.EnergyDensity, null); break;
-                case "engine(ortsburnratemultiplier": BurnRateMultiplier = stf.ReadIntBlock(null); break;
-                case "engine(ortsboilerevaporationrate": BoilerEvapRateLbspFt2 = stf.ReadIntBlock(null); break;
+                case "engine(ortsburnratemultiplier": BurnRateMultiplier = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortsboilerevaporationrate": BoilerEvapRateLbspFt2 = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortscylinderefficiencyrate": CylinderEfficiencyRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsforcefactor1": ForceFactor1Npcutoff = new Interpolator(stf); break;
                 case "engine(ortsforcefactor2": ForceFactor2Npcutoff = new Interpolator(stf); break;
                 case "engine(ortscylinderpressuredrop": CylinderPressureDropLBpStoPSI = new Interpolator(stf); break;
@@ -722,6 +723,7 @@ namespace ORTS
             FuelCalorificKJpKG = locoCopy.FuelCalorificKJpKG;
             BurnRateMultiplier = locoCopy.BurnRateMultiplier;
             BoilerEvapRateLbspFt2 = locoCopy.BoilerEvapRateLbspFt2;
+            CylinderEfficiencyRate = locoCopy.CylinderEfficiencyRate;
             ForceFactor1Npcutoff = new Interpolator(locoCopy.ForceFactor1Npcutoff);
             ForceFactor2Npcutoff = new Interpolator(locoCopy.ForceFactor2Npcutoff);
             CylinderPressureDropLBpStoPSI = new Interpolator(locoCopy.CylinderPressureDropLBpStoPSI);
@@ -1452,7 +1454,7 @@ namespace ORTS
            // Caculate the piston speed
            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
             PistonSpeedFtpM = (2.0f * Me.ToFt(CylinderStrokeM)) * ((FeetinMile * MpS.ToMpH(absSpeedMpS)) / ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) );
-            TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI;
+            TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI * CylinderEfficiencyRate;
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
                       
             // Calculate IHP
@@ -1523,12 +1525,12 @@ namespace ORTS
        MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
 
     // Set maximum force for the locomotive
-       MaxForceN = N.FromLbf(MaxTractiveEffortLbf);
+       MaxForceN = N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
 
     // On starting allow maximum motive force to be used
        if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f)
        {
-           MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(MaxTractiveEffortLbf);
+           MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
        }
     // If "critical" speed of locomotive is reached, limit max IHP
        CriticalSpeedTractiveEffortLbf = (MaxIndicatedHorsePowerHP * 375.0f) / MaxLocoSpeedMpH;
@@ -1538,7 +1540,7 @@ namespace ORTS
     IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
     if(TractiveEffortLbsF > CriticalSpeedTractiveEffortLbf)
         {
-        MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf);
+            MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf * CylinderEfficiencyRate);
         }
     }
     // Derate when priming is occurring.
