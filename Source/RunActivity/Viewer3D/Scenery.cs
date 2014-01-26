@@ -220,7 +220,7 @@ namespace ORTS
                     shapeFilePath = Path.GetFullPath(shapeFilePath);
                     if (!File.Exists(shapeFilePath))
                     {
-                        Trace.TraceWarning("{0} scenery object {1} with StaticFlags {3:X8} references non-existant {2}", WFileName, worldObject.UID, shapeFilePath, worldObject.StaticFlags);
+                        Trace.TraceWarning("{0} scenery object {1} with StaticFlags {3:X8} references non-existent {2}", WFileName, worldObject.UID, shapeFilePath, worldObject.StaticFlags);
                         shapeFilePath = null;
                     }
                 }

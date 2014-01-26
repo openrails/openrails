@@ -340,7 +340,7 @@ namespace MSTS
 
             internal PickupCapacityItem(SBR block)
             {
-                block.VerifyID(TokenID.SpeedRange);
+                block.VerifyID(TokenID.PickupCapacity);
                 QuantityAvailableKG = block.ReadFloat();
                 FeedRateKGpS = block.ReadFloat();
                 block.VerifyEndOfBlock();
