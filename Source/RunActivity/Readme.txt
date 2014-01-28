@@ -80,7 +80,7 @@ GRAPHICS QUALITY
 Note that Open Rails isn't registered with NVidia or ATI so it will run with global settings by default.  
 For best image quality customize
 the graphics settings in your video card control panel. If you are
-setting up a program-specific custom setting, it's the OPENRAILS.EXE program
+setting up a program-specific custom setting, it's the RunActivity.exe program
 in the ORTS folder that you must select. 
 
 
