@@ -394,6 +394,7 @@ namespace ORTS
         public float DemandedThrottlePercent { set { demandedThrottlePercent = value > 100f ? 100f : (value < 0 ? 0 : value); } get { return demandedThrottlePercent; } }
         public float IdleRPM;
         public float MaxRPM;
+        public float RPMRange;
 
         public float ChangeUpRPMpS;
         public float ChangeDownRPMpS;
@@ -416,19 +417,23 @@ namespace ORTS
 
         public float ExhaustParticles = 10.0f;
         public Color ExhaustColor;
-        public Color ExhaustSteadyColor = Color.LightGray;
+        public Color ExhaustSteadyColor = Color.Gray;
         public Color ExhaustTransientColor = Color.Black;
         public Color ExhaustDecelColor = Color.WhiteSmoke;
 
-        public float InitialMagnitude = 1.5f;
-        public float ExhaustDynamics = 1.5f;
+        public float InitialMagnitude = 1.5f;        
         public float MaxMagnitude = 1.5f;
+        public float MagnitudeRange;
+        public float ExhaustMagnitude = 1.5f;   
+        public float ExhaustDynamics = 1.5f;
+
         public float InitialExhaust = 0.7f;
         public float MaxExhaust = 2.8f;
-        public float ExhaustMagnitude = 1.5f;
-        
-        public float ExhaustDecelReduction = 50f; //Represents the percentage that exhaust will be reduced while engine is decreasing RPMs.
-        public float ExhaustAccelIncrease = 200f; //Represents the percentage that exhaust will be increased while engine is increasing RPMs.
+        public float ExhaustRange;
+
+        //ToDo:  These two variables should eventually be pulled from the OR engine files.
+        public float ExhaustDecelReduction = 0.75f; //Represents the percentage that exhaust will be reduced while engine is decreasing RPMs.
+        public float ExhaustAccelIncrease = 2.0f; //Represents the percentage that exhaust will be increased while engine is increasing RPMs.
 
         public float LoadPercent
         {
@@ -512,6 +517,10 @@ namespace ORTS
             {
                 RealRPM = IdleRPM;
                 EngineStatus = Status.Running;
+                RPMRange = MaxRPM - IdleRPM;
+                MagnitudeRange = MaxMagnitude - InitialMagnitude;
+                ExhaustRange = MaxExhaust - InitialExhaust;
+
             }
         }
 
@@ -537,7 +546,7 @@ namespace ORTS
                 }
             }
 
-            if (IdleRPM >= RealRPM - 1 && IdleRPM <= RealRPM + 1)
+            if ( RealRPM == IdleRPM )
             {
                 ExhaustParticles = InitialExhaust;
                 ExhaustMagnitude = InitialMagnitude;
@@ -546,29 +555,25 @@ namespace ORTS
             if (RealRPM < DemandedRPM)
             {
                 dRPM = (float)Math.Min(Math.Sqrt(2 * RateOfChangeUpRPMpSS * (DemandedRPM - RealRPM)), ChangeUpRPMpS);
-                if (dRPM == ChangeUpRPMpS)
+                if ( dRPM > 1.0f ) //The forumula above generates a floating point error that we have to compensate for so we can't actually test for zero.
                 {
-                    ExhaustParticles = ( MaxExhaust * ( RealRPM / MaxRPM )) * 2.0f ;
-                    ExhaustMagnitude = (MaxMagnitude * ( RealRPM / MaxRPM )) * 2.0f ;
+                    ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange ))) * ExhaustAccelIncrease;
+                    ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustAccelIncrease;
                     ExhaustColor = ExhaustTransientColor; 
                 }
                 else
                 {
                     dRPM = 0;
-                    ExhaustParticles = (MaxExhaust * (RealRPM / MaxRPM));
-                    ExhaustMagnitude = (MaxMagnitude * (RealRPM / MaxRPM));
+                    ExhaustParticles = InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange));
+                    ExhaustMagnitude = InitialMagnitude + ((MagnitudeRange * (RealRPM - IdleRPM) / RPMRange));
                     ExhaustColor = ExhaustSteadyColor;
-                    if (RealRPM < IdleRPM)
-                    {
-                        RealRPM = IdleRPM;
-                    }
                 }
             }
             else if (RealRPM > (DemandedRPM))
                 {
                     dRPM = (float)Math.Max(-Math.Sqrt(2 * RateOfChangeDownRPMpSS * (RealRPM - DemandedRPM)), -ChangeDownRPMpS);
-                    ExhaustParticles = (MaxExhaust * (RealRPM / MaxRPM)) * 0.5f;
-                    ExhaustMagnitude = (MaxMagnitude * (RealRPM / MaxRPM)) * 0.5f;
+                    ExhaustParticles = (InitialExhaust + ((ExhaustRange * (RealRPM - IdleRPM) / RPMRange))) * ExhaustDecelReduction;
+                    ExhaustMagnitude = (InitialMagnitude + ((MagnitudeRange * RealRPM - IdleRPM / RPMRange))) * ExhaustDecelReduction;
                     ExhaustColor = ExhaustDecelColor;
 
                 }
