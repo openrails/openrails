@@ -40,6 +40,7 @@ using System.Windows.Forms; // Needed for MessageBox
 using Microsoft.Xna.Framework;
 using MSTS;
 using ORTS.MultiPlayer;
+using ORTS.Scripting;
 
 namespace ORTS
 {
@@ -119,6 +120,7 @@ namespace ORTS
         // Perhaps an Observer design pattern would be better, so the Simulator sends messages to any observers. </CJComment>
         public Confirmer Confirmer;                 // Set by the Viewer
         public Event SoundNotify = Event.None;
+        public ScriptManager ScriptManager { get; private set; }
 
         public Simulator(UserSettings settings, string activityPath)
         {
@@ -173,6 +175,7 @@ namespace ORTS
             }
 
             HazzardManager = new HazzardManager(this);
+            ScriptManager = new ScriptManager(this);
         }
         public void SetActivity(string activityPath)
         {

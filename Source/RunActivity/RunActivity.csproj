@@ -184,7 +184,6 @@
     <Compile Include="..\ORTS\UserSettings.cs">
       <Link>ORTS\UserSettings.cs</Link>
     </Compile>
-    <Compile Include="Common\ElapsedTime.cs" />
     <Compile Include="MSTS\HAZFile.cs" />
     <Compile Include="Popups\CarOperationsWindow.cs" />
     <Compile Include="Processes\Game.cs" />
@@ -199,6 +198,7 @@
     <Compile Include="Common\Conversions.cs" />
     <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\DataLogger.cs" />
+    <Compile Include="Common\ElapsedTime.cs" />
     <Compile Include="Common\enums.cs" />
     <Compile Include="Common\ErrorLogger.cs" />
     <Compile Include="Common\Events.cs" />
@@ -209,6 +209,7 @@
     <Compile Include="Common\Interpolator.cs" />
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
+    <Compile Include="Common\Scripting.cs" />
     <Compile Include="Common\SmoothedData.cs" />
     <Compile Include="Common\SteamTable.cs" />
     <Compile Include="Common\SunMoonPos.cs" />

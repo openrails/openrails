@@ -1,0 +1,295 @@
+﻿// COPYRIGHT 2014 by the Open Rails project.
+// 
+// This file is part of Open Rails.
+// 
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Diagnostics;
+using System.Reflection;
+using System.CodeDom.Compiler;
+using Microsoft.CSharp;
+using ORTS.Processes;
+
+namespace ORTS.Scripting
+{
+    [CallOnThread("Loader")]
+    public class ScriptManager
+    {
+        readonly Simulator Simulator;
+        readonly Dictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
+        static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } }); 
+        static readonly CompilerParameters CompilerParameters = new CompilerParameters();
+
+        const string ScriptNamespace = "ORTS.Scripting.Script";
+
+        [CallOnThread("Loader")]
+        internal ScriptManager(Simulator simulator)
+        {
+            Simulator = simulator;
+            CompilerParameters.GenerateExecutable = false;
+            CompilerParameters.GenerateInMemory = true;
+            //CompilerParameters.IncludeDebugInformation = true;
+            //CompilerParameters.CompilerOptions += " /debug:pdbonly"; 
+            CompilerParameters.ReferencedAssemblies.Add("System.dll");
+            CompilerParameters.ReferencedAssemblies.Add("System.Core.dll");
+            CompilerParameters.ReferencedAssemblies.Add("RunActivity.exe");
+        }
+
+        public object Load(string[] pathArray, string name)
+        {
+            if (Thread.CurrentThread.Name != "Loader Process")
+                Trace.TraceError("SharedScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+
+            if (pathArray == null || pathArray.Length == 0 || name == null || name == "")
+                return null;
+
+            if (Path.GetExtension(name) != ".cs")
+                name += ".cs";
+
+            var path = ORTSPaths.GetFileFromFolders(pathArray, name).ToLowerInvariant();
+
+            var type = String.Format("{0}.{1}", ScriptNamespace, Path.GetFileNameWithoutExtension(path));
+
+            if (path == null || path == "")
+                return null;
+
+            if (Scripts.ContainsKey(path))
+                return Scripts[path].CreateInstance(type, true);
+
+            try
+            {
+                var sourceCode = new StringBuilder();
+                var prefixLines = 3;
+                using (var sr = new StreamReader(path))
+                {
+                    sourceCode.Append("using System;" + Environment.NewLine);
+                    sourceCode.Append("using ORTS.Scripting.Api;" + Environment.NewLine);
+                    sourceCode.Append("namespace " + ScriptNamespace + " {" + Environment.NewLine);
+                    sourceCode.Append(sr.ReadToEnd());
+                    sourceCode.Append("}" + Environment.NewLine);
+                    sr.Close();
+                }
+
+                var compilerResults = Compiler.CompileAssemblyFromSource(CompilerParameters, sourceCode.ToString());
+                if (!compilerResults.Errors.HasErrors)
+                {
+                    var script = compilerResults.CompiledAssembly;
+                    Scripts.Add(path, script);
+                    return script.CreateInstance(type, true);
+                }
+                else
+                {
+                    var errorString = new StringBuilder();
+                    errorString.AppendFormat("Skipped script {0} with error:", path);
+                    errorString.Append(Environment.NewLine);
+                    foreach (CompilerError error in compilerResults.Errors)
+                    {
+                        errorString.AppendFormat("   {0}, line: {1}, column: {2}", error.ErrorText, error.Line - prefixLines, error.Column);
+                        errorString.Append(Environment.NewLine);
+                    }
+
+                    Trace.TraceWarning(errorString.ToString());
+                    return null;
+                }
+            }
+            catch (InvalidDataException error)
+            {
+                Trace.TraceWarning("Skipped script {0} with error: {1}", path, error.Message);
+                return null;
+            }
+            catch (Exception error)
+            {
+                if (File.Exists(path))
+                    Trace.WriteLine(new FileLoadException(path, error));
+                else
+                    Trace.TraceWarning("Ignored missing script file {0}", path);
+                return null;
+            }
+        }
+
+        /*
+        static ClassType CreateInstance<ClassType>(Assembly assembly) where ClassType : class
+        {
+            foreach (var type in assembly.GetTypes())
+                if (typeof(ClassType).IsAssignableFrom(type))
+                    return Activator.CreateInstance(type) as ClassType;
+
+            return default(ClassType);
+        }
+        */
+
+        [CallOnThread("Updater")]
+        public string GetStatus()
+        {
+            return String.Format("{0:F0} scripts", Scripts.Keys.Count);
+        }
+    }
+}
+
+namespace ORTS.Scripting.Api
+{
+    #region TrainControlSystem
+
+    public abstract class TrainControlSystem
+    {
+        public bool Activated { get; set; }
+        
+        /// <summary>
+        /// Will be whown on ASPECT_DISPLAY cabcontrol.
+        /// </summary>
+        //public SignalHead.MstsSignalAspect CabSignalAspect = SignalHead.MstsSignalAspect.UNKNOWN;
+
+        /// <summary>
+        /// False if vigilance monitor was switched off in game options, thus requested to be auto reset.
+        /// </summary>
+        public Func<bool> IsAlerterEnabled;
+        /// <summary>
+        /// True if alerter sound rings, otherwise false
+        /// </summary>
+        public Func<bool> AlerterSound;
+        /// <summary>
+        /// Max allowed speed for the train determined by consist.
+        /// </summary>
+        public Func<float> TrainSpeedLimitMpS;
+        /// <summary>
+        /// Max allowed speed determined by current signal.
+        /// </summary>
+        public Func<float> CurrentSignalSpeedLimitMpS;
+        /// <summary>
+        /// Max allowed speed determined by next signal.
+        /// </summary>
+        public Func<float> NextSignalSpeedLimitMpS;
+        /// <summary>
+        /// Train's actual absolute speed.
+        /// </summary>
+        public Func<float> SpeedMpS;
+        /// <summary>
+        /// Clock value (in seconds) for the simulation. Starts at activity start time.
+        /// </summary>
+        public Func<float> ClockTime;
+        /// <summary>
+        /// Running total of distance travelled - always positive, updated by train physics.
+        /// </summary>
+        public Func<float> DistanceM;
+        /// <summary>
+        /// True if train brake controller is in emergency position, otherwise false.
+        /// </summary>
+        public Func<bool> IsBrakeEmergency;
+        /// <summary>
+        /// True if train brake controller is in full service position, otherwise false.
+        /// </summary>
+        public Func<bool> IsBrakeFullService;
+        public Func<bool> EmergencyCausesThrottleDown;
+        public Func<bool> EmergencyEngagesHorn;
+
+        /// <summary>
+        /// Set train brake controller to full service position.
+        /// </summary>
+        public Action SetFullBrake;
+        /// <summary>
+        /// Set train brake controller to emergency position.
+        /// </summary>
+        public Action SetEmergencyBrake;
+        /// <summary>
+        /// Set throttle controller to position in range [0-1].
+        /// </summary>
+        public Action<float> SetThrottleController;
+        /// <summary>
+        /// Set dynamic brake controller to position in range [0-1].
+        /// </summary>
+        public Action<float> SetDynamicBrakeController;
+        /// <summary>
+        /// Switch vigilance alarm sound on (true) or off (false).
+        /// </summary>
+        public Action<bool> SetVigilanceAlarm;
+        /// <summary>
+        /// Set horn on (true) or off (false).
+        /// </summary>
+        public Action<bool> SetHorn;
+        /// <summary>
+        /// Cut power by pull all pantographs down.
+        /// </summary>
+        public Action SetPantographsDown;
+
+        /// <summary>
+        /// Set ALERTER_DISPLAY cabcontrol display's alarm state on or off.
+        /// </summary>
+        public Action<bool> SetVigilanceAlarmDisplay;
+        /// <summary>
+        /// Set ALERTER_DISPLAY cabcontrol display's emergency state on or off.
+        /// </summary>
+        public Action<bool> SetVigilanceEmergencyDisplay;
+        /// <summary>
+        /// Set OVERSPEED cabcontrol display on or off.
+        /// </summary>
+        public Action<bool> SetOverspeedWarningDisplay;
+        /// <summary>
+        /// Set PENALTY_APP cabcontrol display on or off.
+        /// </summary>
+        public Action<bool> SetPenaltyApplicationDisplay;
+        /// <summary>
+        /// Set current speed limit of the train, as to be shown on SPEEDLIMIT cabcontrol.
+        /// </summary>
+        public Action<float> SetCurrentSpeedLimitMpS;
+        /// <summary>
+        /// Set speed limit of the next signal, as to be shown on SPEEDLIM_DISPLAY cabcontrol.
+        /// </summary>
+        public Action<float> SetNextSpeedLimitMpS;
+
+        /// <summary>
+        /// Called once at initialization time.
+        /// </summary>
+        public abstract void Initialize();
+        /// <summary>
+        /// Called regularly at every simulator update cycle.
+        /// </summary>
+        public abstract void Update();
+        /// <summary>
+        /// Internal reset request by touched systems other than the alerter button.
+        /// </summary>
+        public abstract void AlerterReset();
+        /// <summary>
+        /// Reset request by the alerter button.
+        /// </summary>
+        public abstract void AlerterPressed();
+        /// <summary>
+        /// Called by signalling code externally to stop the train in certain circumstances.
+        /// </summary>
+        public abstract void SetEmergency();
+    }
+
+    public class Counter
+    {
+        float EndValue;
+        float AlarmValue;
+        protected Func<float> CurrentValue;
+
+        public bool Started { get; private set; }
+        public void Setup(float alarmValue) { AlarmValue = alarmValue; }
+        public void Start() { EndValue = CurrentValue() + AlarmValue; Started = true; }
+        public void Stop() { Started = false; }
+        public bool Triggered { get { return Started && CurrentValue() >= EndValue; } }
+    }
+
+    public class Timer : Counter { public Timer(TrainControlSystem tcs) { CurrentValue = tcs.ClockTime; } }
+    public class OdoMeter : Counter { public OdoMeter(TrainControlSystem tcs) { CurrentValue = tcs.DistanceM; } }
+
+    #endregion
+}

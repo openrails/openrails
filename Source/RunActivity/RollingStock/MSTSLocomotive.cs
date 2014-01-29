@@ -192,7 +192,7 @@ namespace ORTS
             TrainBrakeController = new MSTSBrakeController(Simulator);
             EngineBrakeController = new MSTSBrakeController(Simulator);
             DynamicBrakeController = new MSTSNotchController();
-            TrainControlSystem = new MSTSTrainControlSystem(this);
+            TrainControlSystem = new ScriptedTrainControlSystem(this);
             base.InitializeFromWagFile(wagFilePath);
 
             if (ThrottleController == null)
@@ -204,7 +204,7 @@ namespace ORTS
 
             if (VigilanceMonitor)
             {
-                TrainControlSystem.Startup();
+                TrainControlSystem.Initialize();
             }
 
             // Assumes that CabViewList[0] is the front cab
@@ -341,6 +341,7 @@ namespace ORTS
                     break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
 
+                case "engine(ortstraincontrolsystem":
                 case "engine(vigilancemonitor":
                 case "engine(emergencystopmonitor":
                 case "engine(awsmonitor":
@@ -434,7 +435,7 @@ namespace ORTS
             TrainBrakeController = (MSTSBrakeController)locoCopy.TrainBrakeController.Clone();
             EngineBrakeController = locoCopy.EngineBrakeController != null ? (MSTSBrakeController)locoCopy.EngineBrakeController.Clone() : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
-            TrainControlSystem = locoCopy.TrainControlSystem != null ? locoCopy.TrainControlSystem.Clone() : null;
+            TrainControlSystem = locoCopy.TrainControlSystem != null ? locoCopy.TrainControlSystem.Clone(this) : null;
 
             Initialize();
 
@@ -1861,7 +1862,7 @@ namespace ORTS
         }
 #endif
 
-        public TrainControlSystem TrainControlSystem;
+        public ScriptedTrainControlSystem TrainControlSystem;
 
         public void AlerterReset()
         {
@@ -2084,10 +2085,10 @@ namespace ORTS
                     {
                         if (Simulator.Settings.Alerter)
                         {
-                            if (TrainControlSystem.VigilanceAlarm)
-                                data = 1;
-                            else if (TrainControlSystem.VigilanceEmergency)
+                            if (TrainControlSystem.VigilanceEmergency)
                                 data = 2;
+                            else if (TrainControlSystem.VigilanceAlarm)
+                                data = 1;
                             else
                                 data = 0;
                         }

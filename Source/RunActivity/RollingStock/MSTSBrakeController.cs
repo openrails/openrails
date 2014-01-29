@@ -210,7 +210,8 @@ namespace ORTS
 
         public void SetEmergency()
         {
-            SetCurrentNotch(MSTSNotchType.Emergency);            
+            SetCurrentNotch(MSTSNotchType.Emergency);
+            Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
         }        
 
         public bool GetIsFullBrake()
@@ -224,6 +225,7 @@ namespace ORTS
         {
             SetCurrentNotch(MSTSNotchType.ContServ);
             SetCurrentNotch(MSTSNotchType.FullServ);
+            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.On);
         }
 
         static void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
