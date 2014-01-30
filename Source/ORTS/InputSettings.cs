@@ -93,6 +93,8 @@ namespace ORTS
         GameMultiPlayerTexting,
 
         GameSwitchManualMode,
+        GameClearSignalForward,
+        GameClearSignalBackward,
         GameResetSignalForward,
         GameResetSignalBackward,
 
@@ -435,8 +437,10 @@ namespace ORTS
             Commands[(int)UserCommands.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommands.DisplayCompassWindow] = new UserCommandKeyInput(0x0B);
 
-            Commands[(int)UserCommands.GameResetSignalForward] = new UserCommandKeyInput(0x0F);
-            Commands[(int)UserCommands.GameResetSignalBackward] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
+            Commands[(int)UserCommands.GameClearSignalForward] = new UserCommandKeyInput(0x0F);
+            Commands[(int)UserCommands.GameClearSignalBackward] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
+            Commands[(int)UserCommands.GameResetSignalForward] = new UserCommandKeyInput(0x0F, KeyModifiers.Control);
+            Commands[(int)UserCommands.GameResetSignalBackward] = new UserCommandKeyInput(0x0F, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommands.DebugSpeedUp] = new UserCommandKeyInput(0x49, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSpeedDown] = new UserCommandKeyInput(0x51, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSpeedReset] = new UserCommandKeyInput(0x47, KeyModifiers.Control | KeyModifiers.Alt);

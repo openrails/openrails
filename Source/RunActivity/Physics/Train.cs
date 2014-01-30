@@ -5554,6 +5554,10 @@ namespace ORTS
             // restore required position (is cleared by route breakdown)
             switchSection.JunctionSetManual = reqSwitchPosition;
 
+            // set switch
+            switchSection.deAlignSwitchPins();
+            signalRef.setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
+
             // reset indication for misaligned switch
             MisalignedSwitch[routeDirectionIndex, 0] = -1;
             MisalignedSwitch[routeDirectionIndex, 1] = -1;
@@ -6574,6 +6578,10 @@ namespace ORTS
                 // restore required position (is cleared by route breakdown)
                 switchSection.JunctionSetManual = reqSwitchPosition;
 
+                // set switch
+                switchSection.deAlignSwitchPins();
+                signalRef.setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
+
                 // build new route - use signal request
                 float remLength = minCheckDistanceM - coveredLength;
                 TCSubpathRoute newRoute = firstSignal.requestClearSignalExplorer(selectedRoute, remLength, thisRouted, false, 0);
@@ -7017,6 +7025,32 @@ namespace ORTS
                 else if (NextSignalObject[0] != null)
                 {
                     NextSignalObject[0].hasPermission = SignalObject.Permission.Requested;
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Request reset signal
+        //
+
+        public void RequestResetSignal(Direction direction)
+        {
+            if (!MPManager.IsMultiPlayer())
+            {
+                if (ControlMode == TRAIN_CONTROL.MANUAL || ControlMode == TRAIN_CONTROL.EXPLORER)
+                {
+                    int reqRouteIndex = direction == Direction.Forward ? 0 : 1;
+
+                    if (NextSignalObject[reqRouteIndex] != null &&
+                        NextSignalObject[reqRouteIndex].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) != SignalHead.MstsSignalAspect.STOP)
+                    {
+                        int routeIndex = ValidRoute[reqRouteIndex].GetRouteIndex(NextSignalObject[reqRouteIndex].TCNextTC, PresentPosition[reqRouteIndex].RouteListIndex);
+                        signalRef.BreakDownRouteList(ValidRoute[reqRouteIndex], routeIndex, routedForward);
+                        ValidRoute[reqRouteIndex].RemoveRange(routeIndex, ValidRoute[reqRouteIndex].Count - routeIndex);
+
+                        NextSignalObject[reqRouteIndex].ResetSignal(true);
+                    }
                 }
             }
         }
@@ -11956,6 +11990,36 @@ namespace ORTS
                 Direction = direction;
                 OutPin[0] = direction;
                 OutPin[1] = 0;
+                UsedAlternativePath = -1;
+            }
+
+            //================================================================================================//
+            //
+            // Constructor from other route element
+            //
+
+            public TCRouteElement(TCRouteElement otherElement)
+            {
+                TCSectionIndex = otherElement.TCSectionIndex;
+                Direction = otherElement.Direction;
+
+                OutPin = new int[2];
+                otherElement.OutPin.CopyTo(OutPin, 0);
+
+                if (otherElement.StartAlternativePath != null)
+                {
+                    StartAlternativePath = new int[2];
+                    otherElement.StartAlternativePath.CopyTo(StartAlternativePath, 0);
+                }
+
+                if (otherElement.EndAlternativePath != null)
+                {
+                    EndAlternativePath = new int[2];
+                    otherElement.EndAlternativePath.CopyTo(EndAlternativePath, 0);
+                }
+
+                FacingPoint = otherElement.FacingPoint;
+                UsedAlternativePath = otherElement.UsedAlternativePath;
             }
 
             //================================================================================================//
@@ -12079,7 +12143,7 @@ namespace ORTS
                 {
                     for (int iIndex = lstartIndex; iIndex <= lendIndex; iIndex++)
                     {
-                        this.Add(otherSubpathRoute[iIndex]);
+                        this.Add(new TCRouteElement(otherSubpathRoute[iIndex]));
                     }
                 }
             }

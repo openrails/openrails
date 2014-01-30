@@ -712,9 +712,12 @@ namespace ORTS
                 else
                     Simulator.Confirmer.Warning(CabControl.SwitchBehind, CabSetting.Warn1);
             }
-            if (UserInput.IsPressed(UserCommands.GameResetSignalForward)) PlayerTrain.RequestSignalPermission(Direction.Forward);
-			if (UserInput.IsPressed(UserCommands.GameResetSignalBackward)) PlayerTrain.RequestSignalPermission(Direction.Reverse);
-			if (UserInput.IsPressed(UserCommands.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
+            if (UserInput.IsPressed(UserCommands.GameClearSignalForward)) PlayerTrain.RequestSignalPermission(Direction.Forward);
+			if (UserInput.IsPressed(UserCommands.GameClearSignalBackward)) PlayerTrain.RequestSignalPermission(Direction.Reverse);
+            if (UserInput.IsPressed(UserCommands.GameResetSignalForward)) PlayerTrain.RequestResetSignal(Direction.Forward);
+            if (UserInput.IsPressed(UserCommands.GameResetSignalBackward)) PlayerTrain.RequestResetSignal(Direction.Reverse);
+            
+            if (UserInput.IsPressed(UserCommands.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
 
 			if (UserInput.IsPressed(UserCommands.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
 			if (UserInput.IsPressed(UserCommands.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }

@@ -4846,8 +4846,16 @@ namespace ORTS
                     {
                         if (DeadlockReference >= 0 && thisElement.FacingPoint)
                         {
+#if DEBUG_DEADLOCK
+                            File.AppendAllText(@"C:\Temp\deadlock.txt",
+                                "\n **** Check IfAvailable for section " + Index.ToString() + " for train : " + thisTrain.Train.Number.ToString() + "\n");
+#endif
                             DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[DeadlockReference];
                             List<int> pathAvail = sectionDeadlockInfo.CheckDeadlockPathAvailability(this, thisTrain.Train);
+#if DEBUG_DEADLOCK
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", "\nReturned no. of available paths : " + pathAvail.Count.ToString() + "\n");
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", "****\n\n");
+#endif
                             if (pathAvail.Count <= 0) return (false);
                         }
                     }
@@ -4884,6 +4892,12 @@ namespace ORTS
 				String.Format("Reserve section {0} for train {1}\n",
 				this.Index,
 				thisTrain.Train.Number));
+#endif
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\temp\deadlock.txt",
+                String.Format("Reserve section {0} for train {1}\n",
+                this.Index,
+                thisTrain.Train.Number));
 #endif
             if (thisTrain.Train.CheckTrain)
             {
@@ -5077,6 +5091,12 @@ namespace ORTS
 				String.Format("Occupy section {0} for train {1}\n",
 				this.Index,
 				thisTrain.Train.Number));
+#endif
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\temp\deadlock.txt",
+                String.Format("Occupy section {0} for train {1}\n",
+                this.Index,
+                thisTrain.Train.Number));
 #endif
             if (thisTrain.Train.CheckTrain)
             {
@@ -9005,8 +9025,11 @@ namespace ORTS
                 {
                     if (thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
                     {
-                        deadlockArea = true;
-                        break; // exits on deadlock area
+                        if (thisElement.UsedAlternativePath < 0) // if deadlock area and no path yet selected - exit loop; else follow assigned path
+                        {
+                            deadlockArea = true;
+                            break; // exits on deadlock area
+                        }
                     }
                 }
             }
@@ -9016,9 +9039,18 @@ namespace ORTS
 
             if (deadlockArea && lastElement.UsedAlternativePath < 0)
             {
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\Temp\deadlock.txt",
+                    "\n **** Get block state for section " + lastElement.TCSectionIndex.ToString() + " for train : " + thisTrain.Train.Number.ToString() + "\n");
+#endif
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
                 DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[thisSection.DeadlockReference];
                 List<int> availableRoutes = sectionDeadlockInfo.CheckDeadlockPathAvailability(thisSection, thisTrain.Train);
+
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\nReturned no. of available paths : " + availableRoutes.Count.ToString() + "\n");
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "****\n\n");
+#endif
 
                 if (availableRoutes.Count >= 1)
                 {
@@ -10664,6 +10696,92 @@ namespace ORTS
                 firstTrain = false;
             }
 
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n=================\nTrain : " + thisTrain.Number.ToString() + "\n");
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "At Section : " + startSection.Index.ToString() + "\n");
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "To Section : " + endSection.Index.ToString() + "\n");
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n Available paths : \n");
+            foreach (int avroute in PathReferences[startSection.Index])
+            {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "Path index : " + avroute.ToString() + " : \n");
+                Train.TCSubpathRoute thisPath = AvailablePathList[avroute].Path;
+                foreach (Train.TCRouteElement thisElement in thisPath)
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", "   - Element : " + thisElement.TCSectionIndex.ToString() + "\n");
+                }
+            }
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n Available Inverse paths : \n");
+            foreach (int avroute in PathReferences[endSection.Index])
+            {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "Path index : " + avroute.ToString() + " : \n");
+                Train.TCSubpathRoute thisPath = AvailablePathList[avroute].Path;
+                foreach (Train.TCRouteElement thisElement in thisPath)
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", "   - Element : " + thisElement.TCSectionIndex.ToString() + "\n");
+                }
+            }
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n Inverse references : \n");
+            foreach (KeyValuePair<int, int> inverseDetail in InverseInfo)
+            {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", " Path : " + inverseDetail.Key.ToString() + " -> " + inverseDetail.Value.ToString() + "\n");
+            }
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n Free paths : \n");
+            foreach (int avroute in freePaths)
+            {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "Path index : " + avroute.ToString() + " : \n");
+                Train.TCSubpathRoute thisPath = AvailablePathList[avroute].Path;
+                foreach (Train.TCRouteElement thisElement in thisPath)
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", "   - Element : " + thisElement.TCSectionIndex.ToString() + "\n");
+                }
+            }
+
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\nMeeting : \n");
+
+            foreach (int otherTrainNumber in endSection.DeadlockActives)
+            {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "   Other train : " + otherTrainNumber.ToString() + "\n");
+            }
+
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\nUsed paths : \n");
+            foreach (int iRoute in usedRoutes)
+            {
+                if (InverseInfo.ContainsKey(iRoute))
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", " - route index : " + iRoute.ToString() + " = " + InverseInfo[iRoute].ToString() + "\n");
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", " - route index : " + iRoute.ToString() + " = <no inverse> \n");
+                }
+            }
+
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\nCommom paths : \n");
+            foreach (int iRoute in commonRoutes)
+            {
+                if (InverseInfo.ContainsKey(iRoute))
+                {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", " - route index : " + iRoute.ToString() + " = " + InverseInfo[iRoute].ToString() + "\n");
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", " - route index : " + iRoute.ToString() + " = <no inverse> \n");
+                }
+            }
+
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\nSingle paths : \n");
+            foreach (int iRoute in singleRoutes)
+            {
+                if (InverseInfo.ContainsKey(iRoute))
+                {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", " - route index : " + iRoute.ToString() + " = " + InverseInfo[iRoute].ToString() + "\n");
+                }
+                else
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", " - route index : " + iRoute.ToString() + " = <no inverse> \n");
+                }
+            }
+#endif
             // get inverse path indices to compare with this train's paths
 
             List<int> inverseUsedRoutes = new List<int>();
@@ -10689,7 +10807,9 @@ namespace ORTS
             // if deadlock is awaited at other end : remove paths which would cause conflict
             if (endSection.CheckDeadlockAwaited(thisTrain.Number))
             {
-
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n ++ Deadlock Awaited\n");
+#endif
                 // check if this train has any route not used by trains from other end
 
                 foreach (int iPath in freePaths)
@@ -10708,7 +10828,17 @@ namespace ORTS
                         if (!inverseCommonRoutes.Contains(iPath)) useablePaths.Add(iPath);
                     }
 
-                    if (useablePaths.Count > 0) return (useablePaths);
+                    if (useablePaths.Count > 0)
+                    {
+#if DEBUG_DEADLOCK
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- Usable paths (checked common) : \n");
+                        foreach (int iRoute in useablePaths)
+                        {
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", " Route : " + iRoute.ToString() + "\n");
+                        }
+#endif
+                        return (useablePaths);
+                    }
                 }
 
                 // check if any path remains if all required single paths are excluded
@@ -10720,24 +10850,51 @@ namespace ORTS
                         if (!inverseSingleRoutes.Contains(iPath)) useablePaths.Add(iPath);
                     }
 
-                    if (useablePaths.Count > 0) return (useablePaths);
+                    if (useablePaths.Count > 0)
+                    {
+#if DEBUG_DEADLOCK
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- Usable paths (after checking single) : \n");
+                        foreach (int iRoute in useablePaths)
+                        {
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", " Route : " + iRoute.ToString() + "\n");
+                        }
+#endif
+                        return (useablePaths);
+                    }
                 }
 
                 // no path available without conflict - but if deadlock also awaited on this end, proceed anyway (otherwise everything gets stuck)
 
                 if (startSection.DeadlockAwaited.Count >= 1)
                 {
+#if DEBUG_DEADLOCK
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- Free paths (deadlock awaited this end) : \n");
+                    foreach (int iRoute in freePaths)
+                    {
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", " Route : " + iRoute.ToString() + "\n");
+                    }
+#endif
                     return (freePaths); // may use any path in this situation
                 }
 
                 // no path available - return empty list
 
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- No paths available) : \n");
+                foreach (int iRoute in useablePaths)
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", " Route : " + iRoute.ToString() + "\n");
+                }
+#endif
                 return (useablePaths);
             }
 
             // no deadlock awaited at other end : check if there is any single path set, if so exclude those to avoid conflict
             else
             {
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n ++ No Deadlock Awaited\n");
+#endif
                 // check if any path remains if all required single paths are excluded
 
                 if (inverseSingleRoutes.Count >= 1) // there are single paths
@@ -10747,11 +10904,28 @@ namespace ORTS
                         if (!inverseSingleRoutes.Contains(iPath)) useablePaths.Add(iPath);
                     }
 
-                    if (useablePaths.Count > 0) return (useablePaths);
+                    if (useablePaths.Count > 0)
+                    {
+#if DEBUG_DEADLOCK
+                        File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- Usable paths (after checking singles) : \n");
+                        foreach (int iRoute in useablePaths)
+                        {
+                            File.AppendAllText(@"C:\Temp\deadlock.txt", " Route : " + iRoute.ToString() + "\n");
+                        }
+#endif
+                        return (useablePaths);
+                    }
                 }
 
                 // no single path conflicts - so all free paths are available
 
+#if DEBUG_DEADLOCK
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- No signle paths conflicts - all paths available : \n");
+                foreach (int iRoute in freePaths)
+                {
+                    File.AppendAllText(@"C:\Temp\deadlock.txt", " Route : " + iRoute.ToString() + "\n");
+                }
+#endif
                 return (freePaths);
             }
         }
@@ -10822,6 +10996,13 @@ namespace ORTS
 
         public int SelectPath(List<int> availableRoutes, Train thisTrain)
         {
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n**** For train " + thisTrain.Number.ToString() + " Select route from : \n");
+            foreach (int iRoute in availableRoutes)
+            {
+                File.AppendAllText(@"C:\Temp\deadlock.txt", "Available route : " + iRoute.ToString() + "\n");
+            }
+#endif
             int selectedPathNofit = -1;
             int selectedPathFit = -1;
 
@@ -10913,6 +11094,11 @@ namespace ORTS
                 }
             }
 
+#if DEBUG_DEADLOCK
+            File.AppendAllText(@"C:\Temp\deadlock.txt", " Selected path (fit)   : " + selectedPathFit.ToString() + "\n");
+            File.AppendAllText(@"C:\Temp\deadlock.txt", " Selected path (nofit) : " + selectedPathNofit.ToString() + "\n");
+            File.AppendAllText(@"C:\Temp\deadlock.txt", "\n****\n\n");
+#endif
             return (selectedPathFit >= 0 ? selectedPathFit : selectedPathNofit); // return fit path if set else no-fit path
         }
 
