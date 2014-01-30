@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -180,6 +180,7 @@ namespace ORTS
             Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
             Script.TrainSpeedLimitMpS = () => Locomotive.Train.TrainMaxSpeedMpS;
             Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
+            Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
             Script.IsAlerterEnabled = () => Simulator.Settings.Alerter;
             Script.AlerterSound = () => Locomotive.AlerterSnd;
             Script.EmergencyCausesThrottleDown = () => Locomotive.EmergencyCausesThrottleDown;
@@ -196,6 +197,7 @@ namespace ORTS
             Script.SetPenaltyApplicationDisplay = (value) => this.PenaltyApplication = value;
             Script.SetCurrentSpeedLimitMpS = (value) => this.CurrentSpeedLimitMpS = value;
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
+            Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (SignalHead.MstsSignalAspect)value;
             Script.SetVigilanceAlarm = (value) => this.SetVigilanceAlarm(value);
 
             Script.Initialize();
@@ -217,7 +219,7 @@ namespace ORTS
         {
             if (Locomotive.Train.IndexNextSignal >= 0 && Locomotive.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
             {
-                CabSignalAspect = Locomotive.Train.SignalObjectItems[Locomotive.Train.IndexNextSignal].signal_state;
+                Script.NextSignalAspect = () => (TCSSignalAspect)Locomotive.Train.SignalObjectItems[Locomotive.Train.IndexNextSignal].signal_state;
                 Script.NextSignalSpeedLimitMpS = () => Locomotive.Train.SignalObjectItems[Locomotive.Train.IndexNextSignal].actual_speed;
             }
             else
@@ -239,14 +241,14 @@ namespace ORTS
 
                 if (nextSignalObject != null)
                 {
-                    CabSignalAspect = nextSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                    Script.NextSignalAspect = () => (TCSSignalAspect)nextSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                     SignalSpeed = nextSignalObject.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
                     if (SignalSpeed != null)
                         Script.NextSignalSpeedLimitMpS = () => Locomotive.Train.IsFreight ? SignalSpeed.speed_freight : SignalSpeed.speed_pass;
                 }
                 else
                 {
-                    CabSignalAspect = SignalHead.MstsSignalAspect.UNKNOWN;
+                    Script.NextSignalAspect = () => TCSSignalAspect.UNKNOWN;
                     Script.NextSignalSpeedLimitMpS = () => float.MinValue;
                 }
             }
@@ -254,6 +256,9 @@ namespace ORTS
 
         public void Update()
         {
+            if (Script == null)
+                return;
+
             // Auto-clear alerter when not in cabview
             if (Locomotive.AlerterSnd && Simulator.Confirmer.Viewer.Camera.Style != Camera.Styles.Cab)
                 Script.AlerterPressed();
@@ -330,6 +335,8 @@ namespace ORTS
 
         public override void Update()
         {
+            SetNextSignalAspect(NextSignalAspect());
+
             CurrentSpeedLimitMpS = CurrentSignalSpeedLimitMpS() >= 0 ? CurrentSignalSpeedLimitMpS() : TrainSpeedLimitMpS();
             if (CurrentSpeedLimitMpS > TrainSpeedLimitMpS())
                 CurrentSpeedLimitMpS = TrainSpeedLimitMpS();

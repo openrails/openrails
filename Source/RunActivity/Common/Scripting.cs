@@ -150,11 +150,6 @@ namespace ORTS.Scripting.Api
     public abstract class TrainControlSystem
     {
         public bool Activated { get; set; }
-        
-        /// <summary>
-        /// Will be whown on ASPECT_DISPLAY cabcontrol.
-        /// </summary>
-        //public SignalHead.MstsSignalAspect CabSignalAspect = SignalHead.MstsSignalAspect.UNKNOWN;
 
         /// <summary>
         /// False if vigilance monitor was switched off in game options, thus requested to be auto reset.
@@ -173,9 +168,17 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> CurrentSignalSpeedLimitMpS;
         /// <summary>
+        /// Max allowed speed determined by current speedpost.
+        /// </summary>
+        public Func<float> CurrentPostSpeedLimitMpS;
+        /// <summary>
         /// Max allowed speed determined by next signal.
         /// </summary>
         public Func<float> NextSignalSpeedLimitMpS;
+        /// <summary>
+        /// Aspect of the next signal.
+        /// </summary>
+        public Func<TCSSignalAspect> NextSignalAspect;
         /// <summary>
         /// Train's actual absolute speed.
         /// </summary>
@@ -252,6 +255,10 @@ namespace ORTS.Scripting.Api
         /// Set speed limit of the next signal, as to be shown on SPEEDLIM_DISPLAY cabcontrol.
         /// </summary>
         public Action<float> SetNextSpeedLimitMpS;
+        /// <summary>
+        /// Will be whown on ASPECT_DISPLAY cabcontrol.
+        /// </summary>
+        public Action<TCSSignalAspect> SetNextSignalAspect;
 
         /// <summary>
         /// Called once at initialization time.
@@ -290,6 +297,22 @@ namespace ORTS.Scripting.Api
 
     public class Timer : Counter { public Timer(TrainControlSystem tcs) { CurrentValue = tcs.ClockTime; } }
     public class OdoMeter : Counter { public OdoMeter(TrainControlSystem tcs) { CurrentValue = tcs.DistanceM; } }
+
+    /// <summary>
+    /// Represents the same enum as SignalHead.MstsSignalAspect
+    /// </summary>
+    public enum TCSSignalAspect
+    {
+        STOP,
+        STOP_AND_PROCEED,
+        RESTRICTING,
+        APPROACH_1,
+        APPROACH_2,
+        APPROACH_3,
+        CLEAR_1,
+        CLEAR_2,
+        UNKNOWN,
+    }
 
     #endregion
 }
