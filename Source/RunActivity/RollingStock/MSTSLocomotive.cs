@@ -143,8 +143,16 @@ namespace ORTS
 
 
 
-        public float CabRotationZ { get { return (UsingRearCab == true ? -totalRotationZ * Program.Simulator.CabRotating : totalRotationZ * Program.Simulator.CabRotating); } }
-
+		public float CabRotationZ
+		{
+			get
+			{
+				return ((UsingRearCab ||
+					((CabViewList[(int)CabViewType.Front].ViewPointList[0].StartDirection.Y >= 90) ||
+					(CabViewList[(int)CabViewType.Front].ViewPointList[0].StartDirection.Y <= -90)) && !Flipped) == true ?
+					-totalRotationZ * Program.Simulator.CabRotating : totalRotationZ * Program.Simulator.CabRotating);
+			}
+		}
         public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
 
         public List<CabView> CabViewList = new List<CabView>();
