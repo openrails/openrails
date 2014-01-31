@@ -8414,7 +8414,7 @@ namespace ORTS
 
                 for (int iIndex = 0; validLoop; iIndex--)
                 {
-                    int thisElementIndex = elementIndex - iIndex;
+                    int thisElementIndex = otherRouteIndex - iIndex;
                     if (thisElementIndex < 0)
                     {
                         validLoop = false;
