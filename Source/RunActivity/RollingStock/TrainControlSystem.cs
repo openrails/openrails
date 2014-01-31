@@ -265,7 +265,7 @@ namespace ORTS
 
             UpdateNextSignalFunctions();
 
-            Script.Update();
+            Script.Update(); 
         }
 
         public void AlerterPressed(bool pressed)
@@ -276,7 +276,7 @@ namespace ORTS
 
         public void AlerterReset()
         {
-            Script.AlerterReset();
+            //Script.AlerterReset();  Commented out, this causes Steam Locomotives to crash the sim when any key is pressed.
         }
 
         public void SetEmergency()
