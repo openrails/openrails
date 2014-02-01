@@ -1338,16 +1338,29 @@ namespace ORTS
             {
                 // Start with the furthest away distance, then look for a nearer one in range of the camera.
                 var chosenDistanceLevelIndex = lodControl.DistanceLevels.Length - 1;
+
                 // If this LOD group is not in the FOV, skip the whole LOD group.
                 if (!Viewer.Camera.InFov(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex].ViewSphereRadius))
                     continue;
-                while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
-                    chosenDistanceLevelIndex--;
+
+                if (Viewer.Settings.LODAlwaysMaximum)
+                {
+                    // If set, always use the most detailed (first) LOD.
+                    chosenDistanceLevelIndex = 0;
+                }
+                else
+                {
+                    // Otherwise, find the most-detailed LOD that is in-range.
+                    while ((chosenDistanceLevelIndex > 0) && Viewer.Camera.InRange(mstsLocation, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewSphereRadius, lodControl.DistanceLevels[chosenDistanceLevelIndex - 1].ViewingDistance))
+                        chosenDistanceLevelIndex--;
+                }
                 var chosenDistanceLevel = lodControl.DistanceLevels[chosenDistanceLevelIndex];
 
-                // If set, extend the outer LOD to the max. viewing distance
-                if (Viewer.Settings.LODViewingExtention && chosenDistanceLevelIndex == lodControl.DistanceLevels.Length - 1)
+                // If set, extend the outer LOD to the max. viewing distance.
+                if ((Viewer.Settings.LODAlwaysMaximum && Viewer.Settings.LODViewingExtention) || (Viewer.Settings.LODViewingExtention && chosenDistanceLevelIndex == lodControl.DistanceLevels.Length - 1))
                     chosenDistanceLevel.ViewingDistance = float.MaxValue;
+                else if (Viewer.Settings.LODAlwaysMaximum)
+                    chosenDistanceLevel.ViewingDistance = lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1].ViewingDistance;
 
                 // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
                 foreach (var subObject in chosenDistanceLevel.SubObjects.Where((so, i) => (subObjVisible == null || subObjVisible[i]) && (i != 1 || !HasNightSubObj || Viewer.MaterialManager.sunDirection.Y < 0)))

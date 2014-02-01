@@ -98,18 +98,35 @@ namespace ORTS
             if (PerformanceTune && Viewer.RenderProcess.IsActive)
             {
                 // Work out how far we need to change the actual FPS to get to the target.
-                var target = Viewer.Settings.PerformanceTunerTarget - Viewer.RenderProcess.FrameRate.SmoothedValue;
+                //   +ve = under-performing/too much detail
+                //   -ve = over-performing/not enough detail
+                var fpsTarget = Viewer.Settings.PerformanceTunerTarget - Viewer.RenderProcess.FrameRate.SmoothedValue;
 
                 // If vertical sync is on, we're capped to 60 FPS. This means we need to shift a target of 60FPS down to 57FPS.
                 if (Viewer.Settings.VerticalSync && Viewer.Settings.PerformanceTunerTarget > 55)
-                    target -= 3;
+                    fpsTarget -= 3;
+
+                // Summarise the FPS adjustment to: +1 (add detail), 0 (keep), -1 (remove detail).
+                var fpsChange = fpsTarget < -2.5 ? +1 : fpsTarget > 2.5 ? -1 : 0;
+
+                // Work out how much spare CPU we have; the target is 90%.
+                //   +ve = under-performing/too much detail
+                //   -ve = over-performing/not enough detail
+                var cpuTargetRender = Viewer.RenderProcess.Profiler.Wall.SmoothedValue - 90;
+                var cpuTargetUpdater = Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue - 90;
+                var cpuTarget = cpuTargetRender > cpuTargetUpdater ? cpuTargetRender : cpuTargetUpdater;
+
+                // Summarise the CPS adjustment to: +1 (add detail), 0 (keep), -1 (remove detail).
+                var cpuChange = cpuTarget < -2.5 ? +1 : cpuTarget > 2.5 ? -1 : 0;
 
                 // Now we adjust the viewing distance to try and balance out the FPS.
                 var oldViewingDistance = Viewer.Settings.ViewingDistance;
-                if (target > 2.5)
-                    Viewer.Settings.ViewingDistance -= (int)(target - 1.5);
-                else if (target < -2.5)
-                    Viewer.Settings.ViewingDistance += (int)(-target - 1.5);
+                if (fpsChange < 0)
+                    Viewer.Settings.ViewingDistance -= (int)(fpsTarget - 1.5);
+                else if (cpuChange < 0)
+                    Viewer.Settings.ViewingDistance -= (int)(cpuTarget - 1.5);
+                else if (fpsChange > 0 && cpuChange > 0)
+                    Viewer.Settings.ViewingDistance += (int)(-fpsTarget - 1.5);
                 Viewer.Settings.ViewingDistance = (int)MathHelper.Clamp(Viewer.Settings.ViewingDistance, 500, 10000);
 
                 // If we've changed the viewing distance, we need to update the camera matricies.

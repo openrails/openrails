@@ -98,7 +98,8 @@ namespace ORTS
             distanceMountain.Checked = settings.DistantMountains;
             DMDistance.Value = settings.DistantMountainsViewingDistance / 1000;
             NormalViewingDistance.Value = settings.ViewingDistance;
-            LODExtention.Checked = settings.LODViewingExtention;
+            checkBoxLODAlwaysMax.Checked = settings.LODAlwaysMaximum;
+            checkBoxLODExtention.Checked = settings.LODViewingExtention;
             checkBoxPerformanceTuner.Checked = settings.PerformanceTuner;
             numericUpDownPerformanceTunerTarget.Value = settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = settings.DoubleWire;
@@ -333,7 +334,8 @@ namespace ORTS
             Settings.DistantMountains = distanceMountain.Checked;
             Settings.DistantMountainsViewingDistance = (int)DMDistance.Value * 1000;
             Settings.ViewingDistance = (int)NormalViewingDistance.Value;
-            Settings.LODViewingExtention = LODExtention.Checked;
+            Settings.LODAlwaysMaximum = checkBoxLODAlwaysMax.Checked;
+            Settings.LODViewingExtention = checkBoxLODExtention.Checked;
             Settings.PerformanceTuner = checkBoxPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericUpDownPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
