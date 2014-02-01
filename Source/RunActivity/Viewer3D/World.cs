@@ -108,15 +108,21 @@ namespace ORTS
                 // Summarise the FPS adjustment to: +1 (add detail), 0 (keep), -1 (remove detail).
                 var fpsChange = fpsTarget < -2.5 ? +1 : fpsTarget > 2.5 ? -1 : 0;
 
-                // Work out how much spare CPU we have; the target is 90%.
-                //   +ve = under-performing/too much detail
-                //   -ve = over-performing/not enough detail
-                var cpuTargetRender = Viewer.RenderProcess.Profiler.Wall.SmoothedValue - 90;
-                var cpuTargetUpdater = Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue - 90;
-                var cpuTarget = cpuTargetRender > cpuTargetUpdater ? cpuTargetRender : cpuTargetUpdater;
+                // If we're not vertical sync-limited, there's no point calculating the CPU change, just assume adding detail is okay.
+                var cpuTarget = 0f;
+                var cpuChange = 1;
+                if (Viewer.Settings.VerticalSync)
+                {
+                    // Work out how much spare CPU we have; the target is 90%.
+                    //   +ve = under-performing/too much detail
+                    //   -ve = over-performing/not enough detail
+                    var cpuTargetRender = Viewer.RenderProcess.Profiler.Wall.SmoothedValue - 90;
+                    var cpuTargetUpdater = Viewer.UpdaterProcess.Profiler.Wall.SmoothedValue - 90;
+                    cpuTarget = cpuTargetRender > cpuTargetUpdater ? cpuTargetRender : cpuTargetUpdater;
 
-                // Summarise the CPS adjustment to: +1 (add detail), 0 (keep), -1 (remove detail).
-                var cpuChange = cpuTarget < -2.5 ? +1 : cpuTarget > 2.5 ? -1 : 0;
+                    // Summarise the CPS adjustment to: +1 (add detail), 0 (keep), -1 (remove detail).
+                    cpuChange = cpuTarget < -2.5 ? +1 : cpuTarget > 2.5 ? -1 : 0;
+                }
 
                 // Now we adjust the viewing distance to try and balance out the FPS.
                 var oldViewingDistance = Viewer.Settings.ViewingDistance;
