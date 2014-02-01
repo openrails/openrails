@@ -37,10 +37,9 @@ namespace ORTS
         public bool PenaltyApplication { get; set; }
         public float CurrentSpeedLimitMpS { get; set; }
         public float NextSpeedLimitMpS { get; set; }
-        public SignalHead.MstsSignalAspect CabSignalAspect = SignalHead.MstsSignalAspect.UNKNOWN;
+        public Popups.TrackMonitorSignalAspect CabSignalAspect { get; set; }
 
-        SignalObject nextSignalObject;
-        ObjectSpeedInfo SignalSpeed;
+        Train.TrainInfo TrainInfo;
 
         readonly MSTSLocomotive Locomotive;
         readonly Simulator Simulator;
@@ -197,8 +196,15 @@ namespace ORTS
             Script.SetPenaltyApplicationDisplay = (value) => this.PenaltyApplication = value;
             Script.SetCurrentSpeedLimitMpS = (value) => this.CurrentSpeedLimitMpS = value;
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
-            Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (SignalHead.MstsSignalAspect)value;
+            Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (Popups.TrackMonitorSignalAspect)value;
             Script.SetVigilanceAlarm = (value) => this.SetVigilanceAlarm(value);
+            // Will be updated continuously:
+            Script.TrainSpeedLimitMpS = () => float.MinValue;
+            Script.NextSignalSpeedLimitMpS = () => float.MinValue;
+            Script.NextSignalAspect = () => TCSSignalAspect.None;
+            Script.NextSignalDistanceM = () => float.MinValue;
+            Script.NextPostSpeedLimitMpS = () => float.MinValue;
+            Script.NextPostDistanceM = () => float.MinValue;
 
             Script.Initialize();
             Activated = true;
@@ -217,40 +223,58 @@ namespace ORTS
 
         void UpdateNextSignalFunctions()
         {
-            if (Locomotive.Train.IndexNextSignal >= 0 && Locomotive.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
+            TrainInfo = Locomotive.Train.GetTrainInfo();
+
+            if (TrainInfo == null)
             {
-                Script.NextSignalAspect = () => (TCSSignalAspect)Locomotive.Train.SignalObjectItems[Locomotive.Train.IndexNextSignal].signal_state;
-                Script.NextSignalSpeedLimitMpS = () => Locomotive.Train.SignalObjectItems[Locomotive.Train.IndexNextSignal].actual_speed;
+                Script.TrainSpeedLimitMpS = () => float.MinValue;
+                Script.NextSignalSpeedLimitMpS = () => float.MinValue;
+                Script.NextSignalAspect = () => TCSSignalAspect.None;
+                Script.NextSignalDistanceM = () => float.MinValue;
+                Script.NextPostSpeedLimitMpS = () => float.MinValue;
+                Script.NextPostDistanceM = () => float.MinValue;
+                return;
             }
-            else
+
+            Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;
+
+            bool nextSignalFound = false;
+            bool nextSpeedpostFound = false;
+
+            foreach (var foundItem in Locomotive.Train.MUDirection == Direction.Reverse ? TrainInfo.ObjectInfoBackward : TrainInfo.ObjectInfoForward)
             {
-                if ((Locomotive.Train.MUDirection == Direction.Forward || Locomotive.Train.MUDirection == Direction.N)
-                    && Locomotive.Train.NextSignalObject[0] != null)
+                if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL && !nextSignalFound)
                 {
-                    nextSignalObject = Locomotive.Train.NextSignalObject[0];
+                    Script.NextSignalSpeedLimitMpS = () => foundItem.AllowedSpeedMpS;
+                    Script.NextSignalAspect = () => (TCSSignalAspect)foundItem.SignalState;
+                    Script.NextSignalDistanceM = () => foundItem.DistanceToTrainM;
+
+                    nextSignalFound = true;
                 }
-                else if (Locomotive.Train.MUDirection == Direction.Reverse
-                    && Locomotive.Train.NextSignalObject[1] != null)
+                else if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST && !nextSpeedpostFound)
                 {
-                    nextSignalObject = Locomotive.Train.NextSignalObject[1];
-                }
-                else
-                {
-                    nextSignalObject = null;
+                    Script.NextPostSpeedLimitMpS = () => foundItem.AllowedSpeedMpS;
+                    Script.NextPostDistanceM = () => foundItem.DistanceToTrainM;
+
+                    nextSpeedpostFound = true;
                 }
 
-                if (nextSignalObject != null)
+                if (nextSignalFound && nextSpeedpostFound)
                 {
-                    Script.NextSignalAspect = () => (TCSSignalAspect)nextSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
-                    SignalSpeed = nextSignalObject.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
-                    if (SignalSpeed != null)
-                        Script.NextSignalSpeedLimitMpS = () => Locomotive.Train.IsFreight ? SignalSpeed.speed_freight : SignalSpeed.speed_pass;
+                    break;
                 }
-                else
-                {
-                    Script.NextSignalAspect = () => TCSSignalAspect.UNKNOWN;
-                    Script.NextSignalSpeedLimitMpS = () => float.MinValue;
-                }
+            }
+
+            if (!nextSignalFound)
+            {
+                Script.NextPostSpeedLimitMpS = () => float.MinValue;
+                Script.NextSignalAspect = () => TCSSignalAspect.None;
+                Script.NextSignalDistanceM = () => float.MinValue;
+            }
+            if (!nextSpeedpostFound)
+            {
+                Script.NextPostSpeedLimitMpS = () => float.MinValue;
+                Script.NextPostDistanceM = () => float.MinValue;
             }
         }
 
@@ -271,17 +295,22 @@ namespace ORTS
         public void AlerterPressed(bool pressed)
         {
             AlerterButtonPressed = pressed;
-            Script.AlerterPressed();
+            if (Script != null)
+                Script.AlerterPressed();
         }
 
         public void AlerterReset()
         {
-            //Script.AlerterReset();  Commented out, this causes Steam Locomotives to crash the sim when any key is pressed.
+            if (Script != null)
+                Script.AlerterReset();
         }
 
         public void SetEmergency()
         {
-            Script.SetEmergency();
+            if (Script != null)
+                Script.SetEmergency();
+            else
+                Locomotive.TrainBrakeController.SetEmergency();
         }
     }
 

@@ -168,10 +168,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> CurrentSignalSpeedLimitMpS;
         /// <summary>
-        /// Max allowed speed determined by current speedpost.
-        /// </summary>
-        public Func<float> CurrentPostSpeedLimitMpS;
-        /// <summary>
         /// Max allowed speed determined by next signal.
         /// </summary>
         public Func<float> NextSignalSpeedLimitMpS;
@@ -179,6 +175,22 @@ namespace ORTS.Scripting.Api
         /// Aspect of the next signal.
         /// </summary>
         public Func<TCSSignalAspect> NextSignalAspect;
+        /// <summary>
+        /// Distance to next signal.
+        /// </summary>
+        public Func<float> NextSignalDistanceM;
+        /// <summary>
+        /// Max allowed speed determined by current speedpost.
+        /// </summary>
+        public Func<float> CurrentPostSpeedLimitMpS;
+        /// <summary>
+        /// Max allowed speed determined by next speedpost.
+        /// </summary>
+        public Func<float> NextPostSpeedLimitMpS;
+        /// <summary>
+        /// Distance to next speedpost.
+        /// </summary>
+        public Func<float> NextPostDistanceM;
         /// <summary>
         /// Train's actual absolute speed.
         /// </summary>
@@ -299,20 +311,21 @@ namespace ORTS.Scripting.Api
     public class OdoMeter : Counter { public OdoMeter(TrainControlSystem tcs) { CurrentValue = tcs.DistanceM; } }
 
     /// <summary>
-    /// Represents the same enum as SignalHead.MstsSignalAspect
+    /// Represents the same enum as TrackMonitorSignalAspect
     /// </summary>
     public enum TCSSignalAspect
     {
-        STOP,
-        STOP_AND_PROCEED,
-        RESTRICTING,
-        APPROACH_1,
-        APPROACH_2,
-        APPROACH_3,
-        CLEAR_1,
-        CLEAR_2,
-        UNKNOWN,
+        None,
+        Clear_2,
+        Clear_1,
+        Approach_3,
+        Approach_2,
+        Approach_1,
+        Restricted,
+        StopAndProceed,
+        Stop,
+        Permission,
     }
-
+    
     #endregion
 }

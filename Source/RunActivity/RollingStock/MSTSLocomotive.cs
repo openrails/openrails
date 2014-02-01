@@ -2169,42 +2169,42 @@ namespace ORTS
                     {
                         switch (TrainControlSystem.CabSignalAspect)
                         {
-                            case SignalHead.MstsSignalAspect.STOP:
+                            case TrackMonitorSignalAspect.Stop:
                                 {
                                     data = 0;
                                     break;
                                 }
-                            case SignalHead.MstsSignalAspect.STOP_AND_PROCEED:
+                            case TrackMonitorSignalAspect.StopAndProceed:
                                 {
                                     data = 1;
                                     break;
                                 }
-                            case SignalHead.MstsSignalAspect.RESTRICTING:
+                            case TrackMonitorSignalAspect.Restricted:
                                 {
                                     data = 2;
                                     break;
                                 }
-                            case SignalHead.MstsSignalAspect.APPROACH_1:
+                            case TrackMonitorSignalAspect.Approach_1:
                                 {
                                     data = 3;
                                     break;
                                 }
-                            case SignalHead.MstsSignalAspect.APPROACH_2:
+                            case TrackMonitorSignalAspect.Approach_2:
                                 {
                                     data = 4;
                                     break;
                                 }
-                            case SignalHead.MstsSignalAspect.APPROACH_3:
+                            case TrackMonitorSignalAspect.Approach_3:
                                 {
                                     data = 5;
                                     break;
                                 }
-                            case SignalHead.MstsSignalAspect.CLEAR_1:
+                            case TrackMonitorSignalAspect.Clear_1:
                                 {
                                     data = 6;
                                     break;
                                 }
-                            case SignalHead.MstsSignalAspect.CLEAR_2:
+                            case TrackMonitorSignalAspect.Clear_2:
                                 {
                                     data = 7;
                                     break;
