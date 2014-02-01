@@ -48,8 +48,7 @@ namespace ORTS
             WeatherControl = new WeatherControl(viewer);
             // Then drawers.
             Sky = new SkyDrawer(viewer);
-            if (viewer.Settings.Precipitation)
-                Precipitation = new PrecipDrawer(viewer);
+            Precipitation = new PrecipDrawer(viewer);
             Terrain = new TerrainDrawer(viewer);
             Scenery = new SceneryDrawer(viewer);
             Trains = new TrainDrawer(viewer);
@@ -80,7 +79,7 @@ namespace ORTS
                 Viewer.MaterialManager.Mark();
                 Viewer.TextureManager.Mark();
                 Sky.Mark();
-                if (Precipitation != null) Precipitation.Mark();
+                Precipitation.Mark();
                 Terrain.Mark();
                 Scenery.Mark();
                 Trains.Mark();
@@ -155,7 +154,7 @@ namespace ORTS
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             Sky.PrepareFrame(frame, elapsedTime);
-            if (Precipitation != null) Precipitation.PrepareFrame(frame, elapsedTime);
+            Precipitation.PrepareFrame(frame, elapsedTime);
             Terrain.PrepareFrame(frame, elapsedTime);
             Scenery.PrepareFrame(frame, elapsedTime);
             Trains.PrepareFrame(frame, elapsedTime);

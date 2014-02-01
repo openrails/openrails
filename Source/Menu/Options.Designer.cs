@@ -58,10 +58,8 @@
             this.comboBoxWindowSize = new System.Windows.Forms.ComboBox();
             this.checkBoxWindowGlass = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.checkBoxTrainLights = new System.Windows.Forms.CheckBox();
             this.checkBoxShadows = new System.Windows.Forms.CheckBox();
             this.checkBoxWire = new System.Windows.Forms.CheckBox();
-            this.checkBoxPrecipitation = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
             this.checkBoxOverrideNonElectrified = new System.Windows.Forms.CheckBox();
             this.label12 = new System.Windows.Forms.Label();
@@ -75,6 +73,7 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkBoxLODAlwaysMax = new System.Windows.Forms.CheckBox();
             this.checkBoxUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
             this.trackBarDayAmbientLight = new System.Windows.Forms.TrackBar();
             this.label15 = new System.Windows.Forms.Label();
@@ -113,7 +112,6 @@
             this.numericUpDownDataLoggerTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkBoxDataLoggerTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxLODAlwaysMax = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRatePSIpS)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -263,7 +261,7 @@
             this.tabPageGeneral.Controls.Add(this.label4);
             this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
             this.tabPageGeneral.Name = "tabPageGeneral";
-            this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageGeneral.Size = new System.Drawing.Size(444, 403);
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
@@ -278,7 +276,7 @@
             this.tabPageAudio.Controls.Add(this.checkBoxBINSound);
             this.tabPageAudio.Location = new System.Drawing.Point(4, 22);
             this.tabPageAudio.Name = "tabPageAudio";
-            this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageAudio.Size = new System.Drawing.Size(444, 403);
             this.tabPageAudio.TabIndex = 5;
             this.tabPageAudio.Text = "Audio";
@@ -361,13 +359,11 @@
             this.tabPageVideo.Controls.Add(this.comboBoxWindowSize);
             this.tabPageVideo.Controls.Add(this.checkBoxWindowGlass);
             this.tabPageVideo.Controls.Add(this.label3);
-            this.tabPageVideo.Controls.Add(this.checkBoxTrainLights);
             this.tabPageVideo.Controls.Add(this.checkBoxShadows);
             this.tabPageVideo.Controls.Add(this.checkBoxWire);
-            this.tabPageVideo.Controls.Add(this.checkBoxPrecipitation);
             this.tabPageVideo.Location = new System.Drawing.Point(4, 22);
             this.tabPageVideo.Name = "tabPageVideo";
-            this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageVideo.Size = new System.Drawing.Size(444, 403);
             this.tabPageVideo.TabIndex = 4;
             this.tabPageVideo.Text = "Video";
@@ -376,7 +372,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(65, 228);
+            this.label14.Location = new System.Drawing.Point(65, 182);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(104, 13);
             this.label14.TabIndex = 15;
@@ -389,7 +385,7 @@
             0,
             0,
             0});
-            this.NormalViewingDistance.Location = new System.Drawing.Point(6, 226);
+            this.NormalViewingDistance.Location = new System.Drawing.Point(6, 180);
             this.NormalViewingDistance.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -412,7 +408,7 @@
             // labelFOVHelp
             // 
             this.labelFOVHelp.AutoSize = true;
-            this.labelFOVHelp.Location = new System.Drawing.Point(225, 176);
+            this.labelFOVHelp.Location = new System.Drawing.Point(225, 130);
             this.labelFOVHelp.Name = "labelFOVHelp";
             this.labelFOVHelp.Size = new System.Drawing.Size(28, 13);
             this.labelFOVHelp.TabIndex = 11;
@@ -420,7 +416,7 @@
             // 
             // numericUpDownFOV
             // 
-            this.numericUpDownFOV.Location = new System.Drawing.Point(6, 174);
+            this.numericUpDownFOV.Location = new System.Drawing.Point(6, 128);
             this.numericUpDownFOV.Maximum = new decimal(new int[] {
             120,
             0,
@@ -444,7 +440,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(65, 176);
+            this.label10.Location = new System.Drawing.Point(65, 130);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(105, 13);
             this.label10.TabIndex = 10;
@@ -457,7 +453,7 @@
             0,
             0,
             0});
-            this.numericCab2DStretch.Location = new System.Drawing.Point(6, 200);
+            this.numericCab2DStretch.Location = new System.Drawing.Point(6, 154);
             this.numericCab2DStretch.Name = "numericCab2DStretch";
             this.numericCab2DStretch.Size = new System.Drawing.Size(54, 20);
             this.numericCab2DStretch.TabIndex = 12;
@@ -467,7 +463,7 @@
             // labelCab2DStretch
             // 
             this.labelCab2DStretch.AutoSize = true;
-            this.labelCab2DStretch.Location = new System.Drawing.Point(65, 202);
+            this.labelCab2DStretch.Location = new System.Drawing.Point(65, 156);
             this.labelCab2DStretch.Name = "labelCab2DStretch";
             this.labelCab2DStretch.Size = new System.Drawing.Size(89, 13);
             this.labelCab2DStretch.TabIndex = 13;
@@ -521,7 +517,7 @@
             // checkBoxWindowGlass
             // 
             this.checkBoxWindowGlass.AutoSize = true;
-            this.checkBoxWindowGlass.Location = new System.Drawing.Point(6, 151);
+            this.checkBoxWindowGlass.Location = new System.Drawing.Point(6, 105);
             this.checkBoxWindowGlass.Name = "checkBoxWindowGlass";
             this.checkBoxWindowGlass.Size = new System.Drawing.Size(151, 17);
             this.checkBoxWindowGlass.TabIndex = 8;
@@ -537,20 +533,10 @@
             this.label3.TabIndex = 3;
             this.label3.Text = "Window size";
             // 
-            // checkBoxTrainLights
-            // 
-            this.checkBoxTrainLights.AutoSize = true;
-            this.checkBoxTrainLights.Location = new System.Drawing.Point(6, 59);
-            this.checkBoxTrainLights.Name = "checkBoxTrainLights";
-            this.checkBoxTrainLights.Size = new System.Drawing.Size(77, 17);
-            this.checkBoxTrainLights.TabIndex = 4;
-            this.checkBoxTrainLights.Text = "Train lights";
-            this.checkBoxTrainLights.UseVisualStyleBackColor = true;
-            // 
             // checkBoxShadows
             // 
             this.checkBoxShadows.AutoSize = true;
-            this.checkBoxShadows.Location = new System.Drawing.Point(6, 128);
+            this.checkBoxShadows.Location = new System.Drawing.Point(6, 82);
             this.checkBoxShadows.Name = "checkBoxShadows";
             this.checkBoxShadows.Size = new System.Drawing.Size(112, 17);
             this.checkBoxShadows.TabIndex = 7;
@@ -560,22 +546,12 @@
             // checkBoxWire
             // 
             this.checkBoxWire.AutoSize = true;
-            this.checkBoxWire.Location = new System.Drawing.Point(6, 105);
+            this.checkBoxWire.Location = new System.Drawing.Point(6, 59);
             this.checkBoxWire.Name = "checkBoxWire";
             this.checkBoxWire.Size = new System.Drawing.Size(95, 17);
             this.checkBoxWire.TabIndex = 6;
             this.checkBoxWire.Text = "Overhead wire";
             this.checkBoxWire.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxPrecipitation
-            // 
-            this.checkBoxPrecipitation.AutoSize = true;
-            this.checkBoxPrecipitation.Location = new System.Drawing.Point(6, 82);
-            this.checkBoxPrecipitation.Name = "checkBoxPrecipitation";
-            this.checkBoxPrecipitation.Size = new System.Drawing.Size(84, 17);
-            this.checkBoxPrecipitation.TabIndex = 5;
-            this.checkBoxPrecipitation.Text = "Precipitation";
-            this.checkBoxPrecipitation.UseVisualStyleBackColor = true;
             // 
             // tabPageSimulation
             // 
@@ -586,7 +562,7 @@
             this.tabPageSimulation.Controls.Add(this.checkBoxAdvancedAdhesion);
             this.tabPageSimulation.Location = new System.Drawing.Point(4, 22);
             this.tabPageSimulation.Name = "tabPageSimulation";
-            this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageSimulation.Size = new System.Drawing.Size(444, 403);
             this.tabPageSimulation.TabIndex = 2;
             this.tabPageSimulation.Text = "Simulation";
@@ -596,7 +572,7 @@
             // 
             this.checkBoxOverrideNonElectrified.AutoSize = true;
             this.checkBoxOverrideNonElectrified.Location = new System.Drawing.Point(6, 83);
-            this.checkBoxOverrideNonElectrified.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.checkBoxOverrideNonElectrified.Margin = new System.Windows.Forms.Padding(2);
             this.checkBoxOverrideNonElectrified.Name = "checkBoxOverrideNonElectrified";
             this.checkBoxOverrideNonElectrified.Size = new System.Drawing.Size(219, 17);
             this.checkBoxOverrideNonElectrified.TabIndex = 4;
@@ -616,7 +592,7 @@
             // numericUpDownAdhesionFilterSize
             // 
             this.numericUpDownAdhesionFilterSize.Location = new System.Drawing.Point(25, 28);
-            this.numericUpDownAdhesionFilterSize.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.numericUpDownAdhesionFilterSize.Margin = new System.Windows.Forms.Padding(2);
             this.numericUpDownAdhesionFilterSize.Minimum = new decimal(new int[] {
             1,
             0,
@@ -661,7 +637,7 @@
             this.tabPageKeyboard.Controls.Add(this.panelKeys);
             this.tabPageKeyboard.Location = new System.Drawing.Point(4, 22);
             this.tabPageKeyboard.Name = "tabPageKeyboard";
-            this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageKeyboard.Size = new System.Drawing.Size(444, 403);
             this.tabPageKeyboard.TabIndex = 1;
             this.tabPageKeyboard.Text = "Keyboard";
@@ -753,11 +729,21 @@
             this.tabPageExperimental.Controls.Add(this.ElevationText);
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
-            this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageExperimental.Size = new System.Drawing.Size(444, 403);
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxLODAlwaysMax
+            // 
+            this.checkBoxLODAlwaysMax.AutoSize = true;
+            this.checkBoxLODAlwaysMax.Location = new System.Drawing.Point(6, 171);
+            this.checkBoxLODAlwaysMax.Name = "checkBoxLODAlwaysMax";
+            this.checkBoxLODAlwaysMax.Size = new System.Drawing.Size(181, 17);
+            this.checkBoxLODAlwaysMax.TabIndex = 26;
+            this.checkBoxLODAlwaysMax.Text = "Always use highest detail objects";
+            this.checkBoxLODAlwaysMax.UseVisualStyleBackColor = true;
             // 
             // checkBoxUseLocationPassingPaths
             // 
@@ -776,7 +762,7 @@
             this.trackBarDayAmbientLight.AutoSize = false;
             this.trackBarDayAmbientLight.LargeChange = 4;
             this.trackBarDayAmbientLight.Location = new System.Drawing.Point(26, 327);
-            this.trackBarDayAmbientLight.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.trackBarDayAmbientLight.Margin = new System.Windows.Forms.Padding(2);
             this.trackBarDayAmbientLight.Maximum = 30;
             this.trackBarDayAmbientLight.Minimum = 15;
             this.trackBarDayAmbientLight.Name = "trackBarDayAmbientLight";
@@ -1024,7 +1010,7 @@
             this.label5.AutoSize = true;
             this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label5.Location = new System.Drawing.Point(6, 6);
-            this.label5.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label5.Margin = new System.Windows.Forms.Padding(3);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(354, 13);
             this.label5.TabIndex = 0;
@@ -1047,7 +1033,7 @@
             // 
             this.ElevationText.AutoSize = true;
             this.ElevationText.Location = new System.Drawing.Point(6, 25);
-            this.ElevationText.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.ElevationText.Margin = new System.Windows.Forms.Padding(3);
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(81, 13);
             this.ElevationText.TabIndex = 1;
@@ -1066,7 +1052,7 @@
             this.tabPageDataLogger.Controls.Add(this.checkBoxDataLoggerPhysics);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
-            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageDataLogger.Size = new System.Drawing.Size(444, 403);
             this.tabPageDataLogger.TabIndex = 6;
             this.tabPageDataLogger.Text = "DataLogger";
@@ -1082,7 +1068,7 @@
             "mph",
             "kph"});
             this.comboBoxDataLoggerSpeedUnits.Location = new System.Drawing.Point(5, 62);
-            this.comboBoxDataLoggerSpeedUnits.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBoxDataLoggerSpeedUnits.Margin = new System.Windows.Forms.Padding(2);
             this.comboBoxDataLoggerSpeedUnits.Name = "comboBoxDataLoggerSpeedUnits";
             this.comboBoxDataLoggerSpeedUnits.Size = new System.Drawing.Size(121, 21);
             this.comboBoxDataLoggerSpeedUnits.TabIndex = 3;
@@ -1097,7 +1083,7 @@
             "tab",
             "space"});
             this.comboBoxSeparators.Location = new System.Drawing.Point(5, 37);
-            this.comboBoxSeparators.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBoxSeparators.Margin = new System.Windows.Forms.Padding(2);
             this.comboBoxSeparators.Name = "comboBoxSeparators";
             this.comboBoxSeparators.Size = new System.Drawing.Size(121, 21);
             this.comboBoxSeparators.TabIndex = 1;
@@ -1117,7 +1103,7 @@
             this.label18.AutoSize = true;
             this.label18.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label18.Location = new System.Drawing.Point(6, 6);
-            this.label18.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label18.Margin = new System.Windows.Forms.Padding(3);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(368, 26);
             this.label18.TabIndex = 0;
@@ -1183,7 +1169,7 @@
             this.tabPageEvaluate.Controls.Add(this.checkBoxDataLoggerTrainSpeed);
             this.tabPageEvaluate.Location = new System.Drawing.Point(4, 22);
             this.tabPageEvaluate.Name = "tabPageEvaluate";
-            this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageEvaluate.Size = new System.Drawing.Size(444, 403);
             this.tabPageEvaluate.TabIndex = 7;
             this.tabPageEvaluate.Text = "Evaluation";
@@ -1260,16 +1246,6 @@
             this.checkBoxDataLoggerTrainSpeed.TabIndex = 13;
             this.checkBoxDataLoggerTrainSpeed.Text = "Log train speed";
             this.checkBoxDataLoggerTrainSpeed.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxLODAlwaysMax
-            // 
-            this.checkBoxLODAlwaysMax.AutoSize = true;
-            this.checkBoxLODAlwaysMax.Location = new System.Drawing.Point(6, 171);
-            this.checkBoxLODAlwaysMax.Name = "checkBoxLODAlwaysMax";
-            this.checkBoxLODAlwaysMax.Size = new System.Drawing.Size(181, 17);
-            this.checkBoxLODAlwaysMax.TabIndex = 26;
-            this.checkBoxLODAlwaysMax.Text = "Always use highest detail objects";
-            this.checkBoxLODAlwaysMax.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1363,10 +1339,8 @@
         private System.Windows.Forms.ComboBox comboBoxWindowSize;
         private System.Windows.Forms.CheckBox checkBoxWindowGlass;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.CheckBox checkBoxTrainLights;
         private System.Windows.Forms.CheckBox checkBoxShadows;
         private System.Windows.Forms.CheckBox checkBoxWire;
-        private System.Windows.Forms.CheckBox checkBoxPrecipitation;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.NumericUpDown MinLengthChoice;
         private System.Windows.Forms.Label label6;

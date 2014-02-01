@@ -198,7 +198,7 @@ namespace ORTS
                 // Shift the clock forwards or backwards at 1h-per-second.
                 if (UserInput.IsDown(UserCommands.DebugClockForwards)) Viewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
                 if (UserInput.IsDown(UserCommands.DebugClockBackwards)) Viewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
-                if (Viewer.World.Precipitation != null && (UserInput.IsDown(UserCommands.DebugClockForwards) || UserInput.IsDown(UserCommands.DebugClockBackwards))) Viewer.World.Precipitation.Reset();
+                if (UserInput.IsDown(UserCommands.DebugClockForwards) || UserInput.IsDown(UserCommands.DebugClockBackwards)) Viewer.World.Precipitation.Reset();
             }
             // Server needs to notify clients of weather changes.
             if (MultiPlayer.MPManager.IsServer())

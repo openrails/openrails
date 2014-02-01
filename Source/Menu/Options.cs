@@ -76,8 +76,6 @@ namespace ORTS
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
             comboBoxWindowSize.Text = Settings.WindowSize;
             checkBoxAlerter.Checked = Settings.Alerter;
-            checkBoxTrainLights.Checked = Settings.TrainLights;
-            checkBoxPrecipitation.Checked = Settings.Precipitation;
             checkBoxWire.Checked = Settings.Wire;
             numericBrakePipeChargingRatePSIpS.Value = Settings.BrakePipeChargingRate;
             checkBoxGraduatedRelease.Checked = Settings.GraduatedRelease;
@@ -312,8 +310,6 @@ namespace ORTS
             Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
             Settings.WindowSize = comboBoxWindowSize.Text;
             Settings.Alerter = checkBoxAlerter.Checked;
-            Settings.TrainLights = checkBoxTrainLights.Checked;
-            Settings.Precipitation = checkBoxPrecipitation.Checked;
             Settings.Wire = checkBoxWire.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRatePSIpS.Value;
             Settings.GraduatedRelease = checkBoxGraduatedRelease.Checked;

@@ -267,10 +267,7 @@ namespace ORTS
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(lights":
-                    if (Simulator.Settings.TrainLights)
-                        Lights = new LightCollection(stf);
-                    else
-                        stf.SkipBlock();
+                    Lights = new LightCollection(stf);
                     break;
                 case "wagon(inside": ParseWagonInside(stf); break;
                 case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;

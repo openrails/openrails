@@ -98,7 +98,7 @@ namespace ORTS
 		// Audio settings:
 		[Default(5)]
 		public int SoundDetailLevel { get; set; }
-		[Default(false)]
+		[Default(true)]
 		public bool MSTSBINSound { get; set; }
 		[Default(100)]
 		public int SoundVolumePercent { get; set; }
@@ -108,10 +108,6 @@ namespace ORTS
 		public int WorldObjectDensity { get; set; }
 		[Default("1024x768")]
 		public string WindowSize { get; set; }
-		[Default(false)]
-		public bool TrainLights { get; set; }
-		[Default(false)]
-		public bool Precipitation { get; set; }
 		[Default(false)]
 		public bool Wire { get; set; }
 		[Default(false)]
