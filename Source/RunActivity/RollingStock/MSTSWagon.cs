@@ -755,7 +755,10 @@ namespace ORTS
             coupler.Rigid = coupler.R0Diff < .0002f;
             coupler.Stiffness1NpM = other.GetCouplerStiffnessNpM() / 7;
             coupler.Stiffness2NpM = 0;
-            Couplers[0]= coupler;
+            if (Couplers.Count == 0)
+                Couplers.Add(coupler);
+            else
+                Couplers[0]= coupler;
             if (Couplers.Count > 1)
                 Couplers.RemoveAt(1);
         }
