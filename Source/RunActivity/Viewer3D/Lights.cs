@@ -315,16 +315,19 @@ namespace ORTS
             LightConeMaterial = viewer.MaterialManager.Load("LightCone");
 
             UpdateState();
-            foreach (var light in Car.Lights.Lights)
+            if (Car.Lights != null)
             {
-                switch (light.Type)
+                foreach (var light in Car.Lights.Lights)
                 {
-                    case LightType.Glow:
-                        LightMeshes.Add(new LightGlowMesh(this, Viewer.RenderProcess, light));
-                        break;
-                    case LightType.Cone:
-                        LightMeshes.Add(new LightConeMesh(this, Viewer.RenderProcess, light));
-                        break;
+                    switch (light.Type)
+                    {
+                        case LightType.Glow:
+                            LightMeshes.Add(new LightGlowMesh(this, Viewer.RenderProcess, light));
+                            break;
+                        case LightType.Cone:
+                            LightMeshes.Add(new LightConeMesh(this, Viewer.RenderProcess, light));
+                            break;
+                    }
                 }
             }
             HasLightCone = LightMeshes.Any(lm => lm is LightConeMesh);
