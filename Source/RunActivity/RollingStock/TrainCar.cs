@@ -181,6 +181,7 @@ namespace ORTS
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // brake force in Newtons
         public float TotalForceN; // sum of all the forces active on car relative train direction
+        public float MaxTractiveEffortLbf;     // Maximum tractive effort for locomotive
 
         public float CurrentElevationPercent;
 

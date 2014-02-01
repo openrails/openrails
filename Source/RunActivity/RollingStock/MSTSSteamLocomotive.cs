@@ -320,7 +320,7 @@ namespace ORTS
         float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler is used to multiple boiler evaporation area by - used as a player customisation factor.
         float CylinderEfficiencyRate = 1.0f; // Factor to vary the output power of the cylinder without changing steam usage - used as a player customisation factor.
         float SpeedFactor;      // Speed factor - factor to reduce TE due to speed increase - American locomotive company
-        float MaxTractiveEffortLbf;     // Maximum tractive effort for locomotive
+      //  public float MaxTractiveEffortLbf;     // Maximum tractive effort for locomotive
         float MaxLocoSpeedMpH;      // Speed of loco when max performance reached
         float MaxPistonSpeedFtpM;   // Piston speed @ max performance for the locomotive
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
@@ -415,6 +415,7 @@ namespace ORTS
             {
                 BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
             }
+            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 10.0f, 15.0f); // Clamp BoilerEvap Rate to between 10 & 15
             TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2 ); // set max boiler theoretical steam output
 
             MaxBoilerHeatPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 5.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
@@ -1041,6 +1042,11 @@ namespace ORTS
                     FireIsExhausted = true; // fire has run out of fuel.
                 }
             }
+            if (FusiblePlugIsBlown)
+            {
+            BurnRateRawLBpS = 0.0f; // Drop fire due to melting of fusible plug and steam quenching fire, change later to allow graduate ramp down.
+            }
+            
             FireRatio = FireMassKG / IdealFireMassKG;
             if (absSpeedMpS == 0)
             {
@@ -1314,7 +1320,14 @@ namespace ORTS
             WaterTempIN = BkW_Diff / SpecificHeatWaterKJpKGpC;   // calculate water temp variation
             WaterTempNewK += elapsedClockSeconds * WaterTempIN; // Calculate new water temp
             WaterTempNewK = MathHelper.Clamp(WaterTempNewK, 274.0f, 496.0f);
+            if (FusiblePlugIsBlown)
+            {
+            BoilerPressurePSI = 5.0f; // Drop boiler pressure if fusible plug melts.
+            }
+            else
+            {
             BoilerPressurePSI = SaturationPressureKtoPSI[WaterTempNewK]; // Gauge Pressure
+            }
             
             if (!FiringIsManual)
             {
@@ -1454,6 +1467,7 @@ namespace ORTS
            // Caculate the piston speed
            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
             PistonSpeedFtpM = (2.0f * Me.ToFt(CylinderStrokeM)) * ((FeetinMile * MpS.ToMpH(absSpeedMpS)) / ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) );
+            CylinderEfficiencyRate = MathHelper.Clamp(CylinderEfficiencyRate, 0.6f, 1.2f); // Clamp Cylinder Efficiency Rate to between 0.6 & 1.2
             TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI * CylinderEfficiencyRate;
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
                       

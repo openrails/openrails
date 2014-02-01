@@ -57,11 +57,17 @@ namespace ORTS
         public bool DoorLeftOpen;
         public bool DoorRightOpen;
         public bool MirrorOpen;
+        public bool IsSteam; // Set as steam locomotive
+        public bool IsRollerBearing; // Has roller bearings
+        public bool IsStandStill = true;  // Used for MSTS type friction
+        public bool IsDavisFriction = true; // Default to new Davis type friction
+        public bool IsLowSpeed = true; // set indicator for low speed operation  0 - 5mph
 
         // simulation parameters
         public float Variable1;  // used to convey status to soundsource
         public float Variable2;
         public float Variable3;
+        float s;    // speed variable
 
         // wag file data
         public string MainShapeFileName;
@@ -73,11 +79,17 @@ namespace ORTS
         public string InteriorSoundFileName;
         public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
         public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case i'ts missing from the wag
+        float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
+        float RollerBearingCutoutSpeedMpS; // Speed at which the roller bearing will no longer have a reduced influence on friction
         public float Friction0N;        // static friction
-        public bool IsStandStill = true;
+        float Friction5N;               // Friction at 5mph
+        float DavisANnew;               // Temporary value of Davis A for roller bearing calculations
+        float RollerBearingFrictionN; // Temp value for calculating roller bearing friction
         public float DavisAN;           // davis equation constant
         public float DavisBNSpM;        // davis equation constant for speed
         public float DavisCNSSpMM;      // davis equation constant for speed squared
+        public float DrvWheelWeightKg; // weight on locomotive drive wheel, includes drag factor
+        public float SteamLocoMechFrictN; // Steam locomotive mechanical friction
         public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
         public float Adhesion1 = .27f;   // 1st MSTS adhesion value
         public float Adhesion2 = .49f;   // 2nd MSTS adhesion value
@@ -174,7 +186,21 @@ namespace ORTS
                 case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (MassKG < 0.1f) MassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(type":
+                    stf.MustMatch("(");
+                    string typeString1 = stf.ReadString();
+                    IsSteam = String.Compare(typeString1, "Steam") == 0 ? true : false;
+                    break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
+                case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortsbearingtype":
+		            stf.MustMatch("(");
+		            string typeString2 = stf.ReadString();
+		            IsRollerBearing = String.Compare(typeString2,"Roller") == 0 ? true : false;
+		            break;
                 case "wagon(friction": ParseFriction(stf); break;
                 case "wagon(brakesystemtype":
                     brakeSystemType = stf.ReadStringBlock(null).ToLower();
@@ -274,11 +300,14 @@ namespace ORTS
             MainSoundFileName = copy.MainSoundFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
             WheelRadiusM = copy.WheelRadiusM;
+            IsSteam = copy.IsSteam;
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
             Friction0N = copy.Friction0N;
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
+            DrvWheelWeightKg = copy.DrvWheelWeightKg;
+            IsRollerBearing = copy.IsRollerBearing;
             LengthM = copy.LengthM;
 			HeightM = copy.HeightM;
             MassKG = copy.MassKG;
@@ -318,67 +347,71 @@ namespace ORTS
         }
         public void ParseFriction(STFReader stf)
         {
-            stf.MustMatch("(");
-            float c1 = stf.ReadFloat(STFReader.UNITS.Resistance, null);
-            float e1 = stf.ReadFloat(STFReader.UNITS.None, null);
-            float v2 = stf.ReadFloat(STFReader.UNITS.Speed,null);
-            float c2 = stf.ReadFloat(STFReader.UNITS.Resistance, null);
-            float e2 = stf.ReadFloat(STFReader.UNITS.None, null);
-            stf.SkipRestOfBlock();
-            if (v2 < 0 || v2 > 4.4407f) // > 10 mph
-            {   // not fcalc ignore friction and use default davis equation
-                // Starting Friction 
-                //
-                //                      Above Freezing   Below Freezing
-                //    Journal Bearing      25 lb/ton        35 lb/ton   (short ton)
-                //     Roller Bearing       5 lb/ton        15 lb/ton
-                //
-                // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
-                //Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg 
-                DavisAN = 6.3743f * MassKG / 1000 + 128.998f * 4;
-                DavisBNSpM = .49358f * MassKG / 1000;
-                DavisCNSSpMM = .11979f * 100 / 10.76f;
-                Friction0N = DavisAN * 2.0f;            //More firendly to high load trains and the new physics
-            }
-            else
-            {   // probably fcalc, recover approximate davis equation
-                float mps1 = v2;
-                float mps2 = 80 * .44704f;
-                float s = mps2 - mps1;
-                float x1 = mps1 * mps1;
-                float x2 = mps2 * mps2;
-                float sx = (x2 - x1) / 2;
-                float y0 = c1 * (float)Math.Pow(mps1, e1) + c2 * mps1;
-                float y1 = c2 * (float)Math.Pow(mps1, e2) * mps1;
-                float y2 = c2 * (float)Math.Pow(mps2, e2) * mps2;
-                float sy = y0 * (mps2 - mps1) + (y2 - y1) / (1 + e2);
-                y1 *= mps1;
-                y2 *= mps2;
-                float syx = y0 * (x2 - x1) / 2 + (y2 - y1) / (2 + e2);
-                x1 *= mps1;
-                x2 *= mps2;
-                float sx2 = (x2 - x1) / 3;
-                y1 *= mps1;
-                y2 *= mps2;
-                float syx2 = y0 * (x2 - x1) / 3 + (y2 - y1) / (3 + e2);
-                x1 *= mps1;
-                x2 *= mps2;
-                float sx3 = (x2 - x1) / 4;
-                x1 *= mps1;
-                x2 *= mps2;
-                float sx4 = (x2 - x1) / 5;
-                float s1 = syx - sy * sx / s;
-                float s2 = sx * sx2 / s - sx3;
-                float s3 = sx2 - sx * sx / s;
-                float s4 = syx2 - sy * sx2 / s;
-                float s5 = sx2 * sx2 / s - sx4;
-                float s6 = sx3 - sx * sx2 / s;
-                DavisCNSSpMM = (s1 * s6 - s3 * s4) / (s3 * s5 - s2 * s6);
-                DavisBNSpM = (s1 + DavisCNSSpMM * s2) / s3;
-                DavisAN = (sy - DavisBNSpM * sx - DavisCNSSpMM * sx2) / s;
-                Friction0N = c1;
-                if (e1 < 0)
-                    Friction0N *= (float)Math.Pow(.0025 * .44704, e1);
+            if (DavisAN == 0 || DavisBNSpM == 0 || DavisCNSSpMM == 0) // If Davis parameters are not defined in WAG file, then use default methods
+                IsDavisFriction = false; // set to false - indicating that "new" Davis friction is not used
+            {
+                stf.MustMatch("(");
+                float c1 = stf.ReadFloat(STFReader.UNITS.Resistance, null);
+                float e1 = stf.ReadFloat(STFReader.UNITS.None, null);
+                float v2 = stf.ReadFloat(STFReader.UNITS.Speed, null);
+                float c2 = stf.ReadFloat(STFReader.UNITS.Resistance, null);
+                float e2 = stf.ReadFloat(STFReader.UNITS.None, null);
+                stf.SkipRestOfBlock();
+                if (v2 < 0 || v2 > 4.4407f) // > 10 mph
+                {   // not fcalc ignore friction and use default davis equation
+                    // Starting Friction 
+                    //
+                    //                      Above Freezing   Below Freezing
+                    //    Journal Bearing      25 lb/ton        35 lb/ton   (short ton)
+                    //     Roller Bearing       5 lb/ton        15 lb/ton
+                    //
+                    // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
+                    //Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg 
+                    DavisAN = 6.3743f * MassKG / 1000 + 128.998f * 4;
+                    DavisBNSpM = .49358f * MassKG / 1000;
+                    DavisCNSSpMM = .11979f * 100 / 10.76f;
+                    Friction0N = DavisAN * 2.0f;            //More firendly to high load trains and the new physics
+                }
+                else
+                {   // probably fcalc, recover approximate davis equation
+                    float mps1 = v2;
+                    float mps2 = 80 * .44704f;
+                    float s = mps2 - mps1;
+                    float x1 = mps1 * mps1;
+                    float x2 = mps2 * mps2;
+                    float sx = (x2 - x1) / 2;
+                    float y0 = c1 * (float)Math.Pow(mps1, e1) + c2 * mps1;
+                    float y1 = c2 * (float)Math.Pow(mps1, e2) * mps1;
+                    float y2 = c2 * (float)Math.Pow(mps2, e2) * mps2;
+                    float sy = y0 * (mps2 - mps1) + (y2 - y1) / (1 + e2);
+                    y1 *= mps1;
+                    y2 *= mps2;
+                    float syx = y0 * (x2 - x1) / 2 + (y2 - y1) / (2 + e2);
+                    x1 *= mps1;
+                    x2 *= mps2;
+                    float sx2 = (x2 - x1) / 3;
+                    y1 *= mps1;
+                    y2 *= mps2;
+                    float syx2 = y0 * (x2 - x1) / 3 + (y2 - y1) / (3 + e2);
+                    x1 *= mps1;
+                    x2 *= mps2;
+                    float sx3 = (x2 - x1) / 4;
+                    x1 *= mps1;
+                    x2 *= mps2;
+                    float sx4 = (x2 - x1) / 5;
+                    float s1 = syx - sy * sx / s;
+                    float s2 = sx * sx2 / s - sx3;
+                    float s3 = sx2 - sx * sx / s;
+                    float s4 = syx2 - sy * sx2 / s;
+                    float s5 = sx2 * sx2 / s - sx4;
+                    float s6 = sx3 - sx * sx2 / s;
+                    DavisCNSSpMM = (s1 * s6 - s3 * s4) / (s3 * s5 - s2 * s6);
+                    DavisBNSpM = (s1 + DavisCNSSpMM * s2) / s3;
+                    DavisAN = (sy - DavisBNSpM * sx - DavisCNSSpMM * sx2) / s;
+                    Friction0N = c1;
+                    if (e1 < 0)
+                        Friction0N *= (float)Math.Pow(.0025 * .44704, e1);
+                }
             }
         }
         
@@ -451,16 +484,92 @@ namespace ORTS
         {
             base.Update(elapsedClockSeconds);
 
-            float s = Math.Abs(SpeedMpS);
-            if (s > 0.1)
-                IsStandStill = false;
-            if (s == 0.0)
-                IsStandStill = true;
+            if (IsDavisFriction)  // If set to use nex Davis friction the do so
+            {
 
-            if(IsStandStill)
-                FrictionForceN = Friction0N;
-            else
-                FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM);
+                // Davis formulas only apply above about 5mph, so different treatment required for low speed < 5mph.
+                s = Math.Abs(SpeedMpS);
+                if (s > 2.2352)     // if speed above 5 mph then turn off low speed calculations
+                    IsLowSpeed = false;
+                if (s == 0.0)
+                    IsLowSpeed = true;
+
+                // Calculate steam locomotive mechanical friction value, ie 20 (or 98.0667 metric) x DrvWheelWeight x Valve Factor, Assume VF = 1
+                // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.25
+                if (IsSteam)
+                {
+                    if (DrvWheelWeightKg == 0)
+                    {
+                        const float FactorofAdhesion = 4.0f; // Assume a typical factor of adhesion
+                        DrvWheelWeightKg = Kg.FromLb(FactorofAdhesion * MaxTractiveEffortLbf); // calculate Drive wheel weight if not in ENG file
+                    }
+                    const float MetricTonneFromKg = 1000.0f;    // Conversion factor to convert from kg to tonnes
+                    SteamLocoMechFrictN = 98.0667f * (DrvWheelWeightKg / MetricTonneFromKg);
+                }
+                else
+                {
+                    SteamLocoMechFrictN = 0.0f; // if not a steam locomotive set mechanical friction to zero
+                }
+                if (IsLowSpeed)
+                {
+                    const float s5 = 2.2352f; // 5 mph
+                    Friction5N = DavisAN + s5 * (DavisBNSpM + s5 * DavisCNSSpMM); // Calculate friction @ 5 mph
+                    if (IsRollerBearing)
+                    {
+                        StaticFrictionFactorLb = 12.0f; // multiplier factor for roller bearings - 10lbs / short ton, seems low so try 12lbs
+                        DavisANnew = DavisAN;
+                        RollerBearingFrictionN = 0.9f * (DavisAN - SteamLocoMechFrictN); // Roller bearing friction reduced to 90% when train operating between 5 & 35mph
+                        DavisANnew = RollerBearingFrictionN + SteamLocoMechFrictN; // Calculate new Davis A value based on a reduction for roller bearing               
+                        Friction5N = DavisANnew + s5 * (DavisBNSpM + s5 * DavisCNSSpMM); // Calculate friction @ 5 mph - normal for friction bearings
+                    }
+                    else
+                    {
+                        StaticFrictionFactorLb = 20.0f; // multiplier factor for friction bearings - 20lbs / short ton
+                        Friction5N = DavisAN + s5 * (DavisBNSpM + s5 * DavisCNSSpMM); // Calculate friction @ 5 mph - normal for friction bearings
+                    }
+                    Friction0N = N.FromLbf(Kg.ToTUS(MassKG) * StaticFrictionFactorLb) + SteamLocoMechFrictN; // Static friction is journal or roller bearing friction x factor + Mech Factor if steam 
+                    float FrictionLowSpeedN = ((1.0f - (s / s5)) * (Friction0N - Friction5N)) + Friction5N; // Calculate friction below 5mph - decreases linearly with speed
+                    FrictionForceN = FrictionLowSpeedN; // At low speed use this value
+                }
+                else
+                {
+                    if (IsRollerBearing)
+                    {
+                        RollerBearingCutoutSpeedMpS = MpS.FromMpH(35.0f);  // set the roller bearing cutout speed at 35mph
+                        if (s < RollerBearingCutoutSpeedMpS)
+                        {
+                            DavisANnew = DavisAN;
+                            RollerBearingFrictionN = 0.9f * (DavisANnew - SteamLocoMechFrictN); // Roller bearing friction reduced to 90% when train operating between 5 & 35mph
+                            DavisANnew = RollerBearingFrictionN + SteamLocoMechFrictN; // Calculate new Davis A value based on a reduction for roller bearing                
+                            FrictionForceN = DavisANnew + s * (DavisBNSpM + s * DavisCNSSpMM); // At speeds above 35mph use this value for roller bearings
+                        }
+                        else
+                        {
+                            FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM); // At speeds above 35mph use this value for roller bearings
+                        }
+                    }
+                    else
+                    {
+                        FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM); // for friction bearings use this formula
+                    }
+                }
+            }
+            else  // else use old MSTS type friction
+            {
+                s = Math.Abs(SpeedMpS);
+                if (s > 0.1)
+                    IsStandStill = false;
+                if (s == 0.0)
+                    IsStandStill = true;
+
+                if (IsStandStill)
+                    FrictionForceN = Friction0N;
+                else
+                    FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM);
+            }
+
+
+
 
             foreach (MSTSCoupling coupler in Couplers)
             {
