@@ -109,6 +109,10 @@ namespace ORTS
 		[Default("1024x768")]
 		public string WindowSize { get; set; }
 		[Default(false)]
+        public bool TrainLights { get; set; }
+        [Default(false)]
+        public bool Precipitation { get; set; }
+        [Default(false)]
 		public bool Wire { get; set; }
 		[Default(false)]
 		public bool DynamicShadows { get; set; }
@@ -172,6 +176,9 @@ namespace ORTS
         // Experimental settings for Ambient Lighting
         [Default(20)]
         public int DayAmbientLight { get; set; }
+
+        [Default(false)]
+        public bool UseMSTSEnv { get; set; }
 
 		// Data Logger settings:
 		[Default("comma")]

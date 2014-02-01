@@ -467,7 +467,11 @@ namespace ORTS
             // Service
             var newCarInService = Car.Train != null;
             // Time of day
-            var newIsDay = Viewer.World.Sky.solarDirection.Y > 0;
+            bool newIsDay = false;
+            if (Viewer.Settings.UseMSTSEnv == false)
+                newIsDay = Viewer.World.Sky.solarDirection.Y > 0;
+            else
+                newIsDay = Viewer.World.MSTSSky.mstsskysolarDirection.Y > 0;
             // Weather
             var newWeather = Viewer.Simulator.Weather;
             // Coupling

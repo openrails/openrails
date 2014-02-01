@@ -224,7 +224,11 @@ namespace ORTS
 
         public void PrepareFrame(Viewer3D viewer)
         {
-            SolarDirection = viewer.World.Sky.solarDirection;
+            if (viewer.Settings.UseMSTSEnv == false)
+                SolarDirection = viewer.World.Sky.solarDirection;
+            else
+                SolarDirection = viewer.World.MSTSSky.mstsskysolarDirection;
+
             if (ShadowMapMaterial == null)
                 ShadowMapMaterial = (ShadowMapMaterial)viewer.MaterialManager.Load("ShadowMap");
             if (SceneryShader == null)

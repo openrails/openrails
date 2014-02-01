@@ -82,9 +82,6 @@
     <Compile Include="..\MSTS\ENGFile.cs">
       <Link>MSTS\ENGFile.cs</Link>
     </Compile>
-    <Compile Include="..\MSTS\ENVFile.cs">
-      <Link>MSTS\ENVFile.cs</Link>
-    </Compile>
     <Compile Include="..\MSTS\FFile.cs">
       <Link>MSTS\FFile.cs</Link>
     </Compile>
@@ -184,6 +181,7 @@
     <Compile Include="..\ORTS\UserSettings.cs">
       <Link>ORTS\UserSettings.cs</Link>
     </Compile>
+    <Compile Include="MSTS\ENVFile.cs" />
     <Compile Include="MSTS\HAZFile.cs" />
     <Compile Include="Popups\CarOperationsWindow.cs" />
     <Compile Include="Processes\Game.cs" />
@@ -316,6 +314,7 @@
     <Compile Include="Viewer3D\InfoDisplay.cs" />
     <Compile Include="Viewer3D\Lights.cs" />
     <Compile Include="Viewer3D\Materials.cs" />
+    <Compile Include="Viewer3D\MSTSSky.cs" />
     <Compile Include="Viewer3D\OpenAL.cs" />
     <Compile Include="Viewer3D\ParticleEmitter.cs" />
     <Compile Include="Viewer3D\Precipitation.cs" />

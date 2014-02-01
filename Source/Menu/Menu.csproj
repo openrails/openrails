@@ -127,6 +127,7 @@
     <Compile Include="KeyPressControl.Designer.cs">
       <DependentUpon>KeyPressControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="MSTS\ENVFile.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
