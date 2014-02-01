@@ -117,6 +117,7 @@ namespace ORTS
             comboBoxDataLoggerSpeedUnits.Text = settings.DataLogSpeedUnits;
             numericUpDownAdhesionFilterSize.Value = settings.AdhesionMovingAverageFilterSize;
             checkBoxUseLocationPassingPaths.Checked = settings.UseLocationPassingPaths;
+            checkBoxUseMSTSEnv.Checked = settings.UseMSTSEnv;
             trackBarDayAmbientLight.Value = settings.DayAmbientLight;
         }
 
@@ -352,6 +353,7 @@ namespace ORTS
             Settings.AdhesionMovingAverageFilterSize = (int)numericUpDownAdhesionFilterSize.Value;
             Settings.UseLocationPassingPaths = checkBoxUseLocationPassingPaths.Checked;
             Settings.DayAmbientLight = (int)trackBarDayAmbientLight.Value;
+            Settings.UseMSTSEnv = checkBoxUseMSTSEnv.Checked;
 
             Settings.Save();
 
