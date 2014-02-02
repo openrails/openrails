@@ -201,7 +201,7 @@ namespace ORTS
             // Will be updated continuously:
             Script.TrainSpeedLimitMpS = () => float.MinValue;
             Script.NextSignalSpeedLimitMpS = () => float.MinValue;
-            Script.NextSignalAspect = () => TCSSignalAspect.None;
+            Script.NextSignalAspect = () => Aspect.None;
             Script.NextSignalDistanceM = () => float.MinValue;
             Script.NextPostSpeedLimitMpS = () => float.MinValue;
             Script.NextPostDistanceM = () => float.MinValue;
@@ -229,7 +229,7 @@ namespace ORTS
             {
                 Script.TrainSpeedLimitMpS = () => float.MinValue;
                 Script.NextSignalSpeedLimitMpS = () => float.MinValue;
-                Script.NextSignalAspect = () => TCSSignalAspect.None;
+                Script.NextSignalAspect = () => Aspect.None;
                 Script.NextSignalDistanceM = () => float.MinValue;
                 Script.NextPostSpeedLimitMpS = () => float.MinValue;
                 Script.NextPostDistanceM = () => float.MinValue;
@@ -246,7 +246,7 @@ namespace ORTS
                 if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL && !nextSignalFound)
                 {
                     Script.NextSignalSpeedLimitMpS = () => foundItem.AllowedSpeedMpS;
-                    Script.NextSignalAspect = () => (TCSSignalAspect)foundItem.SignalState;
+                    Script.NextSignalAspect = () => (Aspect)foundItem.SignalState;
                     Script.NextSignalDistanceM = () => foundItem.DistanceToTrainM;
 
                     nextSignalFound = true;
@@ -268,7 +268,7 @@ namespace ORTS
             if (!nextSignalFound)
             {
                 Script.NextPostSpeedLimitMpS = () => float.MinValue;
-                Script.NextSignalAspect = () => TCSSignalAspect.None;
+                Script.NextSignalAspect = () => Aspect.None;
                 Script.NextSignalDistanceM = () => float.MinValue;
             }
             if (!nextSpeedpostFound)

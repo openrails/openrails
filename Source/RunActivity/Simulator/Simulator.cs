@@ -120,7 +120,7 @@ namespace ORTS
         // Perhaps an Observer design pattern would be better, so the Simulator sends messages to any observers. </CJComment>
         public Confirmer Confirmer;                 // Set by the Viewer
         public Event SoundNotify = Event.None;
-        public ScriptManager ScriptManager { get; private set; }
+        public ScriptManager ScriptManager;
 
         public Simulator(UserSettings settings, string activityPath)
         {

@@ -37,8 +37,6 @@ namespace ORTS.Scripting
         static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } }); 
         static readonly CompilerParameters CompilerParameters = new CompilerParameters();
 
-        const string ScriptNamespace = "ORTS.Scripting.Script";
-
         [CallOnThread("Loader")]
         internal ScriptManager(Simulator simulator)
         {
@@ -65,7 +63,7 @@ namespace ORTS.Scripting
 
             var path = ORTSPaths.GetFileFromFolders(pathArray, name).ToLowerInvariant();
 
-            var type = String.Format("{0}.{1}", ScriptNamespace, Path.GetFileNameWithoutExtension(path));
+            var type = String.Format("ORTS.Scripting.Script.{0}", Path.GetFileNameWithoutExtension(path));
 
             if (path == null || path == "")
                 return null;
@@ -79,11 +77,7 @@ namespace ORTS.Scripting
                 var prefixLines = 3;
                 using (var sr = new StreamReader(path))
                 {
-                    sourceCode.Append("using System;" + Environment.NewLine);
-                    sourceCode.Append("using ORTS.Scripting.Api;" + Environment.NewLine);
-                    sourceCode.Append("namespace " + ScriptNamespace + " {" + Environment.NewLine);
                     sourceCode.Append(sr.ReadToEnd());
-                    sourceCode.Append("}" + Environment.NewLine);
                     sr.Close();
                 }
 
@@ -174,7 +168,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Aspect of the next signal.
         /// </summary>
-        public Func<TCSSignalAspect> NextSignalAspect;
+        public Func<Aspect> NextSignalAspect;
         /// <summary>
         /// Distance to next signal.
         /// </summary>
@@ -270,7 +264,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Will be whown on ASPECT_DISPLAY cabcontrol.
         /// </summary>
-        public Action<TCSSignalAspect> SetNextSignalAspect;
+        public Action<Aspect> SetNextSignalAspect;
 
         /// <summary>
         /// Called once at initialization time.
@@ -294,6 +288,9 @@ namespace ORTS.Scripting.Api
         public abstract void SetEmergency();
     }
 
+    /// <summary>
+    /// Base class for Timer and OdoMeter. Not to be used directly.
+    /// </summary>
     public class Counter
     {
         float EndValue;
@@ -310,10 +307,11 @@ namespace ORTS.Scripting.Api
     public class Timer : Counter { public Timer(TrainControlSystem tcs) { CurrentValue = tcs.ClockTime; } }
     public class OdoMeter : Counter { public OdoMeter(TrainControlSystem tcs) { CurrentValue = tcs.DistanceM; } }
 
+    // Represents the same enum as TrackMonitorSignalAspect
     /// <summary>
-    /// Represents the same enum as TrackMonitorSignalAspect
+    /// A signal aspect, as shown on track monitor
     /// </summary>
-    public enum TCSSignalAspect
+    public enum Aspect
     {
         None,
         Clear_2,
