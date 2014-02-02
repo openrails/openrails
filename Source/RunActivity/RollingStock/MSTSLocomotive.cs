@@ -3479,8 +3479,12 @@ namespace ORTS
 
             if (_Location == 0 && _Shader != null)
             {
+                if(_Viewer.Settings.UseMSTSEnv == false)
                 _Shader.SetData(_Viewer.MaterialManager.sunDirection,
                     _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.Sky.overcastFactor);
+                else
+                    _Shader.SetData(_Viewer.MaterialManager.sunDirection,
+                _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.MSTSSky.mstsskyovercastFactor);
 
                 _Shader.SetTextureData(stretchedCab.Left, stretchedCab.Top, stretchedCab.Width, stretchedCab.Height);
                 _Shader.Begin();
