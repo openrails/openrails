@@ -137,7 +137,7 @@ namespace ORTS
 
         public ResumeForm(UserSettings settings, Route route, Activity activity, MainForm parentForm)
         {
-            ParentForm = parentForm;
+            parentForm = ParentForm;
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows

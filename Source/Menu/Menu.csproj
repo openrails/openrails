@@ -61,9 +61,6 @@
     <Compile Include="..\MSTS\CONFile.cs">
       <Link>MSTS\CONFile.cs</Link>
     </Compile>
-    <Compile Include="..\MSTS\ENGFile.cs">
-      <Link>MSTS\ENGFile.cs</Link>
-    </Compile>
     <Compile Include="..\MSTS\PATFile.cs">
       <Link>MSTS\PATFile.cs</Link>
     </Compile>
@@ -127,6 +124,7 @@
     <Compile Include="KeyPressControl.Designer.cs">
       <DependentUpon>KeyPressControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="MSTS\ENGFile.cs" />
     <Compile Include="MSTS\ENVFile.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
