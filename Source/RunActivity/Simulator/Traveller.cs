@@ -540,11 +540,14 @@ namespace ORTS
 
             // Do a preliminary cull based on a bounding square around the track section.
             // Bounding distance is (length + error) by (length + error) around starting coordinates.
-            var boundingDistance = trackSection.SectionSize.Length + MaximumCenterlineOffset;
-            var dx = Math.Abs(x - sx);
-            var dz = Math.Abs(z - sz);
-            if (dx > boundingDistance || dz > boundingDistance)
-                return null;
+            if (trackSection != null && trackSection.SectionSize != null)
+            {
+                var boundingDistance = trackSection.SectionSize.Length + MaximumCenterlineOffset;
+                var dx = Math.Abs(x - sx);
+                var dz = Math.Abs(z - sz);
+                if (dx > boundingDistance || dz > boundingDistance)
+                    return null;
+            }
 
             // Calculate distance along and away from the track centerline.
             float lat, lon;
