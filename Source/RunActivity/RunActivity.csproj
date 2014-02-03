@@ -178,8 +178,8 @@
     <Compile Include="..\ORTS\UserSettings.cs">
       <Link>ORTS\UserSettings.cs</Link>
     </Compile>
-    <Compile Include="MSTS\ENGFile.cs" />
-    <Compile Include="MSTS\ENVFile.cs" />
+    <Compile Include="Common\ENGFile.cs" />
+    <Compile Include="Common\ENVFile.cs" />
     <Compile Include="MSTS\HAZFile.cs" />
     <Compile Include="Popups\CarOperationsWindow.cs" />
     <Compile Include="Processes\Game.cs" />

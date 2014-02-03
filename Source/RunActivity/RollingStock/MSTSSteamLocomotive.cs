@@ -145,7 +145,7 @@ namespace ORTS
         float BurnRateMultiplier = 1.0f; // Used to vary the rate at which fuels burns at - used as a player customisation factor.
         float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
         float PressureRatio = 0.01f;    // Ratio to control burn rate - based upon boiler pressure
-        float BurnRateRawLBpS;           // Raw burnrate
+        public float BurnRateRawLBpS;           // Raw burnrate
         SmoothedData FuelRateStokerLBpS = new SmoothedData(30); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRate = new SmoothedData(90); // Automatic fireman takes x seconds to fully react to changing needs.
         SmoothedData BurnRateSmoothLBpS = new SmoothedData(300); // Changes in BurnRate take x seconds to fully react to changing needs.
@@ -2463,6 +2463,14 @@ namespace ORTS
     {
         const float LBToKG = 0.45359237f;
         const float SteamVaporDensityAt100DegC1BarM3pKG = 1.694f;
+        float Throttlepercent;
+        float Burn_Rate;
+        float Steam_Rate;
+        float Color_Value;
+        float Pulse_Rate;
+        float pulse = 0.1f;
+        float steamcolor = 1.0f;
+        float old_Distance_Travelled = 0.0f;
 
         MSTSSteamLocomotive SteamLocomotive { get{ return (MSTSSteamLocomotive)Car;}}
         List<ParticleEmitterDrawer> Cylinders = new List<ParticleEmitterDrawer>();
@@ -2654,6 +2662,7 @@ namespace ORTS
             var steamVolumeM3pS = Kg.FromLb(steamUsageLBpS) * SteamVaporDensityAt100DegC1BarM3pKG;
             var cocksVolumeM3pS = Kg.FromLb(cockSteamUsageLBps) * SteamVaporDensityAt100DegC1BarM3pKG;
             var safetyVolumeM3pS = Kg.FromLb(safetySteamUsageLBps) * SteamVaporDensityAt100DegC1BarM3pKG;
+
             foreach (var drawer in Cylinders)
                 drawer.SetOutput(car.CylinderCocksAreOpen ? cocksVolumeM3pS : 0);
 
@@ -2665,34 +2674,31 @@ namespace ORTS
             
             foreach (var drawer in Stack)
             {
-                float Throttlepercent;
-                float Burn_Rate;
-                float Steam_Rate;
-                float Color_Value;
-                float Pulse_Rate;
-                float pulse = 1.0f;
-                float old_Distance_Travelled = 0.0f;
 
-                Throttlepercent = Math.Max ( car.ThrottlePercent / 10f, 1f );
+                Throttlepercent = Math.Max ( car.ThrottlePercent / 10f, 0f );
 
                 Burn_Rate = car.FireRatio;
 
                 Steam_Rate = steamVolumeM3pS;
 
-                Pulse_Rate = (( MathHelper.Pi * (SteamLocomotive.DriverWheelRadiusM * SteamLocomotive.DriverWheelRadiusM)) / 4.0f);
+                Pulse_Rate = ( MathHelper.Pi * SteamLocomotive.DriverWheelRadiusM / 4 );
 
-                if ((old_Distance_Travelled + Pulse_Rate) < Viewer.PlayerTrain.DistanceTravelledM)
-                {
-                    if (pulse == 0.25f)
+                if (pulse == 0.1f)
+                    if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + (Pulse_Rate / 4))
+                    {
                         pulse = 1.0f;
-                    else
-                        pulse = 0.25f;
+                        steamcolor = .01f;
+                    }
+                if  (pulse == 1.0f)
+                     if ( Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + Pulse_Rate )
+                    {
+                        pulse = 0.1f;
+                        steamcolor = 1.0f;
+                        old_Distance_Travelled = Viewer.PlayerTrain.DistanceTravelledM;
+                    }
+                Color_Value = ( steamVolumeM3pS * steamcolor ) + (car.Smoke.SmoothedValue / 2 ) / 256 * 100f;
 
-                    old_Distance_Travelled = Viewer.PlayerTrain.DistanceTravelledM;
-                }
-                Color_Value =  (( steamVolumeM3pS * .10f ) * pulse)  +  ( car.Smoke.SmoothedValue / 2 ) / 256 * 100f ;
-
-                drawer.SetOutput((Steam_Rate * pulse) + Burn_Rate, Throttlepercent);
+                drawer.SetOutput((car.CylinderSteamUsageLBpS * steamcolor ) + ( Burn_Rate ) , Throttlepercent + (Burn_Rate) );
                 drawer.SetColor(new Color(Color_Value, Color_Value, Color_Value));
                
             }
