@@ -3005,22 +3005,13 @@ namespace ORTS
             if (DayTextures.Keys.Contains(FileName))
                 return;
 
-            if (File.Exists(FileName))
-                DayTextures.Add(FileName, viewer.TextureManager.Get(FileName));
-            else
-                DayTextures.Add(FileName, SharedMaterialManager.MissingTexture);
+            DayTextures.Add(FileName, viewer.TextureManager.Get(FileName));
 
             var nightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "night"), Path.GetFileName(FileName));
-            if (File.Exists(nightpath))
-                NightTextures.Add(FileName, viewer.TextureManager.Get(nightpath));
-            else
-                NightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
+            NightTextures.Add(FileName, viewer.TextureManager.Get(nightpath));
 
             var lightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "cablight"), Path.GetFileName(FileName));
-            if (File.Exists(lightpath))
-                LightTextures.Add(FileName, viewer.TextureManager.Get(lightpath));
-            else
-                LightTextures.Add(FileName, SharedMaterialManager.MissingTexture);
+            LightTextures.Add(FileName, viewer.TextureManager.Get(lightpath));
         }
 
         static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, Point controlSize, int frameCount, Point frameGrid, string fileName)

@@ -74,7 +74,7 @@ namespace ORTS.Scripting
             try
             {
                 var sourceCode = new StringBuilder();
-                var prefixLines = 3;
+                var prefixLines = 0;
                 using (var sr = new StreamReader(path))
                 {
                     sourceCode.Append(sr.ReadToEnd());

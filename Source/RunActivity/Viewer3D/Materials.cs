@@ -58,15 +58,24 @@ namespace ORTS
                 try
                 {
                     Texture2D texture;
-                    if (Path.GetExtension(path) == ".dds")
+                    if (Path.GetExtension(path) == ".dds" && File.Exists(path))
+                    {
                         DDSLib.DDSFromFile(path, GraphicsDevice, true, out texture);
+                    }
                     else if (Path.GetExtension(path) == ".ace")
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
+
                         if (Viewer.Settings.PreferDDSTexture && File.Exists(alternativeTexture))
+                        {
                             DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
-                        else
+                        }
+                        else if (File.Exists(path))
+                        {
                             texture = MSTS.ACEFile.Texture2DFromFile(GraphicsDevice, path);
+                        }
+                        else
+                            return SharedMaterialManager.MissingTexture;
                     }
                     else
                         return SharedMaterialManager.MissingTexture;

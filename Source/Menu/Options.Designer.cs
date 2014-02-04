@@ -56,7 +56,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.numericWorldObjectDensity = new System.Windows.Forms.NumericUpDown();
             this.comboBoxWindowSize = new System.Windows.Forms.ComboBox();
-            this.checkBoxPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.checkBoxWindowGlass = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.checkBoxShadows = new System.Windows.Forms.CheckBox();
@@ -97,6 +96,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.ElevationAmount = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
+            this.checkBoxPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.tabPageDataLogger = new System.Windows.Forms.TabPage();
             this.comboBoxDataLoggerSpeedUnits = new System.Windows.Forms.ComboBox();
             this.comboBoxSeparators = new System.Windows.Forms.ComboBox();
@@ -263,7 +263,7 @@
             this.tabPageGeneral.Controls.Add(this.label4);
             this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
             this.tabPageGeneral.Name = "tabPageGeneral";
-            this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageGeneral.Size = new System.Drawing.Size(444, 403);
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
@@ -278,8 +278,8 @@
             this.tabPageAudio.Controls.Add(this.checkBoxBINSound);
             this.tabPageAudio.Location = new System.Drawing.Point(4, 22);
             this.tabPageAudio.Name = "tabPageAudio";
-            this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPageAudio.Size = new System.Drawing.Size(444, 403);
+            this.tabPageAudio.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageAudio.Size = new System.Drawing.Size(444, 420);
             this.tabPageAudio.TabIndex = 5;
             this.tabPageAudio.Text = "Audio";
             this.tabPageAudio.UseVisualStyleBackColor = true;
@@ -359,15 +359,14 @@
             this.tabPageVideo.Controls.Add(this.label1);
             this.tabPageVideo.Controls.Add(this.numericWorldObjectDensity);
             this.tabPageVideo.Controls.Add(this.comboBoxWindowSize);
-            this.tabPageVideo.Controls.Add(this.checkBoxPreferDDSTexture);
             this.tabPageVideo.Controls.Add(this.checkBoxWindowGlass);
             this.tabPageVideo.Controls.Add(this.label3);
             this.tabPageVideo.Controls.Add(this.checkBoxShadows);
             this.tabPageVideo.Controls.Add(this.checkBoxWire);
             this.tabPageVideo.Location = new System.Drawing.Point(4, 22);
             this.tabPageVideo.Name = "tabPageVideo";
-            this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPageVideo.Size = new System.Drawing.Size(444, 403);
+            this.tabPageVideo.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageVideo.Size = new System.Drawing.Size(444, 420);
             this.tabPageVideo.TabIndex = 4;
             this.tabPageVideo.Text = "Video";
             this.tabPageVideo.UseVisualStyleBackColor = true;
@@ -517,17 +516,6 @@
             this.comboBoxWindowSize.Size = new System.Drawing.Size(121, 21);
             this.comboBoxWindowSize.TabIndex = 2;
             // 
-            // checkBoxPreferDDSTexture
-            // 
-            this.checkBoxPreferDDSTexture.AutoSize = true;
-            this.checkBoxPreferDDSTexture.Location = new System.Drawing.Point(6, 205);
-            this.checkBoxPreferDDSTexture.Margin = new System.Windows.Forms.Padding(2);
-            this.checkBoxPreferDDSTexture.Name = "checkBoxPreferDDSTexture";
-            this.checkBoxPreferDDSTexture.Size = new System.Drawing.Size(217, 17);
-            this.checkBoxPreferDDSTexture.TabIndex = 16;
-            this.checkBoxPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
-            this.checkBoxPreferDDSTexture.UseVisualStyleBackColor = true;
-            // 
             // checkBoxWindowGlass
             // 
             this.checkBoxWindowGlass.AutoSize = true;
@@ -576,8 +564,8 @@
             this.tabPageSimulation.Controls.Add(this.checkBoxAdvancedAdhesion);
             this.tabPageSimulation.Location = new System.Drawing.Point(4, 22);
             this.tabPageSimulation.Name = "tabPageSimulation";
-            this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPageSimulation.Size = new System.Drawing.Size(444, 403);
+            this.tabPageSimulation.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageSimulation.Size = new System.Drawing.Size(444, 420);
             this.tabPageSimulation.TabIndex = 2;
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
@@ -586,7 +574,7 @@
             // 
             this.checkBoxOverrideNonElectrified.AutoSize = true;
             this.checkBoxOverrideNonElectrified.Location = new System.Drawing.Point(6, 83);
-            this.checkBoxOverrideNonElectrified.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.checkBoxOverrideNonElectrified.Margin = new System.Windows.Forms.Padding(2);
             this.checkBoxOverrideNonElectrified.Name = "checkBoxOverrideNonElectrified";
             this.checkBoxOverrideNonElectrified.Size = new System.Drawing.Size(219, 17);
             this.checkBoxOverrideNonElectrified.TabIndex = 4;
@@ -606,7 +594,7 @@
             // numericUpDownAdhesionFilterSize
             // 
             this.numericUpDownAdhesionFilterSize.Location = new System.Drawing.Point(25, 28);
-            this.numericUpDownAdhesionFilterSize.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.numericUpDownAdhesionFilterSize.Margin = new System.Windows.Forms.Padding(2);
             this.numericUpDownAdhesionFilterSize.Minimum = new decimal(new int[] {
             1,
             0,
@@ -651,8 +639,8 @@
             this.tabPageKeyboard.Controls.Add(this.panelKeys);
             this.tabPageKeyboard.Location = new System.Drawing.Point(4, 22);
             this.tabPageKeyboard.Name = "tabPageKeyboard";
-            this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPageKeyboard.Size = new System.Drawing.Size(444, 403);
+            this.tabPageKeyboard.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageKeyboard.Size = new System.Drawing.Size(444, 420);
             this.tabPageKeyboard.TabIndex = 1;
             this.tabPageKeyboard.Text = "Keyboard";
             this.tabPageKeyboard.UseVisualStyleBackColor = true;
@@ -742,9 +730,10 @@
             this.tabPageExperimental.Controls.Add(this.label5);
             this.tabPageExperimental.Controls.Add(this.ElevationAmount);
             this.tabPageExperimental.Controls.Add(this.ElevationText);
+            this.tabPageExperimental.Controls.Add(this.checkBoxPreferDDSTexture);
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
-            this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPageExperimental.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageExperimental.Size = new System.Drawing.Size(444, 403);
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
@@ -754,7 +743,7 @@
             // 
             this.checkBoxUseMSTSEnv.AutoSize = true;
             this.checkBoxUseMSTSEnv.Location = new System.Drawing.Point(6, 356);
-            this.checkBoxUseMSTSEnv.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.checkBoxUseMSTSEnv.Margin = new System.Windows.Forms.Padding(2);
             this.checkBoxUseMSTSEnv.Name = "checkBoxUseMSTSEnv";
             this.checkBoxUseMSTSEnv.Size = new System.Drawing.Size(145, 17);
             this.checkBoxUseMSTSEnv.TabIndex = 27;
@@ -788,7 +777,7 @@
             this.trackBarDayAmbientLight.AutoSize = false;
             this.trackBarDayAmbientLight.LargeChange = 4;
             this.trackBarDayAmbientLight.Location = new System.Drawing.Point(6, 326);
-            this.trackBarDayAmbientLight.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.trackBarDayAmbientLight.Margin = new System.Windows.Forms.Padding(2);
             this.trackBarDayAmbientLight.Maximum = 30;
             this.trackBarDayAmbientLight.Minimum = 15;
             this.trackBarDayAmbientLight.Name = "trackBarDayAmbientLight";
@@ -1036,7 +1025,7 @@
             this.label5.AutoSize = true;
             this.label5.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label5.Location = new System.Drawing.Point(6, 6);
-            this.label5.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label5.Margin = new System.Windows.Forms.Padding(3);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(354, 13);
             this.label5.TabIndex = 0;
@@ -1059,11 +1048,22 @@
             // 
             this.ElevationText.AutoSize = true;
             this.ElevationText.Location = new System.Drawing.Point(6, 22);
-            this.ElevationText.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.ElevationText.Margin = new System.Windows.Forms.Padding(3);
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(81, 13);
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Super-elevation";
+            // 
+            // checkBoxPreferDDSTexture
+            // 
+            this.checkBoxPreferDDSTexture.AutoSize = true;
+            this.checkBoxPreferDDSTexture.Location = new System.Drawing.Point(222, 22);
+            this.checkBoxPreferDDSTexture.Margin = new System.Windows.Forms.Padding(2);
+            this.checkBoxPreferDDSTexture.Name = "checkBoxPreferDDSTexture";
+            this.checkBoxPreferDDSTexture.Size = new System.Drawing.Size(217, 17);
+            this.checkBoxPreferDDSTexture.TabIndex = 16;
+            this.checkBoxPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
+            this.checkBoxPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
             // tabPageDataLogger
             // 
@@ -1078,8 +1078,8 @@
             this.tabPageDataLogger.Controls.Add(this.checkBoxDataLoggerPhysics);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
-            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPageDataLogger.Size = new System.Drawing.Size(444, 403);
+            this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageDataLogger.Size = new System.Drawing.Size(444, 420);
             this.tabPageDataLogger.TabIndex = 6;
             this.tabPageDataLogger.Text = "DataLogger";
             this.tabPageDataLogger.UseVisualStyleBackColor = true;
@@ -1094,7 +1094,7 @@
             "mph",
             "kph"});
             this.comboBoxDataLoggerSpeedUnits.Location = new System.Drawing.Point(5, 62);
-            this.comboBoxDataLoggerSpeedUnits.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBoxDataLoggerSpeedUnits.Margin = new System.Windows.Forms.Padding(2);
             this.comboBoxDataLoggerSpeedUnits.Name = "comboBoxDataLoggerSpeedUnits";
             this.comboBoxDataLoggerSpeedUnits.Size = new System.Drawing.Size(121, 21);
             this.comboBoxDataLoggerSpeedUnits.TabIndex = 3;
@@ -1109,7 +1109,7 @@
             "tab",
             "space"});
             this.comboBoxSeparators.Location = new System.Drawing.Point(5, 37);
-            this.comboBoxSeparators.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBoxSeparators.Margin = new System.Windows.Forms.Padding(2);
             this.comboBoxSeparators.Name = "comboBoxSeparators";
             this.comboBoxSeparators.Size = new System.Drawing.Size(121, 21);
             this.comboBoxSeparators.TabIndex = 1;
@@ -1129,7 +1129,7 @@
             this.label18.AutoSize = true;
             this.label18.ForeColor = System.Drawing.SystemColors.Highlight;
             this.label18.Location = new System.Drawing.Point(6, 6);
-            this.label18.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.label18.Margin = new System.Windows.Forms.Padding(3);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(368, 26);
             this.label18.TabIndex = 0;
@@ -1195,8 +1195,8 @@
             this.tabPageEvaluate.Controls.Add(this.checkBoxDataLoggerTrainSpeed);
             this.tabPageEvaluate.Location = new System.Drawing.Point(4, 22);
             this.tabPageEvaluate.Name = "tabPageEvaluate";
-            this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.tabPageEvaluate.Size = new System.Drawing.Size(444, 403);
+            this.tabPageEvaluate.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageEvaluate.Size = new System.Drawing.Size(444, 420);
             this.tabPageEvaluate.TabIndex = 7;
             this.tabPageEvaluate.Text = "Evaluation";
             this.tabPageEvaluate.UseVisualStyleBackColor = true;

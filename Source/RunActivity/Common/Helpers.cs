@@ -93,10 +93,8 @@ namespace ORTS
             else if ((textureFlags & TextureFlags.WinterSnow) != 0 && simulator.Season == SeasonType.Winter && simulator.Weather == WeatherType.Snow)
                 alternativePath = @"\WinterSnow\";
 
-            if (alternativePath.Length > 0 && File.Exists(texturePath + alternativePath + textureName)) return texturePath + alternativePath + textureName;
-            if (File.Exists(texturePath + @"\" + textureName)) return texturePath + @"\" + textureName;
-            //if (File.Exists(textureName)) return textureName; //some may use \program\content\*.ace
-            return null;
+            if (alternativePath.Length > 0) return texturePath + alternativePath + textureName;
+            return texturePath + @"\" + textureName;
         }
 
         static bool IsSnow(Simulator simulator)
