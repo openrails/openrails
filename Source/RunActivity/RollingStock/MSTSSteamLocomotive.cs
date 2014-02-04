@@ -1665,7 +1665,7 @@ namespace ORTS
         private void UpdateInjectors(float elapsedClockSeconds)
         {
             // Calculate size of injectors to suit cylinder size.
-            InjCylEquivSizeIN = (NumCylinders / 2.0f) * CylinderDiameterM;
+            InjCylEquivSizeIN = (NumCylinders / 2.0f) * Me.ToIn(CylinderDiameterM);
 
             // Based on equiv cyl size determine correct size injector
             if (InjCylEquivSizeIN <= 19.0)
