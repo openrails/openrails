@@ -124,6 +124,8 @@ namespace ORTS
 		public int Cab2DStretch { get; set; }
 		[Default(2000)]
 		public int ViewingDistance { get; set; }
+        [Default(false)]
+        public bool PreferDDSTexture { get; set; }
 
 		// Simulation settings:
 		[Default(true)]

@@ -81,6 +81,7 @@ namespace ORTS
             checkBoxGraduatedRelease.Checked = Settings.GraduatedRelease;
             checkBoxShadows.Checked = Settings.DynamicShadows;
             checkBoxWindowGlass.Checked = Settings.WindowGlass;
+            checkBoxPreferDDSTexture.Checked = Settings.PreferDDSTexture;
             checkBoxBINSound.Checked = Settings.MSTSBINSound;
             checkBoxSuppressConfirmations.Checked = Settings.SuppressConfirmations;
             checkDispatcher.Checked = Settings.ViewDispatcher;
@@ -316,6 +317,7 @@ namespace ORTS
             Settings.GraduatedRelease = checkBoxGraduatedRelease.Checked;
             Settings.DynamicShadows = checkBoxShadows.Checked;
             Settings.WindowGlass = checkBoxWindowGlass.Checked;
+            Settings.PreferDDSTexture = checkBoxPreferDDSTexture.Checked;
             Settings.MSTSBINSound = checkBoxBINSound.Checked;
             Settings.SuppressConfirmations = checkBoxSuppressConfirmations.Checked;
             Settings.ViewDispatcher = checkDispatcher.Checked;

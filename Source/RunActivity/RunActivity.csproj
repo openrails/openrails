@@ -307,6 +307,7 @@
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Viewer3D\CommandLog.cs" />
     <Compile Include="Viewer3D\Commands.cs" />
+    <Compile Include="Viewer3D\DDSLib.cs" />
     <Compile Include="Viewer3D\Dynatrack.cs" />
     <Compile Include="Viewer3D\Forest.cs" />
     <Compile Include="Viewer3D\InfoDisplay.cs" />
