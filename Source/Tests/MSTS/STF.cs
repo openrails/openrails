@@ -542,5 +542,52 @@ namespace Tests
          *     t-uk
          *     t-us
          */
+
+        [Fact]
+        public void Bug1274713_ParentheticalComment()
+        {
+            using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes(
+                "Wagon(\n" +
+                "    Lights(\n" +
+                "        Light( 1 )\n" +
+                "        Light( 2 )\n" +
+                "        #(Comment)\n" +
+                "    )\n" +
+                "    Sound( test.sms )\n" +
+                ")")), "", Encoding.Unicode, true))
+            {
+                reader.ReadItem();
+                Assert.Equal("wagon", reader.Tree.ToLower());
+                reader.MustMatch("(");
+
+                reader.ReadItem();
+                Assert.Equal("wagon(lights", reader.Tree.ToLower());
+                reader.MustMatch("(");
+
+                reader.ReadItem();
+                Assert.Equal("wagon(lights(light", reader.Tree.ToLower());
+                reader.MustMatch("(");
+                Assert.Equal(1, reader.ReadInt(null));
+                reader.SkipRestOfBlock();
+                Assert.Equal("wagon(lights()", reader.Tree.ToLower());
+
+                reader.ReadItem();
+                Assert.Equal("wagon(lights(light", reader.Tree.ToLower());
+                reader.MustMatch("(");
+                Assert.Equal(2, reader.ReadInt(null));
+                reader.SkipRestOfBlock();
+                Assert.Equal("wagon(lights()", reader.Tree.ToLower());
+
+                reader.ReadItem();
+                Assert.Equal("wagon()", reader.Tree.ToLower());
+
+                reader.ReadItem();
+                Assert.Equal("wagon(sound", reader.Tree.ToLower());
+                Assert.Equal("test.sms", reader.ReadStringBlock(""));
+                reader.SkipRestOfBlock();
+
+                Assert.True(reader.Eof, "STFReader.Eof");
+            }
+        }
     }
 }
