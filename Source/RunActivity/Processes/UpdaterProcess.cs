@@ -122,10 +122,6 @@ namespace ORTS.Processes
                 Game.State.Update(CurrentFrame, TotalRealSeconds);
                 CurrentFrame.Sort();
             }
-            catch
-            {
-                Profiler.Stop();
-            }
             finally
             {
                 Profiler.Stop();

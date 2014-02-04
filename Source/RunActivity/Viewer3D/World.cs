@@ -48,14 +48,11 @@ namespace ORTS
             // Control stuff first.
             WeatherControl = new WeatherControl(viewer);
             // Then drawers.
-            if (viewer.Settings.UseMSTSEnv == false)
-                Sky = new SkyDrawer(viewer);
-            else
+            if (viewer.Settings.UseMSTSEnv)
                 MSTSSky = new MSTSSkyDrawer(viewer);
-
-            if (viewer.Settings.Precipitation)
+            else
+                Sky = new SkyDrawer(viewer);
             Precipitation = new PrecipDrawer(viewer);
-
             Terrain = new TerrainDrawer(viewer);
             Scenery = new SceneryDrawer(viewer);
             Trains = new TrainDrawer(viewer);
@@ -85,10 +82,10 @@ namespace ORTS
                 Viewer.ShapeManager.Mark();
                 Viewer.MaterialManager.Mark();
                 Viewer.TextureManager.Mark();
-                if (Viewer.Settings.UseMSTSEnv == false)
-                    Sky.Mark();
-                else
+                if (Viewer.Settings.UseMSTSEnv)
                     MSTSSky.Mark();
+                else
+                    Sky.Mark();
                 Precipitation.Mark();
                 Terrain.Mark();
                 Scenery.Mark();
@@ -169,11 +166,10 @@ namespace ORTS
         [CallOnThread("Updater")]
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if(Viewer.Settings.UseMSTSEnv == false)
-                Sky.PrepareFrame(frame, elapsedTime);
-            else
+            if(Viewer.Settings.UseMSTSEnv)
                 MSTSSky.PrepareFrame(frame, elapsedTime);
-
+            else
+                Sky.PrepareFrame(frame, elapsedTime);
             Precipitation.PrepareFrame(frame, elapsedTime);
             Terrain.PrepareFrame(frame, elapsedTime);
             Scenery.PrepareFrame(frame, elapsedTime);
