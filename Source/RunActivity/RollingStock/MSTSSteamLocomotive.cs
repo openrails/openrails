@@ -2467,8 +2467,8 @@ namespace ORTS
         float Burn_Rate;
         float Steam_Rate;
         float Color_Value;
-        float Pulse_Rate;
-        float pulse = 0.1f;
+        float Pulse_Rate = 1.0f;
+        float pulse = 0.25f;
         float steamcolor = 1.0f;
         float old_Distance_Travelled = 0.0f;
 
@@ -2675,30 +2675,41 @@ namespace ORTS
             foreach (var drawer in Stack)
             {
 
-                Throttlepercent = Math.Max ( car.ThrottlePercent / 10f, 0f );
+                Throttlepercent = Math.Max(car.ThrottlePercent / 10f, 0f);
 
-                Burn_Rate = car.FireRatio;
+                Pulse_Rate = (MathHelper.Pi * SteamLocomotive.DriverWheelRadiusM);
 
-                Steam_Rate = steamVolumeM3pS;
+                if (car.Direction == Direction.Forward)
+                {
+                    if (pulse == 0.25f)
+                        if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + (Pulse_Rate / 4))
+                        {
+                            pulse = 1.0f;
+                        }
+                    if (pulse == 1.0f)
+                        if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + Pulse_Rate)
+                        {
+                            pulse = 0.25f;
+                            old_Distance_Travelled = Viewer.PlayerTrain.DistanceTravelledM;
+                        }
+                }
+                if (car.Direction == Direction.Reverse)
+                {
+                    if (pulse == 0.25f)
+                        if (Viewer.PlayerTrain.DistanceTravelledM < old_Distance_Travelled - (Pulse_Rate / 4))
+                        {
+                            pulse = 1.0f;
+                        }
+                    if (pulse == 1.0f)
+                        if (Viewer.PlayerTrain.DistanceTravelledM < old_Distance_Travelled - Pulse_Rate)
+                        {
+                            pulse = 0.25f;
+                            old_Distance_Travelled = Viewer.PlayerTrain.DistanceTravelledM;
+                        }
+                }
+                Color_Value = (steamVolumeM3pS * .10f) + (car.Smoke.SmoothedValue / 2) / 256 * 100f;
 
-                Pulse_Rate = ( MathHelper.Pi * SteamLocomotive.DriverWheelRadiusM / 4 );
-
-                if (pulse == 0.1f)
-                    if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + (Pulse_Rate / 4))
-                    {
-                        pulse = 1.0f;
-                        steamcolor = .01f;
-                    }
-                if  (pulse == 1.0f)
-                     if ( Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + Pulse_Rate )
-                    {
-                        pulse = 0.1f;
-                        steamcolor = 1.0f;
-                        old_Distance_Travelled = Viewer.PlayerTrain.DistanceTravelledM;
-                    }
-                Color_Value = ( steamVolumeM3pS * steamcolor ) + (car.Smoke.SmoothedValue / 2 ) / 256 * 100f;
-
-                drawer.SetOutput((car.CylinderSteamUsageLBpS * steamcolor ) + ( Burn_Rate ) , Throttlepercent + (Burn_Rate) );
+                drawer.SetOutput((steamVolumeM3pS * pulse) + car.FireRatio, (Throttlepercent + car.FireRatio));
                 drawer.SetColor(new Color(Color_Value, Color_Value, Color_Value));
                
             }
