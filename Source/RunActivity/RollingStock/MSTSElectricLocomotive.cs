@@ -272,6 +272,10 @@ namespace ORTS
             if (PantographFirstUp != up)
                 PantographFirstDelay += PowerOnDelayS;
             PantographFirstUp = up;
+
+            if (Simulator.Confirmer == null)
+                return;
+
             if ((up) && (!Simulator.TRK.Tr_RouteFile.Electrified))
                 Simulator.Confirmer.Warning("No power line!");
             if (Simulator.Settings.OverrideNonElectrifiedRoutes)
