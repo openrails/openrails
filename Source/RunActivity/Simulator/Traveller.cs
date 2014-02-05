@@ -552,10 +552,9 @@ namespace ORTS
             // Calculate distance along and away from the track centerline.
             float lat, lon;
             M.Survey(sx, sz, trackVectorSection.AY, x, z, out lon, out lat);
-            var trackSectionLength = GetLength(trackSection);
             if (Math.Abs(lat) > MaximumCenterlineOffset)
                 return null;
-            if (lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)
+            if (lon < -InitErrorMargin || lon > GetLength(trackSection) + InitErrorMargin)
                 return null;
 
             return new TrackNodeCandidate(lat, lon, false);
@@ -726,7 +725,7 @@ namespace ORTS
                         }
                     }
                     // No sign of the target location in this track section, accumulate remaining track section length and continue.
-                    var length = traveller.IsTrackCurved ? Math.Abs(M.Radians(traveller.trackSection.SectionCurve.Angle)) : traveller.trackSection.SectionSize.Length;
+                    var length = traveller.trackSection != null ? traveller.IsTrackCurved ? Math.Abs(M.Radians(traveller.trackSection.SectionCurve.Angle)) : traveller.trackSection.SectionSize.Length : 0;
                     accumulatedDistance += (traveller.Direction == TravellerDirection.Forward ? length - initialOffset : initialOffset) * radius;
                 }
                 // No sign of the target location yet, let's move on to the next track section.
@@ -1016,7 +1015,10 @@ namespace ORTS
 
         static float GetLength(TrackSection trackSection)
         {
-            return trackSection.SectionCurve != null ? trackSection.SectionCurve.Radius * Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)) : trackSection.SectionSize.Length;
+            if (trackSection == null)
+                return 0;
+
+            return trackSection.SectionCurve != null ? trackSection.SectionCurve.Radius * Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)) : trackSection.SectionSize != null ? trackSection.SectionSize.Length : 0;
         }
 
         /// <summary>
