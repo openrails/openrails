@@ -208,8 +208,8 @@ namespace ORTS
             // read service and consist file
 
             SRVFile srvFile = new SRVFile(Simulator.RoutePath + @"\SERVICES\" + sd.Name + ".SRV");
-            string consistFileName = srvFile.Train_Config;
-            CONFile conFile = new CONFile(Simulator.BasePath + @"\TRAINS\CONSISTS\" + consistFileName + ".CON");
+            string consistFileName = Simulator.BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            CONFile conFile = new CONFile(consistFileName);
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
 	    // Patch Placingproblem - JeroenP
@@ -242,6 +242,12 @@ namespace ORTS
                 ;
                 if (wagon.IsEngine)
                     wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
+
+                if (!File.Exists(wagonFilePath))
+                {
+                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonFilePath, consistFileName);
+                    continue;
+                }
 
                 try
                 {

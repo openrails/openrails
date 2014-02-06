@@ -256,7 +256,7 @@ namespace ORTS
         public override void Update(float elapsedClockSeconds)
         {
             ValveState prevTripleValueState = TripleValveState;
-            if (BrakeLine1PressurePSI < FullServPressurePSI)
+            if (BrakeLine1PressurePSI < FullServPressurePSI - 1)
                 TripleValveState = ValveState.Emergency;
             else if (BrakeLine1PressurePSI > AuxResPressurePSI + 1)
                 TripleValveState = ValveState.Release;
