@@ -483,7 +483,7 @@ namespace ORTS.Popups
 
             //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
 
-            TableSetCells(table, 0, "Car", "Total", "Motive", "Brake", "Friction", "Gravity", "Coupler", "Mass", "Elev", "Notes");
+            TableSetCells(table, 0, "Car", "Total", "Motive", "Brake", "Friction", "Gravity", "Curve", "Coupler", "Mass", "Elev", "Notes");
             TableAddLine(table);
 
             var n = Math.Min(10, train.Cars.Count);
@@ -497,11 +497,12 @@ namespace ORTS.Popups
                 TableSetCell(table, 3, "{0:F0}", car.BrakeForceN);
                 TableSetCell(table, 4, "{0:F0}", car.FrictionForceN);
                 TableSetCell(table, 5, "{0:F0}", car.GravityForceN);
-                TableSetCell(table, 6, "{0:F0}", car.CouplerForceU);
-                TableSetCell(table, 7, "{0:F0}", car.MassKG);
-                TableSetCell(table, 8, "{0:F2}", -car.CurrentElevationPercent);
-                TableSetCell(table, 9, car.Flipped ? "Flipped" : "");
-                TableSetCell(table, 10, car.CouplerOverloaded ? "Coupler overloaded" : "");
+                TableSetCell(table, 6, "{0:F2}", car.CurveForceN);
+                TableSetCell(table, 7, "{0:F0}", car.CouplerForceU);
+                TableSetCell(table, 8, "{0:F0}", car.MassKG);
+                TableSetCell(table, 9, "{0:F2}", -car.CurrentElevationPercent);
+                TableSetCell(table, 10, car.Flipped ? "Flipped" : "");
+                TableSetCell(table, 11, car.CouplerOverloaded ? "Coupler overloaded" : "");
                 TableAddLine(table);
             }
         }

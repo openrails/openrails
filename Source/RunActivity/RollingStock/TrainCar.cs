@@ -178,12 +178,17 @@ namespace ORTS
         public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
         public float PrevMotiveForceN;
         public float GravityForceN;  // Newtons  - signed relative to direction of car - 
+        public float CurveForceN;   // in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // brake force in Newtons
         public float TotalForceN; // sum of all the forces active on car relative train direction
         public float MaxTractiveEffortLbf;     // Maximum tractive effort for locomotive
 
         public float CurrentElevationPercent;
+
+        public bool CurveResistanceSpeedDependent;
+        public float CurveResistanceZeroSpeedFactor;
+        public float CurveResistanceOptimalSpeed;
 
         // temporary values used to compute coupler forces
         public float CouplerForceA; // left hand side value below diagonal
@@ -206,12 +211,20 @@ namespace ORTS
         // Load 3D geometry into this 3D viewer and return it as a TrainCarViewer
         public virtual TrainCarViewer GetViewer(Viewer3D viewer) { return null; }
 
+        public virtual void Initialize()
+        {
+            CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
+            CurveResistanceOptimalSpeed = Simulator.Settings.CurveResistanceOptimalSpeed;
+            CurveResistanceZeroSpeedFactor = Simulator.Settings.CurveResistanceZeroSpeedFactor;
+        }
+
         // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
         {
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * 9.8f * WorldPosition.XNAMatrix.M32;
             CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
+            UpdateCurveForce();
             // acceleration
             if (elapsedClockSeconds > 0.0f)
             {
@@ -223,6 +236,41 @@ namespace ORTS
                 _PrevSpeedMpS = _SpeedMpS;
             }
             UpdateSoundPosition();
+        }
+
+        /// <summary>
+        /// Reads current curve radius and computes the CurveForceN friction. Can be overriden by calling
+        /// base.UpdateCurveForce();
+        /// CurveForceN *= someCarSpecificCoef;     
+        /// </summary>
+        public virtual void UpdateCurveForce()
+        {
+            float radius = CurrentCurveRadius;
+            float speedLimitMpS = 0f;
+            if (this.Train != null)
+                speedLimitMpS = this.Train.AllowedMaxSpeedMpS;
+            else
+                speedLimitMpS = 0f;
+
+            if (radius > 0)
+            {
+                CurveForceN = 500f / (radius - 30f);
+            }
+            else
+                CurveForceN = 0f;
+
+            if (Simulator != null)
+            {
+                if (Simulator.Settings != null)
+                {
+                    if ((speedLimitMpS > 0f) && (CurveResistanceSpeedDependent))
+                    {
+                        CurveForceN *= CurveResistanceZeroSpeedFactor * Math.Abs(Math.Abs(SpeedMpS) - CurveResistanceOptimalSpeed * speedLimitMpS) / speedLimitMpS + 1f;
+                    }
+                }
+            }
+
+            CurveForceN *= 9.81f * MassKG *0.001f;
         }
 
         /// <summary>
@@ -278,6 +326,7 @@ namespace ORTS
             _PrevSpeedMpS = SpeedMpS;
             CouplerSlackM = inf.ReadSingle();
             Headlight = inf.ReadInt32();
+            Initialize();
         }
 
         public bool HasFrontCab { get
@@ -642,8 +691,14 @@ namespace ORTS
         public float totalRotationX;
         public float prevY2 = -1000f;
         public float prevY = -1000f;
+
+        public float CurrentCurveRadius;
+
         public void SuperElevation(float speed, int superEV, Traveller traveler)
         {
+            CurrentCurveRadius = traveler.GetCurrentCurveRadius();
+            
+
             if (prevElev < -30f) { prevElev += 40f; return; }//avoid the first two updates as they are not valid
             speed = (float) Math.Abs(speed);//will make computation easier later, as we only deal with abs value
             if (speed > 40) speed = 40; //vib will not increase after 120km
@@ -692,6 +747,8 @@ namespace ORTS
             else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
             max *= Program.Simulator.CarVibrating/500f;//user may want more vibration (by Ctrl-V)
             var tz = traveler.FindTiltedZ(speed);//rotation if tilted, an indication of centralfuge
+
+            
 
             max = ComputeMaxXZ(timeInterval, max, tz);//add a damping, also based on accelaration
             //small vibration (rotation to add on x,y,z axis)

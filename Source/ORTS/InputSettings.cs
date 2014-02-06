@@ -128,6 +128,7 @@ namespace ORTS
         DebugResetWheelSlip,
         DebugToggleAdvancedAdhesion,
         DebugSoundForm,
+        DebugPhysicsForm,
         DebugPrecipitationIncrease,
         DebugPrecipitationDecrease,
 
@@ -460,6 +461,7 @@ namespace ORTS
             Commands[(int)UserCommands.DebugResetWheelSlip] = new UserCommandKeyInput(0x2D, KeyModifiers.Control);
             Commands[(int)UserCommands.DebugToggleAdvancedAdhesion] = new UserCommandKeyInput(0x2D, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSoundForm] = new UserCommandKeyInput(0x1F, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugPhysicsForm] = new UserCommandKeyInput(0x3D, KeyModifiers.Control);
             Commands[(int)UserCommands.DebugPrecipitationIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugPrecipitationDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Alt);
 

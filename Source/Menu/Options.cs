@@ -120,6 +120,9 @@ namespace ORTS
             checkBoxUseLocationPassingPaths.Checked = settings.UseLocationPassingPaths;
             checkBoxUseMSTSEnv.Checked = settings.UseMSTSEnv;
             trackBarDayAmbientLight.Value = settings.DayAmbientLight;
+            checkBoxCurveResistanceSpeedDependent.Checked = settings.CurveResistanceSpeedDependent;
+            numericUpDownCurveOptimalSpeedFactor.Value = (decimal) settings.CurveResistanceOptimalSpeed;
+            numericUpDownCurveResistanceAtZeroSpeed.Value = (decimal) settings.CurveResistanceZeroSpeedFactor;
         }
 
         static string ParseCategoryFrom(string name)
@@ -356,6 +359,9 @@ namespace ORTS
             Settings.UseLocationPassingPaths = checkBoxUseLocationPassingPaths.Checked;
             Settings.DayAmbientLight = (int)trackBarDayAmbientLight.Value;
             Settings.UseMSTSEnv = checkBoxUseMSTSEnv.Checked;
+            Settings.CurveResistanceSpeedDependent = checkBoxCurveResistanceSpeedDependent.Checked;
+            Settings.CurveResistanceZeroSpeedFactor = (float) numericUpDownCurveResistanceAtZeroSpeed.Value;
+            Settings.CurveResistanceOptimalSpeed = (float) numericUpDownCurveOptimalSpeedFactor.Value;
 
             Settings.Save();
 

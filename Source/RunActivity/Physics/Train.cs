@@ -1202,7 +1202,7 @@ namespace ORTS
             {
                 car.MotiveForceN = 0;
                 car.Update(elapsedClockSeconds);
-                car.TotalForceN = car.MotiveForceN + car.GravityForceN;
+                car.TotalForceN = car.MotiveForceN + car.GravityForceN - car.CurveForceN;
                 massKg += car.MassKG;
 
                 if (car.Flipped)

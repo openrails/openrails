@@ -363,7 +363,6 @@ namespace ORTS
             MaxMagnitude = copy.MaxMagnitude;
             ExhaustParticles = copy.ExhaustParticles;
 
-
             if (copy.GearBox != null)
             {
                 GearBox = new GearBox(copy.GearBox, this);
@@ -522,6 +521,9 @@ namespace ORTS
                 ExhaustRange = MaxExhaust - InitialExhaust;
 
             }
+
+            ExhaustSteadyColor.A = 10;
+            ExhaustDecelColor.A = 10;
         }
 
 

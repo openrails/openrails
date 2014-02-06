@@ -957,7 +957,7 @@ namespace ORTS
             foreach (var drawer in Exhaust)
             {
                 drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude);
-                drawer.SetColor(car.ExhaustColor);
+                drawer.SetColor( car.ExhaustColor );
             }
             base.PrepareFrame(frame, elapsedTime);
         }

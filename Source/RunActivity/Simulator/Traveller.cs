@@ -898,6 +898,30 @@ namespace ORTS
                 location.NormalizeTo(trackVectorSection.TileX, trackVectorSection.TileZ);
         }
 
+        /// <summary>
+        /// Current Curve Radius value. Zero if not a curve
+        /// </summary>
+        /// <returns>Current Curve Radius in meters</returns>
+        public float GetCurrentCurveRadius()
+        {
+            var tn = trackNode;
+            if (tn.TrVectorNode == null) return 0f;
+            var ts = trackSection;
+            var tvs = trackVectorSection;
+
+            if (tvs == null)
+            {
+                return 0f;
+            }
+            else
+            {
+                if (ts.SectionCurve != null)
+                    return ts.SectionCurve.Radius;
+                else
+                    return 0.0f;
+            }
+        }
+
         public float SuperElevationValue(float speed, float timeInterval, bool computed) //will test 1 second ahead, computed will return desired elev. only
         {
             var tn = trackNode;

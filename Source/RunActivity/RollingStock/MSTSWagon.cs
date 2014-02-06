@@ -149,8 +149,9 @@ namespace ORTS
              Initialize();
         }
 
-        public virtual void Initialize()
+        public override void Initialize()
         {
+            base.Initialize();
         }
 
         string brakeSystemType;
@@ -564,8 +565,6 @@ namespace ORTS
                 else
                     FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM);
             }
-
-
 
 
             foreach (MSTSCoupling coupler in Couplers)
