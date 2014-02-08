@@ -37,7 +37,7 @@ float4   ShadowMapLimit;
 float4   ZBias_Lighting;  // x = z-bias, y = diffuse, z = specular, w = step(1, z)
 float4   Fog;  // rgb = color of fog; a = reciprocal of distance from camera, everything is
 			   // normal color; FogDepth = FogStart, i.e. FogEnd = 2 * FogStart.
-float3   LightVector;  // Direction vector to sun (world)
+float4   LightVector_ZFar;  // xyz = direction vector to sun (world), w = z-far distance
 float4   HeadlightPosition;     // xyz = position; w = lighting fading.
 float4   HeadlightDirection;    // xyz = normalized direction (length = distance to light); w = 0.5 * (1 - min dot product).
 float    HeadlightRcpDistance;  // reciprocal length = reciprocal distance to light
@@ -147,7 +147,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
-	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector) * 0.5 + 0.5;
+	Out.Normal_Light.w = dot(Out.Normal_Light.xyz, LightVector_ZFar.xyz) * 0.5 + 0.5;
 }
 
 void _VSSignalProjection(in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
@@ -231,6 +231,7 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 
 	// Project vertex with fixed w=1 and normal=eye.
 	Out.Position = mul(In.Position, WorldViewProjection);
+	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light = EyeVector;
 
@@ -261,7 +262,7 @@ float _PSGetAmbientEffect(in VERTEX_OUTPUT In)
 // Gets the specular light effect.
 float _PSGetSpecularEffect(in VERTEX_OUTPUT In)
 {
-	float3 halfVector = normalize(-In.RelPosition.xyz) + LightVector;
+	float3 halfVector = normalize(-In.RelPosition.xyz) + LightVector_ZFar.xyz;
 	return In.Normal_Light.w * ZBias_Lighting.w * pow(saturate(dot(In.Normal_Light.xyz, normalize(halfVector))), ZBias_Lighting.z);
 }
 
@@ -368,6 +369,11 @@ void _PSApplyFog(inout float3 Color, in VERTEX_OUTPUT In)
 	Color = lerp(Color, Fog.rgb, In.LightDir_Fog.w);
 }
 
+void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
+{
+	Color.a *= saturate((LightVector_ZFar.w - length(In.RelPosition.xyz)) / 50);
+}
+
 float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
@@ -388,6 +394,7 @@ float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	if (ShaderModel3) _PSSceneryFade(Color, In);
 	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
 	return float4(litColor, Color.a);
 }
@@ -408,6 +415,7 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	_PSSceneryFade(Color, In);
 	return float4(litColor, Color.a);
 }
 
@@ -430,6 +438,7 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	_PSSceneryFade(Color, In);
 	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
 	return float4(litColor, Color.a);
 }
@@ -452,6 +461,7 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	_PSSceneryFade(Color, In);
 	return float4(litColor, Color.a);
 }
 
@@ -473,6 +483,7 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	_PSSceneryFade(Color, In);
 	return float4(litColor, Color.a);
 }
 
@@ -490,6 +501,7 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
+	_PSSceneryFade(Color, In);
 	return float4(litColor, Color.a);
 }
 

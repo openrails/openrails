@@ -317,7 +317,7 @@ namespace ORTS
             else
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 
-            SceneryShader.LightVector = sunDirection;
+            SceneryShader.SetLightVector_ZFar(sunDirection, Viewer.Settings.ViewingDistance);
 
             // Headlight illumination
             if (Viewer.PlayerLocomotiveViewer != null
@@ -558,7 +558,11 @@ namespace ORTS
                 if (previousMaterial == null  // Search for opaque pixels in alpha blended polygons
                     && (Options & SceneryMaterialOptions.AlphaBlendingMask) != SceneryMaterialOptions.AlphaBlendingAdd)
                 {
-                    rs.AlphaBlendEnable = false;
+                    // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
+                    rs.AlphaBlendEnable = true;
+                    rs.DestinationBlend = Blend.InverseSourceAlpha;
+                    rs.SourceBlend = Blend.SourceAlpha;
+
                     shader.ReferenceAlpha = 250;
                     rs.DepthBufferWriteEnable = true;
                     rs.DepthBufferFunction = CompareFunction.LessEqual;
@@ -581,7 +585,6 @@ namespace ORTS
                         rs.DestinationBlend = Blend.One; // Additive
                         rs.DepthBufferFunction = CompareFunction.LessEqual;
                     }
-                    rs.DestinationBlend = (Options & SceneryMaterialOptions.AlphaBlendingMask) == SceneryMaterialOptions.AlphaBlendingBlend ? Blend.InverseSourceAlpha : Blend.One;
 
                     rs.SeparateAlphaBlendEnabled = true;
                     rs.AlphaSourceBlend = Blend.Zero;
@@ -590,7 +593,11 @@ namespace ORTS
             }
             else
             {
-                rs.AlphaBlendEnable = false;
+                // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
+                rs.AlphaBlendEnable = true;
+                rs.DestinationBlend = Blend.InverseSourceAlpha;
+                rs.SourceBlend = Blend.SourceAlpha;
+
                 if ((Options & SceneryMaterialOptions.AlphaTest) != 0)
                 {
                     // Transparency testing is enabled
@@ -782,6 +789,11 @@ namespace ORTS
             samplerState.AddressU = TextureAddressMode.Wrap;
             samplerState.AddressV = TextureAddressMode.Wrap;
 
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
             graphicsDevice.VertexDeclaration = TerrainPatch.SharedPatchVertexDeclaration;
         }
 
@@ -805,6 +817,14 @@ namespace ORTS
                 ShaderPasses.Current.End();
             }
             shader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 
         public override void Mark()
@@ -841,6 +861,7 @@ namespace ORTS
 			base.SetState(graphicsDevice, previousMaterial);
 
 			var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false; // Override the normal terrain blending!
 			rs.CullMode = CullMode.None;
 		}
 
@@ -1452,6 +1473,12 @@ namespace ORTS
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200;
 
+            var rs = graphicsDevice.RenderState;
+            // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
+            rs.AlphaBlendEnable = true;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
             graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
         }
 
@@ -1481,6 +1508,11 @@ namespace ORTS
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
             Viewer.MaterialManager.SceneryShader.ReferenceAlpha = 0;
+
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 
         public override Texture2D GetShadowTexture()

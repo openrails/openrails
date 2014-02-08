@@ -58,7 +58,7 @@ namespace ORTS
         readonly EffectParameter shadowMapLimit;
         readonly EffectParameter zBias_Lighting;
         readonly EffectParameter fog;
-        readonly EffectParameter lightVector;
+        readonly EffectParameter lightVector_ZFar;
         readonly EffectParameter headlightPosition;
         readonly EffectParameter headlightDirection;
         readonly EffectParameter headlightRcpDistance;
@@ -141,7 +141,11 @@ namespace ORTS
             fog.SetValue(new Vector4(color.R / 255f, color.G / 255f, color.B / 255f, 1f / depth));
         }
 
-        public Vector3 LightVector { set { _sunDirection = value; lightVector.SetValue(value); } }
+        public void SetLightVector_ZFar(Vector3 sunDirection, int zFar)
+        {
+            _sunDirection = sunDirection;
+            lightVector_ZFar.SetValue(new Vector4(sunDirection.X, sunDirection.Y, sunDirection.Z, zFar));
+        }
 
         public void SetHeadlight(ref Vector3 position, ref Vector3 direction, float distance, float minDotProduct, float fadeTime, float fadeDuration, ref Vector4 color)
         {
@@ -185,7 +189,7 @@ namespace ORTS
             shadowMapLimit = Parameters["ShadowMapLimit"];
             zBias_Lighting = Parameters["ZBias_Lighting"];
             fog = Parameters["Fog"];
-            lightVector = Parameters["LightVector"];
+            lightVector_ZFar = Parameters["LightVector_ZFar"];
             headlightPosition = Parameters["HeadlightPosition"];
             headlightDirection = Parameters["HeadlightDirection"];
             headlightRcpDistance = Parameters["HeadlightRcpDistance"];
