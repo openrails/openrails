@@ -1,0 +1,25 @@
+<project SchemaVersion="1.3">
+    <assemblies>
+        <assembly location=".\Launcher\..\..\Program\OpenRails.exe" documentation=".\Launcher\..\..\Program\OpenRails.xml" />
+        <assembly location=".\RunActivity\..\..\Program\RunActivity.exe" documentation=".\RunActivity\..\..\Program\RunActivity.xml" />
+        <assembly location=".\Menu\..\..\Program\Menu.exe" documentation=".\Menu\..\..\Program\Menu.xml" />
+        <assembly location=".\Tests\..\..\Program\Tests.dll" documentation="" />
+    </assemblies>
+    <documenters>
+        <documenter name="MSDN">
+            <property name="OutputDirectory" value=".\Help\" />
+            <property name="HtmlHelpName" value="Documentation" />
+            <property name="Title" value="Open Rails" />
+            <property name="OutputTarget" value="Web" />
+            <property name="Preliminary" value="True" />
+            <property name="SdkDocVersion" value="SDK_v3_5" />
+            <property name="SdkDocVersionString" value="VS.90" />
+            <property name="CleanIntermediates" value="True" />
+        </documenter>
+        <documenter name="XML">
+            <property name="OutputFile" value=".\doc\doc.xml" />
+            <property name="SdkDocVersion" value="SDK_v3_5" />
+            <property name="SdkDocVersionString" value="VS.90" />
+        </documenter>
+    </documenters>
+</project>
