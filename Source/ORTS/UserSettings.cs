@@ -59,6 +59,7 @@ namespace ORTS
 				SettingsFilePath = null;
 
 			UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
+            // TODO: If using INI file, move these to application directory as well.
 			if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
 			DeletedSaveFolder = Path.Combine(UserDataFolder, "Deleted Saves");
 			SavePackFolder = Path.Combine(UserDataFolder, "Save Packs");
@@ -294,6 +295,8 @@ namespace ORTS
 
 		#endregion
 
+        internal InputSettings Input { get; private set; }
+
 		public UserSettings(IEnumerable<string> options)
 			: base(SettingStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
 		{
@@ -301,6 +304,7 @@ namespace ORTS
 			CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
 			CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
 			Load(options);
+            Input = new InputSettings(options);
 		}
 
 		public override object GetDefaultValue(string name)
@@ -313,7 +317,7 @@ namespace ORTS
 			if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
 				return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
 
-			throw new InvalidDataException(String.Format("Setting {0} has no default value.", property.Name));
+			throw new InvalidDataException(String.Format("UserSetting {0} has no default value.", property.Name));
 		}
 
 		PropertyInfo GetProperty(string name)
@@ -347,6 +351,8 @@ namespace ORTS
 			foreach (var property in GetProperties())
 				if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
 					Save(property.Name, property.PropertyType);
+
+            Input.Save();
 		}
 
 		public override void Save(string name)
@@ -355,6 +361,12 @@ namespace ORTS
 			if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
 				Save(property.Name, property.PropertyType);
 		}
+
+        public override void Reset()
+        {
+            foreach (var property in GetProperties())
+                Reset(property.Name);
+        }
 
 		public void Log()
 		{

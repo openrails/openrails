@@ -48,7 +48,7 @@ namespace ORTS.Popups
                 {
                 }, (keyBox, keyScanCode, keyName) =>
                 {
-                    var color = InputSettings.GetScanCodeColor(keyScanCode);
+                    var color = Owner.Viewer.Settings.Input.GetScanCodeColor(keyScanCode);
                     if (color == Color.TransparentBlack)
                         color = Color.Black;
 
@@ -59,8 +59,8 @@ namespace ORTS.Popups
                 {
                     var line = scrollbox.AddLayoutHorizontal(TextHeight);
                     var width = line.RemainingWidth / 2;
-                    line.Add(new Label(width, line.RemainingHeight, InputSettings.FormatCommandName(command)));
-                    line.Add(new Label(width, line.RemainingHeight, InputSettings.Commands[(int)command].ToString()));
+                    line.Add(new Label(width, line.RemainingHeight, InputSettings.GetPrettyCommandName(command)));
+                    line.Add(new Label(width, line.RemainingHeight, Owner.Viewer.Settings.Input.Commands[(int)command].ToString()));
                 }
             }));
             if (owner.Viewer.Simulator.Activity != null)

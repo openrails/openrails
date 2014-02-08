@@ -2542,10 +2542,10 @@ namespace ORTS
         {
             // Note: UserInput.IsReleased( UserCommands.ControlReverserForward/Backwards ) are given here but
             // UserInput.IsPressed( UserCommands.ControlReverserForward/Backwards ) are handled in base class MSTSLocomotive.
-            if( UserInput.IsReleased( UserCommands.ControlReverserForward ) ) {
+            if( UserInput.IsReleased( UserCommands.ControlForwards ) ) {
                 SteamLocomotive.StopReverseIncrease();
                 new ContinuousReverserCommand( Viewer.Log, true, SteamLocomotive.CutoffController.CurrentValue, SteamLocomotive.CutoffController.CommandStartTime );
-            } else if( UserInput.IsReleased( UserCommands.ControlReverserBackwards ) ) {
+            } else if( UserInput.IsReleased( UserCommands.ControlBackwards ) ) {
                 SteamLocomotive.StopReverseDecrease();
                 new ContinuousReverserCommand( Viewer.Log, false, SteamLocomotive.CutoffController.CurrentValue, SteamLocomotive.CutoffController.CommandStartTime );
             }

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -74,7 +74,7 @@ namespace ORTS
         readonly UserSettings Settings;
         readonly Route Route;
         readonly Activity Activity;
-        readonly MainForm ParentForm;
+        readonly MainForm MainForm;
 
         List<Save> Saves = new List<Save>();
         Task<List<Save>> SaveLoader;
@@ -137,7 +137,7 @@ namespace ORTS
 
         public ResumeForm(UserSettings settings, Route route, Activity activity, MainForm parentForm)
         {
-            parentForm = ParentForm;
+            MainForm = parentForm;
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
@@ -193,7 +193,7 @@ namespace ORTS
                                     // Checks the route is not in your list of routes.
                                     // If so, add it with a warning.
                             {
-                                if (!ParentForm.Routes.Any(el => el.Name == save.RouteName))
+                                if (!MainForm.Routes.Any(el => el.Name == save.RouteName))
                                 {
                                     saves.Add(save);
                                     // Save a warning to show later.

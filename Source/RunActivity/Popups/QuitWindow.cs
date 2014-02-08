@@ -41,12 +41,12 @@ namespace ORTS.Popups
 			else heightForLabels = (vbox.RemainingHeight - 2 * ControlLayout.SeparatorSize) / 2;
             var spacing = (heightForLabels - Owner.TextFontDefault.Height) / 2;
             vbox.AddSpace(0, spacing);
-            vbox.Add(buttonQuit = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, String.Format("Quit {1} ({0})", InputSettings.Commands[(int)UserCommands.GameQuit], Application.ProductName), LabelAlignment.Center));
+            vbox.Add(buttonQuit = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, String.Format("Quit {1} ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommands.GameQuit], Application.ProductName), LabelAlignment.Center));
             vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
 			if (!MultiPlayer.MPManager.IsMultiPlayer())
 			{
-				buttonSave = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, String.Format("Save your game ({0})", InputSettings.Commands[(int)UserCommands.GameSave]), LabelAlignment.Center);
+                buttonSave = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, String.Format("Save your game ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommands.GameSave]), LabelAlignment.Center);
 				vbox.AddSpace(0, spacing);
 				vbox.Add(buttonSave);
 				vbox.AddSpace(0, spacing);
@@ -54,7 +54,7 @@ namespace ORTS.Popups
 				buttonSave.Click += new Action<Control, Point>(buttonSave_Click);
 			}
             vbox.AddSpace(0, spacing);
-            vbox.Add(buttonContinue = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, String.Format("Continue playing ({0})", InputSettings.Commands[(int)UserCommands.GamePauseMenu]), LabelAlignment.Center));
+            vbox.Add(buttonContinue = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, String.Format("Continue playing ({0})", Owner.Viewer.Settings.Input.Commands[(int)UserCommands.GamePauseMenu]), LabelAlignment.Center));
             buttonQuit.Click += new Action<Control, Point>(buttonQuit_Click);
             buttonContinue.Click += new Action<Control, Point>(buttonContinue_Click);
             return vbox;

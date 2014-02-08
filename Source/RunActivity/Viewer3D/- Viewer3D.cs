@@ -755,9 +755,9 @@ namespace ORTS
 
             if (UserInput.IsPressed(UserCommands.DebugDumpKeymap))
             {
-                InputSettings.DumpToText("Keyboard.txt");
+                Settings.Input.DumpToText("Keyboard.txt");
                 MessagesWindow.AddMessage("Keyboard command list saved to 'keyboard.txt'.", 10);
-                InputSettings.DumpToGraphic("Keyboard.png");
+                Settings.Input.DumpToGraphic("Keyboard.png");
                 MessagesWindow.AddMessage("Keyboard map saved to 'keyboard.png'.", 10);
             }
 

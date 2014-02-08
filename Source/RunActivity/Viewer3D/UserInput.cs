@@ -45,12 +45,15 @@ namespace ORTS
 
         public static RailDriverState RDState;
 
+        static InputSettings InputSettings;
+
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys key);
 
         public static void Update(Game game)
         {
             if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.Instance().ComposingText) return;
+            if (InputSettings == null) InputSettings = game.Settings.Input;
             LastKeyboardState = KeyboardState;
             LastMouseState = MouseState;
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.

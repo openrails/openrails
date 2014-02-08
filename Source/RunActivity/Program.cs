@@ -45,7 +45,6 @@ namespace ORTS
         {
             var options = args.Where(a => a.StartsWith("-") || a.StartsWith("/")).Select(a => a.Substring(1));
             var settings = new UserSettings(options);
-            InputSettings.Initialize(options);
 
             var game = new Game(settings);
             game.PushState(new GameStateRunActivity(args));

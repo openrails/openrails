@@ -33,75 +33,87 @@ namespace ORTS
         {
             Application.EnableVisualStyles();
 
-            try
+            if (Debugger.IsAttached)
             {
-                using (var MainForm = new MainForm())
+                MainForm();
+            }
+            else
+            {
+                try
                 {
-                    while (MainForm.ShowDialog() == DialogResult.OK)
-                    {
-                        var parameters = new List<string>();
-                        switch (MainForm.SelectedAction)
-                        {
-                            case MainForm.UserAction.SingleplayerNewGame:
-                                parameters.Add("-start");
-                                break;
-                            case MainForm.UserAction.SingleplayerResumeSave:
-                                parameters.Add("-resume");
-                                break;
-                            case MainForm.UserAction.SingleplayerReplaySave:
-                                parameters.Add("-replay");
-                                break;
-                            case MainForm.UserAction.SingleplayerReplaySaveFromSave:
-                                parameters.Add("-replay_from_save");
-                                break;
-                            case MainForm.UserAction.MultiplayerClient:
-                                parameters.Add("-multiplayerclient");
-                                break;
-                            case MainForm.UserAction.MultiplayerServer:
-                                parameters.Add("-multiplayerserver");
-                                break;
-                        }
-                        switch (MainForm.SelectedAction)
-                        {
-                            case MainForm.UserAction.SingleplayerNewGame:
-                            case MainForm.UserAction.MultiplayerClient:
-                            case MainForm.UserAction.MultiplayerServer:
-                                if (MainForm.SelectedActivity is ORTS.Menu.ExploreActivity)
-                                {
-                                    var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
-                                    parameters.Add(String.Format("\"{0}\" \"{1}\" {2} {3} {4}",
-                                        exploreActivity.Path.FilePath,
-                                        exploreActivity.Consist.FilePath,
-                                        exploreActivity.StartTime,
-                                        (int)exploreActivity.Season,
-                                        (int)exploreActivity.Weather));
-                                }
-                                else
-                                {
-                                    parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FilePath));
-                                }
-                                break;
-                            case MainForm.UserAction.SingleplayerResumeSave:
-                            case MainForm.UserAction.SingleplayerReplaySave:
-                            case MainForm.UserAction.SingleplayerReplaySaveFromSave:
-                                parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
-                                break;
-                        }
-
-                        var processStartInfo = new System.Diagnostics.ProcessStartInfo();
-                        processStartInfo.FileName = Path.Combine(Application.StartupPath, RunActivityProgram);
-                        processStartInfo.Arguments = String.Join(" ", parameters.ToArray());
-                        processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
-                        processStartInfo.WorkingDirectory = Application.StartupPath;
-
-                        var process = Process.Start(processStartInfo);
-                        process.WaitForExit();
-                    }
+                    MainForm();
+                }
+                catch (Exception error)
+                {
+                    MessageBox.Show(error.ToString(), Application.ProductName + " " + VersionInfo.VersionOrBuild);
                 }
             }
-            catch (Exception error)
+        }
+
+        static void MainForm()
+        {
+            using (var MainForm = new MainForm())
             {
-                MessageBox.Show(error.ToString(), Application.ProductName + " " + VersionInfo.VersionOrBuild);
+                while (MainForm.ShowDialog() == DialogResult.OK)
+                {
+                    var parameters = new List<string>();
+                    switch (MainForm.SelectedAction)
+                    {
+                        case MainForm.UserAction.SingleplayerNewGame:
+                            parameters.Add("-start");
+                            break;
+                        case MainForm.UserAction.SingleplayerResumeSave:
+                            parameters.Add("-resume");
+                            break;
+                        case MainForm.UserAction.SingleplayerReplaySave:
+                            parameters.Add("-replay");
+                            break;
+                        case MainForm.UserAction.SingleplayerReplaySaveFromSave:
+                            parameters.Add("-replay_from_save");
+                            break;
+                        case MainForm.UserAction.MultiplayerClient:
+                            parameters.Add("-multiplayerclient");
+                            break;
+                        case MainForm.UserAction.MultiplayerServer:
+                            parameters.Add("-multiplayerserver");
+                            break;
+                    }
+                    switch (MainForm.SelectedAction)
+                    {
+                        case MainForm.UserAction.SingleplayerNewGame:
+                        case MainForm.UserAction.MultiplayerClient:
+                        case MainForm.UserAction.MultiplayerServer:
+                            if (MainForm.SelectedActivity is ORTS.Menu.ExploreActivity)
+                            {
+                                var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
+                                parameters.Add(String.Format("\"{0}\" \"{1}\" {2} {3} {4}",
+                                    exploreActivity.Path.FilePath,
+                                    exploreActivity.Consist.FilePath,
+                                    exploreActivity.StartTime,
+                                    (int)exploreActivity.Season,
+                                    (int)exploreActivity.Weather));
+                            }
+                            else
+                            {
+                                parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FilePath));
+                            }
+                            break;
+                        case MainForm.UserAction.SingleplayerResumeSave:
+                        case MainForm.UserAction.SingleplayerReplaySave:
+                        case MainForm.UserAction.SingleplayerReplaySaveFromSave:
+                            parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
+                            break;
+                    }
+
+                    var processStartInfo = new System.Diagnostics.ProcessStartInfo();
+                    processStartInfo.FileName = Path.Combine(Application.StartupPath, RunActivityProgram);
+                    processStartInfo.Arguments = String.Join(" ", parameters.ToArray());
+                    processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
+                    processStartInfo.WorkingDirectory = Application.StartupPath;
+
+                    var process = Process.Start(processStartInfo);
+                    process.WaitForExit();
+                }
             }
         }
     }

@@ -42,7 +42,7 @@ namespace ORTS
         }
 
         bool Initialized;
-        public UserSettings Settings;
+        UserSettings Settings;
         List<Folder> Folders = new List<Folder>();
         public List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();

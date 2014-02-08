@@ -45,6 +45,7 @@ namespace ORTS.Common
 		protected abstract void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary);
 		public abstract void Save();
 		public abstract void Save(string name);
+        public abstract void Reset();
 
 		protected void Load(IEnumerable<string> options)
 		{
@@ -151,5 +152,11 @@ namespace ORTS.Common
 				SettingStore.SetUserValue(name, (int[])value);
 			}
 		}
+
+        protected void Reset(string name)
+        {
+            SetValue(name, GetDefaultValue(name));
+            SettingStore.DeleteUserValue(name);
+        }
 	}
 }

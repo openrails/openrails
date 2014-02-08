@@ -2,7 +2,7 @@
 
 namespace ORTS
 {
-    partial class KeyPressControl
+    partial class KeyInputControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -32,10 +32,10 @@ namespace ORTS
         {
             this.SuspendLayout();
             // 
-            // KeyPressControl
+            // KeyInputControl
             // 
             this.Name = "InputKeyPress";
-            this.Click += new System.EventHandler(this.KeyPressControl_Click);
+            this.Click += new System.EventHandler(this.KeyInputControl_Click);
             this.ResumeLayout(false);
 
         }

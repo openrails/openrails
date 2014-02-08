@@ -112,11 +112,11 @@
     <Compile Include="..\ORTS\UserSettings.cs">
       <Link>ORTS\UserSettings.cs</Link>
     </Compile>
-    <Compile Include="EditKey.cs">
+    <Compile Include="KeyInputEditControl.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EditKey.Designer.cs">
-      <DependentUpon>EditKey.cs</DependentUpon>
+    <Compile Include="KeyInputEditControl.Designer.cs">
+      <DependentUpon>KeyInputEditControl.cs</DependentUpon>
     </Compile>
     <Compile Include="ImportExportSaveForm.cs">
       <SubType>Form</SubType>
@@ -124,11 +124,11 @@
     <Compile Include="ImportExportSaveForm.designer.cs">
       <DependentUpon>ImportExportSaveForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="KeyPressControl.cs">
+    <Compile Include="KeyInputControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="KeyPressControl.Designer.cs">
-      <DependentUpon>KeyPressControl.cs</DependentUpon>
+    <Compile Include="KeyInputControl.Designer.cs">
+      <DependentUpon>KeyInputControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -167,16 +167,16 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="EditKey.resx">
-      <DependentUpon>EditKey.cs</DependentUpon>
+    <EmbeddedResource Include="KeyInputEditControl.resx">
+      <DependentUpon>KeyInputEditControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="ImportExportSaveForm.resx">
       <DependentUpon>ImportExportSaveForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="KeyPressControl.resx">
-      <DependentUpon>KeyPressControl.cs</DependentUpon>
+    <EmbeddedResource Include="KeyInputControl.resx">
+      <DependentUpon>KeyInputControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
