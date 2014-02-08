@@ -14,25 +14,20 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_SIGNALLING</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;WINDOWS;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <NoWarn>
-    </NoWarn>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\Program</OutputPath>
+    <OutputPath>..\..\Program\</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
     <DefineConstants>TRACE;WINDOWS;NEW_SIGNALLING</DefineConstants>
+    <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
     <ErrorReport>prompt</ErrorReport>
+    <NoWarn>1591</NoWarn>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
     <PlatformTarget>x86</PlatformTarget>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
-    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.81.0.1407, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
@@ -341,38 +336,6 @@
     <Compile Include="Viewer3D\Weather.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\World.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Xna.Framework.3.1">
-      <Visible>False</Visible>
-      <ProductName>Microsoft XNA Framework Redistributable 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\3rdPartyLibs\OpenAL32.dll">
