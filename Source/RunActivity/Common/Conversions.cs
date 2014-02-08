@@ -135,8 +135,6 @@ namespace ORTS
     public class N {
         public static float FromLbf(float l) { return l / 0.224808943871f; }    // lbf => Newtons
         public static float   ToLbf(float n) { return n * 0.224808943871f; }    // Newtons => lbf
-        public static float FromKg(float l) { return l * 9.80665002864f; }    // kg => Newtons
-        public static float   ToKg(float n) { return n / 9.80665002864f; }    // Newtons => kg
     }
 
     /// <summary>
