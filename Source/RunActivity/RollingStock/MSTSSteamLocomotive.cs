@@ -140,12 +140,12 @@ namespace ORTS
         float CurrentSuperheatTeampF;      // current value of superheating based upon boiler steam output
         float SuperheatVolumeRatio;   // Approximate ratio of Superheated steam to saturated steam at same pressure
         float FuelCalorificKJpKG = 33400;
-        float ManBlowerMultiplier = 20.0f;//25; // Blower Multipler for Manual firing
+        float ManBlowerMultiplier = 20.0f; // Blower Multipler for Manual firing
         float ShovelMassKG = 6;
         float BurnRateMultiplier = 1.0f; // Used to vary the rate at which fuels burns at - used as a player customisation factor.
         float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
         float PressureRatio = 0.01f;    // Ratio to control burn rate - based upon boiler pressure
-        public float BurnRateRawLBpS;           // Raw burnrate
+        float BurnRateRawLBpS;           // Raw burnrate
         SmoothedData FuelRateStokerLBpS = new SmoothedData(30); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRate = new SmoothedData(90); // Automatic fireman takes x seconds to fully react to changing needs.
         SmoothedData BurnRateSmoothLBpS = new SmoothedData(300); // Changes in BurnRate take x seconds to fully react to changing needs.
@@ -320,7 +320,7 @@ namespace ORTS
         float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler is used to multiple boiler evaporation area by - used as a player customisation factor.
         float CylinderEfficiencyRate = 1.0f; // Factor to vary the output power of the cylinder without changing steam usage - used as a player customisation factor.
         float SpeedFactor;      // Speed factor - factor to reduce TE due to speed increase - American locomotive company
-      //  public float MaxTractiveEffortLbf;     // Maximum tractive effort for locomotive
+        public float MaxTractiveEffortLbf;     // Maximum tractive effort for locomotive
         float MaxLocoSpeedMpH;      // Speed of loco when max performance reached
         float MaxPistonSpeedFtpM;   // Piston speed @ max performance for the locomotive
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
@@ -332,6 +332,7 @@ namespace ORTS
         float maxForceN;
         float maxPowerW;
         float cutoff;
+        public float DrvWheelWeightKg; // weight on locomotive drive wheel, includes drag factor
   #endregion 
 
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
@@ -487,8 +488,6 @@ namespace ORTS
                 ForceFactor1Npcutoff[.785f] = -.593737f;
                 ForceFactor1Npcutoff[.850f] = -.607703f;
                 ForceFactor1Npcutoff.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f * NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM)); // Original formula
-                // Mean Tractive Force = ((CylDia^2 x CylStroke) / ClyDia) * mean effective pressure (MEP) - This is first part, MEP added below - units = inches.
-                // ForceFactor1.ScaleY(NumCylinders * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM)));
             }
             if (ForceFactor2Npcutoff == null)
             {
@@ -505,8 +504,6 @@ namespace ORTS
                 ForceFactor2Npcutoff[.785f] = .584714f;
                 ForceFactor2Npcutoff[.850f] = .591967f;
                 ForceFactor2Npcutoff.ScaleY(4.4482f * (float)Math.PI / 4 * 39.372f * 39.372f * NumCylinders * CylinderDiameterM * CylinderDiameterM * CylinderStrokeM / (2 * DriverWheelRadiusM)); // original Formula
-                // Mean Tractive Force = ((CylDia^2 x CylStroke) / ClyDia) * mean effective pressure (MEP) - This is first part, MEP added below - units = inches.
-                // ForceFactor2.ScaleY(NumCylinders * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM)));
             }
             if (CylinderPressureDropLBpStoPSI == null)
             {   // this table is not based on measurements
@@ -679,6 +676,7 @@ namespace ORTS
                 case "engine(ortsbackpressure": BackPressureLBpStoPSI = new Interpolator(stf); break;
                 case "engine(ortsburnrate": BurnRateLBpStoKGpS = new Interpolator(stf); break;
                 case "engine(ortsboilerefficiency": BoilerEfficiency = new Interpolator(stf); break;
+                case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
 
                 default: base.Parse(lowercasetoken, stf); break;
             }
@@ -731,6 +729,7 @@ namespace ORTS
             BackPressureLBpStoPSI = new Interpolator(locoCopy.BackPressureLBpStoPSI);
             BurnRateLBpStoKGpS = new Interpolator(locoCopy.BurnRateLBpStoKGpS);
             BoilerEfficiency = locoCopy.BoilerEfficiency;
+            DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
 
@@ -1257,24 +1256,26 @@ namespace ORTS
                 if (BoilerHeatBTU > MaxBoilerHeatBTU) // Limit boiler heat to max value for the boiler
                 {
                     BoilerHeat = true;
-                    BoilerHeatRatio = BoilerHeatOutBTUpS / BoilerHeatInBTUpS; // 
+                    const float BoilerHeatFactor = 1.025f; // Increasing this factor will change the burn rate once boiler heat has been reached
+                    float FactorPower = BoilerHeatBTU / (MaxBoilerHeatBTU / BoilerHeatFactor); 
+                    BoilerHeatRatio = MaxBoilerHeatBTU / (float)Math.Pow(BoilerHeatBTU, FactorPower);
                 }
                 else
                 {
                     BoilerHeat = false;
                     BoilerHeatRatio = 1.0f;
                 }
-
+                BoilerHeatRatio = MathHelper.Clamp(BoilerHeatRatio, 0.0f, 1.0f); // Keep Boiler Heat ratio within bounds
                 if (BoilerHeatBTU > MaxBoilerPressHeatBTU)
                 {
-                    MaxBoilerHeatRatio = (MaxBoilerPressHeatBTU - StartBoilerHeatBTU) / (BoilerHeatBTU - MaxBoilerHeatBTU);
-                    //MaxBoilerHeatRatio = MaxBoilerHeatBTU / BoilerHeatBTU; // 
+                    float FactorPower = BoilerHeatBTU / (MaxBoilerPressHeatBTU - MaxBoilerHeatBTU);
+                    MaxBoilerHeatRatio = MaxBoilerHeatBTU / (float)Math.Pow(BoilerHeatBTU, FactorPower); 
                 }
                 else
                 {
                     MaxBoilerHeatRatio = 1.0f;
                 }
-
+                MaxBoilerHeatRatio = MathHelper.Clamp(MaxBoilerHeatRatio, 0.0f, 1.0f); // Keep Max Boiler Heat ratio within bounds
             }
 
             BoilerHeatInBTUpS = FuelBurnRateLBpS * KJpKg.ToBTUpLb(FuelCalorificKJpKG) * BoilerEfficiencyGrateAreaLBpFT2toX[FuelBurnRateLBpS];
@@ -1503,74 +1504,88 @@ namespace ORTS
         }
 
         protected override void UpdateMotiveForce(float elapsedClockSeconds, float t, float currentSpeedMpS, float currentWheelSpeedMpS)
-    {
-    // Pass force and power information to MSTSLocomotive file by overriding corresponding method there
- 
-    // Calculate maximum power of the locomotive, based upon the maximum IHP
-    // Maximum IHP will occur at different (piston) speed for saturated locomotives and superheated based upon the wheel revolution. Typically saturated locomotive produce maximum power @ a piston speed of 700 ft/min , and superheated will occur @ 1000ft/min
-    // Set values for piston speed
-
-	if ( HasSuperheater)
-	{
-	MaxPistonSpeedFtpM = 1000.0f; // if superheated locomotive
-    SpeedFactor = 0.445f;
-	}
-	else
-	{
-	MaxPistonSpeedFtpM = 700.0f;  // if saturated locomotive
-    SpeedFactor = 0.412f;
-	}
-
-   // Calculate max velocity of the locomotive based upon above piston speed
-
-    MaxLocoSpeedMpH = MaxPistonSpeedFtpM * ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) / (FeetinMile * (2.0f * Me.ToFt(CylinderStrokeM)));
-
-            float TractiveEffortFactor = 0.85f;
-    MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor;
-
-   // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-
-       MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
-    
-   // Set Max Power equal to max IHP
-       MaxPowerW = W.FromHp(MaxIndicatedHorsePowerHP);
-     
-   // Set "current" motive force based upon the throttle, clinders, steam pressure, etc	
-       MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
-
-    // Set maximum force for the locomotive
-       MaxForceN = N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
-
-    // On starting allow maximum motive force to be used
-       if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f)
-       {
-           MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
-       }
-    // If "critical" speed of locomotive is reached, limit max IHP
-       CriticalSpeedTractiveEffortLbf = (MaxIndicatedHorsePowerHP * 375.0f) / MaxLocoSpeedMpH;
-    // Based upon max IHP, limit motive force.
-    if (absSpeedMpS > pS.FrompH(Me.FromMi(MaxLocoSpeedMpH)))
-    {
-    IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
-    if(TractiveEffortLbsF > CriticalSpeedTractiveEffortLbf)
         {
-            MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf * CylinderEfficiencyRate);
-        }
-    }
-    // Derate when priming is occurring.
-    if (BoilerIsPriming)
-        MotiveForceN *= BoilerPrimingDeratingFactor;
-    // Find the maximum TE for debug i.e. @ start and full throttle
-    if (absSpeedMpS < 2.0)
-    {
-        if (MotiveForceN > StartTractiveEffortN)
-        {
-            StartTractiveEffortN = MotiveForceN; // update to new maximum TE
-        }
-    }
-    }
+            // Pass force and power information to MSTSLocomotive file by overriding corresponding method there
+         
+            // Calculate maximum power of the locomotive, based upon the maximum IHP
+            // Maximum IHP will occur at different (piston) speed for saturated locomotives and superheated based upon the wheel revolution. Typically saturated locomotive produce maximum power @ a piston speed of 700 ft/min , and superheated will occur @ 1000ft/min
+            // Set values for piston speed
 
-        
+	        if ( HasSuperheater)
+	        {
+	            MaxPistonSpeedFtpM = 1000.0f; // if superheated locomotive
+                SpeedFactor = 0.445f;
+	        }
+	        else
+	        {
+	            MaxPistonSpeedFtpM = 700.0f;  // if saturated locomotive
+                SpeedFactor = 0.412f;
+	        }
+
+           // Calculate max velocity of the locomotive based upon above piston speed
+
+            MaxLocoSpeedMpH = MaxPistonSpeedFtpM * ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) / (FeetinMile * (2.0f * Me.ToFt(CylinderStrokeM)));
+
+            const float TractiveEffortFactor = 0.85f;
+            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor;
+
+            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+
+            MaxIndicatedHorsePowerHP = SpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+            
+            // Set Max Power equal to max IHP
+            MaxPowerW = W.FromHp(MaxIndicatedHorsePowerHP);
+             
+            // Set "current" motive force based upon the throttle, clinders, steam pressure, etc	
+            MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
+
+            // Set maximum force for the locomotive
+            MaxForceN = N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
+
+            // On starting allow maximum motive force to be used
+            if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f)
+            {
+               MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
+            }
+            // If "critical" speed of locomotive is reached, limit max IHP
+            CriticalSpeedTractiveEffortLbf = (MaxIndicatedHorsePowerHP * 375.0f) / MaxLocoSpeedMpH;
+            // Based upon max IHP, limit motive force.
+            if (absSpeedMpS > pS.FrompH(Me.FromMi(MaxLocoSpeedMpH)))
+            {
+                IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                if(TractiveEffortLbsF > CriticalSpeedTractiveEffortLbf)
+                {
+                    MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CriticalSpeedTractiveEffortLbf * CylinderEfficiencyRate);
+                }
+            }
+            // Derate when priming is occurring.
+            if (BoilerIsPriming)
+                MotiveForceN *= BoilerPrimingDeratingFactor;
+            // Find the maximum TE for debug i.e. @ start and full throttle
+            if (absSpeedMpS < 2.0)
+            {
+                if (MotiveForceN > StartTractiveEffortN)
+                {
+                    StartTractiveEffortN = MotiveForceN; // update to new maximum TE
+                }
+            }
+        }
+
+        protected override float GetSteamLocoMechFrictN()
+        {
+            // Calculate steam locomotive mechanical friction value, ie 20 (or 98.0667 metric) x DrvWheelWeight x Valve Factor, Assume VF = 1
+            // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.0
+
+            if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
+            {
+                const float FactorofAdhesion = 4.0f; // Assume a typical factor of adhesion
+                DrvWheelWeightKg = Kg.FromLb(FactorofAdhesion * MaxTractiveEffortLbf); // calculate Drive wheel weight if not in ENG file
+            }  
+              
+            const float MetricTonneFromKg = 1000.0f;    // Conversion factor to convert from kg to tonnes
+            return 98.0667f * (DrvWheelWeightKg / MetricTonneFromKg);
+        }
+
         private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)
         {
             // Calculate Air Compressor steam Usage if turned on
@@ -1903,7 +1918,7 @@ namespace ORTS
             }
             else
             {
-                HeatRatio = MathHelper.Clamp((BoilerHeatOutBTUpS / BoilerHeatInBTUpS), 0.1f, 1.2f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
+                HeatRatio = MathHelper.Clamp((BoilerHeatOutBTUpS / BoilerHeatInBTUpS), 0.1f, 1.3f);  // Factor to determine how hard to drive burn rate, based on steam gen & usage rate, in AI mode only
             }
         }
 

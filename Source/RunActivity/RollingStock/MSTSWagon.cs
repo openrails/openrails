@@ -57,7 +57,6 @@ namespace ORTS
         public bool DoorLeftOpen;
         public bool DoorRightOpen;
         public bool MirrorOpen;
-        public bool IsSteam; // Set as steam locomotive
         public bool IsRollerBearing; // Has roller bearings
         public bool IsStandStill = true;  // Used for MSTS type friction
         public bool IsDavisFriction = true; // Default to new Davis type friction
@@ -88,7 +87,6 @@ namespace ORTS
         public float DavisAN;           // davis equation constant
         public float DavisBNSpM;        // davis equation constant for speed
         public float DavisCNSSpMM;      // davis equation constant for speed squared
-        public float DrvWheelWeightKg; // weight on locomotive drive wheel, includes drag factor
         public float SteamLocoMechFrictN; // Steam locomotive mechanical friction
         public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
         public float Adhesion1 = .27f;   // 1st MSTS adhesion value
@@ -112,6 +110,11 @@ namespace ORTS
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
+
+        protected virtual float GetSteamLocoMechFrictN()
+        {
+            return 0f;
+        }
 
         public MSTSWagon(Simulator simulator, string wagFilePath)
             : base(simulator, wagFilePath)
@@ -187,16 +190,10 @@ namespace ORTS
                 case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (MassKG < 0.1f) MassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "engine(type":
-                    stf.MustMatch("(");
-                    string typeString1 = stf.ReadString();
-                    IsSteam = String.Compare(typeString1, "Steam") == 0 ? true : false;
-                    break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
                 case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortsbearingtype":
 		            stf.MustMatch("(");
 		            string typeString2 = stf.ReadString();
@@ -298,13 +295,11 @@ namespace ORTS
             MainSoundFileName = copy.MainSoundFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
             WheelRadiusM = copy.WheelRadiusM;
-            IsSteam = copy.IsSteam;
             DriverWheelRadiusM = copy.DriverWheelRadiusM;
             Friction0N = copy.Friction0N;
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
-            DrvWheelWeightKg = copy.DrvWheelWeightKg;
             IsRollerBearing = copy.IsRollerBearing;
             LengthM = copy.LengthM;
 			HeightM = copy.HeightM;
@@ -482,32 +477,17 @@ namespace ORTS
         {
             base.Update(elapsedClockSeconds);
 
-            if (IsDavisFriction)  // If set to use nex Davis friction the do so
+            if (IsDavisFriction)  // If set to use next Davis friction then do so
             {
-
                 // Davis formulas only apply above about 5mph, so different treatment required for low speed < 5mph.
                 s = Math.Abs(SpeedMpS);
-                if (s > 2.2352)     // if speed above 5 mph then turn off low speed calculations
+                if (s > MpS.FromMpH(5))     // if speed above 5 mph then turn off low speed calculations
                     IsLowSpeed = false;
                 if (s == 0.0)
                     IsLowSpeed = true;
-
-                // Calculate steam locomotive mechanical friction value, ie 20 (or 98.0667 metric) x DrvWheelWeight x Valve Factor, Assume VF = 1
-                // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.25
-                if (IsSteam)
-                {
-                    if (DrvWheelWeightKg == 0)
-                    {
-                        const float FactorofAdhesion = 4.0f; // Assume a typical factor of adhesion
-                        DrvWheelWeightKg = Kg.FromLb(FactorofAdhesion * MaxTractiveEffortLbf); // calculate Drive wheel weight if not in ENG file
-                    }
-                    const float MetricTonneFromKg = 1000.0f;    // Conversion factor to convert from kg to tonnes
-                    SteamLocoMechFrictN = 98.0667f * (DrvWheelWeightKg / MetricTonneFromKg);
-                }
-                else
-                {
-                    SteamLocoMechFrictN = 0.0f; // if not a steam locomotive set mechanical friction to zero
-                }
+                
+                float SteamLocoMechFrictN = GetSteamLocoMechFrictN();        
+                
                 if (IsLowSpeed)
                 {
                     const float s5 = 2.2352f; // 5 mph
@@ -565,6 +545,8 @@ namespace ORTS
                 else
                     FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM);
             }
+
+
 
 
             foreach (MSTSCoupling coupler in Couplers)
