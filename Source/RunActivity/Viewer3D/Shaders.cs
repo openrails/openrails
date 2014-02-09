@@ -172,7 +172,7 @@ namespace ORTS
 
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
-        public byte ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
+        public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")

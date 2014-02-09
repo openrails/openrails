@@ -605,7 +605,8 @@ namespace ORTS
                 }
                 else
                 {
-                    shader.ReferenceAlpha = 0;
+                    // Solid rendering.
+                    shader.ReferenceAlpha = -1;
                 }
             }
 

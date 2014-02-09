@@ -371,6 +371,7 @@ void _PSApplyFog(inout float3 Color, in VERTEX_OUTPUT In)
 
 void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 {
+	if (ReferenceAlpha < 0.01) Color.a = 1;
 	Color.a *= saturate((LightVector_ZFar.w - length(In.RelPosition.xyz)) / 50);
 }
 
