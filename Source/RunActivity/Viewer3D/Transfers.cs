@@ -163,6 +163,7 @@ namespace ORTS
             shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TransferPS3" : "TransferPS2"];
             if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
             shader.ImageTexture = Texture;
+            shader.ReferenceAlpha = 128;
 
             var samplerState = graphicsDevice.SamplerStates[0];
             samplerState.AddressU = TextureAddressMode.Border;
