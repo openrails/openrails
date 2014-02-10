@@ -19,6 +19,7 @@
 
 using System;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Viewer3D;
 
 namespace ORTS.Popups
 {

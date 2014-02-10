@@ -26,7 +26,7 @@ using System.Security;
 using System.IO;
 using System.Diagnostics;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     /// <summary>
     /// Wrapper class for the externals of library OpenAL

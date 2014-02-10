@@ -39,19 +39,19 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using MSTSMath;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     [CallOnThread("Loader")]
     public class SharedShapeManager
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 
         Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
         Dictionary<string, bool> ShapeMarks;
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
-        internal SharedShapeManager(Viewer3D viewer)
+        internal SharedShapeManager(Viewer viewer)
         {
             Viewer = viewer;
             EmptyShape = new SharedShape(Viewer);
@@ -121,7 +121,7 @@ namespace ORTS
 
     public class StaticShape
     {
-        public readonly Viewer3D Viewer;
+        public readonly Viewer Viewer;
         public readonly WorldPosition Location;
         public readonly ShapeFlags Flags;
         public readonly SharedShape SharedShape;
@@ -130,7 +130,7 @@ namespace ORTS
         /// Construct and initialize the class
         /// This constructor is for objects described by a MSTS shape file
         /// </summary>
-        public StaticShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags flags)
+        public StaticShape(Viewer viewer, string path, WorldPosition position, ShapeFlags flags)
         {
             Viewer = viewer;
             Location = position;
@@ -152,7 +152,7 @@ namespace ORTS
 
     public class StaticTrackShape : StaticShape
     {
-        public StaticTrackShape(Viewer3D viewer, string path, WorldPosition position)
+        public StaticTrackShape(Viewer viewer, string path, WorldPosition position)
             : base(viewer, path, position, ShapeFlags.AutoZBias)
         {
         }
@@ -170,7 +170,7 @@ namespace ORTS
 
         public readonly int[] Hierarchy;
 
-        public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+        public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
             : base(viewer, path, initialPosition, flags)
         {
             XNAMatrices = new Matrix[SharedShape.Matrices.Length];
@@ -183,7 +183,7 @@ namespace ORTS
                 Hierarchy = new int[0];
         }
 
-        public PoseableShape(Viewer3D viewer, string path, WorldPosition initialPosition)
+        public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition)
             : this(viewer, path, initialPosition, ShapeFlags.None)
         {
         }
@@ -300,12 +300,12 @@ namespace ORTS
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
             : base(viewer, path, initialPosition, flags)
         {
         }
 
-        public AnimatedShape(Viewer3D viewer, string path, WorldPosition initialPosition)
+        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition)
             : this(viewer, path, initialPosition, ShapeFlags.None)
         {
         }
@@ -334,7 +334,7 @@ namespace ORTS
         TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
         uint MainRoute;                  // 0 or 1 - which route is considered the main route
 
-        public SwitchTrackShape(Viewer3D viewer, string path, WorldPosition position, TrJunctionNode trj)
+        public SwitchTrackShape(Viewer viewer, string path, WorldPosition position, TrJunctionNode trj)
             : base(viewer, path, position, ShapeFlags.AutoZBias)
         {
             TrJunctionNode = trj;
@@ -374,7 +374,7 @@ namespace ORTS
 
         protected float AnimationKey;  // tracks position of points as they move left and right
         ShapePrimitive shapePrimitive;
-        public SpeedPostShape(Viewer3D viewer, string path, WorldPosition position, SpeedPostObj spo)
+        public SpeedPostShape(Viewer viewer, string path, WorldPosition position, SpeedPostObj spo)
             : base(viewer, path, position)
         {
 
@@ -558,7 +558,7 @@ namespace ORTS
         bool Opening = true;
         float AnimationKey;
 
-        public LevelCrossingShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
+        public LevelCrossingShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj)
             : base(viewer, path, position, shapeFlags)
         {
             CrossingObj = crossingObj;
@@ -646,14 +646,14 @@ namespace ORTS
 		float Moved = 0f;
 		float AnimationKey;
 
-		public static HazzardShape CreateHazzard(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
+		public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj)
 		{
 			var h = viewer.Simulator.HazzardManager.AddHazzardIntoGame(hObj.itemId, hObj.FileName);
 			if (h == null) return null;
 			return new HazzardShape(viewer, viewer.Simulator.BasePath + @"\Global\Shapes\" + h.HazFile.Tr_HazardFile.FileName + "\0" + viewer.Simulator.BasePath + @"\Global\Textures", position, shapeFlags, hObj, h);
 
 		}
-		public HazzardShape(Viewer3D viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, Hazzard h)
+		public HazzardShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, Hazzard h)
 			: base(viewer, path, position, shapeFlags)
 		{
 			HazardObj = hObj;
@@ -716,7 +716,7 @@ namespace ORTS
 
     public class RoadCarShape : AnimatedShape
     {
-        public RoadCarShape(Viewer3D viewer, string path)
+        public RoadCarShape(Viewer viewer, string path)
             : base(viewer, path, new WorldPosition())
         {
         }
@@ -832,7 +832,7 @@ namespace ORTS
         public LodControl[] LodControls;
         public bool HasNightSubObj;
 
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         public readonly string FilePath;
         public readonly string ReferencePath;
 
@@ -840,7 +840,7 @@ namespace ORTS
         /// Create an empty shape used as a sub when the shape won't load
         /// </summary>
         /// <param name="viewer"></param>
-        public SharedShape(Viewer3D viewer)
+        public SharedShape(Viewer viewer)
         {
             Viewer = viewer;
             FilePath = "Empty";
@@ -852,7 +852,7 @@ namespace ORTS
         /// </summary>
         /// <param name="viewer"></param>
         /// <param name="filePath">Path to shape's S file</param>
-        public SharedShape(Viewer3D viewer, string filePath)
+        public SharedShape(Viewer viewer, string filePath)
         {
             Viewer = viewer;
             FilePath = filePath;
@@ -1419,7 +1419,7 @@ namespace ORTS
         /// Construct and initialize the class.
         /// This constructor is for the labels of track items in TDB and W Files such as sidings and platforms.
         /// </summary>
-        public TrItemLabel(Viewer3D viewer, WorldPosition position, TrObject trObj)
+        public TrItemLabel(Viewer viewer, WorldPosition position, TrObject trObj)
         {
             Location = position;
             var i = 0;

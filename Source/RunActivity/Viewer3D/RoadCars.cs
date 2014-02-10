@@ -24,7 +24,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using MSTS;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class RoadCarSpawner
     {
@@ -35,7 +35,7 @@ namespace ORTS
         const float TrackRailHeight = 0.275f;
         const float TrainRailHeightMaximum = 1;
 
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly CarSpawnerObj CarSpawnerObj;
 
         // THREAD SAFETY:
@@ -50,7 +50,7 @@ namespace ORTS
         float LastSpawnedTime;
         float NextSpawnTime;
 
-        public RoadCarSpawner(Viewer3D viewer, WorldPosition position, CarSpawnerObj carSpawnerObj)
+        public RoadCarSpawner(Viewer viewer, WorldPosition position, CarSpawnerObj carSpawnerObj)
         {
             Debug.Assert(TrackMergeDistance >= 2 * (RampLength + TrackHalfWidth), "TrackMergeDistance is less than 2 * (RampLength + TrackHalfWidth); vertical inconsistencies will occur at close, but not merged, tracks.");
             Viewer = viewer;
@@ -216,7 +216,7 @@ namespace ORTS
         float SpeedMax;
         int NextCrossingIndex;
 
-        public RoadCar(Viewer3D viewer, RoadCarSpawner spawner, float averageSpeed)
+        public RoadCar(Viewer viewer, RoadCarSpawner spawner, float averageSpeed)
         {
             Spawner = spawner;
             Type = Program.Random.Next() % viewer.Simulator.CarSpawnerFile.shapeNames.Length;
@@ -279,7 +279,7 @@ namespace ORTS
 
     public class RoadCarDrawer
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
@@ -287,7 +287,7 @@ namespace ORTS
         Dictionary<RoadCar, RoadCarViewer> Cars = new Dictionary<RoadCar, RoadCarViewer>();
         List<RoadCar> VisibleCars = new List<RoadCar>();
 
-        public RoadCarDrawer(Viewer3D viewer)
+        public RoadCarDrawer(Viewer viewer)
         {
             Viewer = viewer;
         }
@@ -350,7 +350,7 @@ namespace ORTS
         readonly RoadCar Car;
         readonly RoadCarShape CarShape;
 
-        public RoadCarViewer(Viewer3D viewer, RoadCar car)
+        public RoadCarViewer(Viewer viewer, RoadCar car)
         {
             Car = car;
             CarShape = new RoadCarShape(viewer, viewer.Simulator.CarSpawnerFile.shapeNames[car.Type]);

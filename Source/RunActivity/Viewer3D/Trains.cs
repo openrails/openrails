@@ -23,11 +23,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class TrainDrawer
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
@@ -36,7 +36,7 @@ namespace ORTS
         public List<TrainCar> VisibleCars = new List<TrainCar>();
         TrainCar PlayerCar;
 
-        public TrainDrawer(Viewer3D viewer)
+        public TrainDrawer(Viewer viewer)
         {
             Viewer = viewer;
         }

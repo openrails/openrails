@@ -215,7 +215,7 @@ namespace ORTS
         /// </summary>
         void SetVigilanceAlarm(bool value)
         {
-            if (value && Simulator.Confirmer.Viewer.Camera.Style != Camera.Styles.Cab)
+            if (value && Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
                 Script.AlerterPressed();
             else
                 Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
@@ -284,7 +284,7 @@ namespace ORTS
                 return;
 
             // Auto-clear alerter when not in cabview
-            if (Locomotive.AlerterSnd && Simulator.Confirmer.Viewer.Camera.Style != Camera.Styles.Cab)
+            if (Locomotive.AlerterSnd && Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
                 Script.AlerterPressed();
 
             UpdateNextSignalFunctions();

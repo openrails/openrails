@@ -33,7 +33,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class Wire
     {
@@ -44,7 +44,7 @@ namespace ORTS
         /// <param name="trackList">DynatrackDrawer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static int DecomposeStaticWire(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
+        public static int DecomposeStaticWire(Viewer viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -135,7 +135,7 @@ namespace ORTS
         /// <param name="trackList">DynatrackDrawer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeConvertedDynamicWire(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
+        public static void DecomposeConvertedDynamicWire(Viewer viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -223,7 +223,7 @@ namespace ORTS
         /// <param name="trackList">DynatrackDrawer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeDynamicWire(Viewer3D viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj, WorldPosition worldMatrixInput)
+        public static void DecomposeDynamicWire(Viewer viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // DYNAMIC TRACK
             // =============
@@ -310,7 +310,7 @@ namespace ORTS
 
     public class WireDrawer : DynatrackDrawer
     {
-        public WireDrawer(Viewer3D viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle)
+        public WireDrawer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle)
             : base(viewer, position, endPosition)
         {
 
@@ -363,7 +363,7 @@ namespace ORTS
         /// <summary>
         /// WireProfile constructor (default - builds from self-contained data)
         /// </summary>
-        public WireProfile(Viewer3D viewer) // Nasty: void return type is not allowed. (See MSDN for compiler error CS0542.)
+        public WireProfile(Viewer viewer) // Nasty: void return type is not allowed. (See MSDN for compiler error CS0542.)
             : base(viewer, 0)//call the dummy base constructor so that no data is pre-populated
         {
             LODMethod = LODMethods.ComponentAdditive;
@@ -447,7 +447,7 @@ namespace ORTS
     public class WireMesh : DynatrackMesh
     {
         static WireProfile WireProfile;
-        public WireMesh(Viewer3D viewer, WorldPosition worldPosition,
+        public WireMesh(Viewer viewer, WorldPosition worldPosition,
         WorldPosition endPosition, float radius, float angle)
             : base()
         {
@@ -526,7 +526,7 @@ namespace ORTS
         /// <param name="viewer">Viewer.</param>
         /// <param name="lodIndex">Index of LOD mesh to be generated from profile.</param>
         /// <param name="lodItemIndex">Index of LOD mesh to be generated from profile.</param>
-        public ShapePrimitive BuildMesh(Viewer3D viewer, int lodIndex, int lodItemIndex)
+        public ShapePrimitive BuildMesh(Viewer viewer, int lodIndex, int lodItemIndex)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();

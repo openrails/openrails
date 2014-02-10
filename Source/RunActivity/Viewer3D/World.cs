@@ -19,11 +19,11 @@
 
 using Microsoft.Xna.Framework;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class World
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         public readonly WeatherControl WeatherControl;
         public readonly SkyDrawer Sky;
         public readonly MSTSSkyDrawer MSTSSky;
@@ -42,7 +42,7 @@ namespace ORTS
         bool PerformanceTune;
 
         [CallOnThread("Render")]
-        public World(Viewer3D viewer)
+        public World(Viewer viewer)
         {
             Viewer = viewer;
             // Control stuff first.

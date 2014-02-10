@@ -34,7 +34,8 @@ using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
-using Microsoft.Xna.Framework;  // for MathHelper
+using Microsoft.Xna.Framework;
+using ORTS.Viewer3D;  // for MathHelper
 
 namespace ORTS
 {
@@ -793,7 +794,7 @@ namespace ORTS
         /// Create a viewer for this locomotive.   Viewers are only attached
         /// while the locomotive is in viewing range.
         /// </summary>
-        public override TrainCarViewer GetViewer(Viewer3D viewer)
+        public override TrainCarViewer GetViewer(Viewer viewer)
         {
             return new MSTSSteamLocomotiveViewer( viewer, this );
         }
@@ -2494,7 +2495,7 @@ namespace ORTS
         List<ParticleEmitterDrawer> Stack = new List<ParticleEmitterDrawer>();
         List<ParticleEmitterDrawer> Whistle = new List<ParticleEmitterDrawer>();
 
-        public MSTSSteamLocomotiveViewer(Viewer3D viewer, MSTSSteamLocomotive car)
+        public MSTSSteamLocomotiveViewer(Viewer viewer, MSTSSteamLocomotive car)
             : base(viewer, car)
         {
             // Now all the particle drawers have been setup, assign them textures based

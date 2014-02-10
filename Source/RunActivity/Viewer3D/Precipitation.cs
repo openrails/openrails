@@ -24,7 +24,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     #region PrecipDrawer
     /// <summary>
@@ -33,7 +33,7 @@ namespace ORTS
     /// </summary>
     public class PrecipDrawer
     {
-        Viewer3D Viewer;
+        Viewer Viewer;
         Material precipMaterial;
 
         // Classes reqiring instantiation
@@ -50,7 +50,7 @@ namespace ORTS
         /// <summary>
         /// PrecipDrawer constructor
         /// </summary>
-        public PrecipDrawer(Viewer3D viewer)
+        public PrecipDrawer(Viewer viewer)
         {
             Viewer = viewer;
             precipMaterial = viewer.MaterialManager.Load("Precip");

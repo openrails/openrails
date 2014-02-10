@@ -50,6 +50,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using ORTS.Popups;
+using ORTS.Viewer3D;
 
 
 
@@ -549,7 +550,7 @@ namespace ORTS
         /// Create a viewer for this locomotive.   Viewers are only attached
         /// while the locomotive is in viewing range.
         /// </summary>
-        public override TrainCarViewer GetViewer(Viewer3D viewer)
+        public override TrainCarViewer GetViewer(Viewer viewer)
         {
             return new MSTSLocomotiveViewer(viewer, this);
         }
@@ -2372,7 +2373,7 @@ namespace ORTS
         private bool _hasCabRenderer;
         private CabRenderer _CabRenderer;
 
-        public MSTSLocomotiveViewer(Viewer3D viewer, MSTSLocomotive car)
+        public MSTSLocomotiveViewer(Viewer viewer, MSTSLocomotive car)
             : base(viewer, car)
         {
             Locomotive = car;
@@ -2736,7 +2737,7 @@ namespace ORTS
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
-                Viewer.Camera.Style == Camera.Styles.Cab)
+                Viewer.Camera.Style == ORTS.Viewer3D.Camera.Styles.Cab)
             {
 
                 if (_CabRenderer != null)
@@ -2997,7 +2998,7 @@ namespace ORTS
         /// </summary>
         /// <param name="viewer">Viver3D</param>
         /// <param name="FileName">Name of the Texture</param>
-        public static void LoadTextures(Viewer3D viewer, string FileName)
+        public static void LoadTextures(Viewer viewer, string FileName)
         {
             if (string.IsNullOrEmpty(FileName))
                 return;
@@ -3264,7 +3265,7 @@ namespace ORTS
         }
 
         [CallOnThread("Loader")]
-        public static void Mark(Viewer3D viewer)
+        public static void Mark(Viewer viewer)
         {
             foreach (var texture in DayTextures.Values)
                 viewer.TextureManager.Mark(texture);
@@ -3299,13 +3300,13 @@ namespace ORTS
 
         //private List<CabViewControls> CabViewControlsList = new List<CabViewControls>();
         private List<List<CabViewControlRenderer>> CabViewControlRenderersList = new List<List<CabViewControlRenderer>>();
-        private Viewer3D _Viewer;
+        private Viewer _Viewer;
         private MSTSLocomotive _Locomotive;
         private int _Location;
         private bool _isNightTexture;
 
         [CallOnThread("Loader")]
-        public CabRenderer(Viewer3D viewer, MSTSLocomotive car)
+        public CabRenderer(Viewer viewer, MSTSLocomotive car)
         {
             //Sequence = RenderPrimitiveSequence.CabView;
             _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
@@ -3520,7 +3521,7 @@ namespace ORTS
     /// </summary>
     public abstract class CabViewControlRenderer : RenderPrimitive
     {
-        protected readonly Viewer3D Viewer;
+        protected readonly Viewer Viewer;
         protected readonly MSTSLocomotive Locomotive;
         protected readonly CabViewControl Control;
         protected readonly CabShader Shader;
@@ -3532,7 +3533,7 @@ namespace ORTS
 
         Matrix Matrix = Matrix.Identity;
 
-        public CabViewControlRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CabViewControl control, CabShader shader)
+        public CabViewControlRenderer(Viewer viewer, MSTSLocomotive locomotive, CabViewControl control, CabShader shader)
         {
             Viewer = viewer;
             Locomotive = locomotive;
@@ -3619,7 +3620,7 @@ namespace ORTS
         float Rotation;
         float ScaleToScreen = 1;
 
-        public CabViewDialRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CVCDial control, CabShader shader)
+        public CabViewDialRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDial control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
             ControlDial = control;
@@ -3694,7 +3695,7 @@ namespace ORTS
         Color DrawColor;
         bool IsFire;
 
-        public CabViewGaugeRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CVCGauge control, CabShader shader)
+        public CabViewGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCGauge control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
             Gauge = control;
@@ -3712,7 +3713,7 @@ namespace ORTS
             }
         }
 
-        public CabViewGaugeRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CVCFirebox control, CabShader shader)
+        public CabViewGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCFirebox control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
             Gauge = control;
@@ -3890,7 +3891,7 @@ namespace ORTS
         Vector2 DrawPosition = new Vector2();
         Rectangle DestinationRectangle = new Rectangle();
 
-        public CabViewDiscreteRenderer(Viewer3D viewer, MSTSLocomotive locomotive, CVCWithFrames control, CabShader shader)
+        public CabViewDiscreteRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCWithFrames control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
             ControlDiscrete = control;
@@ -4151,7 +4152,7 @@ namespace ORTS
         Color DrawColor;
 
         [CallOnThread("Loader")]
-        public CabViewDigitalRenderer(Viewer3D viewer, MSTSLocomotive car, CVCDigital digital, CabShader shader)
+        public CabViewDigitalRenderer(Viewer viewer, MSTSLocomotive car, CVCDigital digital, CabShader shader)
             : base(viewer, car, digital, shader)
         {
             Position.X = (float)Control.PositionX;

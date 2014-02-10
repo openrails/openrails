@@ -29,7 +29,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class SignalShape : PoseableShape
     {
@@ -39,7 +39,7 @@ namespace ORTS
         readonly bool[] SubObjVisible;
         readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
-        public SignalShape(Viewer3D viewer, MSTS.SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
+        public SignalShape(Viewer viewer, MSTS.SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags)
             : base(viewer, path, position, flags)
         {
 #if DEBUG_SIGNAL_SHAPES
@@ -145,7 +145,7 @@ namespace ORTS
         {
             static readonly Dictionary<string, SignalTypeData> SignalTypes = new Dictionary<string, SignalTypeData>();
 
-            readonly Viewer3D Viewer;
+            readonly Viewer Viewer;
             readonly SignalShape SignalShape;
 #if DEBUG_SIGNAL_SHAPES
             readonly int Index;
@@ -162,7 +162,7 @@ namespace ORTS
             AnimatedPart SemaphorePart;
             int DisplayState = -1;
 
-            public SignalShapeHead(Viewer3D viewer, SignalShape signalShape, int index, SignalHead signalHead,
+            public SignalShapeHead(Viewer viewer, SignalShape signalShape, int index, SignalHead signalHead,
                         MSTS.SignalItem mstsSignalItem, MSTS.SignalShape.SignalSubObj mstsSignalSubObj)
             {
                 Viewer = viewer;
@@ -325,7 +325,7 @@ namespace ORTS
             public readonly float FlashTimeTotal;
             public readonly bool Semaphore;
 
-            public SignalTypeData(Viewer3D viewer, MSTS.SignalType mstsSignalType)
+            public SignalTypeData(Viewer viewer, MSTS.SignalType mstsSignalType)
             {
                 if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
                 {
@@ -419,7 +419,7 @@ namespace ORTS
         readonly VertexDeclaration VertexDeclaration;
         readonly VertexBuffer VertexBuffer;
 
-        public SignalLightMesh(Viewer3D viewer, Vector3 position, float radius, Color color, float u0, float v0, float u1, float v1)
+        public SignalLightMesh(Viewer viewer, Vector3 position, float radius, Color color, float u0, float v0, float u1, float v1)
         {
             var verticies = new[] {
 				new VertexPositionColorTexture(new Vector3(position.X - radius, position.Y + radius, position.Z), color, new Vector2(u1, v0)),
@@ -446,7 +446,7 @@ namespace ORTS
         readonly SceneryShader SceneryShader;
         readonly Texture2D Texture;
 
-        public SignalLightMaterial(Viewer3D viewer, string textureName)
+        public SignalLightMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             SceneryShader = Viewer.MaterialManager.SceneryShader;

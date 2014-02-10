@@ -29,7 +29,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     #region Dynatrack
     public class Dynatrack
@@ -41,7 +41,7 @@ namespace ORTS
         /// <param name="trackList">DynatrackDrawer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrix">Position matrix.</param>
-        public static void Decompose(Viewer3D viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix)
+        public static void Decompose(Viewer viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix)
         {
             // DYNAMIC TRACK
             // =============
@@ -128,7 +128,7 @@ namespace ORTS
     public class DynatrackDrawer
     {
         #region Class variables
-        Viewer3D Viewer;
+        Viewer Viewer;
         WorldPosition worldPosition;
         public DynatrackMesh dtrackMesh;
         #endregion
@@ -137,7 +137,7 @@ namespace ORTS
         /// <summary>
         /// DynatrackDrawer constructor
         /// </summary>
-        public DynatrackDrawer(Viewer3D viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
+        public DynatrackDrawer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
         {
             Viewer = viewer;
             worldPosition = position;
@@ -157,7 +157,7 @@ namespace ORTS
         /// <summary>
         /// DynatrackDrawer default constructor, without DyntrackObj
         /// </summary>
-        public DynatrackDrawer(Viewer3D viewer, WorldPosition position, WorldPosition endPosition)
+        public DynatrackDrawer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
         {
             Viewer = viewer;
             worldPosition = position;
@@ -258,7 +258,7 @@ namespace ORTS
         /// <param name="viewer">Viewer.</param>
         /// <param name="routePath">Path to route.</param>
         /// <param name="trpFile">TRPFile created (out).</param>
-        public static void CreateTrackProfile(Viewer3D viewer, string routePath, out TRPFile trpFile)
+        public static void CreateTrackProfile(Viewer viewer, string routePath, out TRPFile trpFile)
         {
             string path = routePath + @"\TrackProfiles";
             //Establish default track profile
@@ -287,7 +287,7 @@ namespace ORTS
         /// </summary>
         /// <param name="viewer">Viewer 3D.</param>
         /// <param name="filespec">Complete filepath string to track profile file.</param>
-        public TRPFile(Viewer3D viewer, string filespec)
+        public TRPFile(Viewer viewer, string filespec)
         {
             if (filespec == "")
             {
@@ -465,7 +465,7 @@ namespace ORTS
         /// TrProfile constructor (default - builds from self-contained data)
         /// <param name="viewer">Viewer.</param>
         /// </summary>
-        public TrProfile(Viewer3D viewer)
+        public TrProfile(Viewer viewer)
         {
             // Default TrProfile constructor
 
@@ -586,7 +586,7 @@ namespace ORTS
         /// <summary>
         /// TrProfile constructor from STFReader-style profile file
         /// </summary>
-        public TrProfile(Viewer3D viewer, STFReader stf)
+        public TrProfile(Viewer viewer, STFReader stf)
         {
             Name = "Default Dynatrack profile";
 
@@ -607,7 +607,7 @@ namespace ORTS
         /// <summary>
         /// TrProfile constructor from XML profile file
         /// </summary>
-        public TrProfile(Viewer3D viewer, XmlReader reader)
+        public TrProfile(Viewer viewer, XmlReader reader)
         {
             if (reader.IsStartElement())
             {
@@ -687,7 +687,7 @@ namespace ORTS
         /// <param name="viewer">Viewer3D.</param>
         /// <param name="x">Parameter x is a placeholder.</param>
         /// </summary>
-        public TrProfile(Viewer3D viewer, int x)
+        public TrProfile(Viewer viewer, int x)
         {
             // Default TrProfile constructor
             Name = "Default Dynatrack profile";
@@ -764,7 +764,7 @@ namespace ORTS
             CutoffRadius = cutoffRadius;
         }
 
-        public LOD(Viewer3D viewer, STFReader stf)
+        public LOD(Viewer viewer, STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -825,7 +825,7 @@ namespace ORTS
         /// <summary>
         /// LODITem constructor (used for STF-style profile)
         /// </summary>
-        public LODItem(Viewer3D viewer, STFReader stf)
+        public LODItem(Viewer viewer, STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -864,7 +864,7 @@ namespace ORTS
             NumSegments += (uint)count - 1;
         } // end Accum
 
-        public static void LoadMaterial(Viewer3D viewer, LODItem lod)
+        public static void LoadMaterial(Viewer viewer, LODItem lod)
         {
             var options = Helpers.EncodeMaterialOptions(lod);
             lod.LODMaterial = viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(viewer.Simulator, (Helpers.TextureFlags)lod.ESD_Alternative_Texture, lod.TexName), (int)options, lod.MipMapLevelOfDetailBias);
@@ -1049,7 +1049,7 @@ namespace ORTS
         /// <summary>
         /// Constructor.
         /// </summary>
-        public DynatrackMesh(Viewer3D viewer, DyntrackObj track, WorldPosition worldPosition,
+        public DynatrackMesh(Viewer viewer, DyntrackObj track, WorldPosition worldPosition,
                                 WorldPosition endPosition)
         {
             // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
@@ -1125,7 +1125,7 @@ namespace ORTS
         /// <param name="worldPosition">WorldPosition.</param>
         /// <param name="lodIndex">Index of LOD mesh to be generated from profile.</param>
         /// <param name="lodItemIndex">Index of LOD mesh following LODs[iLOD]</param>
-        public ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int lodIndex, int lodItemIndex)
+        public ShapePrimitive BuildMesh(Viewer viewer, WorldPosition worldPosition, int lodIndex, int lodItemIndex)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();

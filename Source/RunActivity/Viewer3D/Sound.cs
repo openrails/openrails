@@ -47,7 +47,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using MSTS;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
 
 /////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ namespace ORTS
         /// <summary>
         /// The listener is connected to this viewer
         /// </summary>
-        public Viewer3D Viewer;
+        public Viewer Viewer;
         /// <summary>
         /// Volume of the ScalabiltyGroup
         /// </summary>
@@ -95,7 +95,7 @@ namespace ORTS
         private List<SoundSource> _inSources;
         private List<SoundSource> _outSources;
 
-        public TrackSoundSource(MSTSWagon car, Viewer3D viewer)
+        public TrackSoundSource(MSTSWagon car, Viewer viewer)
         {
             Car = car;
             Viewer = viewer;
@@ -252,7 +252,7 @@ namespace ORTS
         /// <param name="viewer"></param>
         /// <param name="car"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer3D viewer, MSTSWagon car, string smsFilePath)
+        public SoundSource(Viewer viewer, MSTSWagon car, string smsFilePath)
         {
             Car = car;
             Initialize(viewer, car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
@@ -264,7 +264,7 @@ namespace ORTS
         /// <param name="viewer"></param>
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer3D viewer, Events.Source eventSource, string smsFilePath)
+        public SoundSource(Viewer viewer, Events.Source eventSource, string smsFilePath)
         {
             Initialize(viewer, null, eventSource, smsFilePath);
         }
@@ -276,7 +276,7 @@ namespace ORTS
         /// <param name="worldLocation"></param>
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
+        public SoundSource(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
         {
             IsEnvSound = true;
             Initialize(viewer, worldLocation, eventSource, smsFilePath);
@@ -290,7 +290,7 @@ namespace ORTS
         /// <param name="eventSource"></param>
         /// <param name="smsFilePath"></param>
         /// <param name="slowRolloff"></param>
-        public SoundSource(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath, bool slowRolloff)
+        public SoundSource(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath, bool slowRolloff)
         {
             IsEnvSound = true;
             SlowRolloff = slowRolloff;
@@ -353,7 +353,7 @@ namespace ORTS
         /// <param name="worldLocation">World location of <see cref="SoundSource"/></param>
         /// <param name="eventSource">Type of game part sms belongs to, to determine how to interpret discrete trigger numbers</param>
         /// <param name="smsFilePath">Full path for sms file</param>
-        public void Initialize(Viewer3D viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
+        public void Initialize(Viewer viewer, WorldLocation worldLocation, Events.Source eventSource, string smsFilePath)
         {
             Viewer = viewer;
             WorldLocation = worldLocation;
@@ -1718,11 +1718,11 @@ namespace ORTS
     public class WorldSounds
     {
         Dictionary<string, List<WorldSoundRegion>> SoundRegions = new Dictionary<string, List<WorldSoundRegion>>();
-        private Viewer3D Viewer;
+        private Viewer Viewer;
         private SoundSource ss;
         private List<SoundSourceBase> ls;
 
-        public WorldSounds(Viewer3D viewer)
+        public WorldSounds(Viewer viewer)
         {
             Viewer = viewer;
         }
@@ -1947,7 +1947,7 @@ namespace ORTS
         private TrackAuthority _ta;
 #endif
 
-        public TDBObjects(MSTSWagon Car, Viewer3D Viewer)
+        public TDBObjects(MSTSWagon Car, Viewer Viewer)
         {
             _car = Car;
 #if !NEW_SIGNALLING

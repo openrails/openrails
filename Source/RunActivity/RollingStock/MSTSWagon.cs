@@ -36,6 +36,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using MSTS;
+using ORTS.Viewer3D;
 
 namespace ORTS
 {
@@ -466,7 +467,7 @@ namespace ORTS
         }
 
 
-        public override TrainCarViewer GetViewer(Viewer3D viewer)
+        public override TrainCarViewer GetViewer(Viewer viewer)
         {
             // warning - don't assume there is only one viewer, or that there are any viewers at all.
             // Best practice is not to give the TrainCar class any knowledge of its viewers.
@@ -1046,7 +1047,7 @@ namespace ORTS
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon) Car; } }
 
         bool HasFirstPanto;
-        public MSTSWagonViewer(Viewer3D viewer, MSTSWagon car)
+        public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
             var wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
@@ -1327,7 +1328,7 @@ namespace ORTS
             // Control visibility of passenger cabin when inside it
             if (Viewer.Camera.AttachedCar == this.MSTSWagon
                  && //( Viewer.ViewPoint == Viewer.ViewPoints.Cab ||  // TODO, restore when we complete cab views - 
-                     Viewer.Camera.Style == Camera.Styles.Passenger)
+                     Viewer.Camera.Style == ORTS.Viewer3D.Camera.Styles.Passenger)
             {
                 // We are in the passenger cabin
                 if (InteriorShape != null)
@@ -1339,7 +1340,7 @@ namespace ORTS
             {
                 // Skip drawing if CAB view - draw 2D view instead - by GeorgeS
                 if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
-                    Viewer.Camera.Style == Camera.Styles.Cab)
+                    Viewer.Camera.Style == ORTS.Viewer3D.Camera.Styles.Cab)
                     return;
                 
                 // We are outside the passenger cabin

@@ -21,6 +21,7 @@ using System;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using ORTS.Processes;
+using ORTS.Viewer3D;
 
 namespace ORTS.Popups
 {

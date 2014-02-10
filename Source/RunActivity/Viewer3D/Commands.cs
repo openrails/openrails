@@ -19,7 +19,8 @@ using System;
 using System.Diagnostics;   // Used by Trace.Warnings
 using ORTS.Popups;
 
-namespace ORTS {
+namespace ORTS.Viewer3D
+{
     /// <summary>
     /// This Command Pattern allows requests to be encapsulated as objects (http://sourcemaking.com/design_patterns/command).
     /// The pattern provides many advantages, but it allows OR to record the commands and then to save them when the user presses F2.
@@ -152,7 +153,7 @@ namespace ORTS {
     public class SaveCommand : Command {
         // <CJComment> Receiver is static so that all commands of this type will share it, 
         // especially new commands created by the deserializing process.
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
         public string FileStem;
 
         public SaveCommand( CommandLog log, string fileStem ) 
@@ -875,7 +876,7 @@ namespace ORTS {
     // Other
     [Serializable()]
     public class ChangeCabCommand : Command {
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
 
         public ChangeCabCommand( CommandLog log ) 
             : base( log ) {
@@ -890,7 +891,7 @@ namespace ORTS {
 
     [Serializable()]
     public class ToggleSwitchAheadCommand : Command {
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
 
         public ToggleSwitchAheadCommand( CommandLog log ) 
             : base( log ) {
@@ -905,7 +906,7 @@ namespace ORTS {
 
     [Serializable()]
     public class ToggleSwitchBehindCommand : Command {
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
 
         public ToggleSwitchBehindCommand( CommandLog log ) 
             : base( log ) {
@@ -920,7 +921,7 @@ namespace ORTS {
 
     [Serializable()]
     public class ToggleAnySwitchCommand : IndexCommand {
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
 
         public ToggleAnySwitchCommand( CommandLog log, int index )
             : base(log, index)
@@ -937,7 +938,7 @@ namespace ORTS {
 
     [Serializable()]
     public class UncoupleCommand : Command {
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
         int CarPosition;    // 0 for head of train
 
         public UncoupleCommand( CommandLog log, int carPosition ) 
@@ -958,7 +959,7 @@ namespace ORTS {
 
     [Serializable()]
     public class SaveScreenshotCommand : Command {
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
 
         public SaveScreenshotCommand(CommandLog log)
             : base(log)
@@ -1014,7 +1015,7 @@ namespace ORTS {
     
     [Serializable()]
     public abstract class UseCameraCommand : Command {
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
 
         public UseCameraCommand( CommandLog log )
             : base( log ) {
@@ -1174,7 +1175,7 @@ namespace ORTS {
     
     [Serializable()]
     public abstract class MoveCameraCommand : Command {
-        public static Viewer3D Receiver { get; set; }
+        public static Viewer Receiver { get; set; }
         protected double EndTime;
 
         public MoveCameraCommand( CommandLog log, double startTime, double endTime )

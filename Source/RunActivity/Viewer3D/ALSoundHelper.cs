@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public enum PlayMode
     {

@@ -25,12 +25,13 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ORTS.Viewer3D;
 
 namespace ORTS.Debugging
 {
     public partial class SoundDebugForm : Form
     {
-        Viewer3D Viewer;
+        Viewer Viewer;
 
         private Timer UITimer;
         private double lastUpdateTime = 0;
@@ -40,7 +41,7 @@ namespace ORTS.Debugging
         private Dictionary<object, List<SoundSourceBase>> SoundSources;
         private SoundSource selectedSoundSource;
 
-        public SoundDebugForm(Viewer3D viewer)
+        public SoundDebugForm(Viewer viewer)
         {
             InitializeComponent();
 

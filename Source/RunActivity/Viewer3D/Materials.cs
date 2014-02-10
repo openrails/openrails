@@ -27,18 +27,18 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Popups;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     [CallOnThread("Loader")]
     public class SharedTextureManager
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly GraphicsDevice GraphicsDevice;
         Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
         Dictionary<string, bool> TextureMarks;
 
         [CallOnThread("Render")]
-        internal SharedTextureManager(Viewer3D viewer, GraphicsDevice graphicsDevice)
+        internal SharedTextureManager(Viewer viewer, GraphicsDevice graphicsDevice)
         {
             Viewer = viewer;
             GraphicsDevice = graphicsDevice;
@@ -133,7 +133,7 @@ namespace ORTS
     [CallOnThread("Loader")]
     public class SharedMaterialManager
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         Dictionary<string, Material> Materials = new Dictionary<string, Material>();
         Dictionary<string, bool> MaterialMarks = new Dictionary<string, bool>();
 
@@ -150,7 +150,7 @@ namespace ORTS
         public static Texture2D MissingTexture;
 
         [CallOnThread("Render")]
-        public SharedMaterialManager(Viewer3D viewer)
+        public SharedMaterialManager(Viewer viewer)
         {
             Viewer = viewer;
             // TODO: Move to Loader process.
@@ -372,10 +372,10 @@ namespace ORTS
 
     public abstract class Material
     {
-        public readonly Viewer3D Viewer;
+        public readonly Viewer Viewer;
         readonly string Key;
 
-        protected Material(Viewer3D viewer, string key)
+        protected Material(Viewer viewer, string key)
         {
             Viewer = viewer;
             Key = key;
@@ -405,7 +405,7 @@ namespace ORTS
 
     public class EmptyMaterial : Material
     {
-        public EmptyMaterial(Viewer3D viewer)
+        public EmptyMaterial(Viewer viewer)
             : base(viewer, null)
         {
         }
@@ -413,7 +413,7 @@ namespace ORTS
 
     public class BasicMaterial : Material
     {
-        public BasicMaterial(Viewer3D viewer, string key)
+        public BasicMaterial(Viewer viewer, string key)
             : base(viewer, key)
         {
         }
@@ -427,7 +427,7 @@ namespace ORTS
 
     public class BasicBlendedMaterial : BasicMaterial
     {
-        public BasicBlendedMaterial(Viewer3D viewer, string key)
+        public BasicBlendedMaterial(Viewer viewer, string key)
             : base(viewer, key)
         {
         }
@@ -442,7 +442,7 @@ namespace ORTS
     {
         public readonly SpriteBatch SpriteBatch;
 
-        public SpriteBatchMaterial(Viewer3D viewer)
+        public SpriteBatchMaterial(Viewer viewer)
             : base(viewer, null)
         {
             SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
@@ -514,7 +514,7 @@ namespace ORTS
         IEnumerator<EffectPass> ShaderPassesVegetation;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public SceneryMaterial(Viewer3D viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
+        public SceneryMaterial(Viewer viewer, string texturePath, SceneryMaterialOptions options, float mipMapBias)
             : base(viewer, String.Format("{0}:{1:X}:{2}", texturePath, options, mipMapBias))
         {
             Options = options;
@@ -770,7 +770,7 @@ namespace ORTS
         readonly Texture2D PatchTextureOverlay;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public TerrainMaterial(Viewer3D viewer, string terrainTexture)
+        public TerrainMaterial(Viewer viewer, string terrainTexture)
             : base(viewer, terrainTexture)
         {
             var textures = terrainTexture.Split('\0');
@@ -838,7 +838,7 @@ namespace ORTS
 
     public class TerrainSharedMaterial : TerrainMaterial
     {
-        public TerrainSharedMaterial(Viewer3D viewer, string terrainTexture)
+        public TerrainSharedMaterial(Viewer viewer, string terrainTexture)
             : base(viewer, terrainTexture)
         {
         }
@@ -852,7 +852,7 @@ namespace ORTS
 
     public class TerrainSharedDistantMountain : TerrainSharedMaterial
     {
-        public TerrainSharedDistantMountain(Viewer3D viewer, string terrainTexture)
+        public TerrainSharedDistantMountain(Viewer viewer, string terrainTexture)
             : base(viewer, terrainTexture)
         {
         }
@@ -889,7 +889,7 @@ namespace ORTS
         IEnumerator<EffectPass> ShaderPassesMoon;
         IEnumerator<EffectPass> ShaderPassesClouds;
 
-        public SkyMaterial(Viewer3D viewer)
+        public SkyMaterial(Viewer viewer)
             : base(viewer, null)
         {
             SkyShader = Viewer.MaterialManager.SkyShader;
@@ -1089,7 +1089,7 @@ namespace ORTS
         IEnumerator<EffectPass> ShaderPassesMoon;
         IEnumerator<EffectPass> ShaderPassesClouds;
 
-        public MSTSSkyMaterial(Viewer3D viewer)
+        public MSTSSkyMaterial(Viewer viewer)
             : base(viewer, null)
         {
             MSTSSkyShader = Viewer.MaterialManager.SkyShader;
@@ -1293,7 +1293,7 @@ namespace ORTS
 
         IEnumerator<EffectPass> ShaderPasses;
 
-        public ParticleEmitterMaterial(Viewer3D viewer)
+        public ParticleEmitterMaterial(Viewer viewer)
             : base(viewer, null)
         {
             ShaderPasses = Viewer.MaterialManager.ParticleEmitterShader.Techniques["ParticleEmitterTechnique"].Passes.GetEnumerator();
@@ -1369,7 +1369,7 @@ namespace ORTS
         Texture2D SnowTexture;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public PrecipMaterial(Viewer3D viewer)
+        public PrecipMaterial(Viewer viewer)
             : base(viewer, null)
         {
             // TODO: This should happen on the loader thread.
@@ -1460,7 +1460,7 @@ namespace ORTS
         readonly Texture2D TreeTexture;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public ForestMaterial(Viewer3D viewer, string treeTexture)
+        public ForestMaterial(Viewer viewer, string treeTexture)
             : base(viewer, treeTexture)
         {
             TreeTexture = Viewer.TextureManager.Get(treeTexture);
@@ -1532,7 +1532,7 @@ namespace ORTS
     {
         readonly Texture2D LightGlowTexture;
 
-        public LightGlowMaterial(Viewer3D viewer)
+        public LightGlowMaterial(Viewer viewer)
             : base(viewer, null)
         {
             // TODO: This should happen on the loader thread.
@@ -1596,7 +1596,7 @@ namespace ORTS
 
     public class LightConeMaterial : Material
     {
-        public LightConeMaterial(Viewer3D viewer)
+        public LightConeMaterial(Viewer viewer)
             : base(viewer, null)
         {
         }
@@ -1647,7 +1647,7 @@ namespace ORTS
         readonly Texture2D WaterTexture;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public WaterMaterial(Viewer3D viewer, string waterTexturePath)
+        public WaterMaterial(Viewer viewer, string waterTexturePath)
             : base(viewer, waterTexturePath)
         {
             WaterTexture = Viewer.TextureManager.Get(waterTexturePath);
@@ -1732,7 +1732,7 @@ namespace ORTS
             Blocker,
         }
 
-        public ShadowMapMaterial(Viewer3D viewer)
+        public ShadowMapMaterial(Viewer viewer)
             : base(viewer, null)
         {
             var shadowMapResolution = Viewer.Settings.ShadowMapResolution;
@@ -1846,7 +1846,7 @@ namespace ORTS
         IEnumerator<EffectPass> ShaderPassesPopupWindowGlass;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public PopupWindowMaterial(Viewer3D viewer)
+        public PopupWindowMaterial(Viewer viewer)
             : base(viewer, null)
         {
         }
@@ -1907,7 +1907,7 @@ namespace ORTS
     {
         static BasicEffect basicEffect;
 
-        public YellowMaterial(Viewer3D viewer)
+        public YellowMaterial(Viewer viewer)
             : base(viewer, null)
         {
             if (basicEffect == null)
@@ -1968,7 +1968,7 @@ namespace ORTS
 
         readonly List<Rectangle> TextBoxes = new List<Rectangle>();
 
-        public Label3DMaterial(Viewer3D viewer)
+        public Label3DMaterial(Viewer viewer)
             : base(viewer)
         {
             Texture = new Texture2D(SpriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
@@ -2018,7 +2018,7 @@ namespace ORTS
     {
         IEnumerator<EffectPass> ShaderPassesGraph;
 
-        public DebugNormalMaterial(Viewer3D viewer)
+        public DebugNormalMaterial(Viewer viewer)
             : base(viewer, null)
         {
         }

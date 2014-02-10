@@ -23,7 +23,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public abstract class Shader : Effect
     {
@@ -605,7 +605,7 @@ namespace ORTS
             worldViewProjection.SetValue(wvp);
         }
 
-        public PopupWindowShader(Viewer3D viewer, GraphicsDevice graphicsDevice)
+        public PopupWindowShader(Viewer viewer, GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "PopupWindow")
         {
             world = Parameters["World"];

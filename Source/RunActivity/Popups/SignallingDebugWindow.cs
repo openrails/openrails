@@ -25,6 +25,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using ORTS.Popups;
+using ORTS.Viewer3D;
 
 namespace ORTS
 {
@@ -397,12 +398,12 @@ namespace ORTS
     [CallOnThread("Updater")]
     public abstract class DispatcherPrimitive
     {
-        protected static Vector3 Normalize(WorldLocation location, Camera camera)
+        protected static Vector3 Normalize(WorldLocation location, ORTS.Viewer3D.Camera camera)
         {
             return new Vector3(location.Location.X + (location.TileX - camera.TileX) * 2048, location.Location.Y, -location.Location.Z - (location.TileZ - camera.TileZ) * 2048);
         }
 
-        protected static Vector3 Project3D(Vector3 position, Viewport viewport, Camera camera)
+        protected static Vector3 Project3D(Vector3 position, Viewport viewport, ORTS.Viewer3D.Camera camera)
         {
             return viewport.Project(position, camera.XnaProjection, camera.XnaView, Matrix.Identity);
         }
@@ -412,7 +413,7 @@ namespace ORTS
             return new Vector2(position.X, position.Y);
         }
 
-        public abstract void PrepareFrame(List<Rectangle> labels, Viewport viewport, Camera camera);
+        public abstract void PrepareFrame(List<Rectangle> labels, Viewport viewport, ORTS.Viewer3D.Camera camera);
 
         [CallOnThread("Render")]
         public abstract void Draw(SpriteBatch spriteBatch);
@@ -439,7 +440,7 @@ namespace ORTS
             Width = width;
         }
 
-        public override void PrepareFrame(List<Rectangle> labels, Viewport viewport, Camera camera)
+        public override void PrepareFrame(List<Rectangle> labels, Viewport viewport, ORTS.Viewer3D.Camera camera)
         {
             var start2d = Project3D(Normalize(Start, camera), viewport, camera);
             var end2d = Project3D(Normalize(End, camera), viewport, camera);
@@ -487,7 +488,7 @@ namespace ORTS
             TextSize = new Vector2(Font.MeasureString(text), Font.Height);
         }
 
-        public override void PrepareFrame(List<Rectangle> labels, Viewport viewport, Camera camera)
+        public override void PrepareFrame(List<Rectangle> labels, Viewport viewport, ORTS.Viewer3D.Camera camera)
         {
             var position2D = Project3D(Normalize(Position, camera), viewport, camera);
 

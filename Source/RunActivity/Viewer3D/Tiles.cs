@@ -26,7 +26,7 @@ using System.Threading;
 using Microsoft.Xna.Framework;
 using MSTS;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     /// <summary>
     /// Provides a MRU cache of tile data for a given resolution.

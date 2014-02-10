@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class TransferShape : StaticShape
     {
@@ -30,7 +30,7 @@ namespace ORTS
         readonly TransferMesh Primitive;
         readonly float Radius;
 
-        public TransferShape(Viewer3D viewer, MSTS.TransferObj transfer, WorldPosition position)
+        public TransferShape(Viewer viewer, MSTS.TransferObj transfer, WorldPosition position)
             : base(viewer, null, RemoveRotation(position), ShapeFlags.AutoZBias)
         {
             Material = viewer.MaterialManager.Load("Transfer", Helpers.GetTransferTextureFile(viewer.Simulator, transfer.FileName));
@@ -71,7 +71,7 @@ namespace ORTS
         readonly int VertexCount;
         readonly int PrimitiveCount;
 
-        public TransferMesh(Viewer3D viewer, float width, float height, WorldPosition position)
+        public TransferMesh(Viewer viewer, float width, float height, WorldPosition position)
         {
             var center = position.Location;
             var radius = (float)Math.Sqrt(width * width + height * height) / 2;
@@ -151,7 +151,7 @@ namespace ORTS
         readonly Texture2D Texture;
         IEnumerator<EffectPass> ShaderPasses;
 
-        public TransferMaterial(Viewer3D viewer, string textureName)
+        public TransferMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
             Texture = Viewer.TextureManager.Get(textureName);

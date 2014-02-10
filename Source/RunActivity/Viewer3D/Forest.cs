@@ -24,17 +24,17 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     [CallOnThread("Loader")]
     public class ForestDrawer
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly WorldPosition Position;
         readonly Material Material;
         readonly ForestMesh Mesh;
 
-        public ForestDrawer(Viewer3D viewer, ForestObj forest, WorldPosition position)
+        public ForestDrawer(Viewer viewer, ForestObj forest, WorldPosition position)
         {
             Viewer = viewer;
             Position = position;
@@ -62,7 +62,7 @@ namespace ORTS
     [CallOnThread("Loader")]
     public class ForestMesh : RenderPrimitive
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly VertexDeclaration VertexDeclaration;
         readonly int VertexStride;
         readonly VertexBuffer VertexBuffer;
@@ -70,7 +70,7 @@ namespace ORTS
 
         public readonly float ObjectRadius;
 
-        public ForestMesh(Viewer3D viewer, ForestObj forest, WorldPosition position)
+        public ForestMesh(Viewer viewer, ForestObj forest, WorldPosition position)
         {
             Viewer = viewer;
 

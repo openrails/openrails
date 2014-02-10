@@ -33,7 +33,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     /// <summary>
     /// A LightState object encapsulates the data for each State in the States subblock.
@@ -277,7 +277,7 @@ namespace ORTS
 
     public class LightDrawer
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly TrainCar Car;
         readonly Material LightGlowMaterial;
         readonly Material LightConeMaterial;
@@ -307,7 +307,7 @@ namespace ORTS
         public float LightConeMinDotProduct;
         public Vector4 LightConeColor;
 
-        public LightDrawer(Viewer3D viewer, TrainCar car)
+        public LightDrawer(Viewer viewer, TrainCar car)
         {
             Viewer = viewer;
             Car = car;

@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using ORTS.Viewer3D;
 
 namespace ORTS
 {
@@ -29,13 +30,13 @@ namespace ORTS
     {
 		public readonly bool Threaded;
 		public readonly Profiler Profiler = new Profiler("Sound");
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 		readonly Thread Thread;
 
         private int UpdateCounter = -1;
         private const int FULLUPDATECYCLE = 4; // Number of frequent updates needed till a full update
 
-        public SoundProcess(Viewer3D viewer)
+        public SoundProcess(Viewer viewer)
         {
             Threaded = true;
             Viewer = viewer;

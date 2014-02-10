@@ -33,7 +33,7 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Processes;
 using Game = ORTS.Processes.Game;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public enum RenderPrimitiveSequence
     {
@@ -222,7 +222,7 @@ namespace ORTS
                     RenderShadowItems[shadowMapIndex].Clear();
         }
 
-        public void PrepareFrame(Viewer3D viewer)
+        public void PrepareFrame(Viewer viewer)
         {
             if (viewer.Settings.UseMSTSEnv == false)
                 SolarDirection = viewer.World.Sky.solarDirection;

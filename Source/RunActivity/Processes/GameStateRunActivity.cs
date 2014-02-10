@@ -33,6 +33,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using ORTS.MultiPlayer;
+using ORTS.Viewer3D;
 
 namespace ORTS.Processes
 {
@@ -48,7 +49,7 @@ namespace ORTS.Processes
         static string UserName { get { return Program.UserName; } set { Program.UserName = value; } }
         static string Code { get { return Program.Code; } set { Program.Code = value; } }
 
-        static Viewer3D Viewer { get { return Program.Viewer; } set { Program.Viewer = value; } }
+        static Viewer Viewer { get { return Program.Viewer; } set { Program.Viewer = value; } }
         static ORTraceListener ORTraceListener { get { return Program.ORTraceListener; } set { Program.ORTraceListener = value; } }
         static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
 
@@ -246,7 +247,7 @@ namespace ORTS.Processes
             InitSimulator(settings, args);
             Simulator.Start();
 
-            Viewer = new Viewer3D(Simulator, Game);
+            Viewer = new Viewer(Simulator, Game);
             Viewer.Log = new CommandLog(Viewer);
 
             if (Client != null)
@@ -324,7 +325,7 @@ namespace ORTS.Processes
                 var values = GetSavedValues(inf);
                 InitSimulator(settings, values.args, "Resume");
                 Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
-                Viewer = new Viewer3D(Simulator, Game);
+                Viewer = new Viewer(Simulator, Game);
                 Viewer.Restore(inf);
 
                 // Reload the command log
@@ -354,7 +355,7 @@ namespace ORTS.Processes
                 savedValues values = GetSavedValues(inf);
                 InitSimulator(settings, values.args, "Replay");
                 Simulator.Start();
-                Viewer = new Viewer3D(Simulator, Game);
+                Viewer = new Viewer(Simulator, Game);
             }
 
             Viewer.Log = new CommandLog(Viewer);
@@ -424,7 +425,7 @@ namespace ORTS.Processes
                     InitSimulator(settings, values.args, "Replay");
                 }
                 Simulator.Start();
-                Viewer = new Viewer3D(Simulator, Game);
+                Viewer = new Viewer(Simulator, Game);
             }
             else
             {
@@ -436,7 +437,7 @@ namespace ORTS.Processes
                     savedValues values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Resume");
                     Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
-                    Viewer = new Viewer3D(Simulator, Game);
+                    Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
                 }
             }
@@ -463,7 +464,7 @@ namespace ORTS.Processes
             {
                 InitSimulator(settings, args, "Test");
                 Simulator.Start();
-                Viewer = new Viewer3D(Simulator, Game);
+                Viewer = new Viewer(Simulator, Game);
                 Viewer.Log = new CommandLog(Viewer);
                 Game.ReplaceState(exitGameState);
                 Game.PushState(new GameStateViewer3D(Viewer));

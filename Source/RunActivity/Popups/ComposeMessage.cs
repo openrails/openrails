@@ -22,6 +22,8 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
 using Microsoft.Xna.Framework.Input;
 using System.Linq;
+using ORTS.Viewer3D;
+
 namespace ORTS.Popups
 {
 	public class ComposeMessage : Window

@@ -23,7 +23,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     #region MSTSSkyConstants
     static class MSTSSkyConstants
@@ -40,7 +40,7 @@ namespace ORTS
     public class MSTSSkyDrawer
     {
 
-        Viewer3D MSTSSkyViewer;
+        Viewer MSTSSkyViewer;
         Material MSTSSkyMaterial;
 
         // Classes reqiring instantiation
@@ -55,7 +55,7 @@ namespace ORTS
         public double mstsskylatitude, mstsskylongitude;
         // Date of activity
 
-        public ORTS.SkyDrawer.Date date;
+        public ORTS.Viewer3D.SkyDrawer.Date date;
   
         // Size of the sun- and moon-position lookup table arrays.
         // Must be an integral divisor of 1440 (which is the number of minutes in a day).
@@ -86,7 +86,7 @@ namespace ORTS
         /// <summary>
         /// SkyDrawer constructor
         /// </summary>
-        public MSTSSkyDrawer(Viewer3D viewer)
+        public MSTSSkyDrawer(Viewer viewer)
         {
             MSTSSkyViewer = viewer;
             MSTSSkyMaterial = viewer.MaterialManager.Load("MSTSSky");

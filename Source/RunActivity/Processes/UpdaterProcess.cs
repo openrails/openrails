@@ -20,6 +20,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading;
+using ORTS.Viewer3D;
 
 namespace ORTS.Processes
 {

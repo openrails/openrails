@@ -32,9 +32,9 @@ using ORTS.MultiPlayer;
 using ORTS.Popups;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
-    public class Viewer3D
+    public class Viewer
     {
         // User setups.
         public UserSettings Settings { get; private set; }
@@ -192,7 +192,7 @@ namespace ORTS
         /// <param name="simulator">The <see cref="Simulator"/> with which the viewer runs.</param>
         /// <param name="game">The <see cref="Game"/> with which the viewer runs.</param>
         [CallOnThread("Loader")]
-        public Viewer3D(Simulator simulator, ORTS.Processes.Game game)
+        public Viewer(Simulator simulator, ORTS.Processes.Game game)
         {
             Simulator = simulator;
             Game = game;

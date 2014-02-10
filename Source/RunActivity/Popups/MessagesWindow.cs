@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Xna.Framework;
+using ORTS.Viewer3D;
 
 namespace ORTS.Popups
 {

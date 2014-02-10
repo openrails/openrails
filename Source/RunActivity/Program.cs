@@ -20,13 +20,14 @@ using System.Linq;
 using ORTS.Debugging;
 using ORTS.MultiPlayer;
 using ORTS.Processes;
+using ORTS.Viewer3D;
 
 namespace ORTS
 {
     static class Program
     {
         public static Simulator Simulator;
-        public static Viewer3D Viewer;
+        public static Viewer Viewer;
         public static Random Random = new Random();
         public static Server Server;
         public static ClientComm Client;

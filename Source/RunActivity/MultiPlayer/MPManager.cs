@@ -33,6 +33,7 @@ using System.Text;
 using System.Threading;
 using MSTS;
 using ORTS.Debugging;
+using ORTS.Viewer3D;
 
 namespace ORTS.MultiPlayer
 {
@@ -75,7 +76,7 @@ namespace ORTS.MultiPlayer
 		public static DispatchViewer DispatcherWindow;
 		public bool CheckSpad = true;
 		public static bool PreferGreen = true;
-		Viewer3D Viewer;
+		Viewer Viewer;
 		public string MD5Check = "";
 
 		public void AddUncoupledTrains(Train t)

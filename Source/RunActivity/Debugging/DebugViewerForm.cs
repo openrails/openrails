@@ -34,6 +34,7 @@ using System.Net;
 using Microsoft.Xna.Framework;
 using System.Windows.Forms;
 using MSTS;
+using ORTS.Viewer3D;
 namespace ORTS.Debugging
 {
 
@@ -133,13 +134,13 @@ namespace ORTS.Debugging
 	  float maxX = float.MinValue;
 	  float maxY = float.MinValue;
 
-	  Viewer3D Viewer;
+	  Viewer Viewer;
       /// <summary>
       /// Creates a new DebugViewerForm.
       /// </summary>
       /// <param name="simulator"></param>
       /// /// <param name="viewer"></param>
-      public DispatchViewer(Simulator simulator, Viewer3D viewer)
+      public DispatchViewer(Simulator simulator, Viewer viewer)
       {
          InitializeComponent();
 

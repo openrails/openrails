@@ -21,6 +21,7 @@ using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Viewer3D;
 
 namespace ORTS.Popups {
     public class TrainOperationsWindow : Window {
@@ -82,10 +83,10 @@ namespace ORTS.Popups {
     }
 
     class TrainOperationsCoupler : Image {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly int CarPosition;
 
-        public TrainOperationsCoupler( int x, int y, Viewer3D viewer, TrainCar car, int carPosition )
+        public TrainOperationsCoupler( int x, int y, Viewer viewer, TrainCar car, int carPosition )
             : base( x, y, TrainOperationsWindow.CouplerSize, TrainOperationsWindow.CouplerSize ) {
             Viewer = viewer;
             CarPosition = carPosition;
@@ -101,10 +102,10 @@ namespace ORTS.Popups {
 
     class TrainOperationsLabel : Label
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly int CarPosition;
 
-        public TrainOperationsLabel(int x, int y, Viewer3D viewer, TrainCar car, int carPosition, LabelAlignment alignment)
+        public TrainOperationsLabel(int x, int y, Viewer viewer, TrainCar car, int carPosition, LabelAlignment alignment)
             : base(x, y, "", alignment)
         {
             Viewer = viewer;

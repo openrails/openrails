@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using MSTS;
+using ORTS.Viewer3D;
 
 namespace ORTS
 {

@@ -28,7 +28,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Graphics.PackedVector;
 using MSTS;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public struct ParticleEmitterData
     {
@@ -64,7 +64,7 @@ namespace ORTS
         public const float SpreadRate = 1.5f;
         public const float DurationVariation = 0.5f; // Duration varies +/-50%
 
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly ParticleEmitterMaterial Material;
         readonly float EmissionHoleM2 = 1;
         readonly ParticleEmitter Emitter;
@@ -76,7 +76,7 @@ namespace ORTS
         int InputCycle;
 #endif
 
-        public ParticleEmitterDrawer(Viewer3D viewer, ParticleEmitterData data, WorldPosition worldPosition)
+        public ParticleEmitterDrawer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
             Viewer = viewer;
             Material = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");

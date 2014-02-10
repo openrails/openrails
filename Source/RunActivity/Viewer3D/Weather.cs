@@ -19,11 +19,11 @@
 
 using System.Collections.Generic;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class WeatherControl
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 
         // Overcast factor: 0.0 = almost no clouds; 0.1 = wispy clouds; 1.0 = total overcast.
         public float overcastFactor = 0.1f;
@@ -37,7 +37,7 @@ namespace ORTS
         public readonly List<SoundSourceBase> SnowSound;
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
 
-        public WeatherControl(Viewer3D viewer)
+        public WeatherControl(Viewer viewer)
         {
             Viewer = viewer;
 

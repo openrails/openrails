@@ -21,12 +21,13 @@ using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Viewer3D;
 
 namespace ORTS.Popups
 {
     public class CarOperationsWindow :Window
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 
         public int CarPosition
         {

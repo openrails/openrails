@@ -23,7 +23,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     [DebuggerDisplay("TileX = {TileX}, TileZ = {TileZ}, Size = {Size}")]
     public class WaterTile : RenderPrimitive
@@ -34,7 +34,7 @@ namespace ORTS
 
         static int PatchVertexStride;
 
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly int TileX, TileZ, Size;
         readonly VertexBuffer VertexBuffer;
         readonly IndexBuffer IndexBuffer;
@@ -42,7 +42,7 @@ namespace ORTS
 
         Matrix xnaMatrix = Matrix.Identity;
 
-        public WaterTile(Viewer3D viewer, Tile tile)
+        public WaterTile(Viewer viewer, Tile tile)
         {
             Viewer = viewer;
             TileX = tile.TileX;

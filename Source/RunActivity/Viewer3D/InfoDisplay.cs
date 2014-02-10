@@ -42,14 +42,14 @@ using ORTS.Common;
 using ORTS.Popups;
 
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     /// <summary>
     /// Displays Viewer frame rate and Viewer.Text debug messages in the upper left corner of the screen.
     /// </summary>
     public class InfoDisplay
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly DataLogger Logger = new DataLogger();
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
@@ -94,7 +94,7 @@ namespace ORTS
         readonly IntPtr ProcessHandle;
         PROCESS_MEMORY_COUNTERS ProcessMemoryCounters;
 
-        public InfoDisplay(Viewer3D viewer)
+        public InfoDisplay(Viewer viewer)
         {
             Viewer = viewer;
             TextMaterial = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
@@ -574,7 +574,7 @@ namespace ORTS
     {
         public readonly Label3DMaterial Material;
 
-        protected readonly Viewer3D Viewer;
+        protected readonly Viewer Viewer;
         protected readonly Color Color;
         protected readonly Color Outline;
 

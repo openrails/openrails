@@ -27,6 +27,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using ORTS.Viewer3D;
 
 namespace ORTS.Popups
 {
@@ -47,7 +48,7 @@ namespace ORTS.Popups
             spriteBatch.Draw(FlushTexture, Vector2.Zero, Color.Black);
         }
 
-		public readonly Viewer3D Viewer;
+		public readonly Viewer Viewer;
         public readonly WindowTextManager TextManager;
         public readonly WindowTextFont TextFontDefault;
         public readonly WindowTextFont TextFontDefaultOutlined;
@@ -66,7 +67,7 @@ namespace ORTS.Popups
         internal Point ScreenSize = new Point(10000, 10000); // Arbitrary but necessary.
 		ResolveTexture2D Screen;
 
-		public WindowManager(Viewer3D viewer)
+		public WindowManager(Viewer viewer)
 		{
 			Viewer = viewer;
             WindowManagerMaterial = new BasicBlendedMaterial(viewer, "WindowManager");

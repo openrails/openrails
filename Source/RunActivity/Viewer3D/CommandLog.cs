@@ -21,7 +21,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace ORTS {
+namespace ORTS.Viewer3D
+{
     /// <summary>
     /// User may specify an automatic pause in the replay at a time measured from the end of the replay.
     /// </summary>
@@ -35,7 +36,7 @@ namespace ORTS {
     public class CommandLog {
 
         public List<ICommand> CommandList = new List<ICommand>();
-        public Viewer3D Viewer { get; set; }        // Needed so Update() can get Viewer.CameraReplaySuspended
+        public Viewer Viewer { get; set; }        // Needed so Update() can get Viewer.CameraReplaySuspended
         public Simulator Simulator { get; set; }    // Needed so CommandAdd() and Update() can get Simulator.ClockTime and Update() can get Simulator.Settings.ReplayPauseBeforeEndS
         public bool ReplayComplete { get; set; }
         public double ReplayEndsAt { get; set; }
@@ -48,7 +49,7 @@ namespace ORTS {
         /// <summary>
         /// Preferred constructor.
         /// </summary>
-        public CommandLog( Viewer3D viewer ) {
+        public CommandLog( Viewer viewer ) {
             Viewer = viewer;
             Simulator = viewer.Simulator;  // The Simulator is needed for its ClockTime and Settings properties.
         }

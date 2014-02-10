@@ -31,7 +31,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class SuperElevation
     {
@@ -48,7 +48,7 @@ namespace ORTS
         /// <param name="TileX">TileX coordinates.</param>
         /// <param name="TileZ">TileZ coordinates.</param>
         /// <param name="shapeFilePath">Path to the shape file.</param>
-        public static bool DecomposeStaticSuperElevation(Viewer3D viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
+        public static bool DecomposeStaticSuperElevation(Viewer viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
         {
             if (SuperElevation.HasCheckedElevation == false)
             {
@@ -131,7 +131,7 @@ namespace ORTS
         }
         #region DrawAllSectionsUsingDynamicOneSection
         //no use anymore
-        public static int DecomposeStaticSuperElevationOneSection(Viewer3D viewer, List<DynatrackDrawer> dTrackList, int TileX, int TileZ, TrVectorSection ts)
+        public static int DecomposeStaticSuperElevationOneSection(Viewer viewer, List<DynatrackDrawer> dTrackList, int TileX, int TileZ, TrVectorSection ts)
         {
             if (ts == null) return 0;
             if (SuperElevation.HasCheckedElevation == false)
@@ -183,7 +183,7 @@ namespace ORTS
 
         #region DrawAllSectionsUsingDynamic 
         //no use anymore
-        public static int DecomposeStaticSuperElevation(Viewer3D viewer, List<DynatrackDrawer> dTrackList, int TileX, int TileZ)
+        public static int DecomposeStaticSuperElevation(Viewer viewer, List<DynatrackDrawer> dTrackList, int TileX, int TileZ)
         {
             if (SuperElevation.HasCheckedElevation == false)
             {
@@ -417,7 +417,7 @@ namespace ORTS
         /// <param name="dTrackList">DynatrackDrawer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeConvertedDynamicSuperElevation(Viewer3D viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
+        public static void DecomposeConvertedDynamicSuperElevation(Viewer viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
             WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
@@ -513,7 +513,7 @@ namespace ORTS
         /// <param name="dTrackList">DynatrackDrawer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeDynamicSuperElevation(Viewer3D viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
+        public static void DecomposeDynamicSuperElevation(Viewer viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
             WorldPosition worldMatrixInput)
         {
             // DYNAMIC TRACK
@@ -602,7 +602,7 @@ namespace ORTS
             }
         } // end DecomposeDynamicSuperElevation
 
-        public static bool UseSuperElevationDyn(Viewer3D viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
+        public static bool UseSuperElevationDyn(Viewer viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
     WorldPosition worldMatrixInput)
         {
             bool withCurves = false;
@@ -635,7 +635,7 @@ namespace ORTS
     public class SuperElevationDrawer : DynatrackDrawer
     {
 
-        public SuperElevationDrawer(Viewer3D viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle, 
+        public SuperElevationDrawer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle, 
             float s, float e, float m, float dir)//values for start, end and max elevation
             : base(viewer, position, endPosition)
         {
@@ -649,7 +649,7 @@ namespace ORTS
     public class SuperElevationMesh : DynatrackMesh
     {
         float StartElev, MaxElev, EndElv;
-        public SuperElevationMesh(Viewer3D viewer, WorldPosition worldPosition,
+        public SuperElevationMesh(Viewer viewer, WorldPosition worldPosition,
         WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir)
             : base()
         {
@@ -736,7 +736,7 @@ namespace ORTS
         /// <param name="worldPosition">WorldPosition.</param>
         /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
         /// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
-        public new ShapePrimitive BuildMesh(Viewer3D viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
+        public new ShapePrimitive BuildMesh(Viewer viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();

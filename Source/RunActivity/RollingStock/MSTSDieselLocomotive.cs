@@ -37,6 +37,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
+using ORTS.Viewer3D;
 // needed for Debug
 
 namespace ORTS
@@ -233,7 +234,7 @@ namespace ORTS
         /// Create a viewer for this locomotive.   Viewers are only attached
         /// while the locomotive is in viewing range.
         /// </summary>
-        public override TrainCarViewer GetViewer(Viewer3D viewer)
+        public override TrainCarViewer GetViewer(Viewer viewer)
         {
             return new MSTSDieselLocomotiveViewer(viewer, this);
         }
@@ -834,7 +835,7 @@ namespace ORTS
         MSTSDieselLocomotive DieselLocomotive { get { return (MSTSDieselLocomotive)Car; } }
         List<ParticleEmitterDrawer> Exhaust = new List<ParticleEmitterDrawer>();
 
-        public MSTSDieselLocomotiveViewer(Viewer3D viewer, MSTSDieselLocomotive car)
+        public MSTSDieselLocomotiveViewer(Viewer viewer, MSTSDieselLocomotive car)
             : base(viewer, car)
         {
             // Now all the particle drawers have been setup, assign them textures based

@@ -24,6 +24,7 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using ORTS.Viewer3D;
 
 namespace ORTS.Popups
 {

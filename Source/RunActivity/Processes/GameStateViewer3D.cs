@@ -20,16 +20,17 @@
 using System;
 using ORTS.Debugging;
 using ORTS.MultiPlayer;
+using ORTS.Viewer3D;
 
 namespace ORTS.Processes
 {
     public class GameStateViewer3D : GameState
     {
-        internal readonly Viewer3D Viewer;
+        internal readonly Viewer Viewer;
 
         bool FirstFrame = true;
 
-        public GameStateViewer3D(Viewer3D viewer)
+        public GameStateViewer3D(Viewer viewer)
         {
             Viewer = viewer;
             Viewer.Simulator.Paused = false;

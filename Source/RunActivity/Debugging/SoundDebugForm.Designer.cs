@@ -87,8 +87,8 @@ namespace ORTS.Debugging
             this.inactiveSoundList.Name = "inactiveSoundList";
             this.inactiveSoundList.Size = new System.Drawing.Size(288, 289);
             this.inactiveSoundList.TabIndex = 3;
-            this.inactiveSoundList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.inactiveSoundList_KeyDown);
             this.inactiveSoundList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.inactiveSoundList_KeyPress);
+            this.inactiveSoundList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.inactiveSoundList_KeyDown);
             // 
             // activeSoundList
             // 
@@ -97,8 +97,8 @@ namespace ORTS.Debugging
             this.activeSoundList.Name = "activeSoundList";
             this.activeSoundList.Size = new System.Drawing.Size(288, 519);
             this.activeSoundList.TabIndex = 4;
-            this.activeSoundList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.activeSoundList_KeyDown);
             this.activeSoundList.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.activeSoundList_KeyPress);
+            this.activeSoundList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.activeSoundList_KeyDown);
             // 
             // splitContainer1
             // 

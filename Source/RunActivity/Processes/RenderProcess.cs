@@ -21,6 +21,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Viewer3D;
 
 namespace ORTS.Processes
 {
@@ -33,7 +34,7 @@ namespace ORTS.Processes
         public Point DisplaySize { get; private set; }
         public GraphicsDevice GraphicsDevice { get { return Game.GraphicsDevice; } }
         public bool IsActive { get { return Game.IsActive; } }
-        public Viewer3D Viewer { get { return Game.State is GameStateViewer3D ? (Game.State as GameStateViewer3D).Viewer : null; } }
+        public Viewer Viewer { get { return Game.State is GameStateViewer3D ? (Game.State as GameStateViewer3D).Viewer : null; } }
 
         public Profiler Profiler { get; private set; }
         public Game Game { get; private set; }

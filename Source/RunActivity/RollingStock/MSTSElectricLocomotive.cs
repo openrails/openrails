@@ -35,7 +35,8 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 using System.IO;
 using ORTS.Popups;
-using System.Diagnostics;  // needed for Confirmation
+using System.Diagnostics;
+using ORTS.Viewer3D;  // needed for Confirmation
 
 namespace ORTS
 {
@@ -138,7 +139,7 @@ namespace ORTS
         /// Create a viewer for this locomotive.   Viewers are only attached
         /// while the locomotive is in viewing range.
         /// </summary>
-        public override TrainCarViewer GetViewer(Viewer3D viewer)
+        public override TrainCarViewer GetViewer(Viewer viewer)
         {
             return new MSTSElectricLocomotiveViewer(viewer, this);
         }
@@ -399,7 +400,7 @@ namespace ORTS
 
         MSTSElectricLocomotive ElectricLocomotive;
 
-        public MSTSElectricLocomotiveViewer(Viewer3D viewer, MSTSElectricLocomotive car)
+        public MSTSElectricLocomotiveViewer(Viewer viewer, MSTSElectricLocomotive car)
             : base(viewer, car)
         {
             ElectricLocomotive = car;

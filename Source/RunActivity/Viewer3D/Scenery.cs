@@ -50,11 +50,11 @@ using Microsoft.Xna.Framework;
 using System.Linq;
 using MSTS;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public class SceneryDrawer
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
@@ -65,7 +65,7 @@ namespace ORTS
         int VisibleTileX;
         int VisibleTileZ;
 
-        public SceneryDrawer(Viewer3D viewer)
+        public SceneryDrawer(Viewer viewer)
         {
             Viewer = viewer;
         }
@@ -157,7 +157,7 @@ namespace ORTS
         public List<TrItemLabel> platforms = new List<TrItemLabel>();
         public List<MSTS.PickupObj> PickupList = new List<MSTS.PickupObj>();
 
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 
         /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
@@ -165,7 +165,7 @@ namespace ORTS
         /// </summary>
         /// <param name="visible">Tiles adjacent to the current visible tile may not be modelled.
         /// This flag decides whether a missing file leads to a warning message.</param>
-        public WorldFile(Viewer3D viewer, int tileX, int tileZ, bool visible)
+        public WorldFile(Viewer viewer, int tileX, int tileZ, bool visible)
         {
             Viewer = viewer;
             TileX = tileX;

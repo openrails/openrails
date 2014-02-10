@@ -32,7 +32,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Game = ORTS.Processes.Game;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public static class UserInput
     {

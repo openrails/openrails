@@ -24,7 +24,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     public abstract class Camera
     {
@@ -34,7 +34,7 @@ namespace ORTS
         protected static CameraAngleClamper VerticalClamper = new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f);
         protected const int TerrainAltitudeMargin = 2;
 
-        protected readonly Viewer3D Viewer;
+        protected readonly Viewer Viewer;
 
         protected WorldLocation cameraLocation = new WorldLocation();
         public int TileX { get { return cameraLocation.TileX; } }
@@ -73,12 +73,12 @@ namespace ORTS
         const int SpeedFactorFastSlow = 8;  // Use by GetSpeed
         protected const float SpeedAdjustmentForRotation = 0.1f;
 
-        protected Camera(Viewer3D viewer)
+        protected Camera(Viewer viewer)
         {
             Viewer = viewer;
         }
 
-        protected Camera(Viewer3D viewer, Camera previousCamera) // maintain visual continuity
+        protected Camera(Viewer viewer, Camera previousCamera) // maintain visual continuity
             : this(viewer)
         {
             if (previousCamera != null)
@@ -329,7 +329,7 @@ namespace ORTS
             }
         }
 
-        protected LookAtCamera(Viewer3D viewer)
+        protected LookAtCamera(Viewer viewer)
             : base(viewer)
         {
         }
@@ -371,12 +371,12 @@ namespace ORTS
 
         protected float axisZSpeedBoost = 1.0f;
 
-        protected RotatingCamera(Viewer3D viewer)
+        protected RotatingCamera(Viewer viewer)
             : base(viewer)
         {
         }
 
-        protected RotatingCamera(Viewer3D viewer, Camera previousCamera)
+        protected RotatingCamera(Viewer viewer, Camera previousCamera)
             : base(viewer, previousCamera)
         {
             if (previousCamera != null)
@@ -578,7 +578,7 @@ namespace ORTS
         const float maxCameraHeight = 1000f;
         const float ZoomFactor = 2f;
 
-        public FreeRoamCamera(Viewer3D viewer, Camera previousCamera)
+        public FreeRoamCamera(Viewer viewer, Camera previousCamera)
             : base(viewer, previousCamera)
         {
         }
@@ -756,7 +756,7 @@ namespace ORTS
         public bool tiltingLand;
         protected Vector3 attachedLocation;
 
-        protected AttachedCamera(Viewer3D viewer)
+        protected AttachedCamera(Viewer viewer)
             : base(viewer)
         {
         }
@@ -963,7 +963,7 @@ namespace ORTS
             }
         }
 
-        public TrackingCamera(Viewer3D viewer, AttachedTo attachedTo)
+        public TrackingCamera(Viewer viewer, AttachedTo attachedTo)
             : base(viewer)
         {
             Front = attachedTo == AttachedTo.Front;
@@ -1173,7 +1173,7 @@ namespace ORTS
 
     public abstract class NonTrackingCamera : AttachedCamera
     {
-        public NonTrackingCamera(Viewer3D viewer)
+        public NonTrackingCamera(Viewer viewer)
             : base(viewer)
         {
         }
@@ -1215,7 +1215,7 @@ namespace ORTS
 
         public override float NearPlane { get { return 0.25f; } }
 
-        public BrakemanCamera(Viewer3D viewer)
+        public BrakemanCamera(Viewer viewer)
             : base(viewer)
         {
         }
@@ -1246,7 +1246,7 @@ namespace ORTS
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.1f; } }
 
-        public PassengerCamera(Viewer3D viewer)
+        public PassengerCamera(Viewer viewer)
             : base(viewer)
         {
         }
@@ -1278,7 +1278,7 @@ namespace ORTS
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.25f; } }
 
-        public HeadOutCamera(Viewer3D viewer, HeadDirection headDirection)
+        public HeadOutCamera(Viewer viewer, HeadDirection headDirection)
             : base(viewer)
         {
             Forwards = headDirection == HeadDirection.Forward;
@@ -1335,7 +1335,7 @@ namespace ORTS
             }
         }
 
-        public CabCamera(Viewer3D viewer)
+        public CabCamera(Viewer viewer)
             : base(viewer)
         {
         }
@@ -1520,7 +1520,7 @@ namespace ORTS
             }
         }
 
-        public TracksideCamera(Viewer3D viewer)
+        public TracksideCamera(Viewer viewer)
             : base(viewer)
         {
             Random = new Random();

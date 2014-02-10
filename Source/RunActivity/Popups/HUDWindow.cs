@@ -28,6 +28,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using ORTS.Processes;
+using ORTS.Viewer3D;
 
 namespace ORTS.Popups
 {
@@ -44,7 +45,7 @@ namespace ORTS.Popups
 
         readonly int ProcessorCount = System.Environment.ProcessorCount;
 
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly Action<TableData>[] TextPages;
         readonly WindowTextFont TextFont;
 
@@ -620,13 +621,13 @@ namespace ORTS.Popups
 
     public class HUDGraphSet
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly Material Material;
         readonly Vector2 Margin = new Vector2(40, 10);
         readonly int Spacing;
         readonly List<Graph> Graphs = new List<Graph>();
 
-        public HUDGraphSet(Viewer3D viewer, Material material)
+        public HUDGraphSet(Viewer viewer, Material material)
         {
             Viewer = viewer;
             Material = material;
@@ -722,7 +723,7 @@ namespace ORTS.Popups
         public Vector4 GraphPos; // xy = xy position, zw = width/height
         public Vector2 Sample; // x = index, y = count
 
-        public HUDGraphMesh(Viewer3D viewer, Color color, int height)
+        public HUDGraphMesh(Viewer viewer, Color color, int height)
         {
             VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColor.VertexElements);
             VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, VertexCount * VertexPositionColor.SizeInBytes, BufferUsage.WriteOnly);
@@ -792,7 +793,7 @@ namespace ORTS.Popups
     {
         IEnumerator<EffectPass> ShaderPassesGraph;
 
-        public HUDGraphMaterial(Viewer3D viewer)
+        public HUDGraphMaterial(Viewer viewer)
             : base(viewer, null)
         {
         }

@@ -24,6 +24,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using ORTS.Viewer3D;
 
 namespace ORTS
 {
@@ -208,7 +209,7 @@ namespace ORTS
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Load 3D geometry into this 3D viewer and return it as a TrainCarViewer
-        public virtual TrainCarViewer GetViewer(Viewer3D viewer) { return null; }
+        public virtual TrainCarViewer GetViewer(Viewer viewer) { return null; }
 
         public virtual void Initialize()
         {
@@ -927,9 +928,9 @@ namespace ORTS
         public TrainCar Car;
         public LightDrawer lightDrawer;
 
-        protected Viewer3D Viewer;
+        protected Viewer Viewer;
 
-        public TrainCarViewer( Viewer3D viewer, TrainCar car)
+        public TrainCarViewer( Viewer viewer, TrainCar car)
         {
             Car = car;
             Viewer = viewer;

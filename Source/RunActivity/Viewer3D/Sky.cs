@@ -22,7 +22,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Processes;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     #region SkyConstants
     static class SkyConstants
@@ -36,7 +36,7 @@ namespace ORTS
     #region SkyDrawer
     public class SkyDrawer
     {
-        Viewer3D Viewer;
+        Viewer Viewer;
         Material skyMaterial;
 
         // Classes reqiring instantiation
@@ -86,7 +86,7 @@ namespace ORTS
         /// <summary>
         /// SkyDrawer constructor
         /// </summary>
-        public SkyDrawer(Viewer3D viewer)
+        public SkyDrawer(Viewer viewer)
         {
             Viewer = viewer;
             skyMaterial = viewer.MaterialManager.Load("Sky");

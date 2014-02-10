@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using ORTS.Viewer3D;
 
 namespace ORTS {
     public enum ConfirmLevel
@@ -181,10 +182,10 @@ namespace ORTS {
             , new string [] { "Signal mode", "manual", null, "auto", null, null, "locked. Stop train, then re-try." } 
             };
 
-        public readonly Viewer3D Viewer;
+        public readonly Viewer Viewer;
         readonly double DefaultDurationS;
 
-        public Confirmer(Viewer3D viewer, double defaultDurationS)
+        public Confirmer(Viewer viewer, double defaultDurationS)
         {
             Viewer = viewer;
             DefaultDurationS = defaultDurationS;

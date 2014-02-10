@@ -27,13 +27,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 
-namespace ORTS
+namespace ORTS.Viewer3D
 {
     [DebuggerDisplay("Count = {TerrainTiles.Count}")]
     [CallOnThread("Loader")]
     public class TerrainDrawer
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
 
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
@@ -45,7 +45,7 @@ namespace ORTS
         int VisibleTileZ;
 
         [CallOnThread("Render")]
-        public TerrainDrawer(Viewer3D viewer)
+        public TerrainDrawer(Viewer viewer)
         {
             Viewer = viewer;
         }
@@ -138,7 +138,7 @@ namespace ORTS
         readonly TerrainPatch[,] TerrainPatches; 
         readonly WaterTile WaterTile;
 
-        public TerrainTile(Viewer3D viewer, TileManager tileManager, Tile tile)
+        public TerrainTile(Viewer viewer, TileManager tileManager, Tile tile)
         {
             Trace.Write(tile.Size > 2 ? "L" : "T");
             TileX = tile.TileX;
@@ -190,7 +190,7 @@ namespace ORTS
     [CallOnThread("Loader")]
     public class TerrainPatch : RenderPrimitive
     {
-        readonly Viewer3D Viewer;
+        readonly Viewer Viewer;
         readonly int TileX, TileZ, Size, PatchX, PatchZ, PatchSize;
         readonly float AverageElevation;
 
@@ -210,7 +210,7 @@ namespace ORTS
         readonly Tile Tile;
         readonly terrain_patchset_patch Patch;
 
-        public TerrainPatch(Viewer3D viewer, TileManager tileManager, Tile tile, int x, int z)
+        public TerrainPatch(Viewer viewer, TileManager tileManager, Tile tile, int x, int z)
         {
             Viewer = viewer;
             TileX = tile.TileX;
