@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// This file is the responsibility of the 3D & Environment Team.
+
 // File is partially backported to XNA 3.1 and adapted to OpenRails needs.
 // Original license is as follows:
 

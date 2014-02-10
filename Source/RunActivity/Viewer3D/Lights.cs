@@ -18,10 +18,10 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 // Uncomment either or both of these for debugging information about lights.
-#define DEBUG_LIGHT_STATES
-#define DEBUG_LIGHT_TRANSITIONS
-#define DEBUG_LIGHT_CONE
-#define DEBUG_LIGHT_CONE_FULL
+//#define DEBUG_LIGHT_STATES
+//#define DEBUG_LIGHT_TRANSITIONS
+//#define DEBUG_LIGHT_CONE
+//#define DEBUG_LIGHT_CONE_FULL
 
 using System;
 using System.Collections.Generic;

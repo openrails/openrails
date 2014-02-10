@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// This file is the responsibility of the 3D & Environment Team.
+
 using System;
 using System.Diagnostics;   // Used by Trace.Warnings
 using ORTS.Viewer3D.Popups;
