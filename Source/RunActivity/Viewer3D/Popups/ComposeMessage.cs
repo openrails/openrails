@@ -24,7 +24,7 @@ using Microsoft.Xna.Framework.Input;
 using System.Linq;
 using ORTS.Viewer3D;
 
-namespace ORTS.Popups
+namespace ORTS.Viewer3D.Popups
 {
 	public class ComposeMessage : Window
 	{

@@ -25,7 +25,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ORTS.Popups
+namespace ORTS.Viewer3D.Popups
 {
     public class PauseWindow : LayeredWindow
     {

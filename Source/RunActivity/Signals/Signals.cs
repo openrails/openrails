@@ -32,8 +32,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using MSTS;
-using ORTS.Popups;
-
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {

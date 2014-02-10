@@ -39,7 +39,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
-using ORTS.Popups;
+using ORTS.Viewer3D.Popups;
 
 
 namespace ORTS.Viewer3D

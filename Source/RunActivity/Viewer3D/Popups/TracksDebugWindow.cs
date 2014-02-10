@@ -24,9 +24,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
-using ORTS.Popups;
 
-namespace ORTS
+namespace ORTS.Viewer3D.Popups
 {
     [CallOnThread("Updater")]
     public class TracksDebugWindow : LayeredWindow

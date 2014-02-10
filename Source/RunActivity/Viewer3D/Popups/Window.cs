@@ -26,7 +26,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ORTS.Viewer3D;
 
-namespace ORTS.Popups
+namespace ORTS.Viewer3D.Popups
 {
 	public abstract class Window : RenderPrimitive
 	{

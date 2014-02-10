@@ -17,7 +17,7 @@
 
 using System;
 using System.Diagnostics;   // Used by Trace.Warnings
-using ORTS.Popups;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS.Viewer3D
 {

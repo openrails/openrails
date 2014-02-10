@@ -24,7 +24,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Viewer3D;
 
-namespace ORTS.Popups {
+namespace ORTS.Viewer3D.Popups
+{
     public abstract class Control {
         public Rectangle Position;
         public object Tag;

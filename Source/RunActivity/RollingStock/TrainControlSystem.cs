@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using MSTS;
 using ORTS.Scripting.Api;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {
@@ -37,7 +38,7 @@ namespace ORTS
         public bool PenaltyApplication { get; set; }
         public float CurrentSpeedLimitMpS { get; set; }
         public float NextSpeedLimitMpS { get; set; }
-        public Popups.TrackMonitorSignalAspect CabSignalAspect { get; set; }
+        public TrackMonitorSignalAspect CabSignalAspect { get; set; }
 
         Train.TrainInfo TrainInfo;
 
@@ -196,7 +197,7 @@ namespace ORTS
             Script.SetPenaltyApplicationDisplay = (value) => this.PenaltyApplication = value;
             Script.SetCurrentSpeedLimitMpS = (value) => this.CurrentSpeedLimitMpS = value;
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
-            Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (Popups.TrackMonitorSignalAspect)value;
+            Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
             Script.SetVigilanceAlarm = (value) => this.SetVigilanceAlarm(value);
             // Will be updated continuously:
             Script.TrainSpeedLimitMpS = () => float.MinValue;

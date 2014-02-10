@@ -25,7 +25,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.IO;
 
-namespace ORTS.Popups
+namespace ORTS.Viewer3D.Popups
 {
 	public class HelpWindow : Window
 	{

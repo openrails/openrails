@@ -30,7 +30,7 @@ using ORTS.Common;
 using ORTS.Processes;
 using ORTS.Viewer3D;
 
-namespace ORTS.Popups
+namespace ORTS.Viewer3D.Popups
 {
     public class HUDWindow : LayeredWindow
     {

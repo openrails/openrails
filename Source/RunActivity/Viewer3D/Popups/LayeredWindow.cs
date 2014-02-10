@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ORTS.Popups
+namespace ORTS.Viewer3D.Popups
 {
 	public abstract class LayeredWindow : Window
 	{

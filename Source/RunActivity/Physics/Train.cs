@@ -46,8 +46,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using MSTS;
 using ORTS.MultiPlayer;
-using ORTS.Popups;
 using ORTS.Viewer3D;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {

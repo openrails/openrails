@@ -40,6 +40,7 @@
  */
 
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,10 +50,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
-using ORTS.Popups;
 using ORTS.Viewer3D;
-
-
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {

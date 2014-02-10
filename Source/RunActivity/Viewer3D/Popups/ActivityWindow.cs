@@ -26,7 +26,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.IO;
 using ORTS.Viewer3D;
 
-namespace ORTS.Popups
+namespace ORTS.Viewer3D.Popups
 {
     public class ActivityWindow : Window
     {

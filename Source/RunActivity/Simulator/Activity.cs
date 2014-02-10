@@ -17,16 +17,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MSTS;
-using System.IO;
-using System.Reflection;
 using System.Diagnostics;
-
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS.Popups;
+using MSTS;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {

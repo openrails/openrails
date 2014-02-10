@@ -28,14 +28,14 @@
 // DEBUG flag for debug prints
 
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
 using Microsoft.Xna.Framework;
 using MSTS;
-using ORTS.Popups;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {

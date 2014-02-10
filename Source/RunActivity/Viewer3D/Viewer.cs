@@ -29,8 +29,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MSTS;
 using ORTS.MultiPlayer;
-using ORTS.Popups;
 using ORTS.Processes;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS.Viewer3D
 {

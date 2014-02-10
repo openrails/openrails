@@ -25,7 +25,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS.Popups;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS.Viewer3D
 {

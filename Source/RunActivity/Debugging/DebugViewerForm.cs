@@ -21,20 +21,23 @@
 ///    Richard Plokhaar / Signalsoft Rail Consultancy Ltd.
 /// 
 
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.IO;
+using System.Linq;
 using System.Net;
-using Microsoft.Xna.Framework;
+using System.Text;
 using System.Windows.Forms;
+using Microsoft.Xna.Framework;
 using MSTS;
 using ORTS.Viewer3D;
+using ORTS.Viewer3D.Popups;
+using Control = System.Windows.Forms.Control;
+using Image = System.Drawing.Image;
+
 namespace ORTS.Debugging
 {
 

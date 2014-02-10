@@ -50,7 +50,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
 using MSTS;
-using ORTS.Popups;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {

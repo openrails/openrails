@@ -28,15 +28,15 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using MSTS;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
-using System.IO;
-using ORTS.Popups;
-using System.Diagnostics;
+using Microsoft.Xna.Framework.Input;
+using MSTS;
 using ORTS.Viewer3D;  // needed for Confirmation
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {

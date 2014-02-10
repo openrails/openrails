@@ -23,7 +23,7 @@ using Microsoft.Xna.Framework;
 using ORTS.Processes;
 using ORTS.Viewer3D;
 
-namespace ORTS.Popups
+namespace ORTS.Viewer3D.Popups
 {
     public class QuitWindow : Window
     {
