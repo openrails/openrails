@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -26,6 +26,7 @@ using MSTS;
 
 namespace ORTS.Viewer3D
 {
+    // TODO: Move to simulator!
     public class RoadCarSpawner
     {
         public const float StopDistance = 10;
@@ -175,6 +176,7 @@ namespace ORTS.Viewer3D
         }
     }
 
+    // TODO: Move to simulator!
     public class RoadCar
     {
         const float VisualHeightAdjustment = 0.1f;
@@ -277,17 +279,17 @@ namespace ORTS.Viewer3D
         }
     }
 
-    public class RoadCarDrawer
+    public class RoadCarViewer
     {
         readonly Viewer Viewer;
 
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
         //   assignment of a new instance (possibly cloned and then modified).
-        Dictionary<RoadCar, RoadCarViewer> Cars = new Dictionary<RoadCar, RoadCarViewer>();
+        Dictionary<RoadCar, RoadCarPrimitive> Cars = new Dictionary<RoadCar, RoadCarPrimitive>();
         List<RoadCar> VisibleCars = new List<RoadCar>();
 
-        public RoadCarDrawer(Viewer viewer)
+        public RoadCarViewer(Viewer viewer)
         {
             Viewer = viewer;
         }
@@ -299,7 +301,7 @@ namespace ORTS.Viewer3D
             var cars = Cars;
             if (visibleCars.Any(c => !cars.ContainsKey(c)) || cars.Keys.Any(c => !visibleCars.Contains(c)))
             {
-                var newCars = new Dictionary<RoadCar, RoadCarViewer>();
+                var newCars = new Dictionary<RoadCar, RoadCarPrimitive>();
                 foreach (var car in visibleCars)
                 {
                     if (cars.ContainsKey(car))
@@ -331,9 +333,9 @@ namespace ORTS.Viewer3D
         }
 
         [CallOnThread("Loader")]
-        RoadCarViewer LoadCar(RoadCar car)
+        RoadCarPrimitive LoadCar(RoadCar car)
         {
-            return new RoadCarViewer(Viewer, car);
+            return new RoadCarPrimitive(Viewer, car);
         }
 
         [CallOnThread("Loader")]
@@ -345,12 +347,12 @@ namespace ORTS.Viewer3D
         }
     }
 
-    public class RoadCarViewer
+    public class RoadCarPrimitive
     {
         readonly RoadCar Car;
         readonly RoadCarShape CarShape;
 
-        public RoadCarViewer(Viewer viewer, RoadCar car)
+        public RoadCarPrimitive(Viewer viewer, RoadCar car)
         {
             Car = car;
             CarShape = new RoadCarShape(viewer, viewer.Simulator.CarSpawnerFile.shapeNames[car.Type]);

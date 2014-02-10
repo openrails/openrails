@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -42,13 +42,13 @@ namespace ORTS.Viewer3D
         /// Decompose and add a SuperElevation on top of MSTS track section
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="trackList">DynatrackDrawer list.</param>
+        /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
         /// <param name="TileX">TileX coordinates.</param>
         /// <param name="TileZ">TileZ coordinates.</param>
         /// <param name="shapeFilePath">Path to the shape file.</param>
-        public static bool DecomposeStaticSuperElevation(Viewer viewer, List<DynatrackDrawer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
+        public static bool DecomposeStaticSuperElevation(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
         {
             if (SuperElevation.HasCheckedElevation == false)
             {
@@ -60,7 +60,7 @@ namespace ORTS.Viewer3D
             try
             {
                 shape = viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx);
-            
+
                 if (shape.RoadShape == true) return false;
             }
             catch (Exception)
@@ -74,7 +74,7 @@ namespace ORTS.Viewer3D
             bool isTunnel = shape.TunnelShape;
 
             List<TrVectorSection> sectionsinShape = new List<TrVectorSection>();
-            //List<DynatrackDrawer> tmpTrackList = new List<DynatrackDrawer>();
+            //List<DynamicTrackViewer> tmpTrackList = new List<DynamicTrackViewer>();
             foreach (SectionIdx id in SectionIdxs)
             {
                 uint[] sections = id.TrackSections;
@@ -99,17 +99,17 @@ namespace ORTS.Viewer3D
                     }
                     sectionsinShape.Add(tmp);
 
-                    drawn++;                    
+                    drawn++;
                 }
             }
 
-            if (drawn <=  count || isTunnel)//tunnel or not every section is in SE, will remove all sections in the shape out
+            if (drawn <= count || isTunnel)//tunnel or not every section is in SE, will remove all sections in the shape out
             {
                 if (sectionsinShape.Count > 0) RemoveTracks(sectionsinShape);
                 return false;
             }
             return true;
-        } // end DecomposeStaticSuperElevation
+        }
 
         //remove sections from future consideration
         static void RemoveTracks(List<TrVectorSection> sectionsinShape)
@@ -118,7 +118,7 @@ namespace ORTS.Viewer3D
             {
                 List<TrVectorSection> curve = null;
                 var pos = -1;
-                foreach (var c in allCurves) {  if (c.Contains(tmpSec)) { curve = c; break; } }//find which curve has the section
+                foreach (var c in allCurves) { if (c.Contains(tmpSec)) { curve = c; break; } }//find which curve has the section
                 if (curve != null)
                 {
                     pos = curve.IndexOf(tmpSec);
@@ -129,9 +129,9 @@ namespace ORTS.Viewer3D
             }
 
         }
-        #region DrawAllSectionsUsingDynamicOneSection
+
         //no use anymore
-        public static int DecomposeStaticSuperElevationOneSection(Viewer viewer, List<DynatrackDrawer> dTrackList, int TileX, int TileZ, TrVectorSection ts)
+        public static int DecomposeStaticSuperElevationOneSection(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ, TrVectorSection ts)
         {
             if (ts == null) return 0;
             if (SuperElevation.HasCheckedElevation == false)
@@ -175,15 +175,12 @@ namespace ORTS.Viewer3D
             sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
 
             //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-            dTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
+            dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
             return 1;
-        } // end DecomposeStaticSuperElevation second version
+        }
 
-        #endregion DrawAllSectionsUsingDynamicOneSection
-
-        #region DrawAllSectionsUsingDynamic 
         //no use anymore
-        public static int DecomposeStaticSuperElevation(Viewer viewer, List<DynatrackDrawer> dTrackList, int TileX, int TileZ)
+        public static int DecomposeStaticSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ)
         {
             if (SuperElevation.HasCheckedElevation == false)
             {
@@ -191,7 +188,7 @@ namespace ORTS.Viewer3D
                 SuperElevation.HasCheckedElevation = true;
             }
 
-            var key = (int) (Math.Abs(TileX)+Math.Abs(TileZ));
+            var key = (int)(Math.Abs(TileX) + Math.Abs(TileZ));
             if (!SectionMapTiles.ContainsKey(key)) return 0;//cannot find sections associated with this tile
             var sections = SectionMapTiles[key];
             if (sections == null) return 0;
@@ -219,7 +216,7 @@ namespace ORTS.Viewer3D
                 root.XNAMatrix.Translation = Vector3.Zero;
                 root.XNAMatrix.Translation += Vector3.Transform(trackLoc, Matrix.Identity);
 
-                var sign = -Math.Sign(tss.SectionCurve.Angle); var to = Math.Abs(tss.SectionCurve.Angle*0.0174f);
+                var sign = -Math.Sign(tss.SectionCurve.Angle); var to = Math.Abs(tss.SectionCurve.Angle * 0.0174f);
                 var vectorCurveStartToCenter = Vector3.Left * tss.SectionCurve.Radius * sign;
                 var curveRotation = Matrix.CreateRotationY(to * sign);
                 Vector3 dummy;
@@ -227,17 +224,15 @@ namespace ORTS.Viewer3D
 
                 WorldPosition nextRoot = new WorldPosition(root);
                 nextRoot.XNAMatrix.Translation = displacement;
-                
+
                 dir = 1f;
                 sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
             }
             return 1;
-        } // end DecomposeStaticSuperElevation second version
-
-        #endregion DrawAllSectionsUsingDynamic
+        }
 
         static float sv, ev, mv, dir;
         //a function to find the elevation of a section ,by searching the TDB database
@@ -290,11 +285,11 @@ namespace ORTS.Viewer3D
                 foreach (var section in node.TrVectorNode.TrVectorSections)//loop all curves
                 {
                     i++;
-					var sec = simulator.TSectionDat.TrackSections.Get(section.SectionIndex);
-					if (sec == null) continue;
-					theCurve = sec.SectionCurve;
+                    var sec = simulator.TSectionDat.TrackSections.Get(section.SectionIndex);
+                    if (sec == null) continue;
+                    theCurve = sec.SectionCurve;
                     if (sec.SectionSize != null && Math.Abs(sec.SectionSize.Width - simulator.SuperElevationGauge) > 0.2) continue;//the main route has a gauge different than mine
-                    
+
                     if (theCurve != null && !theCurve.Angle.AlmostEqual(0f, 0.01f)) //a good curve
                     {
                         if (i == 1 || i == count)
@@ -341,8 +336,8 @@ namespace ORTS.Viewer3D
         {
             if (Len < Program.Simulator.SuperElevationMinLen || SectionList.Count == 0) return;//too short a curve or the list is empty
             var tSection = simulator.TSectionDat.TrackSections;
-			var sectionData = tSection.Get(SectionList[0].SectionIndex);
-			if (sectionData == null) return;
+            var sectionData = tSection.Get(SectionList[0].SectionIndex);
+            if (sectionData == null) return;
             //loop all section to determine the max elevation for the whole track
             double Curvature = sectionData.SectionCurve.Angle * SectionList.Count * 33 / Len;//average radius in degree/100feet
             var Max = (float)(Math.Pow(simulator.TRK.Tr_RouteFile.SpeedLimit * 2.25, 2) * 0.0007 * Math.Abs(Curvature) - 3); //in inch
@@ -350,9 +345,9 @@ namespace ORTS.Viewer3D
             Max = (float)Math.Round(Max * 2, MidpointRounding.AwayFromZero) / 200f;//closest to 5 mm increase;
             if (Max < 0.01f) return;
             if (Max > MaxAllowElev) Max = MaxAllowElev;//max
-            Max = (float)Math.Atan(Max/1.44f); //now change to rotation in radius by quick estimation as the angle is small
+            Max = (float)Math.Atan(Max / 1.44f); //now change to rotation in radius by quick estimation as the angle is small
 
-            allCurves.Add(new List<TrVectorSection>( SectionList)); //add the curve
+            allCurves.Add(new List<TrVectorSection>(SectionList)); //add the curve
             MapWFiles2Sections(SectionList);//map these sections to tiles, so we can compute it quicker later
             if (SectionList.Count == 1)//only one section in the curve
             {
@@ -414,10 +409,10 @@ namespace ORTS.Viewer3D
         /// Decompose and add a SuperElevation on top of MSTS track section converted from dynamic tracks
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="dTrackList">DynatrackDrawer list.</param>
+        /// <param name="dTrackList">DynamicTrackViewer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeConvertedDynamicSuperElevation(Viewer viewer, List<DynatrackDrawer> dTrackList, TrackObj dTrackObj,
+        public static void DecomposeConvertedDynamicSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, TrackObj dTrackObj,
             WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
@@ -501,19 +496,19 @@ namespace ORTS.Viewer3D
                 //if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
                 localV = localProjectedV; // Next subsection
             }
-        } // end DecomposeConvertedStaticSuperElevation
+        }
 
         /// <summary>
         /// Decompose and add a SuperElevation on top of MSTS track section
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="dTrackList">DynatrackDrawer list.</param>
+        /// <param name="dTrackList">DynamicTrackViewer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeDynamicSuperElevation(Viewer viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
+        public static void DecomposeDynamicSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, DyntrackObj dTrackObj,
             WorldPosition worldMatrixInput)
         {
             // DYNAMIC TRACK
@@ -523,7 +518,7 @@ namespace ORTS.Viewer3D
             // 2-Create updated transformation objects (instances of WorldPosition) to reflect 
             //   root of next subsection.
             // 3-Distribute elevation change for total section through subsections. (ABANDONED)
-            // 4-For each meaningful subsection of dtrack, build a separate DynatrackMesh.
+            // 4-For each meaningful subsection of dtrack, build a separate SuperElevationPrimitive.
             //
             // Method: Iterate through each subsection, updating WorldPosition for the root of
             // each subsection.  The rotation component changes only in heading.  The translation 
@@ -593,16 +588,16 @@ namespace ORTS.Viewer3D
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
 
                 sv = ev = mv = 0f;
-//                if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
+                //                if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationDrawer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
 
                 localV = localProjectedV; // Next subsection
             }
-        } // end DecomposeDynamicSuperElevation
+        }
 
-        public static bool UseSuperElevationDyn(Viewer viewer, List<DynatrackDrawer> dTrackList, DyntrackObj dTrackObj,
+        public static bool UseSuperElevationDyn(Viewer viewer, List<DynamicTrackViewer> dTrackList, DyntrackObj dTrackObj,
     WorldPosition worldMatrixInput)
         {
             bool withCurves = false;
@@ -628,33 +623,30 @@ namespace ORTS.Viewer3D
 
             }
             return withCurves; //if no curve, will not draw using super elevation
-        } // end UseSuperElevationDyn
+        }
+    }
 
-    } // end class SuperElevations
-
-    public class SuperElevationDrawer : DynatrackDrawer
+    public class SuperElevationViewer : DynamicTrackViewer
     {
 
-        public SuperElevationDrawer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle, 
+        public SuperElevationViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle,
             float s, float e, float m, float dir)//values for start, end and max elevation
             : base(viewer, position, endPosition)
         {
             // Instantiate classes
-            dtrackMesh = new SuperElevationMesh(viewer, position, endPosition, radius, angle, s, e, m, dir);
-        } // end DynatrackDrawer constructor
+            Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, s, e, m, dir);
+        }
+    }
 
-
-    } // end SuperElevationDrawer
-
-    public class SuperElevationMesh : DynatrackMesh
+    public class SuperElevationPrimitive : DynamicTrackPrimitive
     {
         float StartElev, MaxElev, EndElv;
-        public SuperElevationMesh(Viewer viewer, WorldPosition worldPosition,
+        public SuperElevationPrimitive(Viewer viewer, WorldPosition worldPosition,
         WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir)
             : base()
         {
             StartElev = s; EndElv = e; MaxElev = m;
-            // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
+            // SuperElevationPrimitive is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
             // serve as the beginning of the next subsection.
 
@@ -710,7 +702,7 @@ namespace ORTS.Viewer3D
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildMesh(viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildPrimitive(viewer, worldPosition, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
@@ -719,10 +711,7 @@ namespace ORTS.Viewer3D
 
             if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
             else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
-
-
-        } // end SuperElevationMesh constructor
-
+        }
 
         int offSet = 0;
         int whichCase = 0;
@@ -736,7 +725,7 @@ namespace ORTS.Viewer3D
         /// <param name="worldPosition">WorldPosition.</param>
         /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
         /// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
-        public new ShapePrimitive BuildMesh(Viewer viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
+        public new ShapePrimitive BuildPrimitive(Viewer viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();
@@ -825,17 +814,17 @@ namespace ORTS.Viewer3D
                         }
                         VertexIndex++;
                         plv++;
-                    } // end foreach v  
-                } // end foreach pl
+                    }
+                }
                 OldRadius = radius; // Get ready for next segment
                 offSet++;
-            } // end for i
+            }
 
             // Create and populate a new ShapePrimitive
             var indexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short), NumIndices, BufferUsage.WriteOnly);
             indexBuffer.SetData(TriangleListIndices);
             return new ShapePrimitive(lodItem.LODMaterial, new SharedShape.VertexBufferSet(VertexList, viewer.GraphicsDevice), indexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
-        } // end BuildMesh
+        }
 
         /// <summary>
         /// Initializes member variables for straight track sections.
@@ -849,7 +838,7 @@ namespace ORTS.Viewer3D
 
             SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (meters)
             DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
-        } // end LinearGen
+        }
 
         /// <summary>
         /// Initializes member variables for circular arc track sections.
@@ -896,7 +885,8 @@ namespace ORTS.Viewer3D
             // The local center for the curve lies to the left or right of the local origin and ON THE BASE PLANE
             center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
             sectionRotation = Matrix.CreateRotationY(-SegmentLength); // Rotation per iteration (constant)
-        } // end CircArcGen
+        }
+
         /// <summary>
         /// Generates vertices for a succeeding cross section (straight track).
         /// </summary>

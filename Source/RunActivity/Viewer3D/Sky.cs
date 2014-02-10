@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -18,34 +18,31 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Processes;
 
 namespace ORTS.Viewer3D
 {
-    #region SkyConstants
     static class SkyConstants
     {
         // Sky dome constants
         public const int skyRadius = 6000;
         public const int skySides = 24;
     }
-    #endregion
 
-    #region SkyDrawer
-    public class SkyDrawer
+    public class SkyViewer
     {
         Viewer Viewer;
-        Material skyMaterial;
+        Material Material;
 
         // Classes reqiring instantiation
-        public SkyMesh SkyMesh;
+        public SkyPrimitive Primitive;
         WorldLatLon worldLoc; // Access to latitude and longitude calcs (MSTS routes only)
         SunMoonPos skyVectors;
 
-		int seasonType; //still need to remember it as MP now can change it.
-        #region Class variables
+        int seasonType; //still need to remember it as MP now can change it.
         // Latitude of current route in radians. -pi/2 = south pole, 0 = equator, pi/2 = north pole.
         // Longitude of current route in radians. -pi = west of prime, 0 = prime, pi = east of prime.
         public double latitude, longitude;
@@ -80,19 +77,14 @@ namespace ORTS.Viewer3D
         Vector3[] lunarPosArray = new Vector3[72];
         public Vector3 solarDirection;
         public Vector3 lunarDirection;
-        #endregion
 
-        #region Constructor
-        /// <summary>
-        /// SkyDrawer constructor
-        /// </summary>
-        public SkyDrawer(Viewer viewer)
+        public SkyViewer(Viewer viewer)
         {
             Viewer = viewer;
-            skyMaterial = viewer.MaterialManager.Load("Sky");
+            Material = viewer.MaterialManager.Load("Sky");
 
             // Instantiate classes
-            SkyMesh = new SkyMesh( Viewer.RenderProcess);
+            Primitive = new SkyPrimitive(Viewer.RenderProcess);
             skyVectors = new SunMoonPos();
 
             // Set default values
@@ -105,25 +97,21 @@ namespace ORTS.Viewer3D
             // Default wind speed and direction
             windSpeed = 5.0f; // m/s (approx 11 mph)
             windDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
-       }
-        #endregion
+        }
 
-        /// <summary>
-        /// Used to update information affecting the SkyMesh
-        /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-			if (seasonType != (int)Viewer.Simulator.Season)
-			{
-				seasonType = (int)Viewer.Simulator.Season;
-				date.ordinalDate = 82 + seasonType * 91;
-				// TODO: Set the following three externally from ORTS route files (future)
-				date.month = 1 + date.ordinalDate / 30;
-				date.day = 21;
-				date.year = 2010;
-			}
+            if (seasonType != (int)Viewer.Simulator.Season)
+            {
+                seasonType = (int)Viewer.Simulator.Season;
+                date.ordinalDate = 82 + seasonType * 91;
+                // TODO: Set the following three externally from ORTS route files (future)
+                date.month = 1 + date.ordinalDate / 30;
+                date.day = 21;
+                date.year = 2010;
+            }
             // Adjust dome position so the bottom edge is not visible
-			Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y - 100, -Viewer.Camera.Location.Z);
+            Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y - 100, -Viewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
 
             if (worldLoc == null)
@@ -152,13 +140,13 @@ namespace ORTS.Viewer3D
                 fogDistance = Viewer.World.WeatherControl.fogDistance;
             }
 
-			if (MultiPlayer.MPManager.IsClient() && MultiPlayer.MPManager.Instance().weatherChanged)
-			{
-				//received message about weather change
-				if ( MultiPlayer.MPManager.Instance().overCast >= 0)
-				{
-					overcastFactor = MultiPlayer.MPManager.Instance().overCast;
-				}
+            if (MultiPlayer.MPManager.IsClient() && MultiPlayer.MPManager.Instance().weatherChanged)
+            {
+                //received message about weather change
+                if (MultiPlayer.MPManager.Instance().overCast >= 0)
+                {
+                    overcastFactor = MultiPlayer.MPManager.Instance().overCast;
+                }
                 //received message about weather change
                 if (MultiPlayer.MPManager.Instance().newFog > 0)
                 {
@@ -166,18 +154,18 @@ namespace ORTS.Viewer3D
                 }
                 try
                 {
-                    if (MultiPlayer.MPManager.Instance().overCast >= 0 || MultiPlayer.MPManager.Instance().newFog > 0) 
+                    if (MultiPlayer.MPManager.Instance().overCast >= 0 || MultiPlayer.MPManager.Instance().newFog > 0)
                     {
                         MultiPlayer.MPManager.Instance().weatherChanged = false;
-                        MultiPlayer.MPManager.Instance().overCast = -1 ;
-                        MultiPlayer.MPManager.Instance().newFog = -1 ;
+                        MultiPlayer.MPManager.Instance().overCast = -1;
+                        MultiPlayer.MPManager.Instance().newFog = -1;
                     }
                 }
                 catch { }
 
             }
 
-////////////////////// T E M P O R A R Y ///////////////////////////
+            ////////////////////// T E M P O R A R Y ///////////////////////////
 
             // The following keyboard commands are used for viewing sky and weather effects in "demo" mode.
             // Control- and Control+ for overcast, Shift- and Shift+ for fog and - and + for time.
@@ -210,7 +198,7 @@ namespace ORTS.Viewer3D
                 }
             }
 
-////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////
 
             // Current solar and lunar position are calculated by interpolation in the lookup arrays.
             // Using the Lerp() function, so need to calculate the in-between differential
@@ -253,19 +241,17 @@ namespace ORTS.Viewer3D
             lunarDirection.Y = MathHelper.Lerp(lunarPosArray[step1].Y, lunarPosArray[step2].Y, diff);
             lunarDirection.Z = MathHelper.Lerp(lunarPosArray[step1].Z, lunarPosArray[step2].Z, diff);
 
-            frame.AddPrimitive(skyMaterial, SkyMesh, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
+            frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
         }
 
         [CallOnThread("Loader")]
         internal void Mark()
         {
-            skyMaterial.Mark();
+            Material.Mark();
         }
     }
-    #endregion
 
-    #region SkyMesh
-    public class SkyMesh: RenderPrimitive 
+    public class SkyPrimitive : RenderPrimitive
     {
         private VertexBuffer SkyVertexBuffer;
         private static VertexDeclaration SkyVertexDeclaration;
@@ -293,7 +279,7 @@ namespace ORTS.Viewer3D
         /// <summary>
         /// Constructor.
         /// </summary>
-        public SkyMesh(RenderProcess renderProcess)
+        public SkyPrimitive(RenderProcess renderProcess)
         {
             // Initialize the vertex and point-index buffers
             vertexList = new VertexPositionNormalTexture[numVertices];
@@ -498,7 +484,204 @@ namespace ORTS.Viewer3D
                 SkyIndexBuffer.SetData(triangleListIndices);
             }
         }
+    }
 
-    } // SkyMesh
-    #endregion
+    public class SkyMaterial : Material
+    {
+        SkyShader SkyShader;
+        Texture2D SkyTexture;
+        Texture2D StarTextureN;
+        Texture2D StarTextureS;
+        Texture2D MoonTexture;
+        Texture2D MoonMask;
+        Texture2D CloudTexture;
+        private Matrix XNAMoonMatrix;
+        IEnumerator<EffectPass> ShaderPassesSky;
+        IEnumerator<EffectPass> ShaderPassesMoon;
+        IEnumerator<EffectPass> ShaderPassesClouds;
+
+        public SkyMaterial(Viewer viewer)
+            : base(viewer, null)
+        {
+            SkyShader = Viewer.MaterialManager.SkyShader;
+            // TODO: This should happen on the loader thread.
+            SkyTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png"));
+            StarTextureN = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
+            StarTextureS = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_S.png"));
+            MoonTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));
+            MoonMask = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMask.png"));
+            CloudTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Clouds01.png"));
+
+            ShaderPassesSky = SkyShader.Techniques["Sky"].Passes.GetEnumerator();
+            ShaderPassesMoon = SkyShader.Techniques["Moon"].Passes.GetEnumerator();
+            ShaderPassesClouds = SkyShader.Techniques["Clouds"].Passes.GetEnumerator();
+
+            SkyShader.SkyMapTexture = SkyTexture;
+            SkyShader.StarMapTexture = StarTextureN;
+            SkyShader.MoonMapTexture = MoonTexture;
+            SkyShader.MoonMaskTexture = MoonMask;
+            SkyShader.CloudMapTexture = CloudTexture;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            // Adjust Fog color for day-night conditions and overcast
+            FogDay2Night(
+                Viewer.World.Sky.solarDirection.Y,
+                Viewer.World.Sky.overcastFactor);
+
+            //if (Viewer.Settings.DistantMountains) SharedMaterialManager.FogCoeff *= (3 * (5 - Viewer.Settings.DistantMountainsFogValue) + 0.5f);
+
+            if (Viewer.World.Sky.latitude > 0) // TODO: Use a dirty flag to determine if it is necessary to set the texture again
+                SkyShader.StarMapTexture = StarTextureN;
+            else
+                SkyShader.StarMapTexture = StarTextureS;
+            SkyShader.Random = Viewer.World.Sky.moonPhase; // Keep setting this before LightVector for the preshader to work correctly
+            SkyShader.LightVector = Viewer.World.Sky.solarDirection;
+            SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
+            SkyShader.MoonScale = SkyConstants.skyRadius / 20;
+            SkyShader.Overcast = Viewer.World.Sky.overcastFactor;
+            SkyShader.SetFog(Viewer.World.Sky.fogDistance, ref SharedMaterialManager.FogColor);
+            SkyShader.WindSpeed = Viewer.World.Sky.windSpeed;
+            SkyShader.WindDirection = Viewer.World.Sky.windDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
+
+            // Sky dome
+            var rs = graphicsDevice.RenderState;
+            rs.DepthBufferWriteEnable = false;
+
+            SkyShader.CurrentTechnique = SkyShader.Techniques["Sky"];
+            Viewer.World.Sky.Primitive.drawIndex = 1;
+
+            Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
+
+            SkyShader.SetViewMatrix(ref XNAViewMatrix);
+            SkyShader.Begin();
+            ShaderPassesSky.Reset();
+            while (ShaderPassesSky.MoveNext())
+            {
+                ShaderPassesSky.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
+                    SkyShader.SetMatrix(ref wvp);
+                    SkyShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPassesSky.Current.End();
+            }
+            SkyShader.End();
+
+            // Moon
+            SkyShader.CurrentTechnique = SkyShader.Techniques["Moon"];
+            Viewer.World.Sky.Primitive.drawIndex = 2;
+
+            rs.AlphaBlendEnable = true;
+            rs.CullMode = CullMode.CullClockwiseFace;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
+            // Send the transform matrices to the shader
+            int skyRadius = Viewer.World.Sky.Primitive.skyRadius;
+            int cloudRadiusDiff = Viewer.World.Sky.Primitive.cloudDomeRadiusDiff;
+            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.Sky.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
+            Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
+
+            SkyShader.Begin();
+            ShaderPassesMoon.Reset();
+            while (ShaderPassesMoon.MoveNext())
+            {
+                ShaderPassesMoon.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
+                    SkyShader.SetMatrix(ref wvp);
+                    SkyShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPassesMoon.Current.End();
+            }
+            SkyShader.End();
+
+            // Clouds
+            SkyShader.CurrentTechnique = SkyShader.Techniques["Clouds"];
+            Viewer.World.Sky.Primitive.drawIndex = 3;
+
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
+
+            SkyShader.Begin();
+            ShaderPassesClouds.Reset();
+            while (ShaderPassesClouds.MoveNext())
+            {
+                ShaderPassesClouds.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
+                    SkyShader.SetMatrix(ref wvp);
+                    SkyShader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPassesClouds.Current.End();
+            }
+            SkyShader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DepthBufferWriteEnable = true;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
+        }
+
+        public override bool GetBlending()
+        {
+            return false;
+        }
+
+        const float nightStart = 0.15f; // The sun's Y value where it begins to get dark
+        const float nightFinish = -0.05f; // The Y value where darkest fog color is reached and held steady
+
+        // These should be user defined in the Environment files (future)
+        static Vector3 startColor = new Vector3(0.647f, 0.651f, 0.655f); // Original daytime fog color - must be preserved!
+        static Vector3 finishColor = new Vector3(0.05f, 0.05f, 0.05f); //Darkest nighttime fog color
+
+        /// <summary>
+        /// This function darkens the fog color as night begins to fall
+        /// as well as with increasing overcast.
+        /// </summary>
+        /// <param name="sunHeight">The Y value of the sunlight vector</param>
+        /// <param name="overcast">The amount of overcast</param>
+        static void FogDay2Night(float sunHeight, float overcast)
+        {
+            Vector3 floatColor;
+
+            if (sunHeight > nightStart)
+                floatColor = startColor;
+            else if (sunHeight < nightFinish)
+                floatColor = finishColor;
+            else
+            {
+                var amount = (sunHeight - nightFinish) / (nightStart - nightFinish);
+                floatColor = Vector3.Lerp(finishColor, startColor, amount);
+            }
+
+            // Adjust fog color for overcast
+            floatColor *= (1 - 0.5f * overcast);
+            SharedMaterialManager.FogColor.R = (byte)(floatColor.X * 255);
+            SharedMaterialManager.FogColor.G = (byte)(floatColor.Y * 255);
+            SharedMaterialManager.FogColor.B = (byte)(floatColor.Z * 255);
+        }
+
+        public override void Mark()
+        {
+            Viewer.TextureManager.Mark(SkyTexture);
+            Viewer.TextureManager.Mark(StarTextureN);
+            Viewer.TextureManager.Mark(StarTextureS);
+            Viewer.TextureManager.Mark(MoonTexture);
+            Viewer.TextureManager.Mark(MoonMask);
+            Viewer.TextureManager.Mark(CloudTexture);
+            base.Mark();
+        }
+    }
 }

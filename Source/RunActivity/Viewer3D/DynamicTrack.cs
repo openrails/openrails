@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -31,17 +31,16 @@ using ORTS.Processes;
 
 namespace ORTS.Viewer3D
 {
-    #region Dynatrack
-    public class Dynatrack
+    public class DynamicTrack
     {
         /// <summary>
         /// Decompose an MSTS multi-subsection dynamic track section into multiple single-subsection sections.
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="trackList">DynatrackDrawer list.</param>
+        /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrix">Position matrix.</param>
-        public static void Decompose(Viewer viewer, List<DynatrackDrawer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix)
+        public static void Decompose(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix)
         {
             // DYNAMIC TRACK
             // =============
@@ -50,7 +49,7 @@ namespace ORTS.Viewer3D
             // 2-Create updated transformation objects (instances of WorldPosition) to reflect 
             //   root of next subsection.
             // 3-Distribute elevation change for total section through subsections. (ABANDONED)
-            // 4-For each meaningful subsection of dtrack, build a separate DynatrackMesh.
+            // 4-For each meaningful subsection of dtrack, build a separate DynamicTrackPrimitive.
             //
             // Method: Iterate through each subsection, updating WorldPosition for the root of
             // each subsection.  The rotation component changes only in heading.  The translation 
@@ -115,29 +114,20 @@ namespace ORTS.Viewer3D
                 // Update nextRoot with new translation component
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
 
-                // Create a new DynatrackDrawer for the subsection
-                trackList.Add(new DynatrackDrawer(viewer, subsection, root, nextRoot));
+                // Create a new DynamicTrackViewer for the subsection
+                trackList.Add(new DynamicTrackViewer(viewer, subsection, root, nextRoot));
                 localV = localProjectedV; // Next subsection
             }
-        } // end Decompose
+        }
+    }
 
-    } // end class Dynatrack
-    #endregion
-
-    #region DynatrackDrawer
-    public class DynatrackDrawer
+    public class DynamicTrackViewer
     {
-        #region Class variables
         Viewer Viewer;
         WorldPosition worldPosition;
-        public DynatrackMesh dtrackMesh;
-        #endregion
+        public DynamicTrackPrimitive Primitive;
 
-        #region Constructor
-        /// <summary>
-        /// DynatrackDrawer constructor
-        /// </summary>
-        public DynatrackDrawer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
         {
             Viewer = viewer;
             worldPosition = position;
@@ -151,19 +141,14 @@ namespace ORTS.Viewer3D
             }
 
             // Instantiate classes
-            dtrackMesh = new DynatrackMesh(Viewer, dtrack, worldPosition, endPosition);
-        } // end DynatrackDrawer constructor
+            Primitive = new DynamicTrackPrimitive(Viewer, dtrack, worldPosition, endPosition);
+        }
 
-        /// <summary>
-        /// DynatrackDrawer default constructor, without DyntrackObj
-        /// </summary>
-        public DynatrackDrawer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
         {
             Viewer = viewer;
             worldPosition = position;
-
-        } // end DynatrackDrawer constructor
-        #endregion
+        }
 
         /// <summary>
         /// PrepareFrame adds any object mesh in-FOV to the RenderItemCollection. 
@@ -178,22 +163,22 @@ namespace ORTS.Viewer3D
 
             // Find midpoint between track section end and track section root.
             // (Section center for straight; section chord center for arc.)
-            Vector3 xnaLODCenter = 0.5f * (dtrackMesh.XNAEnd + worldPosition.XNAMatrix.Translation +
+            Vector3 xnaLODCenter = 0.5f * (Primitive.XNAEnd + worldPosition.XNAMatrix.Translation +
                                             2 * tileOffsetWrtCamera);
-            dtrackMesh.MSTSLODCenter = new Vector3(xnaLODCenter.X, xnaLODCenter.Y, -xnaLODCenter.Z);
+            Primitive.MSTSLODCenter = new Vector3(xnaLODCenter.X, xnaLODCenter.Y, -xnaLODCenter.Z);
 
             // Ignore any mesh not in field-of-view
-            if (!Viewer.Camera.InFov(dtrackMesh.MSTSLODCenter, dtrackMesh.ObjectRadius)) return;
+            if (!Viewer.Camera.InFov(Primitive.MSTSLODCenter, Primitive.ObjectRadius)) return;
 
             // Scan LODs in forward order, and find first LOD in-range
             LOD lod;
             int lodIndex;
-            for (lodIndex = 0; lodIndex < dtrackMesh.TrProfile.LODs.Count; lodIndex++)
+            for (lodIndex = 0; lodIndex < Primitive.TrProfile.LODs.Count; lodIndex++)
             {
-                lod = (LOD)dtrackMesh.TrProfile.LODs[lodIndex];
-                if (Viewer.Camera.InRange(dtrackMesh.MSTSLODCenter, 0, lod.CutoffRadius)) break;
+                lod = (LOD)Primitive.TrProfile.LODs[lodIndex];
+                if (Viewer.Camera.InRange(Primitive.MSTSLODCenter, 0, lod.CutoffRadius)) break;
             }
-            if (lodIndex == dtrackMesh.TrProfile.LODs.Count) return;
+            if (lodIndex == Primitive.TrProfile.LODs.Count) return;
             // lodIndex marks first in-range LOD
 
             // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
@@ -203,7 +188,7 @@ namespace ORTS.Viewer3D
 
             int lastIndex;
             // Add in-view LODs to the RenderItems collection
-            if (dtrackMesh.TrProfile.LODMethod == TrProfile.LODMethods.CompleteReplacement)
+            if (Primitive.TrProfile.LODMethod == TrProfile.LODMethods.CompleteReplacement)
             {
                 // CompleteReplacement case
                 lastIndex = lodIndex; // Add only the LOD that is the first in-view
@@ -212,29 +197,26 @@ namespace ORTS.Viewer3D
             {
                 // ComponentAdditive case
                 // Add all LODs from the smallest in-view CutOffRadius to the last
-                lastIndex = dtrackMesh.TrProfile.LODs.Count - 1;
+                lastIndex = Primitive.TrProfile.LODs.Count - 1;
             }
             while (lodIndex <= lastIndex)
             {
-                lod = (LOD)dtrackMesh.TrProfile.LODs[lodIndex];
+                lod = (LOD)Primitive.TrProfile.LODs[lodIndex];
                 for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
                 {
-                    frame.AddPrimitive(dtrackMesh.ShapePrimitives[j].Material, dtrackMesh.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                    frame.AddPrimitive(Primitive.ShapePrimitives[j].Material, Primitive.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
                 }
                 lodIndex++;
             }
-        } // end PrepareFrame
+        }
 
         [CallOnThread("Loader")]
         public void Mark()
         {
-            foreach (LOD lod in dtrackMesh.TrProfile.LODs)
+            foreach (LOD lod in Primitive.TrProfile.LODs)
                 lod.Mark();
         }
-    } // end DynatrackDrawer
-    #endregion
-
-    #region DynatrackProfile
+    }
 
     // A track profile consists of a number of groups used for LOD considerations.  There are LODs,
     // Levels-Of-Detail, each of which contains subgroups.  Here, these subgroups are called "LODItems."  
@@ -242,7 +224,7 @@ namespace ORTS.Viewer3D
     // interconnected. A polyline of n segments is defined by n+1 "vertices."  (Use of a polyline allows 
     // for use of more than single segments.  For example, a ballast LOD could be defined as left slope, 
     // level, right slope - a single polyline of four vertices.)
-    #region TRPFile
+
     /// <summary>
     ///  Track profile file class
     /// </summary>
@@ -279,7 +261,7 @@ namespace ORTS.Viewer3D
             }
             // FOR DEBUGGING: Writes XML file from current TRP
             //TRP.TrackProfile.SaveAsXML(@"C:/Users/Walt/Desktop/TrProfile.xml");
-        } // end CreateTrackProfile
+        }
 
         /// <summary>
         /// Create TrackProfile from a track profile file.  
@@ -370,9 +352,9 @@ namespace ORTS.Viewer3D
                         TrackProfile = new TrProfile(viewer);
                         Trace.Write("(default)");
                         break;
-                } // end switch
-            } // else
-        } // end TRPFile constructor
+                }
+            }
+        }
 
         // ValidationEventHandler callback function
         void ValidationCallback(object sender, ValidationEventArgs args)
@@ -391,18 +373,11 @@ namespace ORTS.Viewer3D
             Console.WriteLine(args.Message);
             Console.WriteLine("----------");
         }
-
-    } // end class TRPFile
-
-    #endregion
-
-    #region TrProfile
+    }
 
     // Dynamic track profile class
     public class TrProfile
     {
-        #region Class Variables
-
         public string Name; // e.g., "Default track profile"
         public int ReplicationPitch; //TBD: Replication pitch alternative
         public LODMethods LODMethod = LODMethods.None; // LOD method of control
@@ -412,9 +387,7 @@ namespace ORTS.Viewer3D
         public PitchControls PitchControl = PitchControls.None; // Method of control for profile replication pitch
         public float PitchControlScalar; // Scalar parameter for PitchControls
         public ArrayList LODs = new ArrayList(); // Array of Levels-Of-Detail
-        #endregion
 
-        #region Enumerations
         /// <summary>
         /// Enumeration of LOD control methods
         /// </summary>
@@ -434,7 +407,7 @@ namespace ORTS.Viewer3D
             /// CompleteReplacement -- Each LOD group is a COMPLETE model that REPLACES another as the camera moves.
             /// </summary>
             CompleteReplacement = 2
-        } // end enum LODMethods
+        }
 
         /// <summary>
         /// Enumeration of cross section replication pitch control methods.
@@ -455,11 +428,7 @@ namespace ORTS.Viewer3D
             /// Chord Displacement -- Constant maximum displacement of chord from arc.
             /// </summary>
             ChordDisplacement
-        } // end enum PitchControls
-
-        #endregion
-
-        #region TrProfile Constructors
+        }
 
         /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
@@ -573,15 +542,14 @@ namespace ORTS.Viewer3D
 
             pl = new Polyline(this, "ballast", 2);
             pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
-            pl.Vertices.Add(new Vertex(-2.5f*gauge/1.435f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
-            pl.Vertices.Add(new Vertex(2.5f*gauge/1.435f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
+            pl.Vertices.Add(new Vertex(-2.5f * gauge / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
+            pl.Vertices.Add(new Vertex(2.5f * gauge / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
             lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
             LODs.Add(lod); // Append this LOD to LODs array
-
-        } // end TrProfile() default constructor
+        }
 
         /// <summary>
         /// TrProfile constructor from STFReader-style profile file
@@ -601,8 +569,7 @@ namespace ORTS.Viewer3D
             });
 
             if (LODs.Count == 0) throw new Exception("missing LODs");
-
-        } // end TrProfile(STFReader) constructor
+        }
 
         /// <summary>
         /// TrProfile constructor from XML profile file
@@ -680,7 +647,7 @@ namespace ORTS.Viewer3D
                 }
             }
             if (LODs.Count == 0) throw new Exception("missing LODs");
-        } // end TrProfile(XmlReader) constructor
+        }
 
         /// <summary>
         /// TrProfile constructor (default - builds from self-contained data)
@@ -691,11 +658,8 @@ namespace ORTS.Viewer3D
         {
             // Default TrProfile constructor
             Name = "Default Dynatrack profile";
-        } // end TrProfile() constructor for inherited class
+        }
 
-        #endregion
-
-        #region TrProfile Helpers
         /// <summary>
         /// Gets a member of the LODMethods enumeration that corresponds to sLODMethod.
         /// </summary>
@@ -716,7 +680,7 @@ namespace ORTS.Viewer3D
                 default:
                     return LODMethods.ComponentAdditive;
             }
-        } // end GetLODMethod
+        }
 
         /// <summary>
         /// Gets a member of the PitchControls enumeration that corresponds to sPitchControl.
@@ -739,14 +703,8 @@ namespace ORTS.Viewer3D
                     return PitchControls.None; ;
 
             }
-        } // end GetPitchControl
-        #endregion
-
-    } // end class TrProfile
-
-    #endregion
-
-    #region LOD
+        }
+    }
 
     public class LOD
     {
@@ -783,15 +741,10 @@ namespace ORTS.Viewer3D
             foreach (LODItem lodItem in LODItems)
                 lodItem.Mark();
         }
-    } // end class LOD
-
-    #endregion
-
-    #region LODItem
+    }
 
     public class LODItem
     {
-        #region Class Variables
         public ArrayList Polylines = new ArrayList();  // Array of arrays of vertices 
 
         public string Name;                            // e.g., "Rail sides"
@@ -810,17 +763,13 @@ namespace ORTS.Viewer3D
         public uint NumVertices;                     // Total independent vertices in LOD
         public uint NumSegments;                     // Total line segment count in LOD
 
-        #endregion
-
-        #region LODItem Constructors
-
         /// <summary>
         /// LODITem constructor (used for default and XML-style profiles)
         /// </summary>
         public LODItem(string name)
         {
             Name = name;
-        } // end LODItem() constructor
+        }
 
         /// <summary>
         /// LODITem constructor (used for STF-style profile)
@@ -850,11 +799,7 @@ namespace ORTS.Viewer3D
             if (Polylines.Count == 0) throw new Exception("missing Polylines");
 
             LoadMaterial(viewer, this);
-        } // end LODItem() constructor
-
-        #endregion
-
-        #region LODItem Helpers
+        }
 
         public void Accum(int count)
         {
@@ -862,7 +807,7 @@ namespace ORTS.Viewer3D
             // Used for sizing of vertex and index buffers
             NumVertices += (uint)count;
             NumSegments += (uint)count - 1;
-        } // end Accum
+        }
 
         public static void LoadMaterial(Viewer viewer, LODItem lod)
         {
@@ -875,25 +820,14 @@ namespace ORTS.Viewer3D
         {
             LODMaterial.Mark();
         }
-
-        #endregion
-    } // end class LODItem
-
-    #endregion
-
-    #region Polyline
+    }
 
     public class Polyline
     {
-        #region Class Variables
         public ArrayList Vertices = new ArrayList();    // Array of vertices 
 
         public string Name;                             // e.g., "1:1 embankment"
         public Vector2 DeltaTexCoord;                   // Incremental change in (u, v) from one cross section to the next
-
-        #endregion
-
-        #region Polyline Constructors
 
         /// <summary>
         /// Polyline constructor (DAT)
@@ -915,7 +849,7 @@ namespace ORTS.Viewer3D
             // Name not required.
             if (DeltaTexCoord == Vector2.Zero) throw new Exception("missing DeltaTexCoord");
             if (Vertices.Count == 0) throw new Exception("missing Vertices");
-        } // end Polyline() constructor
+        }
 
         /// <summary>
         /// Bare-bones Polyline constructor (used for XML)
@@ -930,15 +864,8 @@ namespace ORTS.Viewer3D
         public Polyline(TrProfile parent, string name, uint num)
         {
             Name = name;
-        } // end Polyline() constructor
-
-        #endregion
-
-    } // end Polyline
-
-    #endregion
-
-    #region Vertex Struct
+        }
+    }
 
     public struct Vertex
     {
@@ -952,7 +879,7 @@ namespace ORTS.Viewer3D
             Position = new Vector3(x, y, z);
             Normal = new Vector3(nx, ny, nz);
             TexCoord = new Vector2(u, v);
-        } // end Vertex() constructor
+        }
 
         // Vertex constructor (DAT)
         public Vertex(STFReader stf)
@@ -989,14 +916,10 @@ namespace ORTS.Viewer3D
             // No way to check for missing Position.
             if (Normal == Vector3.Zero) throw new Exception("improper Normal");
             // No way to check for missing TexCoord
-        } // end Vertex() constructor
+        }
+    }
 
-    } // end Vertex
-
-    #endregion
-
-    #region DynatrackMesh
-    public class DynatrackMesh : ShapePrimitive //RenderPrimitive
+    public class DynamicTrackPrimitive : ShapePrimitive //RenderPrimitive
     {
         public ShapePrimitive[] ShapePrimitives; // Array of ShapePrimitives
 
@@ -1042,17 +965,17 @@ namespace ORTS.Viewer3D
         /// <summary>
         /// Default constructor
         /// </summary>
-        public DynatrackMesh()
+        public DynamicTrackPrimitive()
         {
         }
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public DynatrackMesh(Viewer viewer, DyntrackObj track, WorldPosition worldPosition,
+        public DynamicTrackPrimitive(Viewer viewer, DyntrackObj track, WorldPosition worldPosition,
                                 WorldPosition endPosition)
         {
-            // DynatrackMesh is responsible for creating a mesh for a section with a single subsection.
+            // DynamicTrackPrimitive is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
             // serve as the beginning of the next subsection.
 
@@ -1066,7 +989,7 @@ namespace ORTS.Viewer3D
             if (track.trackSections.Count != 1)
             {
                 throw new ApplicationException(
-                    "DynatrackMesh Constructor detected a multiple-subsection dynamic track section. " +
+                    "DynamicTrackPrimitive Constructor detected a multiple-subsection dynamic track section. " +
                     "(SectionIdx = " + track.SectionIdx + ")");
             }
             // Populate member DTrackData (a DtrackData struct)
@@ -1097,7 +1020,7 @@ namespace ORTS.Viewer3D
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildMesh(viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildPrimitive(viewer, worldPosition, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
@@ -1105,8 +1028,7 @@ namespace ORTS.Viewer3D
 
             if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
             else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
-
-        } // end DynatrackMesh constructor
+        }
 
         public override void Mark()
         {
@@ -1115,7 +1037,6 @@ namespace ORTS.Viewer3D
             base.Mark();
         }
 
-        #region Vertex and triangle index generators
         /// <summary>
         /// Builds a Dynatrack LOD to TrProfile specifications as one vertex buffer and one index buffer.
         /// The order in which the buffers are built reflects the nesting in the TrProfile.  The nesting order is:
@@ -1125,7 +1046,7 @@ namespace ORTS.Viewer3D
         /// <param name="worldPosition">WorldPosition.</param>
         /// <param name="lodIndex">Index of LOD mesh to be generated from profile.</param>
         /// <param name="lodItemIndex">Index of LOD mesh following LODs[iLOD]</param>
-        public ShapePrimitive BuildMesh(Viewer viewer, WorldPosition worldPosition, int lodIndex, int lodItemIndex)
+        public ShapePrimitive BuildPrimitive(Viewer viewer, WorldPosition worldPosition, int lodIndex, int lodItemIndex)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();
@@ -1185,16 +1106,16 @@ namespace ORTS.Viewer3D
                         }
                         VertexIndex++;
                         plv++;
-                    } // end foreach v  
-                } // end foreach pl
+                    }
+                }
                 OldRadius = radius; // Get ready for next segment
-            } // end for i
+            }
 
             // Create and populate a new ShapePrimitive
             var indexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short), NumIndices, BufferUsage.WriteOnly);
             indexBuffer.SetData(TriangleListIndices);
             return new ShapePrimitive(lodItem.LODMaterial, new SharedShape.VertexBufferSet(VertexList, viewer.GraphicsDevice), indexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
-        } // end BuildMesh
+        }
 
         /// <summary>
         /// Initializes member variables for straight track sections.
@@ -1208,7 +1129,7 @@ namespace ORTS.Viewer3D
 
             SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (meters)
             DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
-        } // end LinearGen
+        }
 
         /// <summary>
         /// Initializes member variables for circular arc track sections.
@@ -1254,7 +1175,7 @@ namespace ORTS.Viewer3D
             // The local center for the curve lies to the left or right of the local origin and ON THE BASE PLANE
             center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
             sectionRotation = Matrix.CreateRotationY(-SegmentLength); // Rotation per iteration (constant)
-        } // end CircArcGen
+        }
 
         /// <summary>
         /// Generates vertices for a succeeding cross section (straight track).
@@ -1299,11 +1220,5 @@ namespace ORTS.Viewer3D
             VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
             VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
         }
-
-        #endregion
-
     }
-    #endregion
-
-    #endregion
 }

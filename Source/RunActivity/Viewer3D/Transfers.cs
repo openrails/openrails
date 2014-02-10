@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -27,14 +27,14 @@ namespace ORTS.Viewer3D
     public class TransferShape : StaticShape
     {
         readonly Material Material;
-        readonly TransferMesh Primitive;
+        readonly TransferPrimitive Primitive;
         readonly float Radius;
 
         public TransferShape(Viewer viewer, MSTS.TransferObj transfer, WorldPosition position)
             : base(viewer, null, RemoveRotation(position), ShapeFlags.AutoZBias)
         {
             Material = viewer.MaterialManager.Load("Transfer", Helpers.GetTransferTextureFile(viewer.Simulator, transfer.FileName));
-            Primitive = new TransferMesh(viewer, transfer.Width, transfer.Height, position);
+            Primitive = new TransferPrimitive(viewer, transfer.Width, transfer.Height, position);
             Radius = (float)Math.Sqrt(transfer.Width * transfer.Width + transfer.Height * transfer.Height) / 2;
         }
 
@@ -63,7 +63,7 @@ namespace ORTS.Viewer3D
         }
     }
 
-    public class TransferMesh : RenderPrimitive
+    public class TransferPrimitive : RenderPrimitive
     {
         readonly VertexDeclaration VertexDeclaration;
         readonly VertexBuffer VertexBuffer;
@@ -71,7 +71,7 @@ namespace ORTS.Viewer3D
         readonly int VertexCount;
         readonly int PrimitiveCount;
 
-        public TransferMesh(Viewer viewer, float width, float height, WorldPosition position)
+        public TransferPrimitive(Viewer viewer, float width, float height, WorldPosition position)
         {
             var center = position.Location;
             var radius = (float)Math.Sqrt(width * width + height * height) / 2;

@@ -44,7 +44,7 @@ namespace ORTS
         /// <param name="longitude">longitude</param>
         /// <param name="clockTime">wall clock time since start of activity, days</param>
         /// <param name="date">structure made up of day, month, year and ordinal date</param>
-        public static Vector3 SolarAngle(double latitude, double longitude, float clockTime, SkyDrawer.Date date)
+        public static Vector3 SolarAngle(double latitude, double longitude, float clockTime, SkyViewer.Date date)
         {
             Vector3 sunDirection;
 
@@ -112,7 +112,7 @@ namespace ORTS
         /// <param name="longitude">longitude</param>
         /// <param name="clockTime">wall clock time since start of activity</param>
         /// <param name="date">structure made up of day, month, year and ordinal date</param>
-        public static Vector3 LunarAngle(double latitude, double longitude, float clockTime, SkyDrawer.Date date)
+        public static Vector3 LunarAngle(double latitude, double longitude, float clockTime, SkyViewer.Date date)
         {
             Vector3 moonDirection;
 

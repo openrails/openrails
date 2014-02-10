@@ -21,6 +21,7 @@
 //#define DEBUG_EMITTER_INPUT
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
@@ -55,7 +56,7 @@ namespace ORTS.Viewer3D
         }
     }
 
-    public class ParticleEmitterDrawer
+    public class ParticleEmitterViewer
     {
         public const float VolumeScale = 1f / 100;
         public const float Rate = 10;
@@ -67,7 +68,7 @@ namespace ORTS.Viewer3D
         readonly Viewer Viewer;
         readonly ParticleEmitterMaterial Material;
         readonly float EmissionHoleM2 = 1;
-        readonly ParticleEmitter Emitter;
+        readonly ParticleEmitterPrimitive Emitter;
 
 #if DEBUG_EMITTER_INPUT
         const int InputCycleLimit = 600;
@@ -76,12 +77,12 @@ namespace ORTS.Viewer3D
         int InputCycle;
 #endif
 
-        public ParticleEmitterDrawer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
+        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
             Viewer = viewer;
             Material = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
             EmissionHoleM2 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
-            Emitter = new ParticleEmitter(viewer.GraphicsDevice, data, worldPosition);
+            Emitter = new ParticleEmitterPrimitive(viewer.GraphicsDevice, data, worldPosition);
 #if DEBUG_EMITTER_INPUT
             EmitterID = ++EmitterIDIndex;
             InputCycle = Program.Random.Next(InputCycleLimit);
@@ -146,7 +147,7 @@ namespace ORTS.Viewer3D
         }
     }
 
-    public class ParticleEmitter : RenderPrimitive
+    public class ParticleEmitterPrimitive : RenderPrimitive
     {
         const int IndiciesPerParticle = 6;
         const int VerticiesPerParticle = 4;
@@ -201,7 +202,7 @@ namespace ORTS.Viewer3D
         float TimeParticlesLastEmitted;
         int DrawCounter;
 
-        public ParticleEmitter(GraphicsDevice graphicsDevice, ParticleEmitterData data, WorldPosition worldPosition)
+        public ParticleEmitterPrimitive(GraphicsDevice graphicsDevice, ParticleEmitterData data, WorldPosition worldPosition)
         {
             MaxParticles = (int)(data.MaxParticlesPerSecond * data.MaxParticleDuration);
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
@@ -327,23 +328,23 @@ namespace ORTS.Viewer3D
 
                 // Initial velocity varies in X and Z only.
                 var initialVelocity = globalInitialVelocity;
-                initialVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.InitialSpreadRate;
-                initialVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.InitialSpreadRate;
+                initialVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
+                initialVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.InitialSpreadRate;
 
                 // Target/final velocity vaies in X, Y and Z.
                 var targetVelocity = globalTargetVelocity;
-                targetVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.SpreadRate;
-                targetVelocity.Y += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.SpreadRate;
-                targetVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterDrawer.SpreadRate;
+                targetVelocity.X += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
+                targetVelocity.Y += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
+                targetVelocity.Z += (float)(Program.Random.NextDouble() - 0.5f) * ParticleEmitterViewer.SpreadRate;
 
                 // Duration is variable too.
-                var duration = ParticleDuration * (1 + (float)(Program.Random.NextDouble() - 0.5f) * 2 * ParticleEmitterDrawer.DurationVariation);
+                var duration = ParticleDuration * (1 + (float)(Program.Random.NextDouble() - 0.5f) * 2 * ParticleEmitterViewer.DurationVariation);
 
                 for (var j = 0; j < VerticiesPerParticle; j++)
                 {
                     Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, currentTime);
                     Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, currentTime + duration);
-                    Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(targetVelocity, ParticleEmitterDrawer.DecelerationTime);
+                    Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(targetVelocity, ParticleEmitterViewer.DecelerationTime);
                     Vertices[vertex + j].TileXY_Vertex_ID = new Short4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
                     Vertices[vertex + j].Color_Random = color_Random;
                 }
@@ -409,6 +410,82 @@ namespace ORTS.Viewer3D
             }
 
             DrawCounter++;
+        }
+    }
+
+    public class ParticleEmitterMaterial : Material
+    {
+        public Texture2D Texture;
+
+        IEnumerator<EffectPass> ShaderPasses;
+
+        public ParticleEmitterMaterial(Viewer viewer)
+            : base(viewer, null)
+        {
+            ShaderPasses = Viewer.MaterialManager.ParticleEmitterShader.Techniques["ParticleEmitterTechnique"].Passes.GetEnumerator();
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            var shader = Viewer.MaterialManager.ParticleEmitterShader;
+            if (Viewer.Settings.UseMSTSEnv == false)
+                shader.LightVector = Viewer.World.Sky.solarDirection;
+            else
+                shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection;
+
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DepthBufferWriteEnable = false;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            var shader = Viewer.MaterialManager.ParticleEmitterShader;
+
+            ShaderPasses.Reset();
+            shader.Begin();
+            while (ShaderPasses.MoveNext())
+            {
+                ShaderPasses.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
+                    shader.CameraTileXY = new Vector2(item.XNAMatrix.M21, item.XNAMatrix.M22);
+                    shader.CurrentTime = item.XNAMatrix.M11;
+                    item.XNAMatrix = Matrix.Identity;
+
+                    var emitter = (ParticleEmitterPrimitive)item.RenderPrimitive;
+                    shader.EmitSize = emitter.EmitSize;
+                    shader.Texture = Texture;
+                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
+                    shader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPasses.Current.End();
+            }
+            shader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DepthBufferWriteEnable = true;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
+        }
+
+        public override bool GetBlending()
+        {
+            return true;
+        }
+
+        public override void Mark()
+        {
+            Viewer.TextureManager.Mark(Texture);
+            base.Mark();
         }
     }
 }

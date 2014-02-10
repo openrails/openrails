@@ -833,7 +833,7 @@ namespace ORTS
     class MSTSDieselLocomotiveViewer : MSTSLocomotiveViewer
     {
         MSTSDieselLocomotive DieselLocomotive { get { return (MSTSDieselLocomotive)Car; } }
-        List<ParticleEmitterDrawer> Exhaust = new List<ParticleEmitterDrawer>();
+        List<ParticleEmitterViewer> Exhaust = new List<ParticleEmitterViewer>();
 
         public MSTSDieselLocomotiveViewer(Viewer viewer, MSTSDieselLocomotive car)
             : base(viewer, car)

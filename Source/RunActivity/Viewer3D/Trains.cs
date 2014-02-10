@@ -136,7 +136,7 @@ namespace ORTS.Viewer3D
         {
             Trace.Write("C");
             var carViewer = car.GetViewer(Viewer);
-            carViewer.lightDrawer = new LightDrawer(Viewer, car);
+            carViewer.lightDrawer = new LightViewer(Viewer, car);
             return carViewer;
         }
 

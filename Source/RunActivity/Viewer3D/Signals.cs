@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -318,7 +318,7 @@ namespace ORTS.Viewer3D
 #if DEBUG_SIGNAL_SHAPES
             public readonly SignalTypeDataType Type;
 #endif
-            public readonly List<SignalLightMesh> Lights = new List<SignalLightMesh>();
+            public readonly List<SignalLightPrimitive> Lights = new List<SignalLightPrimitive>();
             public readonly List<bool> LightsSemaphoreChange = new List<bool>();
             public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
             public readonly float FlashTimeOn;
@@ -354,7 +354,7 @@ namespace ORTS.Viewer3D
                                 continue;
                             }
                             var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
-                            Lights.Add(new SignalLightMesh(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
+                            Lights.Add(new SignalLightPrimitive(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
                             LightsSemaphoreChange.Add(mstsSignalLight.SemaphoreChange);
                         }
                     }
@@ -414,12 +414,12 @@ namespace ORTS.Viewer3D
         }
     }
 
-    public class SignalLightMesh : RenderPrimitive
+    public class SignalLightPrimitive : RenderPrimitive
     {
         readonly VertexDeclaration VertexDeclaration;
         readonly VertexBuffer VertexBuffer;
 
-        public SignalLightMesh(Viewer viewer, Vector3 position, float radius, Color color, float u0, float v0, float u1, float v1)
+        public SignalLightPrimitive(Viewer viewer, Vector3 position, float radius, Color color, float u0, float v0, float u1, float v1)
         {
             var verticies = new[] {
 				new VertexPositionColorTexture(new Vector3(position.X - radius, position.Y + radius, position.Z), color, new Vector2(u1, v0)),

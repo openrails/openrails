@@ -926,7 +926,7 @@ namespace ORTS
     {
          // TODO add view location and limits
         public TrainCar Car;
-        public LightDrawer lightDrawer;
+        public LightViewer lightDrawer;
 
         protected Viewer Viewer;
 

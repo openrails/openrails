@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -31,7 +31,7 @@ namespace ORTS.Viewer3D
 {
     [DebuggerDisplay("Count = {TerrainTiles.Count}")]
     [CallOnThread("Loader")]
-    public class TerrainDrawer
+    public class TerrainViewer
     {
         readonly Viewer Viewer;
 
@@ -45,7 +45,7 @@ namespace ORTS.Viewer3D
         int VisibleTileZ;
 
         [CallOnThread("Render")]
-        public TerrainDrawer(Viewer viewer)
+        public TerrainViewer(Viewer viewer)
         {
             Viewer = viewer;
         }
@@ -135,8 +135,8 @@ namespace ORTS.Viewer3D
     {
         public readonly int TileX, TileZ, Size, PatchCount;
 
-        readonly TerrainPatch[,] TerrainPatches; 
-        readonly WaterTile WaterTile;
+        readonly TerrainPrimitive[,] TerrainPatches;
+        readonly WaterPrimitive WaterTile;
 
         public TerrainTile(Viewer viewer, TileManager tileManager, Tile tile)
         {
@@ -147,18 +147,18 @@ namespace ORTS.Viewer3D
             PatchCount = tile.PatchCount;
 
             // Terrain needs the next tiles over from its east (X+) and south (Z-) edges.
-            viewer.Tiles.Load(TileX + tile.Size, TileZ , false);
+            viewer.Tiles.Load(TileX + tile.Size, TileZ, false);
             viewer.Tiles.Load(TileX + tile.Size, TileZ - 1, false);
             viewer.Tiles.Load(TileX, TileZ - 1, false);
 
-            TerrainPatches = new TerrainPatch[PatchCount, PatchCount];
+            TerrainPatches = new TerrainPrimitive[PatchCount, PatchCount];
             for (var x = 0; x < PatchCount; ++x)
                 for (var z = 0; z < PatchCount; ++z)
                     if (tile.GetPatch(x, z).DrawingEnabled)
-                        TerrainPatches[x, z] = new TerrainPatch(viewer, tileManager, tile, x, z);
+                        TerrainPatches[x, z] = new TerrainPrimitive(viewer, tileManager, tile, x, z);
 
             if (tile.ContainsWater)
-                WaterTile = new WaterTile(viewer, tile);
+                WaterTile = new WaterPrimitive(viewer, tile);
         }
 
         [CallOnThread("Updater")]
@@ -177,7 +177,7 @@ namespace ORTS.Viewer3D
         internal void Mark()
         {
             if (WaterTile != null)
-                WaterTile.Mark();
+                WaterPrimitive.Mark();
 
             for (var x = 0; x < PatchCount; ++x)
                 for (var z = 0; z < PatchCount; ++z)
@@ -188,7 +188,7 @@ namespace ORTS.Viewer3D
 
     [DebuggerDisplay("TileX = {TileX}, TileZ = {TileZ}, Size = {Size}, PatchX = {PatchX}, PatchZ = {PatchZ}")]
     [CallOnThread("Loader")]
-    public class TerrainPatch : RenderPrimitive
+    public class TerrainPrimitive : RenderPrimitive
     {
         readonly Viewer Viewer;
         readonly int TileX, TileZ, Size, PatchX, PatchZ, PatchSize;
@@ -210,7 +210,7 @@ namespace ORTS.Viewer3D
         readonly Tile Tile;
         readonly terrain_patchset_patch Patch;
 
-        public TerrainPatch(Viewer viewer, TileManager tileManager, Tile tile, int x, int z)
+        public TerrainPrimitive(Viewer viewer, TileManager tileManager, Tile tile, int x, int z)
         {
             Viewer = viewer;
             TileX = tile.TileX;
@@ -493,6 +493,117 @@ namespace ORTS.Viewer3D
 
             SharedPatchIndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
             SharedPatchIndexBuffer.SetData(indexData.ToArray());
+        }
+    }
+
+    public class TerrainMaterial : Material
+    {
+        readonly Texture2D PatchTexture;
+        readonly Texture2D PatchTextureOverlay;
+        IEnumerator<EffectPass> ShaderPasses;
+
+        public TerrainMaterial(Viewer viewer, string terrainTexture)
+            : base(viewer, terrainTexture)
+        {
+            var textures = terrainTexture.Split('\0');
+            PatchTexture = Viewer.TextureManager.Get(textures[0]);
+            PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"].Passes.GetEnumerator();
+            shader.ImageTexture = PatchTexture;
+            shader.OverlayTexture = PatchTextureOverlay;
+
+            var samplerState = graphicsDevice.SamplerStates[0];
+            samplerState.AddressU = TextureAddressMode.Wrap;
+            samplerState.AddressV = TextureAddressMode.Wrap;
+
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
+            graphicsDevice.VertexDeclaration = TerrainPrimitive.SharedPatchVertexDeclaration;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            var viewproj = XNAViewMatrix * XNAProjectionMatrix;
+
+            shader.Begin();
+            ShaderPasses.Reset();
+            while (ShaderPasses.MoveNext())
+            {
+                ShaderPasses.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    shader.SetMatrix(ref item.XNAMatrix, ref viewproj);
+                    shader.ZBias = item.RenderPrimitive.ZBias;
+                    shader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPasses.Current.End();
+            }
+            shader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
+        }
+
+        public override void Mark()
+        {
+            Viewer.TextureManager.Mark(PatchTexture);
+            Viewer.TextureManager.Mark(PatchTextureOverlay);
+            base.Mark();
+        }
+    }
+
+    public class TerrainSharedMaterial : TerrainMaterial
+    {
+        public TerrainSharedMaterial(Viewer viewer, string terrainTexture)
+            : base(viewer, terrainTexture)
+        {
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            base.SetState(graphicsDevice, previousMaterial);
+            graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
+        }
+    }
+
+    public class TerrainSharedDistantMountain : TerrainSharedMaterial
+    {
+        public TerrainSharedDistantMountain(Viewer viewer, string terrainTexture)
+            : base(viewer, terrainTexture)
+        {
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            base.SetState(graphicsDevice, previousMaterial);
+
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false; // Override the normal terrain blending!
+            rs.CullMode = CullMode.None;
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            base.ResetState(graphicsDevice);
+
+            var rs = graphicsDevice.RenderState;
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
         }
     }
 }

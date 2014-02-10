@@ -2365,7 +2365,7 @@ namespace ORTS
     {
         MSTSLocomotive Locomotive;
 
-        protected Dictionary<string, List<ParticleEmitterDrawer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterDrawer>>();
+        protected Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
 
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
@@ -2377,8 +2377,8 @@ namespace ORTS
         {
             Locomotive = car;
             ParticleDrawers = (from effect in Locomotive.EffectData
-                               select new KeyValuePair<string, List<ParticleEmitterDrawer>>(effect.Key, new List<ParticleEmitterDrawer>(from data in effect.Value
-                                                                                                                                        select new ParticleEmitterDrawer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                               select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(from data in effect.Value
+                                                                                                                                        select new ParticleEmitterViewer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             //if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
             //    _CabRenderer = new CabRenderer(viewer, Locomotive);
@@ -2727,8 +2727,8 @@ namespace ORTS
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            foreach (List<ParticleEmitterDrawer> drawers in ParticleDrawers.Values)
-                foreach (ParticleEmitterDrawer drawer in drawers)
+            foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
+                foreach (ParticleEmitterViewer drawer in drawers)
                     drawer.PrepareFrame(frame, elapsedTime);
 
             // Wiper animation

@@ -25,13 +25,13 @@ namespace ORTS.Viewer3D
     {
         readonly Viewer Viewer;
         public readonly WeatherControl WeatherControl;
-        public readonly SkyDrawer Sky;
+        public readonly SkyViewer Sky;
         public readonly MSTSSkyDrawer MSTSSky;
-        public readonly PrecipDrawer Precipitation;
-        public readonly TerrainDrawer Terrain;
+        public readonly PrecipitationViewer Precipitation;
+        public readonly TerrainViewer Terrain;
         public readonly SceneryDrawer Scenery;
         public readonly TrainDrawer Trains;
-        public readonly RoadCarDrawer RoadCars;
+        public readonly RoadCarViewer RoadCars;
         public readonly SoundSource GameSounds;
         public readonly WorldSounds Sounds;
 
@@ -51,12 +51,12 @@ namespace ORTS.Viewer3D
             if (viewer.Settings.UseMSTSEnv)
                 MSTSSky = new MSTSSkyDrawer(viewer);
             else
-                Sky = new SkyDrawer(viewer);
-            Precipitation = new PrecipDrawer(viewer);
-            Terrain = new TerrainDrawer(viewer);
+                Sky = new SkyViewer(viewer);
+            Precipitation = new PrecipitationViewer(viewer);
+            Terrain = new TerrainViewer(viewer);
             Scenery = new SceneryDrawer(viewer);
             Trains = new TrainDrawer(viewer);
-            RoadCars = new RoadCarDrawer(viewer);
+            RoadCars = new RoadCarViewer(viewer);
             // Then sound.
             if (viewer.Settings.SoundDetailLevel > 0)
             {

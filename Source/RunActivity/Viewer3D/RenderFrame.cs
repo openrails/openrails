@@ -483,8 +483,8 @@ namespace ORTS.Viewer3D
 
             // Render terrain shadow items now, with their magic.
             if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowItems[shadowMapIndex].Count(ri => ri.Material is TerrainMaterial));
-            graphicsDevice.VertexDeclaration = TerrainPatch.SharedPatchVertexDeclaration;
-            graphicsDevice.Indices = TerrainPatch.SharedPatchIndexBuffer;
+            graphicsDevice.VertexDeclaration = TerrainPrimitive.SharedPatchVertexDeclaration;
+            graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
             ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial && (ri.Material is TerrainSharedMaterial)), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
             ShadowMapMaterial.Render(graphicsDevice, RenderShadowItems[shadowMapIndex].Where(ri => ri.Material is TerrainMaterial && !(ri.Material is TerrainSharedMaterial)), ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 

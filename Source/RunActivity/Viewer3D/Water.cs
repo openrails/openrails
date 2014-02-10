@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -26,7 +26,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace ORTS.Viewer3D
 {
     [DebuggerDisplay("TileX = {TileX}, TileZ = {TileZ}, Size = {Size}")]
-    public class WaterTile : RenderPrimitive
+    public class WaterPrimitive : RenderPrimitive
     {
         public static VertexDeclaration PatchVertexDeclaration;
 
@@ -42,7 +42,7 @@ namespace ORTS.Viewer3D
 
         Matrix xnaMatrix = Matrix.Identity;
 
-        public WaterTile(Viewer viewer, Tile tile)
+        public WaterPrimitive(Viewer viewer, Tile tile)
         {
             Viewer = viewer;
             TileX = tile.TileX;
@@ -163,6 +163,79 @@ namespace ORTS.Viewer3D
         {
             foreach (var material in WaterLayers.Select(kvp => kvp.Value))
                 material.Mark();
+        }
+    }
+
+    public class WaterMaterial : Material
+    {
+        readonly Texture2D WaterTexture;
+        IEnumerator<EffectPass> ShaderPasses;
+
+        public WaterMaterial(Viewer viewer, string waterTexturePath)
+            : base(viewer, waterTexturePath)
+        {
+            WaterTexture = Viewer.TextureManager.Get(waterTexturePath);
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
+            shader.ImageTexture = WaterTexture;
+
+            var samplerState = graphicsDevice.SamplerStates[0];
+            samplerState.AddressU = TextureAddressMode.Wrap;
+            samplerState.AddressV = TextureAddressMode.Wrap;
+            samplerState.MipMapLevelOfDetailBias = 0;
+
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
+            graphicsDevice.VertexDeclaration = WaterPrimitive.PatchVertexDeclaration;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            var viewproj = XNAViewMatrix * XNAProjectionMatrix;
+
+            shader.Begin();
+            ShaderPasses.Reset();
+            while (ShaderPasses.MoveNext())
+            {
+                ShaderPasses.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    shader.SetMatrix(ref item.XNAMatrix, ref viewproj);
+                    shader.ZBias = item.RenderPrimitive.ZBias;
+                    shader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPasses.Current.End();
+            }
+            shader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
+        }
+
+        public override bool GetBlending()
+        {
+            return true;
+        }
+
+        public override void Mark()
+        {
+            Viewer.TextureManager.Mark(WaterTexture);
+            base.Mark();
         }
     }
 }

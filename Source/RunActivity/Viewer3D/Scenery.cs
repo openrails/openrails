@@ -150,8 +150,8 @@ namespace ORTS.Viewer3D
 
         public readonly int TileX, TileZ;
         public List<StaticShape> sceneryObjects = new List<StaticShape>();
-        public List<DynatrackDrawer> dTrackList = new List<DynatrackDrawer>();
-        public List<ForestDrawer> forestList = new List<ForestDrawer>();
+        public List<DynamicTrackViewer> dTrackList = new List<DynamicTrackViewer>();
+        public List<ForestViewer> forestList = new List<ForestViewer>();
         public List<RoadCarSpawner> carSpawners = new List<RoadCarSpawner>();
         public List<TrItemLabel> sidings = new List<TrItemLabel>();
         public List<TrItemLabel> platforms = new List<TrItemLabel>();
@@ -268,13 +268,13 @@ namespace ORTS.Viewer3D
                         // Add DyntrackDrawers for individual subsections
                         if (viewer.Simulator.UseSuperElevation > 0 && SuperElevation.UseSuperElevationDyn(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix))
                             SuperElevation.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
-                        else Dynatrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
                     } // end else if DyntrackObj
                     else if (worldObject.GetType() == typeof(MSTS.ForestObj))
                     {
                         if (!(worldObject as MSTS.ForestObj).IsYard)
-                            forestList.Add(new ForestDrawer(viewer, (ForestObj)worldObject, worldMatrix));
+                            forestList.Add(new ForestViewer(viewer, (ForestObj)worldObject, worldMatrix));
                     }
                     else if (worldObject.GetType() == typeof(MSTS.SignalObj))
                     {

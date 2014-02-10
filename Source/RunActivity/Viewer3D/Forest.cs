@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -27,19 +27,19 @@ using MSTS;
 namespace ORTS.Viewer3D
 {
     [CallOnThread("Loader")]
-    public class ForestDrawer
+    public class ForestViewer
     {
         readonly Viewer Viewer;
         readonly WorldPosition Position;
         readonly Material Material;
-        readonly ForestMesh Mesh;
+        readonly ForestPrimitive Primitive;
 
-        public ForestDrawer(Viewer viewer, ForestObj forest, WorldPosition position)
+        public ForestViewer(Viewer viewer, ForestObj forest, WorldPosition position)
         {
             Viewer = viewer;
             Position = position;
             Material = viewer.MaterialManager.Load("Forest", Helpers.GetForestTextureFile(viewer.Simulator, forest.TreeTexture));
-            Mesh = new ForestMesh(Viewer, forest, position);
+            Primitive = new ForestPrimitive(Viewer, forest, position);
         }
 
         [CallOnThread("Updater")]
@@ -49,7 +49,7 @@ namespace ORTS.Viewer3D
             var dTileZ = Position.TileZ - Viewer.Camera.TileZ;
             var mstsLocation = Position.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
             var xnaMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
-            frame.AddAutoPrimitive(mstsLocation, Mesh.ObjectRadius, float.MaxValue, Material, Mesh, RenderPrimitiveGroup.World, ref xnaMatrix, Viewer.Settings.ShadowAllShapes ? ShapeFlags.ShadowCaster : ShapeFlags.None);
+            frame.AddAutoPrimitive(mstsLocation, Primitive.ObjectRadius, float.MaxValue, Material, Primitive, RenderPrimitiveGroup.World, ref xnaMatrix, Viewer.Settings.ShadowAllShapes ? ShapeFlags.ShadowCaster : ShapeFlags.None);
         }
 
         [CallOnThread("Loader")]
@@ -60,7 +60,7 @@ namespace ORTS.Viewer3D
     }
 
     [CallOnThread("Loader")]
-    public class ForestMesh : RenderPrimitive
+    public class ForestPrimitive : RenderPrimitive
     {
         readonly Viewer Viewer;
         readonly VertexDeclaration VertexDeclaration;
@@ -70,7 +70,7 @@ namespace ORTS.Viewer3D
 
         public readonly float ObjectRadius;
 
-        public ForestMesh(Viewer viewer, ForestObj forest, WorldPosition position)
+        public ForestPrimitive(Viewer viewer, ForestObj forest, WorldPosition position)
         {
             Viewer = viewer;
 
@@ -128,6 +128,81 @@ namespace ORTS.Viewer3D
             graphicsDevice.VertexDeclaration = VertexDeclaration;
             graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexStride);
             graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, PrimitiveCount);
+        }
+    }
+
+    [CallOnThread("Render")]
+    public class ForestMaterial : Material
+    {
+        readonly Texture2D TreeTexture;
+        IEnumerator<EffectPass> ShaderPasses;
+
+        [CallOnThread("Loader")]
+        public ForestMaterial(Viewer viewer, string treeTexture)
+            : base(viewer, treeTexture)
+        {
+            TreeTexture = Viewer.TextureManager.Get(treeTexture);
+        }
+
+        public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
+        {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            shader.CurrentTechnique = shader.Techniques["Forest"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
+            shader.ImageTexture = TreeTexture;
+            shader.ReferenceAlpha = 200;
+
+            var rs = graphicsDevice.RenderState;
+            // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
+            rs.AlphaBlendEnable = true;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
+            graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            var viewproj = XNAViewMatrix * XNAProjectionMatrix;
+
+            shader.SetViewMatrix(ref XNAViewMatrix);
+            shader.Begin();
+            ShaderPasses.Reset();
+            while (ShaderPasses.MoveNext())
+            {
+                ShaderPasses.Current.Begin();
+                foreach (var item in renderItems)
+                {
+                    shader.SetMatrix(ref item.XNAMatrix, ref viewproj);
+                    shader.ZBias = item.RenderPrimitive.ZBias;
+                    shader.CommitChanges();
+                    item.RenderPrimitive.Draw(graphicsDevice);
+                }
+                ShaderPasses.Current.End();
+            }
+            shader.End();
+        }
+
+        public override void ResetState(GraphicsDevice graphicsDevice)
+        {
+            Viewer.MaterialManager.SceneryShader.ReferenceAlpha = 0;
+
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
+        }
+
+        public override Texture2D GetShadowTexture()
+        {
+            return TreeTexture;
+        }
+
+        public override void Mark()
+        {
+            Viewer.TextureManager.Mark(TreeTexture);
+            base.Mark();
         }
     }
 }

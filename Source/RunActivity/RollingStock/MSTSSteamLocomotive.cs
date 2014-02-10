@@ -2489,11 +2489,11 @@ namespace ORTS
         float old_Distance_Travelled = 0.0f;
 
         MSTSSteamLocomotive SteamLocomotive { get{ return (MSTSSteamLocomotive)Car;}}
-        List<ParticleEmitterDrawer> Cylinders = new List<ParticleEmitterDrawer>();
-        List<ParticleEmitterDrawer> Drainpipe = new List<ParticleEmitterDrawer>();
-        List<ParticleEmitterDrawer> SafetyValves = new List<ParticleEmitterDrawer>();
-        List<ParticleEmitterDrawer> Stack = new List<ParticleEmitterDrawer>();
-        List<ParticleEmitterDrawer> Whistle = new List<ParticleEmitterDrawer>();
+        List<ParticleEmitterViewer> Cylinders = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Drainpipe = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SafetyValves = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Stack = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Whistle = new List<ParticleEmitterViewer>();
 
         public MSTSSteamLocomotiveViewer(Viewer viewer, MSTSSteamLocomotive car)
             : base(viewer, car)
