@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using MSTS;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS.Menu
 {
@@ -28,6 +30,8 @@ namespace ORTS.Menu
         public readonly string Start;
         public readonly string End;
         public readonly string FilePath;
+
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
         internal Path(string filePath)
         {
@@ -44,16 +48,16 @@ namespace ORTS.Menu
                 }
                 catch
                 {
-                    Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
                 if (!showInList) throw new InvalidDataException("Path '" + filePath + "' is excluded.");
-                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
-                if (string.IsNullOrEmpty(Start)) Start = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
-                if (string.IsNullOrEmpty(End)) End = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (string.IsNullOrEmpty(Start)) Start = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (string.IsNullOrEmpty(End)) End = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             else
             {
-                Name = Start = End = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                Name = Start = End = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             FilePath = filePath;
         }

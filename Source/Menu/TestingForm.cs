@@ -27,6 +27,8 @@ using System.Text;
 using System.Windows.Forms;
 using ORTS.Menu;
 using Path = System.IO.Path;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
@@ -65,6 +67,9 @@ namespace ORTS
         public TestingForm()
         {
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
+
+            GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+            Localizer.Localize(this, catalog);
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the

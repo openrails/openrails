@@ -24,6 +24,8 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using ORTS.Menu;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
@@ -33,9 +35,13 @@ namespace ORTS
 		string[] Weathers = { "Clear", "Snow", "Rain", "Unknown" };
 		string[] Difficulties = { "Easy", "Medium", "Hard", "Unknown" };
 
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+
         DetailsForm()
         {
             InitializeComponent();
+
+            Localizer.Localize(this, catalog);
 
 			// Windows 2000 and XP should use 8.25pt Tahoma, while Windows
 			// Vista and later should use 9pt "Segoe UI". We'll use the
@@ -46,7 +52,7 @@ namespace ORTS
 		public DetailsForm(Route route)
 			: this()
         {
-            Text = "Route Details";
+            Text = catalog.GetString("Route Details");
 			groupBoxDescription.Text = route.Name;
 			textDescription.Text = route.Description.Replace("\n", "\r\n");
 			groupBoxDescription.Height *= 2;
@@ -58,7 +64,7 @@ namespace ORTS
 		public DetailsForm(Activity activity)
 			: this()
 		{
-            Text = "Activity Details";
+            Text = catalog.GetString("Activity Details");
 			groupBoxDescription.Text = activity.Name;
 			textDescription.Text = activity.Description.Replace("\n", "\r\n");
 			textBriefing.Text = activity.Briefing.Replace("\n", "\r\n");

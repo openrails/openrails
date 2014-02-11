@@ -1,0 +1,1 @@
+GNU.Gettext.Xgettext.exe -D ..\..\Menu\ -D ..\..\ORTS\Menu\ --recursive -o Locales\Menu.pot

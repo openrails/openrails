@@ -25,16 +25,22 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
     public partial class MultiplayerForm : Form
     {
 		readonly UserSettings Settings;
+
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
         
         public MultiplayerForm(UserSettings settings)
         {
             InitializeComponent();
+
+            Localizer.Localize(this, catalog);
 
 			Settings = settings;
 
@@ -63,7 +69,7 @@ namespace ORTS
                 textBoxUser.Select(0, textBoxUser.Text.Length);
 
                 // Set the ErrorProvider error with the text to display. 
-                epUser.SetError(textBoxUser, "User name must be 4-10 characters long, cannot contain space, ' or \" and must not start with a digit.");
+                epUser.SetError(textBoxUser, catalog.GetString("User name must be 4-10 characters long, cannot contain space, ' or \" and must not start with a digit."));
             }
             else
             {
@@ -99,7 +105,7 @@ namespace ORTS
                 numericPort.Select(0, numericPort.Value.ToString().Length);
 
                 // Set the ErrorProvider error with the text to display. 
-                epPort.SetError(numericPort, "Port number must be an integer between 0 and 65535.");
+                epPort.SetError(numericPort, catalog.GetString("Port number must be an integer between 0 and 65535."));
             }
             else
             {

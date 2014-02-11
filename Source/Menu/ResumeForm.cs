@@ -64,13 +64,13 @@ using MSTS;
 using ORTS.Common;
 using ORTS.Menu;
 using Path = System.IO.Path;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
     public partial class ResumeForm : Form
     {
-        const string InvalidTextString = "To prevent crashes and unexpected behavior, new versions of Open Rails invalidate old saved games. {0} of {1} saves are no longer valid.";
-
         readonly UserSettings Settings;
         readonly Route Route;
         readonly Activity Activity;
@@ -135,10 +135,14 @@ namespace ORTS
         public string SelectedSaveFile { get; set; }
         public MainForm.UserAction SelectedAction { get; set; }
 
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+
         public ResumeForm(UserSettings settings, Route route, Activity activity, MainForm parentForm)
         {
             MainForm = parentForm;
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
+
+            Localizer.Localize(this, catalog);
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the
@@ -148,7 +152,7 @@ namespace ORTS
             Settings = settings;
             Route = route;
             Activity = activity;
-            Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name : "Explore Route");
+            Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name : catalog.GetString("Explore Route"));
             checkBoxReplayPauseBeforeEnd.Checked = Settings.ReplayPauseBeforeEnd;
             numericReplayPauseBeforeEnd.Value = Settings.ReplayPauseBeforeEndS;
 
@@ -172,7 +176,7 @@ namespace ORTS
             SaveLoader = new Task<List<Save>>(this, () =>
             {
                 var saves = new List<Save>();
-				var directory = UserSettings.UserDataFolder;
+                var directory = UserSettings.UserDataFolder;
                 var build = VersionInfo.Build.Contains(" ") ? VersionInfo.Build.Substring(VersionInfo.Build.IndexOf(" ") + 1) : null;
                 var prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
                 if (Directory.Exists(directory))
@@ -197,7 +201,7 @@ namespace ORTS
                                 {
                                     saves.Add(save);
                                     // Save a warning to show later.
-                                    warning += String.Format("Warning: Save {0} found from a route with an unexpected name:\n{1}.\n\n", save.RealTime, save.RouteName);
+                                    warning += catalog.GetStringFmt("Warning: Save {0} found from a route with an unexpected name:\n{1}.\n\n", save.RealTime, save.RouteName);
                                 }
                             }
                         }
@@ -209,7 +213,7 @@ namespace ORTS
             {
                 Saves = saves;
                 saveBindingSource.DataSource = Saves;
-                labelInvalidSaves.Text = String.Format(InvalidTextString, Saves.Count(s => !s.Valid), Saves.Count);
+                labelInvalidSaves.Text = catalog.GetStringFmt("To prevent crashes and unexpected behavior, new versions of Open Rails invalidate old saved games. {0} of {1} saves are no longer valid.", Saves.Count(s => !s.Valid), Saves.Count);
                 gridSaves_SelectionChanged(null, null);
                 // Show warning after the list has been updated as this is more useful.
                 if (warning != "")
@@ -292,8 +296,8 @@ namespace ORTS
             {
                 gridSaves.ClearSelection();
 
-				if (!Directory.Exists(UserSettings.DeletedSaveFolder))
-					Directory.CreateDirectory(UserSettings.DeletedSaveFolder);
+                if (!Directory.Exists(UserSettings.DeletedSaveFolder))
+                    Directory.CreateDirectory(UserSettings.DeletedSaveFolder);
 
                 for (var i = 0; i < selectedRows.Count; i++)
                 {
@@ -302,7 +306,7 @@ namespace ORTS
                     {
                         try
                         {
-							File.Move(Path.Combine(UserSettings.UserDataFolder, fileName), Path.Combine(UserSettings.DeletedSaveFolder, fileName));
+                            File.Move(Path.Combine(UserSettings.UserDataFolder, fileName), Path.Combine(UserSettings.DeletedSaveFolder, fileName));
                         }
                         catch { }
                     }
@@ -314,18 +318,18 @@ namespace ORTS
 
         void buttonUndelete_Click(object sender, EventArgs e)
         {
-			if (Directory.Exists(UserSettings.DeletedSaveFolder))
+            if (Directory.Exists(UserSettings.DeletedSaveFolder))
             {
-				foreach (var filePath in Directory.GetFiles(UserSettings.DeletedSaveFolder))
+                foreach (var filePath in Directory.GetFiles(UserSettings.DeletedSaveFolder))
                 {
                     try
                     {
-						File.Move(filePath, Path.Combine(UserSettings.UserDataFolder, Path.GetFileName(filePath)));
+                        File.Move(filePath, Path.Combine(UserSettings.UserDataFolder, Path.GetFileName(filePath)));
                     }
                     catch { }
                 }
 
-				Directory.Delete(UserSettings.DeletedSaveFolder);
+                Directory.Delete(UserSettings.DeletedSaveFolder);
 
                 LoadSaves();
             }

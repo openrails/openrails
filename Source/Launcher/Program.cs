@@ -86,6 +86,8 @@ namespace ORTS
 		{
 			foreach (var file in new[] {
 				// Required libraries:
+				"GNU.Gettext.dll",
+				"GNU.Gettext.WinForms.dll",
 				"ICSharpCode.SharpZipLib.dll",
 				"OpenAL32.dll",
 				"PIEHidDotNet.dll",

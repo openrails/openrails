@@ -95,6 +95,8 @@ namespace ORTS
 		public bool SuppressConfirmations { get; set; }
 		[Default(false)]
 		public bool ViewDispatcher { get; set; }
+        [Default("System")]
+        public String Language { get; set; }
 
 		// Audio settings:
 		[Default(5)]

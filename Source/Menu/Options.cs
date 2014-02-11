@@ -16,19 +16,13 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Windows.Forms;
 using XNA = Microsoft.Xna.Framework.Input;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
@@ -36,9 +30,14 @@ namespace ORTS
     {
         readonly UserSettings Settings;
 
+        private GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        private Boolean Initialized = false;
+
         public OptionsForm(UserSettings settings)
         {
             InitializeComponent();
+
+            Localizer.Localize(this, catalog);
 
             Settings = settings;
 
@@ -53,6 +52,7 @@ namespace ORTS
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             checkSuppressConfirmations.Checked = Settings.SuppressConfirmations;
             checkViewDispatcher.Checked = Settings.ViewDispatcher;
+            comboBoxLanguage.Text = Settings.Language;
 
             // Audio tab
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
@@ -112,6 +112,8 @@ namespace ORTS
             for (var i = 0; i < checkedListBoxDataLogTSContents.Items.Count; i++)
                 checkedListBoxDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
             checkDataLogStationStops.Checked = Settings.DataLogStationStops;
+
+            Initialized = true;
         }
 
         static string ParseCategoryFrom(string name)
@@ -179,7 +181,7 @@ namespace ORTS
                 keyInputControl.ReadOnly = true;
                 keyInputControl.Tag = command;
                 panelKeys.Controls.Add(keyInputControl);
-                toolTip1.SetToolTip(keyInputControl, "Click to change this key");
+                toolTip1.SetToolTip(keyInputControl, catalog.GetString("Click to change this key"));
 
                 ++i;
             }
@@ -195,7 +197,7 @@ namespace ORTS
         void buttonOK_Click(object sender, EventArgs e)
         {
             var result = Settings.Input.CheckForErrors();
-            if (result != "" && DialogResult.Yes != MessageBox.Show("Continue with conflicting key assignments?\n\n" + result, Application.ProductName, MessageBoxButtons.YesNo))
+            if (result != "" && DialogResult.Yes != MessageBox.Show(catalog.GetString("Continue with conflicting key assignments?\n\n") + result, Application.ProductName, MessageBoxButtons.YesNo))
                 return;
 
             // General tab
@@ -204,6 +206,7 @@ namespace ORTS
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.SuppressConfirmations = checkSuppressConfirmations.Checked;
             Settings.ViewDispatcher = checkViewDispatcher.Checked;
+            Settings.Language = comboBoxLanguage.Text;
             
             // Audio tab
             Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
@@ -271,7 +274,7 @@ namespace ORTS
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)
         {
-            if (DialogResult.Yes == MessageBox.Show("Remove all custom key assignments?", Application.ProductName, MessageBoxButtons.YesNo))
+            if (DialogResult.Yes == MessageBox.Show(catalog.GetString("Remove all custom key assignments?"), Application.ProductName, MessageBoxButtons.YesNo))
             {
                 Settings.Input.Reset();
                 InitializeKeyboardSettings();
@@ -282,7 +285,7 @@ namespace ORTS
         {
             var outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Open Rails Keyboard.txt");
             Settings.Input.DumpToText(outputPath);
-            MessageBox.Show("A listing of all keyboard commands and keys has been placed here:\n\n" + outputPath, Application.ProductName);
+            MessageBox.Show(catalog.GetString("A listing of all keyboard commands and keys has been placed here:\n\n") + outputPath, Application.ProductName);
         }
 
         void buttonCheckKeys_Click(object sender, EventArgs e)
@@ -291,7 +294,7 @@ namespace ORTS
             if (errors != "")
                 MessageBox.Show(errors, Application.ProductName);
             else
-                MessageBox.Show("No errors found.", Application.ProductName);
+                MessageBox.Show(catalog.GetString("No errors found."), Application.ProductName);
         }
 
         private void comboBoxWindowSize_SelectedIndexChanged( object sender, EventArgs e ) {
@@ -305,13 +308,18 @@ namespace ORTS
 
         private void numericUpDownFOV_ValueChanged(object sender, EventArgs e)
         {
-            labelFOVHelp.Text = String.Format("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericViewingFOV.Value, numericViewingFOV.Value * 4 / 3, numericViewingFOV.Value * 16 / 9);
+            labelFOVHelp.Text = catalog.GetStringFmt("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericViewingFOV.Value, numericViewingFOV.Value * 4 / 3, numericViewingFOV.Value * 16 / 9);
         }
 
         private void trackBarDayAmbientLight_Scroll(object sender, EventArgs e)
         {
             toolTip1.SetToolTip(trackDayAmbientLight, (trackDayAmbientLight.Value * 5).ToString() + " %");
         }
-        
+
+        private void comboBoxLanguage_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (Initialized)
+                MessageBox.Show(catalog.GetString("Please restart Open Rails in order to load the new language."));
+        }
     }
 }

@@ -30,6 +30,14 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GNU.Gettext, Version=1.1.4959.31284, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext\GNU.Gettext.dll</HintPath>
+    </Reference>
+    <Reference Include="GNU.Gettext.WinForms, Version=1.0.4959.31640, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext\GNU.Gettext.WinForms.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86">
       <SpecificVersion>True</SpecificVersion>
     </Reference>
@@ -229,6 +237,14 @@
     <None Include="Expander-open.png" />
     <None Include="Expander-closed-disabled.png" />
     <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="fr\ORTS.Menu.Messages.resources.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="hu\ORTS.Menu.Messages.resources.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MSTS;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS.Menu
 {
@@ -27,6 +29,8 @@ namespace ORTS.Menu
         public readonly string Name;
         public readonly Locomotive Locomotive = new Locomotive("unknown");
         public readonly string FilePath;
+
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
         internal Consist(string filePath, Folder folder)
         {
@@ -40,14 +44,14 @@ namespace ORTS.Menu
                 }
                 catch
                 {
-                    Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
                 if (Locomotive == null) throw new InvalidDataException("Consist '" + filePath + "' is excluded.");
-                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             else
             {
-                Name = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             FilePath = filePath;
         }
@@ -96,11 +100,13 @@ namespace ORTS.Menu
         public readonly string Description;
         public readonly string FilePath;
 
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+
         internal Locomotive(string filePath)
         {
             if (filePath == null)
             {
-                Name = "- Any Locomotive -";
+                Name = catalog.GetString("- Any Locomotive -");
             }
             else if (File.Exists(filePath))
             {
@@ -114,15 +120,15 @@ namespace ORTS.Menu
                 }
                 catch
                 {
-                    Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
-                if (!showInList) throw new InvalidDataException("Locomotive '" + filePath + "' is excluded.");
-                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (!showInList) throw new InvalidDataException(catalog.GetStringFmt("Locomotive '{0}' is excluded.", filePath));
+                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 if (string.IsNullOrEmpty(Description)) Description = null;
             }
             else
             {
-                Name = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             FilePath = filePath;
         }

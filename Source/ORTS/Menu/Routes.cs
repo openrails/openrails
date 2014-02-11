@@ -18,6 +18,8 @@
 using System.Collections.Generic;
 using System.IO;
 using MSTS;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS.Menu
 {
@@ -26,6 +28,8 @@ namespace ORTS.Menu
         public readonly string Name;
         public readonly string Description;
         public readonly string Path;
+
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
         Route(string path)
         {
@@ -40,14 +44,14 @@ namespace ORTS.Menu
                 }
                 catch
                 {
-                    Name = "<load error: " + System.IO.Path.GetFileName(path) + ">";
+                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileName(path) + ">";
                 }
-                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(path) + ">";
+                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(path) + ">";
                 if (string.IsNullOrEmpty(Description)) Description = null;
             }
             else
             {
-                Name = "<missing: " + System.IO.Path.GetFileName(path) + ">";
+                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileName(path) + ">";
             }
             Path = path;
         }

@@ -21,6 +21,8 @@ using System.Drawing;
 using System.IO;
 using System.IO.Packaging;  // Needs Project > Add reference > .NET > Component name = WindowsBase
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
@@ -29,9 +31,13 @@ namespace ORTS
         readonly ResumeForm.Save Save;
         const string SavePackFileExtension = "ORSavePack";  // Includes "OR" in the extension as this may be emailed, downloaded and mixed in with non-OR files.
 
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+
         public ImportExportSaveForm(ResumeForm.Save save)
         {
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
+
+            Localizer.Localize(this, catalog);
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the
@@ -42,7 +48,7 @@ namespace ORTS
 			if (!Directory.Exists(UserSettings.SavePackFolder)) Directory.CreateDirectory(UserSettings.SavePackFolder);
             UpdateFileList(null);
             bExport.Enabled = !(Save == null);
-            ofdImportSave.Filter = Application.ProductName + " Save Packs (*." + SavePackFileExtension + ")|*." + SavePackFileExtension + "|All files (*.*)|*";
+            ofdImportSave.Filter = Application.ProductName + catalog.GetString("Save Packs") + " (*." + SavePackFileExtension + ")|*." + SavePackFileExtension + "|" + catalog.GetString("All files") + " (*.*)|*";
         }
 
         #region Event handlers
@@ -53,7 +59,7 @@ namespace ORTS
             if (ofdImportSave.ShowDialog() == DialogResult.OK)
             {
 				ExtractFilesFromZip(ofdImportSave.FileName, UserSettings.UserDataFolder);
-                UpdateFileList(String.Format("Save Pack '{0}' imported successfully.", Path.GetFileNameWithoutExtension(ofdImportSave.FileName)));
+                UpdateFileList(catalog.GetStringFmt("Save Pack '{0}' imported successfully.", Path.GetFileNameWithoutExtension(ofdImportSave.FileName)));
             }
         }
 
@@ -77,7 +83,7 @@ namespace ORTS
             {
                 AddFileToZip(fullZipFilePath, fileName);
             }
-            UpdateFileList(String.Format("Save Pack '{0}' exported successfully.", Path.GetFileNameWithoutExtension(Save.File)));
+            UpdateFileList(catalog.GetStringFmt("Save Pack '{0}' exported successfully.", Path.GetFileNameWithoutExtension(Save.File)));
         }
 
         private void bViewSavePacksFolder_Click(object sender, EventArgs e)
@@ -103,7 +109,7 @@ namespace ORTS
         {
 			var files = Directory.GetFiles(UserSettings.SavePackFolder, "*." + SavePackFileExtension);
             textBoxSavePacks.Text = String.IsNullOrEmpty(message) ? "" : message + "\r\n";
-            textBoxSavePacks.Text += String.Format("Save Pack folder contains {0} save pack{1}:", files.Length, files.Length == 1 ? "" : "s");
+            textBoxSavePacks.Text += catalog.GetStringFmt("Save Pack folder contains {0} save pack{1}:", files.Length, files.Length == 1 ? "" : "s");
             foreach (var s in files)
                 textBoxSavePacks.Text += "\r\n    " + Path.GetFileNameWithoutExtension(s);
         }

@@ -39,6 +39,8 @@
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.labelLanguage = new System.Windows.Forms.Label();
+            this.comboBoxLanguage = new System.Windows.Forms.ComboBox();
             this.tabPageAudio = new System.Windows.Forms.TabPage();
             this.numericSoundVolumePercent = new System.Windows.Forms.NumericUpDown();
             this.soundVolumeLabel = new System.Windows.Forms.Label();
@@ -261,6 +263,8 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.labelLanguage);
+            this.tabPageGeneral.Controls.Add(this.comboBoxLanguage);
             this.tabPageGeneral.Controls.Add(this.checkViewDispatcher);
             this.tabPageGeneral.Controls.Add(this.checkSuppressConfirmations);
             this.tabPageGeneral.Controls.Add(this.checkAlerter);
@@ -274,6 +278,31 @@
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
+            // 
+            // labelLanguage
+            // 
+            this.labelLanguage.AutoSize = true;
+            this.labelLanguage.Location = new System.Drawing.Point(133, 127);
+            this.labelLanguage.Name = "labelLanguage";
+            this.labelLanguage.Size = new System.Drawing.Size(55, 13);
+            this.labelLanguage.TabIndex = 7;
+            this.labelLanguage.Text = "Language";
+            // 
+            // comboBoxLanguage
+            // 
+            this.comboBoxLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxLanguage.FormattingEnabled = true;
+            this.comboBoxLanguage.Items.AddRange(new object[] {
+            "System",
+            "English",
+            "French",
+            "Hungarian",
+            });
+            this.comboBoxLanguage.Location = new System.Drawing.Point(6, 124);
+            this.comboBoxLanguage.Name = "comboBoxLanguage";
+            this.comboBoxLanguage.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxLanguage.TabIndex = 6;
+            this.comboBoxLanguage.SelectedIndexChanged += new System.EventHandler(this.comboBoxLanguage_SelectedIndexChanged);
             // 
             // tabPageAudio
             // 
@@ -1495,5 +1524,7 @@
         private System.Windows.Forms.NumericUpDown numericCurveResistanceZeroSpeedFactor;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.NumericUpDown numericCurveResistanceOptimalSpeed;
+        private System.Windows.Forms.Label labelLanguage;
+        private System.Windows.Forms.ComboBox comboBoxLanguage;
     }
 }

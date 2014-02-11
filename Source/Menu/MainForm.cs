@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -26,6 +27,8 @@ using ORTS.Common;
 using ORTS.Menu;
 using Path = ORTS.Menu.Path;
 using System.Resources;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
@@ -65,6 +68,8 @@ namespace ORTS
         public string SelectedSaveFile { get; set; }
         public UserAction SelectedAction { get; set; }
 
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+
         #region Main Form
         public MainForm()
         {
@@ -94,6 +99,8 @@ namespace ORTS
 
             LoadOptions();
 
+            LoadLanguage();
+
             if (!Initialized)
             {
                 Initialized = true;
@@ -122,6 +129,27 @@ namespace ORTS
             if (File.Exists(file))
                 File.Delete(file);
         }
+
+        private void LoadLanguage()
+        {
+            switch (Settings.Language)
+            {
+                case "System":
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture;
+                    break;
+                case "English":
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
+                    break;
+                case "French":
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("fr");
+                    break;
+                case "Hungarian":
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("hu");
+                    break;
+            }
+
+            Localizer.Localize(this, catalog);
+        }
         #endregion
 
         #region Folders
@@ -137,7 +165,7 @@ namespace ORTS
             using (var folderBrowser = new FolderBrowserDialog())
             {
                 folderBrowser.SelectedPath = SelectedFolder != null ? SelectedFolder.Path : "";
-                folderBrowser.Description = "Select a the installation profile (MSTS folder) to add:";
+                folderBrowser.Description = catalog.GetString("Select a the installation profile (MSTS folder) to add:");
                 folderBrowser.ShowNewFolderButton = false;
                 if (folderBrowser.ShowDialog(this) == DialogResult.OK)
                 {
@@ -175,7 +203,7 @@ namespace ORTS
         void buttonFolderRemove_Click(object sender, EventArgs e)
         {
             var folder = SelectedFolder;
-            if (MessageBox.Show("Path: " + folder.Path + "\nName: " + folder.Name + "\n\nRemove this installation profile from Open Rails?", Application.ProductName, MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show(catalog.GetString("Path: ") + folder.Path + catalog.GetString("\nName: ") + folder.Name + catalog.GetString("\n\nRemove this installation profile from Open Rails?"), Application.ProductName, MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 Folders.Remove(folder);
                 SaveFolderList();
@@ -256,16 +284,16 @@ namespace ORTS
             UpdateEnabled();
         }
 
-		bool CheckUserName(string text)
-		{
-			string tmp = text;
-			if (tmp.Length < 4 || tmp.Length > 10 || tmp.Contains("\"") || tmp.Contains("\'") || tmp.Contains(" ") || tmp.Contains("-") || Char.IsDigit(tmp, 0))
-			{
-				MessageBox.Show("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit.", Application.ProductName);
-				return false;
-			}
-			return true;
-		}
+        bool CheckUserName(string text)
+        {
+            string tmp = text;
+            if (tmp.Length < 4 || tmp.Length > 10 || tmp.Contains("\"") || tmp.Contains("\'") || tmp.Contains(" ") || tmp.Contains("-") || Char.IsDigit(tmp, 0))
+            {
+                MessageBox.Show(catalog.GetString("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit."), Application.ProductName);
+                return false;
+            }
+            return true;
+        }
 
         #endregion
 
@@ -310,7 +338,7 @@ namespace ORTS
 
         void buttonMPClient_Click(object sender, EventArgs e)
         {
-			if (CheckUserName(textBoxMPUser.Text) == false) return;
+            if (CheckUserName(textBoxMPUser.Text) == false) return;
             SaveOptions();
             SelectedAction = UserAction.MultiplayerClient;
             DialogResult = DialogResult.OK;
@@ -318,8 +346,8 @@ namespace ORTS
 
         void buttonMPServer_Click(object sender, EventArgs e)
         {
-			if (CheckUserName(textBoxMPUser.Text) == false) return;
-			SaveOptions();
+            if (CheckUserName(textBoxMPUser.Text) == false) return;
+            SaveOptions();
             SelectedAction = UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
         }
@@ -336,7 +364,7 @@ namespace ORTS
             if (!File.Exists(Folder.FolderDataFile))
             {
                 // Handle name change that occured at version 0021
-				var oldFolderDataFileName = UserSettings.UserDataFolder + @"\..\ORTS\folder.dat";
+                var oldFolderDataFileName = UserSettings.UserDataFolder + @"\..\ORTS\folder.dat";
                 try
                 {
                     if (File.Exists(oldFolderDataFileName))
@@ -415,7 +443,7 @@ namespace ORTS
             {
                 Folders = folders;
                 if (Folders.Count == 0)
-                    MessageBox.Show("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder.", Application.ProductName);
+                    MessageBox.Show(catalog.GetString("Microsoft Train Simulator doesn't appear to be installed.\nClick on 'Add...' to point Open Rails at your Microsoft Train Simulator folder."), Application.ProductName);
                 ShowFolderList();
                 if (Folders.Count > 0)
                     comboBoxFolder.Focus();
@@ -672,13 +700,13 @@ namespace ORTS
             Win32.LockWindowUpdate(Handle);
             ClearDetails();
             if (SelectedRoute != null && SelectedRoute.Description != null)
-                ShowDetail(String.Format("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
+                ShowDetail(catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
             if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
-                ShowDetail(String.Format("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
+                ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
             if (SelectedActivity != null && SelectedActivity.Description != null)
             {
-                ShowDetail(String.Format("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
-                ShowDetail("Activity Briefing", SelectedActivity.Briefing.Split('\n'));
+                ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
+                ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
             }
             FlowDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);

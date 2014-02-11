@@ -19,6 +19,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using MSTS;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS.Menu
 {
@@ -36,11 +38,13 @@ namespace ORTS.Menu
         public readonly Path Path = new Path("unknown");
         public readonly string FilePath;
 
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+
         protected Activity(string filePath, Folder folder, Route route)
         {
             if (filePath == null)
             {
-                Name = "- Explore Route -";
+                Name = catalog.GetString("- Explore Route -");
             }
             else if (File.Exists(filePath))
             {
@@ -64,16 +68,16 @@ namespace ORTS.Menu
                 }
                 catch
                 {
-                    Name = "<load error: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
-                if (!showInList) throw new InvalidDataException("Activity '" + filePath + "' is excluded.");
-                if (string.IsNullOrEmpty(Name)) Name = "<unnamed: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                if (!showInList) throw new InvalidDataException(catalog.GetStringFmt("Activity '{0}' is excluded.", filePath));
+                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 if (string.IsNullOrEmpty(Description)) Description = null;
                 if (string.IsNullOrEmpty(Briefing)) Briefing = null;
             }
             else
             {
-                Name = "<missing: " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             FilePath = filePath;
         }

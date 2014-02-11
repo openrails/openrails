@@ -24,6 +24,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using ORTS.Menu;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
@@ -44,6 +46,9 @@ namespace ORTS
         public FolderForm()
         {
             InitializeComponent();
+
+            GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+            Localizer.Localize(this, catalog);
 
 			// Windows 2000 and XP should use 8.25pt Tahoma, while Windows
 			// Vista and later should use 9pt "Segoe UI". We'll use the
