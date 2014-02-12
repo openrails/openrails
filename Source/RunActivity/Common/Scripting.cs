@@ -162,7 +162,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> CurrentSignalSpeedLimitMpS;
 
-        public delegate T NextSignalFunc<T>(int forsight = 0);
+        public delegate T NextSignalFunc<T>(int forsight);
 
         /// <summary>
         /// Max allowed speed determined by next signal.

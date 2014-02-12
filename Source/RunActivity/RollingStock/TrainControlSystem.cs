@@ -219,7 +219,7 @@ namespace ORTS
         {
             if (forsight < 0) forsight = 0;
             if (forsight >= list.Count) SearchTrainInfo(forsight, type);
-            return list[forsight < list.Count ? forsight : 0];
+            return list[forsight < list.Count ? forsight : list.Count - 1];
         }
 
         void SearchTrainInfo(float forsight, Train.TrainObjectItem.TRAINOBJECTTYPE searchFor)
@@ -372,14 +372,14 @@ namespace ORTS
 
         public override void Update()
         {
-            SetNextSignalAspect(NextSignalAspect());
+            SetNextSignalAspect(NextSignalAspect(0));
 
             CurrentSpeedLimitMpS = CurrentSignalSpeedLimitMpS() >= 0 ? CurrentSignalSpeedLimitMpS() : TrainSpeedLimitMpS();
             if (CurrentSpeedLimitMpS > TrainSpeedLimitMpS())
                 CurrentSpeedLimitMpS = TrainSpeedLimitMpS();
 
             SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
-            SetNextSpeedLimitMpS(NextSignalSpeedLimitMpS() < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS() : TrainSpeedLimitMpS());
+            SetNextSpeedLimitMpS(NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS());
 
             if (VigilanceMonitor != null)
                 UpdateVigilance();
