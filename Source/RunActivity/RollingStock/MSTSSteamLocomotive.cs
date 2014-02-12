@@ -75,6 +75,9 @@ namespace ORTS
         bool HotStart = true;
         bool BoilerHeat = false;
         bool HasSuperheater = false;
+        bool safety2IsOn = false; // Safety valve #2 is on and opertaing
+        bool safety3IsOn = false; // Safety valve #3 is on and opertaing
+        bool safety4IsOn = false; // Safety valve #4 is on and opertaing
 
         // state variables
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
@@ -132,7 +135,7 @@ namespace ORTS
         float GrateCombustionRateLBpFt2;     // Grate combustion rate, ie how many lbs coal burnt per sq ft grate area.
         float ORTSMaxFiringRateKGpS;          // OR equivalent of above
         public float SafetyValveUsageLBpS;
-        float SafetyValveDropPSI = 3.0f;      // Pressure drop before Safety valve turns off, normally around 3 psi
+        float SafetyValveDropPSI = 4.0f;      // Pressure drop before Safety valve turns off, normally around 4 psi - First safety valve normally operates between MaxBoilerPressure, and MaxBoilerPressure - 4, ie Max Boiler = 200, cutoff = 196.
         float EvaporationAreaM2;
         float SuperheatAreaM2 = 0.0f;      // Heating area of superheater
         float SuperheatKFactor = 11.7f;     // Factor used to calculate superheat temperature - guesstimate
@@ -216,7 +219,7 @@ namespace ORTS
         float DamperBurnEffect;             // Effect of the Damper control
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
-        float SafetyValveStartPSI = 5.0f;   // Set safety valve to 5 psi over max pressure
+        float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
         float InjectorBoilerInputLB = 0.0f; // Input into boiler from injectors
         public float CylCockSteamUsageLBpS = 0.0f; // Cylinder Cock Steam Usage
         float CylCockDiaIN = 0.5f;          // Steam Cylinder Cock orifice size
@@ -334,6 +337,15 @@ namespace ORTS
         float maxPowerW;
         float cutoff;
         public float DrvWheelWeightKg; // weight on locomotive drive wheel, includes drag factor
+        float NumSafetyValves;  // Number of safety valves fitted to locomotive - typically 1 to 4
+        float SafetyValveSizeIn;    // Size of the safety value - all will be the same size.
+        float SafetyValveSizeDiaIn2; // Area of the safety valve - impacts steam discharge rate - is the space when the valve lifts
+        float MaxSafetyValveDischargeLbspS; // Steam discharge rate of all safety valves combined.
+        float SafetyValveUsage1LBpS; // Usage rate for safety valve #1
+        float SafetyValveUsage2LBpS; // Usage rate for safety valve #2
+        float SafetyValveUsage3LBpS; // Usage rate for safety valve #3
+        float SafetyValveUsage4LBpS; // Usage rate for safety valve #4
+
   #endregion 
 
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
@@ -1170,7 +1182,141 @@ namespace ORTS
         private void UpdateBoiler(float elapsedClockSeconds)
         {
             absSpeedMpS = Math.Abs(Train.SpeedMpS);
-
+            
+            // Determine number and size of safety valves
+            // Reference: Ashton's POP Safety valves catalogue
+            // To calculate size use - Total diam of safety valve = 0.036 x ( H / (L x P), where H = heat area of boiler sq ft (not including superheater), L = valve lift (assume 0.1 in for Ashton valves), P = Abs pressure psi (gauge pressure + atmospheric)
+            
+            const float ValveSizeCalculationFactor = 0.036f;
+            const float ValveLiftIn = 0.1f;
+            float ValveSizeTotalDiaIn = ValveSizeCalculationFactor * ( Me2.ToFt2(EvaporationAreaM2) / (ValveLiftIn * (MaxBoilerPressurePSI + OneAtmospherePSI)));
+              
+            ValveSizeTotalDiaIn += 1.0f; // Add safety margin to align with Ashton size selection table
+            
+            // There will always be at least two safety valves to allow for a possible failure. There may be up to four fitted to a locomotive depending upon the size of the heating area. Therefore allow for combinations of 2x, 3x or 4x.
+            // Common valve sizes are 2.5", 3", 3.5" and 4".
+            
+            // Test for 2x combinations
+            float TestValveSizeTotalDiaIn = ValveSizeTotalDiaIn / 2.0f;
+            if (TestValveSizeTotalDiaIn <= 4.0f)
+            {
+            NumSafetyValves = 2.0f;   // Assume that there are 2 safety valves
+            if ( TestValveSizeTotalDiaIn <= 2.5)
+            {
+            SafetyValveSizeIn = 2.5f; // Safety valve is a 2.5" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 2.5 && TestValveSizeTotalDiaIn <= 3.0)
+            {
+            SafetyValveSizeIn = 3.0f; // Safety valve is a 3.0" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 3.0 && TestValveSizeTotalDiaIn <= 3.5)
+            {
+            SafetyValveSizeIn = 3.5f; // Safety valve is a 3.5" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 3.5 && TestValveSizeTotalDiaIn <= 4.0)
+            {
+            SafetyValveSizeIn = 4.0f; // Safety valve is a 4.0" diameter unit
+            }
+            }
+            else
+            {
+            TestValveSizeTotalDiaIn = ValveSizeTotalDiaIn / 3.0f;
+            // Test for 3x combinations
+            if (TestValveSizeTotalDiaIn <= 4.0f)
+            {
+            NumSafetyValves = 3.0f;   // Assume that there are 3 safety valves
+            if ( TestValveSizeTotalDiaIn <= 2.5)
+            {
+            SafetyValveSizeIn = 2.5f; // Safety valve is a 2.5" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 2.5 && TestValveSizeTotalDiaIn <= 3.0)
+            {
+            SafetyValveSizeIn = 3.0f; // Safety valve is a 3.0" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 3.0 && TestValveSizeTotalDiaIn <= 3.5)
+            {
+            SafetyValveSizeIn = 3.5f; // Safety valve is a 3.5" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 3.5 && TestValveSizeTotalDiaIn <= 4.0)
+            {
+            SafetyValveSizeIn = 4.0f; // Safety valve is a 4.0" diameter unit
+            }
+            }
+            else
+            {
+            TestValveSizeTotalDiaIn = ValveSizeTotalDiaIn / 4.0f;
+            // Test for 4x combinations
+            if (TestValveSizeTotalDiaIn <= 4.0f)
+            {
+            NumSafetyValves = 4.0f;   // Assume that there are 4 safety valves
+            if ( TestValveSizeTotalDiaIn <= 2.5)
+            {
+            SafetyValveSizeIn = 2.5f; // Safety valve is a 2.5" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 2.5 && TestValveSizeTotalDiaIn <= 3.0)
+            {
+            SafetyValveSizeIn = 3.0f; // Safety valve is a 3.0" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 3.0 && TestValveSizeTotalDiaIn <= 3.5)
+            {
+            SafetyValveSizeIn = 3.5f; // Safety valve is a 3.5" diameter unit
+            }
+            if ( TestValveSizeTotalDiaIn > 3.5 && TestValveSizeTotalDiaIn <= 4.0)
+            {
+            SafetyValveSizeIn = 4.0f; // Safety valve is a 4.0" diameter unit
+            }
+            }
+            else
+            {
+            // Else set at maximum default value
+            NumSafetyValves = 4.0f;   // Assume that there are 4 safety valves
+            SafetyValveSizeIn = 4.0f; // Safety valve is a 4.0" diameter unit
+            }
+            }
+            }
+            
+            // Steam Discharge Rates
+            // Use Napier formula to calculate steam discharge rate through safety valve, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
+            // Set "valve area" of safety valve, based on reverse enginnered values of steam, valve area is determined by lift and the gap created 
+            const float SafetyValveDischargeFactor = 70.0f;
+            if (SafetyValveSizeIn == 2.5f)
+            {
+                SafetyValveSizeDiaIn2 = 0.610369021f;
+            }
+            else
+            {
+                if (SafetyValveSizeIn == 3.0f)
+                {
+                    SafetyValveSizeDiaIn2 = 0.799264656f;
+                }
+                else
+                {
+                    if (SafetyValveSizeIn == 3.5f)
+                    {
+                        SafetyValveSizeDiaIn2 = 0.932672199f;
+                    }
+                    else
+                    {
+                        if (SafetyValveSizeIn == 4.0f)
+                        {
+                            SafetyValveSizeDiaIn2 = 0.977534912f;
+                        }
+                    }
+                }
+            }
+            
+            // For display purposes calculate the maximum steam discharge with all safety valves open
+            MaxSafetyValveDischargeLbspS = NumSafetyValves * (SafetyValveSizeDiaIn2 * (MaxBoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor;
+            // Set open pressure and close pressures for safety valves.
+            float SafetyValveOpen1Psi = MaxBoilerPressurePSI;
+            float SafetyValveClose1Psi = MaxBoilerPressurePSI - 4.0f;
+            float SafetyValveOpen2Psi = MaxBoilerPressurePSI + 2.0f;
+            float SafetyValveClose2Psi = MaxBoilerPressurePSI - 3.0f;
+            float SafetyValveOpen3Psi = MaxBoilerPressurePSI + 4.0f;
+            float SafetyValveClose3Psi = MaxBoilerPressurePSI - 2.0f;
+            float SafetyValveOpen4Psi = MaxBoilerPressurePSI + 6.0f;
+            float SafetyValveClose4Psi = MaxBoilerPressurePSI - 1.0f;
+            
             // Safety Valve
             if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)
             {
@@ -1186,11 +1332,99 @@ namespace ORTS
                 {
                     SignalEvent(Event.SteamSafetyValveOff);
                     SafetyIsOn = false;
+                    SafetyValveUsage1LBpS = 0.0f; // if safety valve closed, then zero discharge rate
                 }
             }
             if (SafetyIsOn)
             {
-                SafetyValveUsageLBpS = 1.66666f;   // BTC Handbook - 1 min discharge uses 10 gal(Uk) => 1.6666 lb/s or 6000lb/h
+               // Determine how many safety valves are in operation and set Safety Valve discharge rate
+                SafetyValveUsageLBpS = 0.0f;  // Set to zero initially
+                
+                // Calculate rate for safety valve 1
+                SafetyValveUsage1LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                               
+                // Calculate rate for safety valve 2
+                if (BoilerPressurePSI > SafetyValveOpen2Psi)
+                {
+                safety2IsOn = true; // turn safey 2 on
+                SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                }
+                else
+                {
+                if (BoilerPressurePSI < SafetyValveClose1Psi)
+                {
+                safety2IsOn = false; // turn safey 2 off
+                SafetyValveUsage2LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                }
+                else
+                {
+                if (safety2IsOn)
+                {
+                SafetyValveUsage2LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                }
+                else
+                {
+                SafetyValveUsage2LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                }
+                }
+                }
+                
+                
+                // Calculate rate for safety valve 3
+                if (BoilerPressurePSI > SafetyValveOpen3Psi)
+                {
+                safety3IsOn = true; // turn safey 3 on
+                SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                }
+                else
+                {
+                if (BoilerPressurePSI < SafetyValveClose3Psi)
+                {
+                safety3IsOn = false; // turn safey 3 off
+                SafetyValveUsage3LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                }
+                else
+                {
+                if (safety3IsOn)
+                {
+                SafetyValveUsage3LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                }
+                else
+                {
+                SafetyValveUsage3LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                }
+                }
+                }
+                
+                
+                // Calculate rate for safety valve 4
+                if (BoilerPressurePSI > SafetyValveOpen4Psi)
+                {
+                safety4IsOn = true; // turn safey 4 on
+                SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is above open value then set rate
+                }
+                else
+                {
+                if (BoilerPressurePSI < SafetyValveClose4Psi)
+                {
+                safety4IsOn = false; // turn safey 4 off
+                SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                }
+                else
+                {
+                if (safety4IsOn)
+                {
+                SafetyValveUsage4LBpS = (SafetyValveSizeDiaIn2 * (BoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor; // If safety valve is between open and close values, set rate
+                }
+                else
+                {
+                SafetyValveUsage4LBpS = 0.0f; // if safety valve closed, then zero discharge rate
+                }
+                }
+                }
+                
+                
+                SafetyValveUsageLBpS = SafetyValveUsage1LBpS + SafetyValveUsage2LBpS + SafetyValveUsage3LBpS + SafetyValveUsage4LBpS;   // Sum all the safety valve discharge rates together
                 BoilerMassLB -= elapsedClockSeconds * SafetyValveUsageLBpS;
                 BoilerHeatBTU -= elapsedClockSeconds * SafetyValveUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve
                 TotalSteamUsageLBpS += SafetyValveUsageLBpS;
@@ -1413,7 +1647,15 @@ namespace ORTS
             // Absolute Mean Pressure = Ratio of Expansion
             SteamChestPressurePSI = (throttle * SteamChestPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
             // Initial pressure will be decreased depending upon locomotive speed
-            InitialPressurePSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
+            if (throttle < 0.1)
+            {
+                InitialPressurePSI = 0.0f; // Set intial pressure to zero if throttle is closed
+            }
+            else
+            {
+                InitialPressurePSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
+            }
+            
             MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion)));
                     
            // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
@@ -2069,13 +2311,16 @@ namespace ORTS
             pS.TopH(CylCockSteamUsageLBpS),
             pS.TopH(GeneratorSteamUsageLBpS),
             pS.TopH(StokerSteamUsageLBpS));
-            status.AppendFormat("Press.:\tChest\t{0:N0} psi\tBack\t{1:N0} psi\tMEP\t{2:N0} psi\tComp\t{3:N0} psi\tExhaust\t{4:N0} psi\tSup Fact\t{5:N2}\n",
+            status.AppendFormat("Press.:\tChest\t{0:N0} psi\tBack\t{1:N0} psi\tMEP\t{2:N0} psi\tComp\t{3:N0} psi\tExhaust\t{4:N0} psi\tSup Fact\t{5:N2}\tMax Safe\t{6:N0} lb/h ({7} x {8:N1})\n",
             SteamChestPressurePSI,
             BackPressurePSI,
             MeanEffectivePressurePSI,
             CylinderCompressionPressurePSI,
             CylinderExhaustPressurePSI,
-            SuperheaterSteamUsageFactor);
+            SuperheaterSteamUsageFactor,
+            pS.TopH(MaxSafetyValveDischargeLbspS),
+            NumSafetyValves,
+            SafetyValveSizeIn);
             status.AppendFormat("Status.:\tSafety\t{0}\tPlug\t{1}\tPrime\t{2}\tBoil. Heat\t{3}\tSuper\t{4}",
                 SafetyIsOn,
                 FusiblePlugIsBlown,
