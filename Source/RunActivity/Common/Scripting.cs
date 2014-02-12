@@ -161,18 +161,21 @@ namespace ORTS.Scripting.Api
         /// Max allowed speed determined by current signal.
         /// </summary>
         public Func<float> CurrentSignalSpeedLimitMpS;
+
+        public delegate T NextSignalFunc<T>(int forsight = 0);
+
         /// <summary>
         /// Max allowed speed determined by next signal.
         /// </summary>
-        public Func<float> NextSignalSpeedLimitMpS;
+        public NextSignalFunc<float> NextSignalSpeedLimitMpS;
         /// <summary>
         /// Aspect of the next signal.
         /// </summary>
-        public Func<Aspect> NextSignalAspect;
+        public NextSignalFunc<Aspect> NextSignalAspect;
         /// <summary>
         /// Distance to next signal.
         /// </summary>
-        public Func<float> NextSignalDistanceM;
+        public NextSignalFunc<float> NextSignalDistanceM;
         /// <summary>
         /// Max allowed speed determined by current speedpost.
         /// </summary>
@@ -180,11 +183,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Max allowed speed determined by next speedpost.
         /// </summary>
-        public Func<float> NextPostSpeedLimitMpS;
+        public NextSignalFunc<float> NextPostSpeedLimitMpS;
         /// <summary>
         /// Distance to next speedpost.
         /// </summary>
-        public Func<float> NextPostDistanceM;
+        public NextSignalFunc<float> NextPostDistanceM;
         /// <summary>
         /// Train's actual absolute speed.
         /// </summary>
@@ -294,9 +297,10 @@ namespace ORTS.Scripting.Api
     public class Counter
     {
         float EndValue;
-        float AlarmValue;
         protected Func<float> CurrentValue;
 
+        public float AlarmValue { get; private set; }
+        public float RemainingValue { get { return EndValue - CurrentValue(); } }
         public bool Started { get; private set; }
         public void Setup(float alarmValue) { AlarmValue = alarmValue; }
         public void Start() { EndValue = CurrentValue() + AlarmValue; Started = true; }
@@ -308,9 +312,11 @@ namespace ORTS.Scripting.Api
     public class OdoMeter : Counter { public OdoMeter(TrainControlSystem tcs) { CurrentValue = tcs.DistanceM; } }
 
     // Represents the same enum as TrackMonitorSignalAspect
+    // [Flags] is for allowing the following syntax: if ((NextSignalAspect() & (Aspect.Approach_3 | Aspect.Approach_2)) != 0)
     /// <summary>
     /// A signal aspect, as shown on track monitor
     /// </summary>
+    [Flags]
     public enum Aspect
     {
         None,
@@ -324,6 +330,7 @@ namespace ORTS.Scripting.Api
         Stop,
         Permission,
     }
-    
+
+
     #endregion
 }

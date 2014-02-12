@@ -40,10 +40,16 @@ namespace ORTS
         public float NextSpeedLimitMpS { get; set; }
         public TrackMonitorSignalAspect CabSignalAspect { get; set; }
 
-        Train.TrainInfo TrainInfo;
+        Train.TrainInfo TrainInfo = new Train.TrainInfo();
 
         readonly MSTSLocomotive Locomotive;
         readonly Simulator Simulator;
+
+        List<float> SignalSpeedLimits = new List<float>();
+        List<Aspect> SignalAspects = new List<Aspect>();
+        List<float> SignalDistances = new List<float>();
+        List<float> PostSpeedLimits = new List<float>();
+        List<float> PostDistances = new List<float>();
 
         MonitoringDevice VigilanceMonitor;
         MonitoringDevice OverspeedMonitor;
@@ -178,7 +184,6 @@ namespace ORTS
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.GetIsEmergency();
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.GetIsFullBrake();
             Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
-            Script.TrainSpeedLimitMpS = () => Locomotive.Train.TrainMaxSpeedMpS;
             Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
             Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
             Script.IsAlerterEnabled = () => Simulator.Settings.Alerter;
@@ -199,83 +204,70 @@ namespace ORTS
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
             Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
             Script.SetVigilanceAlarm = (value) => this.SetVigilanceAlarm(value);
-            // Will be updated continuously:
-            Script.TrainSpeedLimitMpS = () => float.MinValue;
-            Script.NextSignalSpeedLimitMpS = () => float.MinValue;
-            Script.NextSignalAspect = () => Aspect.None;
-            Script.NextSignalDistanceM = () => float.MinValue;
-            Script.NextPostSpeedLimitMpS = () => float.MinValue;
-            Script.NextPostDistanceM = () => float.MinValue;
+            Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;
+            Script.NextSignalSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref SignalSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
+            Script.NextSignalAspect = (value) => NextSignalItem<Aspect>(value, ref SignalAspects, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
+            Script.NextSignalDistanceM = (value) => NextSignalItem<float>(value, ref SignalDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
+            Script.NextPostSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref PostSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
+            Script.NextPostDistanceM = (value) => NextSignalItem<float>(value, ref PostDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
 
             Script.Initialize();
             Activated = true;
         }
 
-        /// <summary>
-        /// Auto-clear alerter when not in cabview, otherwise call for sound
-        /// </summary>
-        void SetVigilanceAlarm(bool value)
+        T NextSignalItem<T>(int forsight, ref List<T> list, Train.TrainObjectItem.TRAINOBJECTTYPE type)
         {
-            if (value && Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
-                Script.AlerterPressed();
-            else
-                Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
+            if (forsight < 0) forsight = 0;
+            if (forsight >= list.Count) SearchTrainInfo(forsight, type);
+            return list[forsight < list.Count ? forsight : 0];
         }
 
-        void UpdateNextSignalFunctions()
+        void SearchTrainInfo(float forsight, Train.TrainObjectItem.TRAINOBJECTTYPE searchFor)
         {
-            TrainInfo = Locomotive.Train.GetTrainInfo();
+            if (SignalSpeedLimits.Count == 0)
+                TrainInfo = Locomotive.Train.GetTrainInfo();
 
-            if (TrainInfo == null)
-            {
-                Script.TrainSpeedLimitMpS = () => float.MinValue;
-                Script.NextSignalSpeedLimitMpS = () => float.MinValue;
-                Script.NextSignalAspect = () => Aspect.None;
-                Script.NextSignalDistanceM = () => float.MinValue;
-                Script.NextPostSpeedLimitMpS = () => float.MinValue;
-                Script.NextPostDistanceM = () => float.MinValue;
-                return;
-            }
-
-            Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;
-
-            bool nextSignalFound = false;
-            bool nextSpeedpostFound = false;
+            var signalsFound = 0;
+            var postsFound = 0;
 
             foreach (var foundItem in Locomotive.Train.MUDirection == Direction.Reverse ? TrainInfo.ObjectInfoBackward : TrainInfo.ObjectInfoForward)
             {
-                if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL && !nextSignalFound)
+                if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL)
                 {
-                    Script.NextSignalSpeedLimitMpS = () => foundItem.AllowedSpeedMpS;
-                    Script.NextSignalAspect = () => (Aspect)foundItem.SignalState;
-                    Script.NextSignalDistanceM = () => foundItem.DistanceToTrainM;
-
-                    nextSignalFound = true;
+                    signalsFound++;
+                    if (signalsFound > SignalSpeedLimits.Count)
+                    {
+                        SignalSpeedLimits.Add(foundItem.AllowedSpeedMpS);
+                        SignalAspects.Add((Aspect)foundItem.SignalState);
+                        SignalDistances.Add(foundItem.DistanceToTrainM);
+                    }
                 }
-                else if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST && !nextSpeedpostFound)
+                else if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST)
                 {
-                    Script.NextPostSpeedLimitMpS = () => foundItem.AllowedSpeedMpS;
-                    Script.NextPostDistanceM = () => foundItem.DistanceToTrainM;
-
-                    nextSpeedpostFound = true;
+                    postsFound++;
+                    if (postsFound > PostSpeedLimits.Count)
+                    {
+                        PostSpeedLimits.Add(foundItem.AllowedSpeedMpS);
+                        PostDistances.Add(foundItem.DistanceToTrainM);
+                    }
                 }
-
-                if (nextSignalFound && nextSpeedpostFound)
+                if (searchFor == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL && signalsFound > forsight ||
+                    searchFor == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST && postsFound > forsight)
                 {
                     break;
                 }
             }
 
-            if (!nextSignalFound)
+            if (searchFor == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL && signalsFound == 0)
             {
-                Script.NextPostSpeedLimitMpS = () => float.MinValue;
-                Script.NextSignalAspect = () => Aspect.None;
-                Script.NextSignalDistanceM = () => float.MinValue;
+                SignalSpeedLimits.Add(-1);
+                SignalAspects.Add(Aspect.None);
+                SignalDistances.Add(float.MaxValue);
             }
-            if (!nextSpeedpostFound)
+            if (searchFor == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL && signalsFound == 0)
             {
-                Script.NextPostSpeedLimitMpS = () => float.MinValue;
-                Script.NextPostDistanceM = () => float.MinValue;
+                PostSpeedLimits.Add(-1);
+                PostDistances.Add(float.MaxValue);
             }
         }
 
@@ -284,11 +276,15 @@ namespace ORTS
             if (Script == null)
                 return;
 
+            SignalSpeedLimits.Clear();
+            SignalAspects.Clear();
+            SignalDistances.Clear();
+            PostSpeedLimits.Clear();
+            PostDistances.Clear();
+
             // Auto-clear alerter when not in cabview
             if (Locomotive.AlerterSnd && Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
                 Script.AlerterPressed();
-
-            UpdateNextSignalFunctions();
 
             Script.Update(); 
         }
@@ -312,6 +308,17 @@ namespace ORTS
                 Script.SetEmergency();
             else
                 Locomotive.TrainBrakeController.SetEmergency();
+        }
+
+        /// <summary>
+        /// Auto-clear alerter when not in cabview, otherwise call for sound
+        /// </summary>
+        void SetVigilanceAlarm(bool value)
+        {
+            if (value && Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
+                Script.AlerterPressed();
+            else
+                Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
         }
     }
 
