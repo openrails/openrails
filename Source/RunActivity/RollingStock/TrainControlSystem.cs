@@ -191,7 +191,6 @@ namespace ORTS
             Script.EmergencyCausesThrottleDown = () => Locomotive.EmergencyCausesThrottleDown;
             Script.EmergencyEngagesHorn = () => Locomotive.EmergencyEngagesHorn;
             Script.SetHorn = (value) => Locomotive.SignalEvent(value ? Event.HornOn : Event.HornOff);
-            Script.SetPantographsDown = () => { Locomotive.SignalEvent(Event.Pantograph1Down); Locomotive.SignalEvent(Event.Pantograph2Down); };
             Script.SetFullBrake = () => Locomotive.TrainBrakeController.SetFullBrake();
             Script.SetEmergencyBrake = () => Locomotive.TrainBrakeController.SetEmergency();
             Script.SetThrottleController = (value) => Locomotive.ThrottleController.SetValue(value);
@@ -210,6 +209,13 @@ namespace ORTS
             Script.NextSignalDistanceM = (value) => NextSignalItem<float>(value, ref SignalDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
             Script.NextPostSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref PostSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
             Script.NextPostDistanceM = (value) => NextSignalItem<float>(value, ref PostDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
+            Script.SetPantographsDown = () => 
+            { 
+                Locomotive.SignalEvent(Event.Pantograph1Down);
+                Locomotive.SignalEvent(Event.Pantograph2Down);
+                Locomotive.Train.SignalEvent(Event.Pantograph1Down);
+                Locomotive.Train.SignalEvent(Event.Pantograph2Down);
+            };
 
             Script.Initialize();
             Activated = true;
@@ -264,7 +270,7 @@ namespace ORTS
                 SignalAspects.Add(Aspect.None);
                 SignalDistances.Add(float.MaxValue);
             }
-            if (searchFor == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL && signalsFound == 0)
+            if (searchFor == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST && postsFound == 0)
             {
                 PostSpeedLimits.Add(-1);
                 PostDistances.Add(float.MaxValue);
@@ -379,7 +385,7 @@ namespace ORTS
                 CurrentSpeedLimitMpS = TrainSpeedLimitMpS();
 
             SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
-            SetNextSpeedLimitMpS(NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS());
+            SetNextSpeedLimitMpS(NextSignalSpeedLimitMpS(0) >= 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS());
 
             if (VigilanceMonitor != null)
                 UpdateVigilance();

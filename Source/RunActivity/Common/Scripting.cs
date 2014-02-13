@@ -161,21 +161,18 @@ namespace ORTS.Scripting.Api
         /// Max allowed speed determined by current signal.
         /// </summary>
         public Func<float> CurrentSignalSpeedLimitMpS;
-
-        public delegate T NextSignalFunc<T>(int forsight);
-
         /// <summary>
         /// Max allowed speed determined by next signal.
         /// </summary>
-        public NextSignalFunc<float> NextSignalSpeedLimitMpS;
+        public Func<int, float> NextSignalSpeedLimitMpS;
         /// <summary>
         /// Aspect of the next signal.
         /// </summary>
-        public NextSignalFunc<Aspect> NextSignalAspect;
+        public Func<int, Aspect> NextSignalAspect;
         /// <summary>
         /// Distance to next signal.
         /// </summary>
-        public NextSignalFunc<float> NextSignalDistanceM;
+        public Func<int, float> NextSignalDistanceM;
         /// <summary>
         /// Max allowed speed determined by current speedpost.
         /// </summary>
@@ -183,11 +180,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Max allowed speed determined by next speedpost.
         /// </summary>
-        public NextSignalFunc<float> NextPostSpeedLimitMpS;
+        public Func<int, float> NextPostSpeedLimitMpS;
         /// <summary>
         /// Distance to next speedpost.
         /// </summary>
-        public NextSignalFunc<float> NextPostDistanceM;
+        public Func<int, float> NextPostDistanceM;
         /// <summary>
         /// Train's actual absolute speed.
         /// </summary>
