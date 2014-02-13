@@ -78,6 +78,8 @@ namespace ORTS
         bool safety2IsOn = false; // Safety valve #2 is on and opertaing
         bool safety3IsOn = false; // Safety valve #3 is on and opertaing
         bool safety4IsOn = false; // Safety valve #4 is on and opertaing
+        bool IsGearedSteamLoco = false; // Indicates that it is a geared locomotive
+        bool IsGearedSpeedExcess = false; // Flag indicating that geared locomotive speed has been exceeded 
 
         // state variables
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
@@ -345,6 +347,10 @@ namespace ORTS
         float SafetyValveUsage2LBpS; // Usage rate for safety valve #2
         float SafetyValveUsage3LBpS; // Usage rate for safety valve #3
         float SafetyValveUsage4LBpS; // Usage rate for safety valve #4
+        float MaxSteamGearPistonRateRpM;   // Max piston rate for a geared locomotive, such as a Shay
+        float SteamGearRatio = 0.0f;   // Gear ratio for a geared locomotive, such as a Shay  
+        float MaxGearedSpeedMpS;  // Max speed of the geared locomotive 
+        float MotiveForceGearRatio; // mulitplication factor to be used in calculating motive force etc, when a geared locomotive.    
 
   #endregion 
 
@@ -466,8 +472,22 @@ namespace ORTS
                 SuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
                 SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve.      
              
-
             }
+            
+            // Determine whether it is a geared locomotive
+            if (SteamGearRatio > 1.0)
+            {
+            IsGearedSteamLoco = true;    // set flag for geared locomotive
+            MotiveForceGearRatio = SteamGearRatio;
+            // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
+            // Max Geared speed = ((MaxPistonSpeed / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
+            MaxGearedSpeedMpS =   pS.FrompM(Me.FromMi(((MaxSteamGearPistonRateRpM / SteamGearRatio) * (float)Math.PI * Me.ToFt(DriverWheelRadiusM) * 2.0f) / FeetinMile));  
+            }
+            else
+            {
+            IsGearedSteamLoco = false;    // set flag for non-geared locomotive
+            MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
+            }            
                     
         #endregion
 
@@ -690,7 +710,8 @@ namespace ORTS
                 case "engine(ortsburnrate": BurnRateLBpStoKGpS = new Interpolator(stf); break;
                 case "engine(ortsboilerefficiency": BoilerEfficiency = new Interpolator(stf); break;
                 case "engine(ortsdrivewheelweight": DrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
-
+                case "engine(ortssteamgearratio": SteamGearRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortssteammaxgearpistonrate": MaxSteamGearPistonRateRpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -743,6 +764,8 @@ namespace ORTS
             BurnRateLBpStoKGpS = new Interpolator(locoCopy.BurnRateLBpStoKGpS);
             BoilerEfficiency = locoCopy.BoilerEfficiency;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
+            SteamGearRatio = locoCopy.SteamGearRatio;
+            MaxSteamGearPistonRateRpM = locoCopy.MaxSteamGearPistonRateRpM;
             base.InitializeFromCopy(copy);  // each derived level initializes its own variables
         }
 
@@ -1647,14 +1670,8 @@ namespace ORTS
             // Absolute Mean Pressure = Ratio of Expansion
             SteamChestPressurePSI = (throttle * SteamChestPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
             // Initial pressure will be decreased depending upon locomotive speed
-            if (throttle < 0.1)
-            {
-                InitialPressurePSI = 0.0f; // Set intial pressure to zero if throttle is closed
-            }
-            else
-            {
                 InitialPressurePSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
-            }
+           
             
             MeanPressureStrokePSI = InitialPressurePSI * (cutoff + ((cutoff + CylinderClearancePC) * (float)Math.Log(RatioOfExpansion)));
                     
@@ -1694,8 +1711,14 @@ namespace ORTS
             // CylinderCompressionPressurePSI = 0.25f * InitialPressurePSI * (1.0f / (CylinderCompressionPressureFactor * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]));
             float CylinderCompressionPressureFactor = 0.2f; // factor to increase cpmnpresion pressure by as lcomotive goes faster
             CylinderCompressionPressurePSI = 0.1f * InitialPressurePSI * (1.0f / (CylinderCompressionPressureFactor * CutoffPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]));
+
             float CalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * ((CylinderSweptVolumeFT3pFT * CylinderSteamDensityPSItoLBpFT3[CylinderExhaustPressurePSI]) - (2.0f * CylinderClearancePC * CylinderSweptVolumeFT3pFT * CylinderSteamDensityPSItoLBpFT3[CylinderCompressionPressurePSI])) * SuperheaterSteamUsageFactor;
-                      
+
+            if (throttle < 0.01 && absSpeedMpS > 0.1) // If locomotive moving and throttle set to close, then reduce steam usage.
+            {
+                CalculatedCylinderSteamUsageLBpS = 0.3f; // Set steam usage to a small value if throttle is closed
+            }
+                                
             // usage calculated as moving average to minimize chance of oscillation.
             // Decrease steam usage by SuperheaterUsage factor to model superheater - very crude model - to be improved upon
             CylinderSteamUsageLBpS = (0.6f * CylinderSteamUsageLBpS + 0.4f * CalculatedCylinderSteamUsageLBpS);
@@ -1724,6 +1747,24 @@ namespace ORTS
 
             DrawBarPullLbsF = -1.0f * N.ToLbf(CouplerForceU);
             DrawbarHorsePowerHP = -1.0f * (N.ToLbf(CouplerForceU) * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
+
+
+            if (IsGearedSteamLoco)
+            {
+                if (absSpeedMpS > MaxGearedSpeedMpS)
+                {
+                    if (!IsGearedSpeedExcess)
+                        IsGearedSpeedExcess = true;     // set excess speed flag
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "You are exceeding the maximum recommended speed. Continued operation at this speed may cause damage.");
+                }
+                else
+                {
+                    if (absSpeedMpS < MaxGearedSpeedMpS - 1.0)
+                        IsGearedSpeedExcess = false;     // reset excess speed flag
+                }
+                
+            }
+
 
             MotiveForceSmoothedN.Update(elapsedClockSeconds, MotiveForceN);
             if (float.IsNaN(MotiveForceN))
@@ -1780,15 +1821,15 @@ namespace ORTS
             MaxPowerW = W.FromHp(MaxIndicatedHorsePowerHP);
              
             // Set "current" motive force based upon the throttle, clinders, steam pressure, etc	
-            MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
+            MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF * MotiveForceGearRatio);
 
             // Set maximum force for the locomotive
-            MaxForceN = N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
+            MaxForceN = N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate * MotiveForceGearRatio);
 
             // On starting allow maximum motive force to be used
             if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f)
             {
-               MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
+                MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(MaxForceN);
             }
             // If "critical" speed of locomotive is reached, limit max IHP
             CriticalSpeedTractiveEffortLbf = (MaxIndicatedHorsePowerHP * 375.0f) / MaxLocoSpeedMpH;
@@ -2271,12 +2312,13 @@ namespace ORTS
 
             status.AppendFormat("\n\t\t === Key Inputs === \t\t{0:N0} lb/h\n",
             pS.TopH(EvaporationLBpS));
-            status.AppendFormat("Input:\tEvap\t{0:N0} ft^2\tGrate\t{1:N0} ft^2\tBoil.\t{2:N0} ft^3\tSup\t{3:N0} ft^2\tFuel Cal.\t{4:N0} btu/lb\n",
+            status.AppendFormat("Input:\tEvap\t{0:N0} ft^2\tGrate\t{1:N0} ft^2\tBoil.\t{2:N0} ft^3\tSup\t{3:N0} ft^2\tFuel Cal.\t{4:N0} btu/lb\t\tG. Ratio\t{5:N2}\n",
                 Me2.ToFt2(EvaporationAreaM2),
                 Me2.ToFt2(GrateAreaM2),
                 BoilerVolumeFT3,
                 Me2.ToFt2(SuperheatAreaM2),
-                KJpKg.ToBTUpLb(FuelCalorificKJpKG));
+                KJpKg.ToBTUpLb(FuelCalorificKJpKG),
+                SteamGearRatio);
 
             status.AppendFormat("\n\t\t === Steam Production === \t\t{0:N0} lb/h\n",
             pS.TopH(EvaporationLBpS));
@@ -2321,12 +2363,13 @@ namespace ORTS
             pS.TopH(MaxSafetyValveDischargeLbspS),
             NumSafetyValves,
             SafetyValveSizeIn);
-            status.AppendFormat("Status.:\tSafety\t{0}\tPlug\t{1}\tPrime\t{2}\tBoil. Heat\t{3}\tSuper\t{4}",
+            status.AppendFormat("Status.:\tSafety\t{0}\tPlug\t{1}\tPrime\t{2}\tBoil. Heat\t{3}\tSuper\t{4}\tGear\t{5}",
                 SafetyIsOn,
                 FusiblePlugIsBlown,
                 BoilerIsPriming,
                 BoilerHeat,
-                HasSuperheater);
+                HasSuperheater,
+                IsGearedSteamLoco);
 
             status.AppendFormat("\n\t === Fireman === \n");
             status.AppendFormat("Fire:\tIdeal\t{0:N0} lb\t\tFire\t{1:N0} lb\t\tMax Fire\t{2:N0} lb/h\t\tFuel\t{3:N0} lb/h\t\tBurn\t{4:N0} lb/h\t\tComb\t{5:N1} lbs/ft2\n",
@@ -2366,9 +2409,11 @@ namespace ORTS
                 DrawBarPullLbsF,
                 CriticalSpeedTractiveEffortLbf);
 
-            status.AppendFormat("Move:\tPiston\t{0:N0}ft/m\tDrv\t{1:N0} rpm\n",
+            status.AppendFormat("Move:\tPiston\t{0:N0}ft/m\tDrv\t{1:N0} rpm\tGear Sp\t{2:N0} mph\n",
                 PistonSpeedFtpM,
-                pS.TopM(DrvWheelRevRpS));
+                pS.TopM(DrvWheelRevRpS),
+                MpS.ToMpH(MaxGearedSpeedMpS));
+
             return status.ToString();
         }
 
