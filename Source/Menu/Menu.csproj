@@ -238,14 +238,6 @@
     <None Include="Expander-closed-disabled.png" />
     <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="fr\ORTS.Menu.Messages.resources.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="hu\ORTS.Menu.Messages.resources.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -259,6 +251,7 @@
     </PreBuildEvent>
     <PostBuildEvent>if not $(ConfigurationName) == Release echo $Revision: 000 $&gt;Revision.txt
 if not $(ConfigurationName) == Release date /t&gt;&gt;Revision.txt
-if not $(ConfigurationName) == Release time /t&gt;&gt;Revision.txt</PostBuildEvent>
+if not $(ConfigurationName) == Release time /t&gt;&gt;Revision.txt
+call "$(SolutionDir)3rdPartyLibs\GNU.Gettext\BuildMenuLocales.bat"</PostBuildEvent>
   </PropertyGroup>
 </Project>
