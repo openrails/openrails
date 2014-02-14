@@ -183,6 +183,7 @@ namespace ORTS.Viewer3D
             shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
             if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
             shader.ImageTexture = WaterTexture;
+            shader.ReferenceAlpha = 10;
 
             var samplerState = graphicsDevice.SamplerStates[0];
             samplerState.AddressU = TextureAddressMode.Wrap;
@@ -221,6 +222,9 @@ namespace ORTS.Viewer3D
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            shader.ReferenceAlpha = 0;
+
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
             rs.DestinationBlend = Blend.Zero;

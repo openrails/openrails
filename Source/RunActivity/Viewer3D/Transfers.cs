@@ -202,6 +202,9 @@ namespace ORTS.Viewer3D
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
+            var shader = Viewer.MaterialManager.SceneryShader;
+            shader.ReferenceAlpha = 0;
+
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = false;
             rs.DepthBufferWriteEnable = true;
