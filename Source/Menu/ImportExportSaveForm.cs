@@ -109,7 +109,7 @@ namespace ORTS
         {
 			var files = Directory.GetFiles(UserSettings.SavePackFolder, "*." + SavePackFileExtension);
             textBoxSavePacks.Text = String.IsNullOrEmpty(message) ? "" : message + "\r\n";
-            textBoxSavePacks.Text += catalog.GetStringFmt("Save Pack folder contains {0} save pack{1}:", files.Length, files.Length == 1 ? "" : "s");
+            textBoxSavePacks.Text += catalog.GetPluralStringFmt("Save Pack folder contains {0} save pack:", "Save Pack folder contains {0} save packs:", files.Length);
             foreach (var s in files)
                 textBoxSavePacks.Text += "\r\n    " + Path.GetFileNameWithoutExtension(s);
         }
