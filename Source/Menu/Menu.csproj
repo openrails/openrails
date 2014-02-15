@@ -32,11 +32,11 @@
   <ItemGroup>
     <Reference Include="GNU.Gettext, Version=1.1.4959.31284, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\GNU.Gettext\GNU.Gettext.dll</HintPath>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
     </Reference>
     <Reference Include="GNU.Gettext.WinForms, Version=1.0.4959.31640, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\GNU.Gettext\GNU.Gettext.WinForms.dll</HintPath>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86">
       <SpecificVersion>True</SpecificVersion>
@@ -248,6 +248,7 @@
     </PreBuildEvent>
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
-time /t&gt;&gt;Revision.txt</PostBuildEvent>
+time /t&gt;&gt;Revision.txt
+call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.Menu.bat"</PostBuildEvent>
   </PropertyGroup>
 </Project>

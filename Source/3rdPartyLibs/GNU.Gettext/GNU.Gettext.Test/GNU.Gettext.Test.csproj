@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{40A18DF7-3926-4AC4-8726-581F5C39082D}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>GNU.Gettext.Test</RootNamespace>
+    <AssemblyName>GNU.Gettext.Test</AssemblyName>
+    <StartupObject>GNU.Gettext.Test.MainClass</StartupObject>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="nunit.core">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+      <Package>mono-nunit</Package>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+      <Package>mono-nunit</Package>
+    </Reference>
+    <Reference Include="nunit.core.interfaces">
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <Package>mono-nunit</Package>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="GettextResourceManagerTest.cs" />
+    <Compile Include="CatalogTest.cs" />
+    <Compile Include="MsgfmtTest.cs" />
+    <Compile Include="GetoptTest.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="XgettextTest.cs" />
+    <Compile Include="PluralFormsTest.cs" />
+    <Compile Include="UtilsTest.cs" />
+    <Compile Include="FormatValidatorTest.cs" />
+    <Compile Include="ObjectPropertiesStoreTest.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\GNU.Gettext\GNU.Gettext.csproj">
+      <Project>{6996D99C-2E0F-4EDA-9FF0-BB45F81EADC8}</Project>
+      <Name>GNU.Gettext</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GNU.Gettext.Msgfmt\GNU.Gettext.Msgfmt.csproj">
+      <Project>{2E98861E-D84B-4F9D-9000-EC9744770769}</Project>
+      <Name>GNU.Gettext.Msgfmt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\GNU.Getopt\GNU.Getopt.csproj">
+      <Project>{24BE81B3-C22E-448B-A892-AAF95AB28747}</Project>
+      <Name>GNU.Getopt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GNU.Gettext.Xgettext\GNU.Gettext.Xgettext.csproj">
+      <Project>{69B39E65-093E-417A-BFC9-B1CF7B981680}</Project>
+      <Name>GNU.Gettext.Xgettext</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GNU.Gettext.WinForms\GNU.Gettext.WinForms.csproj">
+      <Project>{A458C869-B3C4-4130-8D3F-00F44548DD5C}</Project>
+      <Name>GNU.Gettext.WinForms</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\Test01.po">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\UtilsTest.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Data\XgettextTest.txt" />
+  </ItemGroup>
+</Project>

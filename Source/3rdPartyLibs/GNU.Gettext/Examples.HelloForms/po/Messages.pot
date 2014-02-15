@@ -1,0 +1,78 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2012-06-28 14:56:59+0200\n"
+"PO-Revision-Date: 2012-07-05 17:14:49+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: MonoDevelop Gettext addin\n"
+
+
+#: ../Form1.cs:97
+#: ../Form1.cs:130
+msgid "Hello, world!"
+msgstr ""
+
+#: ../Form1.cs:102
+msgid "en-US"
+msgstr ""
+
+#: ../Form1.cs:109
+msgid "fr-FR"
+msgstr ""
+
+#: ../Form1.cs:116
+msgid "ru-RU"
+msgstr ""
+
+#: ../Form1.cs:184
+msgid ""
+"Here is an example of how one might continue a very long string\n"
+"for the common case the string represents multi-line output.\n"
+msgstr ""
+
+#: ../Form1.cs:47
+msgid "Text encoding"
+msgstr ""
+
+#: ../Form1.cs:34
+#, csharp-format
+msgid "This program is running as process number \"{0}\"."
+msgstr ""
+
+#: ../Form1.cs:37
+#: ../Form1.cs:40
+#: ../Form1.cs:43
+#, csharp-format
+msgid "found {0} similar word"
+msgid_plural "found {0} similar words"
+msgstr[0] ""
+msgstr[1] ""
+
+#. Context: Computers
+#: ../Form1.cs:45
+msgctxt "Computers"
+msgid "Text encoding"
+msgstr ""
+
+#. Context: Military
+#: ../Form1.cs:46
+msgctxt "Military"
+msgid "Text encoding"
+msgstr ""
+
+#: ../Form1.cs:123
+msgid "Switch to English"
+msgstr ""
+
+#: ../Form1.cs:124
+msgid "Switch to French"
+msgstr ""
+
+#: ../Form1.cs:125
+msgid "Switch to Russian"
+msgstr ""
+

@@ -1,0 +1,37 @@
+/* 1 */ this.Text = @"123456"; 
+/* 2 */ this.Text = @"12""3""46";
+/* 3 */ this.Text = @"123
+456
+789
+";
+
+/* 4 */ this.Text = "a123456";
+
+/* 5 */ this.Text = "a12\"3\"46";
+/* 6 */ this.Text = @"a12""3""46"; // duplicate shoild be ignored
+
+/* 7 */ someCatalog.GetString("b123456");
+/* 8 */ someCatalog.GetString("b12\"3\"46");
+/* 9 */ someCatalog.GetString(@"c123456");
+/* 10 */ someCatalog.GetString(@"c12""3""46");
+
+/* 11 */ someCatalog.GetStringFmt("d123\"{0}\"456", 222);
+/* 12 */ someCatalog.GetStringFmt(@"e123""{0}""456", 222);
+
+/* 13 */ Console.WriteLine(String.Format(
+	catalog.GetPluralString(
+		"found {0} similar word", 
+		"found {0} similar words", 1),
+	0));
+
+/* 14 */ someCatalog.GetParticularString("Sport", @"Score");
+/* 15 */ someCatalog.GetParticularString("Math", @"Score");
+/* 16 */ this.Text = "multiline" +
+		"-string-1" +
+		"-string-2";
+/* 17 */ toolTip1.SetToolTip(label1, "Hint for label1" ) ;
+/* 18 */ toolTip1.SetToolTip(label1, "Multiline" +
+        " Hint" +
+        " for label1" ) ;
+
+// 18 matches with 1 duplicates

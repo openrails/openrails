@@ -1,0 +1,43 @@
+# Comment line 1
+# Commen line 2
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: GNU gettext for .NET\n"
+"Report-Msgid-Bugs-To: bug-gnu-gettext@gnu.org\n"
+"PO-Revision-Date: 2012-06-27 16:04+0100\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"POT-Creation-Date: \n"
+"Last-Translator: Serguei TARASSOV <st@arbinada.com>\n"
+"Language-Team: \n"
+"X-Poedit-Language: Russian\n"
+
+msgid "Hello, world!"
+msgstr "Bonjour, le monde !"
+
+#, csharp-format
+msgid "This program is running as process number {0}."
+msgstr "Ce programme est exécuté en tant que processus numéro {0}."
+
+#, csharp-format
+msgid "found {0} error"
+msgid_plural "found {0} errors"
+msgstr[0] "{0} ошибка найдена"
+msgstr[1] "{0} ошибки найдены"
+msgstr[2] "{0} ошибок найдено"
+
+msgid "Nontranslated message"
+msgstr ""
+
+msgctxt "Sport"
+msgid "Score"
+msgstr "Score1"
+
+msgctxt "Math"
+msgid "Score"
+msgstr "Score2"
+

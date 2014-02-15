@@ -1,0 +1,88 @@
+# Copyright (C) 2004 Free Software Foundation, Inc.
+# This file is distributed under the same license as the hello-csharp package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Examples.Hello\n"
+"Report-Msgid-Bugs-To: bug-gnu-gettext@gnu.org\n"
+"POT-Creation-Date: 2012-06-28 14:56:59+0200\n"
+"PO-Revision-Date: 2012-07-05 10:16+0100\n"
+"Last-Translator: Serguei TARASSOV <st@arbinada.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ru\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)\n"
+"X-Poedit-Language: Russian\n"
+"X-Poedit-Country: RUSSIAN FEDERATION\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../Form1.cs:87
+#: ../Form1.cs:120
+msgid "Hello, world!"
+msgstr "Здравствуй, мир!"
+
+#: ../Form1.cs:92
+msgid "en-US"
+msgstr ""
+
+#: ../Form1.cs:99
+msgid "fr-FR"
+msgstr ""
+
+#: ../Form1.cs:106
+msgid "ru-RU"
+msgstr ""
+
+#: ../Form1.cs:174
+msgid ""
+"Here is an example of how one might continue a very long string\n"
+"for the common case the string represents multi-line output.\n"
+msgstr ""
+"Вот пример как можно продолжить длинную фразу\n"
+"в общем случае она располагается на нескольких строках.\n"
+
+#: ../Form1.cs:42
+msgid "Text encoding"
+msgstr "Кодирование текста"
+
+#: ../Form1.cs:29
+#, csharp-format
+msgid "This program is running as process number \"{0}\"."
+msgstr "Эта программа запущена под процессом номер \"{0}\"."
+
+#: ../Form1.cs:32
+#: ../Form1.cs:35
+#: ../Form1.cs:38
+#, csharp-format
+msgid "found {0} similar word"
+msgid_plural "found {0} similar words"
+msgstr[0] "{0} похожее слово найдено"
+msgstr[1] "{0} похожих слова найдено"
+msgstr[2] "{0} похожих слов найдено"
+
+#. Context: Computers
+#: ../Form1.cs:40
+msgctxt "Computers"
+msgid "Text encoding"
+msgstr "Кодировка текста"
+
+#. Context: Military
+#: ../Form1.cs:41
+msgctxt "Military"
+msgid "Text encoding"
+msgstr "Шифрование текста"
+
+#: ../Form1.cs:113
+msgid "Switch to English"
+msgstr "Переключиться на английский"
+
+#: ../Form1.cs:114
+msgid "Switch to French"
+msgstr "Переключиться на французский"
+
+#: ../Form1.cs:115
+msgid "Switch to Russian"
+msgstr "Переключиться на русский"
+
