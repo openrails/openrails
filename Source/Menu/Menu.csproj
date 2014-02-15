@@ -87,15 +87,6 @@
     <Compile Include="..\MSTS\_STF.cs">
       <Link>MSTS\_STF.cs</Link>
     </Compile>
-    <Compile Include="..\ORTS\Common\Settings.cs">
-      <Link>ORTS\Common\Settings.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\Common\SettingStore.cs">
-      <Link>ORTS\Common\SettingStore.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\Common\VersionInfo.cs">
-      <Link>ORTS\Common\VersionInfo.cs</Link>
-    </Compile>
     <Compile Include="..\ORTS\InputSettings.cs">
       <Link>ORTS\InputSettings.cs</Link>
     </Compile>
@@ -237,6 +228,12 @@
     <None Include="Expander-open.png" />
     <None Include="Expander-closed-disabled.png" />
     <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
+      <Name>ORTS.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

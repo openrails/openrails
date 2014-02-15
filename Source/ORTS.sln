@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "Launcher\Launch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{2B0A170A-878A-4114-BB28-7306C713E185}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Common", "ORTS.Common\ORTS.Common.csproj", "{DA94D876-7D35-46C3-AECE-AFACE72C686C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -31,6 +33,10 @@ Global
 		{2B0A170A-878A-4114-BB28-7306C713E185}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{2B0A170A-878A-4114-BB28-7306C713E185}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{2B0A170A-878A-4114-BB28-7306C713E185}.Release|Mixed Platforms.Build.0 = Release|x86
+		{DA94D876-7D35-46C3-AECE-AFACE72C686C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{DA94D876-7D35-46C3-AECE-AFACE72C686C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{DA94D876-7D35-46C3-AECE-AFACE72C686C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{DA94D876-7D35-46C3-AECE-AFACE72C686C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
