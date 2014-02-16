@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-15 19:56:24+0100\n"
-"PO-Revision-Date: 2014-02-15 19:56:24+0100\n"
+"POT-Creation-Date: 2014-02-16 07:52:41+0100\n"
+"PO-Revision-Date: 2014-02-16 07:52:41+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,6 @@ msgid "OK"
 msgstr ""
 
 #: ../Menu/FolderForm.Designer.cs:67
-#: ../Menu/MultiplayerForm.Designer.cs:60
 #: ../Menu/Options.Designer.cs:212
 #: ../Menu/TestingForm.Designer.cs:84
 msgid "Cancel"
@@ -272,17 +271,14 @@ msgid "Host/port:"
 msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:375
-#: ../Menu/MultiplayerForm.Designer.cs:70
 msgid "User name:"
 msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:385
-#: ../Menu/MultiplayerForm.Designer.cs:127
 msgid "Client"
 msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:395
-#: ../Menu/MultiplayerForm.Designer.cs:139
 msgid "Server"
 msgstr ""
 
@@ -307,7 +303,6 @@ msgid "Season:"
 msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:538
-#: ../Menu/MultiplayerForm.Designer.cs:240
 msgid "Multiplayer"
 msgstr ""
 
@@ -325,48 +320,6 @@ msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:651
 msgid "Open Rails"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.cs:72
-msgid ""
-"User name must be 4-10 characters long, cannot contain space, ' or \" and "
-"must not start with a digit."
-msgstr ""
-
-#: ../Menu/MultiplayerForm.cs:108
-msgid "Port number must be an integer between 0 and 65535."
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:79
-msgid "IP:"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:88
-msgid "Port:"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:104
-msgid "127.0.0.1"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:167
-msgid "10"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:176
-msgid "Update Every "
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:185
-msgid "Seconds"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:194
-msgid "Show Avatar"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:211
-msgid "Avatar URL"
 msgstr ""
 
 #: ../Menu/Options.cs:184
@@ -802,51 +755,6 @@ msgstr ""
 msgid "Restores all saves deleted in this session."
 msgstr ""
 
-#: ../Menu/RouteDetails.cs:55
-msgid "Route Details"
-msgstr ""
-
-#: ../Menu/RouteDetails.cs:67
-msgid "Activity Details"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:100
-msgid "Environment"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:119
-msgid "Start Time"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:138
-msgid "Season"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:157
-msgid "Weather"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:167
-msgid "Close"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:200
-msgid "groupBox1"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:213
-#: ../Menu/TestingForm.Designer.cs:182
-msgid "Activity"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:232
-msgid "Duration"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:251
-msgid "Difficulty"
-msgstr ""
-
 #: ../Menu/TestingForm.Designer.cs:62
 msgid "Test all"
 msgstr ""
@@ -885,6 +793,10 @@ msgstr ""
 
 #: ../Menu/TestingForm.Designer.cs:174
 msgid "Route"
+msgstr ""
+
+#: ../Menu/TestingForm.Designer.cs:182
+msgid "Activity"
 msgstr ""
 
 #: ../Menu/TestingForm.Designer.cs:190

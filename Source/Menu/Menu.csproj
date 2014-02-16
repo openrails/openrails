@@ -149,12 +149,6 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MultiplayerForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MultiplayerForm.Designer.cs">
-      <DependentUpon>MultiplayerForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Options.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,28 +186,14 @@
       <DependentUpon>MainForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="MultiplayerForm.resx">
-      <DependentUpon>MultiplayerForm.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="Options.resx">
       <DependentUpon>Options.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="RouteDetails.resx">
-      <DependentUpon>RouteDetails.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="TestingForm.resx">
       <DependentUpon>TestingForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Compile Include="RouteDetails.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="RouteDetails.designer.cs">
-      <DependentUpon>RouteDetails.cs</DependentUpon>
-    </Compile>
     <Compile Include="SortableBindingList.cs" />
     <Compile Include="Task.cs" />
     <Compile Include="TestingForm.cs">
