@@ -124,7 +124,6 @@ namespace ORTS
         public bool RDHasCombThrottleTrainBrake;    // Temp added for RD exception bug #
         public bool HasDefectiveComboDynamicBreak;
         public bool HasSmoothStruc;
-        private bool HasTrainBrake = false;
         public int ComboCtrlCrossOver = 5;
 
         public float MaxContinuousForceN;
@@ -341,7 +340,6 @@ namespace ORTS
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(brake_train":
-                    HasTrainBrake = true;
                     TrainBrakeController.Parse(stf);
                     break;
                 case "engine(enginecontrollers(brake_engine":
@@ -1607,7 +1605,8 @@ namespace ORTS
         {
             // Insure we have TrainBrakeController ; some vehicles do not
             // such as Hy-rail truck
-            if (HasTrainBrake)
+            // if (HasTrainBrake)
+            if (TrainBrakeController.IsValid())
                 TrainBrakeController.SetRDPercent(percent);
         }
 
