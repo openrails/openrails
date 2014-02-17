@@ -35,7 +35,7 @@ namespace ORTS.Viewer3D.Popups
         int LastPlayerTrainCars;
 
         public TrainOperationsWindow( WindowManager owner )
-            : base( owner, 600, Window.DecorationSize.Y + CarListHeight + CarListPadding + ControlLayoutScrollbox.ScrollbarSize, "Train Operations" ) {
+            : base( owner, 600, Window.DecorationSize.Y + CarListHeight + CarListPadding + ControlLayoutScrollbox.ScrollbarSize, Viewer.Catalog.GetString("Train Operations")) {
         }
 
         protected internal override void Initialize() {

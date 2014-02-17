@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2014-02-15 19:11:40+0100\n"
-"PO-Revision-Date: 2014-02-15 19:20+0100\n"
+"POT-Creation-Date: 2014-02-16 07:52:41+0100\n"
+"PO-Revision-Date: 2014-02-16 11:52+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -16,8 +16,8 @@ msgstr ""
 msgid "OK"
 msgstr ""
 
-#: ../Menu/FolderForm.Designer.cs:67 ../Menu/MultiplayerForm.Designer.cs:60
-#: ../Menu/Options.Designer.cs:212 ../Menu/TestingForm.Designer.cs:84
+#: ../Menu/FolderForm.Designer.cs:67 ../Menu/Options.Designer.cs:212
+#: ../Menu/TestingForm.Designer.cs:84
 msgid "Cancel"
 msgstr "Mégse"
 
@@ -276,15 +276,15 @@ msgstr "Útirány:"
 msgid "Host/port:"
 msgstr "Szerver/port:"
 
-#: ../Menu/MainForm.Designer.cs:375 ../Menu/MultiplayerForm.Designer.cs:70
+#: ../Menu/MainForm.Designer.cs:375
 msgid "User name:"
 msgstr "Felhasználónév:"
 
-#: ../Menu/MainForm.Designer.cs:385 ../Menu/MultiplayerForm.Designer.cs:127
+#: ../Menu/MainForm.Designer.cs:385
 msgid "Client"
 msgstr "Résztvevő"
 
-#: ../Menu/MainForm.Designer.cs:395 ../Menu/MultiplayerForm.Designer.cs:139
+#: ../Menu/MainForm.Designer.cs:395
 msgid "Server"
 msgstr "Kiszolgáló"
 
@@ -308,7 +308,7 @@ msgstr "Kezdési idő:"
 msgid "Season:"
 msgstr "Évszak:"
 
-#: ../Menu/MainForm.Designer.cs:538 ../Menu/MultiplayerForm.Designer.cs:240
+#: ../Menu/MainForm.Designer.cs:538
 msgid "Multiplayer"
 msgstr "Többrésztvevős"
 
@@ -327,48 +327,6 @@ msgstr "Szerkesztés"
 #: ../Menu/MainForm.Designer.cs:651
 msgid "Open Rails"
 msgstr ""
-
-#: ../Menu/MultiplayerForm.cs:72
-msgid ""
-"User name must be 4-10 characters long, cannot contain space, ' or \" and "
-"must not start with a digit."
-msgstr ""
-
-#: ../Menu/MultiplayerForm.cs:108
-msgid "Port number must be an integer between 0 and 65535."
-msgstr "A portnak egy 0 és 65535 közé eső egész számnak kell lennie"
-
-#: ../Menu/MultiplayerForm.Designer.cs:79
-msgid "IP:"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:88
-msgid "Port:"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:104
-msgid "127.0.0.1"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:167
-msgid "10"
-msgstr ""
-
-#: ../Menu/MultiplayerForm.Designer.cs:176
-msgid "Update Every "
-msgstr "Frissítés minden"
-
-#: ../Menu/MultiplayerForm.Designer.cs:185
-msgid "Seconds"
-msgstr "másodpercben"
-
-#: ../Menu/MultiplayerForm.Designer.cs:194
-msgid "Show Avatar"
-msgstr "Avatár megjelenítése"
-
-#: ../Menu/MultiplayerForm.Designer.cs:211
-msgid "Avatar URL"
-msgstr "Avatár URL"
 
 #: ../Menu/Options.cs:184
 msgid "Click to change this key"
@@ -817,50 +775,6 @@ msgstr "A kiválasztott mentések törlése."
 msgid "Restores all saves deleted in this session."
 msgstr "Az ebben a játékban törölt mentések visszaállítása"
 
-#: ../Menu/RouteDetails.cs:55
-msgid "Route Details"
-msgstr "Pálya részletei"
-
-#: ../Menu/RouteDetails.cs:67
-msgid "Activity Details"
-msgstr "A szolgálat részletei"
-
-#: ../Menu/RouteDetails.designer.cs:100
-msgid "Environment"
-msgstr "Környezet"
-
-#: ../Menu/RouteDetails.designer.cs:119
-msgid "Start Time"
-msgstr "Indulási idő"
-
-#: ../Menu/RouteDetails.designer.cs:138
-msgid "Season"
-msgstr "Évszak"
-
-#: ../Menu/RouteDetails.designer.cs:157
-msgid "Weather"
-msgstr "Időjárás"
-
-#: ../Menu/RouteDetails.designer.cs:167
-msgid "Close"
-msgstr "Bezárás"
-
-#: ../Menu/RouteDetails.designer.cs:200
-msgid "groupBox1"
-msgstr ""
-
-#: ../Menu/RouteDetails.designer.cs:213 ../Menu/TestingForm.Designer.cs:182
-msgid "Activity"
-msgstr "Szolgálat"
-
-#: ../Menu/RouteDetails.designer.cs:232
-msgid "Duration"
-msgstr "Időtartam"
-
-#: ../Menu/RouteDetails.designer.cs:251
-msgid "Difficulty"
-msgstr "Nehézség"
-
 #: ../Menu/TestingForm.Designer.cs:62
 msgid "Test all"
 msgstr "Mind tesztelése"
@@ -900,6 +814,10 @@ msgstr ""
 #: ../Menu/TestingForm.Designer.cs:174
 msgid "Route"
 msgstr "Pálya"
+
+#: ../Menu/TestingForm.Designer.cs:182
+msgid "Activity"
+msgstr "Szolgálat"
 
 #: ../Menu/TestingForm.Designer.cs:190
 msgid "Tested"
@@ -956,6 +874,48 @@ msgstr "- Bármelyik jármű -"
 #, csharp-format
 msgid "Locomotive '{0}' is excluded."
 msgstr "'{0}' jármű kizárva."
+
+#~ msgid "Port number must be an integer between 0 and 65535."
+#~ msgstr "A portnak egy 0 és 65535 közé eső egész számnak kell lennie"
+
+#~ msgid "Update Every "
+#~ msgstr "Frissítés minden"
+
+#~ msgid "Seconds"
+#~ msgstr "másodpercben"
+
+#~ msgid "Show Avatar"
+#~ msgstr "Avatár megjelenítése"
+
+#~ msgid "Avatar URL"
+#~ msgstr "Avatár URL"
+
+#~ msgid "Route Details"
+#~ msgstr "Pálya részletei"
+
+#~ msgid "Activity Details"
+#~ msgstr "A szolgálat részletei"
+
+#~ msgid "Environment"
+#~ msgstr "Környezet"
+
+#~ msgid "Start Time"
+#~ msgstr "Indulási idő"
+
+#~ msgid "Season"
+#~ msgstr "Évszak"
+
+#~ msgid "Weather"
+#~ msgstr "Időjárás"
+
+#~ msgid "Close"
+#~ msgstr "Bezárás"
+
+#~ msgid "Duration"
+#~ msgstr "Időtartam"
+
+#~ msgid "Difficulty"
+#~ msgstr "Nehézség"
 
 #~ msgid "Placed Keyboard.txt on your desktop"
 #~ msgstr "A Keyboard.txt fájl az asztalra mentve."

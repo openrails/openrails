@@ -49,7 +49,7 @@ namespace ORTS.Viewer3D.Popups
 		Label Message;
 
 		public NextStationWindow(WindowManager owner)
-			: base(owner, 550, 135, "Next Station")
+			: base(owner, 550, 135, Viewer.Catalog.GetString("Next Station"))
 		{
         }
 
@@ -65,12 +65,12 @@ namespace ORTS.Viewer3D.Popups
 			vbox.AddHorizontalSeparator();
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(new Label(boxWidth * 3, hbox.RemainingHeight, "Station"));
-                hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Distance", LabelAlignment.Center));
-				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Arrive", LabelAlignment.Center));
-				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Actual", LabelAlignment.Center));
-				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Depart", LabelAlignment.Center));
-				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, "Actual", LabelAlignment.Center));
+				hbox.Add(new Label(boxWidth * 3, hbox.RemainingHeight, Viewer.Catalog.GetString("Station")));
+                hbox.Add(new Label(boxWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("Distance"), LabelAlignment.Center));
+				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("Arrive"), LabelAlignment.Center));
+				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("Actual"), LabelAlignment.Center));
+				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("Depart"), LabelAlignment.Center));
+				hbox.Add(new Label(boxWidth, hbox.RemainingHeight, Viewer.Catalog.GetString("Actual"), LabelAlignment.Center));
 			}
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
@@ -129,10 +129,10 @@ namespace ORTS.Viewer3D.Popups
                     {
                         StationPreviousName.Text = at.PlatformEnd1.Station;
                         StationPreviousArriveScheduled.Text = at.SchArrive.ToString("HH:mm:ss");
-                        StationPreviousArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : "(missed)";
+                        StationPreviousArriveActual.Text = at.ActArrive.HasValue ? at.ActArrive.Value.ToString("HH:mm:ss") : Viewer.Catalog.GetString("(missed)");
                         StationPreviousArriveActual.Color = GetArrivalColor(at.SchArrive, at.ActArrive);
                         StationPreviousDepartScheduled.Text = at.SchDepart.ToString("HH:mm:ss");
-                        StationPreviousDepartActual.Text = at.ActDepart.HasValue ? at.ActDepart.Value.ToString("HH:mm:ss") : "(missed)";
+                        StationPreviousDepartActual.Text = at.ActDepart.HasValue ? at.ActDepart.Value.ToString("HH:mm:ss") : Viewer.Catalog.GetString("(missed)");
                         StationPreviousDepartActual.Color = GetDepartColor(at.SchDepart, at.ActDepart);
 
                         StationPreviousDistance.Text = "";
@@ -209,7 +209,7 @@ namespace ORTS.Viewer3D.Popups
 
                     if (act.IsFinished)
                     {
-                        Message.Text = "Activity completed.";
+                        Message.Text = Viewer.Catalog.GetString("Activity completed.");
                     }
                 }
             }

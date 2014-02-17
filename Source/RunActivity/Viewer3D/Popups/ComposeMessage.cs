@@ -31,7 +31,7 @@ namespace ORTS.Viewer3D.Popups
 		Label Message;
 
 		public ComposeMessage(WindowManager owner)
-			: base(owner, 600, 72, "Compose Message (e.g.   receiver1, receiver2: message body)")
+			: base(owner, 600, 72, Viewer.Catalog.GetString("Compose Message (e.g.   receiver1, receiver2: message body)"))
 		{
 		}
 

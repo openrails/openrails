@@ -56,6 +56,7 @@ namespace ORTS.Processes
         void UpdaterThread()
         {
             Profiler.SetThread();
+            Game.LoadLanguage();
 
             while (Thread.CurrentThread.ThreadState == System.Threading.ThreadState.Running)
             {

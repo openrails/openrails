@@ -115,20 +115,20 @@ namespace ORTS
             switch (Type)
             {
                 case MSTSNotchType.Dummy: return "";
-                case MSTSNotchType.Release: return "Release";
-                case MSTSNotchType.FullQuickRelease: return "Quick Release";
-                case MSTSNotchType.Running: return "Running";
-                case MSTSNotchType.Neutral: return "Neutral";
-                case MSTSNotchType.Apply: return "Apply";
-                case MSTSNotchType.EPApply: return "EPApply";
-                case MSTSNotchType.Emergency: return "Emergency";
-                case MSTSNotchType.SelfLap: return "Lap";
-                case MSTSNotchType.GSelfLap: return "Service";
-                case MSTSNotchType.GSelfLapH: return "Service";
-                case MSTSNotchType.Lap: return "Lap";
-                case MSTSNotchType.Suppression: return "Suppresion";
-                case MSTSNotchType.ContServ: return "Cont. Service";
-                case MSTSNotchType.FullServ: return "Full Service";
+                case MSTSNotchType.Release: return Viewer3D.Viewer.Catalog.GetString("Release");
+                case MSTSNotchType.FullQuickRelease: return Viewer3D.Viewer.Catalog.GetString("Quick Release");
+                case MSTSNotchType.Running: return Viewer3D.Viewer.Catalog.GetString("Running");
+                case MSTSNotchType.Neutral: return Viewer3D.Viewer.Catalog.GetString("Neutral");
+                case MSTSNotchType.Apply: return Viewer3D.Viewer.Catalog.GetString("Apply");
+                case MSTSNotchType.EPApply: return Viewer3D.Viewer.Catalog.GetString("EPApply");
+                case MSTSNotchType.Emergency: return Viewer3D.Viewer.Catalog.GetString("Emergency");
+                case MSTSNotchType.SelfLap: return Viewer3D.Viewer.Catalog.GetString("Lap");
+                case MSTSNotchType.GSelfLap: return Viewer3D.Viewer.Catalog.GetString("Service");
+                case MSTSNotchType.GSelfLapH: return Viewer3D.Viewer.Catalog.GetString("Service");
+                case MSTSNotchType.Lap: return Viewer3D.Viewer.Catalog.GetString("Lap");
+                case MSTSNotchType.Suppression: return Viewer3D.Viewer.Catalog.GetString("Suppresion");
+                case MSTSNotchType.ContServ: return Viewer3D.Viewer.Catalog.GetString("Cont. Service");
+                case MSTSNotchType.FullServ: return Viewer3D.Viewer.Catalog.GetString("Full Service");
                 default: return "";
             }
         }

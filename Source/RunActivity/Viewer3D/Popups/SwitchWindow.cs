@@ -44,7 +44,7 @@ namespace ORTS.Viewer3D.Popups
 
 		public SwitchWindow(WindowManager owner)
 #if NEW_SIGNALLING
-            : base(owner, Window.DecorationSize.X + (int)2.5 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
+            : base(owner, Window.DecorationSize.X + (int)2.5 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, Viewer.Catalog.GetString("Switch"))
 #else
             : base(owner, Window.DecorationSize.X + 2 * SwitchImageSize, Window.DecorationSize.Y + 2 * SwitchImageSize, "Switch")
 #endif

@@ -85,7 +85,12 @@ namespace ORTS
 	{
         public static string FormatSpeed(float speed, bool isMetric)
         {
-            return String.Format(isMetric ? "{0:F1}kph" : "{0:F1}mph", MpS.FromMpS(speed, isMetric));
+            return String.Format(isMetric ? "{0:F1}km/h" : "{0:F1}mph", MpS.FromMpS(speed, isMetric));
+        }
+
+        public static string FormatTrackMonitorSpeed(float speed, bool isMetric)
+        {
+            return String.Format(isMetric ? "{0:F0} km/h" : "{0:F0} mph", MpS.FromMpS(speed, isMetric));
         }
 
         public static string FormatDistance(float distance, bool isMetric)

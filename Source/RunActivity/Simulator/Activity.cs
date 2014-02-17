@@ -26,6 +26,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
 using ORTS.Viewer3D.Popups;
+using GNU.Gettext;
 
 namespace ORTS
 {
@@ -459,6 +460,8 @@ namespace ORTS
         public string DisplayMessage { get; internal set; }
         public Color DisplayColor { get; internal set; }
 
+        protected GettextResourceManager Catalog = new GettextResourceManager("ORTS.Simulator");
+
         public virtual void NotifyEvent(ActivityEventType EventType)
         {
         }
@@ -761,14 +764,14 @@ namespace ORTS
                     // Still have to wait
                     if (remaining > 0)
                     {
-                        DisplayMessage = string.Format("Passenger boarding completes in {0:D2}:{1:D2}",
+                        DisplayMessage = Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
                             remaining / 60, remaining % 60);
                     }
                     // May depart
                     else if (!maydepart)
                     {
                         maydepart = true;
-                        DisplayMessage = "Passenger boarding completed. You may depart now.";
+                        DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
                         Program.Simulator.SoundNotify = Event.PermissionToDepart;
 
                         // if last task, show closure window

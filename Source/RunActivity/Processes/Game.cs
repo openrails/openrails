@@ -71,6 +71,7 @@ namespace ORTS.Processes
         public Game(UserSettings settings)
         {
             Settings = settings;
+            LoadLanguage();
             ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
             Exiting += new System.EventHandler(Game_Exiting);
             RenderProcess = new RenderProcess(this);
@@ -167,6 +168,25 @@ namespace ORTS.Processes
             state.Game = this;
             States.Push(state);
             Trace.TraceInformation("Game.ReplaceState({0})  {1}", state.GetType().Name, String.Join(" | ", States.Select(s => s.GetType().Name).ToArray()));
+        }
+
+        public void LoadLanguage()
+        {
+            switch (Settings.Language)
+            {
+                case "System":
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InstalledUICulture;
+                    break;
+                case "English":
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en");
+                    break;
+                case "French":
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("fr");
+                    break;
+                case "Hungarian":
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("hu");
+                    break;
+            }
         }
 
         /// <summary>

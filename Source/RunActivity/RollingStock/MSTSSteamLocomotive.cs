@@ -932,7 +932,12 @@ namespace ORTS
 
             if (CutoffController.UpdateValue != 0.0)
                 // On a steam locomotive, the Reverser is the same as the Cut Off Control.
-                Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
+                switch (Direction)
+                {
+                    case Direction.Reverse: Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamLocomotiveReverser, Math.Abs(Train.MUReverserPercent), CabSetting.Off); break;
+                    case Direction.N: Simulator.Confirmer.Confirm(CabControl.SteamLocomotiveReverser, CabSetting.Neutral); break;
+                    case Direction.Forward: Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamLocomotiveReverser, Math.Abs(Train.MUReverserPercent), CabSetting.On); break;
+                }
             if (BlowerController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100);
             if (BlowerController.UpdateValue < 0.0)
@@ -2270,11 +2275,6 @@ namespace ORTS
             return data;
         }
 
-        private string GetCutOffControllerStatus()
-        {
-            return String.Format( " {0} {1:F0}", Direction, Math.Abs( Train.MUReverserPercent ) );
-        }
-
         public override string GetStatus()
         {
             var evap = pS.TopH(EvaporationLBpS);
@@ -2420,7 +2420,12 @@ namespace ORTS
         public override void StartReverseIncrease( float? target ) {
             CutoffController.StartIncrease( target );
             CutoffController.CommandStartTime = Simulator.ClockTime;
-            Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
+            switch (Direction)
+            {
+                case Direction.Reverse: Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamLocomotiveReverser, Math.Abs(Train.MUReverserPercent), CabSetting.Off); break;
+                case Direction.N: Simulator.Confirmer.Confirm(CabControl.SteamLocomotiveReverser, CabSetting.Neutral); break;
+                case Direction.Forward: Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamLocomotiveReverser, Math.Abs(Train.MUReverserPercent), CabSetting.On); break;
+            }
             SignalEvent(Event.ReverserChange);
         }
 
@@ -2431,7 +2436,12 @@ namespace ORTS
         public override void StartReverseDecrease( float? target ) {
             CutoffController.StartDecrease( target );
             CutoffController.CommandStartTime = Simulator.ClockTime;
-            Simulator.Confirmer.Message(CabControl.Reverser, GetCutOffControllerStatus());
+            switch (Direction)
+            {
+                case Direction.Reverse: Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamLocomotiveReverser, Math.Abs(Train.MUReverserPercent), CabSetting.Off); break;
+                case Direction.N: Simulator.Confirmer.Confirm(CabControl.SteamLocomotiveReverser, CabSetting.Neutral); break;
+                case Direction.Forward: Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamLocomotiveReverser, Math.Abs(Train.MUReverserPercent), CabSetting.On); break;
+            }
             SignalEvent(Event.ReverserChange);
         }
 

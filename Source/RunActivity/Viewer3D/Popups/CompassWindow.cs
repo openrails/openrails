@@ -30,7 +30,7 @@ namespace ORTS.Viewer3D.Popups
 		Label Longitude;
 
 		public CompassWindow(WindowManager owner)
-			: base(owner, 250, 95, "Compass")
+			: base(owner, 250, 95, Viewer.Catalog.GetString("Compass"))
 		{
 		}
 
@@ -41,10 +41,10 @@ namespace ORTS.Viewer3D.Popups
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
 				var w = hbox.RemainingWidth / 9;
-				hbox.Add(new Label(1 * w, hbox.RemainingHeight, "Lat:", LabelAlignment.Right));
+				hbox.Add(new Label(1 * w, hbox.RemainingHeight, Viewer.Catalog.GetString("Lat:"), LabelAlignment.Right));
 				hbox.Add(Latitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
 				hbox.AddSpace(w, hbox.RemainingHeight);
-				hbox.Add(new Label(1 * w, hbox.RemainingHeight, "Lon:", LabelAlignment.Right));
+				hbox.Add(new Label(1 * w, hbox.RemainingHeight, Viewer.Catalog.GetString("Lon:"), LabelAlignment.Right));
 				hbox.Add(Longitude = new Label(3 * w, hbox.RemainingHeight, "000.000000", LabelAlignment.Right));
 			}
 			return vbox;

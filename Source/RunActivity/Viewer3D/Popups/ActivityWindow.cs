@@ -41,7 +41,7 @@ namespace ORTS.Viewer3D.Popups
         DateTime PopupTime;
 
         public ActivityWindow( WindowManager owner )
-            : base(owner, 400, 180, "Activity Events")
+            : base(owner, 400, 180, Viewer.Catalog.GetString("Activity Events"))
         {
             Activity = Owner.Viewer.Simulator.ActivityRun;
         }
@@ -144,7 +144,8 @@ namespace ORTS.Viewer3D.Popups
                         if (Activity.IsComplete)
                         {
                             Visible = Activity.IsActivityWindowOpen = Owner.Viewer.HelpWindow.ActivityUpdated = Owner.Viewer.Simulator.Paused = true;
-                            ComposeMenu(e.ParsedObject.Name, String.Format("This activity has ended {0}.\nFor a detailed evaluation, see the Help Window (F1).", Activity.IsSuccessful ? "successfully" : "without success"));
+                            ComposeMenu(e.ParsedObject.Name, Viewer.Catalog.GetStringFmt("This activity has ended {0}.\nFor a detailed evaluation, see the Help Window (F1).",
+                                Activity.IsSuccessful ? Viewer.Catalog.GetString("successfully") : Viewer.Catalog.GetString("without success")));
                             EndMenu();
                     }
                         else
@@ -198,10 +199,10 @@ namespace ORTS.Viewer3D.Popups
         // </CJComment>
         void ResumeMenu()
         {
-            ResumeLabel.Text = "Resume";
-            CloseLabel.Text = "Resume and close box";
-            QuitLabel.Text = "Quit activity";
-            StatusLabel.Text = "Status: Activity paused";
+            ResumeLabel.Text = Viewer.Catalog.GetString("Resume");
+            CloseLabel.Text = Viewer.Catalog.GetString("Resume and close box");
+            QuitLabel.Text = Viewer.Catalog.GetString("Quit activity");
+            StatusLabel.Text = Viewer.Catalog.GetString("Status: Activity paused");
             StatusLabel.Color = Color.LightSalmon;
         }
 
@@ -211,9 +212,9 @@ namespace ORTS.Viewer3D.Popups
         void CloseMenu()
         {
             ResumeLabel.Text = "";
-            CloseLabel.Text = "Close box";
-            QuitLabel.Text = "Quit activity";
-            StatusLabel.Text = "Status: Activity resumed";
+            CloseLabel.Text = Viewer.Catalog.GetString("Close box");
+            QuitLabel.Text = Viewer.Catalog.GetString("Quit activity");
+            StatusLabel.Text = Viewer.Catalog.GetString("Status: Activity resumed");
             StatusLabel.Color = Color.LightGreen;
         }
 
@@ -221,14 +222,14 @@ namespace ORTS.Viewer3D.Popups
         {
             ResumeLabel.Text = "";
             CloseLabel.Text = "";
-            QuitLabel.Text = "End Activity";
-            StatusLabel.Text = "Status: Activity paused";
+            QuitLabel.Text = Viewer.Catalog.GetString("End Activity");
+            StatusLabel.Text = Viewer.Catalog.GetString("Status: Activity paused");
             StatusLabel.Color = Color.LightSalmon;
         }
 
         void ComposeMenu(string eventLabel, string message)
         {
-            EventNameLabel.Text = "Event: " + eventLabel;
+            EventNameLabel.Text = Viewer.Catalog.GetStringFmt("Event: {0}", eventLabel);
             MessageScroller.SetScrollPosition(0);
             Message.Text = message;
         }

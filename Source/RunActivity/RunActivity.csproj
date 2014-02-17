@@ -457,6 +457,7 @@
     </PreBuildEvent>
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
-time /t&gt;&gt;Revision.txt</PostBuildEvent>
+time /t&gt;&gt;Revision.txt
+call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.RunActivity.bat"</PostBuildEvent>
   </PropertyGroup>
 </Project>

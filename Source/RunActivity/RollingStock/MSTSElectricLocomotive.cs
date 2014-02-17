@@ -278,9 +278,9 @@ namespace ORTS
                 return;
 
             if ((up) && (!Simulator.TRK.Tr_RouteFile.Electrified))
-                Simulator.Confirmer.Warning("No power line!");
+                Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power line!"));
             if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                Simulator.Confirmer.Information("Power line condition overriden.");
+                Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overriden."));
         }
 
         public void SetPantographSecond( bool up)
@@ -289,9 +289,9 @@ namespace ORTS
                 PantographSecondDelay += PowerOnDelayS;
             PantographSecondUp = up;
             if((up)&&(!Simulator.TRK.Tr_RouteFile.Electrified))
-                Simulator.Confirmer.Warning("No power line!");
+                Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power line!"));
             if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                Simulator.Confirmer.Information("Power line condition overriden.");
+                Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overriden."));
         }
 
         public override void SetPower(bool ToState)

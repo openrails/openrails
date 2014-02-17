@@ -1,0 +1,1110 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2014-02-17 20:36:58+0100\n"
+"PO-Revision-Date: 2014-02-17 20:36:59+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: MonoDevelop Gettext addin\n"
+
+
+#: ../RunActivity/Debugging/DebugViewerForm.cs:193
+msgid "View Self"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.cs:583
+msgid "MSG to Server"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.cs:587
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
+msgid "MSG to All"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
+msgid "View Train"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
+msgid "m"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
+msgid "Remove"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
+msgid "Auto Switch"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
+msgid "Show Avatars"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
+msgid "MSG to Selected"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
+#: ../RunActivity/Debugging/MessageViewer.Designer.cs:88
+msgid "Compose MSG"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
+msgid "Res"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
+msgid "Reply to Selected"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
+msgid "Draw Path"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
+msgid "Pick Signals"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
+msgid "Pick Switches"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
+msgid "Can Join"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
+msgid "Assist"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
+msgid "Normal"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
+msgid "Follow"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
+msgid "Penalty"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
+msgid "Prefer Green"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
+msgid "See in Game"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
+msgid "DispatchViewer"
+msgstr ""
+
+#: ../RunActivity/Debugging/GenericObjectViewerForm.cs:89
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:202
+msgid "Resume"
+msgstr ""
+
+#: ../RunActivity/Debugging/GenericObjectViewerForm.cs:94
+#: ../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:67
+msgid "Pause"
+msgstr ""
+
+#: ../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:80
+msgid "GenericObjectViewerForm"
+msgstr ""
+
+#: ../RunActivity/Debugging/MessageViewer.Designer.cs:46
+msgid "Clear All"
+msgstr ""
+
+#: ../RunActivity/Debugging/MessageViewer.Designer.cs:57
+msgid "Reply Selected"
+msgstr ""
+
+#: ../RunActivity/Debugging/MessageViewer.Designer.cs:102
+msgid "MessageViewer"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.cs:189
+#: ../RunActivity/Debugging/SoundDebugForm.cs:219
+#: ../RunActivity/Debugging/SoundDebugForm.cs:220
+#: ../RunActivity/Debugging/SoundDebugForm.cs:221
+msgid "-"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.cs:218
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
+msgid "0"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:151
+msgid "Current SMS"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:162
+msgid "Stream Properties"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:173
+msgid "3D"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:242
+msgid "Speed"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:270
+msgid "Variable 2"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:289
+msgid "Variable 3"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:299
+msgid "Variable 1"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
+msgid "Distance"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:319
+msgid "Volume"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:328
+msgid ""
+"Total number of sound \r\n"
+"files in cache:"
+msgstr ""
+
+#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:348
+msgid "SoundDebugForm"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:282
+msgid "No power line!"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:273
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:284
+msgid "Power line condition overriden."
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:118
+msgid "Release"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:119
+msgid "Quick Release"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:120
+msgid "Running"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:121
+msgid "Neutral"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:122
+msgid "Apply"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:123
+msgid "EPApply"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:124
+msgid "Emergency"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:125
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:128
+msgid "Lap"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:126
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:127
+msgid "Service"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:129
+msgid "Suppresion"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:130
+msgid "Cont. Service"
+msgstr ""
+
+#: ../RunActivity/RollingStock/MSTSNotchController.cs:131
+msgid "Full Service"
+msgstr ""
+
+#: ../RunActivity/Simulator/Activity.cs:774
+msgid "Passenger boarding completed. You may depart now."
+msgstr ""
+
+#: ../RunActivity/Simulator/Activity.cs:767
+#, csharp-format
+msgid "Passenger boarding completes in {0:D2}:{1:D2}"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:138
+#: ../RunActivity/Simulator/Confirmation.cs:150
+msgid "reverse"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:138
+#: ../RunActivity/Simulator/Confirmation.cs:150
+msgid "neutral"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:138
+#: ../RunActivity/Simulator/Confirmation.cs:150
+msgid "forward"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:138
+#: ../RunActivity/Simulator/Confirmation.cs:150
+msgid "locked. Close throttle, stop train then re-try."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:139
+msgid "Throttle"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:139
+#: ../RunActivity/Simulator/Confirmation.cs:151
+#: ../RunActivity/Simulator/Confirmation.cs:152
+#: ../RunActivity/Simulator/Confirmation.cs:153
+#: ../RunActivity/Simulator/Confirmation.cs:155
+#: ../RunActivity/Simulator/Confirmation.cs:156
+#: ../RunActivity/Simulator/Confirmation.cs:160
+#: ../RunActivity/Simulator/Confirmation.cs:184
+#: ../RunActivity/Simulator/Confirmation.cs:185
+msgid "close"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:139
+#: ../RunActivity/Simulator/Confirmation.cs:151
+#: ../RunActivity/Simulator/Confirmation.cs:152
+#: ../RunActivity/Simulator/Confirmation.cs:153
+#: ../RunActivity/Simulator/Confirmation.cs:155
+#: ../RunActivity/Simulator/Confirmation.cs:156
+#: ../RunActivity/Simulator/Confirmation.cs:160
+#: ../RunActivity/Simulator/Confirmation.cs:184
+#: ../RunActivity/Simulator/Confirmation.cs:185
+msgid "open"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:139
+msgid "locked. Release dynamic brake then re-try."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:140
+msgid "Wheelslip"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:140
+msgid "over"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:140
+msgid "occurring. Tractive power greatly reduced."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:140
+msgid "warning"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:142
+msgid "Power"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:142
+#: ../RunActivity/Simulator/Confirmation.cs:146
+#: ../RunActivity/Simulator/Confirmation.cs:147
+#: ../RunActivity/Simulator/Confirmation.cs:152
+#: ../RunActivity/Simulator/Confirmation.cs:153
+#: ../RunActivity/Simulator/Confirmation.cs:158
+#: ../RunActivity/Simulator/Confirmation.cs:166
+#: ../RunActivity/Simulator/Confirmation.cs:171
+#: ../RunActivity/Simulator/Confirmation.cs:174
+#: ../RunActivity/Simulator/Confirmation.cs:176
+#: ../RunActivity/Simulator/Confirmation.cs:177
+#: ../RunActivity/Simulator/Confirmation.cs:178
+#: ../RunActivity/Simulator/Confirmation.cs:179
+#: ../RunActivity/Simulator/Confirmation.cs:180
+#: ../RunActivity/Simulator/Confirmation.cs:181
+msgid "off"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:142
+#: ../RunActivity/Simulator/Confirmation.cs:146
+#: ../RunActivity/Simulator/Confirmation.cs:147
+#: ../RunActivity/Simulator/Confirmation.cs:152
+#: ../RunActivity/Simulator/Confirmation.cs:153
+#: ../RunActivity/Simulator/Confirmation.cs:158
+#: ../RunActivity/Simulator/Confirmation.cs:171
+#: ../RunActivity/Simulator/Confirmation.cs:174
+#: ../RunActivity/Simulator/Confirmation.cs:180
+#: ../RunActivity/Simulator/Confirmation.cs:181
+msgid "on"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:143
+msgid "Pantograph 1"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:143
+#: ../RunActivity/Simulator/Confirmation.cs:144
+msgid "lower"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:143
+#: ../RunActivity/Simulator/Confirmation.cs:144
+msgid "raise"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:144
+msgid "Pantograph 2"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:146
+msgid "Player Diesel Power"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:146
+msgid "locked. Close throttle then re-try."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:147
+msgid "Helper Diesel Power"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:148
+msgid "Diesel Tank"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:148
+msgid "re-fuelled"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:148
+msgid "level"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:151
+msgid "Regulator"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:152
+msgid "Injector 1"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:153
+msgid "Injector 2"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:154
+msgid "Blower"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:154
+#: ../RunActivity/Simulator/Confirmation.cs:157
+#: ../RunActivity/Simulator/Confirmation.cs:166
+#: ../RunActivity/Simulator/Confirmation.cs:191
+msgid "decrease"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:154
+#: ../RunActivity/Simulator/Confirmation.cs:157
+#: ../RunActivity/Simulator/Confirmation.cs:166
+#: ../RunActivity/Simulator/Confirmation.cs:191
+msgid "increase"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:155
+msgid "Damper"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:156
+msgid "Firebox Door"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:157
+msgid "Firing Rate"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:158
+msgid "Manual Firing"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:159
+msgid "Fire"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:159
+msgid "add shovelfull"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:160
+msgid "Cylinder Cocks"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:161
+#: ../RunActivity/Simulator/Confirmation.cs:162
+msgid "Tender"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:161
+msgid "Coal re-filled"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:161
+msgid "Coal level"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:162
+msgid "Water re-filled"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:162
+msgid "Water level"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:164
+msgid "Train Brake"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:164
+#: ../RunActivity/Simulator/Confirmation.cs:165
+msgid "release"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:164
+#: ../RunActivity/Simulator/Confirmation.cs:165
+#: ../RunActivity/Simulator/Confirmation.cs:167
+msgid "apply"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:165
+msgid "Engine Brake"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:166
+msgid "Dynamic Brake"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:166
+msgid "setup"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:167
+msgid "Emergency Brake"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:168
+msgid "Bail Off"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:168
+msgid "disengage"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:168
+msgid "engage"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:169
+msgid "Brakes"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:169
+msgid "initialize"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:169
+msgid "cannot initialize. Stop train then re-try."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:170
+msgid "Handbrake"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:170
+msgid "none"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:170
+msgid "full"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:171
+msgid "Retainers"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:171
+msgid "Exhaust"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:171
+msgid "High Pressure"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:171
+msgid "Low Pressure"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:171
+msgid "Slow Direct"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:172
+msgid "Brake Hose"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:172
+msgid "disconnect"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:172
+msgid "connect"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:174
+msgid "Sander"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:175
+msgid "Alerter"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:175
+msgid "acknowledge"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:176
+msgid "Horn"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:177
+msgid "Whistle"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:177
+msgid "blow"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:178
+msgid "Bell"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:178
+msgid "ring"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:179
+msgid "Headlight"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:179
+msgid "dim"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:179
+msgid "bright"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:180
+msgid "Cab Light"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:181
+msgid "Wipers"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:182
+msgid "Cab"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:182
+msgid "changing is not available"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:182
+msgid ""
+"changing disabled. Close throttle, set reverser to neutral, stop train then "
+"re-try."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:184
+msgid "Doors Left"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:185
+msgid "Doors Right"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:186
+msgid "Mirror"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:186
+msgid "retract"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:186
+msgid "extend"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:188
+msgid "Switch Ahead"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:188
+#: ../RunActivity/Simulator/Confirmation.cs:189
+msgid "locked. Use Ctrl+M to change signals to manual mode then re-try."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:189
+msgid "Switch Behind"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:191
+msgid "Simulation Speed"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:191
+msgid "reset"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:192
+msgid "Uncouple After"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:193
+msgid "Activity"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:193
+msgid "quit"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:193
+msgid "resume"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:194
+msgid "Replay"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:194
+msgid "Overriding camera replay. Press Esc to resume camera replay."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:195
+msgid "Location labels"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:195
+msgid "sidings"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:195
+msgid "stations"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:195
+msgid "stations and sidings"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:196
+msgid "Gearbox"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:196
+msgid "down"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:196
+msgid "up"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:196
+msgid "locked. Use shaft before changing gear."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:197
+msgid "Signal mode"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:197
+msgid "manual"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:197
+msgid "auto"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:197
+msgid "locked. Stop train, then re-try."
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:205
+#: ../RunActivity/Simulator/Confirmation.cs:214
+#: ../RunActivity/Simulator/Confirmation.cs:252
+#, csharp-format
+msgid "{0} {1}"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:209
+#, csharp-format
+msgid "{0}"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:219
+#, csharp-format
+msgid "{0} to {1:0}%"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:224
+#, csharp-format
+msgid "{0} {1:0}% {2}"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:229
+#, csharp-format
+msgid "{0:0}% {1}"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:234
+#, csharp-format
+msgid "{0:0}%"
+msgstr ""
+
+#: ../RunActivity/Simulator/Confirmation.cs:242
+#: ../RunActivity/Simulator/Confirmation.cs:247
+#, csharp-format
+msgid "{0} {1:0}%"
+msgstr ""
+
+#. Context: NonSteam
+#: ../RunActivity/Simulator/Confirmation.cs:138
+msgctxt "NonSteam"
+msgid "Reverser"
+msgstr ""
+
+#. Context: Steam
+#: ../RunActivity/Simulator/Confirmation.cs:150
+msgctxt "Steam"
+msgid "Reverser"
+msgstr ""
+
+#. Context: Alerter
+#: ../RunActivity/Simulator/Confirmation.cs:175
+msgctxt "Alerter"
+msgid "sound"
+msgstr ""
+
+#. Context: Horn
+#: ../RunActivity/Simulator/Confirmation.cs:176
+msgctxt "Horn"
+msgid "sound"
+msgstr ""
+
+#. Context: Cab
+#: ../RunActivity/Simulator/Confirmation.cs:182
+msgctxt "Cab"
+msgid "change"
+msgstr ""
+
+#. Context: Switch
+#: ../RunActivity/Simulator/Confirmation.cs:188
+#: ../RunActivity/Simulator/Confirmation.cs:189
+msgctxt "Switch"
+msgid "change"
+msgstr ""
+
+#. Context: Labels
+#: ../RunActivity/Simulator/Confirmation.cs:195
+msgctxt "Labels"
+msgid "none"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Viewer.cs:1070
+msgid "Game saved"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
+msgid "Activity Events"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
+msgid "successfully"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
+msgid "without success"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
+msgid "Resume and close box"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
+msgid "Quit activity"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
+msgid "Status: Activity paused"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
+msgid "Close box"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
+msgid "Status: Activity resumed"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
+msgid "End Activity"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:147
+#, csharp-format
+msgid ""
+"This activity has ended {0}.\n"
+"For a detailed evaluation, see the Help Window (F1)."
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:232
+#, csharp-format
+msgid "Event: {0}"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:39
+msgid "Car Operation Menu"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
+msgid "Toggle Handbrake"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:63
+msgid "Toggle Power"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:76
+msgid "Toggle MU Connection"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:87
+msgid "Close window"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:119
+msgid "Handbrake set"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
+msgid "Handbrake off"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:135
+msgid "Power OFF command sent"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
+msgid "Power ON command sent"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:140
+msgid "No power command for this type of car!"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:156
+msgid "MU signal connected"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:158
+msgid "MU signal disconnected"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:161
+msgid "No MU command for this type of car!"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:33
+msgid "Compass"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:44
+msgid "Lat:"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:47
+msgid "Lon:"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/ComposeMessage.cs:34
+msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:40
+msgid "Help"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:42
+msgid "Key Commands"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:68
+msgid "Briefing"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:79
+msgid "Timetable"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:84
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:68
+msgid "Station"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
+msgid "Arrive"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+msgid "Actual"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
+msgid "Depart"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:103
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:105
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:132
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:135
+msgid "(missed)"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:112
+msgid "Work Orders"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:117
+msgid "Task"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
+msgid "Car(s)"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
+msgid "Location"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
+msgid "Status"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:140
+msgid "Assemble Train"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:144
+msgid "At Location"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:148
+msgid "Drop Off"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:152
+msgid "Pick Up"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:225
+msgid "Done"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:238
+msgid "Procedures"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:52
+msgid "Next Station"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:212
+msgid "Activity completed."
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:31
+msgid "Pause Menu"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:45
+#, csharp-format
+msgid "Quit {1} ({0})"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:50
+#, csharp-format
+msgid "Save your game ({0})"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:58
+#, csharp-format
+msgid "Continue playing ({0})"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/SwitchWindow.cs:47
+msgid "Switch"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
+msgid "Track Monitor"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:110
+msgid "Speed:"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:117
+msgid "Projected:"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:124
+msgid "Limit:"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:142
+msgid " Dist      Speed   Aspect"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
+msgid "Train Operations"
+msgstr ""
+

@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Threading;
+using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -31,6 +32,7 @@ using MSTS;
 using ORTS.MultiPlayer;
 using ORTS.Processes;
 using ORTS.Viewer3D.Popups;
+using GNU.Gettext;
 
 namespace ORTS.Viewer3D
 {
@@ -75,6 +77,7 @@ namespace ORTS.Viewer3D
         public TracksDebugWindow TracksDebugWindow { get; private set; } // Control-Alt-F6
         public SignallingDebugWindow SignallingDebugWindow { get; private set; } // Control-Alt-F11 window
         public ComposeMessage ComposeMessageWindow { get; private set; } // Control-Alt-F11 window
+        public static GettextResourceManager Catalog { get; private set; } // Localization dictionary
 		// Route Information
         public TileManager Tiles { get; private set; }
         public TileManager LoTiles { get; private set; }
@@ -197,6 +200,9 @@ namespace ORTS.Viewer3D
             Simulator = simulator;
             Game = game;
             Settings = simulator.Settings;
+
+            Game.LoadLanguage();
+
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;
             LoaderProcess = game.LoaderProcess;
@@ -289,6 +295,8 @@ namespace ORTS.Viewer3D
             TextureManager = new SharedTextureManager(this, GraphicsDevice);
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
+
+            Catalog = new GettextResourceManager("ORTS.Simulator");
 
             WindowManager = new WindowManager(this);
             QuitWindow = new QuitWindow(WindowManager);
@@ -1059,7 +1067,7 @@ namespace ORTS.Viewer3D
             {
                 SaveActivityThumbnail = false;
                 SaveScreenshotToFile(Game.GraphicsDevice, Path.Combine(UserSettings.UserDataFolder, SaveActivityFileStem + ".png"), true);
-                MessagesWindow.AddMessage("Game saved", 5);
+                MessagesWindow.AddMessage(Catalog.GetString("Game saved"), 5);
             }
         }
 

@@ -88,7 +88,7 @@ namespace ORTS.Viewer3D.Popups
 
         // Constructor
         public TrackMonitorWindow(WindowManager owner)
-            : base(owner, 150, LabelsHeight + TrackMonitorHeight + 10, "Track Monitor")
+            : base(owner, 150, LabelsHeight + TrackMonitorHeight + 10, Viewer.Catalog.GetString("Track Monitor"))
         {
         }
 
@@ -107,21 +107,21 @@ namespace ORTS.Viewer3D.Popups
                 // first text box - speed - items added in horizontal order
                 var hbox_t1 = vbox.AddLayoutHorizontal(16);
                 {
-                    hbox_t1.Add(new Label(hbox_t1.RemainingWidth / 2, hbox_t1.RemainingHeight, "Speed:"));
+                    hbox_t1.Add(new Label(hbox_t1.RemainingWidth / 2, hbox_t1.RemainingHeight, Viewer.Catalog.GetString("Speed:")));
                     hbox_t1.Add(SpeedCurrent = new Label(hbox_t1.RemainingWidth, hbox_t1.RemainingHeight, "", LabelAlignment.Right));
                 }
 
                 // second text box - projected speed - items added in horizontal order
                 var hbox_t2 = vbox.AddLayoutHorizontal(16);
                 {
-                    hbox_t2.Add(new Label(hbox_t2.RemainingWidth / 2, hbox_t2.RemainingHeight, "Projected:"));
+                    hbox_t2.Add(new Label(hbox_t2.RemainingWidth / 2, hbox_t2.RemainingHeight, Viewer.Catalog.GetString("Projected:")));
                     hbox_t2.Add(SpeedProjected = new Label(hbox_t2.RemainingWidth, hbox_t2.RemainingHeight, "", LabelAlignment.Right));
                 }
 
                 // third text bos - max allowed speed - items added in horizontal order
                 var hbox_t3 = vbox.AddLayoutHorizontal(16);
                 {
-                    hbox_t3.Add(new Label(hbox_t3.RemainingWidth / 2, hbox_t3.RemainingHeight, "Limit:"));
+                    hbox_t3.Add(new Label(hbox_t3.RemainingWidth / 2, hbox_t3.RemainingHeight, Viewer.Catalog.GetString("Limit:")));
                     hbox_t3.Add(SpeedAllowed = new Label(hbox_t3.RemainingWidth, hbox_t3.RemainingHeight, "", LabelAlignment.Right));
                 }
 
@@ -139,7 +139,7 @@ namespace ORTS.Viewer3D.Popups
 
                 // add object area header
                 var hbox_oh = vbox.AddLayoutHorizontal(16);
-                hbox_oh.Add(new Label(hbox_oh.RemainingWidth, hbox_oh.RemainingHeight, " Dist      Speed   Aspect"));
+                hbox_oh.Add(new Label(hbox_oh.RemainingWidth, hbox_oh.RemainingHeight, Viewer.Catalog.GetString(" Dist      Speed   Aspect")));
 
                 // add separator between object area header and object area
                 vbox.AddHorizontalSeparator();
@@ -165,9 +165,9 @@ namespace ORTS.Viewer3D.Popups
             if (updateFull)
             {
                 // speeds
-                SpeedCurrent.Text = FormatStrings.FormatSpeed(Math.Abs(thisInfo.speedMpS), Owner.Viewer.MilepostUnitsMetric);
-                SpeedProjected.Text = FormatStrings.FormatSpeed(Math.Abs(thisInfo.projectedSpeedMpS), Owner.Viewer.MilepostUnitsMetric);
-                SpeedAllowed.Text = FormatStrings.FormatSpeed(thisInfo.allowedSpeedMpS, Owner.Viewer.MilepostUnitsMetric);
+                SpeedCurrent.Text = FormatStrings.FormatTrackMonitorSpeed(Math.Abs(thisInfo.speedMpS), Owner.Viewer.MilepostUnitsMetric);
+                SpeedProjected.Text = FormatStrings.FormatTrackMonitorSpeed(Math.Abs(thisInfo.projectedSpeedMpS), Owner.Viewer.MilepostUnitsMetric);
+                SpeedAllowed.Text = FormatStrings.FormatTrackMonitorSpeed(thisInfo.allowedSpeedMpS, Owner.Viewer.MilepostUnitsMetric);
 
                 // control mode
                 string ControlText = ControlModeLabels[thisInfo.ControlMode];
@@ -720,7 +720,7 @@ namespace ORTS.Viewer3D.Popups
 
                 if (thisItem.SignalState != TrackMonitorSignalAspect.Stop && thisItem.AllowedSpeedMpS > 0)
                 {
-                    string speedString = FormatStrings.FormatSpeed(thisItem.AllowedSpeedMpS, metric);
+                    string speedString = FormatStrings.FormatTrackMonitorSpeed(thisItem.AllowedSpeedMpS, metric);
                     Point labelPoint = new Point(offset.X + speedTextOffset, offset.Y + reqLabelPosition);
 
                     Font.Draw(spriteBatch, labelPoint, speedString, Color.White);
@@ -756,7 +756,7 @@ namespace ORTS.Viewer3D.Popups
                     forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
                 newLabelPosition = reqLabelPosition;
 
-                string speedString = FormatStrings.FormatSpeed(thisItem.AllowedSpeedMpS, metric);
+                string speedString = FormatStrings.FormatTrackMonitorSpeed(thisItem.AllowedSpeedMpS, metric);
                 Point labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition);
 
                 Font.Draw(spriteBatch, labelPoint, speedString, Color.White);

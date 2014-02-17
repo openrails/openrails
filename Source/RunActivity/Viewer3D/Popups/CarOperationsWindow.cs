@@ -36,7 +36,7 @@ namespace ORTS.Viewer3D.Popups
         }
 
         public CarOperationsWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 12, Window.DecorationSize.Y + owner.TextFontDefault.Height * 8, "Car Operation Menu")
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 12, Window.DecorationSize.Y + owner.TextFontDefault.Height * 8, Viewer.Catalog.GetString("Car Operation Menu"))
         {
             Viewer = owner.Viewer;
         }
@@ -51,7 +51,7 @@ namespace ORTS.Viewer3D.Popups
             var spacing = (heightForLabels - Owner.TextFontDefault.Height) / 3;
             vbox.AddSpace(0, spacing);
 
-            vbox.Add(buttonHandbrake = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, "Toggle Handbrake", LabelAlignment.Center));
+            vbox.Add(buttonHandbrake = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Handbrake"), LabelAlignment.Center));
             //if((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus())
             //    vbox.Add(buttonHandbrake = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, "Handbrake Off", LabelAlignment.Center));
             //else
@@ -60,7 +60,7 @@ namespace ORTS.Viewer3D.Popups
             vbox.AddSpace(0, spacing);
             vbox.AddHorizontalSeparator();
 
-            buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, "Toggle Power", LabelAlignment.Center);
+            buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle Power"), LabelAlignment.Center);
             //if((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).PowerOn)
             //    buttonTogglePower = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, "Power Off", LabelAlignment.Center);
             //else
@@ -73,7 +73,7 @@ namespace ORTS.Viewer3D.Popups
 			vbox.AddHorizontalSeparator();
 			buttonTogglePower.Click += new Action<Control, Point>(buttonTogglePower_Click);
             vbox.AddSpace(0, spacing);
-            vbox.Add(buttonToggleMU = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, "Toggle MU Connection", LabelAlignment.Center));
+            vbox.Add(buttonToggleMU = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Toggle MU Connection"), LabelAlignment.Center));
             //if((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).AcceptMUSignals)
             //    vbox.Add(buttonToggleMU = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, "Disconnect from MU", LabelAlignment.Center));
             //else
@@ -84,7 +84,7 @@ namespace ORTS.Viewer3D.Popups
             vbox.AddHorizontalSeparator();
             vbox.AddHorizontalSeparator();
             vbox.AddSpace(0, spacing);
-            vbox.Add(buttonClose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, "Close window", LabelAlignment.Center));
+            vbox.Add(buttonClose = new Label(vbox.RemainingWidth, Owner.TextFontDefault.Height, Viewer.Catalog.GetString("Close window"), LabelAlignment.Center));
             buttonClose.Click += new Action<Control, Point>(buttonClose_Click);
 
             return vbox;
@@ -116,9 +116,9 @@ namespace ORTS.Viewer3D.Popups
         {
             new WagonHandbrakeCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus());
             if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus())
-                Viewer.Simulator.Confirmer.Information("Handbrake set");
+                Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Handbrake set"));
             else
-                Viewer.Simulator.Confirmer.Information("Handbrake off");
+                Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Handbrake off"));
             Visible = false;
         }
 
@@ -132,12 +132,12 @@ namespace ORTS.Viewer3D.Popups
             {
                 new PowerCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).PowerOn);
                 if((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).PowerOn)
-                    Viewer.Simulator.Confirmer.Information("Power OFF command sent");
+                    Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power OFF command sent"));
                 else
-                    Viewer.Simulator.Confirmer.Information("Power ON command sent");
+                    Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power ON command sent"));
             }
             else
-                Viewer.Simulator.Confirmer.Warning("No power command for this type of car!");
+                Viewer.Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power command for this type of car!"));
 
             Visible = false;
         }
@@ -153,12 +153,12 @@ namespace ORTS.Viewer3D.Popups
             {
                 new ToggleMUCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).AcceptMUSignals);
                 if((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).AcceptMUSignals)
-                    Viewer.Simulator.Confirmer.Information("MU signal connected");
+                    Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("MU signal connected"));
                 else
-                    Viewer.Simulator.Confirmer.Information("MU signal disconnected");
+                    Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("MU signal disconnected"));
             }
             else
-                Viewer.Simulator.Confirmer.Warning("No MU command for this type of car!");
+                Viewer.Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No MU command for this type of car!"));
 
             Visible = false;
         }
