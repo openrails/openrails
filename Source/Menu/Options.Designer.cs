@@ -297,6 +297,7 @@
             "English",
             "French",
             "Hungarian",
+            "Italian",
             });
             this.comboBoxLanguage.Location = new System.Drawing.Point(6, 124);
             this.comboBoxLanguage.Name = "comboBoxLanguage";

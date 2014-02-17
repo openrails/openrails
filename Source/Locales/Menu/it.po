@@ -1,26 +1,26 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-17 21:35:51+0100\n"
-"PO-Revision-Date: 2014-02-17 21:35:51+0100\n"
-"Last-Translator: \n"
+"Project-Id-Version: OpenRails\n"
+"POT-Creation-Date: 2014-02-16 19:40:31-0700\n"
+"PO-Revision-Date: 2014-02-17 20:21+0100\n"
+"Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
+"<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: \n"
+"Language: it\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: MonoDevelop Gettext addin\n"
+"X-Generator: Poedit 1.6.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-
-#: ../Menu/FolderForm.Designer.cs:56
-#: ../Menu/Options.Designer.cs:159
+#: ../Menu/FolderForm.Designer.cs:56 ../Menu/Options.Designer.cs:159
 msgid "OK"
 msgstr ""
 
-#: ../Menu/FolderForm.Designer.cs:67
-#: ../Menu/Options.Designer.cs:212
+#: ../Menu/FolderForm.Designer.cs:67 ../Menu/Options.Designer.cs:212
 #: ../Menu/TestingForm.Designer.cs:84
 msgid "Cancel"
-msgstr ""
+msgstr "Annulla"
 
 #: ../Menu/FolderForm.Designer.cs:77
 msgid "Path:"
@@ -28,52 +28,52 @@ msgstr ""
 
 #: ../Menu/FolderForm.Designer.cs:86
 msgid "Name:"
-msgstr ""
+msgstr "Nome:"
 
 #: ../Menu/FolderForm.Designer.cs:116
 msgid "Installation Profile"
-msgstr ""
+msgstr "Profilo di riferimento"
 
 #: ../Menu/ImportExportSaveForm.cs:51
 msgid "Save Packs"
-msgstr ""
+msgstr "Salva sessioni"
 
 #: ../Menu/ImportExportSaveForm.cs:51
 msgid "All files"
-msgstr ""
+msgstr "Tutti i file"
 
 #: ../Menu/ImportExportSaveForm.cs:62
 #, csharp-format
 msgid "Save Pack '{0}' imported successfully."
-msgstr ""
+msgstr "Sessione '{0}' importata correttamente."
 
 #: ../Menu/ImportExportSaveForm.cs:86
 #, csharp-format
 msgid "Save Pack '{0}' exported successfully."
-msgstr ""
+msgstr "Sessione '{0}' esportata correttamente."
 
 #: ../Menu/ImportExportSaveForm.cs:112
 #, csharp-format
 msgid "Save Pack folder contains {0} save pack:"
 msgid_plural "Save Pack folder contains {0} save packs:"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "La cartella contiene {0} sessione:"
+msgstr[1] "La cartella contiene {0} sessioni:"
 
 #: ../Menu/ImportExportSaveForm.Designer.cs:39
 msgid "Open Save Packs folder"
-msgstr ""
+msgstr "Apri la cartella dei salvataggi"
 
 #: ../Menu/ImportExportSaveForm.Designer.cs:49
 msgid "Export to Save Pack"
-msgstr ""
+msgstr "Esporta su file"
 
 #: ../Menu/ImportExportSaveForm.Designer.cs:59
 msgid "Import Save Pack"
-msgstr ""
+msgstr "Importa da file"
 
 #: ../Menu/ImportExportSaveForm.Designer.cs:91
 msgid "Import and export saved games"
-msgstr ""
+msgstr "Importa ed esporta sessioni salvate"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:53
 msgid "✔"
@@ -93,116 +93,126 @@ msgstr ""
 
 #: ../Menu/KeyInputEditControl.Designer.cs:54
 msgid "Accept changes"
-msgstr ""
+msgstr "Salva le modifiche"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:65
 msgid "Cancel changes"
-msgstr ""
+msgstr "Annulla le modifiche"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:75
 msgid "Press any key"
-msgstr ""
+msgstr "Premi un tasto"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:87
 msgid "Reset to default"
-msgstr ""
+msgstr "Ripristina default"
 
 #: ../Menu/MainForm.cs:92
 msgid "Spring"
-msgstr ""
+msgstr "Primavera"
 
 #: ../Menu/MainForm.cs:93
 msgid "Summer"
-msgstr ""
+msgstr "Estate"
 
 #: ../Menu/MainForm.cs:94
 msgid "Autumn"
-msgstr ""
+msgstr "Autunno"
 
 #: ../Menu/MainForm.cs:95
 msgid "Winter"
-msgstr ""
+msgstr "Inverno"
 
 #: ../Menu/MainForm.cs:99
 msgid "Clear"
-msgstr ""
+msgstr "Sereno"
 
 #: ../Menu/MainForm.cs:100
 msgid "Snow"
-msgstr ""
+msgstr "Neve"
 
 #: ../Menu/MainForm.cs:101
 msgid "Rain"
-msgstr ""
+msgstr "Pioggia"
 
 #: ../Menu/MainForm.cs:105
 msgid "Easy"
-msgstr ""
+msgstr "Facile"
 
 #: ../Menu/MainForm.cs:106
 msgid "Medium"
-msgstr ""
+msgstr "Medio"
 
 #: ../Menu/MainForm.cs:107
 msgid "Hard"
-msgstr ""
+msgstr "Difficile"
 
-#: ../Menu/MainForm.cs:186
+#: ../Menu/MainForm.cs:193
 msgid "Select a the installation profile (MSTS folder) to add:"
-msgstr ""
+msgstr "Scegli un profilo (cartella MSTS) da aggiungere:"
 
-#: ../Menu/MainForm.cs:224
+#: ../Menu/MainForm.cs:231
 msgid "Path: "
 msgstr ""
 
-#: ../Menu/MainForm.cs:224
+#: ../Menu/MainForm.cs:231
 msgid ""
 "\n"
 "Name: "
 msgstr ""
+"\n"
+"Nome:"
 
-#: ../Menu/MainForm.cs:224
+#: ../Menu/MainForm.cs:231
 msgid ""
 "\n"
 "\n"
 "Remove this installation profile from Open Rails?"
 msgstr ""
+"\n"
+"\n"
+"Rimuovere questo profilo da Open Rails?"
 
-#: ../Menu/MainForm.cs:310
+#: ../Menu/MainForm.cs:317
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
 msgstr ""
+"Il nome utente deve essere formato da 4 massimo 10 caratteri e non deve "
+"contenere spazi, ',\" oppure - e non deve iniziare con un numero"
 
-#: ../Menu/MainForm.cs:464
+#: ../Menu/MainForm.cs:471
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed.\n"
 "Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
 "folder."
 msgstr ""
+"Microsoft Train Simulator non sembra installato.\n"
+"Clicca su 'Aggiungi...' per indicare a  Open Rails la cartella di Microsoft "
+"Train Simulator."
 
-#: ../Menu/MainForm.cs:727
+#: ../Menu/MainForm.cs:734
 msgid "Activity Briefing"
-msgstr ""
+msgstr "Presentazione Activity"
 
-#: ../Menu/MainForm.cs:721
+#: ../Menu/MainForm.cs:728
 #, csharp-format
 msgid "Route: {0}"
-msgstr ""
+msgstr "Scenario: {0}"
 
-#: ../Menu/MainForm.cs:723
+#: ../Menu/MainForm.cs:730
 #, csharp-format
 msgid "Locomotive: {0}"
-msgstr ""
+msgstr "Locomotiva: {0}"
 
-#: ../Menu/MainForm.cs:726
+#: ../Menu/MainForm.cs:733
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:94
 msgid "Windowed"
-msgstr ""
+msgstr "In finestra"
 
 #: ../Menu/MainForm.Designer.cs:104
 msgid "Start"
@@ -218,33 +228,31 @@ msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:137
 msgid "Add..."
-msgstr ""
+msgstr "Aggiungi..."
 
 #: ../Menu/MainForm.Designer.cs:151
 msgid "Remove"
-msgstr ""
+msgstr "Rimuovi"
 
 #: ../Menu/MainForm.Designer.cs:163
 msgid "Logging"
-msgstr ""
+msgstr "Scrivi Log"
 
-#: ../Menu/MainForm.Designer.cs:172
-#: ../Menu/Options.Designer.cs:1398
+#: ../Menu/MainForm.Designer.cs:172 ../Menu/Options.Designer.cs:1397
 msgid "Options"
-msgstr ""
+msgstr "Opzioni"
 
 #: ../Menu/MainForm.Designer.cs:182
 msgid "Resume/ Replay..."
-msgstr ""
+msgstr "Riprendi/ Ricomincia..."
 
-#: ../Menu/MainForm.Designer.cs:191
-#: ../Menu/TestingForm.Designer.cs:295
+#: ../Menu/MainForm.Designer.cs:191 ../Menu/TestingForm.Designer.cs:295
 msgid "Testing"
-msgstr ""
+msgstr "Test"
 
 #: ../Menu/MainForm.Designer.cs:290
 msgid "Route:"
-msgstr ""
+msgstr "Scenario:"
 
 #: ../Menu/MainForm.Designer.cs:301
 msgid "Activity:"
@@ -252,19 +260,19 @@ msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:312
 msgid "Locomotive:"
-msgstr ""
+msgstr "Locomotiva:"
 
 #: ../Menu/MainForm.Designer.cs:323
 msgid "Consist:"
-msgstr ""
+msgstr "Convoglio:"
 
 #: ../Menu/MainForm.Designer.cs:334
 msgid "Starting at:"
-msgstr ""
+msgstr "Partenza da:"
 
 #: ../Menu/MainForm.Designer.cs:345
 msgid "Heading to:"
-msgstr ""
+msgstr "Diretto a:"
 
 #: ../Menu/MainForm.Designer.cs:364
 msgid "Host/port:"
@@ -272,7 +280,7 @@ msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:375
 msgid "User name:"
-msgstr ""
+msgstr "Nome utente:"
 
 #: ../Menu/MainForm.Designer.cs:385
 msgid "Client"
@@ -284,23 +292,23 @@ msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:469
 msgid "Weather:"
-msgstr ""
+msgstr "Meteo:"
 
 #: ../Menu/MainForm.Designer.cs:480
 msgid "Duration:"
-msgstr ""
+msgstr "Durata:"
 
 #: ../Menu/MainForm.Designer.cs:491
 msgid "Difficulty:"
-msgstr ""
+msgstr "Difficoltà:"
 
 #: ../Menu/MainForm.Designer.cs:502
 msgid "Time:"
-msgstr ""
+msgstr "Ora:"
 
 #: ../Menu/MainForm.Designer.cs:513
 msgid "Season:"
-msgstr ""
+msgstr "Stagione:"
 
 #: ../Menu/MainForm.Designer.cs:538
 msgid "Multiplayer"
@@ -308,15 +316,15 @@ msgstr ""
 
 #: ../Menu/MainForm.Designer.cs:550
 msgid "Singleplayer"
-msgstr ""
+msgstr "Gioco singolo"
 
 #: ../Menu/MainForm.Designer.cs:560
 msgid "Installation profile:"
-msgstr ""
+msgstr "Profilo di installazione:"
 
 #: ../Menu/MainForm.Designer.cs:592
 msgid "Edit"
-msgstr ""
+msgstr "Modifica"
 
 #: ../Menu/MainForm.Designer.cs:651
 msgid "Open Rails"
@@ -324,31 +332,35 @@ msgstr ""
 
 #: ../Menu/Options.cs:184
 msgid "Click to change this key"
-msgstr ""
+msgstr "Clicca per cambiare questo tasto"
 
 #: ../Menu/Options.cs:200
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
 msgstr ""
+"Conflitto fra le assegnazioni dei tasti, continuo?\n"
+"\n"
 
 #: ../Menu/Options.cs:277
 msgid "Remove all custom key assignments?"
-msgstr ""
+msgstr "Rimuovo tutte le assegnazioni tasti personalizzate?"
 
 #: ../Menu/Options.cs:288
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
 msgstr ""
+"Una lista di tutti i comandi da tastiera è stata posta qui:\n"
+"\n"
 
 #: ../Menu/Options.cs:297
 msgid "No errors found."
-msgstr ""
+msgstr "Nessun errore rilevato."
 
 #: ../Menu/Options.cs:322
 msgid "Please restart Open Rails in order to load the new language."
-msgstr ""
+msgstr "Riavvia Open Rails per caricare la nuova lingua."
 
 #: ../Menu/Options.cs:311
 #, csharp-format
@@ -357,307 +369,316 @@ msgid ""
 "{1:F0}° horizontal FOV on 4:3\n"
 "{2:F0}° horizontal FOV on 16:9"
 msgstr ""
+"{0:F0}° di campo verticale corrispondono a:\n"
+"{1:F0}° di campo orizzontale su schermo 4:3\n"
+"{2:F0}° di campo orizzontale su schermo 16:9"
 
 #: ../Menu/Options.Designer.cs:192
 msgid "Brake pipe charging rate (PSI/s)"
-msgstr ""
+msgstr "Tasso di caricamento della condotta freni (PSI/s)"
 
 #: ../Menu/Options.Designer.cs:201
 msgid "Graduated release air brakes"
-msgstr ""
+msgstr "Rilascio graduale freno pneumatico"
 
 #: ../Menu/Options.Designer.cs:222
 msgid "Alerter"
-msgstr ""
+msgstr "Allertatore"
 
 #: ../Menu/Options.Designer.cs:232
 msgid "Suppress control confirmations"
-msgstr ""
+msgstr "Disattiva conferma comandi"
 
 #: ../Menu/Options.Designer.cs:242
 msgid "Dispatcher window"
-msgstr ""
+msgstr "Finestra DCO"
 
 #: ../Menu/Options.Designer.cs:279
 msgid "General"
-msgstr ""
+msgstr "Generale"
 
 #: ../Menu/Options.Designer.cs:289
 msgid "Language"
-msgstr ""
+msgstr "Lingua"
 
-#: ../Menu/Options.Designer.cs:320
+#: ../Menu/Options.Designer.cs:319
 msgid "Audio"
 msgstr ""
 
-#: ../Menu/Options.Designer.cs:353
+#: ../Menu/Options.Designer.cs:352
 msgid "% Sound Volume"
-msgstr ""
+msgstr "% Volume Audio"
 
-#: ../Menu/Options.Designer.cs:362
+#: ../Menu/Options.Designer.cs:361
 msgid "Sound detail level"
-msgstr ""
+msgstr "Livello dettaglio dei suoni"
 
-#: ../Menu/Options.Designer.cs:383
+#: ../Menu/Options.Designer.cs:382
 msgid "MSTS Bin compatible sound"
-msgstr ""
+msgstr "Suoni compatibili MSTS Bin"
 
-#: ../Menu/Options.Designer.cs:407
+#: ../Menu/Options.Designer.cs:406
 msgid "Video"
 msgstr ""
 
-#: ../Menu/Options.Designer.cs:417
+#: ../Menu/Options.Designer.cs:416
 msgid "Viewing distance (m)"
-msgstr ""
+msgstr "Distanza di visione (m)"
 
-#: ../Menu/Options.Designer.cs:453
+#: ../Menu/Options.Designer.cs:452
 msgid "XXX"
 msgstr ""
 
-#: ../Menu/Options.Designer.cs:485
+#: ../Menu/Options.Designer.cs:484
 msgid "Viewing vertical FOV"
-msgstr ""
+msgstr "Angolo di campo verticale"
 
-#: ../Menu/Options.Designer.cs:508
+#: ../Menu/Options.Designer.cs:507
 msgid "% Cab 2D stretch"
-msgstr ""
+msgstr "% stiramento cabine 2D"
 
-#: ../Menu/Options.Designer.cs:517
+#: ../Menu/Options.Designer.cs:516
 msgid "World object density"
-msgstr ""
+msgstr "Densità oggetti"
 
-#: ../Menu/Options.Designer.cs:562
+#: ../Menu/Options.Designer.cs:561
 msgid "Glass on in-game windows"
-msgstr ""
+msgstr "Trasparenza nelle finestre in-game"
 
-#: ../Menu/Options.Designer.cs:572
+#: ../Menu/Options.Designer.cs:571
 msgid "Window size"
-msgstr ""
+msgstr "Dimensioni finestra"
 
-#: ../Menu/Options.Designer.cs:581
+#: ../Menu/Options.Designer.cs:580
 msgid "Dynamic shadows"
-msgstr ""
+msgstr "Ombre dinamiche"
 
-#: ../Menu/Options.Designer.cs:591
+#: ../Menu/Options.Designer.cs:590
 msgid "Overhead wire"
-msgstr ""
+msgstr "Filo catenaria"
 
-#: ../Menu/Options.Designer.cs:611
+#: ../Menu/Options.Designer.cs:610
 msgid "Simulation"
-msgstr ""
+msgstr "Simulazione"
 
-#: ../Menu/Options.Designer.cs:622
+#: ../Menu/Options.Designer.cs:621
 msgid "Optimal curve speed factor"
-msgstr ""
+msgstr "Fattore di velocità ottimale in curva"
 
-#: ../Menu/Options.Designer.cs:656
+#: ../Menu/Options.Designer.cs:655
 msgid "Curve resistance multiplier at zero speed"
-msgstr ""
+msgstr "Moltiplicatore della curva di resistenza a velocità 0"
 
-#: ../Menu/Options.Designer.cs:690
+#: ../Menu/Options.Designer.cs:689
 msgid "Curve resistance speed dependent"
-msgstr ""
+msgstr "Attrito in curva dipendente dalla velocità"
 
-#: ../Menu/Options.Designer.cs:701
+#: ../Menu/Options.Designer.cs:700
 msgid "Override non-electrified route line-voltage"
-msgstr ""
+msgstr "Ignora voltaggio su linee non elettrificate"
 
-#: ../Menu/Options.Designer.cs:712
+#: ../Menu/Options.Designer.cs:711
 msgid "Adhesion Moving Average Filter Size"
-msgstr ""
+msgstr "Dimensione del filtro per l'aderenza"
 
-#: ../Menu/Options.Designer.cs:739
+#: ../Menu/Options.Designer.cs:738
 msgid "Break couplers"
-msgstr ""
+msgstr "Rottura ganci"
 
-#: ../Menu/Options.Designer.cs:749
+#: ../Menu/Options.Designer.cs:748
 msgid "Use advanced adhesion model"
-msgstr ""
+msgstr "Usa modello aderenza avanzato"
 
-#: ../Menu/Options.Designer.cs:764
+#: ../Menu/Options.Designer.cs:763
 msgid "Keyboard"
-msgstr ""
+msgstr "Tastiera"
 
-#: ../Menu/Options.Designer.cs:774
+#: ../Menu/Options.Designer.cs:773
 msgid "Export"
-msgstr ""
+msgstr "Esporta"
 
-#: ../Menu/Options.Designer.cs:787
+#: ../Menu/Options.Designer.cs:786
 msgid "Defaults"
-msgstr ""
+msgstr "Ripristina"
 
-#: ../Menu/Options.Designer.cs:799
+#: ../Menu/Options.Designer.cs:798
 msgid "Check"
-msgstr ""
+msgstr "Controlla"
 
-#: ../Menu/Options.Designer.cs:846
+#: ../Menu/Options.Designer.cs:845
 msgid "Experimental"
-msgstr ""
+msgstr "Sperimentali"
 
-#: ../Menu/Options.Designer.cs:857
+#: ../Menu/Options.Designer.cs:856
 msgid "Use MSTS Environments"
-msgstr ""
+msgstr "Usa ambientazioni MSTS"
 
-#: ../Menu/Options.Designer.cs:867
+#: ../Menu/Options.Designer.cs:866
 msgid "Always use highest detail objects"
-msgstr ""
+msgstr "Usa sempre il massimo dettaglio oggetti"
 
-#: ../Menu/Options.Designer.cs:879
+#: ../Menu/Options.Designer.cs:878
 msgid "Use location-linked passing path processing"
-msgstr ""
+msgstr "Usa elaborazione legata al tracciato per i path di incrocio"
 
-#: ../Menu/Options.Designer.cs:906
+#: ../Menu/Options.Designer.cs:905
 msgid "Ambient daylight brightness"
-msgstr ""
+msgstr "Luminosità ambiente diurna"
 
-#: ../Menu/Options.Designer.cs:915
+#: ../Menu/Options.Designer.cs:914
 msgid "Target frame rate"
-msgstr ""
+msgstr "Frame rate richiesto"
 
-#: ../Menu/Options.Designer.cs:952
+#: ../Menu/Options.Designer.cs:951
 msgid "Automatically tune settings to keep performance level"
-msgstr ""
+msgstr "Setta automaticamente i parametri per mantenere le prestazioni"
 
-#: ../Menu/Options.Designer.cs:962
+#: ../Menu/Options.Designer.cs:961
 msgid "Loading delay (ms)"
-msgstr ""
+msgstr "Ritardo di caricamento (ms)"
 
-#: ../Menu/Options.Designer.cs:988
+#: ../Menu/Options.Designer.cs:987
 msgid "Double overhead wires"
-msgstr ""
+msgstr "Doppio filo catenaria"
 
-#: ../Menu/Options.Designer.cs:998
+#: ../Menu/Options.Designer.cs:997
 msgid "Extend object maximum viewing distance to horizon"
-msgstr ""
+msgstr "Estendi la massima distanza di visione all'orizzonte"
 
-#: ../Menu/Options.Designer.cs:1008
+#: ../Menu/Options.Designer.cs:1007
 msgid "Viewing distance (km)"
-msgstr ""
+msgstr "Distanza di visione (km)"
 
-#: ../Menu/Options.Designer.cs:1045
+#: ../Menu/Options.Designer.cs:1044
 msgid "Distant mountains"
-msgstr ""
+msgstr "Montagne distanti"
 
-#: ../Menu/Options.Designer.cs:1055
+#: ../Menu/Options.Designer.cs:1054
 msgid "Gauge (mm)"
-msgstr ""
+msgstr "Scartamento (mm)"
 
-#: ../Menu/Options.Designer.cs:1091
+#: ../Menu/Options.Designer.cs:1090
 msgid "Minimum length (m)"
-msgstr ""
+msgstr "Lunghezza minima (m)"
 
-#: ../Menu/Options.Designer.cs:1128
+#: ../Menu/Options.Designer.cs:1127
 msgid "Level"
-msgstr ""
+msgstr "Livello"
 
-#: ../Menu/Options.Designer.cs:1139
+#: ../Menu/Options.Designer.cs:1138
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
+"Le funzioni sperimentali possono rallentare il gioco, usale a tuo rischio."
 
-#: ../Menu/Options.Designer.cs:1162
+#: ../Menu/Options.Designer.cs:1161
 msgid "Super-elevation"
-msgstr ""
+msgstr "Sopraelevazione"
 
-#: ../Menu/Options.Designer.cs:1172
+#: ../Menu/Options.Designer.cs:1171
 msgid "Load DDS textures in preference to ACE"
-msgstr ""
+msgstr "Carica texture DDS preferendole alle ACE"
 
-#: ../Menu/Options.Designer.cs:1191
+#: ../Menu/Options.Designer.cs:1190
 msgid "DataLogger"
-msgstr ""
+msgstr "Registrazione"
 
-#: ../Menu/Options.Designer.cs:1232
+#: ../Menu/Options.Designer.cs:1231
 msgid "Speed units"
-msgstr ""
+msgstr "Unità di misura della velocità"
 
-#: ../Menu/Options.Designer.cs:1253
+#: ../Menu/Options.Designer.cs:1252
 msgid "Log miscellaneous data"
-msgstr ""
+msgstr "Registra dati vari"
 
-#: ../Menu/Options.Designer.cs:1263
+#: ../Menu/Options.Designer.cs:1262
 msgid "Log performance data"
-msgstr ""
+msgstr "Registra dati di performance"
 
-#: ../Menu/Options.Designer.cs:1273
+#: ../Menu/Options.Designer.cs:1272
 msgid "Start logging with the simulation start"
-msgstr ""
+msgstr "Inizia la registrazione quando parte la simulazione"
 
-#: ../Menu/Options.Designer.cs:1284
+#: ../Menu/Options.Designer.cs:1283
 msgid "Separator"
-msgstr ""
+msgstr "Separatore"
 
-#: ../Menu/Options.Designer.cs:1293
+#: ../Menu/Options.Designer.cs:1292
 msgid "Log physics data"
-msgstr ""
+msgstr "Registra dati fisici"
 
-#: ../Menu/Options.Designer.cs:1308
+#: ../Menu/Options.Designer.cs:1307
 msgid "Evaluation"
-msgstr ""
+msgstr "Valutazione"
 
-#: ../Menu/Options.Designer.cs:1339
+#: ../Menu/Options.Designer.cs:1338
 msgid "Interval (sec)"
-msgstr ""
+msgstr "Intervallo (sec)"
 
-#: ../Menu/Options.Designer.cs:1348
+#: ../Menu/Options.Designer.cs:1347
 msgid "Log station stops"
-msgstr ""
+msgstr "Registra fermate alle stazioni"
 
-#: ../Menu/Options.Designer.cs:1380
+#: ../Menu/Options.Designer.cs:1379
 msgid "Log train speed"
-msgstr ""
+msgstr "Registra velocità del treno"
 
-#: ../Menu/Options.Designer.cs:1243
+#: ../Menu/Options.Designer.cs:1242
 msgid ""
 "Use DataLogger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
 "time!"
 msgstr ""
+"Registra i dati della simulazione (F12 durante il gioco).\r\n"
+"Ricorda che il file cresce in proporzione alla durata della simulazione!"
 
-#: ../Menu/Options.Designer.cs:339
+#: ../Menu/Options.Designer.cs:338
 msgid "Sound Volume 0-100"
-msgstr ""
+msgstr "Volume Audio 0-100"
 
-#: ../Menu/Options.Designer.cs:788
+#: ../Menu/Options.Designer.cs:787
 msgid "Load the factory default key assignments."
-msgstr ""
+msgstr "Ricarica le impostazioni standard dei tasti."
 
-#: ../Menu/Options.Designer.cs:800
+#: ../Menu/Options.Designer.cs:799
 msgid "Check for incorrect key assignments."
-msgstr ""
+msgstr "Controlla assegnazioni dei tasti non corrette."
 
-#: ../Menu/Options.Designer.cs:894
+#: ../Menu/Options.Designer.cs:893
 msgid "Default is 100"
-msgstr ""
+msgstr "Default 100"
 
-#: ../Menu/Options.Designer.cs:938
-#: ../Menu/Options.Designer.cs:1031
+#: ../Menu/Options.Designer.cs:937 ../Menu/Options.Designer.cs:1030
 msgid "Distance to see mountains"
-msgstr ""
+msgstr "Distanza di visione montagne"
 
-#: ../Menu/Options.Designer.cs:1114
+#: ../Menu/Options.Designer.cs:1113
 msgid "Shortest curve to have elevation"
-msgstr ""
+msgstr "Più breve curva per avere sopraelevazione"
 
-#: ../Menu/Options.Designer.cs:1152
+#: ../Menu/Options.Designer.cs:1151
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
-msgstr ""
+msgstr "0: nessuna sopraelevazione, 1: 9cm max; 10: 18cm max"
 
-#: ../Menu/Options.Designer.cs:498
+#: ../Menu/Options.Designer.cs:497
 msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
 msgstr ""
+"0 per tagliare la vista, 100 per stirarla. Per le cabine della stessa "
+"dimensione del display usare 100"
 
-#: ../Menu/Options.Designer.cs:775
+#: ../Menu/Options.Designer.cs:774
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."
 msgstr ""
+"Genera una lista degli assegnamenti di tastiera. \r\n"
+"Il file sarà salvato sul Desktop."
 
 #: ../Menu/ResumeForm.cs:119
 msgid "Explore Route"
-msgstr ""
+msgstr "Esplorazione scenario"
 
 #: ../Menu/ResumeForm.cs:168
 #, csharp-format
@@ -666,6 +687,9 @@ msgid ""
 "{1}.\n"
 "\n"
 msgstr ""
+"Attenzione: Salvataggio {0} è di uno scenario con nome inatteso:\n"
+"{1}.\n"
+"\n"
 
 #: ../Menu/ResumeForm.cs:180
 #, csharp-format
@@ -673,22 +697,25 @@ msgid ""
 "To prevent crashes and unexpected behavior, new versions of Open Rails "
 "invalidate old saved games. {0} of {1} saves are no longer valid."
 msgstr ""
+"Per prevenire crash e comportamenti inattesi, le nuove versioni di Open "
+"Rails invalidano le vecchie sessioni salvate. {0} di {1} salvataggi non sono "
+"più validi."
 
 #: ../Menu/ResumeForm.Designer.cs:175
 msgid "Resume"
-msgstr ""
+msgstr "Riprendi"
 
 #: ../Menu/ResumeForm.Designer.cs:186
 msgid "Delete"
-msgstr ""
+msgstr "Cancella"
 
 #: ../Menu/ResumeForm.Designer.cs:198
 msgid "Undelete"
-msgstr ""
+msgstr "Ripristina"
 
 #: ../Menu/ResumeForm.Designer.cs:220
 msgid "Delete all invalid saves"
-msgstr ""
+msgstr "Cancella salvataggi non validi"
 
 #: ../Menu/ResumeForm.Designer.cs:231
 msgid "Import/ export"
@@ -696,27 +723,27 @@ msgstr ""
 
 #: ../Menu/ResumeForm.Designer.cs:247
 msgid "Invalid saves"
-msgstr ""
+msgstr "Salvataggi non validi"
 
 #: ../Menu/ResumeForm.Designer.cs:291
 msgid "Replay from start"
-msgstr ""
+msgstr "Riparti dall'inizio"
 
 #: ../Menu/ResumeForm.Designer.cs:314
 msgid "Replay from previous save"
-msgstr ""
+msgstr "Riparti dal salvataggio"
 
 #: ../Menu/ResumeForm.Designer.cs:327
 msgid "Pause replay at end"
-msgstr ""
+msgstr "Pausa dopo il replay"
 
 #: ../Menu/ResumeForm.Designer.cs:359
 msgid "Pause seconds before end:"
-msgstr ""
+msgstr "Secondi di pausa prima della fine:"
 
 #: ../Menu/ResumeForm.Designer.cs:377
 msgid "Saved Games"
-msgstr ""
+msgstr "Sessioni salvate"
 
 #: ../Menu/ResumeForm.Designer.cs:100
 msgid "File"
@@ -724,7 +751,7 @@ msgstr ""
 
 #: ../Menu/ResumeForm.Designer.cs:109
 msgid "Saved At"
-msgstr ""
+msgstr "Salvato il"
 
 #: ../Menu/ResumeForm.Designer.cs:117
 msgid "Path"
@@ -732,11 +759,11 @@ msgstr ""
 
 #: ../Menu/ResumeForm.Designer.cs:125
 msgid "Time"
-msgstr ""
+msgstr "Ora"
 
 #: ../Menu/ResumeForm.Designer.cs:135
 msgid "Distance"
-msgstr ""
+msgstr "Distanza"
 
 #: ../Menu/ResumeForm.Designer.cs:143
 msgid "Tile"
@@ -744,44 +771,43 @@ msgstr ""
 
 #: ../Menu/ResumeForm.Designer.cs:151
 msgid "Valid"
-msgstr ""
+msgstr "Valido"
 
 #: ../Menu/ResumeForm.Designer.cs:187
 msgid "Deletes the currently selected save or saves."
-msgstr ""
+msgstr "Cancella i salvatggi selezionati"
 
-#: ../Menu/ResumeForm.Designer.cs:199
-#: ../Menu/ResumeForm.Designer.cs:232
+#: ../Menu/ResumeForm.Designer.cs:199 ../Menu/ResumeForm.Designer.cs:232
 msgid "Restores all saves deleted in this session."
-msgstr ""
+msgstr "Ripristina i salvataggi cancellati in questa sessione"
 
 #: ../Menu/TestingForm.Designer.cs:62
 msgid "Test all"
-msgstr ""
+msgstr "Testa tutto"
 
 #: ../Menu/TestingForm.Designer.cs:73
 msgid "Test"
-msgstr ""
+msgstr "Testa"
 
 #: ../Menu/TestingForm.Designer.cs:95
 msgid "Summary"
-msgstr ""
+msgstr "Riepilogo"
 
 #: ../Menu/TestingForm.Designer.cs:252
 msgid "Details"
-msgstr ""
+msgstr "Dettagli"
 
 #: ../Menu/TestingForm.Designer.cs:264
 msgid "Override user settings when running tests"
-msgstr ""
+msgstr "Ignora i settaggi utente durante i test"
 
 #: ../Menu/TestingForm.Designer.cs:274
 msgid "Clear sort"
-msgstr ""
+msgstr "Annulla ordinamento"
 
 #: ../Menu/TestingForm.Designer.cs:146
 msgid "ToTest"
-msgstr ""
+msgstr "Da Testare"
 
 #: ../Menu/TestingForm.Designer.cs:155
 msgid "ActivityFilePath"
@@ -789,11 +815,11 @@ msgstr ""
 
 #: ../Menu/TestingForm.Designer.cs:165
 msgid "DefaultSort"
-msgstr ""
+msgstr "Ordinamento standard"
 
 #: ../Menu/TestingForm.Designer.cs:174
 msgid "Route"
-msgstr ""
+msgstr "Scenario"
 
 #: ../Menu/TestingForm.Designer.cs:182
 msgid "Activity"
@@ -801,15 +827,15 @@ msgstr ""
 
 #: ../Menu/TestingForm.Designer.cs:190
 msgid "Tested"
-msgstr ""
+msgstr "Testato"
 
 #: ../Menu/TestingForm.Designer.cs:199
 msgid "Passed"
-msgstr ""
+msgstr "Ok"
 
 #: ../Menu/TestingForm.Designer.cs:208
 msgid "Errors"
-msgstr ""
+msgstr "Errori"
 
 #: ../Menu/TestingForm.Designer.cs:218
 msgid "Load"
@@ -821,45 +847,82 @@ msgstr ""
 
 #: ../ORTS/Menu/Activities.cs:47
 msgid "- Explore Route -"
-msgstr ""
+msgstr "- Esplorazione scenario -"
 
-#: ../ORTS/Menu/Activities.cs:71
-#: ../ORTS/Menu/Consists.cs:47
-#: ../ORTS/Menu/Consists.cs:123
-#: ../ORTS/Menu/Paths.cs:51
+#: ../ORTS/Menu/Activities.cs:71 ../ORTS/Menu/Consists.cs:47
+#: ../ORTS/Menu/Consists.cs:123 ../ORTS/Menu/Paths.cs:51
 #: ../ORTS/Menu/Routes.cs:47
 msgid "load error:"
-msgstr ""
+msgstr "errore caricamento:"
 
-#: ../ORTS/Menu/Activities.cs:74
-#: ../ORTS/Menu/Consists.cs:50
-#: ../ORTS/Menu/Consists.cs:126
-#: ../ORTS/Menu/Paths.cs:54
-#: ../ORTS/Menu/Paths.cs:55
-#: ../ORTS/Menu/Paths.cs:56
-#: ../ORTS/Menu/Routes.cs:49
+#: ../ORTS/Menu/Activities.cs:74 ../ORTS/Menu/Consists.cs:50
+#: ../ORTS/Menu/Consists.cs:126 ../ORTS/Menu/Paths.cs:54
+#: ../ORTS/Menu/Paths.cs:55 ../ORTS/Menu/Paths.cs:56 ../ORTS/Menu/Routes.cs:49
 msgid "unnamed:"
-msgstr ""
+msgstr "senza nome:"
 
-#: ../ORTS/Menu/Activities.cs:80
-#: ../ORTS/Menu/Consists.cs:54
-#: ../ORTS/Menu/Consists.cs:131
-#: ../ORTS/Menu/Paths.cs:60
+#: ../ORTS/Menu/Activities.cs:80 ../ORTS/Menu/Consists.cs:54
+#: ../ORTS/Menu/Consists.cs:131 ../ORTS/Menu/Paths.cs:60
 #: ../ORTS/Menu/Routes.cs:54
 msgid "missing:"
-msgstr ""
+msgstr "mancante:"
 
 #: ../ORTS/Menu/Activities.cs:73
 #, csharp-format
 msgid "Activity '{0}' is excluded."
-msgstr ""
+msgstr "Activity '{0}' è esclusa."
 
 #: ../ORTS/Menu/Consists.cs:109
 msgid "- Any Locomotive -"
-msgstr ""
+msgstr "- Tutte le locomotive -"
 
 #: ../ORTS/Menu/Consists.cs:125
 #, csharp-format
 msgid "Locomotive '{0}' is excluded."
-msgstr ""
+msgstr "Locomotiva '{0}' è esclusa."
 
+#~ msgid ""
+#~ "User name must be 4-10 characters long, cannot contain space, ' or \" and "
+#~ "must not start with a digit."
+#~ msgstr ""
+#~ "Il nome utente deve essere formato da 4 massimo 10 caratteri e non deve "
+#~ "contenere spazi, ',\" oppure - e non deve iniziare con un numero"
+
+#~ msgid "Port number must be an integer between 0 and 65535."
+#~ msgstr "Il numero di porta deve essere un numero intero tra 0 e 65535"
+
+#~ msgid "Update Every "
+#~ msgstr "Aggiorna ogni"
+
+#~ msgid "Seconds"
+#~ msgstr "Secondi"
+
+#~ msgid "Show Avatar"
+#~ msgstr "Mostra Avatar"
+
+#~ msgid "Avatar URL"
+#~ msgstr "URL dell'Avatar"
+
+#~ msgid "Route Details"
+#~ msgstr "Dettagli scenario"
+
+#~ msgid "Activity Details"
+#~ msgstr "Dettagli activity"
+
+#~ msgid "Start Time"
+#~ msgstr "Ora di partenza"
+
+#~ msgid "Season"
+#~ msgstr "Stagione"
+
+#~ msgid "Weather"
+#~ msgstr "Meteo"
+
+#~ msgid "Close"
+#~ msgstr "Chiudi"
+
+#~ msgid "Duration"
+#~ msgstr "Durata"
+
+#~ msgid "Difficulty"
+#~ msgstr "Difficoltà"
