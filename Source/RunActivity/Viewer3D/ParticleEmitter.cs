@@ -105,19 +105,16 @@ namespace ORTS.Viewer3D
 #endif
         }
 
-        public void SetOutput(float volumeM3pS, float durationS)
+        public void SetOutput(float volumeM3pS, float durationS, Color particleColor )
         {
             SetOutput(volumeM3pS);
             Emitter.ParticleDuration = durationS;
+            Emitter.ParticleColor = particleColor;
+
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
                 Trace.TraceInformation("Emitter{0}({1:F6}m^3) D={2,3}s", EmitterID, EmissionHoleM2, durationS);
 #endif
-        }
-
-        public void SetColor(Color particleColor)
-        {
-            Emitter.ParticleColor = particleColor;
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)

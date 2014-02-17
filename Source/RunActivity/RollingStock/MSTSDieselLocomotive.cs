@@ -79,8 +79,9 @@ namespace ORTS
         public float EngineRPM;
         public float ExhaustParticles = 2.0f;
         public Color ExhaustColor = Color.Gray;
-        Color ExhaustSteadyColor = Color.Gray;
-        Color ExhaustTransientColor = Color.Black;
+        public Color ExhaustTransientColor = Color.Black;
+        public Color ExhaustDecelColor = Color.WhiteSmoke;
+        public Color ExhaustSteadyColor = Color.Gray;
 
         public DieselEngines DieselEngines = new DieselEngines();
 
@@ -110,8 +111,8 @@ namespace ORTS
                 case "engine(dieselsmokeeffectinitialmagnitude": InitialMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxmagnitude": MaxMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortsdiesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;
-                case "engine(ortsdiesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;
+                case "engine(ortsdiesel(exhaustcolor": ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); break;  //Moved to DieselEngine.cs
+                case "engine(ortsdiesel(exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue); break;  //Moved to DieselEngine.cs
                 case "engine(ortsdieselengines": DieselEngines = new DieselEngines(this, stf); break;
                 case "engine(maxdiesellevel": MaxDieselLevelL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(dieselusedperhouratmaxpower": DieselUsedPerHourAtMaxPowerL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
@@ -405,8 +406,6 @@ namespace ORTS
             }
 
             //Initial smoke, when locomotive is started:
-
-            ExhaustColor = ExhaustSteadyColor;
             
 
             ExhaustParticles = DieselEngines[0].ExhaustParticles;
@@ -957,8 +956,7 @@ namespace ORTS
             var car = this.Car as MSTSDieselLocomotive;
             foreach (var drawer in Exhaust)
             {
-                drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude);
-                drawer.SetColor( car.ExhaustColor );
+                drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude, new Color(car.ExhaustColor.R, car.ExhaustColor.G, car.ExhaustColor.B));
             }
             base.PrepareFrame(frame, elapsedTime);
         }

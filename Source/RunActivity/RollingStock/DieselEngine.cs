@@ -362,6 +362,10 @@ namespace ORTS
             MaxExhaust = copy.MaxExhaust;
             MaxMagnitude = copy.MaxMagnitude;
             ExhaustParticles = copy.ExhaustParticles;
+            ExhaustColor = copy.ExhaustColor;
+            ExhaustSteadyColor = copy.ExhaustSteadyColor;
+            ExhaustTransientColor = copy.ExhaustTransientColor;
+            ExhaustDecelColor = copy.ExhaustDecelColor;
 
             if (copy.GearBox != null)
             {
@@ -746,6 +750,10 @@ namespace ORTS
             InitialMagnitude = loco.InitialMagnitude;
             MaxMagnitude = loco.MaxMagnitude;
             MaxExhaust = loco.MaxExhaust;
+            ExhaustSteadyColor = loco.ExhaustSteadyColor;
+            ExhaustColor = loco.ExhaustColor;
+            ExhaustDecelColor = loco.ExhaustDecelColor;
+            ExhaustTransientColor = loco.ExhaustTransientColor;
             InitialExhaust = loco.InitialMagnitude;
             StartingRPM = loco.IdleRPM * 2.0f / 3.0f;
             StartingConfirmationRPM = loco.IdleRPM * 1.1f;

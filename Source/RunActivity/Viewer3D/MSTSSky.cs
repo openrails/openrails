@@ -148,7 +148,7 @@ namespace ORTS.Viewer3D
                 if (mstsskymoonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
                     mstsskymoonPhase = 3; // Moon dog only occurs in winter
                 // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
-                mstsskyovercastFactor = MSTSSkyViewer.World.WeatherControl.overcastFactor;
+                //mstsskyovercastFactor = MSTSSkyViewer.World.WeatherControl.overcastFactor;
                 mstsskyfogDistance = MSTSSkyViewer.World.WeatherControl.fogDistance;
             }
 
@@ -379,15 +379,14 @@ namespace ORTS.Viewer3D
                     indexCount - 6,
                     2);
                     break;
-                case 3: // Clouds Dome
-                    graphicsDevice.DrawIndexedPrimitives(
-                        PrimitiveType.TriangleList,
-                        0,
-                        (numVertices - 4) / 2,
-                        (numVertices - 4) / 2,
-                        (indexCount - 6) / 2,
-                        (indexCount - 6) / 6);
-                    break;
+                //case 3: // Clouds Dome
+                    //graphicsDevice.DrawIndexedPrimitives(
+                        //PrimitiveType.TriangleList, 0,
+                        //(numVertices - 4) / 2,
+                        //(numVertices - 4) / 2,
+                        //(indexCount - 6) / 2,
+                        //(indexCount - 6) / 6);
+                    //break;
                 default:
                     break;
             }

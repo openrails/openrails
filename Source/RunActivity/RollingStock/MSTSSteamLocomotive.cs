@@ -3015,8 +3015,7 @@ namespace ORTS
                 }
                 Color_Value = (steamVolumeM3pS * .10f) + (car.Smoke.SmoothedValue / 2) / 256 * 100f;
 
-                drawer.SetOutput((steamVolumeM3pS * pulse) + car.FireRatio, (Throttlepercent + car.FireRatio));
-                drawer.SetColor(new Color(Color_Value, Color_Value, Color_Value));
+                drawer.SetOutput((steamVolumeM3pS * pulse) + car.FireRatio, (Throttlepercent + car.FireRatio), (new Color(Color_Value, Color_Value, Color_Value)));
                
             }
 
