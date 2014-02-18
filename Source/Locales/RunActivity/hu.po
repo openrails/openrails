@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2014-02-17 19:36:31+0100\n"
-"PO-Revision-Date: 2014-02-17 19:40+0100\n"
+"POT-Creation-Date: 2014-02-18 18:54:46+0100\n"
+"PO-Revision-Date: 2014-02-18 19:04+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -11,6 +11,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../RunActivity/Common/Conversions.cs:86
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
+msgid "m"
+msgstr ""
+
+#: ../RunActivity/Common/Conversions.cs:87
+msgid "km"
+msgstr ""
+
+#: ../RunActivity/Common/Conversions.cs:88
+msgid "mi"
+msgstr ""
+
+#: ../RunActivity/Common/Conversions.cs:89
+msgid "yd"
+msgstr ""
+
+#: ../RunActivity/Common/Conversions.cs:90
+msgid "km/h"
+msgstr ""
+
+#: ../RunActivity/Common/Conversions.cs:91
+msgid "mph"
+msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.cs:193
 msgid "View Self"
@@ -27,10 +52,6 @@ msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
-msgstr ""
-
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
-msgid "m"
 msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
@@ -258,7 +279,8 @@ msgstr "Az utasok le- és felszállása befejeződött. A vonat indítható."
 #: ../RunActivity/Simulator/Activity.cs:767
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
-msgstr "Az utasok le- és felszállása {0:D2}:{1:D2} időn belül befejeződik."
+msgstr ""
+"Az utasok le- és felszállása {0:D2}:{1:D2} másodpercen belül befejeződik."
 
 #: ../RunActivity/Simulator/Confirmation.cs:138
 #: ../RunActivity/Simulator/Confirmation.cs:150

@@ -61,12 +61,14 @@ namespace ORTS.Scripting
             if (Path.GetExtension(name) != ".cs")
                 name += ".cs";
 
-            var path = ORTSPaths.GetFileFromFolders(pathArray, name).ToLowerInvariant();
-
-            var type = String.Format("ORTS.Scripting.Script.{0}", Path.GetFileNameWithoutExtension(path));
+            var path = ORTSPaths.GetFileFromFolders(pathArray, name);
 
             if (path == null || path == "")
                 return null;
+            
+            path = path.ToLowerInvariant();
+
+            var type = String.Format("ORTS.Scripting.Script.{0}", Path.GetFileNameWithoutExtension(path));
 
             if (Scripts.ContainsKey(path))
                 return Scripts[path].CreateInstance(type, true);

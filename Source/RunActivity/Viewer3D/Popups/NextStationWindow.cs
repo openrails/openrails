@@ -140,7 +140,7 @@ namespace ORTS.Viewer3D.Popups
                             String.Compare(playerTrain.StationStops[0].PlatformItem.Name, StationPreviousName.Text) == 0 &&
                             playerTrain.StationStops[0].DistanceToTrainM > 0)
                         {
-                            StationPreviousDistance.Text = FormatStrings.FormatDistance(playerTrain.StationStops[0].DistanceToTrainM, metric);
+                            StationPreviousDistance.Text = FormatStrings.FormatDistanceDisplay(playerTrain.StationStops[0].DistanceToTrainM, metric);
                         }
                     }
                     else
@@ -170,7 +170,7 @@ namespace ORTS.Viewer3D.Popups
                             String.Compare(playerTrain.StationStops[0].PlatformItem.Name, StationCurrentName.Text) == 0 &&
                             playerTrain.StationStops[0].DistanceToTrainM > 0)
                         {
-                            StationCurrentDistance.Text = FormatStrings.FormatDistance(playerTrain.StationStops[0].DistanceToTrainM, metric);
+                            StationCurrentDistance.Text = FormatStrings.FormatDistanceDisplay(playerTrain.StationStops[0].DistanceToTrainM, metric);
                         }
                     }
                     else
@@ -196,7 +196,7 @@ namespace ORTS.Viewer3D.Popups
                             String.Compare(playerTrain.StationStops[0].PlatformItem.Name, StationNextName.Text) == 0 &&
                             playerTrain.StationStops[0].DistanceToTrainM > 0)
                         {
-                            StationNextDistance.Text = FormatStrings.FormatDistance(playerTrain.StationStops[0].DistanceToTrainM, metric);
+                            StationNextDistance.Text = FormatStrings.FormatDistanceDisplay(playerTrain.StationStops[0].DistanceToTrainM, metric);
                         }
                     }
                     else

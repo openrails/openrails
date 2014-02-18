@@ -75,8 +75,6 @@ namespace ORTS
         {
             InitializeComponent();
 
-            Localizer.Localize(this, catalog);
-
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the
             // Message Box font to allow for user-customizations, though.
@@ -87,7 +85,21 @@ namespace ORTS
 #if DEBUG
             Text = Text + " (debug)";
 #endif
-            string[] Seasons = 
+            CleanupPre021();
+            ShowDetails();
+            UpdateEnabled();
+        }
+
+        void MainForm_Shown(object sender, EventArgs e)
+        {
+            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
+            Settings = new UserSettings(options);
+
+            LoadOptions();
+            LoadLanguage();
+            Localizer.Localize(this, catalog);
+
+            string[] Seasons =
             { 
                 catalog.GetString("Spring"),
                 catalog.GetString("Summer"),
@@ -111,20 +123,7 @@ namespace ORTS
             this.comboBoxStartWeather.Items.AddRange(Weathers);
             this.comboBoxDifficulty.Items.AddRange(Difficulties);
 
-            CleanupPre021();
             ShowEnvironment();
-            ShowDetails();
-            UpdateEnabled();
-        }
-
-        void MainForm_Shown(object sender, EventArgs e)
-        {
-            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
-            Settings = new UserSettings(options);
-
-            LoadOptions();
-
-            LoadLanguage();
 
             if (!Initialized)
             {

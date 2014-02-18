@@ -165,9 +165,9 @@ namespace ORTS.Viewer3D.Popups
             if (updateFull)
             {
                 // speeds
-                SpeedCurrent.Text = FormatStrings.FormatTrackMonitorSpeed(Math.Abs(thisInfo.speedMpS), Owner.Viewer.MilepostUnitsMetric);
-                SpeedProjected.Text = FormatStrings.FormatTrackMonitorSpeed(Math.Abs(thisInfo.projectedSpeedMpS), Owner.Viewer.MilepostUnitsMetric);
-                SpeedAllowed.Text = FormatStrings.FormatTrackMonitorSpeed(thisInfo.allowedSpeedMpS, Owner.Viewer.MilepostUnitsMetric);
+                SpeedCurrent.Text = FormatStrings.FormatSpeedDisplay(Math.Abs(thisInfo.speedMpS), Owner.Viewer.MilepostUnitsMetric);
+                SpeedProjected.Text = FormatStrings.FormatSpeedDisplay(Math.Abs(thisInfo.projectedSpeedMpS), Owner.Viewer.MilepostUnitsMetric);
+                SpeedAllowed.Text = FormatStrings.FormatSpeedLimit(thisInfo.allowedSpeedMpS, Owner.Viewer.MilepostUnitsMetric);
 
                 // control mode
                 string ControlText = ControlModeLabels[thisInfo.ControlMode];
@@ -579,7 +579,7 @@ namespace ORTS.Viewer3D.Popups
                     {
                         int actLabelOffset = Convert.ToInt32(actDistanceM * distanceFactor);
                         int actLabelposition = forward ? zeropoint - actLabelOffset : zeropoint + actLabelOffset;
-                        string distanceString = FormatStrings.FormatDistance(actDistanceM, metric);
+                        string distanceString = FormatStrings.FormatDistanceDisplay(actDistanceM, metric);
 
                         Font.Draw(spriteBatch, new Point(offset.X + distanceTextOffset, offset.Y + actLabelposition), distanceString, Color.White);
                     }
@@ -670,7 +670,7 @@ namespace ORTS.Viewer3D.Popups
 
                 if (itemOffset < firstLabelPosition && !firstLabelShown)
                 {
-                    string distanceString = FormatStrings.FormatDistance(thisItem.DistanceToTrainM, metric);
+                    string distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
                     Point labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + itemLocation);
 
                     Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);
@@ -720,7 +720,7 @@ namespace ORTS.Viewer3D.Popups
 
                 if (thisItem.SignalState != TrackMonitorSignalAspect.Stop && thisItem.AllowedSpeedMpS > 0)
                 {
-                    string speedString = FormatStrings.FormatTrackMonitorSpeed(thisItem.AllowedSpeedMpS, metric);
+                    string speedString = FormatStrings.FormatSpeedLimit(thisItem.AllowedSpeedMpS, metric);
                     Point labelPoint = new Point(offset.X + speedTextOffset, offset.Y + reqLabelPosition);
 
                     Font.Draw(spriteBatch, labelPoint, speedString, Color.White);
@@ -728,7 +728,7 @@ namespace ORTS.Viewer3D.Popups
 
                 if ( (itemOffset < firstLabelPosition && !firstLabelShown) || thisItem.DistanceToTrainM > maxDisplayDistance)
                 {
-                    string distanceString = FormatStrings.FormatDistance(thisItem.DistanceToTrainM, metric);
+                    string distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
                     Point labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + reqLabelPosition);
 
                     Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);
@@ -756,14 +756,14 @@ namespace ORTS.Viewer3D.Popups
                     forward ? Math.Min(itemLocation, lastLabelPosition - textSpacing) : Math.Max(itemLocation, lastLabelPosition + textSpacing);
                 newLabelPosition = reqLabelPosition;
 
-                string speedString = FormatStrings.FormatTrackMonitorSpeed(thisItem.AllowedSpeedMpS, metric);
+                string speedString = FormatStrings.FormatSpeedLimit(thisItem.AllowedSpeedMpS, metric);
                 Point labelPoint = new Point(offset.X + speedTextOffset, offset.Y + newLabelPosition);
 
                 Font.Draw(spriteBatch, labelPoint, speedString, Color.White);
 
                 if (itemOffset < firstLabelPosition && !firstLabelShown)
                 {
-                    string distanceString = FormatStrings.FormatDistance(thisItem.DistanceToTrainM, metric);
+                    string distanceString = FormatStrings.FormatDistanceDisplay(thisItem.DistanceToTrainM, metric);
                     labelPoint = new Point(offset.X + distanceTextOffset, offset.Y + newLabelPosition);
 
                     Font.Draw(spriteBatch, labelPoint, distanceString, Color.White);

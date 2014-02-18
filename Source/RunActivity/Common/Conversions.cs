@@ -83,16 +83,40 @@ namespace ORTS
 
 	public class FormatStrings
 	{
+        static string m = Viewer3D.Viewer.Catalog.GetString("m");
+        static string km = Viewer3D.Viewer.Catalog.GetString("km");
+        static string mi = Viewer3D.Viewer.Catalog.GetString("mi");
+        static string yd = Viewer3D.Viewer.Catalog.GetString("yd");
+        static string kmph = Viewer3D.Viewer.Catalog.GetString("km/h");
+        static string mph = Viewer3D.Viewer.Catalog.GetString("mph");
+
+        /// <summary>
+        /// Formatted unlocalized speed string, used in reports and logs.
+        /// </summary>
         public static string FormatSpeed(float speed, bool isMetric)
         {
-            return String.Format(isMetric ? "{0:F1}km/h" : "{0:F1}mph", MpS.FromMpS(speed, isMetric));
+            return String.Format("{0:F1}{1}", MpS.FromMpS(speed, isMetric), isMetric ? "km/h" : "mph");
         }
 
-        public static string FormatTrackMonitorSpeed(float speed, bool isMetric)
+        /// <summary>
+        /// Formatted localized speed string, used to display tracking speed, with 1 decimal precision
+        /// </summary>
+        public static string FormatSpeedDisplay(float speed, bool isMetric)
         {
-            return String.Format(isMetric ? "{0:F0} km/h" : "{0:F0} mph", MpS.FromMpS(speed, isMetric));
+            return String.Format("{0:F1} {1}", MpS.FromMpS(speed, isMetric), isMetric ? kmph : mph);
         }
 
+        /// <summary>
+        /// Formatted localized speed string, used to display speed limits, with 0 decimal precision
+        /// </summary>
+        public static string FormatSpeedLimit(float speed, bool isMetric)
+        {
+            return String.Format("{0:F0} {1}", MpS.FromMpS(speed, isMetric), isMetric ? kmph : mph);
+        }
+
+        /// <summary>
+        /// Formatted unlocalized distance string, used in reports and logs.
+        /// </summary>
         public static string FormatDistance(float distance, bool isMetric)
         {
             if (isMetric)
@@ -100,12 +124,30 @@ namespace ORTS
                 // <0.1 kilometers, show meters.
                 if (Math.Abs(distance) < 100)
                     return String.Format("{0:N0}m", distance);
-                return String.Format("{0:F1}km", distance / 1000.000);
+                return String.Format("{0:F1}km", distance / 1000f);
             }
             // <0.1 miles, show yards.
             if (Math.Abs(distance) < Me.FromMi(0.1f))
                 return String.Format("{0:N0}yd", Me.ToYd(distance));
             return String.Format("{0:F1}mi", Me.ToMi(distance));
+        }
+
+        /// <summary>
+        /// Formatted localized distance string, as displayed in in-game windows
+        /// </summary>
+        public static string FormatDistanceDisplay(float distance, bool isMetric)
+        {
+            if (isMetric)
+            {
+                // <0.1 kilometers, show meters.
+                if (Math.Abs(distance) < 100)
+                    return String.Format("{0:N0} {1}", distance, m);
+                return String.Format("{0:F1} {1}", distance / 1000f, km);
+            }
+            // <0.1 miles, show yards.
+            if (Math.Abs(distance) < Me.FromMi(0.1f))
+                return String.Format("{0:N0} {1}", Me.ToYd(distance), yd);
+            return String.Format("{0:F1} {1}", Me.ToMi(distance), mi);
         }
 
         public static string FormatMass(float mass, bool isMetric)

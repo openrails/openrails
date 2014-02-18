@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-17 21:35:51+0100\n"
-"PO-Revision-Date: 2014-02-17 21:35:51+0100\n"
+"POT-Creation-Date: 2014-02-18 20:48:59+0100\n"
+"PO-Revision-Date: 2014-02-18 20:49:00+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -107,95 +107,95 @@ msgstr ""
 msgid "Reset to default"
 msgstr ""
 
-#: ../Menu/MainForm.cs:92
+#: ../Menu/MainForm.cs:104
 msgid "Spring"
 msgstr ""
 
-#: ../Menu/MainForm.cs:93
+#: ../Menu/MainForm.cs:105
 msgid "Summer"
 msgstr ""
 
-#: ../Menu/MainForm.cs:94
+#: ../Menu/MainForm.cs:106
 msgid "Autumn"
 msgstr ""
 
-#: ../Menu/MainForm.cs:95
+#: ../Menu/MainForm.cs:107
 msgid "Winter"
 msgstr ""
 
-#: ../Menu/MainForm.cs:99
+#: ../Menu/MainForm.cs:111
 msgid "Clear"
 msgstr ""
 
-#: ../Menu/MainForm.cs:100
+#: ../Menu/MainForm.cs:112
 msgid "Snow"
 msgstr ""
 
-#: ../Menu/MainForm.cs:101
+#: ../Menu/MainForm.cs:113
 msgid "Rain"
 msgstr ""
 
-#: ../Menu/MainForm.cs:105
+#: ../Menu/MainForm.cs:117
 msgid "Easy"
 msgstr ""
 
-#: ../Menu/MainForm.cs:106
+#: ../Menu/MainForm.cs:118
 msgid "Medium"
 msgstr ""
 
-#: ../Menu/MainForm.cs:107
+#: ../Menu/MainForm.cs:119
 msgid "Hard"
 msgstr ""
 
-#: ../Menu/MainForm.cs:186
+#: ../Menu/MainForm.cs:185
 msgid "Select a the installation profile (MSTS folder) to add:"
 msgstr ""
 
-#: ../Menu/MainForm.cs:224
+#: ../Menu/MainForm.cs:223
 msgid "Path: "
 msgstr ""
 
-#: ../Menu/MainForm.cs:224
+#: ../Menu/MainForm.cs:223
 msgid ""
 "\n"
 "Name: "
 msgstr ""
 
-#: ../Menu/MainForm.cs:224
+#: ../Menu/MainForm.cs:223
 msgid ""
 "\n"
 "\n"
 "Remove this installation profile from Open Rails?"
 msgstr ""
 
-#: ../Menu/MainForm.cs:310
+#: ../Menu/MainForm.cs:309
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
 msgstr ""
 
-#: ../Menu/MainForm.cs:464
+#: ../Menu/MainForm.cs:463
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed.\n"
 "Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
 "folder."
 msgstr ""
 
-#: ../Menu/MainForm.cs:727
+#: ../Menu/MainForm.cs:726
 msgid "Activity Briefing"
 msgstr ""
 
-#: ../Menu/MainForm.cs:721
+#: ../Menu/MainForm.cs:720
 #, csharp-format
 msgid "Route: {0}"
 msgstr ""
 
-#: ../Menu/MainForm.cs:723
+#: ../Menu/MainForm.cs:722
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr ""
 
-#: ../Menu/MainForm.cs:726
+#: ../Menu/MainForm.cs:725
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
