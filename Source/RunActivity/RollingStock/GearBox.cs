@@ -223,8 +223,11 @@ namespace ORTS
         {
             get
             {
-                if (ShaftRPM >= (CurrentGear.DownGearProportion * DieselEngine.MaxRPM))
-                    clutchOn = true;
+                if (DieselEngine.locomotive.ThrottlePercent > 0)
+                {
+                    if (ShaftRPM >= (CurrentGear.DownGearProportion * DieselEngine.MaxRPM))
+                        clutchOn = true;
+                }
                 if (ShaftRPM < DieselEngine.StartingRPM)
                     clutchOn = false;
                 return clutchOn;
@@ -382,6 +385,10 @@ namespace ORTS
             if ((clutch <= 0.05) || (clutch >= 1f))
             {
                 if (currentGearIndex < nextGearIndex) DieselEngine.locomotive.SignalEvent(Event.GearUp);
+                currentGearIndex = nextGearIndex;
+            }
+            if ((clutch <= 0.05) || (clutch >= 0.5f))
+            {
                 if (currentGearIndex > nextGearIndex) DieselEngine.locomotive.SignalEvent(Event.GearDown);
                 currentGearIndex = nextGearIndex;
             }
@@ -390,6 +397,11 @@ namespace ORTS
                 switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
+                        if (DieselEngine.locomotive.ThrottlePercent == 0)
+                        {
+                            clutchOn = false;
+                            ClutchPercent = 0f;
+                        }
                         break;
                     case GearBoxOperation.Automatic:
                     case GearBoxOperation.Semiautomatic:
@@ -476,5 +488,10 @@ namespace ORTS
         public GearBox GearBox;
 
         public Gear(GearBox gb) { GearBox = gb; }
+
+        public override string ToString()
+        {
+            return base.ToString();
+        }
     }
 }
