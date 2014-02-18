@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using GNU.Gettext;
 
 namespace ORTS.Common
 {
@@ -83,12 +84,13 @@ namespace ORTS.Common
 
 	public class FormatStrings
 	{
-        static string m = "m"; // FIXME: Viewer3D.Viewer.Catalog.GetString("m");
-        static string km = "km"; // FIXME: Viewer3D.Viewer.Catalog.GetString("km");
-        static string mi = "mi"; // FIXME: Viewer3D.Viewer.Catalog.GetString("mi");
-        static string yd = "yd"; // FIXME: Viewer3D.Viewer.Catalog.GetString("yd");
-        static string kmph = "kmph"; // FIXME: Viewer3D.Viewer.Catalog.GetString("km/h");
-        static string mph = "mph"; // FIXME: Viewer3D.Viewer.Catalog.GetString("mph");
+        static GettextResourceManager Catalog = new GettextResourceManager("ORTS.Common");
+        static string m = Catalog.GetString("m");
+        static string km = Catalog.GetString("km");
+        static string mi = Catalog.GetString("mi");
+        static string yd = Catalog.GetString("yd");
+        static string kmph = Catalog.GetString("km/h");
+        static string mph = Catalog.GetString("mph");
 
         /// <summary>
         /// Formatted unlocalized speed string, used in reports and logs.
