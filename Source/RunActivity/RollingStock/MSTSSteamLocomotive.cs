@@ -32,10 +32,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Microsoft.Xna.Framework.Graphics;
-using MSTS;
 using Microsoft.Xna.Framework;
-using ORTS.Viewer3D;  // for MathHelper
+using Microsoft.Xna.Framework.Graphics;
+using MSTS.Formats;
+using MSTS.Parsers;
+using ORTS.Common;  // for MathHelper
+using ORTS.Viewer3D;
 
 namespace ORTS
 {

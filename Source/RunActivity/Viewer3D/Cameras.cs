@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {

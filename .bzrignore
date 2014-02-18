@@ -1,4 +1,5 @@
 *.application
+*.bak
 *.cachefile
 *.pdb
 *.suo

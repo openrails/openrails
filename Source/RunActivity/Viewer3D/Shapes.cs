@@ -36,8 +36,9 @@ using System.Text;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS;
+using MSTS.Formats;
 using MSTSMath;
+using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {

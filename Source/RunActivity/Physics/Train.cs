@@ -37,6 +37,7 @@
 // #define DEBUG_TEST
 // #define DEBUG_REPORTS
 // #define DEBUG_DEADLOCK
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,7 +45,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Formats;
+using MSTS.Parsers;
+using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Viewer3D;
 using ORTS.Viewer3D.Popups;
@@ -1438,7 +1441,7 @@ namespace ORTS
                         }
                         else
                         {
-                            SignalHead.MstsSignalAspect nextAspect = NextSignalObject[0].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                            MstsSignalAspect nextAspect = NextSignalObject[0].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                             stringBuild.Append(nextAspect.ToString());
                         }
                     }
@@ -1450,7 +1453,7 @@ namespace ORTS
                         }
                         else
                         {
-                            SignalHead.MstsSignalAspect nextAspect = NextSignalObject[1].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                            MstsSignalAspect nextAspect = NextSignalObject[1].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                             stringBuild.Append(nextAspect.ToString());
                         }
                     }
@@ -1613,9 +1616,9 @@ namespace ORTS
         /// get aspect of next signal ahead
         /// </summary>
 
-        public SignalHead.MstsSignalAspect GetNextSignalAspect(int direction)
+        public MstsSignalAspect GetNextSignalAspect(int direction)
         {
-            SignalHead.MstsSignalAspect thisAspect = SignalHead.MstsSignalAspect.STOP;
+            MstsSignalAspect thisAspect = MstsSignalAspect.STOP;
             if (NextSignalObject[direction] != null)
             {
                 thisAspect = NextSignalObject[direction].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
@@ -1726,7 +1729,7 @@ namespace ORTS
 
             ObjectItemInfo.ObjectItemFindState returnState = ObjectItemInfo.ObjectItemFindState.None;
             float distanceToLastObject = 9E29f;  // set to overlarge value
-            SignalHead.MstsSignalAspect nextAspect = SignalHead.MstsSignalAspect.UNKNOWN;
+            MstsSignalAspect nextAspect = MstsSignalAspect.UNKNOWN;
 
             ObjectItemInfo firstObject = signalRef.GetNextObject_InRoute(routedForward, ValidRoute[0],
                 PresentPosition[0].RouteListIndex, PresentPosition[0].TCOffset, -1,
@@ -1759,7 +1762,7 @@ namespace ORTS
 
             while (returnState == ObjectItemInfo.ObjectItemFindState.Object &&
                 distanceToLastObject < maxDistance &&
-                nextAspect != SignalHead.MstsSignalAspect.STOP)
+                nextAspect != MstsSignalAspect.STOP)
             {
                 int foundSection = -1;
 
@@ -2085,11 +2088,11 @@ namespace ORTS
                     {
                         nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                         if (nextObject.ObjectDetails.enabledTrain != null && nextObject.ObjectDetails.enabledTrain.Train != this)
-                            nextObject.signal_state = SignalHead.MstsSignalAspect.STOP; // state not valid if not enabled for this train
+                            nextObject.signal_state = MstsSignalAspect.STOP; // state not valid if not enabled for this train
                         ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
-                        nextObject.speed_passenger = thisSpeed == null || nextObject.signal_state == SignalHead.MstsSignalAspect.STOP ? -1 : thisSpeed.speed_pass;
-                        nextObject.speed_freight = thisSpeed == null || nextObject.signal_state == SignalHead.MstsSignalAspect.STOP ? -1 : thisSpeed.speed_freight;
-                        nextObject.speed_flag = thisSpeed == null || nextObject.signal_state == SignalHead.MstsSignalAspect.STOP ? 0 : thisSpeed.speed_flag;
+                        nextObject.speed_passenger = thisSpeed == null || nextObject.signal_state == MstsSignalAspect.STOP ? -1 : thisSpeed.speed_pass;
+                        nextObject.speed_freight = thisSpeed == null || nextObject.signal_state == MstsSignalAspect.STOP ? -1 : thisSpeed.speed_freight;
+                        nextObject.speed_flag = thisSpeed == null || nextObject.signal_state == MstsSignalAspect.STOP ? 0 : thisSpeed.speed_flag;
                     }
 
                     prevObject = nextObject;
@@ -2100,7 +2103,7 @@ namespace ORTS
                 // If so, no check on list is required
                 //
 
-                SignalHead.MstsSignalAspect nextAspect = SignalHead.MstsSignalAspect.UNKNOWN;
+                MstsSignalAspect nextAspect = MstsSignalAspect.UNKNOWN;
 
                 for (int isig = SignalObjectItems.Count - 1; isig >= 0 && !signalFound; isig--)
                 {
@@ -2126,7 +2129,7 @@ namespace ORTS
 
                 while (lastDistance < maxDistance &&
                           returnState == ObjectItemInfo.ObjectItemFindState.Object &&
-                          nextAspect != SignalHead.MstsSignalAspect.STOP)
+                          nextAspect != MstsSignalAspect.STOP)
                 {
 
                     var prevSignal = prevObject.ObjectDetails;
@@ -3569,7 +3572,7 @@ namespace ORTS
                     // check if train really went passed signal in correct direction
                     if (ValidRoute[direction].SignalIsAheadOfTrain(NextSignalObject[direction], trainPreviousPos)) // train was in front on last check, so we did pass
                     {
-                        SignalHead.MstsSignalAspect signalState = GetNextSignalAspect(direction);
+                        MstsSignalAspect signalState = GetNextSignalAspect(direction);
                         passedSignalIndex = NextSignalObject[direction].thisRef;
 
 #if DEBUG_REPORTS
@@ -3592,7 +3595,7 @@ namespace ORTS
                             File.AppendAllText(@"C:\temp\checktrain.txt", reportCT + "\n");
                         }
 
-                        if (signalState == SignalHead.MstsSignalAspect.STOP && NextSignalObject[direction].hasPermission == SignalObject.Permission.Denied)
+                        if (signalState == MstsSignalAspect.STOP && NextSignalObject[direction].hasPermission == SignalObject.Permission.Denied)
                         {
                             Trace.TraceWarning("Train {0} passing signal {1} at {2} at danger at {3}",
                                Number.ToString(), NextSignalObject[direction].thisRef.ToString(),
@@ -3727,7 +3730,7 @@ namespace ORTS
                     TrackCircuitSection rearSection = signalRef.TrackCircuitList[RearSignalObject.TCNextTC];
                     if (!TCSubpathRoute.IsAheadOfTrain(rearSection, 0.0f, overlapPosition))
                     {
-                        if (RearSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == SignalHead.MstsSignalAspect.STOP)
+                        if (RearSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP)
                         {
                             SetTrainOutOfControl(OUTOFCONTROL.SPAD_REAR);
                             outOfControl = true;
@@ -4452,7 +4455,7 @@ namespace ORTS
 
             else if (SpeedMpS < Math.Abs(0.1) &&
              NextSignalObject[0] != null &&
-             GetNextSignalAspect(0) == SignalHead.MstsSignalAspect.STOP &&
+             GetNextSignalAspect(0) == MstsSignalAspect.STOP &&
                      CheckTrainWaitingForSignal(NextSignalObject[0], 0))
             {
                 bool hasClaimed = ClaimState;
@@ -4984,10 +4987,10 @@ namespace ORTS
                 if (thisSection.EndSignals[reqDirection] != null)
                 {
                     var endSignal = thisSection.EndSignals[reqDirection];
-                    SignalHead.MstsSignalAspect thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                    MstsSignalAspect thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                     hasEndSignal = true;
 
-                    if (thisAspect == SignalHead.MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
+                    if (thisAspect == MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
                     {
                         endWithSignal = true;
                         sectionWithSignalIndex = iindex;
@@ -6009,7 +6012,7 @@ namespace ORTS
                     var thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
                     hasEndSignal = true;
 
-                    if (thisAspect == SignalHead.MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
+                    if (thisAspect == MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
                     {
                         endWithSignal = true;
                         sectionWithSignalIndex = iindex;
@@ -6130,7 +6133,7 @@ namespace ORTS
 
                 var nextSignal = thisSection.EndSignals[thisElement.Direction];
                 if (nextSignal != null &&
-                    nextSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == SignalHead.MstsSignalAspect.STOP &&
+                    nextSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP &&
                     nextSignal.hasPermission != SignalObject.Permission.Granted)
                 {
                     unclearedSignal = true;
@@ -6354,7 +6357,7 @@ namespace ORTS
                     if (thisSection.EndSignals[direction] != null)
                     {
                         reqSignal = thisSection.EndSignals[direction];
-                        signalFound = (reqSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == SignalHead.MstsSignalAspect.STOP);
+                        signalFound = (reqSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP);
                     }
                 }
             }
@@ -7044,7 +7047,7 @@ namespace ORTS
                     int reqRouteIndex = direction == Direction.Forward ? 0 : 1;
 
                     if (NextSignalObject[reqRouteIndex] != null &&
-                        NextSignalObject[reqRouteIndex].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) != SignalHead.MstsSignalAspect.STOP)
+                        NextSignalObject[reqRouteIndex].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) != MstsSignalAspect.STOP)
                     {
                         int routeIndex = ValidRoute[reqRouteIndex].GetRouteIndex(NextSignalObject[reqRouteIndex].TCNextTC, PresentPosition[reqRouteIndex].RouteListIndex);
                         signalRef.BreakDownRouteList(ValidRoute[reqRouteIndex], routeIndex, routedForward);
@@ -9265,12 +9268,12 @@ namespace ORTS
 
                 if (NextSignalObject[1] != null)
                 {
-                    SignalHead.MstsSignalAspect nextAspect = GetNextSignalAspect(1);
-                    if (NextSignalObject[1].enabledTrain == null || NextSignalObject[1].enabledTrain.Train != this) nextAspect = SignalHead.MstsSignalAspect.STOP;  // aspect only valid if signal enabled for this train
+                    MstsSignalAspect nextAspect = GetNextSignalAspect(1);
+                    if (NextSignalObject[1].enabledTrain == null || NextSignalObject[1].enabledTrain.Train != this) nextAspect = MstsSignalAspect.STOP;  // aspect only valid if signal enabled for this train
 
                     switch (nextAspect)
                     {
-                        case SignalHead.MstsSignalAspect.STOP:
+                        case MstsSignalAspect.STOP:
                             if (NextSignalObject[1].hasPermission == SignalObject.Permission.Granted)
                             {
                                 firstchar = "G";
@@ -9280,25 +9283,25 @@ namespace ORTS
                                 firstchar = "S";
                             }
                             break;
-                        case SignalHead.MstsSignalAspect.STOP_AND_PROCEED:
+                        case MstsSignalAspect.STOP_AND_PROCEED:
                             firstchar = "P";
                             break;
-                        case SignalHead.MstsSignalAspect.RESTRICTING:
+                        case MstsSignalAspect.RESTRICTING:
                             firstchar = "R";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_1:
+                        case MstsSignalAspect.APPROACH_1:
                             firstchar = "A";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_2:
+                        case MstsSignalAspect.APPROACH_2:
                             firstchar = "A";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_3:
+                        case MstsSignalAspect.APPROACH_3:
                             firstchar = "A";
                             break;
-                        case SignalHead.MstsSignalAspect.CLEAR_1:
+                        case MstsSignalAspect.CLEAR_1:
                             firstchar = "C";
                             break;
-                        case SignalHead.MstsSignalAspect.CLEAR_2:
+                        case MstsSignalAspect.CLEAR_2:
                             firstchar = "C";
                             break;
                     }
@@ -9309,12 +9312,12 @@ namespace ORTS
 
                 if (NextSignalObject[0] != null)
                 {
-                    SignalHead.MstsSignalAspect nextAspect = GetNextSignalAspect(0);
-                    if (NextSignalObject[0].enabledTrain == null || NextSignalObject[0].enabledTrain.Train != this) nextAspect = SignalHead.MstsSignalAspect.STOP;  // aspect only valid if signal enabled for this train
+                    MstsSignalAspect nextAspect = GetNextSignalAspect(0);
+                    if (NextSignalObject[0].enabledTrain == null || NextSignalObject[0].enabledTrain.Train != this) nextAspect = MstsSignalAspect.STOP;  // aspect only valid if signal enabled for this train
 
                     switch (nextAspect)
                     {
-                        case SignalHead.MstsSignalAspect.STOP:
+                        case MstsSignalAspect.STOP:
                             if (NextSignalObject[0].hasPermission == SignalObject.Permission.Granted)
                             {
                                 lastchar = "G";
@@ -9324,25 +9327,25 @@ namespace ORTS
                                 lastchar = "S";
                             }
                             break;
-                        case SignalHead.MstsSignalAspect.STOP_AND_PROCEED:
+                        case MstsSignalAspect.STOP_AND_PROCEED:
                             lastchar = "P";
                             break;
-                        case SignalHead.MstsSignalAspect.RESTRICTING:
+                        case MstsSignalAspect.RESTRICTING:
                             lastchar = "R";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_1:
+                        case MstsSignalAspect.APPROACH_1:
                             lastchar = "A";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_2:
+                        case MstsSignalAspect.APPROACH_2:
                             lastchar = "A";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_3:
+                        case MstsSignalAspect.APPROACH_3:
                             lastchar = "A";
                             break;
-                        case SignalHead.MstsSignalAspect.CLEAR_1:
+                        case MstsSignalAspect.CLEAR_1:
                             lastchar = "C";
                             break;
-                        case SignalHead.MstsSignalAspect.CLEAR_2:
+                        case MstsSignalAspect.CLEAR_2:
                             lastchar = "C";
                             break;
                     }
@@ -9356,32 +9359,32 @@ namespace ORTS
             {
                 if (NextSignalObject[0] != null)
                 {
-                    SignalHead.MstsSignalAspect nextAspect = GetNextSignalAspect(0);
+                    MstsSignalAspect nextAspect = GetNextSignalAspect(0);
 
                     switch (nextAspect)
                     {
-                        case SignalHead.MstsSignalAspect.STOP:
+                        case MstsSignalAspect.STOP:
                             statusString[iColumn] = "STOP";
                             break;
-                        case SignalHead.MstsSignalAspect.STOP_AND_PROCEED:
+                        case MstsSignalAspect.STOP_AND_PROCEED:
                             statusString[iColumn] = "SPRC";
                             break;
-                        case SignalHead.MstsSignalAspect.RESTRICTING:
+                        case MstsSignalAspect.RESTRICTING:
                             statusString[iColumn] = "REST";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_1:
+                        case MstsSignalAspect.APPROACH_1:
                             statusString[iColumn] = "APP1";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_2:
+                        case MstsSignalAspect.APPROACH_2:
                             statusString[iColumn] = "APP2";
                             break;
-                        case SignalHead.MstsSignalAspect.APPROACH_3:
+                        case MstsSignalAspect.APPROACH_3:
                             statusString[iColumn] = "APP3";
                             break;
-                        case SignalHead.MstsSignalAspect.CLEAR_1:
+                        case MstsSignalAspect.CLEAR_1:
                             statusString[iColumn] = "CLR1";
                             break;
-                        case SignalHead.MstsSignalAspect.CLEAR_2:
+                        case MstsSignalAspect.CLEAR_2:
                             statusString[iColumn] = "CLR2";
                             break;
                     }

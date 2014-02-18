@@ -34,7 +34,8 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using MSTS;
+using MSTS.Formats;
+using MSTS.Parsers;
 using ORTS.Viewer3D;  // needed for Confirmation
 using ORTS.Viewer3D.Popups;
 

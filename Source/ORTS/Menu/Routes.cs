@@ -17,7 +17,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using MSTS;
+using MSTS.Formats;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 
@@ -35,7 +35,7 @@ namespace ORTS.Menu
         {
             if (Directory.Exists(path))
             {
-				var trkFilePath = MSTSPath.GetTRKFileName(path);
+				var trkFilePath = MSTS.MSTSPath.GetTRKFileName(path);
                 try
                 {
 					var trkFile = new TRKFile(trkFilePath);

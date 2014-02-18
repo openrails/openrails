@@ -46,11 +46,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MSTS\_STF.cs">
-      <Link>MSTS\_STF.cs</Link>
-    </Compile>
     <Compile Include="MSTS\STF.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MSTS.Parsers\MSTS.Parsers.csproj">
+      <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
+      <Name>MSTS.Parsers</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

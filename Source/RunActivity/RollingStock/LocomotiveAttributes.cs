@@ -18,12 +18,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
-using MSTS;
-using Microsoft.Xna.Framework;
+using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MSTS.Parsers;
 
 namespace ORTS
 {
@@ -79,7 +79,7 @@ namespace ORTS
                         if (hasFile && opfa.FileID == attr.FileID)
                         {
                             AttributeProcessor ap = new AttributeProcessor(initWhat, fi, stf, attr.DefaultValue);
-                            tp = new MSTS.STFReader.TokenProcessor(attr.Token, ap.P);
+                            tp = new MSTS.Parsers.STFReader.TokenProcessor(attr.Token, ap.P);
 
                             result.Add(tp);
                         }
@@ -221,7 +221,7 @@ namespace ORTS
 
     public class AttributeProcessor
     {
-        public MSTS.STFReader.Processor P;
+        public STFReader.Processor P;
         private FieldInfo _fi;
 
         public AttributeProcessor(object setWhom, FieldInfo fi, STFReader stf, object defaultValue)

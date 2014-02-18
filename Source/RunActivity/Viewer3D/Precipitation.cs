@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS;
+using MSTS.Formats;
 using ORTS.Processes;
 
 namespace ORTS.Viewer3D
@@ -332,10 +332,10 @@ namespace ORTS.Viewer3D
             shader.CurrentTime = (float)Viewer.Simulator.GameTime;
             switch (Viewer.Simulator.Weather)
             {
-                case MSTS.WeatherType.Snow:
+                case MSTS.Formats.WeatherType.Snow:
                     shader.PrecipTexture = SnowTexture;
                     break;
-                case MSTS.WeatherType.Rain:
+                case MSTS.Formats.WeatherType.Rain:
                     shader.PrecipTexture = RainTexture;
                     break;
                 // Safe? or need a default here? If so, what?
@@ -351,7 +351,7 @@ namespace ORTS.Viewer3D
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
-            if (Viewer.Simulator.Weather == MSTS.WeatherType.Clear)
+            if (Viewer.Simulator.Weather == MSTS.Formats.WeatherType.Clear)
                 return;
 
             var shader = Viewer.MaterialManager.PrecipShader;

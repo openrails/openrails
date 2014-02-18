@@ -49,7 +49,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Formats;
+using MSTS.Parsers;
 using ORTS.Viewer3D.Popups;
 
 namespace ORTS
@@ -169,7 +170,7 @@ namespace ORTS
         /// Constructor
         ///
 
-        public SIGSCRfile(string RoutePath, IList<string> ScriptFiles, IDictionary<string, SignalType> SignalTypes)
+        public SIGSCRfile(string RoutePath, IList<string> ScriptFiles, IDictionary<string, MSTS.Formats.SignalType> SignalTypes)
         {
 
             // Create required translators
@@ -1703,8 +1704,8 @@ namespace ORTS
                         string partString = TermString.Substring(7);
                         try
                         {
-                            SignalHead.MstsSignalAspect Aspect =
-                                    (SignalHead.MstsSignalAspect)Enum.Parse(typeof(SignalHead.MstsSignalAspect), partString, true);
+                            MstsSignalAspect Aspect =
+                                    (MstsSignalAspect)Enum.Parse(typeof(MstsSignalAspect), partString, true);
                             TermParts = new SCRParameterType(SCRTermType.Sigasp, (int)Aspect);
                         }
                         catch (Exception Ex)
@@ -1753,7 +1754,7 @@ namespace ORTS
                         string partString = TermString.Substring(8);
                         try
                         {
-                            int sfIndex = MSTS.SignalShape.SignalSubObj.SignalSubTypes.IndexOf(partString);
+                            int sfIndex = MSTS.Formats.SignalShape.SignalSubObj.SignalSubTypes.IndexOf(partString);
                             TermParts = new SCRParameterType(SCRTermType.Sigfeat, sfIndex);
                         }
                         catch (Exception Ex)
@@ -3021,7 +3022,7 @@ namespace ORTS
                     switch (FloatType)
                     {
                         case SCRExternalFloats.STATE:
-                            thisHead.state = (SignalHead.MstsSignalAspect)tempvalue;
+                            thisHead.state = (MstsSignalAspect)tempvalue;
                             break;
 
                         case SCRExternalFloats.DRAW_STATE:
@@ -3328,7 +3329,7 @@ namespace ORTS
                     
                 case (SCRExternalFunctions.THIS_SIG_LR):
                     bool sigfound_lr = false;
-                    SignalHead.MstsSignalAspect returnState_lr = thisHead.this_sig_lr((SignalHead.MstsSignalFunction)parameter1_value, ref sigfound_lr);
+                    MstsSignalAspect returnState_lr = thisHead.this_sig_lr((SignalHead.MstsSignalFunction)parameter1_value, ref sigfound_lr);
                     return_value = sigfound_lr ? (int)returnState_lr : -1;
                     break;
 
@@ -3336,7 +3337,7 @@ namespace ORTS
 
                 case (SCRExternalFunctions.THIS_SIG_MR):
                     bool sigfound_mr = false;
-                    SignalHead.MstsSignalAspect returnState_mr = thisHead.this_sig_mr((SignalHead.MstsSignalFunction)parameter1_value, ref sigfound_mr);
+                    MstsSignalAspect returnState_mr = thisHead.this_sig_mr((SignalHead.MstsSignalFunction)parameter1_value, ref sigfound_mr);
                     return_value = sigfound_mr ? (int)returnState_mr : -1;
                     break;
 
@@ -3410,7 +3411,7 @@ namespace ORTS
                 // def_draw_state
 
                 case (SCRExternalFunctions.DEF_DRAW_STATE):
-                    return_value = thisHead.def_draw_state((SignalHead.MstsSignalAspect)parameter1_value);
+                    return_value = thisHead.def_draw_state((MstsSignalAspect)parameter1_value);
                     break;
 
                 // DEBUG routine : to be implemented later

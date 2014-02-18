@@ -23,6 +23,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS;
+using MSTS.Formats;
 using ORTS.Viewer3D;
 
 namespace ORTS.Viewer3D.Popups

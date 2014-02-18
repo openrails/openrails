@@ -24,7 +24,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS;
+using MSTS.Formats;
 using ORTS.Viewer3D.Popups;
 using GNU.Gettext;
 
@@ -899,13 +899,13 @@ namespace ORTS
     /// </summary>
     public abstract class EventWrapper
     {
-        public MSTS.Event ParsedObject;     // Points to object parsed from file *.act
+        public MSTS.Formats.Event ParsedObject;     // Points to object parsed from file *.act
         public int OriginalActivationLevel; // Needed to reset .ActivationLevel
         public int TimesTriggered;          // Needed for evaluation after activity ends
         public Boolean IsDisabled;          // Used for a reversible event to prevent it firing again until after it has been reset.
         protected Simulator Simulator;
 
-        public EventWrapper(MSTS.Event @event, Simulator simulator)
+        public EventWrapper(MSTS.Formats.Event @event, Simulator simulator)
         {
             ParsedObject = @event;
             Simulator = simulator;
@@ -1004,7 +1004,7 @@ namespace ORTS
         SidingItem SidingEnd2;
         List<string> ChangeWagonIdList;   // Wagons to be assembled, picked up or dropped off.
 
-        public EventCategoryActionWrapper(MSTS.Event @event, Simulator simulator)
+        public EventCategoryActionWrapper(MSTS.Formats.Event @event, Simulator simulator)
             : base(@event, simulator)
         {
             var e = this.ParsedObject as EventCategoryAction;
@@ -1189,7 +1189,7 @@ namespace ORTS
 
     public class EventCategoryLocationWrapper : EventWrapper
     {
-        public EventCategoryLocationWrapper(MSTS.Event @event, Simulator simulator)
+        public EventCategoryLocationWrapper(MSTS.Formats.Event @event, Simulator simulator)
             : base(@event, simulator)
         {
         }
@@ -1197,7 +1197,7 @@ namespace ORTS
         override public Boolean Triggered(Activity activity)
         {
             var triggered = false;
-            var e = this.ParsedObject as MSTS.EventCategoryLocation;
+            var e = this.ParsedObject as MSTS.Formats.EventCategoryLocation;
             if (e.TriggerOnStop)
             {
                 // Is train still moving?
@@ -1224,14 +1224,14 @@ namespace ORTS
     public class EventCategoryTimeWrapper : EventWrapper
     {
 
-        public EventCategoryTimeWrapper(MSTS.Event @event, Simulator simulator)
+        public EventCategoryTimeWrapper(MSTS.Formats.Event @event, Simulator simulator)
             : base(@event, simulator)
         {
         }
 
         override public Boolean Triggered(Activity activity)
         {
-            var e = this.ParsedObject as MSTS.EventCategoryTime;
+            var e = this.ParsedObject as MSTS.Formats.EventCategoryTime;
             if (e == null) return false;
             var triggered = (e.Time <= (int)Simulator.ClockTime - activity.StartTimeS);
             return triggered;

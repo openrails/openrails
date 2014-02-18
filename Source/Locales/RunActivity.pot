@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-18 20:48:56+0100\n"
-"PO-Revision-Date: 2014-02-18 20:48:57+0100\n"
+"POT-Creation-Date: 2014-02-18 21:47:51+0000\n"
+"PO-Revision-Date: 2014-02-18 21:47:51+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,46 +11,25 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../RunActivity/Common/Conversions.cs:86
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
-msgid "m"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:87
-msgid "km"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:88
-msgid "mi"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:89
-msgid "yd"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:90
-msgid "km/h"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:91
-msgid "mph"
-msgstr ""
-
-#: ../RunActivity/Debugging/DebugViewerForm.cs:193
+#: ../RunActivity/Debugging/DebugViewerForm.cs:195
 msgid "View Self"
 msgstr ""
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:583
+#: ../RunActivity/Debugging/DebugViewerForm.cs:585
 msgid "MSG to Server"
 msgstr ""
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:587
+#: ../RunActivity/Debugging/DebugViewerForm.cs:589
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
 msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
+msgid "m"
 msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
@@ -193,7 +172,7 @@ msgid "Variable 1"
 msgstr ""
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
 msgid "Distance"
 msgstr ""
 
@@ -211,13 +190,13 @@ msgstr ""
 msgid "SoundDebugForm"
 msgstr ""
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:282
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:272
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:283
 msgid "No power line!"
 msgstr ""
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:273
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:284
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:274
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:285
 msgid "Power line condition overriden."
 msgstr ""
 
@@ -863,7 +842,7 @@ msgctxt "Labels"
 msgid "none"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Viewer.cs:1070
+#: ../RunActivity/Viewer3D/Viewer.cs:1071
 msgid "Game saved"
 msgstr ""
 
@@ -1002,31 +981,31 @@ msgid "Timetable"
 msgstr ""
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:84
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:68
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
 msgid "Station"
 msgstr ""
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Arrive"
 msgstr ""
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 msgid "Actual"
 msgstr ""
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Depart"
 msgstr ""
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:103
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:105
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:132
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:135
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
 msgid "(missed)"
 msgstr ""
 
@@ -1066,19 +1045,19 @@ msgstr ""
 msgid "Pick Up"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:225
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:226
 msgid "Done"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:238
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:239
 msgid "Procedures"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:52
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
 msgid "Next Station"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:212
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
 msgid "Activity completed."
 msgstr ""
 
@@ -1101,27 +1080,27 @@ msgstr ""
 msgid "Continue playing ({0})"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/SwitchWindow.cs:47
+#: ../RunActivity/Viewer3D/Popups/SwitchWindow.cs:48
 msgid "Switch"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
 msgid "Track Monitor"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:110
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:111
 msgid "Speed:"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:117
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:118
 msgid "Projected:"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:124
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:125
 msgid "Limit:"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:142
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:143
 msgid " Dist      Speed   Aspect"
 msgstr ""
 

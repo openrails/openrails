@@ -920,7 +920,7 @@ namespace ORTS.Viewer3D
             SurfaceFormat surfaceFormat = SurfaceFormatFromLoadFormat(loadSurfaceFormat, compressionFormat, pixelFlags, rgbBitCount);
 
             Texture2D tx = new Texture2D(device, width, height, numMips, TextureUsage.None, surfaceFormat);
-            tx.Tag = new MSTS.AceInfo() { AlphaBits = XNATextureNumAlphaBits(tx) };
+            tx.Tag = new MSTS.Formats.AceInfo() { AlphaBits = XNATextureNumAlphaBits(tx) };
 
             if (tx.Format != surfaceFormat)
             {

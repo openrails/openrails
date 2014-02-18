@@ -21,7 +21,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using MSTS;
+using MSTS.Formats;
+using ORTS.Common;
 
 namespace ORTS
 {
@@ -32,7 +33,7 @@ namespace ORTS
 		readonly Simulator Simulator;
 		public readonly Dictionary<int, Hazzard> Hazzards;
 		public readonly Dictionary<int, Hazzard> CurrentHazzards;
-		public readonly Dictionary<string, MSTS.HAZFile> HazFiles;
+		public readonly Dictionary<string, HAZFile> HazFiles;
 		List<int> InterestedHazzards;//those hazards is closed to player, needs to listen to horn
 		public HazzardManager(Simulator simulator)
 		{

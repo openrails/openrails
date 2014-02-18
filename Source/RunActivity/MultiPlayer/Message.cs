@@ -18,12 +18,15 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
-using System.IO.Compression;
-using System.IO;
+using MSTS.Formats;
+using MSTS.Parsers;
 using ORTS;
-using MSTS;
+using ORTS.Common;
+
 namespace ORTS.MultiPlayer
 {
 	public class Message
@@ -2775,7 +2778,7 @@ namespace ORTS.MultiPlayer
 			int i = 0;
 			foreach (var t in signals)
 			{
-				t.Value.state = (SignalHead.MstsSignalAspect)(signalsStates[2 * i] - 1); //we added 1 when build the message, need to subtract it out
+				t.Value.state = (MstsSignalAspect)(signalsStates[2 * i] - 1); //we added 1 when build the message, need to subtract it out
 				t.Value.draw_state = (int)(signalsStates[2 * i + 1] - 1);
 				//t.Value.draw_state = t.Value.def_draw_state(t.Value.state);
 				//System.Console.Write(msgx[i]-48);
@@ -3164,12 +3167,12 @@ namespace ORTS.MultiPlayer
                     signal.holdState = SignalObject.HoldState.ManualApproach;
                     foreach (var sigHead in signal.SignalHeads)
                     {
-                        var drawstate1 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_1);
-                        var drawstate2 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_2);
-                        var drawstate3 = sigHead.def_draw_state(SignalHead.MstsSignalAspect.APPROACH_3);
-                        if (drawstate1 > 0) { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_1; }
-                        else if (drawstate2 > 0) { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_2; }
-                        else { sigHead.state = SignalHead.MstsSignalAspect.APPROACH_3; }
+                        var drawstate1 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_1);
+                        var drawstate2 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_2);
+                        var drawstate3 = sigHead.def_draw_state(MstsSignalAspect.APPROACH_3);
+                        if (drawstate1 > 0) { sigHead.state = MstsSignalAspect.APPROACH_1; }
+                        else if (drawstate2 > 0) { sigHead.state = MstsSignalAspect.APPROACH_2; }
+                        else { sigHead.state = MstsSignalAspect.APPROACH_3; }
                         sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
                     }
                     break;

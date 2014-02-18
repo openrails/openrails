@@ -30,7 +30,8 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS;
+using MSTS.Formats;
+using ORTS.Common;
 using ORTS.Processes;
 
 namespace ORTS.Viewer3D

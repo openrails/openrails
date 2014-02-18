@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using MSTS;
+using MSTS.Formats;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 

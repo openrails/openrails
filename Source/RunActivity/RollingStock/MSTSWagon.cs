@@ -35,7 +35,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Formats;
+using MSTS.Parsers;
+using ORTS.Common;
 using ORTS.Viewer3D;
 
 namespace ORTS

@@ -24,7 +24,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using MSTS;
+using MSTS.Formats;
+using MSTS.Parsers;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D.Popups;
 

@@ -22,7 +22,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Formats;
+using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {

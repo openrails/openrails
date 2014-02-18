@@ -51,11 +51,11 @@ namespace ORTS
                     AddSoundSource(Viewer.World.GameSounds.SMSFolder + "\\" + Viewer.World.GameSounds.SMSFileName, new List<SoundSourceBase>() { Viewer.World.GameSounds });
 
                 // Need to repeat it here, since the SoundProcess was not yet available at WeatherControl construction time
-                if (Viewer.Simulator.Weather == MSTS.WeatherType.Clear)
+                if (Viewer.Simulator.Weather == MSTS.Formats.WeatherType.Clear)
                     AddSoundSource(Viewer.World.WeatherControl, Viewer.World.WeatherControl.ClearSound);
-                else if (Viewer.Simulator.Weather == MSTS.WeatherType.Rain)
+                else if (Viewer.Simulator.Weather == MSTS.Formats.WeatherType.Rain)
                     AddSoundSource(Viewer.World.WeatherControl, Viewer.World.WeatherControl.RainSound);
-                else if (Viewer.Simulator.Weather == MSTS.WeatherType.Snow)
+                else if (Viewer.Simulator.Weather == MSTS.Formats.WeatherType.Snow)
                     AddSoundSource(Viewer.World.WeatherControl, Viewer.World.WeatherControl.SnowSound);
             }
         }

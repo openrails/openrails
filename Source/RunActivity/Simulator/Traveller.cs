@@ -16,13 +16,14 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Formats;
 using MSTSMath;
+using ORTS.Common;
 
 namespace ORTS
 {

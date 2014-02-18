@@ -27,7 +27,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using MSTS;
+using MSTS.Formats;
+using ORTS.Common;
 
 namespace ORTS
 {

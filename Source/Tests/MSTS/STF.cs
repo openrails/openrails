@@ -21,7 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Parsers;
 using Xunit;
 
 namespace Tests

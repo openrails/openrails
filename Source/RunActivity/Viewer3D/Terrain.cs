@@ -25,7 +25,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS;
+using MSTS.Formats;
 
 namespace ORTS.Viewer3D
 {

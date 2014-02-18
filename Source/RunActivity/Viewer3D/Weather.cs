@@ -66,23 +66,23 @@ namespace ORTS.Viewer3D
             SetWeather(Viewer.Simulator.Weather);
         }
 
-        public void SetWeather(MSTS.WeatherType weather)
+        public void SetWeather(MSTS.Formats.WeatherType weather)
         {
             if (Viewer.SoundProcess != null) Viewer.SoundProcess.RemoveSoundSource(this);
             switch (weather)
             {
-                case MSTS.WeatherType.Clear:
+                case MSTS.Formats.WeatherType.Clear:
                     overcastFactor = 0.05f;
                     fogDistance = 20000;
                     if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, ClearSound);
                     break;
-                case MSTS.WeatherType.Rain:
+                case MSTS.Formats.WeatherType.Rain:
                     overcastFactor = 0.7f;
                     pricipitationIntensity = 4500;
                     fogDistance = 1000;
                     if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, RainSound);
                     break;
-                case MSTS.WeatherType.Snow:
+                case MSTS.Formats.WeatherType.Snow:
                     overcastFactor = 0.6f;
                     pricipitationIntensity = 6500;
                     fogDistance = 500;

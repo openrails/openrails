@@ -36,7 +36,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS;
+using MSTS.Formats;
+using MSTS.Parsers;
+using ORTS.Common;
 using ORTS.Viewer3D;
 // needed for Debug
 

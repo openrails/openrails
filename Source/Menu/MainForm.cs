@@ -562,8 +562,8 @@ namespace ORTS
             exploreActivity.Consist = SelectedConsist;
             exploreActivity.Path = SelectedPath;
             exploreActivity.StartTime = SelectedStartTime;
-            exploreActivity.Season = (MSTS.SeasonType)SelectedStartSeason;
-            exploreActivity.Weather = (MSTS.WeatherType)SelectedStartWeather;
+            exploreActivity.Season = (MSTS.Formats.SeasonType)SelectedStartSeason;
+            exploreActivity.Weather = (MSTS.Formats.WeatherType)SelectedStartWeather;
         }
         #endregion
 

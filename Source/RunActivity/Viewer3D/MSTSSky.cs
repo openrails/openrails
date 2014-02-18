@@ -571,12 +571,12 @@ namespace ORTS.Viewer3D
             {
                 var mstsskytexture = Viewer.ENVFile.SkyLayers.ToArray();
                 string mstsSkyTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[0].TextureName.ToString();
-                MSTSSkyTexture = MSTS.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture);
+                MSTSSkyTexture = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture);
                 string mstsSkyStarTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[1].TextureName.ToString();
-                MSTSSkyStarTextureN = MSTS.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyStarTexture);
-                MSTSSkyStarTextureS = MSTS.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyStarTexture);  //ToDo:  MSTS doesn't use multiple star textures, revisit this for OR env files possibly in the future.
+                MSTSSkyStarTextureN = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyStarTexture);
+                MSTSSkyStarTextureS = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyStarTexture);  //ToDo:  MSTS doesn't use multiple star textures, revisit this for OR env files possibly in the future.
                 string mstsSkylowTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[1].TextureName.ToString();
-                MSTSSkylowTexture = MSTS.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkylowTexture);
+                MSTSSkylowTexture = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkylowTexture);
             }
             else
             {
@@ -589,8 +589,8 @@ namespace ORTS.Viewer3D
                 var mstsskysatellitetexture = Viewer.ENVFile.SkySatellite.ToArray();
                 string mstsSkySunTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[0].TextureName.ToString();
                 string mstsSkyMoonTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[1].TextureName.ToString();
-                MSTSSkySunTexture = MSTS.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
-                MSTSSkyMoonTexture = MSTS.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
+                MSTSSkySunTexture = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
+                MSTSSkyMoonTexture = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
             }
             else
                 MSTSSkyMoonTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));

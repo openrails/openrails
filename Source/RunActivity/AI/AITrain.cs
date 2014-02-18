@@ -34,7 +34,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Formats;
+using MSTS.Parsers;
+using ORTS.Common;
 using ORTS.Viewer3D.Popups;
 
 namespace ORTS
@@ -770,7 +772,7 @@ namespace ORTS
                 // check signal state
 
                 if (thisInfo.ObjectType == ObjectItemInfo.ObjectItemType.Signal &&
-                        thisInfo.signal_state < SignalHead.MstsSignalAspect.APPROACH_1 &&
+                        thisInfo.signal_state < MstsSignalAspect.APPROACH_1 &&
                         !thisInfo.processed)
                 {
                     if (CheckTrain)
@@ -781,7 +783,7 @@ namespace ORTS
                     if (!(ControlMode == TRAIN_CONTROL.AUTO_NODE &&
                                     thisInfo.distance_to_train > DistanceToEndNodeAuthorityM[0]))
                     {
-                        if (thisInfo.signal_state == SignalHead.MstsSignalAspect.STOP ||
+                        if (thisInfo.signal_state == MstsSignalAspect.STOP ||
                             thisInfo.ObjectDetails.enabledTrain != routedForward)
                         {
                             CreateTrainAction(validSpeed, 0.0f,
@@ -1111,7 +1113,7 @@ namespace ORTS
 
             else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
             {
-                SignalHead.MstsSignalAspect nextAspect = SignalHead.MstsSignalAspect.UNKNOWN;
+                MstsSignalAspect nextAspect = MstsSignalAspect.UNKNOWN;
                 // there is a next item and it is the next signal
                 if (nextActionInfo != null && nextActionInfo.ActiveItem != null &&
                     nextActionInfo.ActiveItem.ObjectDetails == NextSignalObject[0])
@@ -1129,8 +1131,8 @@ namespace ORTS
                     NextStopDistanceM = DistanceToEndNodeAuthorityM[0];
                 }
 
-                else if (nextAspect > SignalHead.MstsSignalAspect.STOP &&
-                        nextAspect < SignalHead.MstsSignalAspect.APPROACH_1)
+                else if (nextAspect > MstsSignalAspect.STOP &&
+                        nextAspect < MstsSignalAspect.APPROACH_1)
                 {
                     // check if any other signals within clearing distance
                     bool signalCleared = true;
@@ -1147,7 +1149,7 @@ namespace ORTS
                                 {
                                     withinDistance = false;  // signal is far enough ahead
                                 }
-                                else if (nextObject.signal_state == SignalHead.MstsSignalAspect.STOP)
+                                else if (nextObject.signal_state == MstsSignalAspect.STOP)
                                 {
                                     signalCleared = false;   // signal is not clear
                                 }
@@ -1162,7 +1164,7 @@ namespace ORTS
                         StartMoving(AI_START_MOVEMENT.SIGNAL_RESTRICTED);
                     }
                 }
-                else if (nextAspect >= SignalHead.MstsSignalAspect.APPROACH_1)
+                else if (nextAspect >= MstsSignalAspect.APPROACH_1)
                 {
                     // check if any other signals within clearing distance
                     bool signalCleared = true;
@@ -1179,7 +1181,7 @@ namespace ORTS
                                 {
                                     withinDistance = false;  // signal is far enough ahead
                                 }
-                                else if (nextObject.signal_state == SignalHead.MstsSignalAspect.STOP)
+                                else if (nextObject.signal_state == MstsSignalAspect.STOP)
                                 {
                                     signalCleared = false;   // signal is not clear
                                 }
@@ -1327,8 +1329,8 @@ namespace ORTS
 
             if (thisStation.ExitSignal >= 0 && NextSignalObject[0] != null && NextSignalObject[0].thisRef == thisStation.ExitSignal)
             {
-                SignalHead.MstsSignalAspect nextAspect = GetNextSignalAspect(0);
-                if (nextAspect == SignalHead.MstsSignalAspect.STOP)
+                MstsSignalAspect nextAspect = GetNextSignalAspect(0);
+                if (nextAspect == MstsSignalAspect.STOP)
                 {
                     // check if end of route reached
 
@@ -1573,7 +1575,7 @@ namespace ORTS
 
             else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
-                if (nextActionInfo.ActiveItem.signal_state >= SignalHead.MstsSignalAspect.APPROACH_1)
+                if (nextActionInfo.ActiveItem.signal_state >= MstsSignalAspect.APPROACH_1)
                 {
                     clearAction = true;
 
@@ -1595,7 +1597,7 @@ namespace ORTS
                               FormatStrings.FormatSpeed(SpeedMpS, true) + ")\n");
                     }
                 }
-                else if (nextActionInfo.ActiveItem.signal_state != SignalHead.MstsSignalAspect.STOP)
+                else if (nextActionInfo.ActiveItem.signal_state != MstsSignalAspect.STOP)
                 {
                     nextActionInfo.NextAction = AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED;
                     if ((nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM)
@@ -1626,7 +1628,7 @@ namespace ORTS
 
             else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED)
             {
-                if (nextActionInfo.ActiveItem.signal_state >= SignalHead.MstsSignalAspect.APPROACH_1 ||
+                if (nextActionInfo.ActiveItem.signal_state >= MstsSignalAspect.APPROACH_1 ||
                 (nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM)
                 {
                     clearAction = true;
@@ -3546,7 +3548,7 @@ namespace ORTS
 
             else if (thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
-                if (thisItem.ActiveItem.signal_state == SignalHead.MstsSignalAspect.STOP &&
+                if (thisItem.ActiveItem.signal_state == MstsSignalAspect.STOP &&
                     thisItem.ActiveItem.ObjectDetails.holdState == SignalObject.HoldState.StationStop)
                 {
                     actionValid = false;
@@ -3569,7 +3571,7 @@ namespace ORTS
 
             // check if cleared
 
-                else if (thisItem.ActiveItem.signal_state >= SignalHead.MstsSignalAspect.APPROACH_1)
+                else if (thisItem.ActiveItem.signal_state >= MstsSignalAspect.APPROACH_1)
                 {
                     actionValid = false;
                     actionCleared = true;
@@ -3591,7 +3593,7 @@ namespace ORTS
 
             // check if restricted
 
-                else if (thisItem.ActiveItem.signal_state != SignalHead.MstsSignalAspect.STOP)
+                else if (thisItem.ActiveItem.signal_state != MstsSignalAspect.STOP)
                 {
                     thisItem.NextAction = AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED;
                     if ((thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM)
@@ -3671,7 +3673,7 @@ namespace ORTS
 
             else if (thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_RESTRICTED)
             {
-                if (thisItem.ActiveItem.signal_state >= SignalHead.MstsSignalAspect.APPROACH_1 ||
+                if (thisItem.ActiveItem.signal_state >= MstsSignalAspect.APPROACH_1 ||
                 (thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < signalApproachDistanceM)
                 {
                     actionValid = false;
@@ -4184,7 +4186,7 @@ namespace ORTS
 
             thisInfo.processed = inf.ReadBoolean();
 
-            thisInfo.signal_state = SignalHead.MstsSignalAspect.UNKNOWN;
+            thisInfo.signal_state = MstsSignalAspect.UNKNOWN;
             if (thisInfo.ObjectDetails.isSignal)
             {
                 thisInfo.signal_state = thisInfo.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);

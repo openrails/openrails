@@ -38,7 +38,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms; // Needed for MessageBox
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Formats;
 using ORTS.MultiPlayer;
 using ORTS.Scripting;
 using ORTS.Viewer3D;
@@ -140,7 +140,7 @@ namespace ORTS
             Trace.Write("Loading ");
 
             Trace.Write(" TRK");
-            TRK = new TRKFile(MSTSPath.GetTRKFileName(RoutePath));
+            TRK = new TRKFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             RouteName = TRK.Tr_RouteFile.Name;
 
             Trace.Write(" TDB");
@@ -193,7 +193,7 @@ namespace ORTS
             Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
             if (Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
             {
-                TDB.TrackDB.AddRestrictZone(TSectionDat, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
+                TDB.TrackDB.AddRestrictZone(TRK.Tr_RouteFile, TSectionDat, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
             }
         }
         public void SetExplore(string path, string consist, string start, string season, string weather)

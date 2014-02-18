@@ -21,6 +21,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MSTS.Formats;
+using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {
@@ -30,7 +32,7 @@ namespace ORTS.Viewer3D
         readonly TransferPrimitive Primitive;
         readonly float Radius;
 
-        public TransferShape(Viewer viewer, MSTS.TransferObj transfer, WorldPosition position)
+        public TransferShape(Viewer viewer, TransferObj transfer, WorldPosition position)
             : base(viewer, null, RemoveRotation(position), ShapeFlags.AutoZBias)
         {
             Material = viewer.MaterialManager.Load("Transfer", Helpers.GetTransferTextureFile(viewer.Simulator, transfer.FileName));

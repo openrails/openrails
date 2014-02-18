@@ -1095,7 +1095,7 @@ namespace ORTS.Processes
             {
                 var path = Path.Combine(Simulator.RoutePath, "load.ace");
                 if (File.Exists(path))
-                    return MSTS.ACEFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
+                    return MSTS.Formats.ACEFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
                 return null;
             }
         }

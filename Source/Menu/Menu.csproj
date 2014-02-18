@@ -60,32 +60,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MSTS\ACTFile.cs">
-      <Link>MSTS\ACTFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\CONFile.cs">
-      <Link>MSTS\CONFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\ENGFile.cs">
-      <Link>MSTS\ENGFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\ENVFile.cs">
-      <Link>MSTS\ENVFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\PATFile.cs">
-      <Link>MSTS\PATFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\SRVFile.cs">
-      <Link>MSTS\SRVFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\TRKFile.cs">
-      <Link>MSTS\TRKFile.cs</Link>
-    </Compile>
     <Compile Include="..\MSTS\_paths.cs">
       <Link>MSTS\_paths.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_STF.cs">
-      <Link>MSTS\_STF.cs</Link>
     </Compile>
     <Compile Include="..\ORTS\InputSettings.cs">
       <Link>ORTS\InputSettings.cs</Link>
@@ -210,6 +186,10 @@
     <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MSTS.Formats\MSTS.Formats.csproj">
+      <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
+      <Name>MSTS.Formats</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
       <Name>ORTS.Common</Name>
@@ -229,6 +209,6 @@
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
 time /t&gt;&gt;Revision.txt
-call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.Menu.bat"</PostBuildEvent>
+call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "$(ProjectName)" "$(ProjectDir)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

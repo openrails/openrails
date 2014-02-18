@@ -64,95 +64,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MSTS\ACEFile.cs">
-      <Link>MSTS\ACEFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\ACTFile.cs">
-      <Link>MSTS\ACTFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\CAMCFGFile.cs">
-      <Link>MSTS\CAMCFGFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\CarSpawnerFile.cs">
-      <Link>MSTS\CarSpawnerFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\CONFile.cs">
-      <Link>MSTS\CONFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\CVFFile.cs">
-      <Link>MSTS\CVFFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\ENGFile.cs">
-      <Link>MSTS\ENGFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\ENVFile.cs">
-      <Link>MSTS\ENVFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\FFile.cs">
-      <Link>MSTS\FFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\HAZFile.cs">
-      <Link>MSTS\HAZFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\PATFile.cs">
-      <Link>MSTS\PATFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\RDBFile.cs">
+    <Compile Include="..\MSTS.Formats\RDBFile.cs">
       <Link>MSTS\RDBFile.cs</Link>
     </Compile>
-    <Compile Include="..\MSTS\SDFile.cs">
-      <Link>MSTS\SDFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\SFile.cs">
-      <Link>MSTS\SFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\SIGCFGFile.cs">
-      <Link>MSTS\SIGCFGFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\SMSFile.cs">
-      <Link>MSTS\SMSFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\SRVFile.cs">
-      <Link>MSTS\SRVFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\TDBFile.cs">
+    <Compile Include="..\MSTS.Formats\TDBFile.cs">
       <Link>MSTS\TDBFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\TFile.cs">
-      <Link>MSTS\TFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\TRKFile.cs">
-      <Link>MSTS\TRKFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\TSectionDat.cs">
-      <Link>MSTS\TSectionDat.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\TTypeDatFile.cs">
-      <Link>MSTS\TTypeDatFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\WFile.cs">
-      <Link>MSTS\WFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\WSFile.cs">
-      <Link>MSTS\WSFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\YFile.cs">
-      <Link>MSTS\YFile.cs</Link>
     </Compile>
     <Compile Include="..\MSTS\_math.cs">
       <Link>MSTS\_math.cs</Link>
     </Compile>
     <Compile Include="..\MSTS\_paths.cs">
       <Link>MSTS\_paths.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_sbr.cs">
-      <Link>MSTS\_sbr.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_STF.cs">
-      <Link>MSTS\_STF.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS\_tokenid.cs">
-      <Link>MSTS\_tokenid.cs</Link>
     </Compile>
     <Compile Include="..\ORTS\InputSettings.cs">
       <Link>ORTS\InputSettings.cs</Link>
@@ -185,8 +107,6 @@
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />
     <Compile Include="AI\AITrain.cs" />
-    <Compile Include="Common\Conversions.cs" />
-    <Compile Include="Common\Coordinates.cs" />
     <Compile Include="Common\DataLogger.cs" />
     <Compile Include="Common\ElapsedTime.cs" />
     <Compile Include="Common\enums.cs" />
@@ -439,9 +359,21 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MSTS.Formats\MSTS.Formats.csproj">
+      <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
+      <Name>MSTS.Formats</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MSTS.Parsers\MSTS.Parsers.csproj">
+      <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
+      <Name>MSTS.Parsers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
       <Name>ORTS.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.IO\ORTS.IO.csproj">
+      <Project>{6AB8B673-5775-4536-A58A-BA0A15899583}</Project>
+      <Name>ORTS.IO</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -458,6 +390,6 @@
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
 time /t&gt;&gt;Revision.txt
-call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.RunActivity.bat"</PostBuildEvent>
+call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "$(ProjectName)" "$(ProjectDir)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -24,7 +24,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Xna.Framework;
-using MSTS;
+using MSTS.Formats;
+using ORTS.Common;
 
 namespace ORTS.Viewer3D
 {

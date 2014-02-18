@@ -31,7 +31,8 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using MSTS;
+using MSTS.Parsers;
+using ORTS.Common;
 using ORTS.Debugging;
 using ORTS.Viewer3D;
 

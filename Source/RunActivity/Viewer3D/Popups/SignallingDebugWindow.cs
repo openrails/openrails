@@ -23,7 +23,9 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MSTS;
+using MSTS.Formats;
+using MSTS.Parsers;
+using ORTS.Common;
 using ORTS.Viewer3D;
 using ORTS.Viewer3D.Popups;
 
@@ -310,7 +312,7 @@ namespace ORTS.Viewer3D.Popups
                 var signal = thisInfo.ObjectDetails;
                 if (signal == null)
                     break;
-                if (signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == SignalHead.MstsSignalAspect.UNKNOWN)
+                if (signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
                     break;
                 var signalDistance = thisInfo.distance_found;
 #endif
@@ -347,9 +349,9 @@ namespace ORTS.Viewer3D.Popups
         {
             var aspect = signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
 
-            if (aspect >= SignalHead.MstsSignalAspect.CLEAR_1)
+            if (aspect >= MstsSignalAspect.CLEAR_1)
                 return DebugWindowSignalAspect.Clear;
-            if (aspect >= SignalHead.MstsSignalAspect.STOP_AND_PROCEED)
+            if (aspect >= MstsSignalAspect.STOP_AND_PROCEED)
                 return DebugWindowSignalAspect.Warning;
             return DebugWindowSignalAspect.Stop;
         }
