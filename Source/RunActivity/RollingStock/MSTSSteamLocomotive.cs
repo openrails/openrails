@@ -180,7 +180,9 @@ namespace ORTS
         Interpolator Injector09FlowratePSItoUKGpM;  // Flowrate of 09mm injector in gpm based on boiler pressure        
         Interpolator Injector10FlowratePSItoUKGpM;  // Flowrate of 10mm injector in gpm based on boiler pressure
         Interpolator Injector11FlowratePSItoUKGpM;  // Flowrate of 11mm injector in gpm based on boiler pressure
-        Interpolator Injector13FlowratePSItoUKGpM;  // Flowrate of 13mm injector in gpm based on boiler pressure                
+        Interpolator Injector13FlowratePSItoUKGpM;  // Flowrate of 13mm injector in gpm based on boiler pressure 
+        Interpolator Injector14FlowratePSItoUKGpM;  // Flowrate of 14mm injector in gpm based on boiler pressure         
+        Interpolator Injector15FlowratePSItoUKGpM;  // Flowrate of 15mm injector in gpm based on boiler pressure                       
         Interpolator SpecificHeatKtoKJpKGpK;        // table for specific heat capacity of water at temp of water
         Interpolator SaturationPressureKtoPSI;      // Saturated pressure of steam (psi) @ water temperature (K)
         Interpolator BoilerEfficiencyGrateAreaLBpFT2toX;      //  Table to determine boiler efficiency based upon lbs of coal per sq ft of Grate Area
@@ -262,6 +264,7 @@ namespace ORTS
         float BoilerHeatOutBTUpS = 0.0f;// heat out of boiler in BTU
         float BoilerHeatInBTUpS = 0.0f; // heat into boiler in BTU
         float InjCylEquivSizeIN;        // Calculate the equivalent cylinder size for purpose of sizing the injector.
+        float InjectorSize;             // size of injector installed on boiler
 
         // Values from previous iteration to use in UpdateFiring() and show in HUD
         float PreviousBoilerHeatOutBTUpS = 0.0f;
@@ -387,6 +390,8 @@ namespace ORTS
             Injector10FlowratePSItoUKGpM = SteamTable.Injector10FlowrateInterpolatorPSItoUKGpM();
             Injector11FlowratePSItoUKGpM = SteamTable.Injector11FlowrateInterpolatorPSItoUKGpM();
             Injector13FlowratePSItoUKGpM = SteamTable.Injector13FlowrateInterpolatorPSItoUKGpM();
+            Injector14FlowratePSItoUKGpM = SteamTable.Injector14FlowrateInterpolatorPSItoUKGpM();            
+            Injector15FlowratePSItoUKGpM = SteamTable.Injector15FlowrateInterpolatorPSItoUKGpM();            
             InjDelWaterTempMinPressureFtoPSI = SteamTable.InjDelWaterTempMinPressureInterpolatorFtoPSI();
             InjDelWaterTempMaxPressureFtoPSI = SteamTable.InjDelWaterTempMaxPressureInterpolatorFtoPSI();
             InjWaterFedSteamPressureFtoPSI = SteamTable.InjWaterFedSteamPressureInterpolatorFtoPSI();
@@ -1975,18 +1980,32 @@ namespace ORTS
             if (InjCylEquivSizeIN <= 19.0)
             {
                 InjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector Flow rate 
+                InjectorSize = 09.0f; // store size for display in HUD
             }
             else if (InjCylEquivSizeIN <= 24.0)
             {
                 InjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 10 mm Injector Flow rate 
+                InjectorSize = 10.0f; // store size for display in HUD                
             }
             else if (InjCylEquivSizeIN <= 26.0)
             {
                 InjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 11 mm Injector Flow rate 
+                InjectorSize = 11.0f; // store size for display in HUD                
+            }
+            else if (InjCylEquivSizeIN <= 28.0)
+            {
+                InjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 13 mm Injector Flow rate 
+                InjectorSize = 13.0f; // store size for display in HUD                
+            }
+            else if (InjCylEquivSizeIN <= 30.0)
+            {
+                InjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 14 mm Injector Flow rate 
+                InjectorSize = 14.0f; // store size for display in HUD                
             }
             else
             {
-                InjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 13 mm Injector Flow rate 
+                InjectorFlowRateLBpS = pS.FrompM(Injector15FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 15 mm Injector Flow rate 
+                InjectorSize = 15.0f; // store size for display in HUD                
             }
             if (WaterIsExhausted)
             {
@@ -2379,8 +2398,9 @@ namespace ORTS
                 pS.TopH(FuelFeedRateLBpS),
                 pS.TopH(FuelBurnRateLBpS),
                 (pS.TopH(GrateCombustionRateLBpFt2)));
-            status.AppendFormat("Injector:\tMax\t{0:N0} gal(uk)/h\t\tInj. 1\t{1:N0} gal(uk)/h\t\ttemp\t{2:N0} F\t\tInj. 2\t{3:N0} gal(uk)/h\t\ttemp 2\t{4:N0} F\n",
+            status.AppendFormat("Injector:\tMax\t{0:N0} gal(uk)/h\t\t({1:N0}mm)\tInj. 1\t{2:N0} gal(uk)/h\t\ttemp\t{3:N0} F\t\tInj. 2\t{4:N0} gal(uk)/h\t\ttemp 2\t{5:N0} F\n",
                 pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
+                InjectorSize,
                 Injector1Fraction * pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,
                 Injector1WaterDelTempF,
                 Injector2Fraction * pS.TopH(InjectorFlowRateLBpS) / WaterLBpUKG,

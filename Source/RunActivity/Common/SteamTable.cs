@@ -66,34 +66,50 @@ namespace ORTS
             0.2782f, 0.2994f, 0.3205f, 0.3416f, 0.3627f, 0.3838f, 0.4048f, 0.4259f, 0.4469f, 0.4680f,
             0.4890f, 0.5101f, 0.5312f, 0.5522f, 0.5733f, 0.5944f, 0.6155f, 0.6367f, 0.6578f, 0.6790f
         };
-        // injector 9mm flowrates (gallons (uk) per minute) - data extrapolated below 40psi and over 180psi
+        // injector 9mm flowrates (gallons (uk) per minute) - data extrapolated from info in 1928 Sellers Injector Manual
         static float[] Injector09FlowTableUKGpM = new float[]
         {
-            7.3f, 9.3f, 11.3f, 13.3f, 15.3f, 17.3f, 18.8f, 20.3f, 21.7f, 23.0f, 24.3f,
-            25.45f, 26.6f, 27.65f, 28.7f, 29.7f, 30.7f, 31.7f, 32.7f, 33.7f, 34.7f,
-            35.7f, 36.7f, 38.7f, 39.7f, 40.7f, 41.7f, 42.7f, 43.7f, 44.7f, 45.7f
+            7.30f, 9.95f, 12.61f, 15.26f, 17.91f, 20.56f, 23.22f, 25.87f, 28.52f, 31.18f, 33.83f,
+            36.48f, 39.14f, 39.90f, 40.66f, 41.43f, 42.19f, 42.95f, 43.72f, 43.97f, 44.23f,
+            44.49f, 44.74f, 45.00f, 45.26f, 45.51f, 45.77f, 46.03f, 46.28f, 46.28f, 46.80f
         };
-        // injector 10mm flowrates (gallons (uk) per minute) - data extrapolated below 40psi and over 200psi
+        // injector 10mm flowrates (gallons (uk) per minute) - data extrapolated from info in 1928 Sellers Injector Manual
         static float[] Injector10FlowTableUKGpM = new float[]
         {
-            9.3f, 11.5f, 14.00f, 16.4f, 18.9f, 21.2f, 23.2f, 25.1f, 26.8f, 28.4f, 30.0f,
-            31.2f, 32.3f, 33.45f, 35.4f, 36.65f, 37.9f, 39.05f, 40.2f, 41.2f, 42.4f,
-            44.6f, 45.8f, 47.0f, 48.2f, 49.4f, 50.6f, 51.8f, 53.0f, 54.2f, 56.4f
+            7.3f, 10.68f, 14.06f, 17.44f, 20.83f, 24.21f, 27.59f, 30.97f, 34.35f, 37.73f, 41.12f,
+            44.50f, 47.88f, 48.92f, 49.96f, 51.00f, 52.04f, 53.08f, 54.12f, 54.48f, 54.85f,
+            55.21f, 55.57f, 55.93f, 56.29f, 56.65f, 57.01f, 57.37f, 57.73f, 58.09f, 58.45f
         };
-        // injector 11mm flowrates (gallons (uk) per minute) - data extrapolated below 40psi and over 200psi
+        // injector 11mm flowrates (gallons (uk) per minute) - data extrapolated from info in 1928 Sellers Injector Manual
         static float[] Injector11FlowTableUKGpM = new float[]
         {
-            9.3f, 11.5f, 14.00f, 16.4f, 25.6f, 27.4f, 29.1f, 31.6f, 34.5f, 37.3f, 40.8f,
-            42.0f, 43.2f, 44.45f, 45.7f, 46.5f, 47.3f, 48.5f, 49.7f, 52.6f, 55.5f,
-            56.5f, 57.5f, 58.5f, 59.5f, 60.5f, 61.5f, 62.5f, 63.5f, 64.5f, 65.5f
+            9.3f, 13.30f, 17.31f, 21.31f, 25.31f, 29.32f, 33.32f, 37.33f, 41.33f, 45.33f, 49.34f,
+            53.34f, 57.34f, 58.59f, 59.84f, 61.09f, 62.34f, 63.59f, 64.84f, 65.21f, 65.57f,
+            65.94f, 66.31f, 66.68f, 67.04f, 67.41f, 67.78f, 68.15f, 68.52f, 68.88f, 69.25f
         };
-        // injector 13mm flowrates (gallons (uk) per minute) - data extrapolated below 40psi and over 200psi
+        // injector 13mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
         static float[] Injector13FlowTableUKGpM = new float[]
         {
-            9.3f, 11.5f, 14.00f, 16.4f, 39.2f, 41.8f, 45.2f, 48.7f, 52.1f, 55.3f, 58.7f,
-            60.65f, 62.6f, 64.4f, 66.2f, 67.95f, 69.7f, 72.9f, 76.1f, 78.05f, 80.0f,
-            81.0f, 82.0f, 83.0f, 84.0f, 85.0f, 86.0f, 87.0f, 88.0f, 89.0f, 90.0f
+            9.3f, 15.35f, 21.40f, 27.44f, 33.49f, 39.54f, 45.59f, 51.64f, 57.69f, 63.73f, 69.78f,
+            75.83f, 81.88f, 83.75f, 85.63f, 87.50f, 89.37f, 91.25f, 93.12f, 93.75f, 94.37f,
+            94.99f, 95.62f, 96.24f, 96.87f, 97.49f, 98.12f, 98.74f, 99.37f, 99.99f, 100.61f
         };
+        
+      // injector 14mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
+        static float[] Injector14FlowTableUKGpM = new float[]
+        {
+            9.30f, 16.79f, 24.28f, 31.77f, 39.26f, 46.75f, 54.24f, 61.73f, 69.21f, 76.70f, 84.19f,
+            91.68f, 99.17f, 100.81f, 102.45f, 104.09f, 105.72f, 107.36f, 109.00f, 111.65f, 114.30f,
+            115.94f, 117.58f, 119.21f, 120.85f, 122.49f, 124.13f, 125.77f, 127.40f, 129.04f, 130.68f
+        };
+        
+      // injector 15mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
+        static float[] Injector15FlowTableUKGpM = new float[]
+        {
+            9.30f, 17.82f, 26.33f, 34.85f, 43.36f, 51.88f, 60.40f, 68.91f, 77.43f, 85.94f, 94.46f,
+            102.98f, 111.49f, 113.33f, 115.16f, 117.0f, 118.83f, 120.67f, 122.50f, 125.50f, 128.50f,
+            130.14f, 131.78f, 133.41f, 135.05f, 136.69f, 138.33f, 139.97f, 141.60f, 143.24f, 144.88f
+        };        
        
         // Temperature of water in deg Kelvin
                 static float[] TemperatureTableK = new float[]
@@ -329,6 +345,18 @@ namespace ORTS
         {
             return new Interpolator(PressureTablePSI, Injector13FlowTableUKGpM);
         } 
+        
+        // Flowrate table vs Boiler Pressure for 14mm Injector
+        public static Interpolator Injector14FlowrateInterpolatorPSItoUKGpM()
+        {
+            return new Interpolator(PressureTablePSI, Injector14FlowTableUKGpM);
+        } 
+        
+        // Flowrate table vs Boiler Pressure for 15mm Injector
+        public static Interpolator Injector15FlowrateInterpolatorPSItoUKGpM()
+        {
+            return new Interpolator(PressureTablePSI, Injector15FlowTableUKGpM);
+        }       
 
         public static Interpolator WaterHeatInterpolatorPSItoBTUpLB()
         {
