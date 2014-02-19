@@ -392,7 +392,8 @@ namespace ORTS
 #if !NEW_SIGNALLING
             Commands[(int)UserCommands.DebugResetSignal] = new RailDriverUserCommand(3, 0x02);
 #else
-            Commands[(int)UserCommands.GameResetSignalForward] = new RailDriverUserCommand(3, 0x02);
+            // Commands[(int)UserCommands.GameResetSignalForward] = new RailDriverUserCommand(3, 0x02);
+               Commands[(int)UserCommands.GameClearSignalForward] = new RailDriverUserCommand(3, 0x02);
 #endif
             //Commands[(int)UserCommands. load passengers] = new RailDriverUserCommand(3, 0x04);
             //Commands[(int)UserCommands. ok] = new RailDriverUserCommand(3, 0x08);
@@ -405,7 +406,9 @@ namespace ORTS
             Commands[(int)UserCommands.CameraPanLeft] = new RailDriverUserCommand(4, 0x02);
             // buttons on top left
             //Commands[(int)UserCommands. gear shift] = new RailDriverUserCommand(4, 0x04);
+            Commands[(int)UserCommands.ControlGearUp] = new RailDriverUserCommand(4, 0x04);
             //Commands[(int)UserCommands. gear shift] = new RailDriverUserCommand(4, 0x08);
+            Commands[(int)UserCommands.ControlGearDown] = new RailDriverUserCommand(4, 0x08);
             //Commands[(int)UserCommands.ControlEmergency] = new RailDriverUserCommand(4, 0x30); handled elsewhere
             Commands[(int)UserCommands. ControlAlerter] = new RailDriverUserCommand(4, 0x40);
             Commands[(int)UserCommands.ControlSander] = new RailDriverUserCommand(4, 0x80);
