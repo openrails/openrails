@@ -38,7 +38,7 @@ namespace ORTS.Menu
         public readonly Path Path = new Path("unknown");
         public readonly string FilePath;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         protected Activity(string filePath, Folder folder, Route route)
         {

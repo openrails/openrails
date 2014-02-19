@@ -460,7 +460,7 @@ namespace ORTS
         public string DisplayMessage { get; internal set; }
         public Color DisplayColor { get; internal set; }
 
-        protected GettextResourceManager Catalog = new GettextResourceManager("ORTS.Simulator");
+        protected GettextResourceManager Catalog = new GettextResourceManager("RunActivity");
 
         public virtual void NotifyEvent(ActivityEventType EventType)
         {

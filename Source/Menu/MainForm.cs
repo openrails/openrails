@@ -68,7 +68,7 @@ namespace ORTS
         public string SelectedSaveFile { get; set; }
         public UserAction SelectedAction { get; set; }
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         #region Main Form
         public MainForm()

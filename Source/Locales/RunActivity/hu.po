@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2014-02-18 18:54:46+0100\n"
-"PO-Revision-Date: 2014-02-18 22:06-0000\n"
+"POT-Creation-Date: 2014-02-19 21:05:17+0100\n"
+"PO-Revision-Date: 2014-02-19 21:12+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -12,46 +12,29 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../RunActivity/Common/Conversions.cs:86
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
-msgid "m"
-msgstr ""
+#: ../RunActivity/Debugging/DebugViewerForm.cs:2074
+msgid "Switching Request Sent to the Server"
+msgstr "A váltási kérelem el lett küldve a kiszolgálónak"
 
-#: ../RunActivity/Common/Conversions.cs:87
-msgid "km"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:88
-msgid "mi"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:89
-msgid "yd"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:90
-msgid "km/h"
-msgstr ""
-
-#: ../RunActivity/Common/Conversions.cs:91
-msgid "mph"
-msgstr ""
-
-#: ../RunActivity/Debugging/DebugViewerForm.cs:193
+#: ../RunActivity/Debugging/DebugViewerForm.cs:197
 msgid "View Self"
 msgstr ""
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:583
+#: ../RunActivity/Debugging/DebugViewerForm.cs:588
 msgid "MSG to Server"
 msgstr ""
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:587
+#: ../RunActivity/Debugging/DebugViewerForm.cs:592
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
 msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
+msgid "m"
 msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
@@ -85,15 +68,15 @@ msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
-msgstr ""
+msgstr "Útvonal megjelnítése"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
 msgid "Pick Signals"
-msgstr ""
+msgstr "Jelzők kiválaszthatók"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
 msgid "Pick Switches"
-msgstr ""
+msgstr "Váltók kiválaszthatók"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
 msgid "Can Join"
@@ -194,7 +177,7 @@ msgid "Variable 1"
 msgstr ""
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
 msgid "Distance"
 msgstr "Távolság"
 
@@ -212,13 +195,83 @@ msgstr ""
 msgid "SoundDebugForm"
 msgstr ""
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:282
+#: ../RunActivity/Physics/Train.cs:1230
+msgid "Coupler broken!"
+msgstr "Vonatszakadás!"
+
+#: ../RunActivity/Physics/Train.cs:1233
+msgid "Coupler overloaded!"
+msgstr "A kapcsoló túlterhelt!"
+
+#: ../RunActivity/Physics/Train.cs:3761 ../RunActivity/Physics/Train.cs:3766
+msgid "Other train is blocking path"
+msgstr "Másik vonat foglalja a vágányt"
+
+#: ../RunActivity/Physics/Train.cs:4622
+msgid "Stopped due to errors in route setting"
+msgstr "Pályával kapcsolatos hiba miatt megállítva"
+
+#: ../RunActivity/Physics/Train.cs:5280 ../RunActivity/Physics/Train.cs:6353
+msgid "No signal in train's path"
+msgstr "Nincs jelző a vonat vágányútján"
+
+#: ../RunActivity/Physics/Train.cs:5288
+msgid "Next signal already allocated to other train"
+msgstr "A következő jelző már másik vonatnak lett beállítve"
+
+#: ../RunActivity/Physics/Train.cs:5349
+msgid "Request to clear signal cannot be processed"
+msgstr "A kérelem a jelző szabaddá tételére nem értelmezhető"
+
+#: ../RunActivity/Physics/Train.cs:5455 ../RunActivity/Physics/Train.cs:6473
+msgid "No switch found"
+msgstr "Nem található váltó"
+
+#: ../RunActivity/Physics/Train.cs:6707
+msgid "Train is not back on original route"
+msgstr "A vonat még nem tért vissza az eredeti útvonalára"
+
+#: ../RunActivity/Physics/Train.cs:6716
+msgid ""
+"Original route is reverse from present direction, stop train before switching"
+msgstr ""
+"Az eredeti útvonal az ellenkező irányba vezet, állítsd meg a vonatot a "
+"váltás előtt"
+
+#: ../RunActivity/Physics/Train.cs:6729
+msgid "Cannot change to Manual Mode while in Explorer Mode"
+msgstr "Nem lehet helyi forgalomirányításra váltani vonalbejárás közben"
+
+#: ../RunActivity/Physics/Train.cs:6822
+msgid "Reversal required and rear of train not on required route"
+msgstr ""
+"Visszafogás lenne szükséges, de a vonat vége nincs a megfelelő vágányúton"
+
+#: ../RunActivity/Physics/Train.cs:7009
+msgid "Cannot clear signal behind train while in AUTO mode"
+msgstr ""
+"Nem lehet a vonat mögötti jelzőt szabaddá tenni központi forgalomirányítás "
+"felügyelete alatt"
+
+#: ../RunActivity/Physics/Train.cs:7251
+#, csharp-format
+msgid "Allowed speed raised to {0}"
+msgstr "A megengedett sebesség {0}-ra emelkedett"
+
+#: ../RunActivity/Physics/Train.cs:7293
+#, csharp-format
+msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
+msgstr ""
+"A vonat a {0}. sz. vonattal kapcsolatos probléma miatt lett megállítva, oka: "
+"{1}"
+
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:272
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:283
 msgid "No power line!"
 msgstr "Nincs felsővezeték!"
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:273
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:284
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:274
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:285
 msgid "Power line condition overriden."
 msgstr "Felsővezeték hiánya felülbírálva."
 
@@ -870,7 +923,7 @@ msgctxt "Labels"
 msgid "none"
 msgstr "nincsenek"
 
-#: ../RunActivity/Viewer3D/Viewer.cs:1070
+#: ../RunActivity/Viewer3D/Viewer.cs:1071
 msgid "Game saved"
 msgstr "A játékállás elmentve."
 
@@ -1010,31 +1063,31 @@ msgid "Timetable"
 msgstr "Menetrend"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:84
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:68
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
 msgid "Station"
 msgstr "Állomás"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Arrive"
 msgstr "Érkezés"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 msgid "Actual"
 msgstr "Tényleges"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Depart"
 msgstr "Indulás"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:103
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:105
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:132
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:135
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
 msgid "(missed)"
 msgstr "(elhibázva)"
 
@@ -1074,19 +1127,19 @@ msgstr "Lecsatolás"
 msgid "Pick Up"
 msgstr "Rácsatolás"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:225
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:226
 msgid "Done"
 msgstr "Kész"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:238
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:239
 msgid "Procedures"
 msgstr "Eljárások"
 
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:52
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
 msgid "Next Station"
 msgstr "Következő állomás"
 
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:212
+#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
 msgid "Activity completed."
 msgstr "Szolgálat teljesítve."
 
@@ -1109,27 +1162,51 @@ msgstr "Játék mentése ({0})"
 msgid "Continue playing ({0})"
 msgstr "Játék folytatása ({0})"
 
-#: ../RunActivity/Viewer3D/Popups/SwitchWindow.cs:47
+#: ../RunActivity/Viewer3D/Popups/SwitchWindow.cs:48
 msgid "Switch"
 msgstr "Váltó"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
 msgid "Track Monitor"
 msgstr "Pályafigyelő"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:110
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:88
+msgid "Auto Signal"
+msgstr "KÖFI"
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
+msgid "Node"
+msgstr "Csomóponti"
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:90
+msgid "Manual"
+msgstr "Kézi forgalomirányítás"
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
+msgid "Explorer"
+msgstr "Vonalbejárás"
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
+msgid "OutOfControl : "
+msgstr "Irányítás nélkül : "
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
+msgid "Unknown"
+msgstr "Ismeretlen"
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
 msgid "Speed:"
 msgstr "Sebesség:"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:117
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:119
 msgid "Projected:"
 msgstr "Előrejelzett:"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:124
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
 msgid "Limit:"
 msgstr "Megengedett:"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:142
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:144
 msgid " Dist      Speed   Aspect"
 msgstr " Táv.      Sebesség  Kép"
 

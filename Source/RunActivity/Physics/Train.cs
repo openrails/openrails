@@ -1243,10 +1243,10 @@ namespace ORTS
                         {
                             Simulator.UncoupleBehind(uncoupleBehindCar);
                             uncoupleBehindCar.CouplerOverloaded = false;
-                            Simulator.Confirmer.Warning("Coupler broken!");
+                            Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Coupler broken!"));
                         }
                         else
-                            Simulator.Confirmer.Warning("Coupler overloaded!");
+                            Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Coupler overloaded!"));
                     }
                 }
                 else
@@ -3774,12 +3774,12 @@ namespace ORTS
                                     List<TrainRouted> trainsInSection = nextSection.CircuitState.TrainsOccupying();
                                     foreach (TrainRouted nextTrain in trainsInSection)
                                     {
-                                        nextTrain.Train.ForcedStop("Other train is blocking path", Number);
+                                        nextTrain.Train.ForcedStop(Viewer.Catalog.GetString("Other train is blocking path"), Number);
                                     }
 
                                     if (nextSection.CircuitState.TrainReserved != null)
                                     {
-                                        nextSection.CircuitState.TrainReserved.Train.ForcedStop("Other train is blocking path", Number);
+                                        nextSection.CircuitState.TrainReserved.Train.ForcedStop(Viewer.Catalog.GetString("Other train is blocking path"), Number);
                                     }
                                 }
                                 else
@@ -4635,7 +4635,7 @@ namespace ORTS
                 otherTrain.LastReservedSection[0] = -1;
                 if (Math.Abs(otherTrain.SpeedMpS) > 0)
                 {
-                    otherTrain.ForcedStop("Stopped due to errors in route setting", Number);
+                    otherTrain.ForcedStop(Viewer.Catalog.GetString("Stopped due to errors in route setting"), Number);
                 }
                 otherTrain.SwitchToNodeControl(-1);
 
@@ -5293,7 +5293,7 @@ namespace ORTS
             if (lastSection.EndSignals[lastElement.Direction] == null)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, "No signal in train's path");
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("No signal in train's path"));
                 return;
             }
 
@@ -5301,7 +5301,7 @@ namespace ORTS
             if (requestedSignal.enabledTrain != null && requestedSignal.enabledTrain.Train != this)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Next signal already allocated to other train");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Next signal already allocated to other train"));
                 Simulator.SoundNotify = Event.PermissionDenied;
                 return;
             }
@@ -5362,7 +5362,7 @@ namespace ORTS
                 if (!requestValid)
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Message(ConfirmLevel.Information, "Request to clear signal cannot be processed");
+                        Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Request to clear signal cannot be processed"));
                     Program.Simulator.SoundNotify = Event.PermissionDenied;
                 }
             }
@@ -5468,7 +5468,7 @@ namespace ORTS
             else
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "No switch found");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("No switch found"));
             }
 
             return (switchSet);
@@ -6366,7 +6366,7 @@ namespace ORTS
             if (!signalFound)
             {
                 if (Simulator.Confirmer != null && this.TrainType != TRAINTYPE.REMOTE) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, "No signal in train's path");
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("No signal in train's path"));
                 return;
             }
 
@@ -6486,7 +6486,7 @@ namespace ORTS
             else
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "No switch found");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("No switch found"));
             }
 
             return (switchSet);
@@ -6720,7 +6720,7 @@ namespace ORTS
                 if (routeIndex < 0)
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, "Train is not back on original route");
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Train is not back on original route"));
                 }
                 else
                 {
@@ -6729,7 +6729,7 @@ namespace ORTS
                     if (lastDirection != presentDirection && Math.Abs(SpeedMpS) > 0.1f)
                     {
                         if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, "Original route is reverse from present direction, stop train before switching");
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Original route is reverse from present direction, stop train before switching"));
                     }
                     else
                     {
@@ -6742,7 +6742,7 @@ namespace ORTS
             else if (ControlMode == TRAIN_CONTROL.EXPLORER)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Cannot change to Manual Mode while in Explorer Mode");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Cannot change to Manual Mode while in Explorer Mode"));
             }
             else
             {
@@ -6835,7 +6835,7 @@ namespace ORTS
             if (!CheckReversal(oldRoute, ref reversal))
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Reversal required and rear of train not on required route");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Reversal required and rear of train not on required route"));
                 return;
             }
 
@@ -7022,7 +7022,7 @@ namespace ORTS
                 if (direction != Direction.Forward)
                 {
                     if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, "Cannot clear signal behind train while in AUTO mode");
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Cannot clear signal behind train while in AUTO mode"));
                     Simulator.SoundNotify = Event.PermissionDenied;
                 }
 
@@ -7161,9 +7161,7 @@ namespace ORTS
             if (ControlMode != TRAIN_CONTROL.EXPLORER)
                 ControlMode = TRAIN_CONTROL.OUT_OF_CONTROL;
 
-            String report = "Train ";
-            report = String.Concat(report, Number.ToString());
-            report = String.Concat(report, " is out of control and will be stopped. Reason : ");
+            var report = string.Format("Train {0} is out of control and will be stopped. Reason : ", Number.ToString());
 
             OutOfControlReason = reason;
 
@@ -7266,7 +7264,7 @@ namespace ORTS
 #endif
             if (TrainType == TRAINTYPE.PLAYER && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
             {
-                String message = "Allowed speed raised to " + FormatStrings.FormatSpeed(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric);
+                var message = Viewer.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric));
                 Simulator.Confirmer.Message(ConfirmLevel.Information, message);
             }
         }
@@ -7308,9 +7306,7 @@ namespace ORTS
 
             if (Program.Simulator.PlayerLocomotive != null && Program.Simulator.PlayerLocomotive.Train == this)
             {
-                String report = "Train stopped due to problems with other train : train ";
-                report = String.Concat(report, otherTrainNumber.ToString());
-                report = String.Concat(report, " , reason : ", reason);
+                var report = Viewer.Catalog.GetStringFmt("Train stopped due to problems with other train: train {0} , reason: {1}", otherTrainNumber, reason);
 
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, report);

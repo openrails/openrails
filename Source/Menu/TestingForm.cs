@@ -68,7 +68,7 @@ namespace ORTS
         {
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
-            GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+            GettextResourceManager catalog = new GettextResourceManager("Menu");
             Localizer.Localize(this, catalog);
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows

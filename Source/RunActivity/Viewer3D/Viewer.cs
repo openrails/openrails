@@ -297,7 +297,7 @@ namespace ORTS.Viewer3D
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
 
-            Catalog = new GettextResourceManager("ORTS.Simulator");
+            Catalog = new GettextResourceManager("RunActivity");
 
             WindowManager = new WindowManager(this);
             QuitWindow = new QuitWindow(WindowManager);

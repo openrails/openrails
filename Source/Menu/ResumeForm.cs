@@ -135,7 +135,7 @@ namespace ORTS
         public string SelectedSaveFile { get; set; }
         public MainForm.UserAction SelectedAction { get; set; }
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         public ResumeForm(UserSettings settings, Route route, Activity activity, MainForm parentForm)
         {

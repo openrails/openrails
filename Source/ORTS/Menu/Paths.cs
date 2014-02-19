@@ -31,7 +31,7 @@ namespace ORTS.Menu
         public readonly string End;
         public readonly string FilePath;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         internal Path(string filePath)
         {

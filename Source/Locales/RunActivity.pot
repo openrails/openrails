@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-18 23:05:30+0000\n"
-"PO-Revision-Date: 2014-02-18 23:05:31+0000\n"
+"POT-Creation-Date: 2014-02-19 21:12:17+0100\n"
+"PO-Revision-Date: 2014-02-19 21:12:19+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,15 +11,19 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:195
+#: ../RunActivity/Debugging/DebugViewerForm.cs:2074
+msgid "Switching Request Sent to the Server"
+msgstr ""
+
+#: ../RunActivity/Debugging/DebugViewerForm.cs:197
 msgid "View Self"
 msgstr ""
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:585
+#: ../RunActivity/Debugging/DebugViewerForm.cs:588
 msgid "MSG to Server"
 msgstr ""
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:589
+#: ../RunActivity/Debugging/DebugViewerForm.cs:592
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
 msgstr ""
@@ -188,6 +192,72 @@ msgstr ""
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:348
 msgid "SoundDebugForm"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:1230
+msgid "Coupler broken!"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:1233
+msgid "Coupler overloaded!"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:3761
+#: ../RunActivity/Physics/Train.cs:3766
+msgid "Other train is blocking path"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:4622
+msgid "Stopped due to errors in route setting"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:5280
+#: ../RunActivity/Physics/Train.cs:6353
+msgid "No signal in train's path"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:5288
+msgid "Next signal already allocated to other train"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:5349
+msgid "Request to clear signal cannot be processed"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:5455
+#: ../RunActivity/Physics/Train.cs:6473
+msgid "No switch found"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:6707
+msgid "Train is not back on original route"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:6716
+msgid ""
+"Original route is reverse from present direction, stop train before switching"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:6729
+msgid "Cannot change to Manual Mode while in Explorer Mode"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:6822
+msgid "Reversal required and rear of train not on required route"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:7009
+msgid "Cannot clear signal behind train while in AUTO mode"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:7251
+#, csharp-format
+msgid "Allowed speed raised to {0}"
+msgstr ""
+
+#: ../RunActivity/Physics/Train.cs:7293
+#, csharp-format
+msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 
 #: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:272
@@ -1084,23 +1154,47 @@ msgstr ""
 msgid "Switch"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
 msgid "Track Monitor"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:111
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:88
+msgid "Auto Signal"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
+msgid "Node"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:90
+msgid "Manual"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
+msgid "Explorer"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
+msgid "OutOfControl : "
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
+msgid "Unknown"
+msgstr ""
+
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
 msgid "Speed:"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:118
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:119
 msgid "Projected:"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:125
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
 msgid "Limit:"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:143
+#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:144
 msgid " Dist      Speed   Aspect"
 msgstr ""
 

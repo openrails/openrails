@@ -52,15 +52,7 @@ namespace ORTS.Viewer3D.Popups
         Label ControlMode;
         TrackMonitor Monitor;
 
-        readonly Dictionary<Train.TRAIN_CONTROL, string> ControlModeLabels =
-            new Dictionary<Train.TRAIN_CONTROL, string> {
-			{ Train.TRAIN_CONTROL.AUTO_SIGNAL , "Auto Signal" },
-			{ Train.TRAIN_CONTROL.AUTO_NODE, "Node" },
-			{ Train.TRAIN_CONTROL.MANUAL, "Manual" },
-            { Train.TRAIN_CONTROL.EXPLORER, "Explorer" },
-			{ Train.TRAIN_CONTROL.OUT_OF_CONTROL, "OutOfControl : " },
-			{ Train.TRAIN_CONTROL.UNDEFINED, "Unknown" },
-		};
+        readonly Dictionary<Train.TRAIN_CONTROL, string> ControlModeLabels;
 
         static readonly Dictionary<Train.END_AUTHORITY, string> AuthorityLabels =
             new Dictionary<Train.END_AUTHORITY, string> {
@@ -91,6 +83,15 @@ namespace ORTS.Viewer3D.Popups
         public TrackMonitorWindow(WindowManager owner)
             : base(owner, 150, LabelsHeight + TrackMonitorHeight + 10, Viewer.Catalog.GetString("Track Monitor"))
         {
+            ControlModeLabels = new Dictionary<Train.TRAIN_CONTROL, string> 
+            {
+			    { Train.TRAIN_CONTROL.AUTO_SIGNAL , Viewer.Catalog.GetString("Auto Signal") },
+			    { Train.TRAIN_CONTROL.AUTO_NODE, Viewer.Catalog.GetString("Node") },
+			    { Train.TRAIN_CONTROL.MANUAL, Viewer.Catalog.GetString("Manual") },
+                { Train.TRAIN_CONTROL.EXPLORER, Viewer.Catalog.GetString("Explorer") },
+			    { Train.TRAIN_CONTROL.OUT_OF_CONTROL, Viewer.Catalog.GetString("OutOfControl : ") },
+			    { Train.TRAIN_CONTROL.UNDEFINED, Viewer.Catalog.GetString("Unknown") },
+		    };
         }
 
         // Initialize

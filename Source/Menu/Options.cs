@@ -30,7 +30,7 @@ namespace ORTS
     {
         readonly UserSettings Settings;
 
-        private GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        private GettextResourceManager catalog = new GettextResourceManager("Menu");
         private Boolean Initialized = false;
 
         public OptionsForm(UserSettings settings)

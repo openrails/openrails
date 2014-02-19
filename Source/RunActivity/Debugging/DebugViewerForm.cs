@@ -39,6 +39,8 @@ using ORTS.Viewer3D;
 using ORTS.Viewer3D.Popups;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 
 namespace ORTS.Debugging
 {
@@ -257,6 +259,7 @@ namespace ORTS.Debugging
 			  // do this only once
 			  loaded = true;
 			  //trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
+              Localizer.Localize(this, Viewer.Catalog);
 		  }
 
 		  switchItemsDrawn = new List<SwitchWidget>();
@@ -2098,7 +2101,7 @@ namespace ORTS.Debugging
 			  //aider selects and throws the switch, but need to confirm by the dispatcher
 			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
 				  nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected, true)).ToString());
-			  Program.Simulator.Confirmer.Information("Switching Request Sent to the Server");
+			  Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Switching Request Sent to the Server"));
 
 		  }
 		  //server throws the switch immediately

@@ -31,7 +31,7 @@ namespace ORTS
         readonly ResumeForm.Save Save;
         const string SavePackFileExtension = "ORSavePack";  // Includes "OR" in the extension as this may be emailed, downloaded and mixed in with non-OR files.
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         public ImportExportSaveForm(ResumeForm.Save save)
         {

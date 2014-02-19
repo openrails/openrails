@@ -30,7 +30,7 @@ namespace ORTS.Menu
         public readonly Locomotive Locomotive = new Locomotive("unknown");
         public readonly string FilePath;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         internal Consist(string filePath, Folder folder)
         {
@@ -100,7 +100,7 @@ namespace ORTS.Menu
         public readonly string Description;
         public readonly string FilePath;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         internal Locomotive(string filePath)
         {
