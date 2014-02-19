@@ -48,10 +48,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Xna.Framework;
 using MSTS.Formats;
 using MSTS.Parsers;
-using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {
@@ -3349,7 +3347,7 @@ namespace ORTS
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
                         SignalObject foundSignal = null;
-                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.SIGFN)parameter1_value, ref foundSignal);
+                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.MstsSignalFunction)parameter1_value, ref foundSignal);
                         int foundRef = foundSignal != null ? foundSignal.thisRef : -1;
                         File.AppendAllText(dpe_fileLoc + @"printproc.txt",
                                 " OPP_SIG_LR : Located signal : " + foundRef.ToString() + "\n");

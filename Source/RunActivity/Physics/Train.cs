@@ -7555,6 +7555,98 @@ namespace ORTS
                 }
             }
 
+            // add present occupied sections to train route to avoid out-of-path detection
+            // check if first section in route
+
+            if (ValidRoute[0].GetRouteIndex(OccupiedTrack[0].Index, 0) > 0)
+            {
+                int lastSectionIndex = OccupiedTrack[0].Index;
+                int lastIndex = ValidRoute[0].GetRouteIndex(lastSectionIndex, 0);
+
+                for (int isection = 1; isection <= OccupiedTrack.Count - 1; isection++)
+                {
+                    int nextSectionIndex = OccupiedTrack[isection].Index;
+                    int nextIndex = ValidRoute[0].GetRouteIndex(nextSectionIndex, 0);
+
+                    if (nextIndex < 0) // this section is not in route - if last index = 0, add to start else add to rear
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[nextSectionIndex];
+                        int thisDirection = 0;
+
+                        for (int iLink = 0; iLink <= 1; iLink++)
+                        {
+                            for (int iDir = 0; iDir <= 1; iDir++)
+                            {
+                                if (thisSection.Pins[iDir, iLink].Link == lastSectionIndex)
+                                {
+                                    thisDirection = thisSection.Pins[iDir,iLink].Direction;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (lastIndex == 0)
+                        {
+                            ValidRoute[0].Insert(0, new TCRouteElement( OccupiedTrack[isection], thisDirection, signalRef, lastSectionIndex));
+                        }
+                        else
+                        {
+                            ValidRoute[0].Add(new TCRouteElement(OccupiedTrack[isection], thisDirection, signalRef, lastSectionIndex));
+                        }
+                    }
+                    else
+                    {
+                        lastIndex = nextIndex;
+                        lastSectionIndex = nextSectionIndex;
+                    }
+                }
+            }
+            // else start from last section
+            else
+            {
+                int otIndex = OccupiedTrack.Count - 1;
+                int lastSectionIndex = OccupiedTrack[otIndex].Index;
+                int lastIndex = ValidRoute[0].GetRouteIndex(lastSectionIndex, 0);
+
+                for (int isection = otIndex - 1; isection >= 0; isection--)
+                {
+                    int nextSectionIndex = OccupiedTrack[isection].Index;
+                    int nextIndex = ValidRoute[0].GetRouteIndex(nextSectionIndex, 0);
+
+                    if (nextIndex < 0) // this section is not in route - if last index = 0, add to start else add to rear
+                    {
+                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[nextSectionIndex];
+                        int thisDirection = 0;
+
+                        for (int iLink = 0; iLink <= 1; iLink++)
+                        {
+                            for (int iDir = 0; iDir <= 1; iDir++)
+                            {
+                                if (thisSection.Pins[iDir, iLink].Link == lastSectionIndex)
+                                {
+                                    thisDirection = thisSection.Pins[iDir, iLink].Direction;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (lastIndex == 0)
+                        {
+                            ValidRoute[0].Insert(0, new TCRouteElement( OccupiedTrack[isection], thisDirection, signalRef, lastSectionIndex));
+                        }
+                        else
+                        {
+                            ValidRoute[0].Add(new TCRouteElement(OccupiedTrack[isection], thisDirection, signalRef, lastSectionIndex));
+                        }
+                    }
+                    else
+                    {
+                        lastIndex = nextIndex;
+                        lastSectionIndex = nextSectionIndex;
+                    }
+                }
+            }
+
             // reset signals etc.
 
             SignalObjectItems.Clear();
@@ -8386,7 +8478,7 @@ namespace ORTS
 
                 for (int iIndex = 0; validLoop; iIndex--)
                 {
-                    int thisElementIndex = elementIndex - iIndex;
+                    int thisElementIndex = elementIndex + iIndex; // going backward as iIndex is negative!
                     if (thisElementIndex < 0)
                     {
                         validLoop = false;
@@ -8414,14 +8506,14 @@ namespace ORTS
 
                 for (int iIndex = 0; validLoop; iIndex--)
                 {
-                    int thisElementIndex = otherRouteIndex - iIndex;
+                    int thisElementIndex = otherRouteIndex + iIndex; // going backward as iIndex is negative!
                     if (thisElementIndex < 0)
                     {
                         validLoop = false;
                     }
                     else
                     {
-                        TCRouteElement thisElement = otherRoute[thisElementIndex];
+                        TCRouteElement thisElement = otherRoute[otherRouteIndex];
                         TrackCircuitSection thisRouteSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                         totalDistance += thisRouteSection.Length;
 

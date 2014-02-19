@@ -133,7 +133,7 @@ namespace ORTS
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
 
-				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true, false);
+                ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true, false);
             }
         }
 
@@ -156,7 +156,7 @@ namespace ORTS
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
 
-				ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true, false);
+                ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset, PresentPosition[1].TCDirection, Length, true, true, false);
             }
         }
 
@@ -1152,6 +1152,7 @@ namespace ORTS
                                 else if (nextObject.signal_state == MstsSignalAspect.STOP)
                                 {
                                     signalCleared = false;   // signal is not clear
+                                    NextSignalObject[0].ForcePropagation = true;
                                 }
                             }
                         }
@@ -1184,6 +1185,7 @@ namespace ORTS
                                 else if (nextObject.signal_state == MstsSignalAspect.STOP)
                                 {
                                     signalCleared = false;   // signal is not clear
+                                    NextSignalObject[0].ForcePropagation = true;
                                 }
                             }
                         }
@@ -2998,7 +3000,7 @@ namespace ORTS
                 StationStops.Add(thisStation);
             }
 
-	    // adjust station stop indices for removed subpaths
+            // adjust station stop indices for removed subpaths
             for (int i = 0; i < StationStops.Count; i++)
             {
                 var WPcur = StationStops[i];

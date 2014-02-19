@@ -6866,6 +6866,7 @@ namespace ORTS
         private bool fullRoute;                 // required route is full route to next signal or end-of-track
         private bool propagated;                // route request propagated to next signal
         private bool isPropagated;              // route request for this signal was propagated from previous signal
+        public bool ForcePropagation = false;   // Force propagation (used in case of signals at very short distance)
 
         public bool enabled
         {
@@ -6998,6 +6999,7 @@ namespace ORTS
             fullRoute = inf.ReadBoolean();
             propagated = inf.ReadBoolean();
             isPropagated = inf.ReadBoolean();
+            ForcePropagation = false; // preset (not stored)
             ReqNumClearAhead = inf.ReadInt32();
 
             // set dummy train, route direction index will be set later on restore of train
@@ -7957,6 +7959,7 @@ namespace ORTS
 
             isPropagated = false;
             propagated = false;
+            ForcePropagation = false;
 
             // reset block state to most restrictive
 
@@ -8679,10 +8682,11 @@ namespace ORTS
                 propagateState = false;
             }
 
-            if (ReqNumClearAhead > 0 && nextSignal != null && internalBlockState == InternalBlockstate.Reserved)
+            if ( (ReqNumClearAhead > 0 || ForcePropagation) && nextSignal != null && internalBlockState == InternalBlockstate.Reserved)
             {
                 nextSignal.requestClearSignal(RoutePart, enabledTrain, ReqNumClearAhead, propagateState, this);
                 propagated = true;
+                ForcePropagation = false;
             }
 
         } //propagateRequest
