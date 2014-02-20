@@ -1404,7 +1404,7 @@ namespace ORTS.Viewer3D
             var viewpointList = (loco.UsingRearCab)
             ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
             : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
-            var rotationXRadiansOffset = RotationXRadians - MSTSMath.M.Radians(viewpointList[sideLocation].StartDirection.X);
+            var rotationXRadiansOffset = RotationXRadians - MathHelper.ToRadians(viewpointList[sideLocation].StartDirection.X);
 
             sideLocation += index;
 
@@ -1469,8 +1469,8 @@ namespace ORTS.Viewer3D
             ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
             : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
 
-            RotationXRadians = MSTSMath.M.Radians(viewpoints[sideLocation].StartDirection.X);
-            RotationYRadians = MSTSMath.M.Radians(viewpoints[sideLocation].StartDirection.Y);
+            RotationXRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.X);
+            RotationYRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.Y);
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)

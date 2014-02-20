@@ -22,6 +22,7 @@ using System.IO;
 using System.Collections.Generic;
 using MSTS.Parsers;
 using ORTS;
+using Microsoft.Xna.Framework;
 #endif
 
 namespace MSTS.Formats
@@ -652,8 +653,7 @@ namespace MSTS.Formats
 			    DisplayNumber = stf.ReadInt(null);
 		    }
                     
-			Angle = stf.ReadFloat(STFReader.UNITS.None, null);
-		    MSTSMath.M.NormalizeRadians(ref Angle);
+			Angle = MathHelper.WrapAngle(stf.ReadFloat(STFReader.UNITS.None, null));
 
                     stf.SkipRestOfBlock();
                 }),

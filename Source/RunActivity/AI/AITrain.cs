@@ -1118,7 +1118,7 @@ namespace ORTS
                 if (nextActionInfo != null && nextActionInfo.ActiveItem != null &&
                     nextActionInfo.ActiveItem.ObjectDetails == NextSignalObject[0])
                 {
-                    nextAspect = nextActionInfo.ActiveItem.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                    nextAspect = nextActionInfo.ActiveItem.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
                 }
                 else
                 {
@@ -4191,7 +4191,7 @@ namespace ORTS
             thisInfo.signal_state = MstsSignalAspect.UNKNOWN;
             if (thisInfo.ObjectDetails.isSignal)
             {
-                thisInfo.signal_state = thisInfo.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                thisInfo.signal_state = thisInfo.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
             }
 
             return (thisInfo);

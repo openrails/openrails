@@ -26,6 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Xna.Framework;
 using MSTS.Parsers;
 using MSTSMath;
 
@@ -1467,7 +1468,7 @@ namespace MSTS.Formats
         public void Offset(TWorldDirection d, float distanceRight)
         {
             TWorldDirection DRight = new TWorldDirection(d);
-            DRight.Rotate(M.Radians(90));
+            DRight.Rotate(MathHelper.ToRadians(90));
             Move(DRight, distanceRight);
         }
 

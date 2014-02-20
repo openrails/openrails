@@ -1441,7 +1441,7 @@ namespace ORTS
                         }
                         else
                         {
-                            MstsSignalAspect nextAspect = NextSignalObject[0].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                            MstsSignalAspect nextAspect = NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL);
                             stringBuild.Append(nextAspect.ToString());
                         }
                     }
@@ -1453,7 +1453,7 @@ namespace ORTS
                         }
                         else
                         {
-                            MstsSignalAspect nextAspect = NextSignalObject[1].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                            MstsSignalAspect nextAspect = NextSignalObject[1].this_sig_lr(MstsSignalFunction.NORMAL);
                             stringBuild.Append(nextAspect.ToString());
                         }
                     }
@@ -1621,7 +1621,7 @@ namespace ORTS
             MstsSignalAspect thisAspect = MstsSignalAspect.STOP;
             if (NextSignalObject[direction] != null)
             {
-                thisAspect = NextSignalObject[direction].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                thisAspect = NextSignalObject[direction].this_sig_lr(MstsSignalFunction.NORMAL);
             }
 
             return thisAspect;
@@ -1660,7 +1660,7 @@ namespace ORTS
                 if (speedpostList.Count > 0)
                 {
                     var thisSpeedpost = signalRef.SignalObjects[speedpostList[0]];
-                    var speed_info = thisSpeedpost.this_lim_speed(SignalHead.MstsSignalFunction.SPEED);
+                    var speed_info = thisSpeedpost.this_lim_speed(MstsSignalFunction.SPEED);
 
                     AllowedMaxSpeedMpS = Math.Min(AllowedMaxSpeedMpS, IsFreight ? speed_info.speed_freight : speed_info.speed_pass);
                 }
@@ -1683,7 +1683,7 @@ namespace ORTS
                     if (speedpostList.Count > 0)
                     {
                         var thisSpeedpost = signalRef.SignalObjects[speedpostList[0]];
-                        var speed_info = thisSpeedpost.this_lim_speed(SignalHead.MstsSignalFunction.SPEED);
+                        var speed_info = thisSpeedpost.this_lim_speed(MstsSignalFunction.SPEED);
                         float distanceFromFront = Length - thisSpeedpost.DistanceTo(RearTDBTraveller);
                         if (distanceFromFront >= 0)
                         {
@@ -1742,7 +1742,7 @@ namespace ORTS
                 SignalObjectItems.Add(firstObject);
                 if (firstObject.ObjectDetails.isSignal)
                 {
-                    nextAspect = firstObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                    nextAspect = firstObject.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
                 }
                 distanceToLastObject = firstObject.distance_found;
             }
@@ -1799,7 +1799,7 @@ namespace ORTS
                 {
                     if (nextObject.ObjectDetails.isSignal)
                     {
-                        nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                        nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
                         nextAspect = nextObject.signal_state;
 
                     }
@@ -2063,8 +2063,8 @@ namespace ORTS
 
                 if (firstObject.ObjectDetails.isSignal)
                 {
-                    firstObject.signal_state = firstObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
-                    ObjectSpeedInfo thisSpeed = firstObject.ObjectDetails.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
+                    firstObject.signal_state = firstObject.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
+                    ObjectSpeedInfo thisSpeed = firstObject.ObjectDetails.this_sig_speed(MstsSignalFunction.NORMAL);
                     firstObject.speed_passenger = thisSpeed == null ? -1 : thisSpeed.speed_pass;
                     firstObject.speed_freight = thisSpeed == null ? -1 : thisSpeed.speed_freight;
                     firstObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
@@ -2086,10 +2086,10 @@ namespace ORTS
 
                     if (nextObject.ObjectDetails.isSignal)
                     {
-                        nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                        nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
                         if (nextObject.ObjectDetails.enabledTrain != null && nextObject.ObjectDetails.enabledTrain.Train != this)
                             nextObject.signal_state = MstsSignalAspect.STOP; // state not valid if not enabled for this train
-                        ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
+                        ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(MstsSignalFunction.NORMAL);
                         nextObject.speed_passenger = thisSpeed == null || nextObject.signal_state == MstsSignalAspect.STOP ? -1 : thisSpeed.speed_pass;
                         nextObject.speed_freight = thisSpeed == null || nextObject.signal_state == MstsSignalAspect.STOP ? -1 : thisSpeed.speed_freight;
                         nextObject.speed_flag = thisSpeed == null || nextObject.signal_state == MstsSignalAspect.STOP ? 0 : thisSpeed.speed_flag;
@@ -2164,9 +2164,9 @@ namespace ORTS
 
                         if (nextObject.ObjectDetails.isSignal)
                         {
-                            nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                            nextObject.signal_state = nextObject.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL);
                             nextAspect = nextObject.signal_state;
-                            ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
+                            ObjectSpeedInfo thisSpeed = nextObject.ObjectDetails.this_sig_speed(MstsSignalFunction.NORMAL);
                             nextObject.speed_passenger = thisSpeed == null ? -1 : thisSpeed.speed_pass;
                             nextObject.speed_freight = thisSpeed == null ? -1 : thisSpeed.speed_freight;
                             nextObject.speed_flag = thisSpeed == null ? 0 : thisSpeed.speed_flag;
@@ -3604,7 +3604,7 @@ namespace ORTS
                             break;
                         }
 
-                        else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[direction].sigfound[(int)SignalHead.MstsSignalFunction.NORMAL] < 0) // no next signal
+                        else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL && NextSignalObject[direction].sigfound[(int)MstsSignalFunction.NORMAL] < 0) // no next signal
                         {
                             SwitchToNodeControl(LastReservedSection[direction]);
 #if DEBUG_REPORTS
@@ -3635,7 +3635,7 @@ namespace ORTS
                     }
 
                     // get next signal
-                    int nextSignalIndex = NextSignalObject[direction].sigfound[(int)SignalHead.MstsSignalFunction.NORMAL];
+                    int nextSignalIndex = NextSignalObject[direction].sigfound[(int)MstsSignalFunction.NORMAL];
                     if (nextSignalIndex >= 0)
                     {
                         NextSignalObject[direction] = signalRef.SignalObjects[nextSignalIndex];
@@ -3730,7 +3730,7 @@ namespace ORTS
                     TrackCircuitSection rearSection = signalRef.TrackCircuitList[RearSignalObject.TCNextTC];
                     if (!TCSubpathRoute.IsAheadOfTrain(rearSection, 0.0f, overlapPosition))
                     {
-                        if (RearSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP)
+                        if (RearSignalObject.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP)
                         {
                             SetTrainOutOfControl(OUTOFCONTROL.SPAD_REAR);
                             outOfControl = true;
@@ -4435,7 +4435,7 @@ namespace ORTS
             if (signalObjectIndex >= 0)
             {
                 var thisSignal = signalRef.SignalObjects[signalObjectIndex];
-                int nextSignalIndex = thisSignal.sigfound[(int)SignalHead.MstsSignalFunction.NORMAL];
+                int nextSignalIndex = thisSignal.sigfound[(int)MstsSignalFunction.NORMAL];
                 if (nextSignalIndex >= 0)
                 {
                     var nextSignal = signalRef.SignalObjects[nextSignalIndex];
@@ -4987,7 +4987,7 @@ namespace ORTS
                 if (thisSection.EndSignals[reqDirection] != null)
                 {
                     var endSignal = thisSection.EndSignals[reqDirection];
-                    MstsSignalAspect thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                    MstsSignalAspect thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(MstsSignalFunction.NORMAL);
                     hasEndSignal = true;
 
                     if (thisAspect == MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
@@ -5628,7 +5628,7 @@ namespace ORTS
             if (foundSpeedLimit.Count > 0)
             {
                 var speedLimit = signalRef.SignalObjects[Math.Abs(foundSpeedLimit[0])];
-                var thisSpeedInfo = speedLimit.this_lim_speed(SignalHead.MstsSignalFunction.SPEED);
+                var thisSpeedInfo = speedLimit.this_lim_speed(MstsSignalFunction.SPEED);
                 float thisSpeedMpS = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
 
                 if (thisSpeedMpS > 0)
@@ -5718,7 +5718,7 @@ namespace ORTS
                     }
                     else
                     {
-                        ObjectSpeedInfo thisSpeedInfo = thisObject.this_lim_speed(SignalHead.MstsSignalFunction.SPEED);
+                        ObjectSpeedInfo thisSpeedInfo = thisObject.this_lim_speed(MstsSignalFunction.SPEED);
                         float thisSpeedMpS = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
 
                         if (thisSpeedMpS > 0)
@@ -5748,7 +5748,7 @@ namespace ORTS
             if (passedSignalIndex >= 0)
             {
                 var passedSignal = signalRef.SignalObjects[passedSignalIndex];
-                var thisSpeedInfo = passedSignal.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
+                var thisSpeedInfo = passedSignal.this_sig_speed(MstsSignalFunction.NORMAL);
 
                 if (thisSpeedInfo != null)
                 {
@@ -6009,7 +6009,7 @@ namespace ORTS
                 if (thisSection.EndSignals[reqDirection] != null)
                 {
                     var endSignal = thisSection.EndSignals[reqDirection];
-                    var thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+                    var thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(MstsSignalFunction.NORMAL);
                     hasEndSignal = true;
 
                     if (thisAspect == MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
@@ -6133,7 +6133,7 @@ namespace ORTS
 
                 var nextSignal = thisSection.EndSignals[thisElement.Direction];
                 if (nextSignal != null &&
-                    nextSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP &&
+                    nextSignal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP &&
                     nextSignal.hasPermission != SignalObject.Permission.Granted)
                 {
                     unclearedSignal = true;
@@ -6357,7 +6357,7 @@ namespace ORTS
                     if (thisSection.EndSignals[direction] != null)
                     {
                         reqSignal = thisSection.EndSignals[direction];
-                        signalFound = (reqSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP);
+                        signalFound = (reqSignal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP);
                     }
                 }
             }
@@ -7047,7 +7047,7 @@ namespace ORTS
                     int reqRouteIndex = direction == Direction.Forward ? 0 : 1;
 
                     if (NextSignalObject[reqRouteIndex] != null &&
-                        NextSignalObject[reqRouteIndex].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) != MstsSignalAspect.STOP)
+                        NextSignalObject[reqRouteIndex].this_sig_lr(MstsSignalFunction.NORMAL) != MstsSignalAspect.STOP)
                     {
                         int routeIndex = ValidRoute[reqRouteIndex].GetRouteIndex(NextSignalObject[reqRouteIndex].TCNextTC, PresentPosition[reqRouteIndex].RouteListIndex);
                         signalRef.BreakDownRouteList(ValidRoute[reqRouteIndex], routeIndex, routedForward);
@@ -9754,7 +9754,7 @@ namespace ORTS
                 if (thisItem.ObjectType == ObjectItemInfo.ObjectItemType.Signal)
                 {
                     TrackMonitorSignalAspect signalAspect =
-                        thisItem.ObjectDetails.TranslateTMAspect(thisItem.ObjectDetails.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
+                        thisItem.ObjectDetails.TranslateTMAspect(thisItem.ObjectDetails.this_sig_lr(MstsSignalFunction.NORMAL));
                     if (thisItem.ObjectDetails.enabledTrain == null || thisItem.ObjectDetails.enabledTrain.Train != this)
                     {
                         signalAspect = TrackMonitorSignalAspect.Stop;
@@ -9779,8 +9779,8 @@ namespace ORTS
             if (!signalProcessed && NextSignalObject[0] != null && NextSignalObject[0].enabledTrain != null && NextSignalObject[0].enabledTrain.Train == this)
             {
                 TrackMonitorSignalAspect signalAspect =
-                    NextSignalObject[0].TranslateTMAspect(NextSignalObject[0].this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
-                ObjectSpeedInfo thisSpeedInfo = NextSignalObject[0].this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
+                    NextSignalObject[0].TranslateTMAspect(NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL));
+                ObjectSpeedInfo thisSpeedInfo = NextSignalObject[0].this_sig_speed(MstsSignalFunction.NORMAL);
                 float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
                 TrainObjectItem nextItem = new TrainObjectItem(signalAspect, validSpeed, distanceToSignal);
@@ -9806,7 +9806,7 @@ namespace ORTS
             {
                 if (RearSignalObject != null)
                 {
-                    TrackMonitorSignalAspect signalAspect = RearSignalObject.TranslateTMAspect(RearSignalObject.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
+                    TrackMonitorSignalAspect signalAspect = RearSignalObject.TranslateTMAspect(RearSignalObject.this_sig_lr(MstsSignalFunction.NORMAL));
                     TrainObjectItem nextItem = new TrainObjectItem(signalAspect, -1.0f, ClearanceAtRearM);
                     thisInfo.ObjectInfoBackward.Add(nextItem);
                 }
@@ -9875,10 +9875,10 @@ namespace ORTS
                     {
                         distanceToTrainM = sectionStart + thisSection.Length;
                         var thisSignal = thisSection.EndSignals[sectionDirection];
-                        var thisSpeedInfo = thisSignal.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
+                        var thisSpeedInfo = thisSignal.this_sig_speed(MstsSignalFunction.NORMAL);
                         float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
-                        TrackMonitorSignalAspect signalAspect = thisSignal.TranslateTMAspect(thisSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
+                        TrackMonitorSignalAspect signalAspect = thisSignal.TranslateTMAspect(thisSignal.this_sig_lr(MstsSignalFunction.NORMAL));
                         thisItem = new TrainObjectItem(signalAspect, validSpeed, distanceToTrainM);
                         thisInfo.ObjectInfoForward.Add(thisItem);
                     }
@@ -9888,7 +9888,7 @@ namespace ORTS
                         foreach (ORTS.TrackCircuitSignalItem thisSpeeditem in thisSection.CircuitItems.TrackCircuitSpeedPosts[sectionDirection].TrackCircuitItem)
                         {
                             var thisSpeedpost = thisSpeeditem.SignalRef;
-                            var thisSpeedInfo = thisSpeedpost.this_sig_speed(SignalHead.MstsSignalFunction.SPEED);
+                            var thisSpeedInfo = thisSpeedpost.this_sig_speed(MstsSignalFunction.SPEED);
                             float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;
@@ -9929,10 +9929,10 @@ namespace ORTS
                     {
                         distanceToTrainM = sectionStart + thisSection.Length;
                         SignalObject thisSignal = thisSection.EndSignals[sectionDirection];
-                        ObjectSpeedInfo thisSpeedInfo = thisSignal.this_sig_speed(SignalHead.MstsSignalFunction.NORMAL);
+                        ObjectSpeedInfo thisSpeedInfo = thisSignal.this_sig_speed(MstsSignalFunction.NORMAL);
                         float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
-                        TrackMonitorSignalAspect signalAspect = thisSignal.TranslateTMAspect(thisSignal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL));
+                        TrackMonitorSignalAspect signalAspect = thisSignal.TranslateTMAspect(thisSignal.this_sig_lr(MstsSignalFunction.NORMAL));
                         thisItem = new TrainObjectItem(signalAspect, validSpeed, distanceToTrainM);
                         thisInfo.ObjectInfoBackward.Add(thisItem);
                     }
@@ -9942,7 +9942,7 @@ namespace ORTS
                         foreach (ORTS.TrackCircuitSignalItem thisSpeeditem in thisSection.CircuitItems.TrackCircuitSpeedPosts[sectionDirection].TrackCircuitItem)
                         {
                             SignalObject thisSpeedpost = thisSpeeditem.SignalRef;
-                            ObjectSpeedInfo thisSpeedInfo = thisSpeedpost.this_sig_speed(SignalHead.MstsSignalFunction.SPEED);
+                            ObjectSpeedInfo thisSpeedInfo = thisSpeedpost.this_sig_speed(MstsSignalFunction.SPEED);
                             float validSpeed = IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass;
 
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;

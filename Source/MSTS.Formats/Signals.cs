@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MSTS.Parsers
+namespace MSTS.Formats
 {
     public enum MstsSignalAspect
     {
@@ -32,6 +32,18 @@ namespace MSTS.Parsers
         APPROACH_3,
         CLEAR_1,
         CLEAR_2,
+        UNKNOWN,
+    }
+
+    public enum MstsSignalFunction
+    {
+        NORMAL,
+        DISTANCE,
+        REPEATER,
+        SHUNTING,
+        INFO,
+        SPEED,
+        ALERT,
         UNKNOWN,
     }
 }

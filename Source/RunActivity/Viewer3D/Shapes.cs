@@ -434,25 +434,26 @@ namespace ORTS.Viewer3D
                     for (var j = 0; j < speed.Length; j++)
                     {
                         var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+                        var rot = Matrix.CreateRotationY(-rotation);
 
                         //the left-bottom vertex
                         Vector3 v = new Vector3(offset.X, offset.Y, 0.01f);
-                        M.Rotate2D(rotation, ref v.X, ref v.Z);
+                        v = Vector3.Transform(v, rot);
                         v += start; Vertex v1 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY);
 
                         //the right-bottom vertex
                         v.X = offset.X + size; v.Y = offset.Y; v.Z = 0.01f;
-                        M.Rotate2D(rotation, ref v.X, ref v.Z);
+                        v = Vector3.Transform(v, rot);
                         v += start; Vertex v2 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY);
 
                         //the right-top vertex
                         v.X = offset.X + size; v.Y = offset.Y + size; v.Z = 0.01f;
-                        M.Rotate2D(rotation, ref v.X, ref v.Z);
+                        v = Vector3.Transform(v, rot);
                         v += start; Vertex v3 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX + 0.25f, tY - 0.25f);
 
                         //the left-top vertex
                         v.X = offset.X; v.Y = offset.Y + size; v.Z = 0.01f;
-                        M.Rotate2D(rotation, ref v.X, ref v.Z);
+                        v = Vector3.Transform(v, rot);
                         v += start; Vertex v4 = new Vertex(v.X, v.Y, v.Z, 0, 0, -1, tX, tY - 0.25f);
 
                         //memory may not be enough

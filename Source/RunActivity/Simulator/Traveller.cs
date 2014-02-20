@@ -87,8 +87,8 @@ namespace ORTS
                     {
                         directionVector.X *= -1;
                         directionVector.Y += MathHelper.Pi;
-                        M.NormalizeRadians(ref directionVector.X);
-                        M.NormalizeRadians(ref directionVector.Y);
+                        directionVector.X = MathHelper.WrapAngle(directionVector.X);
+                        directionVector.Y = MathHelper.WrapAngle(directionVector.Y);
                     }
                     if (lengthSet)
                         trackNodeOffset = trackNodeLength - trackNodeOffset;
@@ -479,39 +479,38 @@ namespace ORTS
         /// <returns>Details on where exactly the location is on the track.</returns>
         static TrackNodeCandidate TryTrackSectionCurved(WorldLocation loc, TrVectorSection trackVectorSection, TrackSection trackSection)
         {// TODO: Add y component.
-            float x = loc.Location.X;
-            float z = loc.Location.Z;
+            var l = loc.Location;
             // We're working relative to the track section, so offset as needed.
-            x += (loc.TileX - trackVectorSection.TileX) * 2048;
-            z += (loc.TileZ - trackVectorSection.TileZ) * 2048;
+            l.X += (loc.TileX - trackVectorSection.TileX) * 2048;
+            l.Z += (loc.TileZ - trackVectorSection.TileZ) * 2048;
             var sx = trackVectorSection.X;
             var sz = trackVectorSection.Z;
 
             // Do a preliminary cull based on a bounding square around the track section.
             // Bounding distance is (radius * angle + error) by (radius * angle + error) around starting coordinates but no more than 2 for angle.
-            var boundingDistance = trackSection.SectionCurve.Radius * Math.Min(Math.Abs(M.Radians(trackSection.SectionCurve.Angle)), 2) + MaximumCenterlineOffset;
-            var dx = Math.Abs(x - sx);
-            var dz = Math.Abs(z - sz);
+            var boundingDistance = trackSection.SectionCurve.Radius * Math.Min(Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)), 2) + MaximumCenterlineOffset;
+            var dx = Math.Abs(l.X - sx);
+            var dz = Math.Abs(l.Z - sz);
             if (dx > boundingDistance || dz > boundingDistance)
                 return null;
 
             // To simplify the math, center around the start of the track section, rotate such that the track section starts out pointing north (+z) and flip so the track curves to the right.
-            x -= sx;
-            z -= sz;
-            M.Rotate2D(trackVectorSection.AY, ref x, ref z);
+            l.X -= sx;
+            l.Z -= sz;
+            l = Vector3.Transform(l, Matrix.CreateRotationY(-trackVectorSection.AY));
             if (trackSection.SectionCurve.Angle < 0)
-                x *= -1;
+                l.X *= -1;
 
             // Compute distance to curve's center at (radius,0) then adjust to get distance from centerline.
-            dx = x - trackSection.SectionCurve.Radius;
-            float lat = (float)Math.Sqrt(dx * dx + z * z) - trackSection.SectionCurve.Radius;
+            dx = l.X - trackSection.SectionCurve.Radius;
+            float lat = (float)Math.Sqrt(dx * dx + l.Z * l.Z) - trackSection.SectionCurve.Radius;
             if (Math.Abs(lat) > MaximumCenterlineOffset)
                 return null;
 
             // Compute distance along curve (ensure we are in the top right quadrant, otherwise our math goes wrong).
-            if (z < -InitErrorMargin || x > trackSection.SectionCurve.Radius + InitErrorMargin || z > trackSection.SectionCurve.Radius + InitErrorMargin)
+            if (l.Z < -InitErrorMargin || l.X > trackSection.SectionCurve.Radius + InitErrorMargin || l.Z > trackSection.SectionCurve.Radius + InitErrorMargin)
                 return null;
-            var radiansAlongCurve = (float)Math.Asin(z / trackSection.SectionCurve.Radius);
+            var radiansAlongCurve = (float)Math.Asin(l.Z / trackSection.SectionCurve.Radius);
             var lon = radiansAlongCurve * trackSection.SectionCurve.Radius;
             var trackSectionLength = GetLength(trackSection);
             if (lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)
@@ -726,7 +725,7 @@ namespace ORTS
                         }
                     }
                     // No sign of the target location in this track section, accumulate remaining track section length and continue.
-                    var length = traveller.trackSection != null ? traveller.IsTrackCurved ? Math.Abs(M.Radians(traveller.trackSection.SectionCurve.Angle)) : traveller.trackSection.SectionSize.Length : 0;
+                    var length = traveller.trackSection != null ? traveller.IsTrackCurved ? Math.Abs(MathHelper.ToRadians(traveller.trackSection.SectionCurve.Angle)) : traveller.trackSection.SectionSize.Length : 0;
                     accumulatedDistance += (traveller.Direction == TravellerDirection.Forward ? length - initialOffset : initialOffset) * radius;
                 }
                 // No sign of the target location yet, let's move on to the next track section.
@@ -892,8 +891,8 @@ namespace ORTS
                 directionVector.X *= -1;
                 directionVector.Y += MathHelper.Pi;
             }
-            M.NormalizeRadians(ref directionVector.X);
-            M.NormalizeRadians(ref directionVector.Y);
+            directionVector.X = MathHelper.WrapAngle(directionVector.X);
+            directionVector.Y = MathHelper.WrapAngle(directionVector.Y);
 
             if (trackVectorSection != null)
                 location.NormalizeTo(trackVectorSection.TileX, trackVectorSection.TileZ);

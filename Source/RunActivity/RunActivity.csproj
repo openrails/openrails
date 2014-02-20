@@ -70,9 +70,6 @@
     <Compile Include="..\MSTS.Formats\TDBFile.cs">
       <Link>MSTS\TDBFile.cs</Link>
     </Compile>
-    <Compile Include="..\MSTS\_math.cs">
-      <Link>MSTS\_math.cs</Link>
-    </Compile>
     <Compile Include="..\MSTS\_paths.cs">
       <Link>MSTS\_paths.cs</Link>
     </Compile>

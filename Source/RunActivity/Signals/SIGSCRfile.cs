@@ -1727,8 +1727,8 @@ namespace ORTS
                         string partString = TermString.Substring(6);
                         try
                         {
-                            SignalHead.MstsSignalFunction Type =
-                                    (SignalHead.MstsSignalFunction)Enum.Parse(typeof(SignalHead.MstsSignalFunction), partString, true);
+                            MstsSignalFunction Type =
+                                    (MstsSignalFunction)Enum.Parse(typeof(MstsSignalFunction), partString, true);
                             TermParts = new SCRParameterType(SCRTermType.Sigfn, (int)Type);
                         }
                         catch (Exception Ex)
@@ -3281,7 +3281,7 @@ namespace ORTS
                 // next_sig_lr
 
                 case (SCRExternalFunctions.NEXT_SIG_LR):
-                    return_value = (int)thisHead.next_sig_lr((SignalHead.MstsSignalFunction)parameter1_value);
+                    return_value = (int)thisHead.next_sig_lr((MstsSignalFunction)parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -3304,7 +3304,7 @@ namespace ORTS
                 // next_sig_mr
 
                 case (SCRExternalFunctions.NEXT_SIG_MR):
-                    return_value = (int)thisHead.next_sig_mr((SignalHead.MstsSignalFunction)parameter1_value);
+                    return_value = (int)thisHead.next_sig_mr((MstsSignalFunction)parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -3327,7 +3327,7 @@ namespace ORTS
                     
                 case (SCRExternalFunctions.THIS_SIG_LR):
                     bool sigfound_lr = false;
-                    MstsSignalAspect returnState_lr = thisHead.this_sig_lr((SignalHead.MstsSignalFunction)parameter1_value, ref sigfound_lr);
+                    MstsSignalAspect returnState_lr = thisHead.this_sig_lr((MstsSignalFunction)parameter1_value, ref sigfound_lr);
                     return_value = sigfound_lr ? (int)returnState_lr : -1;
                     break;
 
@@ -3335,19 +3335,19 @@ namespace ORTS
 
                 case (SCRExternalFunctions.THIS_SIG_MR):
                     bool sigfound_mr = false;
-                    MstsSignalAspect returnState_mr = thisHead.this_sig_mr((SignalHead.MstsSignalFunction)parameter1_value, ref sigfound_mr);
+                    MstsSignalAspect returnState_mr = thisHead.this_sig_mr((MstsSignalFunction)parameter1_value, ref sigfound_mr);
                     return_value = sigfound_mr ? (int)returnState_mr : -1;
                     break;
 
                 // opp_sig_lr
 
                 case (SCRExternalFunctions.OPP_SIG_LR):
-                    return_value = (int)thisHead.opp_sig_lr((SignalHead.MstsSignalFunction)parameter1_value);
+                    return_value = (int)thisHead.opp_sig_lr((MstsSignalFunction)parameter1_value);
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
                         SignalObject foundSignal = null;
-                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.MstsSignalFunction)parameter1_value, ref foundSignal);
+                        int dummy = (int)thisHead.opp_sig_lr((MstsSignalFunction)parameter1_value, ref foundSignal);
                         int foundRef = foundSignal != null ? foundSignal.thisRef : -1;
                         File.AppendAllText(dpe_fileLoc + @"printproc.txt",
                                 " OPP_SIG_LR : Located signal : " + foundRef.ToString() + "\n");
@@ -3357,7 +3357,7 @@ namespace ORTS
                     if (TDB_debug_ref.Contains(thisHead.TDBIndex))
                     {
                         SignalObject foundSignal = null;
-                        int dummy = (int)thisHead.opp_sig_lr((SignalHead.MstsSignalFunction)parameter1_value, ref foundSignal);
+                        int dummy = (int)thisHead.opp_sig_lr((MstsSignalFunction)parameter1_value, ref foundSignal);
                         int foundRef = foundSignal != null ? foundSignal.thisRef : -1;
                         File.AppendAllText(dpr_fileLoc + @"printproc.txt",
                                 " OPP_SIG_LR : Located signal : " + foundRef.ToString() + "\n");
@@ -3368,7 +3368,7 @@ namespace ORTS
                 // opp_sig_mr
 
                 case (SCRExternalFunctions.OPP_SIG_MR):
-                    return_value = (int)thisHead.opp_sig_mr((SignalHead.MstsSignalFunction)parameter1_value);
+                    return_value = (int)thisHead.opp_sig_mr((MstsSignalFunction)parameter1_value);
                     break;
 
                 // dist_multi_sig_mr
@@ -3392,8 +3392,8 @@ namespace ORTS
 #endif
 
                     return_value = (int)thisHead.dist_multi_sig_mr(
-                            (SignalHead.MstsSignalFunction)parameter1_value,
-                            (SignalHead.MstsSignalFunction)parameter2_value,
+                            (MstsSignalFunction)parameter1_value,
+                            (MstsSignalFunction)parameter2_value,
                             dumpfile);
 
                     break;

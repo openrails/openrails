@@ -20,6 +20,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Xna.Framework;
 using MSTS.Parsers;
 using MSTSMath;
 #if !NEW_SIGNALLING
@@ -110,7 +111,7 @@ namespace MSTS.Formats
 			{
 				SectionCurve = new SectionCurve();
 				SectionCurve.Radius = b;
-				SectionCurve.Angle = (float)M.Degrees( a );
+                SectionCurve.Angle = (float)MathHelper.ToDegrees(a);
 			}
 			stf.SkipRestOfBlock();
 		}

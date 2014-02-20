@@ -228,7 +228,7 @@ namespace ORTS.Viewer3D.Popups
                                            GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
                                                GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
                                                Color.Green,
-                                           String.Format("Signal ({0})", signalObj.Signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL)),
+                                           String.Format("Signal ({0})", signalObj.Signal.this_sig_lr(MstsSignalFunction.NORMAL)),
                                            Owner.TextFontDefaultOutlined));
 #endif
                             }
@@ -312,7 +312,7 @@ namespace ORTS.Viewer3D.Popups
                 var signal = thisInfo.ObjectDetails;
                 if (signal == null)
                     break;
-                if (signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
+                if (signal.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.UNKNOWN)
                     break;
                 var signalDistance = thisInfo.distance_found;
 #endif
@@ -347,7 +347,7 @@ namespace ORTS.Viewer3D.Popups
 #else
         static DebugWindowSignalAspect GetAspect(SignalObject signal)
         {
-            var aspect = signal.this_sig_lr(SignalHead.MstsSignalFunction.NORMAL);
+            var aspect = signal.this_sig_lr(MstsSignalFunction.NORMAL);
 
             if (aspect >= MstsSignalAspect.CLEAR_1)
                 return DebugWindowSignalAspect.Clear;
