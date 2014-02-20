@@ -27,6 +27,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ORTS.Common;
+using GNU.Gettext;
 
 namespace ORTS
 {
@@ -198,6 +199,15 @@ namespace ORTS
     }
 
     /// <summary>
+    /// Localization attribute for decorating enums.
+    /// </summary>
+    public sealed class GetStringAttribute : Attribute
+    {
+        public GetStringAttribute(string name) { Name = name; }
+        public string Name { get; private set; }
+    }
+
+    /// <summary>
     /// Loads, stores and manages keyboard input settings for all available <see cref="UserCommands"/>.
     /// </summary>
     /// <remarks>
@@ -216,6 +226,8 @@ namespace ORTS
     /// </remarks>
     public class InputSettings : Settings
     {
+        GettextResourceManager catalog = new GettextResourceManager("ORTS");
+
         public static readonly UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
         public readonly UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
 

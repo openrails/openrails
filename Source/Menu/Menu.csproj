@@ -209,6 +209,7 @@
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
 time /t&gt;&gt;Revision.txt
-call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "$(ProjectName)" "$(ProjectDir)"</PostBuildEvent>
+call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "$(ProjectName)" "$(ProjectDir)"
+call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "ORTS" "$(ProjectDir)..\ORTS\"</PostBuildEvent>
   </PropertyGroup>
 </Project>
