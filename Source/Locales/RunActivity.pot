@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-20 20:58:26+0000\n"
-"PO-Revision-Date: 2014-02-20 20:58:27+0000\n"
+"POT-Creation-Date: 2014-02-20 21:35:26+0000\n"
+"PO-Revision-Date: 2014-02-20 21:35:26+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -267,7 +267,7 @@ msgstr ""
 
 #: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:274
 #: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:285
-msgid "Power line condition overriden."
+msgid "Power line condition overridden."
 msgstr ""
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:118
@@ -309,7 +309,7 @@ msgid "Service"
 msgstr ""
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:129
-msgid "Suppresion"
+msgid "Suppression"
 msgstr ""
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:130
@@ -382,7 +382,7 @@ msgid "locked. Release dynamic brake then re-try."
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:140
-msgid "Wheelslip"
+msgid "Wheel-slip"
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:140
@@ -467,7 +467,7 @@ msgid "Diesel Tank"
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:148
-msgid "re-fuelled"
+msgid "re-fueled"
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:148
@@ -525,7 +525,7 @@ msgid "Fire"
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:159
-msgid "add shovelfull"
+msgid "add shovel-full"
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:160
@@ -744,7 +744,7 @@ msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:188
 #: ../RunActivity/Simulator/Confirmation.cs:189
-msgid "locked. Use Ctrl+M to change signals to manual mode then re-try."
+msgid "locked. Use Control+M to change signals to manual mode then re-try."
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:189
@@ -780,7 +780,7 @@ msgid "Replay"
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:194
-msgid "Overriding camera replay. Press Esc to resume camera replay."
+msgid "Overriding camera replay. Press Escape to resume camera replay."
 msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:195

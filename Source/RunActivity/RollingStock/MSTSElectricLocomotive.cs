@@ -281,7 +281,7 @@ namespace ORTS
             if ((up) && (!Simulator.TRK.Tr_RouteFile.Electrified))
                 Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power line!"));
             if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overriden."));
+                Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overridden."));
         }
 
         public void SetPantographSecond( bool up)
@@ -292,7 +292,7 @@ namespace ORTS
             if((up)&&(!Simulator.TRK.Tr_RouteFile.Electrified))
                 Simulator.Confirmer.Warning(Viewer.Catalog.GetString("No power line!"));
             if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overriden."));
+                Simulator.Confirmer.Information(Viewer.Catalog.GetString("Power line condition overridden."));
         }
 
         public override void SetPower(bool ToState)

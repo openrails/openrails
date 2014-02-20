@@ -137,7 +137,7 @@ namespace ORTS {
                 // Power
                 , new string [] { GetParticularString("NonSteam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
                 , new string [] { GetString("Throttle"), null, null, null, GetString("close"), GetString("open"), GetString("locked. Release dynamic brake then re-try.") } 
-                , new string [] { GetString("Wheelslip"), GetString("over"), null, GetString("occurring. Tractive power greatly reduced."), null, null, GetString("warning") } 
+                , new string [] { GetString("Wheel-slip"), GetString("over"), null, GetString("occurring. Tractive power greatly reduced."), null, null, GetString("warning") } 
                 // Electric power
                 , new string [] { GetString("Power"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Pantograph 1"), GetString("lower"), null, GetString("raise") } 
@@ -145,7 +145,7 @@ namespace ORTS {
                 // Diesel power
                 , new string [] { GetString("Player Diesel Power"), GetString("off"), null, GetString("on"), null, null, GetString("locked. Close throttle then re-try.") }
                 , new string [] { GetString("Helper Diesel Power"), GetString("off"), null, GetString("on") }
-                , new string [] { GetString("Diesel Tank"), null, null, GetString("re-fuelled"), null, GetString("level") } 
+                , new string [] { GetString("Diesel Tank"), null, null, GetString("re-fueled"), null, GetString("level") } 
                 // Steam power
                 , new string [] { GetParticularString("Steam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
                 , new string [] { GetString("Regulator"), null, null, null, GetString("close"), GetString("open") }    // Throttle for steam locomotives
@@ -156,7 +156,7 @@ namespace ORTS {
                 , new string [] { GetString("Firebox Door"), null, null, null, GetString("close"), GetString("open") }
                 , new string [] { GetString("Firing Rate"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
-                , new string [] { GetString("Fire"), null, null, GetString("add shovelfull") } 
+                , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
                 , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") } 
@@ -185,13 +185,13 @@ namespace ORTS {
                 , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Mirror"), GetString("retract"), null, GetString("extend") } 
                 // Track Devices
-                , new string [] { GetString("Switch Ahead"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Ctrl+M to change signals to manual mode then re-try.") } 
-                , new string [] { GetString("Switch Behind"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Ctrl+M to change signals to manual mode then re-try.") } 
+                , new string [] { GetString("Switch Ahead"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Control+M to change signals to manual mode then re-try.") } 
+                , new string [] { GetString("Switch Behind"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Control+M to change signals to manual mode then re-try.") } 
                 // Simulation
                 , new string [] { GetString("Simulation Speed"), GetString("reset"), null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Uncouple After") } 
                 , new string [] { GetString("Activity"), GetString("quit"), null, GetString("resume") } 
-                , new string [] { GetString("Replay"), null, null, null, null, null, GetString("Overriding camera replay. Press Esc to resume camera replay.") } 
+                , new string [] { GetString("Replay"), null, null, null, null, null, GetString("Overriding camera replay. Press Escape to resume camera replay.") } 
                 , new string [] { GetString("Location labels"), GetParticularString("Labels", "none"), GetString("sidings"), GetString("stations"), GetString("stations and sidings") } 
                 , new string [] { GetString("Gearbox"), null, null, null, GetString("down"), GetString("up"), GetString("locked. Use shaft before changing gear.") } 
                 , new string [] { GetString("Signal mode"), GetString("manual"), null, GetString("auto"), null, null, GetString("locked. Stop train, then re-try.") } 

@@ -126,7 +126,7 @@ namespace ORTS
                 case MSTSNotchType.GSelfLap: return Viewer3D.Viewer.Catalog.GetString("Service");
                 case MSTSNotchType.GSelfLapH: return Viewer3D.Viewer.Catalog.GetString("Service");
                 case MSTSNotchType.Lap: return Viewer3D.Viewer.Catalog.GetString("Lap");
-                case MSTSNotchType.Suppression: return Viewer3D.Viewer.Catalog.GetString("Suppresion");
+                case MSTSNotchType.Suppression: return Viewer3D.Viewer.Catalog.GetString("Suppression");
                 case MSTSNotchType.ContServ: return Viewer3D.Viewer.Catalog.GetString("Cont. Service");
                 case MSTSNotchType.FullServ: return Viewer3D.Viewer.Catalog.GetString("Full Service");
                 default: return "";
