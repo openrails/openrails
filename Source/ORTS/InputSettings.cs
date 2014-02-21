@@ -39,151 +39,151 @@ namespace ORTS
     /// </remarks>
     public enum UserCommands
     {
-        GamePauseMenu,
-        GameSave,
-        GameQuit,
-        GamePause,
-        GameScreenshot,
-        GameFullscreen,
-        GameSwitchAhead,
-        GameSwitchBehind,
-        GameSwitchPicked,
-        GameSignalPicked,
-        GameSwitchWithMouse,
-        GameUncoupleWithMouse,
-        GameChangeCab,
-        GameRequestControl,
-        GameMultiPlayerDispatcher,
-        GameMultiPlayerTexting,
-        GameSwitchManualMode,
-        GameClearSignalForward,
-        GameClearSignalBackward,
-        GameResetSignalForward,
-        GameResetSignalBackward,
+        [GetString("Game Pause Menu")] GamePauseMenu,
+        [GetString("Game Save")] GameSave,
+        [GetString("Game Quit")] GameQuit,
+        [GetString("Game Pause")] GamePause,
+        [GetString("Game Screenshot")] GameScreenshot,
+        [GetString("Game Fullscreen")] GameFullscreen,
+        [GetString("Game Switch Ahead")] GameSwitchAhead,
+        [GetString("Game Switch Behind")] GameSwitchBehind,
+        [GetString("Game Switch Picked")] GameSwitchPicked,
+        [GetString("Game Signal Picked")] GameSignalPicked,
+        [GetString("Game Switch With Mouse")] GameSwitchWithMouse,
+        [GetString("Game Uncouple With Mouse")] GameUncoupleWithMouse,
+        [GetString("Game Change Cab")] GameChangeCab,
+        [GetString("Game Request Control")] GameRequestControl,
+        [GetString("Game Multi Player Dispatcher")] GameMultiPlayerDispatcher,
+        [GetString("Game Multi Player Texting")] GameMultiPlayerTexting,
+        [GetString("Game Switch Manual Mode")] GameSwitchManualMode,
+        [GetString("Game Clear Signal Forward")] GameClearSignalForward,
+        [GetString("Game Clear Signal Backward")] GameClearSignalBackward,
+        [GetString("Game Reset Signal Forward")] GameResetSignalForward,
+        [GetString("Game Reset Signal Backward")] GameResetSignalBackward,
 
-        DisplayNextWindowTab,
-        DisplayHelpWindow,
-        DisplayTrackMonitorWindow,
-        DisplayHUD,
-        DisplayCarLabels,
-        DisplayStationLabels,
-        DisplaySwitchWindow,
-        DisplayTrainOperationsWindow,
-        DisplayNextStationWindow,
-        DisplayCompassWindow,
+        [GetString("Display Next Window Tab")] DisplayNextWindowTab,
+        [GetString("Display Help Window")] DisplayHelpWindow,
+        [GetString("Display Track Monitor Window")] DisplayTrackMonitorWindow,
+        [GetString("Display HUD")] DisplayHUD,
+        [GetString("Display Car Labels")] DisplayCarLabels,
+        [GetString("Display Station Labels")] DisplayStationLabels,
+        [GetString("Display Switch Window")] DisplaySwitchWindow,
+        [GetString("Display Train Operations Window")] DisplayTrainOperationsWindow,
+        [GetString("Display Next Station Window")] DisplayNextStationWindow,
+        [GetString("Display Compass Window")] DisplayCompassWindow,
 
-        DebugSpeedUp,
-        DebugSpeedDown,
-        DebugSpeedReset,
-        DebugOvercastIncrease,
-        DebugOvercastDecrease,
-        DebugFogIncrease,
-        DebugFogDecrease,
-        DebugWeatherChange,
-        DebugClockForwards,
-        DebugClockBackwards,
-        DebugLogger,
-        DebugLockShadows,
-        DebugDumpKeymap,
-        DebugLogRenderFrame,
-        DebugTracks,
-        DebugSignalling,
-        DebugResetWheelSlip,
-        DebugToggleAdvancedAdhesion,
-        DebugSoundForm,
-        DebugPhysicsForm,
-        DebugPrecipitationIncrease,
-        DebugPrecipitationDecrease,
+        [GetString("Debug Speed Up")] DebugSpeedUp,
+        [GetString("Debug Speed Down")] DebugSpeedDown,
+        [GetString("Debug Speed Reset")] DebugSpeedReset,
+        [GetString("Debug Overcast Increase")] DebugOvercastIncrease,
+        [GetString("Debug Overcast Decrease")] DebugOvercastDecrease,
+        [GetString("Debug Fog Increase")] DebugFogIncrease,
+        [GetString("Debug Fog Decrease")] DebugFogDecrease,
+        [GetString("Debug Weather Change")] DebugWeatherChange,
+        [GetString("Debug Clock Forwards")] DebugClockForwards,
+        [GetString("Debug Clock Backwards")] DebugClockBackwards,
+        [GetString("Debug Logger")] DebugLogger,
+        [GetString("Debug Lock Shadows")] DebugLockShadows,
+        [GetString("Debug Dump Keymap")] DebugDumpKeymap,
+        [GetString("Debug Log Render Frame")] DebugLogRenderFrame,
+        [GetString("Debug Tracks")] DebugTracks,
+        [GetString("Debug Signalling")] DebugSignalling,
+        [GetString("Debug Reset Wheel Slip")] DebugResetWheelSlip,
+        [GetString("Debug Toggle Advanced Adhesion")] DebugToggleAdvancedAdhesion,
+        [GetString("Debug Sound Form")] DebugSoundForm,
+        [GetString("Debug Physics Form")] DebugPhysicsForm,
+        [GetString("Debug Precipitation Increase")] DebugPrecipitationIncrease,
+        [GetString("Debug Precipitation Decrease")] DebugPrecipitationDecrease,
 
-        CameraCab,
-        CameraOutsideFront,
-        CameraOutsideRear,
-        CameraTrackside,
-        CameraPassenger,
-        CameraBrakeman,
-        CameraFree,
-        CameraPreviousFree,
-        CameraHeadOutForward,
-        CameraHeadOutBackward,
-        CameraToggleShowCab,
-        CameraReset,
-        CameraMoveFast,
-        CameraMoveSlow,
-        CameraPanLeft,
-        CameraPanRight,
-        CameraPanUp,
-        CameraPanDown,
-        CameraZoomIn,
-        CameraZoomOut,
-        CameraRotateLeft,
-        CameraRotateRight,
-        CameraRotateUp,
-        CameraRotateDown,
-        CameraCarNext,
-        CameraCarPrevious,
-        CameraCarFirst,
-        CameraCarLast,
-        CameraJumpingTrains,
-        CameraJumpBackPlayer,
-        CameraJumpSeeSwitch,
-        CameraVibrate,
-        CameraCabRotate,
+        [GetString("Camera Cab")] CameraCab,
+        [GetString("Camera Outside Front")] CameraOutsideFront,
+        [GetString("Camera Outside Rear")] CameraOutsideRear,
+        [GetString("Camera Trackside")] CameraTrackside,
+        [GetString("Camera Passenger")] CameraPassenger,
+        [GetString("Camera Brakeman")] CameraBrakeman,
+        [GetString("Camera Free")] CameraFree,
+        [GetString("Camera Previous Free")] CameraPreviousFree,
+        [GetString("Camera HeadOut Forward")] CameraHeadOutForward,
+        [GetString("Camera HeadOut Backward")] CameraHeadOutBackward,
+        [GetString("Camera Toggle Show Cab")] CameraToggleShowCab,
+        [GetString("Camera Reset")] CameraReset,
+        [GetString("Camera Move Fast")] CameraMoveFast,
+        [GetString("Camera Move Slow")] CameraMoveSlow,
+        [GetString("Camera Pan Left")] CameraPanLeft,
+        [GetString("Camera Pan Right")] CameraPanRight,
+        [GetString("Camera Pan Up")] CameraPanUp,
+        [GetString("Camera Pan Down")] CameraPanDown,
+        [GetString("Camera Zoom In")] CameraZoomIn,
+        [GetString("Camera Zoom Out")] CameraZoomOut,
+        [GetString("Camera Rotate Left")] CameraRotateLeft,
+        [GetString("Camera Rotate Right")] CameraRotateRight,
+        [GetString("Camera Rotate Up")] CameraRotateUp,
+        [GetString("Camera Rotate Down")] CameraRotateDown,
+        [GetString("Camera Car Next")] CameraCarNext,
+        [GetString("Camera Car Previous")] CameraCarPrevious,
+        [GetString("Camera Car First")] CameraCarFirst,
+        [GetString("Camera Car Last")] CameraCarLast,
+        [GetString("Camera Jumping Trains")] CameraJumpingTrains,
+        [GetString("Camera Jump Back Player")] CameraJumpBackPlayer,
+        [GetString("Camera Jump See Switch")] CameraJumpSeeSwitch,
+        [GetString("Camera Vibrate")] CameraVibrate,
+        [GetString("Camera Cab Rotate")] CameraCabRotate,
 
-        ControlForwards,
-        ControlBackwards,
-        ControlThrottleIncrease,
-        ControlThrottleDecrease,
-        ControlGearUp,
-        ControlGearDown,
-        ControlTrainBrakeIncrease,
-        ControlTrainBrakeDecrease,
-        ControlEngineBrakeIncrease,
-        ControlEngineBrakeDecrease,
-        ControlDynamicBrakeIncrease,
-        ControlDynamicBrakeDecrease,
-        ControlBailOff,
-        ControlInitializeBrakes,
-        ControlHandbrakeFull,
-        ControlHandbrakeNone,
-        ControlRetainersOn,
-        ControlRetainersOff,
-        ControlBrakeHoseConnect,
-        ControlBrakeHoseDisconnect,
-        ControlAlerter,
-        ControlEmergency,
-        ControlSander,
-        ControlWiper,
-        ControlHorn,
-        ControlBell,
-        ControlBellToggle,
-        ControlDoorLeft,
-        ControlDoorRight,
-        ControlMirror,
-        ControlLight,
-        ControlPantograph1,
-        ControlPantograph2,
-        ControlDieselPlayer,
-        ControlDieselHelper,
-        ControlHeadlightIncrease,
-        ControlHeadlightDecrease,
-        ControlInjector1Increase,
-        ControlInjector1Decrease,
-        ControlInjector1,
-        ControlInjector2Increase,
-        ControlInjector2Decrease,
-        ControlInjector2,
-        ControlBlowerIncrease,
-        ControlBlowerDecrease,
-        ControlDamperIncrease,
-        ControlDamperDecrease,
-        ControlFireboxOpen,
-        ControlFireboxClose,
-        ControlFiringRateIncrease,
-        ControlFiringRateDecrease,
-        ControlFireShovelFull,
-        ControlCylinderCocks,
-        ControlFiring,
-        ControlRefill,
+        [GetString("Control Forwards")] ControlForwards,
+        [GetString("Control Backwards")] ControlBackwards,
+        [GetString("Control Throttle Increase")] ControlThrottleIncrease,
+        [GetString("Control Throttle Decrease")] ControlThrottleDecrease,
+        [GetString("Control Gear Up")] ControlGearUp,
+        [GetString("Control Gear Down")] ControlGearDown,
+        [GetString("Control Train Brake Increase")] ControlTrainBrakeIncrease,
+        [GetString("Control Train Brake Decrease")] ControlTrainBrakeDecrease,
+        [GetString("Control Engine Brake Increase")] ControlEngineBrakeIncrease,
+        [GetString("Control Engine Brake Decrease")] ControlEngineBrakeDecrease,
+        [GetString("Control Dynamic Brake Increase")] ControlDynamicBrakeIncrease,
+        [GetString("Control Dynamic Brake Decrease")] ControlDynamicBrakeDecrease,
+        [GetString("Control Bail Off")] ControlBailOff,
+        [GetString("Control Initialize Brakes")] ControlInitializeBrakes,
+        [GetString("Control Handbrake Full")] ControlHandbrakeFull,
+        [GetString("Control Handbrake None")] ControlHandbrakeNone,
+        [GetString("Control Retainers On")] ControlRetainersOn,
+        [GetString("Control Retainers Off")] ControlRetainersOff,
+        [GetString("Control Brake Hose Connect")] ControlBrakeHoseConnect,
+        [GetString("Control Brake Hose Disconnect")] ControlBrakeHoseDisconnect,
+        [GetString("Control Alerter")] ControlAlerter,
+        [GetString("Control Emergency")] ControlEmergency,
+        [GetString("Control Sander")] ControlSander,
+        [GetString("Control Wiper")] ControlWiper,
+        [GetString("Control Horn")] ControlHorn,
+        [GetString("Control Bell")] ControlBell,
+        [GetString("Control Bell Toggle")] ControlBellToggle,
+        [GetString("Control Door Left")] ControlDoorLeft,
+        [GetString("Control Door Right")] ControlDoorRight,
+        [GetString("Control Mirror")] ControlMirror,
+        [GetString("Control Light")] ControlLight,
+        [GetString("Control Pantograph1")] ControlPantograph1,
+        [GetString("Control Pantograph2")] ControlPantograph2,
+        [GetString("Control Diesel Player")] ControlDieselPlayer,
+        [GetString("Control Diesel Helper")] ControlDieselHelper,
+        [GetString("Control Headlight Increase")] ControlHeadlightIncrease,
+        [GetString("Control Headlight Decrease")] ControlHeadlightDecrease,
+        [GetString("Control Injector1 Increase")] ControlInjector1Increase,
+        [GetString("Control Injector1 Decrease")] ControlInjector1Decrease,
+        [GetString("Control Injector1")] ControlInjector1,
+        [GetString("Control Injector2 Increase")] ControlInjector2Increase,
+        [GetString("Control Injector2 Decrease")] ControlInjector2Decrease,
+        [GetString("Control Injector2")] ControlInjector2,
+        [GetString("Control Blower Increase")] ControlBlowerIncrease,
+        [GetString("Control Blower Decrease")] ControlBlowerDecrease,
+        [GetString("Control Damper Increase")] ControlDamperIncrease,
+        [GetString("Control Damper Decrease")] ControlDamperDecrease,
+        [GetString("Control Firebox Open")] ControlFireboxOpen,
+        [GetString("Control Firebox Close")] ControlFireboxClose,
+        [GetString("Control Firing Rate Increase")] ControlFiringRateIncrease,
+        [GetString("Control Firing Rate Decrease")] ControlFiringRateDecrease,
+        [GetString("Control Fire Shovel Full")] ControlFireShovelFull,
+        [GetString("Control Cylinder Cocks")] ControlCylinderCocks,
+        [GetString("Control Firing")] ControlFiring,
+        [GetString("Control Refill")] ControlRefill,
     }
 
     /// <summary>
@@ -201,10 +201,11 @@ namespace ORTS
     /// <summary>
     /// Localization attribute for decorating enums.
     /// </summary>
-    public sealed class GetStringAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Field)]
+    public class GetStringAttribute : Attribute
     {
-        public GetStringAttribute(string name) { Name = name; }
         public string Name { get; private set; }
+        public GetStringAttribute(string name) { Name = name; }
     }
 
     /// <summary>
@@ -226,7 +227,7 @@ namespace ORTS
     /// </remarks>
     public class InputSettings : Settings
     {
-        GettextResourceManager catalog = new GettextResourceManager("ORTS");
+        static GettextResourceManager catalog = new GettextResourceManager("ORTS");
 
         public static readonly UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
         public readonly UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
@@ -241,7 +242,7 @@ namespace ORTS
         /// </summary>
         /// <param name="options">The list of one-time options to override persisted settings, if any.</param>
         public InputSettings(IEnumerable<string> options)
-            : base(SettingStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Keys"))
+        : base(SettingStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Keys"))
         {
             InitializeCommands(Commands);
             Load(options);
@@ -627,11 +628,11 @@ namespace ORTS
                 if (modInput != null)
                 {
                     if (modInput.Shift && modInput.IgnoreShift)
-                        errors.Add(String.Format("{0} requires and is modified by Shift", GetPrettyCommandName(command)));
+                        errors.Add(catalog.GetStringFmt("{0} requires and is modified by Shift", GetPrettyLocalizedName(command)));
                     if (modInput.Control && modInput.IgnoreControl)
-                        errors.Add(String.Format("{0} requires and is modified by Control", GetPrettyCommandName(command)));
+                        errors.Add(catalog.GetStringFmt("{0} requires and is modified by Control", GetPrettyLocalizedName(command)));
                     if (modInput.Alt && modInput.IgnoreAlt)
-                        errors.Add(String.Format("{0} requires and is modified by Alt", GetPrettyCommandName(command)));
+                        errors.Add(catalog.GetStringFmt("{0} requires and is modified by Alt", GetPrettyLocalizedName(command)));
                 }
             }
 
@@ -662,11 +663,22 @@ namespace ORTS
                     var unique2 = input2.GetUniqueInputs();
                     var sharedUnique = unique1.Where(id => unique2.Contains(id));
                     foreach (var uniqueInput in sharedUnique)
-                        errors.Add(String.Format("{0} and {1} both match {2}", GetPrettyCommandName(command1), GetPrettyCommandName(command2), GetPrettyUniqueInput(uniqueInput)));
+                        errors.Add(catalog.GetStringFmt("{0} and {1} both match {2}", GetPrettyLocalizedName(command1), GetPrettyLocalizedName(command2), GetPrettyUniqueInput(uniqueInput)));
                 }
             }
 
             return String.Join("\n", errors.ToArray());
+        }
+
+        public static string GetPrettyLocalizedName(Enum value)
+        {
+            var type = value.GetType();
+            var name = type.GetField(Enum.GetName(type, value))
+                .GetCustomAttributes(false)
+                .OfType<GetStringAttribute>()
+                .SingleOrDefault()
+                .Name;
+            return catalog.GetString(name);
         }
 
         public static string GetPrettyCommandName(UserCommands command)
@@ -766,7 +778,7 @@ namespace ORTS
         }
 
         public UserCommandModifierInput(KeyModifiers modifiers)
-            : this((modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
+        : this((modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
         {
         }
 
@@ -845,22 +857,22 @@ namespace ORTS
         }
 
         public UserCommandKeyInput(int scancode)
-            : this(scancode, KeyModifiers.None)
+        : this(scancode, KeyModifiers.None)
         {
         }
 
         public UserCommandKeyInput(Keys virtualKey)
-            : this(virtualKey, KeyModifiers.None)
+        : this(virtualKey, KeyModifiers.None)
         {
         }
 
         public UserCommandKeyInput(int scancode, KeyModifiers modifiers)
-            : this(scancode, Keys.None, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
+        : this(scancode, Keys.None, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
         {
         }
 
         public UserCommandKeyInput(Keys virtualKey, KeyModifiers modifiers)
-            : this(0, virtualKey, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
+        : this(0, virtualKey, (modifiers & KeyModifiers.Shift) != 0, (modifiers & KeyModifiers.Control) != 0, (modifiers & KeyModifiers.Alt) != 0)
         {
         }
 

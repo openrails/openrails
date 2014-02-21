@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-02-19 21:05:17+0100\n"
-"PO-Revision-Date: 2014-02-20 18:55+0100\n"
+"POT-Creation-Date: 2014-02-21 23:01:54+0100\n"
+"PO-Revision-Date: 2014-02-21 23:04+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -272,7 +272,7 @@ msgstr "Nincs felsővezeték!"
 
 #: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:274
 #: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:285
-msgid "Power line condition overriden."
+msgid "Power line condition overridden."
 msgstr "Felsővezeték hiánya felülbírálva."
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:118
@@ -314,7 +314,7 @@ msgid "Service"
 msgstr "Üzemben"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:129
-msgid "Suppresion"
+msgid "Suppression"
 msgstr "Nyomás allatt"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:130
@@ -388,7 +388,7 @@ msgid "locked. Release dynamic brake then re-try."
 msgstr "letiltva. Előbb kapcsold ki a dinamikus féket."
 
 #: ../RunActivity/Simulator/Confirmation.cs:140
-msgid "Wheelslip"
+msgid "Wheel-slip"
 msgstr "Kerékmegperdülés"
 
 #: ../RunActivity/Simulator/Confirmation.cs:140
@@ -473,7 +473,7 @@ msgid "Diesel Tank"
 msgstr "Dízel üzemanyagtartály"
 
 #: ../RunActivity/Simulator/Confirmation.cs:148
-msgid "re-fuelled"
+msgid "re-fueled"
 msgstr "újratöltve"
 
 #: ../RunActivity/Simulator/Confirmation.cs:148
@@ -531,7 +531,7 @@ msgid "Fire"
 msgstr "Tűz"
 
 #: ../RunActivity/Simulator/Confirmation.cs:159
-msgid "add shovelfull"
+msgid "add shovel-full"
 msgstr "egy egész lapát szén rádobása"
 
 #: ../RunActivity/Simulator/Confirmation.cs:160
@@ -752,7 +752,7 @@ msgstr "Váltás a vonat előtt"
 
 #: ../RunActivity/Simulator/Confirmation.cs:188
 #: ../RunActivity/Simulator/Confirmation.cs:189
-msgid "locked. Use Ctrl+M to change signals to manual mode then re-try."
+msgid "locked. Use Control+M to change signals to manual mode then re-try."
 msgstr ""
 "letiltva. Előbb nyomj <Ctrl+M>-et a kézi forgalomirányításra váltáshoz."
 
@@ -789,9 +789,9 @@ msgid "Replay"
 msgstr "Visszajátszás"
 
 #: ../RunActivity/Simulator/Confirmation.cs:194
-msgid "Overriding camera replay. Press Esc to resume camera replay."
+msgid "Overriding camera replay. Press Escape to resume camera replay."
 msgstr ""
-"Kameranézet visszajátszásának felülbírálata. Nyomd meg az <Escape>-et a "
+"Kameranézet visszajátszásának felülbírálása. Nyomd meg az <Escape>-et a "
 "visszatéréshez."
 
 #: ../RunActivity/Simulator/Confirmation.cs:195
@@ -1101,7 +1101,7 @@ msgstr "Feladat"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
 msgid "Car(s)"
-msgstr "Kocsik"
+msgstr "Kocsi"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
 msgid "Location"

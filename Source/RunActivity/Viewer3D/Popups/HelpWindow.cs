@@ -59,7 +59,7 @@ namespace ORTS.Viewer3D.Popups
                 {
                     var line = scrollbox.AddLayoutHorizontal(TextHeight);
                     var width = line.RemainingWidth / 2;
-                    line.Add(new Label(width, line.RemainingHeight, InputSettings.GetPrettyCommandName(command)));
+                    line.Add(new Label(width, line.RemainingHeight, InputSettings.GetPrettyLocalizedName(command)));
                     line.Add(new Label(width, line.RemainingHeight, Owner.Viewer.Settings.Input.Commands[(int)command].ToString()));
                 }
             }));

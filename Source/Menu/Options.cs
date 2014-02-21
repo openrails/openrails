@@ -150,7 +150,7 @@ namespace ORTS
             var i = 0;
             foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
             {
-                var name = InputSettings.GetPrettyCommandName(command);
+                var name = InputSettings.GetPrettyLocalizedName(command);
                 var category = ParseCategoryFrom(name);
                 var descriptor = ParseDescriptorFrom(name);
 
