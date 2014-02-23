@@ -23,7 +23,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using ORTS.Common;
 
-namespace ORTS
+namespace ORTS.Settings
 {
 	[AttributeUsage(AttributeTargets.Property)]
 	public sealed class DefaultAttribute : Attribute
@@ -40,7 +40,7 @@ namespace ORTS
 	{
 	}
 
-	public class UserSettings : Settings
+	public class UserSettings : SettingsBase
 	{
 		public static readonly string RegistryKey;        // ie @"SOFTWARE\OpenRails\ORTS"
 		public static readonly string SettingsFilePath;   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
@@ -297,7 +297,7 @@ namespace ORTS
 
 		#endregion
 
-        internal InputSettings Input { get; private set; }
+        public InputSettings Input { get; private set; }
 
 		public UserSettings(IEnumerable<string> options)
 			: base(SettingStore.GetSettingStore(SettingsFilePath, RegistryKey, null))

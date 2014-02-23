@@ -20,9 +20,10 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
-using XNA = Microsoft.Xna.Framework.Input;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
+using ORTS.Settings;
+using XNA = Microsoft.Xna.Framework.Input;
 
 namespace ORTS
 {

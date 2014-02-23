@@ -15,12 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using MSTS.Formats;
 using GNU.Gettext;
-using GNU.Gettext.WinForms;
+using MSTS.Formats;
 
 namespace ORTS.Menu
 {
@@ -31,7 +29,7 @@ namespace ORTS.Menu
         public readonly string End;
         public readonly string FilePath;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS");
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
         internal Path(string filePath)
         {

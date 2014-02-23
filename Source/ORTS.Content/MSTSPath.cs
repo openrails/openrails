@@ -22,9 +22,9 @@ using System.Diagnostics;
 using Microsoft.Win32;
 using System.IO;
 
-
 namespace MSTS
 {
+    // TODO: Replace this with a full-on ORTS.Content.ContentManager.
     /// <summary>
     /// Utility functions to access the various directories in an MSTS install.
     /// </summary>

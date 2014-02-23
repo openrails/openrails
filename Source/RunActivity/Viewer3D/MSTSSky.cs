@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Processes;
+using ORTS.Settings;
 
 namespace ORTS.Viewer3D
 {

@@ -24,6 +24,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using ORTS.Processes;
+using ORTS.Settings;
 
 namespace ORTS.Viewer3D
 {

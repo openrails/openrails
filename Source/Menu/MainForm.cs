@@ -21,14 +21,15 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Resources;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using ORTS.Common;
-using ORTS.Menu;
-using Path = ORTS.Menu.Path;
-using System.Resources;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
+using ORTS.Common;
+using ORTS.Menu;
+using ORTS.Settings;
+using Path = ORTS.Menu.Path;
 
 namespace ORTS
 {
@@ -85,6 +86,7 @@ namespace ORTS
 #if DEBUG
             Text = Text + " (debug)";
 #endif
+            Folder.UserDataFolder = UserSettings.UserDataFolder;
             CleanupPre021();
             ShowDetails();
             UpdateEnabled();
@@ -591,7 +593,7 @@ namespace ORTS
             if (SelectedActivity == null || SelectedActivity is ExploreActivity)
             {
                 comboBoxLocomotive.Items.Clear();
-                comboBoxLocomotive.Items.Add(new Locomotive(null));
+                comboBoxLocomotive.Items.Add(new Locomotive());
                 foreach (var loco in Consists.Where(c => c.Locomotive != null).Select(c => c.Locomotive).Distinct().OrderBy(l => l.ToString()))
                     comboBoxLocomotive.Items.Add(loco);
                 if (comboBoxLocomotive.Items.Count == 1)

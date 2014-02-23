@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-21 23:04:36+0100\n"
-"PO-Revision-Date: 2014-02-21 23:04:38+0100\n"
+"POT-Creation-Date: 2014-02-23 20:46:03+0000\n"
+"PO-Revision-Date: 2014-02-23 20:46:03+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -260,13 +260,13 @@ msgstr ""
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:272
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:283
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:273
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:284
 msgid "No power line!"
 msgstr ""
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:274
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:285
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:275
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:286
 msgid "Power line condition overridden."
 msgstr ""
 
@@ -912,7 +912,7 @@ msgctxt "Labels"
 msgid "none"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Viewer.cs:1071
+#: ../RunActivity/Viewer3D/Viewer.cs:1072
 msgid "Game saved"
 msgstr ""
 
@@ -1034,92 +1034,92 @@ msgstr ""
 msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:40
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
 msgid "Help"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:42
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
 msgid "Key Commands"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:68
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:69
 msgid "Briefing"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:79
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
 msgid "Timetable"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:84
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
 msgid "Station"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Arrive"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 msgid "Actual"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Depart"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:103
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:105
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
 msgid "(missed)"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:112
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:113
 msgid "Work Orders"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:117
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
 msgid "Task"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
 msgid "Car(s)"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
 msgid "Location"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
 msgid "Status"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:140
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
 msgid "Assemble Train"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:144
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:145
 msgid "At Location"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:148
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:149
 msgid "Drop Off"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:152
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:153
 msgid "Pick Up"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:226
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:227
 msgid "Done"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:239
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
 msgid "Procedures"
 msgstr ""
 
@@ -1131,21 +1131,21 @@ msgstr ""
 msgid "Activity completed."
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:31
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
 msgid "Pause Menu"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:45
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
 #, csharp-format
 msgid "Quit {1} ({0})"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:50
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
 #, csharp-format
 msgid "Save your game ({0})"
 msgstr ""
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:58
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
 #, csharp-format
 msgid "Continue playing ({0})"
 msgstr ""

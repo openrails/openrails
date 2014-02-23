@@ -30,60 +30,6 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GNU.Gettext, Version=1.1.4959.31284, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
-    </Reference>
-    <Reference Include="GNU.Gettext.WinForms, Version=1.0.4959.31640, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86">
-      <SpecificVersion>True</SpecificVersion>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=MSIL">
-      <SpecificVersion>True</SpecificVersion>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\MSTS\_paths.cs">
-      <Link>MSTS\_paths.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\InputSettings.cs">
-      <Link>ORTS\InputSettings.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\Menu\Activities.cs">
-      <Link>ORTS\Menu\Activities.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\Menu\Consists.cs">
-      <Link>ORTS\Menu\Consists.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\Menu\Folders.cs">
-      <Link>ORTS\Menu\Folders.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\Menu\Paths.cs">
-      <Link>ORTS\Menu\Paths.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\Menu\Routes.cs">
-      <Link>ORTS\Menu\Routes.cs</Link>
-    </Compile>
-    <Compile Include="..\ORTS\UserSettings.cs">
-      <Link>ORTS\UserSettings.cs</Link>
-    </Compile>
     <Compile Include="KeyInputEditControl.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -186,6 +132,27 @@
     <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
+    </Reference>
+    <Reference Include="GNU.Gettext.WinForms, Version=1.0.5151.39911, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\MSTS.Formats\MSTS.Formats.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
       <Name>MSTS.Formats</Name>
@@ -193,6 +160,18 @@
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
       <Name>ORTS.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
+      <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
+      <Name>ORTS.Content</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Menu\ORTS.Menu.csproj">
+      <Project>{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}</Project>
+      <Name>ORTS.Menu</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj">
+      <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
+      <Name>ORTS.Settings</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -209,7 +188,6 @@
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
 time /t&gt;&gt;Revision.txt
-call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "$(ProjectName)" "$(ProjectDir)"
-call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "ORTS" "$(ProjectDir)..\ORTS\"</PostBuildEvent>
+call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "$(ProjectName)" "$(ProjectDir)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

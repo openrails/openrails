@@ -38,6 +38,7 @@ using Microsoft.Xna.Framework;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
+using ORTS.Settings;
 using ORTS.Viewer3D;
 
 namespace ORTS

@@ -60,12 +60,13 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 using MSTS;
 using ORTS.Common;
 using ORTS.Menu;
+using ORTS.Settings;
 using Path = System.IO.Path;
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
 
 namespace ORTS
 {

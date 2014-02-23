@@ -31,6 +31,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Processes;
+using ORTS.Settings;
 using Game = ORTS.Processes.Game;
 
 namespace ORTS.Viewer3D

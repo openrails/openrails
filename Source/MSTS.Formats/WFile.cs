@@ -29,6 +29,7 @@ using System.IO;
 using Microsoft.Xna.Framework;
 using MSTS.Parsers;
 using MSTSMath;
+using ORTS.Common;
 
 
 namespace MSTS.Formats
@@ -276,7 +277,7 @@ namespace MSTS.Formats
         public PickupCapacityItem PickupCapacity;
         public List<TrItemId> TrItemIDList = new List<TrItemId>();
         public uint CollideFlags;
-        public ORTS.Common.WorldLocation Location = null;
+        public WorldLocation Location = null;
 
         /// <summary>
         /// Creates the object, but currently skips the animation field.

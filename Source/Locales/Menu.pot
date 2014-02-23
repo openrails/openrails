@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-20 21:35:24+0000\n"
-"PO-Revision-Date: 2014-02-20 21:35:24+0000\n"
+"POT-Creation-Date: 2014-02-23 20:46:00+0000\n"
+"PO-Revision-Date: 2014-02-23 20:46:01+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -34,25 +34,25 @@ msgstr ""
 msgid "Installation Profile"
 msgstr ""
 
-#: ../Menu/ImportExportSaveForm.cs:51
+#: ../Menu/ImportExportSaveForm.cs:52
 msgid "Save Packs"
 msgstr ""
 
-#: ../Menu/ImportExportSaveForm.cs:51
+#: ../Menu/ImportExportSaveForm.cs:52
 msgid "All files"
 msgstr ""
 
-#: ../Menu/ImportExportSaveForm.cs:62
+#: ../Menu/ImportExportSaveForm.cs:63
 #, csharp-format
 msgid "Save Pack '{0}' imported successfully."
 msgstr ""
 
-#: ../Menu/ImportExportSaveForm.cs:86
+#: ../Menu/ImportExportSaveForm.cs:87
 #, csharp-format
 msgid "Save Pack '{0}' exported successfully."
 msgstr ""
 
-#: ../Menu/ImportExportSaveForm.cs:112
+#: ../Menu/ImportExportSaveForm.cs:113
 #, csharp-format
 msgid "Save Pack folder contains {0} save pack:"
 msgid_plural "Save Pack folder contains {0} save packs:"
@@ -107,95 +107,95 @@ msgstr ""
 msgid "Reset to default"
 msgstr ""
 
-#: ../Menu/MainForm.cs:104
+#: ../Menu/MainForm.cs:106
 msgid "Spring"
 msgstr ""
 
-#: ../Menu/MainForm.cs:105
+#: ../Menu/MainForm.cs:107
 msgid "Summer"
 msgstr ""
 
-#: ../Menu/MainForm.cs:106
+#: ../Menu/MainForm.cs:108
 msgid "Autumn"
 msgstr ""
 
-#: ../Menu/MainForm.cs:107
+#: ../Menu/MainForm.cs:109
 msgid "Winter"
 msgstr ""
 
-#: ../Menu/MainForm.cs:111
+#: ../Menu/MainForm.cs:113
 msgid "Clear"
 msgstr ""
 
-#: ../Menu/MainForm.cs:112
+#: ../Menu/MainForm.cs:114
 msgid "Snow"
 msgstr ""
 
-#: ../Menu/MainForm.cs:113
+#: ../Menu/MainForm.cs:115
 msgid "Rain"
 msgstr ""
 
-#: ../Menu/MainForm.cs:117
+#: ../Menu/MainForm.cs:119
 msgid "Easy"
 msgstr ""
 
-#: ../Menu/MainForm.cs:118
+#: ../Menu/MainForm.cs:120
 msgid "Medium"
 msgstr ""
 
-#: ../Menu/MainForm.cs:119
+#: ../Menu/MainForm.cs:121
 msgid "Hard"
 msgstr ""
 
-#: ../Menu/MainForm.cs:185
+#: ../Menu/MainForm.cs:187
 msgid "Select a the installation profile (MSTS folder) to add:"
 msgstr ""
 
-#: ../Menu/MainForm.cs:223
+#: ../Menu/MainForm.cs:225
 msgid "Path: "
 msgstr ""
 
-#: ../Menu/MainForm.cs:223
+#: ../Menu/MainForm.cs:225
 msgid ""
 "\n"
 "Name: "
 msgstr ""
 
-#: ../Menu/MainForm.cs:223
+#: ../Menu/MainForm.cs:225
 msgid ""
 "\n"
 "\n"
 "Remove this installation profile from Open Rails?"
 msgstr ""
 
-#: ../Menu/MainForm.cs:309
+#: ../Menu/MainForm.cs:311
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
 msgstr ""
 
-#: ../Menu/MainForm.cs:463
+#: ../Menu/MainForm.cs:465
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed.\n"
 "Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
 "folder."
 msgstr ""
 
-#: ../Menu/MainForm.cs:726
+#: ../Menu/MainForm.cs:728
 msgid "Activity Briefing"
-msgstr ""
-
-#: ../Menu/MainForm.cs:720
-#, csharp-format
-msgid "Route: {0}"
 msgstr ""
 
 #: ../Menu/MainForm.cs:722
 #, csharp-format
+msgid "Route: {0}"
+msgstr ""
+
+#: ../Menu/MainForm.cs:724
+#, csharp-format
 msgid "Locomotive: {0}"
 msgstr ""
 
-#: ../Menu/MainForm.cs:725
+#: ../Menu/MainForm.cs:727
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
@@ -322,35 +322,35 @@ msgstr ""
 msgid "Open Rails"
 msgstr ""
 
-#: ../Menu/Options.cs:184
+#: ../Menu/Options.cs:185
 msgid "Click to change this key"
 msgstr ""
 
-#: ../Menu/Options.cs:200
+#: ../Menu/Options.cs:201
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
 msgstr ""
 
-#: ../Menu/Options.cs:277
+#: ../Menu/Options.cs:278
 msgid "Remove all custom key assignments?"
 msgstr ""
 
-#: ../Menu/Options.cs:288
+#: ../Menu/Options.cs:289
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
 msgstr ""
 
-#: ../Menu/Options.cs:297
+#: ../Menu/Options.cs:298
 msgid "No errors found."
 msgstr ""
 
-#: ../Menu/Options.cs:322
+#: ../Menu/Options.cs:323
 msgid "Please restart Open Rails in order to load the new language."
 msgstr ""
 
-#: ../Menu/Options.cs:311
+#: ../Menu/Options.cs:312
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -655,11 +655,11 @@ msgid ""
 "The output is placed on your desktop."
 msgstr ""
 
-#: ../Menu/ResumeForm.cs:119
+#: ../Menu/ResumeForm.cs:120
 msgid "Explore Route"
 msgstr ""
 
-#: ../Menu/ResumeForm.cs:168
+#: ../Menu/ResumeForm.cs:169
 #, csharp-format
 msgid ""
 "Warning: Save {0} found from a route with an unexpected name:\n"
@@ -667,7 +667,7 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../Menu/ResumeForm.cs:180
+#: ../Menu/ResumeForm.cs:181
 #, csharp-format
 msgid ""
 "To prevent crashes and unexpected behavior, new versions of Open Rails "

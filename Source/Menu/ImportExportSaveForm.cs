@@ -23,6 +23,7 @@ using System.IO.Packaging;  // Needs Project > Add reference > .NET > Component 
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
+using ORTS.Settings;
 
 namespace ORTS
 {

@@ -274,7 +274,6 @@ using System.Text;
 #if NEW_SIGNALLING
 using System.IO;
 #endif
-using ORTS;
 using MSTS.Parsers; // For class S (seconds)
 
 namespace MSTS.Formats

@@ -20,6 +20,7 @@ using System.Linq;
 using ORTS.Debugging;
 using ORTS.MultiPlayer;
 using ORTS.Processes;
+using ORTS.Settings;
 using ORTS.Viewer3D;
 
 namespace ORTS

@@ -41,6 +41,7 @@ using Microsoft.Xna.Framework;
 using MSTS.Formats;
 using ORTS.MultiPlayer;
 using ORTS.Scripting;
+using ORTS.Settings;
 using ORTS.Viewer3D;
 
 namespace ORTS

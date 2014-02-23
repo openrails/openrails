@@ -29,7 +29,7 @@ using Microsoft.Xna.Framework.Input;
 using ORTS.Common;
 using GNU.Gettext;
 
-namespace ORTS
+namespace ORTS.Settings
 {
     /// <summary>
     /// Specifies game commands.
@@ -225,9 +225,9 @@ namespace ORTS
     /// <item><term>Virtual key</term><description>A virtual key represents a logical key on the keyboard, irrespective of where it might be located. For keys outside the "main" area, this is much the same as scan codes and is preferred when refering to logical keys like "Up Arrow".</description></item>
     /// </list>
     /// </remarks>
-    public class InputSettings : Settings
+    public class InputSettings : SettingsBase
     {
-        static GettextResourceManager catalog = new GettextResourceManager("ORTS");
+        static GettextResourceManager catalog = new GettextResourceManager("ORTS.Settings");
 
         public static readonly UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];
         public readonly UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommands)).Length];

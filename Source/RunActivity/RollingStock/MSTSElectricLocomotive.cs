@@ -36,6 +36,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MSTS.Formats;
 using MSTS.Parsers;
+using ORTS.Settings;
 using ORTS.Viewer3D;  // needed for Confirmation
 using ORTS.Viewer3D.Popups;
 

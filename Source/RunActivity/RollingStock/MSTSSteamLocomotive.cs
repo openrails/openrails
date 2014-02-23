@@ -37,6 +37,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;  // for MathHelper
+using ORTS.Settings;
 using ORTS.Viewer3D;
 
 namespace ORTS

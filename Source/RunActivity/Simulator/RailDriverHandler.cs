@@ -24,6 +24,7 @@ using System.Text;
 using Microsoft.Win32;
 using MSTS.Parsers;
 using ORTS.Common;
+using ORTS.Settings;
 using ORTS.Viewer3D;
 using PIEHidDotNet;
 

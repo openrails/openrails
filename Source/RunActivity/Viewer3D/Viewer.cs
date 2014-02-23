@@ -33,6 +33,7 @@ using MSTS.Formats;
 using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Processes;
+using ORTS.Settings;
 using ORTS.Viewer3D.Popups;
 
 namespace ORTS.Viewer3D

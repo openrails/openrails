@@ -22,7 +22,7 @@ using System.Linq;
 
 namespace ORTS.Common
 {
-	public abstract class Settings
+	public abstract class SettingsBase
 	{
 		public enum Source
 		{
@@ -34,7 +34,7 @@ namespace ORTS.Common
 		protected readonly SettingStore SettingStore;
 		protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
 
-		public Settings(SettingStore settings)
+		public SettingsBase(SettingStore settings)
 		{
 			SettingStore = settings;
 		}

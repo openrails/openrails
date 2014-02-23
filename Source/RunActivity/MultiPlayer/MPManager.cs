@@ -34,6 +34,7 @@ using System.Threading;
 using MSTS.Parsers;
 using ORTS.Common;
 using ORTS.Debugging;
+using ORTS.Settings;
 using ORTS.Viewer3D;
 
 namespace ORTS.MultiPlayer

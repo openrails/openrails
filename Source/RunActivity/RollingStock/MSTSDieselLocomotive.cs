@@ -39,6 +39,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
+using ORTS.Settings;
 using ORTS.Viewer3D;
 // needed for Debug
 

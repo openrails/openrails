@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using ORTS.Common;
+using ORTS.Settings;
 
 namespace ORTS.Processes
 {

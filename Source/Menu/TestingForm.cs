@@ -25,10 +25,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using ORTS.Menu;
-using Path = System.IO.Path;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
+using ORTS.Menu;
+using ORTS.Settings;
+using Path = System.IO.Path;
 
 namespace ORTS
 {

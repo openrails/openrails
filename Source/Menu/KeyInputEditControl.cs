@@ -20,6 +20,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using ORTS.Settings;
 using Xna = Microsoft.Xna.Framework.Input;
 
 namespace ORTS

@@ -33,6 +33,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using ORTS.MultiPlayer;
+using ORTS.Settings;
 using ORTS.Viewer3D;
 
 namespace ORTS.Processes

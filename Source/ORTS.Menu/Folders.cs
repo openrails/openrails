@@ -23,6 +23,8 @@ namespace ORTS.Menu
 {
     public class Folder
     {
+        public static string UserDataFolder;
+
         public readonly string Name;
         public readonly string Path;
 
@@ -41,7 +43,7 @@ namespace ORTS.Menu
         {
             get
             {
-				return UserSettings.UserDataFolder + @"\folder.dat";
+				return UserDataFolder + @"\folder.dat";
             }
         }
 

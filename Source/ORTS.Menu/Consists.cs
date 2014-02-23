@@ -18,9 +18,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MSTS.Formats;
 using GNU.Gettext;
-using GNU.Gettext.WinForms;
+using MSTS.Formats;
 
 namespace ORTS.Menu
 {
@@ -30,7 +29,7 @@ namespace ORTS.Menu
         public readonly Locomotive Locomotive = new Locomotive("unknown");
         public readonly string FilePath;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS");
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
         internal Consist(string filePath, Folder folder)
         {
@@ -100,7 +99,12 @@ namespace ORTS.Menu
         public readonly string Description;
         public readonly string FilePath;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS");
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+
+        public Locomotive()
+            : this(null)
+        {
+        }
 
         internal Locomotive(string filePath)
         {

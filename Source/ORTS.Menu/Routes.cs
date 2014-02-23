@@ -17,9 +17,9 @@
 
 using System.Collections.Generic;
 using System.IO;
-using MSTS.Formats;
 using GNU.Gettext;
-using GNU.Gettext.WinForms;
+using MSTS;
+using MSTS.Formats;
 
 namespace ORTS.Menu
 {
@@ -29,13 +29,13 @@ namespace ORTS.Menu
         public readonly string Description;
         public readonly string Path;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS");
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
         Route(string path)
         {
             if (Directory.Exists(path))
             {
-				var trkFilePath = MSTS.MSTSPath.GetTRKFileName(path);
+				var trkFilePath = MSTSPath.GetTRKFileName(path);
                 try
                 {
 					var trkFile = new TRKFile(trkFilePath);

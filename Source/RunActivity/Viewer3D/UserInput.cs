@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using ORTS.Settings;
 using Game = ORTS.Processes.Game;
 
 namespace ORTS.Viewer3D

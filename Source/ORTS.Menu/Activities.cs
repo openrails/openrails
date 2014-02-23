@@ -15,11 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using GNU.Gettext;
-using GNU.Gettext.WinForms;
 using MSTS.Formats;
 
 namespace ORTS.Menu
@@ -38,7 +36,7 @@ namespace ORTS.Menu
         public readonly Path Path = new Path("unknown");
         public readonly string FilePath;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS");
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
         protected Activity(string filePath, Folder folder, Route route)
         {
