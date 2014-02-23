@@ -329,7 +329,7 @@ namespace ORTS.Settings
 
 		PropertyInfo[] GetProperties()
 		{
-			return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+			return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(pi => pi.Name != "Input").ToArray();
 		}
 
 		protected override object GetValue(string name)
