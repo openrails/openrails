@@ -294,6 +294,7 @@
             this.comboBoxLanguage.FormattingEnabled = true;
             this.comboBoxLanguage.Items.AddRange(new object[] {
             "System",
+            "Danish",
             "English",
             "French",
             "Hungarian",

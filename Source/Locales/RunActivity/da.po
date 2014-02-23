@@ -1,363 +1,358 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-02-23 23:03:51+0100\n"
-"PO-Revision-Date: 2014-02-23 23:11+0100\n"
-"Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
-"Language-Team: Open Rails Dev Team\n"
-"Language: hu\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2014-02-21 23:04:36+0100\n"
+"PO-Revision-Date: 2014-02-23 20:36+0100\n"
+"Last-Translator: tog-sim.dk\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: da\n"
 
 #: ../RunActivity/Debugging/DebugViewerForm.cs:2074
 msgid "Switching Request Sent to the Server"
-msgstr "A vágányútállítási kérelem el lett küldve az irányítónak"
+msgstr "Sporskifte skift-anmodning sendt til serveren"
 
 #: ../RunActivity/Debugging/DebugViewerForm.cs:197
 msgid "View Self"
-msgstr ""
+msgstr "Se dig selv"
 
 #: ../RunActivity/Debugging/DebugViewerForm.cs:588
 msgid "MSG to Server"
-msgstr ""
+msgstr "Besked til server"
 
 #: ../RunActivity/Debugging/DebugViewerForm.cs:592
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
-msgstr ""
+msgstr "Besked til Alle"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
-msgstr ""
+msgstr "Vis tog"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
 msgid "m"
-msgstr ""
+msgstr "m"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
 msgid "Remove"
-msgstr ""
+msgstr "Slet"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
 msgid "Auto Switch"
-msgstr ""
+msgstr "Auto Sporskift"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
-msgstr ""
+msgstr "Vis Avatarer"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
-msgstr ""
+msgstr "Besked til valgte"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
 #: ../RunActivity/Debugging/MessageViewer.Designer.cs:88
 msgid "Compose MSG"
-msgstr ""
+msgstr "Skriv besked"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
 msgid "Res"
-msgstr ""
+msgstr "Res"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
-msgstr ""
+msgstr "Besvar til valgte"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
-msgstr "Útvonal megjelnítése"
+msgstr "Tegn Rute"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
 msgid "Pick Signals"
-msgstr "Jelzők kiválaszthatók"
+msgstr "Vælg Signaler"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
 msgid "Pick Switches"
-msgstr "Váltók kiválaszthatók"
+msgstr "Vælg Sporskifter"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
 msgid "Can Join"
-msgstr ""
+msgstr "Kan Deltage"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
 msgid "Assist"
-msgstr ""
+msgstr "Assister"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
-msgstr ""
+msgstr "Følg"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
-msgstr ""
+msgstr "Straf"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
 msgid "Prefer Green"
-msgstr ""
+msgstr "Foretræk Grøn"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
-msgstr ""
+msgstr "Se i Spil"
 
 #: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
 msgid "DispatchViewer"
-msgstr ""
+msgstr "DispatchViewer"
 
 #: ../RunActivity/Debugging/GenericObjectViewerForm.cs:89
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:202
 msgid "Resume"
-msgstr "Folytatás"
+msgstr "Genoptag"
 
 #: ../RunActivity/Debugging/GenericObjectViewerForm.cs:94
 #: ../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:67
 msgid "Pause"
-msgstr "Szünet"
+msgstr "Pause"
 
 #: ../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:80
 msgid "GenericObjectViewerForm"
-msgstr ""
+msgstr "GenericObjectViewerForm"
 
 #: ../RunActivity/Debugging/MessageViewer.Designer.cs:46
 msgid "Clear All"
-msgstr ""
+msgstr "Ryd All"
 
 #: ../RunActivity/Debugging/MessageViewer.Designer.cs:57
 msgid "Reply Selected"
-msgstr ""
+msgstr "Besvar Valgte"
 
 #: ../RunActivity/Debugging/MessageViewer.Designer.cs:102
 msgid "MessageViewer"
-msgstr ""
+msgstr "BeskedFremviser"
 
 #: ../RunActivity/Debugging/SoundDebugForm.cs:189
 #: ../RunActivity/Debugging/SoundDebugForm.cs:219
 #: ../RunActivity/Debugging/SoundDebugForm.cs:220
 #: ../RunActivity/Debugging/SoundDebugForm.cs:221
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: ../RunActivity/Debugging/SoundDebugForm.cs:218
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
 msgid "0"
-msgstr ""
+msgstr "0"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:151
 msgid "Current SMS"
-msgstr ""
+msgstr "Nuværende Besked"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:162
 msgid "Stream Properties"
-msgstr ""
+msgstr "Stream Egenskaber"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:173
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:242
 msgid "Speed"
-msgstr ""
+msgstr "Hastighed"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:270
 msgid "Variable 2"
-msgstr ""
+msgstr "Variabel 2"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:289
 msgid "Variable 3"
-msgstr ""
+msgstr "Variabel 3"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:299
 msgid "Variable 1"
-msgstr ""
+msgstr "Variabel 1"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
 msgid "Distance"
-msgstr "Távolság"
+msgstr "Afstand"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:319
 msgid "Volume"
-msgstr ""
+msgstr "Lydstyrke"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:328
 msgid ""
 "Total number of sound \r\n"
 "files in cache:"
 msgstr ""
+"Samlet antal af lyd-\r\n"
+"filer i cache:"
 
 #: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:348
 msgid "SoundDebugForm"
-msgstr ""
+msgstr "SoundDebugForm"
 
 #: ../RunActivity/Physics/Train.cs:1230
 msgid "Coupler broken!"
-msgstr "Vonatszakadás!"
+msgstr "Kobling brudt!"
 
 #: ../RunActivity/Physics/Train.cs:1233
 msgid "Coupler overloaded!"
-msgstr "A kapcsoló túlterhelt!"
+msgstr "Kobling overbelastet!"
 
 #: ../RunActivity/Physics/Train.cs:3761 ../RunActivity/Physics/Train.cs:3766
 msgid "Other train is blocking path"
-msgstr "Másik vonat foglalja a vágányt"
+msgstr "Et andet tog blokerer ruten"
 
 #: ../RunActivity/Physics/Train.cs:4622
 msgid "Stopped due to errors in route setting"
-msgstr "Pályával kapcsolatos hiba miatt megállítva"
+msgstr "Stoppet pga. fejl i rute-indstillinger"
 
 #: ../RunActivity/Physics/Train.cs:5280 ../RunActivity/Physics/Train.cs:6353
 msgid "No signal in train's path"
-msgstr "Nincs jelző a vonat vágányútján"
+msgstr "Ingen signaler på togets rute"
 
 #: ../RunActivity/Physics/Train.cs:5288
 msgid "Next signal already allocated to other train"
-msgstr "A következő jelző már másik vonatnak lett beállítve"
+msgstr "Næste signal er allerede tildelt et andet tog"
 
 #: ../RunActivity/Physics/Train.cs:5349
 msgid "Request to clear signal cannot be processed"
-msgstr "A kérelem a jelző szabaddá tételére nem értelmezhető"
+msgstr "Anmodning om rydning af signal kan ikke udføres"
 
 #: ../RunActivity/Physics/Train.cs:5455 ../RunActivity/Physics/Train.cs:6473
 msgid "No switch found"
-msgstr "Nem található váltó"
+msgstr "Ingen sporskifter fundet"
 
 #: ../RunActivity/Physics/Train.cs:6707
 msgid "Train is not back on original route"
-msgstr "A vonat még nem tért vissza az eredeti útvonalára"
+msgstr "Toget befinder sig ikke på den oprindelige rute"
 
 #: ../RunActivity/Physics/Train.cs:6716
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
-"Az eredeti útvonal az ellenkező irányba vezet, állítsd meg a vonatot a "
-"váltás előtt"
+"Oprindelige rute er vendt fra nuværende retning, stop toget før du skifter"
 
 #: ../RunActivity/Physics/Train.cs:6729
 msgid "Cannot change to Manual Mode while in Explorer Mode"
-msgstr "Nem lehet helyi forgalomirányításra váltani vonalbejárás közben"
+msgstr "Kan ikke skifte til manuel tilstand i Udforsk Rute-tilstand"
 
 #: ../RunActivity/Physics/Train.cs:6822
 msgid "Reversal required and rear of train not on required route"
-msgstr ""
-"Visszafogás lenne szükséges, de a vonat vége nincs a megfelelő vágányúton"
+msgstr "Vending påkrævet, og bagsiden af toget er ikke på ruten"
 
 #: ../RunActivity/Physics/Train.cs:7009
 msgid "Cannot clear signal behind train while in AUTO mode"
-msgstr ""
-"Nem lehet a vonat mögötti jelzőt szabaddá tenni központi forgalomirányítás "
-"felügyelete alatt"
+msgstr "Kan ikke rydde signalet bag toget i AUTO-tilstand"
 
 #: ../RunActivity/Physics/Train.cs:7251
 #, csharp-format
 msgid "Allowed speed raised to {0}"
-msgstr "A megengedett sebesség {0}-ra emelkedett"
+msgstr "Tilladt hastighed hævet til {0}"
 
 #: ../RunActivity/Physics/Train.cs:7293
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
-msgstr ""
-"A vonat a {0}. sz. vonattal kapcsolatos probléma miatt lett megállítva, oka: "
-"{1}"
+msgstr "Toget stoppet pga. problemer med et andet tog: tog {0} , årsag: {1}"
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:273
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:284
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:272
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:283
 msgid "No power line!"
-msgstr "Nincs felsővezeték!"
+msgstr "Ingen køreledninger!"
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:275
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:286
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:274
+#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:285
 msgid "Power line condition overridden."
-msgstr "Felsővezeték hiánya felülbírálva."
+msgstr "Kørelednings-krav tilsidesat."
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:118
 msgid "Release"
-msgstr "Feloldás"
+msgstr "Frigiv"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:119
 msgid "Quick Release"
-msgstr "Gyorsoldás"
+msgstr "Frigiv Hurtigt"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:120
 msgid "Running"
-msgstr "Szabadonfutó"
+msgstr "Kører"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:121
 msgid "Neutral"
-msgstr "Semleges állás"
+msgstr "Frigear"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:122
 msgid "Apply"
-msgstr "Töltés"
+msgstr "Anvend"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:123
 msgid "EPApply"
-msgstr "EP alkalmazása"
+msgstr "EPAnvend"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:124
 msgid "Emergency"
-msgstr "Gyorsfék"
+msgstr "Nødbremse"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:125
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:128
 msgid "Lap"
-msgstr ""
+msgstr "Omgang"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:126
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:127
 msgid "Service"
-msgstr "Üzemben"
+msgstr "Service"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:129
 msgid "Suppression"
-msgstr "Nyomás allatt"
+msgstr "Suppression"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:130
 msgid "Cont. Service"
-msgstr "Folyamatos üzem"
+msgstr "Kont. Service"
 
 #: ../RunActivity/RollingStock/MSTSNotchController.cs:131
 msgid "Full Service"
-msgstr "Teljes üzem"
+msgstr "Fuld Service"
 
 #: ../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
-msgstr "Az utasok le- és felszállása befejeződött. A vonat indítható."
+msgstr "Ombordstigning fuldført. Du er nu klar til afgang."
 
 #: ../RunActivity/Simulator/Activity.cs:767
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
-msgstr ""
-"Az utasok le- és felszállása {0:D2}:{1:D2} másodpercen belül befejeződik."
+msgstr "Ombordstigning fuldført om {0:D2}:{1:D2}"
 
 #: ../RunActivity/Simulator/Confirmation.cs:138
 #: ../RunActivity/Simulator/Confirmation.cs:150
 msgid "reverse"
-msgstr "hátramnet"
+msgstr "Baglæns"
 
 #: ../RunActivity/Simulator/Confirmation.cs:138
 #: ../RunActivity/Simulator/Confirmation.cs:150
 msgid "neutral"
-msgstr "semleges állás"
+msgstr "Frigear"
 
 #: ../RunActivity/Simulator/Confirmation.cs:138
 #: ../RunActivity/Simulator/Confirmation.cs:150
 msgid "forward"
-msgstr "előremenet"
+msgstr "Fremad"
 
 #: ../RunActivity/Simulator/Confirmation.cs:138
 #: ../RunActivity/Simulator/Confirmation.cs:150
 msgid "locked. Close throttle, stop train then re-try."
-msgstr "letiltva. Előbb zárd le a menetszabályzót és állítsd meg a vonatot."
+msgstr "låst. Tag gassen af, stop toget og forsøg igen."
 
 #: ../RunActivity/Simulator/Confirmation.cs:139
 msgid "Throttle"
-msgstr "Menetszabályzó"
+msgstr "Gashåndtag"
 
 #: ../RunActivity/Simulator/Confirmation.cs:139
 #: ../RunActivity/Simulator/Confirmation.cs:151
@@ -369,7 +364,7 @@ msgstr "Menetszabályzó"
 #: ../RunActivity/Simulator/Confirmation.cs:184
 #: ../RunActivity/Simulator/Confirmation.cs:185
 msgid "close"
-msgstr "zárás"
+msgstr "luk"
 
 #: ../RunActivity/Simulator/Confirmation.cs:139
 #: ../RunActivity/Simulator/Confirmation.cs:151
@@ -381,31 +376,31 @@ msgstr "zárás"
 #: ../RunActivity/Simulator/Confirmation.cs:184
 #: ../RunActivity/Simulator/Confirmation.cs:185
 msgid "open"
-msgstr "nyitás"
+msgstr "åbn"
 
 #: ../RunActivity/Simulator/Confirmation.cs:139
 msgid "locked. Release dynamic brake then re-try."
-msgstr "letiltva. Előbb kapcsold ki a dinamikus féket."
+msgstr "låst. Frigiv den dynamiske bremse og forsøg igen."
 
 #: ../RunActivity/Simulator/Confirmation.cs:140
 msgid "Wheel-slip"
-msgstr "Kerékmegperdülés"
+msgstr "Hjulspin"
 
 #: ../RunActivity/Simulator/Confirmation.cs:140
 msgid "over"
-msgstr "vége"
+msgstr "ovre"
 
 #: ../RunActivity/Simulator/Confirmation.cs:140
 msgid "occurring. Tractive power greatly reduced."
-msgstr "folyamatban. A vonóerő nagymértékben lecsökkent."
+msgstr "opstår. Trækkraften stærkt reduceret."
 
 #: ../RunActivity/Simulator/Confirmation.cs:140
 msgid "warning"
-msgstr "figyelmeztetőjel"
+msgstr "advarsel"
 
 #: ../RunActivity/Simulator/Confirmation.cs:142
 msgid "Power"
-msgstr "Főmegszakító"
+msgstr "Effekt"
 
 #: ../RunActivity/Simulator/Confirmation.cs:142
 #: ../RunActivity/Simulator/Confirmation.cs:146
@@ -423,7 +418,7 @@ msgstr "Főmegszakító"
 #: ../RunActivity/Simulator/Confirmation.cs:180
 #: ../RunActivity/Simulator/Confirmation.cs:181
 msgid "off"
-msgstr "ki"
+msgstr "fra"
 
 #: ../RunActivity/Simulator/Confirmation.cs:142
 #: ../RunActivity/Simulator/Confirmation.cs:146
@@ -436,443 +431,444 @@ msgstr "ki"
 #: ../RunActivity/Simulator/Confirmation.cs:180
 #: ../RunActivity/Simulator/Confirmation.cs:181
 msgid "on"
-msgstr "be"
+msgstr "til"
 
 #: ../RunActivity/Simulator/Confirmation.cs:143
 msgid "Pantograph 1"
-msgstr "1-es áramszedő"
+msgstr "Strømaftager 1"
 
 #: ../RunActivity/Simulator/Confirmation.cs:143
 #: ../RunActivity/Simulator/Confirmation.cs:144
 msgid "lower"
-msgstr "le"
+msgstr "sænk"
 
 #: ../RunActivity/Simulator/Confirmation.cs:143
 #: ../RunActivity/Simulator/Confirmation.cs:144
 msgid "raise"
-msgstr "fel"
+msgstr "hæv"
 
 #: ../RunActivity/Simulator/Confirmation.cs:144
 msgid "Pantograph 2"
-msgstr "2-es áramszedő"
+msgstr "Strømaftager 2"
 
 #: ../RunActivity/Simulator/Confirmation.cs:146
 msgid "Player Diesel Power"
-msgstr "Vonógép dízelmotor"
+msgstr "Spiller Diesel-motor"
 
 #: ../RunActivity/Simulator/Confirmation.cs:146
 msgid "locked. Close throttle then re-try."
-msgstr "indítás/leállítás letiltva. Előbb zárd le a menetszabályzót."
+msgstr "låst. Tag gassen af og forsøg igen."
 
 #: ../RunActivity/Simulator/Confirmation.cs:147
 msgid "Helper Diesel Power"
-msgstr "Segédgép dízelmotor"
+msgstr "Hjælper Diesel-motor"
 
 #: ../RunActivity/Simulator/Confirmation.cs:148
 msgid "Diesel Tank"
-msgstr "Dízel üzemanyagtartály"
+msgstr "Diesel Tank"
 
 #: ../RunActivity/Simulator/Confirmation.cs:148
 msgid "re-fueled"
-msgstr "újratöltve"
+msgstr "tanket"
 
 #: ../RunActivity/Simulator/Confirmation.cs:148
 msgid "level"
-msgstr "szintje"
+msgstr "niveau"
 
 #: ../RunActivity/Simulator/Confirmation.cs:151
 msgid "Regulator"
-msgstr "Töltésszabályzó"
+msgstr "Regulator"
 
 #: ../RunActivity/Simulator/Confirmation.cs:152
 msgid "Injector 1"
-msgstr "Baloldali gőzsugárszivattyú"
+msgstr "Indsprøjtning 1"
 
 #: ../RunActivity/Simulator/Confirmation.cs:153
 msgid "Injector 2"
-msgstr "Jobboldali gőzsugárszivattyú"
+msgstr "Indsprøjtning 2"
 
 #: ../RunActivity/Simulator/Confirmation.cs:154
 msgid "Blower"
-msgstr "Füstszekrény-fúvóka"
+msgstr "Blæser"
 
 #: ../RunActivity/Simulator/Confirmation.cs:154
 #: ../RunActivity/Simulator/Confirmation.cs:157
 #: ../RunActivity/Simulator/Confirmation.cs:166
 #: ../RunActivity/Simulator/Confirmation.cs:191
 msgid "decrease"
-msgstr "csökkentés"
+msgstr "reducer"
 
 #: ../RunActivity/Simulator/Confirmation.cs:154
 #: ../RunActivity/Simulator/Confirmation.cs:157
 #: ../RunActivity/Simulator/Confirmation.cs:166
 #: ../RunActivity/Simulator/Confirmation.cs:191
 msgid "increase"
-msgstr "növelés"
+msgstr "øg"
 
 #: ../RunActivity/Simulator/Confirmation.cs:155
 msgid "Damper"
-msgstr "Légbefúvó"
+msgstr "spjæld"
 
 #: ../RunActivity/Simulator/Confirmation.cs:156
 msgid "Firebox Door"
-msgstr "Tűzszekrényajtó"
+msgstr "Brændkammer-låge"
 
 #: ../RunActivity/Simulator/Confirmation.cs:157
 msgid "Firing Rate"
-msgstr "Tüzelőanyag-adagolás"
+msgstr "Fyringsgrad"
 
 #: ../RunActivity/Simulator/Confirmation.cs:158
 msgid "Manual Firing"
-msgstr "Kézi tüzelés"
+msgstr "Håndfyring"
 
 #: ../RunActivity/Simulator/Confirmation.cs:159
 msgid "Fire"
-msgstr "Tűz"
+msgstr "Fyring"
 
 #: ../RunActivity/Simulator/Confirmation.cs:159
 msgid "add shovel-full"
-msgstr "egy egész lapát szén rádobása"
+msgstr "Skovlen fyldt"
 
 #: ../RunActivity/Simulator/Confirmation.cs:160
 msgid "Cylinder Cocks"
-msgstr "Hengercsapok"
+msgstr "Cylinder Porte"
 
 #: ../RunActivity/Simulator/Confirmation.cs:161
 #: ../RunActivity/Simulator/Confirmation.cs:162
 msgid "Tender"
-msgstr "Szerkocsi"
+msgstr "Kulvogn"
 
 #: ../RunActivity/Simulator/Confirmation.cs:161
 msgid "Coal re-filled"
-msgstr "szénkészlet újratöltve"
+msgstr "Kul fyldt op"
 
 #: ../RunActivity/Simulator/Confirmation.cs:161
 msgid "Coal level"
-msgstr "szénmennyiség"
+msgstr "Kul niveau"
 
 #: ../RunActivity/Simulator/Confirmation.cs:162
 msgid "Water re-filled"
-msgstr "vízkészlet újratöltve"
+msgstr "Vand fyldt op"
 
 #: ../RunActivity/Simulator/Confirmation.cs:162
 msgid "Water level"
-msgstr "vízszint"
+msgstr "Vand niveau"
 
 #: ../RunActivity/Simulator/Confirmation.cs:164
 msgid "Train Brake"
-msgstr "Átmenőfék"
+msgstr "Togbremse"
 
 #: ../RunActivity/Simulator/Confirmation.cs:164
 #: ../RunActivity/Simulator/Confirmation.cs:165
 msgid "release"
-msgstr "oldás"
+msgstr "løsn"
 
 #: ../RunActivity/Simulator/Confirmation.cs:164
 #: ../RunActivity/Simulator/Confirmation.cs:165
 #: ../RunActivity/Simulator/Confirmation.cs:167
 msgid "apply"
-msgstr "töltés"
+msgstr "anvend"
 
 #: ../RunActivity/Simulator/Confirmation.cs:165
 msgid "Engine Brake"
-msgstr "Kiegészítő fék"
+msgstr "Lokomotivbremse"
 
 #: ../RunActivity/Simulator/Confirmation.cs:166
 msgid "Dynamic Brake"
-msgstr "Dinamikus fék"
+msgstr "Dynamisk Bremse"
 
 #: ../RunActivity/Simulator/Confirmation.cs:166
 msgid "setup"
-msgstr "beállítás"
+msgstr "Setup"
 
 #: ../RunActivity/Simulator/Confirmation.cs:167
 msgid "Emergency Brake"
-msgstr "Gyorsfék"
+msgstr "Nødbremse"
 
 #: ../RunActivity/Simulator/Confirmation.cs:168
 msgid "Bail Off"
-msgstr "Fékoldás"
+msgstr "Nulstil Bremser"
 
 #: ../RunActivity/Simulator/Confirmation.cs:168
 msgid "disengage"
-msgstr "befejezve"
+msgstr "frigør"
 
 #: ../RunActivity/Simulator/Confirmation.cs:168
 msgid "engage"
-msgstr "folyamatban"
+msgstr "brug"
 
 #: ../RunActivity/Simulator/Confirmation.cs:169
 msgid "Brakes"
-msgstr "Fékek"
+msgstr "Bremser"
 
 #: ../RunActivity/Simulator/Confirmation.cs:169
 msgid "initialize"
-msgstr "üzembe helyezés"
+msgstr "Initialiser"
 
 #: ../RunActivity/Simulator/Confirmation.cs:169
 msgid "cannot initialize. Stop train then re-try."
-msgstr "nem üzembehelyezhetők. Előbb állítsd meg a vonatot."
+msgstr "Kan ikke initialisere. Stop toget og forsøg igen."
 
 #: ../RunActivity/Simulator/Confirmation.cs:170
 msgid "Handbrake"
-msgstr "Kézifék"
+msgstr "Håndbremse"
 
 #: ../RunActivity/Simulator/Confirmation.cs:170
 msgid "none"
-msgstr "ki"
+msgstr "Ingen"
 
 #: ../RunActivity/Simulator/Confirmation.cs:170
 msgid "full"
-msgstr "teljes üzem"
+msgstr "Fuld"
 
 #: ../RunActivity/Simulator/Confirmation.cs:171
 msgid "Retainers"
-msgstr "Vonatrögzítő fékek"
+msgstr "Retainer"
 
 #: ../RunActivity/Simulator/Confirmation.cs:171
 msgid "Exhaust"
-msgstr "kiengedés"
+msgstr "Udstødning"
 
 #: ../RunActivity/Simulator/Confirmation.cs:171
 msgid "High Pressure"
-msgstr "Nagynyomás"
+msgstr "Højt Tryk"
 
 #: ../RunActivity/Simulator/Confirmation.cs:171
 msgid "Low Pressure"
-msgstr "Kisnyomás"
+msgstr "Lavt Tryk"
 
 #: ../RunActivity/Simulator/Confirmation.cs:171
 msgid "Slow Direct"
-msgstr ""
+msgstr "Langsom"
 
 #: ../RunActivity/Simulator/Confirmation.cs:172
 msgid "Brake Hose"
-msgstr "Légvezetékek"
+msgstr "Bremseslange"
 
 #: ../RunActivity/Simulator/Confirmation.cs:172
 msgid "disconnect"
-msgstr "szétkötés"
+msgstr "frakobl"
 
 #: ../RunActivity/Simulator/Confirmation.cs:172
 msgid "connect"
-msgstr "csatlakoztatás"
+msgstr "tilkobl"
 
 #: ../RunActivity/Simulator/Confirmation.cs:174
 msgid "Sander"
-msgstr "Homokoló"
+msgstr "Sand"
 
 #: ../RunActivity/Simulator/Confirmation.cs:175
 msgid "Alerter"
-msgstr "Éberségjelzés"
+msgstr "Alarm"
 
 #: ../RunActivity/Simulator/Confirmation.cs:175
 msgid "acknowledge"
-msgstr "törölve"
+msgstr "Godkend"
 
 #: ../RunActivity/Simulator/Confirmation.cs:176
 msgid "Horn"
-msgstr "Kürt"
+msgstr "Horn"
 
 #: ../RunActivity/Simulator/Confirmation.cs:177
 msgid "Whistle"
-msgstr "Mozdonysíp"
+msgstr "Fløjte"
 
 #: ../RunActivity/Simulator/Confirmation.cs:177
 msgid "blow"
-msgstr "megszólaltatás"
+msgstr "blæs"
 
 #: ../RunActivity/Simulator/Confirmation.cs:178
 msgid "Bell"
-msgstr "Harang"
+msgstr "Klokke"
 
 #: ../RunActivity/Simulator/Confirmation.cs:178
 msgid "ring"
-msgstr "megszólaltatás"
+msgstr "ring"
 
 #: ../RunActivity/Simulator/Confirmation.cs:179
 msgid "Headlight"
-msgstr "Homlokfény"
+msgstr "Lys"
 
 #: ../RunActivity/Simulator/Confirmation.cs:179
 msgid "dim"
-msgstr "tompa"
+msgstr "Normal"
 
 #: ../RunActivity/Simulator/Confirmation.cs:179
 msgid "bright"
-msgstr "fényes"
+msgstr "Fjernlys"
 
 #: ../RunActivity/Simulator/Confirmation.cs:180
 msgid "Cab Light"
-msgstr "Vezetőfülke világítása"
+msgstr "Kabinelys"
 
 #: ../RunActivity/Simulator/Confirmation.cs:181
 msgid "Wipers"
-msgstr "Ablaktörlő"
+msgstr "Vinduesviskere"
 
 #: ../RunActivity/Simulator/Confirmation.cs:182
 msgid "Cab"
-msgstr "Vezetőfülke"
+msgstr "Førerhus"
 
 #: ../RunActivity/Simulator/Confirmation.cs:182
 msgid "changing is not available"
-msgstr "váltás nem lehetséges"
+msgstr "skift er ikke muligt"
 
 #: ../RunActivity/Simulator/Confirmation.cs:182
 msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
 msgstr ""
-"váltás letiltva. Előbb zárd le a menetszabályzót, az irányváltót tedd üresbe "
-"és állítsd meg a vonatot."
+"skift deaktiveret. Tag gassen af, sæt retningsgiver til frigear, stop toget "
+"og forsøg igen."
 
 #: ../RunActivity/Simulator/Confirmation.cs:184
 msgid "Doors Left"
-msgstr "Baloldali ajtók"
+msgstr "Venstre døre"
 
 #: ../RunActivity/Simulator/Confirmation.cs:185
 msgid "Doors Right"
-msgstr "Jobboldali ajtók"
+msgstr "Højre døre"
 
 #: ../RunActivity/Simulator/Confirmation.cs:186
 msgid "Mirror"
-msgstr "Tükrök"
+msgstr "Spejl"
 
 #: ../RunActivity/Simulator/Confirmation.cs:186
 msgid "retract"
-msgstr "behajtás"
+msgstr "tilbagetrækning"
 
 #: ../RunActivity/Simulator/Confirmation.cs:186
 msgid "extend"
-msgstr "kihajtás"
+msgstr "udvid"
 
 #: ../RunActivity/Simulator/Confirmation.cs:188
 msgid "Switch Ahead"
-msgstr "Vágányútállítás a vonat előtt"
+msgstr "Sporskifte forude"
 
 #: ../RunActivity/Simulator/Confirmation.cs:188
 #: ../RunActivity/Simulator/Confirmation.cs:189
 msgid "locked. Use Control+M to change signals to manual mode then re-try."
 msgstr ""
-"letiltva. Előbb nyomj <Ctrl+M>-et a kézi forgalomirányításra váltáshoz."
+"låst. Brug Control+M for at skifte signaler til manuel tilstand og forsøg så "
+"igen."
 
 #: ../RunActivity/Simulator/Confirmation.cs:189
 msgid "Switch Behind"
-msgstr "Vágányútállítás a vonat mögött"
+msgstr "Sporskifte bagude"
 
 #: ../RunActivity/Simulator/Confirmation.cs:191
 msgid "Simulation Speed"
-msgstr "Időgyorsítás"
+msgstr "Simulerings-hastighed"
 
 #: ../RunActivity/Simulator/Confirmation.cs:191
 msgid "reset"
-msgstr "alaphelyzetbe állítás"
+msgstr "nulstil"
 
 #: ../RunActivity/Simulator/Confirmation.cs:192
 msgid "Uncouple After"
-msgstr "Szétcsatolás hátul"
+msgstr "Frakobl efter"
 
 #: ../RunActivity/Simulator/Confirmation.cs:193
 msgid "Activity"
-msgstr "Szolgálat"
+msgstr "Aktivitet"
 
 #: ../RunActivity/Simulator/Confirmation.cs:193
 msgid "quit"
-msgstr "befejezés"
+msgstr "afslut"
 
 #: ../RunActivity/Simulator/Confirmation.cs:193
 msgid "resume"
-msgstr "folytatás"
+msgstr "genoptag"
 
 #: ../RunActivity/Simulator/Confirmation.cs:194
 msgid "Replay"
-msgstr "Visszajátszás"
+msgstr "genafspil"
 
 #: ../RunActivity/Simulator/Confirmation.cs:194
 msgid "Overriding camera replay. Press Escape to resume camera replay."
 msgstr ""
-"Kameranézet visszajátszásának felülbírálása. Nyomd meg az <Escape>-et a "
-"visszatéréshez."
+"Tilsidesætter kamera-afspilning. Tryk på Escape for at genoptage kamera-"
+"afspilning."
 
 #: ../RunActivity/Simulator/Confirmation.cs:195
 msgid "Location labels"
-msgstr "Helymegjelölő címkék"
+msgstr "Sted etiketter"
 
 #: ../RunActivity/Simulator/Confirmation.cs:195
 msgid "sidings"
-msgstr "vágányok"
+msgstr "sidespor"
 
 #: ../RunActivity/Simulator/Confirmation.cs:195
 msgid "stations"
-msgstr "állomások"
+msgstr "stationer"
 
 #: ../RunActivity/Simulator/Confirmation.cs:195
 msgid "stations and sidings"
-msgstr "állomások és vágányok"
+msgstr "stationer og sidespor"
 
 #: ../RunActivity/Simulator/Confirmation.cs:196
 msgid "Gearbox"
-msgstr "Sebességváltó"
+msgstr "Gearkasse"
 
 #: ../RunActivity/Simulator/Confirmation.cs:196
 msgid "down"
-msgstr "le"
+msgstr "ned"
 
 #: ../RunActivity/Simulator/Confirmation.cs:196
 msgid "up"
-msgstr "fel"
+msgstr "op"
 
 #: ../RunActivity/Simulator/Confirmation.cs:196
 msgid "locked. Use shaft before changing gear."
-msgstr "lezárva. Használd a tengelykapcsolót sebességváltás előtt."
+msgstr "låst. Brug akslen, før du skifter gear. "
 
 #: ../RunActivity/Simulator/Confirmation.cs:197
 msgid "Signal mode"
-msgstr "Forgalomirányítás"
+msgstr "Signal tilstand"
 
 #: ../RunActivity/Simulator/Confirmation.cs:197
 msgid "manual"
-msgstr "kézi"
+msgstr "manuel"
 
 #: ../RunActivity/Simulator/Confirmation.cs:197
 msgid "auto"
-msgstr "központi"
+msgstr "auto"
 
 #: ../RunActivity/Simulator/Confirmation.cs:197
 msgid "locked. Stop train, then re-try."
-msgstr "váltás letiltva. Előbb állítsd meg a vonatot."
+msgstr "låst. Stop toget og forsøg igen."
 
 #: ../RunActivity/Simulator/Confirmation.cs:205
 #: ../RunActivity/Simulator/Confirmation.cs:214
 #: ../RunActivity/Simulator/Confirmation.cs:252
 #, csharp-format
 msgid "{0} {1}"
-msgstr ""
+msgstr "{0} {1}"
 
 #: ../RunActivity/Simulator/Confirmation.cs:209
 #, csharp-format
 msgid "{0}"
-msgstr ""
+msgstr "{0}"
 
 #: ../RunActivity/Simulator/Confirmation.cs:219
 #, csharp-format
 msgid "{0} to {1:0}%"
-msgstr "{0} {1:0}%-ra"
+msgstr "{0} til {1:0}%"
 
 #: ../RunActivity/Simulator/Confirmation.cs:224
 #, csharp-format
 msgid "{0} {1:0}% {2}"
-msgstr "{0} {1:0}%-ra {2}"
+msgstr "{0} {1:0}% {2}"
 
 #: ../RunActivity/Simulator/Confirmation.cs:229
 #, csharp-format
 msgid "{0:0}% {1}"
-msgstr ""
+msgstr "{0:0}% {1}"
 
 #: ../RunActivity/Simulator/Confirmation.cs:234
 #, csharp-format
 msgid "{0:0}%"
-msgstr ""
+msgstr "{0:0}%"
 
 #: ../RunActivity/Simulator/Confirmation.cs:242
 #: ../RunActivity/Simulator/Confirmation.cs:247
@@ -884,86 +880,86 @@ msgstr "{0} {1:0}%"
 #: ../RunActivity/Simulator/Confirmation.cs:138
 msgctxt "NonSteam"
 msgid "Reverser"
-msgstr "Irányváltó"
+msgstr "Retningsgiver [ Ikke Damptog ]"
 
 #. Context: Steam
 #: ../RunActivity/Simulator/Confirmation.cs:150
 msgctxt "Steam"
 msgid "Reverser"
-msgstr "Vezérmű"
+msgstr "Retningsgiver [ Damptog ]"
 
 #. Context: Alerter
 #: ../RunActivity/Simulator/Confirmation.cs:175
 msgctxt "Alerter"
 msgid "sound"
-msgstr "megszólalt"
+msgstr "lyd [ Alarm ]"
 
 #. Context: Horn
 #: ../RunActivity/Simulator/Confirmation.cs:176
 msgctxt "Horn"
 msgid "sound"
-msgstr "meszólaltatás"
+msgstr "lyd [ Horn ]"
 
 #. Context: Cab
 #: ../RunActivity/Simulator/Confirmation.cs:182
 msgctxt "Cab"
 msgid "change"
-msgstr "váltás megtörtént"
+msgstr "skift [ Førerhus ]"
 
 #. Context: Switch
 #: ../RunActivity/Simulator/Confirmation.cs:188
 #: ../RunActivity/Simulator/Confirmation.cs:189
 msgctxt "Switch"
 msgid "change"
-msgstr " "
+msgstr "skift [ Sporskifter ]"
 
 #. Context: Labels
 #: ../RunActivity/Simulator/Confirmation.cs:195
 msgctxt "Labels"
 msgid "none"
-msgstr "nincsenek"
+msgstr "ingen [ Etiketter ]"
 
-#: ../RunActivity/Viewer3D/Viewer.cs:1072
+#: ../RunActivity/Viewer3D/Viewer.cs:1071
 msgid "Game saved"
-msgstr "A játékállás elmentve."
+msgstr "Spillet er gemt"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
 msgid "Activity Events"
-msgstr "Szolgálat eseményei"
+msgstr "Aktivitets Opgaver"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "successfully"
-msgstr "sikeresen"
+msgstr "med succes"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "without success"
-msgstr "sikertelenül"
+msgstr "uden succes"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
 msgid "Resume and close box"
-msgstr "Folytatás és ablak bezárása"
+msgstr "Genoptag spillet og luk vinduet"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
 msgid "Quit activity"
-msgstr "Szolgálat befejezése"
+msgstr "Afslut aktiviteten"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
 msgid "Status: Activity paused"
-msgstr "Állapot: Szolgálat szüneteltetve"
+msgstr "Status: Aktivitet på pause"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
 msgid "Close box"
-msgstr "Ablak bezárása"
+msgstr "Luk vindue"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
 msgid "Status: Activity resumed"
-msgstr "Állapot: Szolgálat folytatva"
+msgstr "Status: Aktivitet genoptaget"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
 msgid "End Activity"
-msgstr "Szolgálat vége"
+msgstr "Afslut Aktivitet"
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:147
 #, csharp-format
@@ -971,245 +967,246 @@ msgid ""
 "This activity has ended {0}.\n"
 "For a detailed evaluation, see the Help Window (F1)."
 msgstr ""
-"A szolgálat {0} ért véget.Részletes kiértékelésért lásd a Súgóablakot <F1>."
+"Denne aktivitet er slut {0}.\n"
+"For en detaljeret vurdering, se Hjælpevinduet (F1)."
 
 #: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:232
 #, csharp-format
 msgid "Event: {0}"
-msgstr "Esemény: {0}"
+msgstr "Opgave: {0}"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:39
 msgid "Car Operation Menu"
-msgstr "Kocsivizsgálat"
+msgstr "Vogn-betjenings Menu"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
 msgid "Toggle Handbrake"
-msgstr "Kézifék átállítása"
+msgstr "Håndbremse til/fra"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:63
 msgid "Toggle Power"
-msgstr "Gép indítása/leállítása"
+msgstr "Motor til/fra"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:76
 msgid "Toggle MU Connection"
-msgstr "Távvezérlés kapcsolása"
+msgstr "MU Forbindelse til/fra"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:87
 msgid "Close window"
-msgstr "Ablak bezárása"
+msgstr "Luk vindue"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:119
 msgid "Handbrake set"
-msgstr "Kézifék: be"
+msgstr "Håndbremse til"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
 msgid "Handbrake off"
-msgstr "Kézifék: ki"
+msgstr "Håndbremse fra"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:135
 msgid "Power OFF command sent"
-msgstr "Leállítási parancs elküldve"
+msgstr "Kommando 'Sluk Motor' er blevet sendt"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
 msgid "Power ON command sent"
-msgstr "Elindítási parancs elküldve"
+msgstr "Kommando 'Start Motor' er blevet sendt"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:140
 msgid "No power command for this type of car!"
-msgstr "Ezt a típusú kocsit nem lehet gépként elindítani!"
+msgstr "Ingen start/stop af motor for denne vogn!"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:156
 msgid "MU signal connected"
-msgstr "Távvezérlő kábel csatlakoztatva"
+msgstr "MU signal forbundet"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:158
 msgid "MU signal disconnected"
-msgstr "Távvezérlő kábel szétcsatolva"
+msgstr "MU signal frakoblet"
 
 #: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:161
 msgid "No MU command for this type of car!"
-msgstr "Távvezérlés nem lehetséges ennél a típusú kocsinál."
+msgstr "Ingen MU kommando for denne vogn!"
 
 #: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:33
 msgid "Compass"
-msgstr "Iránytű"
+msgstr "Kompas"
 
 #: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:44
 msgid "Lat:"
-msgstr "Szél:"
+msgstr "Breddegrad (lat):"
 
 #: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:47
 msgid "Lon:"
-msgstr "Hossz:"
+msgstr "Længdegrad (lon):"
 
 #: ../RunActivity/Viewer3D/Popups/ComposeMessage.cs:34
 msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
-msgstr "Üzenet beírása (pl. címzett1, címzett2: üenet szövege)"
+msgstr "Skriv besked (fx. modtager1, modtager2: besked)"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:40
 msgid "Help"
-msgstr "Súgó"
+msgstr "Hjælp"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:42
 msgid "Key Commands"
-msgstr "Billentyűparancsok"
+msgstr "Tastaturbindinger"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:69
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:68
 msgid "Briefing"
-msgstr "Eligazítás"
+msgstr "Orientering"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:79
 msgid "Timetable"
-msgstr "Menetrend"
+msgstr "Tidsplan"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:84
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
 msgid "Station"
-msgstr "Állomás"
+msgstr "Station"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Arrive"
-msgstr "Érkezés"
+msgstr "Ankomst"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 msgid "Actual"
-msgstr "Tényleges"
+msgstr "Aktuel"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Depart"
-msgstr "Indulás"
+msgstr "Afgang"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:103
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:105
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
 msgid "(missed)"
-msgstr "(elhibázva)"
+msgstr "(ej til tiden)"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:113
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:112
 msgid "Work Orders"
-msgstr "Menetutasítás"
+msgstr "Arbejdsopgaver"
+
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:117
+msgid "Task"
+msgstr "Opgaver"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
-msgid "Task"
-msgstr "Feladat"
+msgid "Car(s)"
+msgstr "Vogn(e)"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
-msgid "Car(s)"
-msgstr "Kocsi"
+msgid "Location"
+msgstr "Sted"
 
 #: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
-msgid "Location"
-msgstr "Állomás"
-
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
 msgid "Status"
-msgstr "Állapot"
+msgstr "Status"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:140
 msgid "Assemble Train"
-msgstr "Kocsirendezés"
+msgstr "Sammensæt Tog"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:145
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:144
 msgid "At Location"
-msgstr "Állomás"
+msgstr "Ved Stedet"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:149
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:148
 msgid "Drop Off"
-msgstr "Lecsatolás"
+msgstr "Aflever"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:153
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:152
 msgid "Pick Up"
-msgstr "Rácsatolás"
+msgstr "Afhent"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:227
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:226
 msgid "Done"
-msgstr "Kész"
+msgstr "Færdig"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
+#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:239
 msgid "Procedures"
-msgstr "Eljárások"
+msgstr "Procedurer"
 
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
 msgid "Next Station"
-msgstr "Következő állomás"
+msgstr "Næste Station"
 
 #: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
 msgid "Activity completed."
-msgstr "Szolgálat teljesítve."
+msgstr "Aktivitet fuldført."
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:31
 msgid "Pause Menu"
-msgstr "Szünet"
+msgstr "Pause Menu"
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:45
 #, csharp-format
 msgid "Quit {1} ({0})"
-msgstr "Kilépés {1}ből ({0})"
+msgstr "Afslut {1} ({0})"
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:50
 #, csharp-format
 msgid "Save your game ({0})"
-msgstr "Játék mentése ({0})"
+msgstr "Gem dit spil ({0})"
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
+#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:58
 #, csharp-format
 msgid "Continue playing ({0})"
-msgstr "Játék folytatása ({0})"
+msgstr "Fortsæt spillet ({0})"
 
 #: ../RunActivity/Viewer3D/Popups/SwitchWindow.cs:48
 msgid "Switch"
-msgstr "Váltó"
+msgstr "Skift"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
 msgid "Track Monitor"
-msgstr "Pályafigyelő"
+msgstr "Spor Monitor"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:88
 msgid "Auto Signal"
-msgstr "KÖFI"
+msgstr "Auto Signal"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
 msgid "Node"
-msgstr "Csomóponti"
+msgstr "Node"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:90
 msgid "Manual"
-msgstr "Kézi forgalomirányítás"
+msgstr "Manuel"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
 msgid "Explorer"
-msgstr "Vonalbejárás"
+msgstr "Udforsk"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
 msgid "OutOfControl : "
-msgstr "Irányítás nélkül : "
+msgstr "UdeAfKontrol:"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
 msgid "Unknown"
-msgstr "Ismeretlen"
+msgstr "Ukendt"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
 msgid "Speed:"
-msgstr "Sebesség:"
+msgstr "Hastighed:"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:119
 msgid "Projected:"
-msgstr "Előrejelzett:"
+msgstr "Forventet:"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
 msgid "Limit:"
-msgstr "Megengedett:"
+msgstr "Begrænsning:"
 
 #: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:144
 msgid " Dist      Speed   Aspect"
-msgstr " Táv.      Sebesség  Kép"
+msgstr " Dist     Hastighed  Element"
 
 #: ../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
 msgid "Train Operations"
-msgstr "Vonatvizsgálat"
+msgstr "Tog Funktioner"

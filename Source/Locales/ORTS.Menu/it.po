@@ -1,9 +1,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRails\n"
-"POT-Creation-Date: 2014-02-20 20:48:10+0100\n"
-"PO-Revision-Date: 2014-02-20 20:49+0100\n"
-"Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
+"POT-Creation-Date: 2014-02-21 23:04:36+0100\n"
+"PO-Revision-Date: 2014-02-23 20:35+0100\n"
+"Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
+"<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: \n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -11,6 +12,590 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../ORTS/InputSettings.cs:42
+msgid "Game Pause Menu"
+msgstr "Gioco attiva il menu Pausa"
+
+#: ../ORTS/InputSettings.cs:43
+msgid "Game Save"
+msgstr "Gioco salva"
+
+#: ../ORTS/InputSettings.cs:44
+msgid "Game Quit"
+msgstr "Gioco chiudi"
+
+#: ../ORTS/InputSettings.cs:45
+msgid "Game Pause"
+msgstr "Gioco pausa"
+
+#: ../ORTS/InputSettings.cs:46
+msgid "Game Screenshot"
+msgstr "Gioco cattura schermata"
+
+#: ../ORTS/InputSettings.cs:47
+msgid "Game Fullscreen"
+msgstr "Gioco a tutto schermo"
+
+#: ../ORTS/InputSettings.cs:48
+msgid "Game Switch Ahead"
+msgstr "Gioco muove lo scambio davanti"
+
+#: ../ORTS/InputSettings.cs:49
+msgid "Game Switch Behind"
+msgstr "Gioco muove lo scambio dietro"
+
+#: ../ORTS/InputSettings.cs:50
+msgid "Game Switch Picked"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:51
+msgid "Game Signal Picked"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:52
+msgid "Game Switch With Mouse"
+msgstr "Gioco sposta scambio con il mouse"
+
+#: ../ORTS/InputSettings.cs:53
+msgid "Game Uncouple With Mouse"
+msgstr "Gioco sgancia con il mouse"
+
+#: ../ORTS/InputSettings.cs:54
+msgid "Game Change Cab"
+msgstr "Gioco cambio cabina"
+
+#: ../ORTS/InputSettings.cs:55
+msgid "Game Request Control"
+msgstr "Gioco assumi il controllo"
+
+#: ../ORTS/InputSettings.cs:56
+msgid "Game Multi Player Dispatcher"
+msgstr "Gioco apre finestra DCO"
+
+#: ../ORTS/InputSettings.cs:57
+msgid "Game Multi Player Texting"
+msgstr "Gioco messaggistica multiplayer"
+
+#: ../ORTS/InputSettings.cs:58
+msgid "Game Switch Manual Mode"
+msgstr "Gioco scambi manuali"
+
+#: ../ORTS/InputSettings.cs:59
+msgid "Game Clear Signal Forward"
+msgstr "Gioco apre il segnale davanti"
+
+#: ../ORTS/InputSettings.cs:60
+msgid "Game Clear Signal Backward"
+msgstr "Gioco apre il segnale dietro"
+
+#: ../ORTS/InputSettings.cs:61
+msgid "Game Reset Signal Forward"
+msgstr "Gioco ripristina il segnale davanti"
+
+#: ../ORTS/InputSettings.cs:62
+msgid "Game Reset Signal Backward"
+msgstr "Gioco ripristina il segnale dietro"
+
+#: ../ORTS/InputSettings.cs:64
+msgid "Display Next Window Tab"
+msgstr "Display Pagina successiva della finestra"
+
+#: ../ORTS/InputSettings.cs:65
+msgid "Display Help Window"
+msgstr "Display Finestra Aiuto"
+
+#: ../ORTS/InputSettings.cs:66
+msgid "Display Track Monitor Window"
+msgstr "Display Monitor Linea"
+
+#: ../ORTS/InputSettings.cs:67
+msgid "Display HUD"
+msgstr "Display Informazioni su schermo"
+
+#: ../ORTS/InputSettings.cs:68
+msgid "Display Car Labels"
+msgstr "Display Etichette rotabili"
+
+#: ../ORTS/InputSettings.cs:69
+msgid "Display Station Labels"
+msgstr "Display Etichette stazioni"
+
+#: ../ORTS/InputSettings.cs:70
+msgid "Display Switch Window"
+msgstr "Display Finestra scambi"
+
+#: ../ORTS/InputSettings.cs:71
+msgid "Display Train Operations Window"
+msgstr "Display Finestra operazioni treno"
+
+#: ../ORTS/InputSettings.cs:72
+msgid "Display Next Station Window"
+msgstr "Display Finestra prossima stazione"
+
+#: ../ORTS/InputSettings.cs:73
+msgid "Display Compass Window"
+msgstr "Display Bussola"
+
+#: ../ORTS/InputSettings.cs:75
+msgid "Debug Speed Up"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:76
+msgid "Debug Speed Down"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:77
+msgid "Debug Speed Reset"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:78
+msgid "Debug Overcast Increase"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:79
+msgid "Debug Overcast Decrease"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:80
+msgid "Debug Fog Increase"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:81
+msgid "Debug Fog Decrease"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:82
+msgid "Debug Weather Change"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:83
+msgid "Debug Clock Forwards"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:84
+msgid "Debug Clock Backwards"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:85
+msgid "Debug Logger"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:86
+msgid "Debug Lock Shadows"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:87
+msgid "Debug Dump Keymap"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:88
+msgid "Debug Log Render Frame"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:89
+msgid "Debug Tracks"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:90
+msgid "Debug Signalling"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:91
+msgid "Debug Reset Wheel Slip"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:92
+msgid "Debug Toggle Advanced Adhesion"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:93
+msgid "Debug Sound Form"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:94
+msgid "Debug Physics Form"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:95
+msgid "Debug Precipitation Increase"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:96
+msgid "Debug Precipitation Decrease"
+msgstr ""
+
+#: ../ORTS/InputSettings.cs:98
+msgid "Camera Cab"
+msgstr "Vista in cabina"
+
+#: ../ORTS/InputSettings.cs:99
+msgid "Camera Outside Front"
+msgstr "Vista esterna davanti"
+
+#: ../ORTS/InputSettings.cs:100
+msgid "Camera Outside Rear"
+msgstr "Vista esterna dietro"
+
+#: ../ORTS/InputSettings.cs:101
+msgid "Camera Trackside"
+msgstr "Vista sul percorso"
+
+#: ../ORTS/InputSettings.cs:102
+msgid "Camera Passenger"
+msgstr "Vista passeggero"
+
+#: ../ORTS/InputSettings.cs:103
+msgid "Camera Brakeman"
+msgstr "Vista frenatore"
+
+#: ../ORTS/InputSettings.cs:104
+msgid "Camera Free"
+msgstr "Vista libera"
+
+#: ../ORTS/InputSettings.cs:105
+msgid "Camera Previous Free"
+msgstr "Vista libera precedente"
+
+#: ../ORTS/InputSettings.cs:106
+msgid "Camera HeadOut Forward"
+msgstr "Vista testa in fuori avanti"
+
+#: ../ORTS/InputSettings.cs:107
+msgid "Camera HeadOut Backward"
+msgstr "Vista testa in fuori indietro"
+
+#: ../ORTS/InputSettings.cs:108
+msgid "Camera Toggle Show Cab"
+msgstr "Vista alterna visualizzazione cabina"
+
+#: ../ORTS/InputSettings.cs:109
+msgid "Camera Reset"
+msgstr "Telecamera Reset"
+
+#: ../ORTS/InputSettings.cs:110
+msgid "Camera Move Fast"
+msgstr "Telecamera muove rapidamente"
+
+#: ../ORTS/InputSettings.cs:111
+msgid "Camera Move Slow"
+msgstr "Telecamera muove lentamente"
+
+#: ../ORTS/InputSettings.cs:112
+msgid "Camera Pan Left"
+msgstr "Telecamera sposta a sinistra"
+
+#: ../ORTS/InputSettings.cs:113
+msgid "Camera Pan Right"
+msgstr "Telecamera sposta a destra"
+
+#: ../ORTS/InputSettings.cs:114
+msgid "Camera Pan Up"
+msgstr "Telecamera sposta in alto"
+
+#: ../ORTS/InputSettings.cs:115
+msgid "Camera Pan Down"
+msgstr "Telecamera sposta in alto"
+
+#: ../ORTS/InputSettings.cs:116
+msgid "Camera Zoom In"
+msgstr "Telecamera aumenta zoom"
+
+#: ../ORTS/InputSettings.cs:117
+msgid "Camera Zoom Out"
+msgstr "Telecamera diminuisci zoom"
+
+#: ../ORTS/InputSettings.cs:118
+msgid "Camera Rotate Left"
+msgstr "Telecamera ruota verso sinistra"
+
+#: ../ORTS/InputSettings.cs:119
+msgid "Camera Rotate Right"
+msgstr "Telecamera ruota verso destra"
+
+#: ../ORTS/InputSettings.cs:120
+msgid "Camera Rotate Up"
+msgstr "Telecamera ruota verso l'alto"
+
+#: ../ORTS/InputSettings.cs:121
+msgid "Camera Rotate Down"
+msgstr "Telecamera ruota verso il basso"
+
+#: ../ORTS/InputSettings.cs:122
+msgid "Camera Car Next"
+msgstr "Telecamera sul rotabile successivo"
+
+#: ../ORTS/InputSettings.cs:123
+msgid "Camera Car Previous"
+msgstr "Telecamera sul rotabile precedente"
+
+#: ../ORTS/InputSettings.cs:124
+msgid "Camera Car First"
+msgstr "Telecamera sul primo rotabile"
+
+#: ../ORTS/InputSettings.cs:125
+msgid "Camera Car Last"
+msgstr "Telecamera sull'ultimo rotabile"
+
+#: ../ORTS/InputSettings.cs:126
+msgid "Camera Jumping Trains"
+msgstr "Telecamera su altri treni"
+
+#: ../ORTS/InputSettings.cs:127
+msgid "Camera Jump Back Player"
+msgstr "Telecamera sul player"
+
+#: ../ORTS/InputSettings.cs:128
+msgid "Camera Jump See Switch"
+msgstr "Telecamera vista scambio"
+
+#: ../ORTS/InputSettings.cs:129
+msgid "Camera Vibrate"
+msgstr "Telecamera vibrazione"
+
+#: ../ORTS/InputSettings.cs:130
+msgid "Camera Cab Rotate"
+msgstr "Telecamera inclinazione cabina"
+
+#: ../ORTS/InputSettings.cs:132
+msgid "Control Forwards"
+msgstr "Controllo marcia avanti"
+
+#: ../ORTS/InputSettings.cs:133
+msgid "Control Backwards"
+msgstr "Controllo marcia indietro"
+
+#: ../ORTS/InputSettings.cs:134
+msgid "Control Throttle Increase"
+msgstr "Controllo aumenta acceleratore"
+
+#: ../ORTS/InputSettings.cs:135
+msgid "Control Throttle Decrease"
+msgstr "Controllo diminuisci acceleratore"
+
+#: ../ORTS/InputSettings.cs:136
+msgid "Control Gear Up"
+msgstr "Controllo sale di marcia"
+
+#: ../ORTS/InputSettings.cs:137
+msgid "Control Gear Down"
+msgstr "Controllo scala la marcia"
+
+#: ../ORTS/InputSettings.cs:138
+msgid "Control Train Brake Increase"
+msgstr "Controllo Aumenta il freno treno"
+
+#: ../ORTS/InputSettings.cs:139
+msgid "Control Train Brake Decrease"
+msgstr "Controllo Diminuisce il freno treno"
+
+#: ../ORTS/InputSettings.cs:140
+msgid "Control Engine Brake Increase"
+msgstr "Controllo Aumenta il freno locomotiva"
+
+#: ../ORTS/InputSettings.cs:141
+msgid "Control Engine Brake Decrease"
+msgstr "Controllo Diminuisce il freno locomotiva"
+
+#: ../ORTS/InputSettings.cs:142
+msgid "Control Dynamic Brake Increase"
+msgstr "Controllo Aumenta il freno dinamico"
+
+#: ../ORTS/InputSettings.cs:143
+msgid "Control Dynamic Brake Decrease"
+msgstr "Controllo Diminuisce il freno dinamico"
+
+#: ../ORTS/InputSettings.cs:144
+msgid "Control Bail Off"
+msgstr "Controllo Sfrenatura totale"
+
+#: ../ORTS/InputSettings.cs:145
+msgid "Control Initialize Brakes"
+msgstr "Controllo Inizializza i freni"
+
+#: ../ORTS/InputSettings.cs:146
+msgid "Control Handbrake Full"
+msgstr "Controllo Freno a mano inserito"
+
+#: ../ORTS/InputSettings.cs:147
+msgid "Control Handbrake None"
+msgstr "Controllo Freno a mano disinserito"
+
+#: ../ORTS/InputSettings.cs:148
+msgid "Control Retainers On"
+msgstr "Controllo fermi attivi"
+
+#: ../ORTS/InputSettings.cs:149
+msgid "Control Retainers Off"
+msgstr "Controllo fermi disattivati"
+
+#: ../ORTS/InputSettings.cs:150
+msgid "Control Brake Hose Connect"
+msgstr "Controllo Condotta freni collegata"
+
+#: ../ORTS/InputSettings.cs:151
+msgid "Control Brake Hose Disconnect"
+msgstr "Controllo Condotta freni scollegata"
+
+#: ../ORTS/InputSettings.cs:152
+msgid "Control Alerter"
+msgstr "Controllo Allertatore"
+
+#: ../ORTS/InputSettings.cs:153
+msgid "Control Emergency"
+msgstr "Controllo Emergenza"
+
+#: ../ORTS/InputSettings.cs:154
+msgid "Control Sander"
+msgstr "Controllo Sabbiere"
+
+#: ../ORTS/InputSettings.cs:155
+msgid "Control Wiper"
+msgstr "Controllo Tergicristalli"
+
+#: ../ORTS/InputSettings.cs:156
+msgid "Control Horn"
+msgstr "Controllo Tromba"
+
+#: ../ORTS/InputSettings.cs:157
+msgid "Control Bell"
+msgstr "Controllo Campana"
+
+#: ../ORTS/InputSettings.cs:158
+msgid "Control Bell Toggle"
+msgstr "Controllo Campana attiva/disattiva"
+
+#: ../ORTS/InputSettings.cs:159
+msgid "Control Door Left"
+msgstr "Controllo porte a sinistra"
+
+#: ../ORTS/InputSettings.cs:160
+msgid "Control Door Right"
+msgstr "Controllo porte a destra"
+
+#: ../ORTS/InputSettings.cs:161
+msgid "Control Mirror"
+msgstr "Controllo Specchietti"
+
+#: ../ORTS/InputSettings.cs:162
+msgid "Control Light"
+msgstr "Controllo Luce"
+
+#: ../ORTS/InputSettings.cs:163
+msgid "Control Pantograph1"
+msgstr "Controllo pantografo 1"
+
+#: ../ORTS/InputSettings.cs:164
+msgid "Control Pantograph2"
+msgstr "Controllo pantografo 2"
+
+#: ../ORTS/InputSettings.cs:165
+msgid "Control Diesel Player"
+msgstr "Controllo Accensione Loco Diesel"
+
+#: ../ORTS/InputSettings.cs:166
+msgid "Control Diesel Helper"
+msgstr "Controllo Accensione Loco Diesel aggiuntiva"
+
+#: ../ORTS/InputSettings.cs:167
+msgid "Control Headlight Increase"
+msgstr "Controllo Aumento luminosità fanali"
+
+#: ../ORTS/InputSettings.cs:168
+msgid "Control Headlight Decrease"
+msgstr "Controllo Diminuzione luminosità fanali"
+
+#: ../ORTS/InputSettings.cs:169
+msgid "Control Injector1 Increase"
+msgstr "Controllo aumenta iniettore 1"
+
+#: ../ORTS/InputSettings.cs:170
+msgid "Control Injector1 Decrease"
+msgstr "Controllo diminuisci iniettore 1"
+
+#: ../ORTS/InputSettings.cs:171
+msgid "Control Injector1"
+msgstr "Controllo iniettore 1"
+
+#: ../ORTS/InputSettings.cs:172
+msgid "Control Injector2 Increase"
+msgstr "Controllo aumenta iniettore 2"
+
+#: ../ORTS/InputSettings.cs:173
+msgid "Control Injector2 Decrease"
+msgstr "Controllo diminuisci iniettore 2"
+
+#: ../ORTS/InputSettings.cs:174
+msgid "Control Injector2"
+msgstr "Controllo iniettore 2"
+
+#: ../ORTS/InputSettings.cs:175
+msgid "Control Blower Increase"
+msgstr "Controllo aumenta Blower "
+
+#: ../ORTS/InputSettings.cs:176
+msgid "Control Blower Decrease"
+msgstr "Controllo diminuisci Blower "
+
+#: ../ORTS/InputSettings.cs:177
+msgid "Control Damper Increase"
+msgstr "Controllo aumenta Damper"
+
+#: ../ORTS/InputSettings.cs:178
+msgid "Control Damper Decrease"
+msgstr "Controllo diminuisci Damper"
+
+#: ../ORTS/InputSettings.cs:179
+msgid "Control Firebox Open"
+msgstr "Controllo apri la porta del forno"
+
+#: ../ORTS/InputSettings.cs:180
+msgid "Control Firebox Close"
+msgstr "Controllo chiudi la porta del forno"
+
+#: ../ORTS/InputSettings.cs:181
+msgid "Control Firing Rate Increase"
+msgstr "Controllo aumenta fuoco"
+
+#: ../ORTS/InputSettings.cs:182
+msgid "Control Firing Rate Decrease"
+msgstr "Controllo diminuisci fuoco"
+
+#: ../ORTS/InputSettings.cs:183
+msgid "Control Fire Shovel Full"
+msgstr "Controllo aggiunta carbone"
+
+#: ../ORTS/InputSettings.cs:184
+msgid "Control Cylinder Cocks"
+msgstr "Controllo sfogo cilindri"
+
+#: ../ORTS/InputSettings.cs:185
+msgid "Control Firing"
+msgstr "Controllo fuoco"
+
+#: ../ORTS/InputSettings.cs:186
+msgid "Control Refill"
+msgstr "Controllo rifornimento"
+
+#: ../ORTS/InputSettings.cs:631
+#, csharp-format
+msgid "{0} requires and is modified by Shift"
+msgstr "{0} richiede ed è modificato da Shift"
+
+#: ../ORTS/InputSettings.cs:633
+#, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr "{0} richiede ed è modificato da Control"
+
+#: ../ORTS/InputSettings.cs:635
+#, csharp-format
+msgid "{0} requires and is modified by Alt"
+msgstr "{0} richiede ed è modificato da Alt"
+
+#: ../ORTS/InputSettings.cs:666
+#, csharp-format
+msgid "{0} and {1} both match {2}"
+msgstr "{0} e {1} entrambi corrispondono a {2}"
 
 #: ../ORTS/Menu/Activities.cs:47
 msgid "- Explore Route -"
@@ -56,9 +641,6 @@ msgstr "Locomotiva '{0}' è esclusa."
 
 #~ msgid "Installation Profile"
 #~ msgstr "Profilo di riferimento"
-
-#~ msgid "Save Packs"
-#~ msgstr "Salva sessioni"
 
 #~ msgid "All files"
 #~ msgstr "Tutti i file"
@@ -276,23 +858,14 @@ msgstr "Locomotiva '{0}' è esclusa."
 #~ msgid "Graduated release air brakes"
 #~ msgstr "Rilascio graduale freno pneumatico"
 
-#~ msgid "Alerter"
-#~ msgstr "Allertatore"
-
 #~ msgid "Suppress control confirmations"
 #~ msgstr "Disattiva conferma comandi"
-
-#~ msgid "Dispatcher window"
-#~ msgstr "Finestra DCO"
 
 #~ msgid "General"
 #~ msgstr "Generale"
 
 #~ msgid "Language"
 #~ msgstr "Lingua"
-
-#~ msgid "% Sound Volume"
-#~ msgstr "% Volume Audio"
 
 #~ msgid "Sound detail level"
 #~ msgstr "Livello dettaglio dei suoni"
@@ -415,9 +988,6 @@ msgstr "Locomotiva '{0}' è esclusa."
 
 #~ msgid "Load DDS textures in preference to ACE"
 #~ msgstr "Carica texture DDS preferendole alle ACE"
-
-#~ msgid "DataLogger"
-#~ msgstr "Registrazione"
 
 #~ msgid "Speed units"
 #~ msgstr "Unità di misura della velocità"

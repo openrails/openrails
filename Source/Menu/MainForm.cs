@@ -161,6 +161,7 @@ namespace ORTS
             switch (Settings.Language)
             {
                 case "System": System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture; break;
+                case "Danish": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("da"); break;
                 case "English": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("en"); break;
                 case "French": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("fr"); break;
                 case "Hungarian": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("hu"); break;

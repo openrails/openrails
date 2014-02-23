@@ -175,18 +175,12 @@ namespace ORTS.Processes
         {
             switch (Settings.Language)
             {
-                case "System":
-                    System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InstalledUICulture;
-                    break;
-                case "English":
-                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en");
-                    break;
-                case "French":
-                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("fr");
-                    break;
-                case "Hungarian":
-                    System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("hu");
-                    break;
+                case "System": System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InstalledUICulture; break;
+                case "Danish": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("da"); break;
+                case "English": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en"); break;
+                case "French": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("fr"); break;
+                case "Hungarian": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("hu"); break;
+                case "Italian": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("it"); break;
             }
         }
 
