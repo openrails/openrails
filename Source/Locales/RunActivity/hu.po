@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2014-02-21 23:01:54+0100\n"
-"PO-Revision-Date: 2014-02-21 23:04+0100\n"
+"PO-Revision-Date: 2014-02-22 12:57+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -14,7 +14,7 @@ msgstr ""
 
 #: ../RunActivity/Debugging/DebugViewerForm.cs:2074
 msgid "Switching Request Sent to the Server"
-msgstr "A váltási kérelem el lett küldve a kiszolgálónak"
+msgstr "A vágányútállítási kérelem el lett küldve az irányítónak"
 
 #: ../RunActivity/Debugging/DebugViewerForm.cs:197
 msgid "View Self"
@@ -740,15 +740,15 @@ msgstr "Tükrök"
 
 #: ../RunActivity/Simulator/Confirmation.cs:186
 msgid "retract"
-msgstr "be"
+msgstr "behajtás"
 
 #: ../RunActivity/Simulator/Confirmation.cs:186
 msgid "extend"
-msgstr "ki"
+msgstr "kihajtás"
 
 #: ../RunActivity/Simulator/Confirmation.cs:188
 msgid "Switch Ahead"
-msgstr "Váltás a vonat előtt"
+msgstr "Vágányútállítás a vonat előtt"
 
 #: ../RunActivity/Simulator/Confirmation.cs:188
 #: ../RunActivity/Simulator/Confirmation.cs:189
@@ -758,7 +758,7 @@ msgstr ""
 
 #: ../RunActivity/Simulator/Confirmation.cs:189
 msgid "Switch Behind"
-msgstr "Váltás a vonat mögött"
+msgstr "Vágányútállítás a vonat mögött"
 
 #: ../RunActivity/Simulator/Confirmation.cs:191
 msgid "Simulation Speed"
@@ -770,7 +770,7 @@ msgstr "alaphelyzetbe állítás"
 
 #: ../RunActivity/Simulator/Confirmation.cs:192
 msgid "Uncouple After"
-msgstr "Szétcsatolás mögötte"
+msgstr "Szétcsatolás hátul"
 
 #: ../RunActivity/Simulator/Confirmation.cs:193
 msgid "Activity"

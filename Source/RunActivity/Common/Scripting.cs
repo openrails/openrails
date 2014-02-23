@@ -47,6 +47,7 @@ namespace ORTS.Scripting
             //CompilerParameters.CompilerOptions += " /debug:pdbonly"; 
             CompilerParameters.ReferencedAssemblies.Add("System.dll");
             CompilerParameters.ReferencedAssemblies.Add("System.Core.dll");
+            CompilerParameters.ReferencedAssemblies.Add("ORTS.Common.dll");
             CompilerParameters.ReferencedAssemblies.Add("RunActivity.exe");
         }
 
@@ -227,6 +228,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<float> SetDynamicBrakeController;
         /// <summary>
+        /// Cut power by pull all pantographs down.
+        /// </summary>
+        public Action SetPantographsDown;
+        /// <summary>
         /// Switch vigilance alarm sound on (true) or off (false).
         /// </summary>
         public Action<bool> SetVigilanceAlarm;
@@ -235,9 +240,29 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<bool> SetHorn;
         /// <summary>
-        /// Cut power by pull all pantographs down.
+        /// Trigger Info1 sound event
         /// </summary>
-        public Action SetPantographsDown;
+        public Action TriggerSoundInfo1;
+        /// <summary>
+        /// Trigger Info2 sound event
+        /// </summary>
+        public Action TriggerSoundInfo2;
+        /// <summary>
+        /// Trigger Penalty1 sound event
+        /// </summary>
+        public Action TriggerSoundPenalty1;
+        /// <summary>
+        /// Trigger Penalty2 sound event
+        /// </summary>
+        public Action TriggerSoundPenalty2;
+        /// <summary>
+        /// Trigger Activate sound event
+        /// </summary>
+        public Action TriggerSoundSystemActivate;
+        /// <summary>
+        /// Trigger Deactivate sound event
+        /// </summary>
+        public Action TriggerSoundSystemDeactivate;
 
         /// <summary>
         /// Set ALERTER_DISPLAY cabcontrol display's alarm state on or off.

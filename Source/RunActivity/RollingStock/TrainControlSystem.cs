@@ -61,7 +61,10 @@ namespace ORTS
         public bool Activated;
 
         string ScriptName;
+        string SoundFileName;
         TrainControlSystem Script;
+
+        public Dictionary<TrainControlSystem, string> Sounds = new Dictionary<TrainControlSystem, string>();
 
         public ScriptedTrainControlSystem() { }
 
@@ -76,6 +79,7 @@ namespace ORTS
             Locomotive = newLocomotive;
             Simulator = newLocomotive.Simulator;
             ScriptName = other.ScriptName;
+            SoundFileName = other.SoundFileName;
             if (other.VigilanceMonitor != null) VigilanceMonitor = new MonitoringDevice(other.VigilanceMonitor);
             if (other.OverspeedMonitor != null) OverspeedMonitor = new MonitoringDevice(other.OverspeedMonitor);
             if (other.EmergencyStopMonitor != null) EmergencyStopMonitor = new MonitoringDevice(other.EmergencyStopMonitor);
@@ -91,6 +95,7 @@ namespace ORTS
                 case "engine(emergencystopmonitor": EmergencyStopMonitor = new MonitoringDevice(stf); break;
                 case "engine(awsmonitor": AWSMonitor = new MonitoringDevice(stf); break;
                 case "engine(ortstraincontrolsystem" : ScriptName = stf.ReadStringBlock(null); break;
+                case "engine(ortstraincontrolsystemsound": SoundFileName = stf.ReadStringBlock(null); break;
             }
         }
 
@@ -179,7 +184,18 @@ namespace ORTS
                 ((MSTSTrainControlSystem)Script).EmergencyStopMonitor = EmergencyStopMonitor;
                 ((MSTSTrainControlSystem)Script).AWSMonitor = AWSMonitor;
             }
-            
+
+            if (SoundFileName != null)
+            {
+                var soundPathArray = new[] {
+                    Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "SOUND"),
+                    Path.Combine(Program.Simulator.BasePath, "SOUND"),
+                };
+                var soundPath = ORTSPaths.GetFileFromFolders(soundPathArray, SoundFileName);
+                if (File.Exists(soundPath))
+                    Sounds.Add(Script, soundPath);
+            }
+
             Script.ClockTime = () => (float)Simulator.ClockTime;
             Script.DistanceM = () => Locomotive.DistanceM;
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.GetIsEmergency();
@@ -204,6 +220,12 @@ namespace ORTS
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
             Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
             Script.SetVigilanceAlarm = (value) => this.SetVigilanceAlarm(value);
+            Script.TriggerSoundInfo1 = () => this.SignalEvent(Event.TrainControlSystemInfo1, Script);
+            Script.TriggerSoundInfo2 = () => this.SignalEvent(Event.TrainControlSystemInfo2, Script);
+            Script.TriggerSoundPenalty1 = () => this.SignalEvent(Event.TrainControlSystemPenalty1, Script);
+            Script.TriggerSoundPenalty2 = () => this.SignalEvent(Event.TrainControlSystemPenalty2, Script);
+            Script.TriggerSoundSystemActivate = () => this.SignalEvent(Event.TrainControlSystemActivate, Script);
+            Script.TriggerSoundSystemDeactivate = () => this.SignalEvent(Event.TrainControlSystemDeactivate, Script);
             Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;
             Script.NextSignalSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref SignalSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
             Script.NextSignalAspect = (value) => NextSignalItem<Aspect>(value, ref SignalAspects, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
@@ -278,6 +300,12 @@ namespace ORTS
             }
         }
 
+        public void SignalEvent(Event evt, TrainControlSystem script)
+        {
+            foreach (var eventHandler in Locomotive.EventHandlers)
+                eventHandler.HandleEvent(evt, script);
+        }  
+        
         public void Update()
         {
             if (Script == null)

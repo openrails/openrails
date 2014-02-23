@@ -350,6 +350,7 @@ namespace ORTS
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
 
                 case "engine(ortstraincontrolsystem":
+                case "engine(ortstraincontrolsystemsound":
                 case "engine(vigilancemonitor":
                 case "engine(emergencystopmonitor":
                 case "engine(awsmonitor":
@@ -2388,6 +2389,11 @@ namespace ORTS
             if (Locomotive.CabSoundFileName != null) LoadCarSound(wagonFolderSlash, Locomotive.CabSoundFileName);
 
             SoundSources.Add(new TrackSoundSource(MSTSWagon, Viewer));
+
+            if (Locomotive.TrainControlSystem != null && Locomotive.TrainControlSystem.Sounds.Count > 0)
+                foreach (var script in Locomotive.TrainControlSystem.Sounds.Keys)
+                    Viewer.SoundProcess.AddSoundSource(script, new List<SoundSourceBase>() {
+                        new SoundSource(Viewer, Locomotive, Locomotive.TrainControlSystem.Sounds[script])});
         }
 
         bool SwapControl()

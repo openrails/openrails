@@ -1106,6 +1106,29 @@ namespace ORTS.Viewer3D
             }
         }
 
+        /// <summary>
+        /// Check if this trigger listens to an event, and if also belongs to the object
+        /// </summary>
+        /// <param name="eventID">Occured event</param>
+        /// <param name="viewer">Object the event belongs to</param>
+        public void HandleEvent(Event eventID, object viewer)
+        {
+            if (eventID == TriggerID)
+            {
+                try
+                {
+                    if (SoundStream.SoundSource.Car.Simulator.Confirmer.Viewer.SoundProcess.GetSoundSources(viewer).Contains(SoundStream.SoundSource as SoundSourceBase))
+                    {
+                        Triggered = true;
+                    }
+                }
+                catch
+                {
+                    return;
+                }
+            }
+        }
+
         public override void TryTrigger()
         {
             Triggered &= Enabled;

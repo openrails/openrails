@@ -20,6 +20,7 @@ namespace ORTS
     public interface EventHandler
     {
         void HandleEvent(Event evt);
+        void HandleEvent(Event evt, object viewer);
     }
 
     public enum Event
@@ -90,6 +91,12 @@ namespace ORTS
         TrainBrakeChange,
         TrainBrakePressureDecrease,
         TrainBrakePressureIncrease,
+        TrainControlSystemActivate,
+        TrainControlSystemDeactivate,
+        TrainControlSystemInfo1,
+        TrainControlSystemInfo2,
+        TrainControlSystemPenalty1,
+        TrainControlSystemPenalty2,
         Uncouple,
         UncoupleB, // NOTE: Currently not used in Open Rails.
         UncoupleC, // NOTE: Currently not used in Open Rails.
@@ -218,7 +225,13 @@ namespace ORTS
                         case 105: return Event.DoorOpen; // door opened; propagated to all locos and wagons of the consist
                         case 106: return Event.DoorClose; // door closed; propagated to all locos and wagons of the consist
                         case 107: return Event.MirrorOpen; 
-                        case 108: return Event.MirrorClose; 
+                        case 108: return Event.MirrorClose;
+                        case 109: return Event.TrainControlSystemInfo1;
+                        case 110: return Event.TrainControlSystemInfo2;
+                        case 111: return Event.TrainControlSystemActivate;
+                        case 112: return Event.TrainControlSystemDeactivate;
+                        case 113: return Event.TrainControlSystemPenalty1;
+                        case 114: return Event.TrainControlSystemPenalty2;
                         //
 
                         default: return 0;

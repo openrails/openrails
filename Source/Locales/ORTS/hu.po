@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS\n"
 "POT-Creation-Date: 2014-02-21 21:33:34+0100\n"
-"PO-Revision-Date: 2014-02-21 23:02+0100\n"
+"PO-Revision-Date: 2014-02-22 20:33+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -22,7 +22,7 @@ msgstr "Játék Mentés"
 
 #: ../ORTS/InputSettings.cs:45
 msgid "Game Quit"
-msgstr "Játék Befejezés"
+msgstr "Játék Kilépés"
 
 #: ../ORTS/InputSettings.cs:46
 msgid "Game Pause"
@@ -50,7 +50,7 @@ msgstr "Játék Váltóállítás kattintva"
 
 #: ../ORTS/InputSettings.cs:52
 msgid "Game Signal Picked"
-msgstr "Játék Jelző kattintva"
+msgstr "Játék Jelzőállítás kattintva"
 
 #: ../ORTS/InputSettings.cs:53
 msgid "Game Switch With Mouse"
@@ -98,43 +98,43 @@ msgstr "Játék Vágányút törlése hátul"
 
 #: ../ORTS/InputSettings.cs:65
 msgid "Display Next Window Tab"
-msgstr ""
+msgstr "Megjelenítés Következő ablakfül"
 
 #: ../ORTS/InputSettings.cs:66
 msgid "Display Help Window"
-msgstr ""
+msgstr "Megjelenítés Súgóablak"
 
 #: ../ORTS/InputSettings.cs:67
 msgid "Display Track Monitor Window"
-msgstr ""
+msgstr "Megjelenítés Pályafigyelő ablak"
 
 #: ../ORTS/InputSettings.cs:68
 msgid "Display HUD"
-msgstr ""
+msgstr "Megjelenítés HUD"
 
 #: ../ORTS/InputSettings.cs:69
 msgid "Display Car Labels"
-msgstr ""
+msgstr "Megjelenítés Kocsik címkéi"
 
 #: ../ORTS/InputSettings.cs:70
 msgid "Display Station Labels"
-msgstr ""
+msgstr "Megjelenítés Állomások címkéi"
 
 #: ../ORTS/InputSettings.cs:71
 msgid "Display Switch Window"
-msgstr ""
+msgstr "Megjelenítés Váltóállító ablak"
 
 #: ../ORTS/InputSettings.cs:72
 msgid "Display Train Operations Window"
-msgstr ""
+msgstr "Megjelenítés Vonatvizsgáló ablak"
 
 #: ../ORTS/InputSettings.cs:73
 msgid "Display Next Station Window"
-msgstr ""
+msgstr "Megjelenítés Következő állomások ablaka"
 
 #: ../ORTS/InputSettings.cs:74
 msgid "Display Compass Window"
-msgstr ""
+msgstr "Megjelenítés Iránytű ablak"
 
 #: ../ORTS/InputSettings.cs:76
 msgid "Debug Speed Up"
