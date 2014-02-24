@@ -63,6 +63,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>call "$(SolutionDir)3rdPartyLibs\GNU.Gettext.PostBuild.bat" "$(ProjectName)" "$(ProjectDir)"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
