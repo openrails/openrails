@@ -64,8 +64,8 @@ namespace ORTS
 
     public class SmoothedDataWithPercentiles : SmoothedData
     {
-        const int HistoryStepCount = 10; // 10 units
-        const float HistoryStepSize = 1; // each unit = 1 second
+        const int HistoryStepCount = 40; // 40 units (i.e. 10 seconds)
+        const float HistoryStepSize = 0.25f; // each unit = 1/4 second
 
         List<float>[] history = new List<float>[HistoryStepCount];
         float position;

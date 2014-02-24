@@ -209,7 +209,7 @@ namespace ORTS.Viewer3D
                         Logger.Data(GC.CollectionCount(2).ToString("F0"));
                         Logger.Data(ProcessorCount.ToString("F0"));
                         Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
-                        Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F4"));
+                        Logger.Data(Viewer.RenderProcess.FrameTime.P50.ToString("F4"));
                         Logger.Data(Viewer.RenderProcess.FrameTime.P95.ToString("F4"));
                         Logger.Data(Viewer.RenderProcess.FrameTime.P99.ToString("F4"));
                         Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
@@ -473,9 +473,9 @@ namespace ORTS.Viewer3D
                                 "Gen 2 GC",
                                 "Processors",
                                 "Frame Rate",
-                                "Frame Time",
-                                "Frame Time P95",
-                                "Frame Time P99",
+                                "Frame Time 50th percentile",
+                                "Frame Time 95th percentile",
+                                "Frame Time 99th percentile",
                                 "Shadow Primitives",
                                 "Render Primitives",
                                 "Render Process",
