@@ -20,6 +20,7 @@
 using System;
 using System.Diagnostics;   // Used by Trace.Warnings
 using ORTS.Viewer3D.Popups;
+using ORTS.Viewer3D.RollingStock;
 
 namespace ORTS.Viewer3D
 {

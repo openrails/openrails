@@ -27,18 +27,12 @@
  * 
  */
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using MSTS.Formats;
 using MSTS.Parsers;
-using ORTS.Settings;
 using ORTS.Viewer3D;  // needed for Confirmation
-using ORTS.Viewer3D.Popups;
 
 namespace ORTS
 {
@@ -135,15 +129,6 @@ namespace ORTS
             Pan1Up = inf.ReadBoolean();
             Pan2Up = inf.ReadBoolean();
             base.Restore(inf);
-        }
-
-        /// <summary>
-        /// Create a viewer for this locomotive.   Viewers are only attached
-        /// while the locomotive is in viewing range.
-        /// </summary>
-        public override TrainCarViewer GetViewer(Viewer viewer)
-        {
-            return new MSTSElectricLocomotiveViewer(viewer, this);
         }
 
         public override void Initialize()
@@ -388,63 +373,4 @@ namespace ORTS
 
 
     } // class ElectricLocomotive
-
-    ///////////////////////////////////////////////////
-    ///   3D VIEW
-    ///////////////////////////////////////////////////
-
-
-    /// <summary>
-    /// Adds pantograph animation to the basic LocomotiveViewer class
-    /// </summary>
-    public class MSTSElectricLocomotiveViewer : MSTSLocomotiveViewer
-    {
-
-        MSTSElectricLocomotive ElectricLocomotive;
-
-        public MSTSElectricLocomotiveViewer(Viewer viewer, MSTSElectricLocomotive car)
-            : base(viewer, car)
-        {
-            ElectricLocomotive = car;
-        }
-
-        /// <summary>
-        /// A keyboard or mouse click has occured. Read the UserInput
-        /// structure to determine what was pressed.
-        /// </summary>
-        public override void HandleUserInput(ElapsedTime elapsedTime)
-        {
-            if( UserInput.IsPressed( UserCommands.ControlPantograph1 ) ) {
-                new PantographCommand(Viewer.Log, 1, !ElectricLocomotive.PantographFirstUp);
-                return; // I.e. Skip the call to base.HandleUserInput()
-            }
-            if( UserInput.IsPressed( UserCommands.ControlPantograph2 ) ) {
-                new PantographCommand(Viewer.Log, 2, !ElectricLocomotive.PantographSecondUp);
-                return;
-            }
-
-            base.HandleUserInput(elapsedTime);
-        }
-
-        /// <summary>
-        /// We are about to display a video frame.  Calculate positions for 
-        /// animated objects, and add their primitives to the RenderFrame list.
-        /// </summary>
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-
-            base.PrepareFrame(frame, elapsedTime);
-        }
-
-        /// <summary>
-        /// This doesn't function yet.
-        /// </summary>
-        public override void Unload()
-        {
-            base.Unload();
-        }
-
-
-    } // class ElectricLocomotiveViewer
-
 }

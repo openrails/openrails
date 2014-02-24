@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using ORTS.Common;
+using ORTS.Viewer3D.RollingStock;
 
 namespace ORTS.Viewer3D
 {
@@ -136,7 +137,13 @@ namespace ORTS.Viewer3D
         TrainCarViewer LoadCar(TrainCar car)
         {
             Trace.Write("C");
-            var carViewer = car.GetViewer(Viewer);
+            TrainCarViewer carViewer =
+                car is MSTSDieselLocomotive ? new MSTSDieselLocomotiveViewer(Viewer, car as MSTSDieselLocomotive) :
+                car is MSTSElectricLocomotive ? new MSTSElectricLocomotiveViewer(Viewer, car as MSTSElectricLocomotive) :
+                car is MSTSSteamLocomotive ? new MSTSSteamLocomotiveViewer(Viewer, car as MSTSSteamLocomotive) :
+                car is MSTSLocomotive ? new MSTSLocomotiveViewer(Viewer, car as MSTSLocomotive) :
+                car is MSTSWagon ? new MSTSWagonViewer(Viewer, car as MSTSWagon) :
+                null;
             carViewer.lightDrawer = new LightViewer(Viewer, car);
             return carViewer;
         }

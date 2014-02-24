@@ -31,16 +31,12 @@
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
-using ORTS.Settings;
-using ORTS.Viewer3D;
 // needed for Debug
 
 namespace ORTS
@@ -232,15 +228,6 @@ namespace ORTS
                 DieselEngines[0].InitFromMSTS(this);
             }
             DieselEngines.Restore(inf);
-        }
-
-        /// <summary>
-        /// Create a viewer for this locomotive.   Viewers are only attached
-        /// while the locomotive is in viewing range.
-        /// </summary>
-        public override TrainCarViewer GetViewer(Viewer viewer)
-        {
-            return new MSTSDieselLocomotiveViewer(viewer, this);
         }
 
         /// <summary>
@@ -797,7 +784,7 @@ namespace ORTS
         public override MSTSNotchController GetRefillController(uint type)
         {
             MSTSNotchController controller = null;
-            if (type == (uint)MSTSLocomotiveViewer.PickupType.FuelDiesel) return FuelController;
+            if (type == (uint)PickupType.FuelDiesel) return FuelController;
             return controller;
         }
 
@@ -817,161 +804,11 @@ namespace ORTS
         /// <returns>0.0 to 1.0. If type is unknown, returns 0.0</returns>
         public override float GetFilledFraction(uint pickupType)
         {
-            if (pickupType == (uint)MSTSLocomotiveViewer.PickupType.FuelDiesel)
+            if (pickupType == (uint)PickupType.FuelDiesel)
             {
                 return FuelController.CurrentValue;
             }
             return 0f;
         }
     } // class DieselLocomotive
-
-    ///////////////////////////////////////////////////
-    ///   3D VIEW
-    ///////////////////////////////////////////////////
-
-    /// <summary>
-    /// Adds any special Diesel loco animation to the basic LocomotiveViewer class
-    /// </summary>
-    class MSTSDieselLocomotiveViewer : MSTSLocomotiveViewer
-    {
-        MSTSDieselLocomotive DieselLocomotive { get { return (MSTSDieselLocomotive)Car; } }
-        List<ParticleEmitterViewer> Exhaust = new List<ParticleEmitterViewer>();
-
-        public MSTSDieselLocomotiveViewer(Viewer viewer, MSTSDieselLocomotive car)
-            : base(viewer, car)
-        {
-            // Now all the particle drawers have been setup, assign them textures based
-            // on what emitters we know about.
-
-            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
-
-            foreach (var drawers in from drawer in ParticleDrawers
-                                    where drawer.Key.ToLowerInvariant().StartsWith("exhaust")
-                                    select drawer.Value)
-            {
-                Exhaust.AddRange(drawers);
-            }
-            foreach (var drawer in Exhaust)
-                drawer.Initialize(viewer.TextureManager.Get(dieselTexture));
-        }
-
-        
-        /// <summary>
-        /// A keyboard or mouse click has occured. Read the UserInput
-        /// structure to determine what was pressed.
-        /// </summary>
-        public override void HandleUserInput(ElapsedTime elapsedTime)
-        {
-            if( UserInput.IsPressed( UserCommands.ControlDieselPlayer ) ) {
-                if( DieselLocomotive.ThrottlePercent < 1 ) 
-                {
-//                    DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
-                    if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped)
-                    {
-                        DieselLocomotive.DieselEngines[0].Start();
-                        DieselLocomotive.SignalEvent(Event.EnginePowerOn); // power on sound hook
-                    }
-                    if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Running)
-                    {
-                        DieselLocomotive.DieselEngines[0].Stop();
-                        DieselLocomotive.SignalEvent(Event.EnginePowerOff); // power off sound hook
-                    }
-                    Viewer.Simulator.Confirmer.Confirm( CabControl.PlayerDiesel, DieselLocomotive.DieselEngines.PowerOn ? CabSetting.On : CabSetting.Off );
-                } 
-                else
-                {
-                    Viewer.Simulator.Confirmer.Warning( CabControl.PlayerDiesel, CabSetting.Warn1 );
-                }
-            }
-            if (UserInput.IsPressed(UserCommands.ControlDieselHelper))
-            {
-                var powerOn = false;
-                var helperLocos = 0;
-
-                foreach (var car in DieselLocomotive.Train.Cars)
-                {
-                    var mstsDieselLocomotive = car as MSTSDieselLocomotive;
-                    if (mstsDieselLocomotive != null && mstsDieselLocomotive.AcceptMUSignals)
-                    {
-                        if (mstsDieselLocomotive.DieselEngines.Count > 0)
-                        {
-                            if ((car == Program.Simulator.PlayerLocomotive))
-                            {
-                                if ((mstsDieselLocomotive.DieselEngines.Count > 1))
-                                {
-                                    for (int i = 1; i < mstsDieselLocomotive.DieselEngines.Count; i++)
-                                    {
-                                        if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Stopped)
-                                        {
-                                            mstsDieselLocomotive.DieselEngines[i].Start();
-                                        }
-                                        if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Running)
-                                        {
-                                            mstsDieselLocomotive.DieselEngines[i].Stop();
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                foreach (DieselEngine de in mstsDieselLocomotive.DieselEngines)
-                                {
-                                    if (de.EngineStatus == DieselEngine.Status.Stopped)
-                                    {
-                                        de.Start();
-                                    }
-                                    if (de.EngineStatus == DieselEngine.Status.Running)
-                                    {
-                                        de.Stop();
-                                    }
-                                }
-                            }
-                        }
-                        //mstsDieselLocomotive.StartStopDiesel();
-                        powerOn = mstsDieselLocomotive.DieselEngines.PowerOn;
-                        if ((car != Program.Simulator.PlayerLocomotive)&&(mstsDieselLocomotive.AcceptMUSignals))
-                        {
-                            if ((mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped) ||
-                                (mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping))
-                                mstsDieselLocomotive.SignalEvent(Event.EnginePowerOff);
-                            else
-                                mstsDieselLocomotive.SignalEvent(Event.EnginePowerOn);
-                        }
-                        helperLocos++;
-                    }
-                }
-                // One confirmation however many helper locomotives
-                // <CJComment> Couldn't make one confirmation per loco work correctly :-( </CJComment>
-                if( helperLocos > 0 ) {
-                    Viewer.Simulator.Confirmer.Confirm( CabControl.HelperDiesel, powerOn ? CabSetting.On : CabSetting.Off );
-                }
-            }
-            base.HandleUserInput(elapsedTime);
-        }
-
-
-        /// <summary>
-        /// We are about to display a video frame.  Calculate positions for 
-        /// animated objects, and add their primitives to the RenderFrame list.
-        /// </summary>
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-            var car = this.Car as MSTSDieselLocomotive;
-            foreach (var drawer in Exhaust)
-            {
-                drawer.SetOutput(car.ExhaustParticles, car.MaxMagnitude, new Color(car.ExhaustColor.R, car.ExhaustColor.G, car.ExhaustColor.B));
-            }
-            base.PrepareFrame(frame, elapsedTime);
-        }
-
-        /// <summary>
-        /// This doesn't function yet.
-        /// </summary>
-        public override void Unload()
-        {
-            base.Unload();
-        }
-
-    } // class MSTSDieselLocomotiveViewer
-
 }

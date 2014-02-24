@@ -155,6 +155,11 @@
     <Compile Include="Simulator\RailDriverHandler.cs" />
     <Compile Include="Simulator\Simulator.cs" />
     <Compile Include="Simulator\Traveller.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSDieselLocomotiveViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSElectricLocomotiveViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSLocomotiveViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSSteamLocomotiveViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSWagonViewer.cs" />
     <Compile Include="Viewer3D\Viewer.cs" />
     <Compile Include="Viewer3D\ALSoundHelper.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />

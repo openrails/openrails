@@ -209,9 +209,6 @@ namespace ORTS
         public List<ViewPoint> PassengerViewpoints = new List<ViewPoint>();
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
-        // Load 3D geometry into this 3D viewer and return it as a TrainCarViewer
-        public virtual TrainCarViewer GetViewer(Viewer viewer) { return null; }
-
         public virtual void Initialize()
         {
             CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
