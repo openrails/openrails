@@ -232,6 +232,7 @@ namespace ORTS
             Script.NextSignalDistanceM = (value) => NextSignalItem<float>(value, ref SignalDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
             Script.NextPostSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref PostSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
             Script.NextPostDistanceM = (value) => NextSignalItem<float>(value, ref PostDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
+            Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);
             Script.SetPantographsDown = () => 
             { 
                 Locomotive.SignalEvent(Event.Pantograph1Down);
@@ -304,7 +305,28 @@ namespace ORTS
         {
             foreach (var eventHandler in Locomotive.EventHandlers)
                 eventHandler.HandleEvent(evt, script);
-        }  
+        }
+
+        public static float SpeedCurve(float targetDistanceM, float targetSpeedLimitMpS, float slope, float delayS, float trainDecelerationMpS2)
+        {
+            if (targetSpeedLimitMpS < 0)
+                targetSpeedLimitMpS = 0;
+            const float gravityMpS2 = 9.80665f;
+            var slopeMpS2 = gravityMpS2 * slope;
+            var delayDeceleration = delayS * trainDecelerationMpS2;
+            var delaySlope = delayS * slopeMpS2;
+            var delayDecelSlope = delayDeceleration - delaySlope;
+
+            var speed = (float)Math.Sqrt
+                (
+                    delayDecelSlope * delayDecelSlope
+                    + 2f * targetDistanceM * (trainDecelerationMpS2 - slopeMpS2)
+                    + targetSpeedLimitMpS * targetSpeedLimitMpS
+                )
+                - delayDecelSlope;
+
+            return speed;
+        }
         
         public void Update()
         {

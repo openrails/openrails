@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
 "POT-Creation-Date: 2014-02-23 23:03:50+0100\n"
-"PO-Revision-Date: 2014-02-23 23:10+0100\n"
+"PO-Revision-Date: 2014-02-24 19:56+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -14,7 +14,7 @@ msgstr ""
 
 #: ../Menu/FolderForm.Designer.cs:56 ../Menu/Options.Designer.cs:159
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: ../Menu/FolderForm.Designer.cs:67 ../Menu/Options.Designer.cs:212
 #: ../Menu/TestingForm.Designer.cs:84
@@ -76,19 +76,19 @@ msgstr "Játékmentések importálása és exportálása"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:53
 msgid "✔"
-msgstr ""
+msgstr "✔"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:64
 msgid "✘"
-msgstr ""
+msgstr "✘"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:86
 msgid "↺"
-msgstr ""
+msgstr "↺"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:108
 msgid "EditKey"
-msgstr ""
+msgstr "EditKey"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:54
 msgid "Accept changes"
@@ -218,11 +218,11 @@ msgstr "Indítás"
 
 #: ../Menu/MainForm.Designer.cs:117
 msgid "open"
-msgstr ""
+msgstr "open"
 
 #: ../Menu/MainForm.Designer.cs:129
 msgid "rails"
-msgstr ""
+msgstr "rails"
 
 #: ../Menu/MainForm.Designer.cs:137
 msgid "Add..."
@@ -326,7 +326,7 @@ msgstr "Szerkesztés"
 
 #: ../Menu/MainForm.Designer.cs:651
 msgid "Open Rails"
-msgstr ""
+msgstr "Open Rails"
 
 #: ../Menu/Options.cs:185
 msgid "Click to change this key"
@@ -425,7 +425,7 @@ msgstr "Látótávolság [m]"
 
 #: ../Menu/Options.Designer.cs:454
 msgid "XXX"
-msgstr ""
+msgstr "XXX"
 
 #: ../Menu/Options.Designer.cs:486
 msgid "Viewing vertical FOV"
@@ -477,7 +477,7 @@ msgstr "Villamosítatlan vonal vonali feszültségének felülírása"
 
 #: ../Menu/Options.Designer.cs:713
 msgid "Adhesion Moving Average Filter Size"
-msgstr ""
+msgstr "Súrlódás mozgóátlag-szűrőjének mérete"
 
 #: ../Menu/Options.Designer.cs:740
 msgid "Break couplers"
@@ -665,6 +665,8 @@ msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
 msgstr ""
+"Levágáshoz 0, széthúzáshoz 100. Ha a vezetőfülkekép mérete megegyezik a "
+"képernyőével, 100 használandó."
 
 #: ../Menu/Options.Designer.cs:776
 msgid ""
@@ -685,6 +687,9 @@ msgid ""
 "{1}.\n"
 "\n"
 msgstr ""
+"Figyelmeztetés: A {0} mentés egy ismeretlen nevű pályához tartozik:\n"
+"{1}.\n"
+"\n"
 
 #: ../Menu/ResumeForm.cs:181
 #, csharp-format
@@ -801,15 +806,15 @@ msgstr "Rendezés törlése"
 
 #: ../Menu/TestingForm.Designer.cs:146
 msgid "ToTest"
-msgstr ""
+msgstr "ToTest"
 
 #: ../Menu/TestingForm.Designer.cs:155
 msgid "ActivityFilePath"
-msgstr ""
+msgstr "ActivityFilePath"
 
 #: ../Menu/TestingForm.Designer.cs:165
 msgid "DefaultSort"
-msgstr ""
+msgstr "DefaultSort"
 
 #: ../Menu/TestingForm.Designer.cs:174
 msgid "Route"
@@ -837,4 +842,4 @@ msgstr "Terhelés"
 
 #: ../Menu/TestingForm.Designer.cs:228
 msgid "FPS"
-msgstr ""
+msgstr "FPS"

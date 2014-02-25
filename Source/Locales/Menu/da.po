@@ -1,10 +1,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2014-02-20 21:35:24+0000\n"
-"PO-Revision-Date: 2014-02-23 20:36+0100\n"
-"Last-Translator: tog-sim.dk\n"
-"Language-Team: Open Rails Dev Team\n"
+"POT-Creation-Date: 2014-02-23 23:18:06+0100\n"
+"PO-Revision-Date: 2014-02-24 10:38+0100\n"
+"Last-Translator: Zepder\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -33,25 +33,25 @@ msgstr "Navn:"
 msgid "Installation Profile"
 msgstr "Installations Profil"
 
-#: ../Menu/ImportExportSaveForm.cs:51
+#: ../Menu/ImportExportSaveForm.cs:52
 msgid "Save Packs"
 msgstr "Gemte spil"
 
-#: ../Menu/ImportExportSaveForm.cs:51
+#: ../Menu/ImportExportSaveForm.cs:52
 msgid "All files"
 msgstr "Alle filer"
 
-#: ../Menu/ImportExportSaveForm.cs:62
+#: ../Menu/ImportExportSaveForm.cs:63
 #, csharp-format
 msgid "Save Pack '{0}' imported successfully."
 msgstr "Gemt spil '{0}' importeret med succes."
 
-#: ../Menu/ImportExportSaveForm.cs:86
+#: ../Menu/ImportExportSaveForm.cs:87
 #, csharp-format
 msgid "Save Pack '{0}' exported successfully."
 msgstr "Gemt spil '{0}' eksporteret med succes."
 
-#: ../Menu/ImportExportSaveForm.cs:112
+#: ../Menu/ImportExportSaveForm.cs:113
 #, csharp-format
 msgid "Save Pack folder contains {0} save pack:"
 msgid_plural "Save Pack folder contains {0} save packs:"
@@ -100,61 +100,61 @@ msgstr "Annuller ændringer"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:75
 msgid "Press any key"
-msgstr "Tryk på en vilkårlig tast"
+msgstr "Tryk en på en tast"
 
 #: ../Menu/KeyInputEditControl.Designer.cs:87
 msgid "Reset to default"
 msgstr "Gendan standardindstillinger"
 
-#: ../Menu/MainForm.cs:104
+#: ../Menu/MainForm.cs:106
 msgid "Spring"
 msgstr "Forår"
 
-#: ../Menu/MainForm.cs:105
+#: ../Menu/MainForm.cs:107
 msgid "Summer"
 msgstr "Sommer"
 
-#: ../Menu/MainForm.cs:106
+#: ../Menu/MainForm.cs:108
 msgid "Autumn"
 msgstr "Efterår"
 
-#: ../Menu/MainForm.cs:107
+#: ../Menu/MainForm.cs:109
 msgid "Winter"
 msgstr "Vinter"
 
-#: ../Menu/MainForm.cs:111
+#: ../Menu/MainForm.cs:113
 msgid "Clear"
 msgstr "Skyfrit"
 
-#: ../Menu/MainForm.cs:112
+#: ../Menu/MainForm.cs:114
 msgid "Snow"
 msgstr "Sne"
 
-#: ../Menu/MainForm.cs:113
+#: ../Menu/MainForm.cs:115
 msgid "Rain"
 msgstr "Regn"
 
-#: ../Menu/MainForm.cs:117
+#: ../Menu/MainForm.cs:119
 msgid "Easy"
-msgstr "Let"
+msgstr "Nem"
 
-#: ../Menu/MainForm.cs:118
+#: ../Menu/MainForm.cs:120
 msgid "Medium"
 msgstr "Middel"
 
-#: ../Menu/MainForm.cs:119
+#: ../Menu/MainForm.cs:121
 msgid "Hard"
 msgstr "Svær"
 
-#: ../Menu/MainForm.cs:185
+#: ../Menu/MainForm.cs:188
 msgid "Select a the installation profile (MSTS folder) to add:"
 msgstr "Vælg en installationsprofil (MSTS mappe) der skal tilføjes:"
 
-#: ../Menu/MainForm.cs:223
+#: ../Menu/MainForm.cs:226
 msgid "Path: "
 msgstr "Sti:"
 
-#: ../Menu/MainForm.cs:223
+#: ../Menu/MainForm.cs:226
 msgid ""
 "\n"
 "Name: "
@@ -162,7 +162,7 @@ msgstr ""
 "\n"
 "Navn:"
 
-#: ../Menu/MainForm.cs:223
+#: ../Menu/MainForm.cs:226
 msgid ""
 "\n"
 "\n"
@@ -172,7 +172,7 @@ msgstr ""
 "\n"
 "Slet denne installationsprofil fra Open Rails?"
 
-#: ../Menu/MainForm.cs:309
+#: ../Menu/MainForm.cs:312
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -180,7 +180,7 @@ msgstr ""
 "Brugernavn skal være fra 4 til 10 tegn, må ikke indeholde mellemrum,  ', \" "
 "eller - og må ikke begynde med et tal."
 
-#: ../Menu/MainForm.cs:463
+#: ../Menu/MainForm.cs:466
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed.\n"
 "Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
@@ -190,21 +190,21 @@ msgstr ""
 "Tryk på 'Tilføj...' for at pege Open Rails til Microsoft Train Simulator "
 "mappen."
 
-#: ../Menu/MainForm.cs:726
+#: ../Menu/MainForm.cs:729
 msgid "Activity Briefing"
-msgstr "Aktivitets Orientering"
+msgstr "Aktivitets Information"
 
-#: ../Menu/MainForm.cs:720
+#: ../Menu/MainForm.cs:723
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Rute: {0}"
 
-#: ../Menu/MainForm.cs:722
+#: ../Menu/MainForm.cs:725
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Lokomotiv: {0}"
 
-#: ../Menu/MainForm.cs:725
+#: ../Menu/MainForm.cs:728
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "Aktivitet: {0}"
@@ -237,13 +237,13 @@ msgstr "Slet"
 msgid "Logging"
 msgstr "Logføring"
 
-#: ../Menu/MainForm.Designer.cs:172 ../Menu/Options.Designer.cs:1398
+#: ../Menu/MainForm.Designer.cs:172 ../Menu/Options.Designer.cs:1399
 msgid "Options"
 msgstr "Indstillinger"
 
 #: ../Menu/MainForm.Designer.cs:182
 msgid "Resume/ Replay..."
-msgstr "Genoptag/ Genafspilning"
+msgstr "Genoptag/ Genafspil"
 
 #: ../Menu/MainForm.Designer.cs:191 ../Menu/TestingForm.Designer.cs:295
 msgid "Testing"
@@ -263,7 +263,7 @@ msgstr "Lokomotiv:"
 
 #: ../Menu/MainForm.Designer.cs:323
 msgid "Consist:"
-msgstr "Consist:"
+msgstr "Sammensætning:"
 
 #: ../Menu/MainForm.Designer.cs:334
 msgid "Starting at:"
@@ -329,23 +329,23 @@ msgstr "Rediger"
 msgid "Open Rails"
 msgstr "Open Rails"
 
-#: ../Menu/Options.cs:184
+#: ../Menu/Options.cs:185
 msgid "Click to change this key"
 msgstr "Klik her for at ændre denne tast"
 
-#: ../Menu/Options.cs:200
+#: ../Menu/Options.cs:201
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
 msgstr ""
-"Fortsæt med modstridende tastetilknytninger?\n"
+"Fortsæt med modstridende tastebindinger?\n"
 "\n"
 
-#: ../Menu/Options.cs:277
+#: ../Menu/Options.cs:278
 msgid "Remove all custom key assignments?"
-msgstr "Fjern alle brugerdefinerede tastetilknytninger?"
+msgstr "Fjern alle brugerdefinerede tastebindinger?"
 
-#: ../Menu/Options.cs:288
+#: ../Menu/Options.cs:289
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
@@ -353,15 +353,15 @@ msgstr ""
 "En liste over alle tastatur kommandoer og nøgler er placeret her:\n"
 "\n"
 
-#: ../Menu/Options.cs:297
+#: ../Menu/Options.cs:298
 msgid "No errors found."
 msgstr "Ingen fejl blev fundet."
 
-#: ../Menu/Options.cs:322
+#: ../Menu/Options.cs:323
 msgid "Please restart Open Rails in order to load the new language."
 msgstr "Genstart Open Rails for at indlæse det nye sprog."
 
-#: ../Menu/Options.cs:311
+#: ../Menu/Options.cs:312
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -400,228 +400,228 @@ msgstr "Generelt"
 msgid "Language"
 msgstr "Sprog"
 
-#: ../Menu/Options.Designer.cs:320
+#: ../Menu/Options.Designer.cs:321
 msgid "Audio"
 msgstr "Lyd"
 
-#: ../Menu/Options.Designer.cs:353
+#: ../Menu/Options.Designer.cs:354
 msgid "% Sound Volume"
 msgstr "% Lydstyrke"
 
-#: ../Menu/Options.Designer.cs:362
+#: ../Menu/Options.Designer.cs:363
 msgid "Sound detail level"
 msgstr "Lydkvalitet"
 
-#: ../Menu/Options.Designer.cs:383
+#: ../Menu/Options.Designer.cs:384
 msgid "MSTS Bin compatible sound"
 msgstr "MSTS Bin kompatibel lyd"
 
-#: ../Menu/Options.Designer.cs:407
+#: ../Menu/Options.Designer.cs:408
 msgid "Video"
 msgstr "Grafik"
 
-#: ../Menu/Options.Designer.cs:417
+#: ../Menu/Options.Designer.cs:418
 msgid "Viewing distance (m)"
 msgstr "Synsafstand (m)"
 
-#: ../Menu/Options.Designer.cs:453
+#: ../Menu/Options.Designer.cs:454
 msgid "XXX"
 msgstr "XXX"
 
-#: ../Menu/Options.Designer.cs:485
+#: ../Menu/Options.Designer.cs:486
 msgid "Viewing vertical FOV"
-msgstr "Lodret sysfelt"
+msgstr "Lodret synsfelt"
 
-#: ../Menu/Options.Designer.cs:508
+#: ../Menu/Options.Designer.cs:509
 msgid "% Cab 2D stretch"
 msgstr "% Stræk af 2D Førehus"
 
-#: ../Menu/Options.Designer.cs:517
+#: ../Menu/Options.Designer.cs:518
 msgid "World object density"
 msgstr "Genstandes tæthed"
 
-#: ../Menu/Options.Designer.cs:562
+#: ../Menu/Options.Designer.cs:563
 msgid "Glass on in-game windows"
 msgstr "Gennemsigtige vinduer"
 
-#: ../Menu/Options.Designer.cs:572
+#: ../Menu/Options.Designer.cs:573
 msgid "Window size"
 msgstr "Vinduesstørrelse"
 
-#: ../Menu/Options.Designer.cs:581
+#: ../Menu/Options.Designer.cs:582
 msgid "Dynamic shadows"
 msgstr "Dynamiske skygger"
 
-#: ../Menu/Options.Designer.cs:591
+#: ../Menu/Options.Designer.cs:592
 msgid "Overhead wire"
 msgstr "Køreledning"
 
-#: ../Menu/Options.Designer.cs:611
+#: ../Menu/Options.Designer.cs:612
 msgid "Simulation"
 msgstr "Simulering"
 
-#: ../Menu/Options.Designer.cs:622
+#: ../Menu/Options.Designer.cs:623
 msgid "Optimal curve speed factor"
-msgstr "Optimal hastighedsfaktor i kurver"
+msgstr "Optimal hastighedsfaktor i sving"
 
-#: ../Menu/Options.Designer.cs:656
+#: ../Menu/Options.Designer.cs:657
 msgid "Curve resistance multiplier at zero speed"
 msgstr "Sving: modstandsforøgelse ved hastigheden nul"
 
-#: ../Menu/Options.Designer.cs:690
+#: ../Menu/Options.Designer.cs:691
 msgid "Curve resistance speed dependent"
 msgstr "Sving: hastigheds afhængig modstand"
 
-#: ../Menu/Options.Designer.cs:701
+#: ../Menu/Options.Designer.cs:702
 msgid "Override non-electrified route line-voltage"
 msgstr "Tillad elektriske tog på ikke-elektrificeret rute"
 
-#: ../Menu/Options.Designer.cs:712
+#: ../Menu/Options.Designer.cs:713
 msgid "Adhesion Moving Average Filter Size"
 msgstr "Størrelsen af filter til friktion"
 
-#: ../Menu/Options.Designer.cs:739
+#: ../Menu/Options.Designer.cs:740
 msgid "Break couplers"
 msgstr "Koblingsbrud"
 
-#: ../Menu/Options.Designer.cs:749
+#: ../Menu/Options.Designer.cs:750
 msgid "Use advanced adhesion model"
 msgstr "Brug avanceret friktionsmodel"
 
-#: ../Menu/Options.Designer.cs:764
+#: ../Menu/Options.Designer.cs:765
 msgid "Keyboard"
 msgstr "Tastatur"
 
-#: ../Menu/Options.Designer.cs:774
+#: ../Menu/Options.Designer.cs:775
 msgid "Export"
 msgstr "Eksporter"
 
-#: ../Menu/Options.Designer.cs:787
+#: ../Menu/Options.Designer.cs:788
 msgid "Defaults"
 msgstr "Standard"
 
-#: ../Menu/Options.Designer.cs:799
+#: ../Menu/Options.Designer.cs:800
 msgid "Check"
 msgstr "Tjek"
 
-#: ../Menu/Options.Designer.cs:846
+#: ../Menu/Options.Designer.cs:847
 msgid "Experimental"
 msgstr "Forsøg"
 
-#: ../Menu/Options.Designer.cs:857
+#: ../Menu/Options.Designer.cs:858
 msgid "Use MSTS Environments"
 msgstr "Brug MSTS omgivelser"
 
-#: ../Menu/Options.Designer.cs:867
+#: ../Menu/Options.Designer.cs:868
 msgid "Always use highest detail objects"
 msgstr "Brug altid de mest detaljerede objekter"
 
-#: ../Menu/Options.Designer.cs:879
+#: ../Menu/Options.Designer.cs:880
 msgid "Use location-linked passing path processing"
 msgstr "Brug 'location-linked' overhalingsspor bearbejdning"
 
-#: ../Menu/Options.Designer.cs:906
+#: ../Menu/Options.Designer.cs:907
 msgid "Ambient daylight brightness"
 msgstr "Lysstyrke ved dagslys"
 
-#: ../Menu/Options.Designer.cs:915
+#: ../Menu/Options.Designer.cs:916
 msgid "Target frame rate"
 msgstr "FPS målsætning"
 
-#: ../Menu/Options.Designer.cs:952
+#: ../Menu/Options.Designer.cs:953
 msgid "Automatically tune settings to keep performance level"
 msgstr "Automatisk justerering af indstillinger for at opretholde ydeevne"
 
-#: ../Menu/Options.Designer.cs:962
+#: ../Menu/Options.Designer.cs:963
 msgid "Loading delay (ms)"
 msgstr "Indlæsnings-forsinkelse (ms)"
 
-#: ../Menu/Options.Designer.cs:988
+#: ../Menu/Options.Designer.cs:989
 msgid "Double overhead wires"
 msgstr "Dobbelte køreledninger"
 
-#: ../Menu/Options.Designer.cs:998
+#: ../Menu/Options.Designer.cs:999
 msgid "Extend object maximum viewing distance to horizon"
 msgstr "Udvid objekters maksimal synsafstand til horisonten"
 
-#: ../Menu/Options.Designer.cs:1008
+#: ../Menu/Options.Designer.cs:1009
 msgid "Viewing distance (km)"
 msgstr "Synsafstand (km)"
 
-#: ../Menu/Options.Designer.cs:1045
+#: ../Menu/Options.Designer.cs:1046
 msgid "Distant mountains"
 msgstr "Bjerge i det fjerne"
 
-#: ../Menu/Options.Designer.cs:1055
+#: ../Menu/Options.Designer.cs:1056
 msgid "Gauge (mm)"
 msgstr "Sporvidde (mm)"
 
-#: ../Menu/Options.Designer.cs:1091
+#: ../Menu/Options.Designer.cs:1092
 msgid "Minimum length (m)"
 msgstr "Minimum længde (m)"
 
-#: ../Menu/Options.Designer.cs:1128
+#: ../Menu/Options.Designer.cs:1129
 msgid "Level"
 msgstr "Niveau"
 
-#: ../Menu/Options.Designer.cs:1139
+#: ../Menu/Options.Designer.cs:1140
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr "Forsøgsfunktioner der kan bremse spillet, brug dem på eget ansvar."
 
-#: ../Menu/Options.Designer.cs:1162
+#: ../Menu/Options.Designer.cs:1163
 msgid "Super-elevation"
-msgstr "Elevation i kurver"
+msgstr "Elevation i sving"
 
-#: ../Menu/Options.Designer.cs:1172
+#: ../Menu/Options.Designer.cs:1173
 msgid "Load DDS textures in preference to ACE"
 msgstr "Indlæs DDS strukturer fremfor ACE"
 
-#: ../Menu/Options.Designer.cs:1191
+#: ../Menu/Options.Designer.cs:1192
 msgid "DataLogger"
 msgstr "Data logføring"
 
-#: ../Menu/Options.Designer.cs:1232
+#: ../Menu/Options.Designer.cs:1233
 msgid "Speed units"
 msgstr "Hastighedsenheder"
 
-#: ../Menu/Options.Designer.cs:1253
+#: ../Menu/Options.Designer.cs:1254
 msgid "Log miscellaneous data"
 msgstr "Log øvrige data"
 
-#: ../Menu/Options.Designer.cs:1263
+#: ../Menu/Options.Designer.cs:1264
 msgid "Log performance data"
 msgstr "Log ydelsesdata"
 
-#: ../Menu/Options.Designer.cs:1273
+#: ../Menu/Options.Designer.cs:1274
 msgid "Start logging with the simulation start"
 msgstr "Start logføring når simuleringen begynder"
 
-#: ../Menu/Options.Designer.cs:1284
+#: ../Menu/Options.Designer.cs:1285
 msgid "Separator"
 msgstr "Adskiller"
 
-#: ../Menu/Options.Designer.cs:1293
+#: ../Menu/Options.Designer.cs:1294
 msgid "Log physics data"
 msgstr "Log fysiske data"
 
-#: ../Menu/Options.Designer.cs:1308
+#: ../Menu/Options.Designer.cs:1309
 msgid "Evaluation"
 msgstr "Evaluering"
 
-#: ../Menu/Options.Designer.cs:1339
+#: ../Menu/Options.Designer.cs:1340
 msgid "Interval (sec)"
 msgstr "Interval (sek)"
 
-#: ../Menu/Options.Designer.cs:1348
+#: ../Menu/Options.Designer.cs:1349
 msgid "Log station stops"
 msgstr "Log data ved stop på stationer"
 
-#: ../Menu/Options.Designer.cs:1380
+#: ../Menu/Options.Designer.cs:1381
 msgid "Log train speed"
 msgstr "Log togets hastighed"
 
-#: ../Menu/Options.Designer.cs:1243
+#: ../Menu/Options.Designer.cs:1244
 msgid ""
 "Use DataLogger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
@@ -630,55 +630,55 @@ msgstr ""
 "Brug DataLogger til at gemme dine simuleringsdata (kommando: F12).\r\n"
 "Husk, at størrelsen af logfilen vokser i takt med simuleringstiden!"
 
-#: ../Menu/Options.Designer.cs:339
+#: ../Menu/Options.Designer.cs:340
 msgid "Sound Volume 0-100"
 msgstr "Lyd niveau 0-100"
 
-#: ../Menu/Options.Designer.cs:788
+#: ../Menu/Options.Designer.cs:789
 msgid "Load the factory default key assignments."
-msgstr "Gendan fabriksindstillinger for tastetilknytninger"
+msgstr "Gendan fabriksindstillinger for tastebindinger"
 
-#: ../Menu/Options.Designer.cs:800
+#: ../Menu/Options.Designer.cs:801
 msgid "Check for incorrect key assignments."
-msgstr "Tjek for forkerte tastetilknytninger"
+msgstr "Tjek for ukorrekte tastebindinger"
 
-#: ../Menu/Options.Designer.cs:894
+#: ../Menu/Options.Designer.cs:895
 msgid "Default is 100"
 msgstr "Standard er 100"
 
-#: ../Menu/Options.Designer.cs:938 ../Menu/Options.Designer.cs:1031
+#: ../Menu/Options.Designer.cs:939 ../Menu/Options.Designer.cs:1032
 msgid "Distance to see mountains"
-msgstr "Synsafstand for bjerge"
+msgstr "Synsafstand til bjerge"
 
-#: ../Menu/Options.Designer.cs:1114
+#: ../Menu/Options.Designer.cs:1115
 msgid "Shortest curve to have elevation"
 msgstr "Korteste sving for at have elevation"
 
-#: ../Menu/Options.Designer.cs:1152
+#: ../Menu/Options.Designer.cs:1153
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr "0: ingen elevation, 1: 9cm max; 10: 18cm max"
 
-#: ../Menu/Options.Designer.cs:498
+#: ../Menu/Options.Designer.cs:499
 msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
 msgstr ""
-"0 for at klippe førerhuset, 100 for at strække den. For førerhuse der "
+"0 for at forkorte førerhuset, 100 for at strække den. For førerhuse der "
 "matcher skærmen, kan du bruge 100."
 
-#: ../Menu/Options.Designer.cs:775
+#: ../Menu/Options.Designer.cs:776
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."
 msgstr ""
-"Generer en liste over dine tastaturtilknytninger. \r\n"
+"Generer en liste over dine tastaturbindinger. \r\n"
 "Resultatet bliver placeret på skrivebordet."
 
-#: ../Menu/ResumeForm.cs:119
+#: ../Menu/ResumeForm.cs:120
 msgid "Explore Route"
 msgstr "Udforsk Rute"
 
-#: ../Menu/ResumeForm.cs:168
+#: ../Menu/ResumeForm.cs:169
 #, csharp-format
 msgid ""
 "Warning: Save {0} found from a route with an unexpected name:\n"
@@ -689,7 +689,7 @@ msgstr ""
 "{1}.\n"
 "\n"
 
-#: ../Menu/ResumeForm.cs:180
+#: ../Menu/ResumeForm.cs:181
 #, csharp-format
 msgid ""
 "To prevent crashes and unexpected behavior, new versions of Open Rails "
@@ -708,7 +708,7 @@ msgstr "Slet"
 
 #: ../Menu/ResumeForm.Designer.cs:198
 msgid "Undelete"
-msgstr "Genopret"
+msgstr "Gendan"
 
 #: ../Menu/ResumeForm.Designer.cs:220
 msgid "Delete all invalid saves"
@@ -764,7 +764,7 @@ msgstr "Afstand"
 
 #: ../Menu/ResumeForm.Designer.cs:143
 msgid "Tile"
-msgstr "Tile"
+msgstr "Sted"
 
 #: ../Menu/ResumeForm.Designer.cs:151
 msgid "Valid"
@@ -812,7 +812,7 @@ msgstr "Sti til aktiviteter"
 
 #: ../Menu/TestingForm.Designer.cs:165
 msgid "DefaultSort"
-msgstr "DefaultSort"
+msgstr "StandardSort"
 
 #: ../Menu/TestingForm.Designer.cs:174
 msgid "Route"

@@ -211,6 +211,15 @@ namespace ORTS.Scripting.Api
         public Func<bool> EmergencyCausesThrottleDown;
         public Func<bool> EmergencyEngagesHorn;
 
+        // TODO: The following will be available in .NET 4 as normal Func:
+        public delegate TResult Func5<T1, T2, T3, T4, T5, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
+
+        /// <summary>
+        /// (float targetDistanceM, float targetSpeedLimitMpS, float slope, float delayS, float trainDecelerationMpS2)
+        /// Returns a speed curve based speed limit
+        /// </summary>
+        public Func5<float, float, float, float, float, float> SpeedCurve;
+
         /// <summary>
         /// Set train brake controller to full service position.
         /// </summary>
