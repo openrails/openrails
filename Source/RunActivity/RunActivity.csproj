@@ -1,34 +1,71 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
-    <AssemblyName>RunActivity</AssemblyName>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <OutputType>WinExe</OutputType>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ORTS</RootNamespace>
+    <AssemblyName>RunActivity</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Program\</OutputPath>
     <DefineConstants>DEBUG;TRACE;WINDOWS;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <OutputPath>..\..\Program\</OutputPath>
+    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
-    <DefineConstants>TRACE;WINDOWS;NEW_SIGNALLING</DefineConstants>
-    <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
-    <ErrorReport>prompt</ErrorReport>
-    <NoWarn>1591</NoWarn>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
+    <DefineConstants>TRACE;WINDOWS;NEW_SIGNALLING</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
+    </Reference>
+    <Reference Include="GNU.Gettext.WinForms, Version=1.0.5151.39911, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="PIEHidDotNet, Version=2.2.3.26389, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\PIEHidDotNet.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\MSTS.Formats\RDBFile.cs">
       <Link>MSTS\RDBFile.cs</Link>
@@ -36,13 +73,6 @@
     <Compile Include="..\MSTS.Formats\TDBFile.cs">
       <Link>MSTS\TDBFile.cs</Link>
     </Compile>
-    <Compile Include="Viewer3D\Popups\CarOperationsWindow.cs" />
-    <Compile Include="Processes\Game.cs" />
-    <Compile Include="Processes\GameState.cs" />
-    <Compile Include="Processes\GameStateRunActivity.cs" />
-    <Compile Include="Processes\GameStateViewer3D.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Simulator\Hazzard.cs" />
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />
     <Compile Include="AI\AITrain.cs" />
@@ -102,31 +132,17 @@
     <Compile Include="MultiPlayer\ServerComm.cs" />
     <Compile Include="Physics\Brakes.cs" />
     <Compile Include="Physics\Train.cs" />
-    <Compile Include="Viewer3D\Popups\ActivityWindow.cs" />
-    <Compile Include="Viewer3D\Popups\CompassWindow.cs" />
-    <Compile Include="Viewer3D\Popups\ComposeMessage.cs" />
-    <Compile Include="Viewer3D\Popups\HelpWindow.cs" />
-    <Compile Include="Viewer3D\Popups\HUDWindow.cs" />
-    <Compile Include="Viewer3D\Popups\LayeredWindow.cs" />
-    <Compile Include="Viewer3D\Popups\MessagesWindow.cs" />
-    <Compile Include="Viewer3D\Popups\NextStationWindow.cs" />
-    <Compile Include="Viewer3D\Popups\PauseWindow.cs" />
-    <Compile Include="Viewer3D\Popups\QuitWindow.cs" />
-    <Compile Include="Viewer3D\Popups\SignallingDebugWindow.cs" />
-    <Compile Include="Viewer3D\Popups\SwitchWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TrackMonitorWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TracksDebugWindow.cs" />
-    <Compile Include="Viewer3D\Popups\TrainOperationsWindow.cs" />
-    <Compile Include="Viewer3D\Popups\Window.cs" />
-    <Compile Include="Viewer3D\Popups\WindowControls.cs" />
-    <Compile Include="Viewer3D\Popups\WindowManager.cs" />
-    <Compile Include="Viewer3D\Popups\WindowText.cs" />
+    <Compile Include="Processes\Game.cs" />
+    <Compile Include="Processes\GameState.cs" />
+    <Compile Include="Processes\GameStateRunActivity.cs" />
+    <Compile Include="Processes\GameStateViewer3D.cs" />
     <Compile Include="Processes\LoaderProcess.cs" />
     <Compile Include="Processes\ProcessState.cs" />
     <Compile Include="Processes\Profiler.cs" />
     <Compile Include="Processes\RenderProcess.cs" />
     <Compile Include="Processes\SoundProcess.cs" />
     <Compile Include="Processes\UpdaterProcess.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />
     <Compile Include="RollingStock\Axle.cs" />
@@ -151,16 +167,11 @@
     <Compile Include="Signals\SIGSCRfile.cs" />
     <Compile Include="Simulator\Activity.cs" />
     <Compile Include="Simulator\Confirmation.cs" />
+    <Compile Include="Simulator\Hazzard.cs" />
     <Compile Include="Simulator\LevelCrossing.cs" />
     <Compile Include="Simulator\RailDriverHandler.cs" />
     <Compile Include="Simulator\Simulator.cs" />
     <Compile Include="Simulator\Traveller.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSDieselLocomotiveViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSElectricLocomotiveViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSLocomotiveViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSSteamLocomotiveViewer.cs" />
-    <Compile Include="Viewer3D\RollingStock\MSTSWagonViewer.cs" />
-    <Compile Include="Viewer3D\Viewer.cs" />
     <Compile Include="Viewer3D\ALSoundHelper.cs" />
     <Compile Include="Viewer3D\Cameras.cs" />
     <Compile Include="Viewer3D\CommandLog.cs" />
@@ -174,9 +185,34 @@
     <Compile Include="Viewer3D\MSTSSky.cs" />
     <Compile Include="Viewer3D\OpenAL.cs" />
     <Compile Include="Viewer3D\ParticleEmitter.cs" />
+    <Compile Include="Viewer3D\Popups\ActivityWindow.cs" />
+    <Compile Include="Viewer3D\Popups\CarOperationsWindow.cs" />
+    <Compile Include="Viewer3D\Popups\CompassWindow.cs" />
+    <Compile Include="Viewer3D\Popups\ComposeMessage.cs" />
+    <Compile Include="Viewer3D\Popups\HelpWindow.cs" />
+    <Compile Include="Viewer3D\Popups\HUDWindow.cs" />
+    <Compile Include="Viewer3D\Popups\LayeredWindow.cs" />
+    <Compile Include="Viewer3D\Popups\MessagesWindow.cs" />
+    <Compile Include="Viewer3D\Popups\NextStationWindow.cs" />
+    <Compile Include="Viewer3D\Popups\PauseWindow.cs" />
+    <Compile Include="Viewer3D\Popups\QuitWindow.cs" />
+    <Compile Include="Viewer3D\Popups\SignallingDebugWindow.cs" />
+    <Compile Include="Viewer3D\Popups\SwitchWindow.cs" />
+    <Compile Include="Viewer3D\Popups\TrackMonitorWindow.cs" />
+    <Compile Include="Viewer3D\Popups\TracksDebugWindow.cs" />
+    <Compile Include="Viewer3D\Popups\TrainOperationsWindow.cs" />
+    <Compile Include="Viewer3D\Popups\Window.cs" />
+    <Compile Include="Viewer3D\Popups\WindowControls.cs" />
+    <Compile Include="Viewer3D\Popups\WindowManager.cs" />
+    <Compile Include="Viewer3D\Popups\WindowText.cs" />
     <Compile Include="Viewer3D\Precipitation.cs" />
     <Compile Include="Viewer3D\RenderFrame.cs" />
     <Compile Include="Viewer3D\RoadCars.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSDieselLocomotiveViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSElectricLocomotiveViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSLocomotiveViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSSteamLocomotiveViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\MSTSWagonViewer.cs" />
     <Compile Include="Viewer3D\Scenery.cs" />
     <Compile Include="Viewer3D\Shaders.cs" />
     <Compile Include="Viewer3D\Shapes.cs" />
@@ -189,6 +225,7 @@
     <Compile Include="Viewer3D\Trains.cs" />
     <Compile Include="Viewer3D\Transfers.cs" />
     <Compile Include="Viewer3D\UserInput.cs" />
+    <Compile Include="Viewer3D\Viewer.cs" />
     <Compile Include="Viewer3D\Water.cs" />
     <Compile Include="Viewer3D\Weather.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
@@ -208,9 +245,6 @@
     <Content Include="Content\Clouds01.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\Loading.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Content\DebugShader.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -221,6 +255,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\LightGlowShader.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Loading.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Loading.png">
@@ -301,31 +338,6 @@
     <Content Include="Version.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
-    </Reference>
-    <Reference Include="GNU.Gettext.WinForms, Version=1.0.5151.39911, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
-    <Reference Include="PIEHidDotNet, Version=2.2.3.26389, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\PIEHidDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MSTS.Formats\MSTS.Formats.csproj">

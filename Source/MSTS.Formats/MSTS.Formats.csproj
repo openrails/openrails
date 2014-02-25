@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NEW_SIGNALLING</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -31,6 +31,21 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\MSTS.Formats.xml</DocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="..\MSTS\_math.cs">
       <Link>_math.cs</Link>
@@ -45,12 +60,12 @@
     <Compile Include="ENVFile.cs" />
     <Compile Include="FFile.cs" />
     <Compile Include="HAZFile.cs" />
-    <Compile Include="Signals.cs" />
     <Compile Include="PATFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SDFile.cs" />
     <Compile Include="SFile.cs" />
     <Compile Include="SIGCFGFile.cs" />
+    <Compile Include="Signals.cs" />
     <Compile Include="SMSFile.cs" />
     <Compile Include="SRVFile.cs" />
     <Compile Include="TFile.cs" />
@@ -60,13 +75,6 @@
     <Compile Include="WFile.cs" />
     <Compile Include="WSFile.cs" />
     <Compile Include="YFile.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MSTS.Parsers\MSTS.Parsers.csproj">

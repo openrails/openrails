@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NEW_SIGNALLING</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -32,14 +32,6 @@
     <DocumentationFile>..\..\Program\ORTS.Common.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Conversions.cs" />
-    <Compile Include="Coordinates.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SettingsBase.cs" />
-    <Compile Include="SettingStore.cs" />
-    <Compile Include="VersionInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
@@ -49,6 +41,22 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Conversions.cs" />
+    <Compile Include="Coordinates.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SettingsBase.cs" />
+    <Compile Include="SettingStore.cs" />
+    <Compile Include="VersionInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

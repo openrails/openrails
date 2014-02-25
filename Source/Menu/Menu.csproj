@@ -1,34 +1,68 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
-    <AssemblyName>Menu</AssemblyName>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <OutputType>WinExe</OutputType>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{5EA53243-5C52-4F9C-A730-C35F6C68FB74}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ORTS</RootNamespace>
+    <AssemblyName>Menu</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Program\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <OutputPath>..\..\Program\</OutputPath>
+    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
-    <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>..\..\Program\Menu.xml</DocumentationFile>
-    <ErrorReport>prompt</ErrorReport>
-    <NoWarn>1591</NoWarn>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Program\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>..\..\Program\Menu.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
+    </Reference>
+    <Reference Include="GNU.Gettext.WinForms, Version=1.0.5151.39911, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="KeyInputEditControl.cs">
       <SubType>Form</SubType>
@@ -127,30 +161,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Expander-closed.png" />
-    <None Include="Expander-open.png" />
     <None Include="Expander-closed-disabled.png" />
+    <None Include="Expander-open.png" />
     <None Include="Properties\DataSources\ResumeForm.Save.datasource" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\GNU.Gettext.dll</HintPath>
-    </Reference>
-    <Reference Include="GNU.Gettext.WinForms, Version=1.0.5151.39911, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="WindowsBase">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MSTS.Formats\MSTS.Formats.csproj">
