@@ -292,14 +292,6 @@
             // 
             this.comboBoxLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLanguage.FormattingEnabled = true;
-            this.comboBoxLanguage.Items.AddRange(new object[] {
-            "System",
-            "Danish",
-            "English",
-            "French",
-            "Hungarian",
-            "Italian",
-            });
             this.comboBoxLanguage.Location = new System.Drawing.Point(6, 124);
             this.comboBoxLanguage.Name = "comboBoxLanguage";
             this.comboBoxLanguage.Size = new System.Drawing.Size(121, 21);

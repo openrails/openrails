@@ -20,6 +20,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using ORTS.Settings;
@@ -34,6 +35,12 @@ namespace ORTS
         private GettextResourceManager catalog = new GettextResourceManager("Menu");
         private Boolean Initialized = false;
 
+        public class Language
+        {
+            public string Code { get; set; }
+            public string Name { get; set; }
+        }
+
         public OptionsForm(UserSettings settings)
         {
             InitializeComponent();
@@ -41,6 +48,17 @@ namespace ORTS
             Localizer.Localize(this, catalog);
 
             Settings = settings;
+
+            List<Language> languages = new List<Language>() { new Language { Code = "--", Name = "system" } };
+
+            var supportedLanguages = "da en fr hu it".Split(' ');
+            foreach (var code in supportedLanguages)
+                languages.Add(new Language { Code = code, Name = System.Globalization.CultureInfo.GetCultureInfo(code).NativeName.ToLowerInvariant() });
+
+            comboBoxLanguage.DataSource = languages;
+            comboBoxLanguage.DisplayMember = "Name";
+            comboBoxLanguage.ValueMember = "Code";
+            comboBoxLanguage.SelectedValue = Settings.Language;
 
             // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
             // Vista and later should use 9pt "Segoe UI". We'll use the
@@ -207,7 +225,7 @@ namespace ORTS
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.SuppressConfirmations = checkSuppressConfirmations.Checked;
             Settings.ViewDispatcher = checkViewDispatcher.Checked;
-            Settings.Language = comboBoxLanguage.Text;
+            Settings.Language = comboBoxLanguage.SelectedValue.ToString();
             
             // Audio tab
             Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;

@@ -173,14 +173,13 @@ namespace ORTS.Processes
 
         public void LoadLanguage()
         {
-            switch (Settings.Language)
+            try
             {
-                case "System": System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InstalledUICulture; break;
-                case "Danish": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("da"); break;
-                case "English": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en"); break;
-                case "French": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("fr"); break;
-                case "Hungarian": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("hu"); break;
-                case "Italian": System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("it"); break;
+                System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(Settings.Language);
+            }
+            catch
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InstalledUICulture;
             }
         }
 

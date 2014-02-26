@@ -158,14 +158,13 @@ namespace ORTS
 
         private void LoadLanguage()
         {
-            switch (Settings.Language)
+            try
             {
-                case "System": System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture; break;
-                case "Danish": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("da"); break;
-                case "English": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("en"); break;
-                case "French": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("fr"); break;
-                case "Hungarian": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("hu"); break;
-                case "Italian": System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("it"); break;
+                System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(Settings.Language);
+            }
+            catch
+            {
+                System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InstalledUICulture;
             }
 
             Localizer.Localize(this, catalog);
