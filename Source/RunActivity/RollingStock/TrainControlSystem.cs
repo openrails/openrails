@@ -66,6 +66,8 @@ namespace ORTS
 
         public Dictionary<TrainControlSystem, string> Sounds = new Dictionary<TrainControlSystem, string>();
 
+        const float GravityMpS2 = 9.80665f;
+
         public ScriptedTrainControlSystem() { }
 
         public ScriptedTrainControlSystem(MSTSLocomotive locomotive)
@@ -183,6 +185,8 @@ namespace ORTS
                 ((MSTSTrainControlSystem)Script).OverspeedMonitor = OverspeedMonitor;
                 ((MSTSTrainControlSystem)Script).EmergencyStopMonitor = EmergencyStopMonitor;
                 ((MSTSTrainControlSystem)Script).AWSMonitor = AWSMonitor;
+                ((MSTSTrainControlSystem)Script).EmergencyCausesThrottleDown = Locomotive.EmergencyCausesThrottleDown;
+                ((MSTSTrainControlSystem)Script).EmergencyEngagesHorn = Locomotive.EmergencyEngagesHorn;
             }
 
             if (SoundFileName != null)
@@ -205,8 +209,6 @@ namespace ORTS
             Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
             Script.IsAlerterEnabled = () => Simulator.Settings.Alerter;
             Script.AlerterSound = () => Locomotive.AlerterSnd;
-            Script.EmergencyCausesThrottleDown = () => Locomotive.EmergencyCausesThrottleDown;
-            Script.EmergencyEngagesHorn = () => Locomotive.EmergencyEngagesHorn;
             Script.SetHorn = (value) => Locomotive.SignalEvent(value ? Event.HornOn : Event.HornOff);
             Script.SetFullBrake = () => Locomotive.TrainBrakeController.SetFullBrake();
             Script.SetEmergencyBrake = () => Locomotive.TrainBrakeController.SetEmergency();
@@ -220,12 +222,12 @@ namespace ORTS
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
             Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
             Script.SetVigilanceAlarm = (value) => this.SetVigilanceAlarm(value);
-            Script.TriggerSoundInfo1 = () => this.SignalEvent(Event.TrainControlSystemInfo1, Script);
-            Script.TriggerSoundInfo2 = () => this.SignalEvent(Event.TrainControlSystemInfo2, Script);
-            Script.TriggerSoundPenalty1 = () => this.SignalEvent(Event.TrainControlSystemPenalty1, Script);
-            Script.TriggerSoundPenalty2 = () => this.SignalEvent(Event.TrainControlSystemPenalty2, Script);
-            Script.TriggerSoundSystemActivate = () => this.SignalEvent(Event.TrainControlSystemActivate, Script);
-            Script.TriggerSoundSystemDeactivate = () => this.SignalEvent(Event.TrainControlSystemDeactivate, Script);
+            Script.TriggerSoundInfo1 = () => this.HandleEvent(Event.TrainControlSystemInfo1, Script);
+            Script.TriggerSoundInfo2 = () => this.HandleEvent(Event.TrainControlSystemInfo2, Script);
+            Script.TriggerSoundPenalty1 = () => this.HandleEvent(Event.TrainControlSystemPenalty1, Script);
+            Script.TriggerSoundPenalty2 = () => this.HandleEvent(Event.TrainControlSystemPenalty2, Script);
+            Script.TriggerSoundSystemActivate = () => this.HandleEvent(Event.TrainControlSystemActivate, Script);
+            Script.TriggerSoundSystemDeactivate = () => this.HandleEvent(Event.TrainControlSystemDeactivate, Script);
             Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;
             Script.NextSignalSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref SignalSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
             Script.NextSignalAspect = (value) => NextSignalItem<Aspect>(value, ref SignalAspects, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
@@ -233,6 +235,7 @@ namespace ORTS
             Script.NextPostSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref PostSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
             Script.NextPostDistanceM = (value) => NextSignalItem<float>(value, ref PostDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
             Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);
+            Script.DistanceCurve = (arg1, arg2, arg3, arg4, arg5) => DistanceCurve(arg1, arg2, arg3, arg4, arg5);
             Script.SetPantographsDown = () => 
             { 
                 Locomotive.SignalEvent(Event.Pantograph1Down);
@@ -301,31 +304,39 @@ namespace ORTS
             }
         }
 
-        public void SignalEvent(Event evt, TrainControlSystem script)
+        private void HandleEvent(Event evt, TrainControlSystem script)
         {
             foreach (var eventHandler in Locomotive.EventHandlers)
                 eventHandler.HandleEvent(evt, script);
         }
 
-        public static float SpeedCurve(float targetDistanceM, float targetSpeedLimitMpS, float slope, float delayS, float trainDecelerationMpS2)
+        private static float SpeedCurve(float targetDistanceM, float targetSpeedMpS, float slope, float delayS, float decelerationMpS2)
         {
-            if (targetSpeedLimitMpS < 0)
-                targetSpeedLimitMpS = 0;
-            const float gravityMpS2 = 9.80665f;
-            var slopeMpS2 = gravityMpS2 * slope;
-            var delayDeceleration = delayS * trainDecelerationMpS2;
-            var delaySlope = delayS * slopeMpS2;
-            var delayDecelSlope = delayDeceleration - delaySlope;
+            if (targetSpeedMpS < 0)
+                targetSpeedMpS = 0;
 
-            var speed = (float)Math.Sqrt
-                (
-                    delayDecelSlope * delayDecelSlope
-                    + 2f * targetDistanceM * (trainDecelerationMpS2 - slopeMpS2)
-                    + targetSpeedLimitMpS * targetSpeedLimitMpS
-                )
-                - delayDecelSlope;
+            decelerationMpS2 -= GravityMpS2 * slope;
 
-            return speed;
+            float squareSpeedComponent = targetSpeedMpS * targetSpeedMpS
+                + (delayS * delayS) * decelerationMpS2 * decelerationMpS2
+                + 2f * targetDistanceM * decelerationMpS2;
+
+            float speedComponent = delayS * decelerationMpS2;
+
+            return (float)Math.Sqrt(squareSpeedComponent) - speedComponent;
+        }
+
+        private static float DistanceCurve(float currentSpeedMpS, float targetSpeedMpS, float slope, float delayS, float decelerationMpS2)
+        {
+            if (targetSpeedMpS < 0)
+                targetSpeedMpS = 0;
+
+            float brakingDistanceM = (currentSpeedMpS * currentSpeedMpS - targetSpeedMpS * targetSpeedMpS)
+                / (2 * (decelerationMpS2 - GravityMpS2 * slope));
+
+            float delayDistanceM = delayS * currentSpeedMpS;
+
+            return brakingDistanceM + delayDistanceM;
         }
         
         public void Update()
@@ -399,6 +410,8 @@ namespace ORTS
         public ScriptedTrainControlSystem.MonitoringDevice OverspeedMonitor;
         public ScriptedTrainControlSystem.MonitoringDevice EmergencyStopMonitor;
         public ScriptedTrainControlSystem.MonitoringDevice AWSMonitor;
+        public bool EmergencyCausesThrottleDown;
+        public bool EmergencyEngagesHorn;
 
         public MSTSTrainControlSystem() { }
 
@@ -485,9 +498,9 @@ namespace ORTS
                     return;
                 SetEmergencyBrake();
             }
-            if (EmergencyCausesThrottleDown()) SetThrottleController(0.0f);
+            if (EmergencyCausesThrottleDown) SetThrottleController(0f);
             if (EmergencyStopMonitor != null && EmergencyStopMonitor.EmergencyCutsPower) SetPantographsDown();
-            if (EmergencyEngagesHorn()) SetHorn(true);
+            if (EmergencyEngagesHorn) SetHorn(true);
         }
 
         void EngageFullBrake()
