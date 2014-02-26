@@ -623,10 +623,15 @@ namespace ORTS
             {
                 if (DieselConsumptionTab != null)
                 {
-                    if (ThrottlePercent == 0)
-                        DieselFlowLps = DieselUsedPerHourAtIdleL / 3600.0f;
+                    if ((ThrottlePercent == 0) && (dRPM <= 0))
+                    {
+                        if(RealRPM > IdleRPM)
+                            DieselFlowLps = DieselConsumptionTab[RealRPM] / 3600.0f * 0.1f;
+                        else
+                            DieselFlowLps = DieselUsedPerHourAtIdleL / 3600.0f;
+                    }
                     else
-                        DieselFlowLps = DieselConsumptionTab[RealRPM] * MaxOutputPowerW / 3600.0f / 800.0f / 1000.0f;
+                        DieselFlowLps = DieselConsumptionTab[RealRPM] / 3600.0f;
                 }
                 else
                 {

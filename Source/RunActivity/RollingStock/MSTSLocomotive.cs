@@ -1990,8 +1990,7 @@ namespace ORTS
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
-                                float dynCurrRangeFactor = (float)(cvc.MaxValue);
-                                if (cvc.MaxValue == 0) dynCurrRangeFactor = (float)(cvc.MinValue);
+                                float dynCurrRangeFactor = (float)(cvc.MinValue);
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * dynCurrRangeFactor;
                                 else
