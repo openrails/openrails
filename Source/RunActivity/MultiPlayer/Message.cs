@@ -2999,7 +2999,7 @@ namespace ORTS.MultiPlayer
 				{
 					System.Console.WriteLine("MSG from " + sender + ":" + msgx);
 					MPManager.Instance().lastSender = sender;
-					if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.MSG(" From "+ sender+": "+msgx);
+					if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.MSG(Viewer3D.Viewer.Catalog.GetStringFmt(" From {0}: {1}", sender, msgx));
 					Program.DebugViewer.addNewMessage(Program.Simulator.GameTime, sender + ": " + msgx);
 					break;
 				}

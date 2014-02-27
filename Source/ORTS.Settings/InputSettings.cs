@@ -672,13 +672,18 @@ namespace ORTS.Settings
 
         public static string GetPrettyLocalizedName(Enum value)
         {
+            return catalog.GetString(GetPrettyName(value));
+        }
+
+        public static string GetPrettyName(Enum value)
+        {
             var type = value.GetType();
             var name = type.GetField(Enum.GetName(type, value))
                 .GetCustomAttributes(false)
                 .OfType<GetStringAttribute>()
                 .SingleOrDefault()
                 .Name;
-            return catalog.GetString(name);
+            return name;
         }
 
         public static string GetPrettyCommandName(UserCommands command)

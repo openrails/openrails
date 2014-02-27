@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-24 19:35:34+0000\n"
-"PO-Revision-Date: 2014-02-24 19:35:34+0000\n"
+"POT-Creation-Date: 2014-02-27 20:10:51+0100\n"
+"PO-Revision-Date: 2014-02-27 20:10:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -194,6 +194,11 @@ msgstr ""
 msgid "SoundDebugForm"
 msgstr ""
 
+#: ../../RunActivity/MultiPlayer/Message.cs:2975
+#, csharp-format
+msgid " From {0}: {1}"
+msgstr ""
+
 #: ../../RunActivity/Physics/Train.cs:1230
 msgid "Coupler broken!"
 msgstr ""
@@ -260,13 +265,13 @@ msgstr ""
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:273
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:284
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:258
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:269
 msgid "No power line!"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:275
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:286
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:260
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
 msgid "Power line condition overridden."
 msgstr ""
 
@@ -329,585 +334,609 @@ msgstr ""
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:138
-#: ../../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:25
+msgid "None"
+msgstr ""
+
+#: ../../RunActivity/Simulator/Confirmation.cs:26
+msgid "Information"
+msgstr ""
+
+#: ../../RunActivity/Simulator/Confirmation.cs:27
+msgid "Warning"
+msgstr ""
+
+#: ../../RunActivity/Simulator/Confirmation.cs:28
+msgid "Error"
+msgstr ""
+
+#: ../../RunActivity/Simulator/Confirmation.cs:29
+msgid "MSG"
+msgstr ""
+
+#: ../../RunActivity/Simulator/Confirmation.cs:137
+msgid "<none>"
+msgstr ""
+
+#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "reverse"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:138
-#: ../../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "neutral"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:138
-#: ../../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "forward"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:138
-#: ../../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "locked. Close throttle, stop train then re-try."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "Throttle"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:139
-#: ../../RunActivity/Simulator/Confirmation.cs:151
+#: ../../RunActivity/Simulator/Confirmation.cs:140
 #: ../../RunActivity/Simulator/Confirmation.cs:152
 #: ../../RunActivity/Simulator/Confirmation.cs:153
-#: ../../RunActivity/Simulator/Confirmation.cs:155
+#: ../../RunActivity/Simulator/Confirmation.cs:154
 #: ../../RunActivity/Simulator/Confirmation.cs:156
-#: ../../RunActivity/Simulator/Confirmation.cs:160
-#: ../../RunActivity/Simulator/Confirmation.cs:184
+#: ../../RunActivity/Simulator/Confirmation.cs:157
+#: ../../RunActivity/Simulator/Confirmation.cs:161
 #: ../../RunActivity/Simulator/Confirmation.cs:185
+#: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "close"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:139
-#: ../../RunActivity/Simulator/Confirmation.cs:151
+#: ../../RunActivity/Simulator/Confirmation.cs:140
 #: ../../RunActivity/Simulator/Confirmation.cs:152
 #: ../../RunActivity/Simulator/Confirmation.cs:153
-#: ../../RunActivity/Simulator/Confirmation.cs:155
+#: ../../RunActivity/Simulator/Confirmation.cs:154
 #: ../../RunActivity/Simulator/Confirmation.cs:156
-#: ../../RunActivity/Simulator/Confirmation.cs:160
-#: ../../RunActivity/Simulator/Confirmation.cs:184
+#: ../../RunActivity/Simulator/Confirmation.cs:157
+#: ../../RunActivity/Simulator/Confirmation.cs:161
 #: ../../RunActivity/Simulator/Confirmation.cs:185
+#: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "open"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "locked. Release dynamic brake then re-try."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "Wheel-slip"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "over"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "occurring. Tractive power greatly reduced."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "warning"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:142
+#: ../../RunActivity/Simulator/Confirmation.cs:143
 msgid "Power"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:142
-#: ../../RunActivity/Simulator/Confirmation.cs:146
+#: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:147
-#: ../../RunActivity/Simulator/Confirmation.cs:152
+#: ../../RunActivity/Simulator/Confirmation.cs:148
 #: ../../RunActivity/Simulator/Confirmation.cs:153
-#: ../../RunActivity/Simulator/Confirmation.cs:158
-#: ../../RunActivity/Simulator/Confirmation.cs:166
-#: ../../RunActivity/Simulator/Confirmation.cs:171
-#: ../../RunActivity/Simulator/Confirmation.cs:174
-#: ../../RunActivity/Simulator/Confirmation.cs:176
+#: ../../RunActivity/Simulator/Confirmation.cs:154
+#: ../../RunActivity/Simulator/Confirmation.cs:159
+#: ../../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:175
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 #: ../../RunActivity/Simulator/Confirmation.cs:178
 #: ../../RunActivity/Simulator/Confirmation.cs:179
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 #: ../../RunActivity/Simulator/Confirmation.cs:181
+#: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "off"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:142
-#: ../../RunActivity/Simulator/Confirmation.cs:146
+#: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:147
-#: ../../RunActivity/Simulator/Confirmation.cs:152
+#: ../../RunActivity/Simulator/Confirmation.cs:148
 #: ../../RunActivity/Simulator/Confirmation.cs:153
-#: ../../RunActivity/Simulator/Confirmation.cs:158
-#: ../../RunActivity/Simulator/Confirmation.cs:171
-#: ../../RunActivity/Simulator/Confirmation.cs:174
-#: ../../RunActivity/Simulator/Confirmation.cs:180
+#: ../../RunActivity/Simulator/Confirmation.cs:154
+#: ../../RunActivity/Simulator/Confirmation.cs:159
+#: ../../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:175
 #: ../../RunActivity/Simulator/Confirmation.cs:181
+#: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "on"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:143
+#: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "Pantograph 1"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:144
+#: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "lower"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:144
+#: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "raise"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:144
+#: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "Pantograph 2"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:146
+#: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "Player Diesel Power"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:146
+#: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "locked. Close throttle then re-try."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:147
+#: ../../RunActivity/Simulator/Confirmation.cs:148
 msgid "Helper Diesel Power"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:148
+#: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "Diesel Tank"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:148
+#: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "re-fueled"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:148
+#: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "level"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:151
+#: ../../RunActivity/Simulator/Confirmation.cs:152
 msgid "Regulator"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:152
+#: ../../RunActivity/Simulator/Confirmation.cs:153
 msgid "Injector 1"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:153
+#: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "Injector 2"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:154
+#: ../../RunActivity/Simulator/Confirmation.cs:155
 msgid "Blower"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:154
-#: ../../RunActivity/Simulator/Confirmation.cs:157
-#: ../../RunActivity/Simulator/Confirmation.cs:166
-#: ../../RunActivity/Simulator/Confirmation.cs:191
+#: ../../RunActivity/Simulator/Confirmation.cs:155
+#: ../../RunActivity/Simulator/Confirmation.cs:158
+#: ../../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "decrease"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:154
-#: ../../RunActivity/Simulator/Confirmation.cs:157
-#: ../../RunActivity/Simulator/Confirmation.cs:166
-#: ../../RunActivity/Simulator/Confirmation.cs:191
+#: ../../RunActivity/Simulator/Confirmation.cs:155
+#: ../../RunActivity/Simulator/Confirmation.cs:158
+#: ../../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "increase"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:155
+#: ../../RunActivity/Simulator/Confirmation.cs:156
 msgid "Damper"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:156
+#: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "Firebox Door"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:157
+#: ../../RunActivity/Simulator/Confirmation.cs:158
 msgid "Firing Rate"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:158
+#: ../../RunActivity/Simulator/Confirmation.cs:159
 msgid "Manual Firing"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:159
+#: ../../RunActivity/Simulator/Confirmation.cs:160
 msgid "Fire"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:159
+#: ../../RunActivity/Simulator/Confirmation.cs:160
 msgid "add shovel-full"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:160
+#: ../../RunActivity/Simulator/Confirmation.cs:161
 msgid "Cylinder Cocks"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:161
 #: ../../RunActivity/Simulator/Confirmation.cs:162
+#: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Tender"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:161
+#: ../../RunActivity/Simulator/Confirmation.cs:162
 msgid "Coal re-filled"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:161
+#: ../../RunActivity/Simulator/Confirmation.cs:162
 msgid "Coal level"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:162
+#: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Water re-filled"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:162
+#: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Water level"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:164
+#: ../../RunActivity/Simulator/Confirmation.cs:165
 msgid "Train Brake"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:164
 #: ../../RunActivity/Simulator/Confirmation.cs:165
+#: ../../RunActivity/Simulator/Confirmation.cs:166
 msgid "release"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:164
 #: ../../RunActivity/Simulator/Confirmation.cs:165
-#: ../../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "apply"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:165
+#: ../../RunActivity/Simulator/Confirmation.cs:166
 msgid "Engine Brake"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "Dynamic Brake"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "setup"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "Emergency Brake"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:168
+#: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "Bail Off"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:168
+#: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "disengage"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:168
+#: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "engage"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:169
+#: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "Brakes"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:169
+#: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "initialize"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:169
+#: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "cannot initialize. Stop train then re-try."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:170
+#: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "Handbrake"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:170
+#: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "none"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:170
+#: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "full"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Retainers"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Exhaust"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "High Pressure"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Low Pressure"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Slow Direct"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "Brake Hose"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "disconnect"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "connect"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:174
+#: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "Sander"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:175
+#: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Alerter"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:175
+#: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "acknowledge"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:176
+#: ../../RunActivity/Simulator/Confirmation.cs:177
 msgid "Horn"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:177
+#: ../../RunActivity/Simulator/Confirmation.cs:178
 msgid "Whistle"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:177
+#: ../../RunActivity/Simulator/Confirmation.cs:178
 msgid "blow"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:178
+#: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "Bell"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:178
+#: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "ring"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:179
+#: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "Headlight"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:179
+#: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "dim"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:179
+#: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "bright"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:180
+#: ../../RunActivity/Simulator/Confirmation.cs:181
 msgid "Cab Light"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:181
+#: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "Wipers"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:182
+#: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "Cab"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:182
+#: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "changing is not available"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:182
+#: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:184
+#: ../../RunActivity/Simulator/Confirmation.cs:185
 msgid "Doors Left"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:185
+#: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "Doors Right"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:186
+#: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "Mirror"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:186
+#: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "retract"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:186
+#: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "extend"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:188
+#: ../../RunActivity/Simulator/Confirmation.cs:189
 msgid "Switch Ahead"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:188
 #: ../../RunActivity/Simulator/Confirmation.cs:189
+#: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "locked. Use Control+M to change signals to manual mode then re-try."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:189
+#: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "Switch Behind"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:191
+#: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "Simulation Speed"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:191
+#: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "reset"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:192
+#: ../../RunActivity/Simulator/Confirmation.cs:193
 msgid "Uncouple After"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:193
+#: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "Activity"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:193
+#: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "quit"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:193
+#: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "resume"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:194
+#: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Replay"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:194
+#: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Overriding camera replay. Press Escape to resume camera replay."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "Location labels"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "sidings"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "stations"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "stations and sidings"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:196
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "Gearbox"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:196
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "down"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:196
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "up"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:196
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "locked. Use shaft before changing gear."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "Signal mode"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "manual"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "auto"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "locked. Stop train, then re-try."
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:205
-#: ../../RunActivity/Simulator/Confirmation.cs:214
-#: ../../RunActivity/Simulator/Confirmation.cs:252
+#: ../../RunActivity/Simulator/Confirmation.cs:206
+#: ../../RunActivity/Simulator/Confirmation.cs:215
+#: ../../RunActivity/Simulator/Confirmation.cs:253
 #, csharp-format
 msgid "{0} {1}"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:209
+#: ../../RunActivity/Simulator/Confirmation.cs:210
 #, csharp-format
 msgid "{0}"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:219
+#: ../../RunActivity/Simulator/Confirmation.cs:220
 #, csharp-format
 msgid "{0} to {1:0}%"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:224
+#: ../../RunActivity/Simulator/Confirmation.cs:225
 #, csharp-format
 msgid "{0} {1:0}% {2}"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:229
+#: ../../RunActivity/Simulator/Confirmation.cs:230
 #, csharp-format
 msgid "{0:0}% {1}"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:234
+#: ../../RunActivity/Simulator/Confirmation.cs:235
 #, csharp-format
 msgid "{0:0}%"
 msgstr ""
 
-#: ../../RunActivity/Simulator/Confirmation.cs:242
-#: ../../RunActivity/Simulator/Confirmation.cs:247
+#: ../../RunActivity/Simulator/Confirmation.cs:243
+#: ../../RunActivity/Simulator/Confirmation.cs:248
 #, csharp-format
 msgid "{0} {1:0}%"
 msgstr ""
 
 #. Context: NonSteam
-#: ../../RunActivity/Simulator/Confirmation.cs:138
+#: ../../RunActivity/Simulator/Confirmation.cs:139
 msgctxt "NonSteam"
 msgid "Reverser"
 msgstr ""
 
 #. Context: Steam
-#: ../../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgctxt "Steam"
 msgid "Reverser"
 msgstr ""
 
 #. Context: Alerter
-#: ../../RunActivity/Simulator/Confirmation.cs:175
+#: ../../RunActivity/Simulator/Confirmation.cs:176
 msgctxt "Alerter"
 msgid "sound"
 msgstr ""
 
 #. Context: Horn
-#: ../../RunActivity/Simulator/Confirmation.cs:176
+#: ../../RunActivity/Simulator/Confirmation.cs:177
 msgctxt "Horn"
 msgid "sound"
 msgstr ""
 
 #. Context: Cab
-#: ../../RunActivity/Simulator/Confirmation.cs:182
+#: ../../RunActivity/Simulator/Confirmation.cs:183
 msgctxt "Cab"
 msgid "change"
 msgstr ""
 
 #. Context: Switch
-#: ../../RunActivity/Simulator/Confirmation.cs:188
 #: ../../RunActivity/Simulator/Confirmation.cs:189
+#: ../../RunActivity/Simulator/Confirmation.cs:190
 msgctxt "Switch"
 msgid "change"
 msgstr ""
 
 #. Context: Labels
-#: ../../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgctxt "Labels"
 msgid "none"
 msgstr ""

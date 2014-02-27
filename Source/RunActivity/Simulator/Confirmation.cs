@@ -17,15 +17,16 @@
 
 using System;
 using ORTS.Viewer3D;
+using ORTS.Settings;
 
 namespace ORTS {
     public enum ConfirmLevel
     {
-        None,
-        Information,
-        Warning,
-        Error,
-		MSG,
+        [GetString("None")] None,
+        [GetString("Information")] Information,
+        [GetString("Warning")] Warning,
+        [GetString("Error")] Error,
+		[GetString("MSG")] MSG,
     };
 
     // <CJComment> Some of these are not cab controls or even controls. However they all make good use of structured text. </CJComment>
@@ -133,7 +134,7 @@ namespace ORTS {
             Func<string, string, string> GetParticularString = (context, value) => Viewer.Catalog.GetParticularString(context, value);
 
             ConfirmText = new string[][] {
-                new string [] { "<none>" } 
+                new string [] { GetString("<none>") } 
                 // Power
                 , new string [] { GetParticularString("NonSteam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
                 , new string [] { GetString("Throttle"), null, null, null, GetString("close"), GetString("open"), GetString("locked. Release dynamic brake then re-try.") } 
@@ -312,7 +313,7 @@ namespace ORTS {
 			var duration = DefaultDurationS;
 			if (level >= ConfirmLevel.Warning) duration *= 2;
 			if (level >= ConfirmLevel.MSG) duration *= 5;
-            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], level, message), duration);
+            Viewer.MessagesWindow.AddMessage(String.Format("{0}/{1}", control, level), String.Format(format, ConfirmText[(int)control][0], Viewer.Catalog.GetString(InputSettings.GetPrettyName(level)), message), duration);
         }
     }
 }
