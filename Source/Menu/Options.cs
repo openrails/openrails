@@ -49,11 +49,10 @@ namespace ORTS
 
             Settings = settings;
 
-            List<Language> languages = new List<Language>() { new Language { Code = "--", Name = "system" } };
-
-            var supportedLanguages = "da en fr hu it".Split(' ');
-            foreach (var code in supportedLanguages)
-                languages.Add(new Language { Code = code, Name = System.Globalization.CultureInfo.GetCultureInfo(code).NativeName.ToLowerInvariant() });
+            var languages = new List<Language>() { new Language { Code = "", Name = "System" } };
+            foreach (var path in Directory.GetDirectories(Path.GetDirectoryName(Application.ExecutablePath)))
+                if (Directory.GetFiles(path, "*.Messages.resources.dll").Length > 0)
+                    languages.Add(new Language { Code = Path.GetFileName(path), Name = CultureInfo.GetCultureInfo(Path.GetFileName(path)).NativeName });
 
             comboBoxLanguage.DataSource = languages;
             comboBoxLanguage.DisplayMember = "Name";

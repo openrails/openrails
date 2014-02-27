@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
@@ -158,13 +159,13 @@ namespace ORTS
 
         private void LoadLanguage()
         {
-            try
+            if (Settings.Language.Length > 0)
             {
-                System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(Settings.Language);
-            }
-            catch
-            {
-                System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InstalledUICulture;
+                try
+                {
+                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(Settings.Language);
+                }
+                catch { }
             }
 
             Localizer.Localize(this, catalog);

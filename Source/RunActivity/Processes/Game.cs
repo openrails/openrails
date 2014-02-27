@@ -20,7 +20,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using ORTS.Common;
 using ORTS.Settings;
@@ -173,13 +175,13 @@ namespace ORTS.Processes
 
         public void LoadLanguage()
         {
-            try
+            if (Settings.Language.Length > 0)
             {
-                System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo(Settings.Language);
-            }
-            catch
-            {
-                System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InstalledUICulture;
+                try
+                {
+                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(Settings.Language);
+                }
+                catch { }
             }
         }
 
