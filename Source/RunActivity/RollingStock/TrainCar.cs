@@ -209,7 +209,16 @@ namespace ORTS
         public List<ViewPoint> PassengerViewpoints = new List<ViewPoint>();
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
-        public virtual void Initialize()
+        // Used by Curve Speed Method
+        float TrackGaugeM;  // Track gauge - read in MSTSWagon
+        float CentreOfGravityM; // get centre of gravity - read in MSTSWagon
+        float SuperelevationM; // Super elevation on the curve
+        float UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 3"
+        float SuperElevationTotalM; // Total superelevation
+        bool IsMaxEquaLoadSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
+        bool IsCriticalSpeed = true; // Has the critical speed around the curve been reached, is is the wagon about to overturn?
+        
+          public virtual void Initialize()
         {
             CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
             CurveResistanceOptimalSpeed = Simulator.Settings.CurveResistanceOptimalSpeed;
@@ -223,6 +232,7 @@ namespace ORTS
             GravityForceN = MassKG * 9.8f * WorldPosition.XNAMatrix.M32;
             CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
             UpdateCurveForce();
+            UpdateCurveSpeedLimit();
             // acceleration
             if (elapsedClockSeconds > 0.0f)
             {
@@ -234,6 +244,129 @@ namespace ORTS
                 _PrevSpeedMpS = _SpeedMpS;
             }
             UpdateSoundPosition();
+        }
+
+        /// <summary>
+        /// Reads current curve radius and computes the maximum recommended speed around the curve based upon the 
+        /// superelevation of the track
+        /// </summary>
+        public virtual void UpdateCurveSpeedLimit()
+        {
+            float s = Math.Abs(SpeedMpS); // speed of train
+            CentreOfGravityM = GetCentreofGravityM();
+            TrackGaugeM = GetTrackGaugeM();
+          
+          #region Calculate permissible speeds around curves
+
+            // get curve radius
+
+            if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
+            {
+
+                // Set Superelevation value - based upon standard figures
+
+                if (CurrentCurveRadius > 3200)
+                {
+                    SuperelevationM = 0.0f;  // Assume no superelevation
+                }
+                else if (CurrentCurveRadius <= 3200 & CurrentCurveRadius > 1600)
+                {
+                    SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
+                }
+                else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
+                {
+                    SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
+                }
+                else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
+                {
+                    SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
+                }
+                else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
+                {
+                    SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
+                }
+                else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
+                {
+                    SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
+                }
+                else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
+                {
+                    SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
+                }
+                // for tighter radius curves assume on branch lines and less superelevation
+                else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
+                {
+                    SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
+                }
+                else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
+                {
+                    SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
+                }
+
+                // Calulate equal wheel loading speed for current curve and superelevation - this was considered the "safe" speed to travel around a curve
+                // max equal load speed = SQRT ( (superelevation x gravity x curve radius) / track gauge)
+                // SuperElevation is made up of two components = rail superelevation + the amount of sideways force that a passenger will be comfortable with. This is expressed as a figure similar to superelevation.
+
+                SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
+
+                float MaxEquaLoadSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * 9.81f * CurrentCurveRadius) / TrackGaugeM);
+
+               // Test current speed to see if greater then "safe" speed around the curve
+                if (s > MaxEquaLoadSpeedMps)
+                {
+                    if (!IsMaxEquaLoadSpeed)
+                    {
+                        IsMaxEquaLoadSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, "You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable, or your train may derail.");
+                    }
+                    else
+                    {
+                        if (s < MaxEquaLoadSpeedMps)
+                        {
+                            IsMaxEquaLoadSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
+                        }
+                    }
+                }
+
+                // Calculate critical speed - indicates the speed above which stock will overturn - sum of the centrifrugal force and the vertical weight of the vehicle around the CoG
+                // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
+                // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
+
+                float EJ = (SuperElevationTotalM * CentreOfGravityM) / TrackGaugeM;
+                float KC = (TrackGaugeM / 2.0f) + EJ;
+                const float KgtoTonne = 0.001f;
+                float CentrifrugalForceN = MassKG * KgtoTonne * (KC / CentreOfGravityM);
+
+                float CriticalSpeedMpS = (float)Math.Sqrt((CentrifrugalForceN * 9.81f * CurrentCurveRadius) / (MassKG * KgtoTonne));
+                              
+                if (s > CriticalSpeedMpS)
+                {
+                    if (!IsCriticalSpeed)
+                    {
+                        IsCriticalSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, "Your train has overturned.");
+                    }
+                    else
+                    {
+                        if (s < CriticalSpeedMpS)
+                        {
+                            IsCriticalSpeed = false; // reset flag for IsCriticalSpeed reached
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                // reset flags if train is on a straight
+                IsCriticalSpeed = false;   // reset flag for IsCriticalSpeed reached
+                IsMaxEquaLoadSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
+            }
+            #endregion
+
+
+
+
         }
 
         /// <summary>
@@ -351,7 +484,19 @@ namespace ORTS
             return false;
         }
 #endif
+       // Method to get Track Gauge from MSTSWagon
+        public virtual float GetTrackGaugeM()
+        {
+            
+            return TrackGaugeM;
+        }
 
+        // Method to get Centre of Gravity from MSTSWagon
+        public virtual float GetCentreofGravityM()
+        {
+
+            return CentreOfGravityM;
+        }
 
         public virtual float GetCouplerZeroLengthM()
         {

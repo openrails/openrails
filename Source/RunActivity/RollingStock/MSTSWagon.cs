@@ -103,6 +103,13 @@ namespace ORTS
         public float WheelSpeedMpS;
         public float SlipWarningThresholdPercent = 70;
         public float NumWheelsBrakingFactor = 4;   // MSTS braking factor loosely based on the number of braked wheels. Not used yet.
+        float CentreOfGravityM; // Lateral Centre of gravity
+        float Gauge1M; // temporary variable for the track gauge
+        float Gauge2M; // temporary variable for the track gauge
+        float TrackGaugeM = 1435.0f; // Gauge of track
+        float XCoGM; // Centre of Gravity - X value
+        float YCoGM; // Centre of Gravity - Y value
+        float ZCoGM; // Centre of Gravity - Z value
 
         /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
@@ -113,6 +120,7 @@ namespace ORTS
 
         public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
 
+        // Get steam locomotive friction from steam folder
         protected virtual float GetSteamLocoMechFrictN()
         {
             return 0f;
@@ -187,6 +195,19 @@ namespace ORTS
                     stf.ReadFloat(STFReader.UNITS.Distance, null);
                     HeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     LengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(ortstrackgauge":
+                    stf.MustMatch("(");
+                    Gauge1M = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    Gauge2M = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(centreofgravity":
+                    stf.MustMatch("(");
+                    XCoGM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    YCoGM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    ZCoGM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (MassKG < 0.1f) MassKG = 0.1f; break;
@@ -304,7 +325,11 @@ namespace ORTS
             DavisCNSSpMM = copy.DavisCNSSpMM;
             IsRollerBearing = copy.IsRollerBearing;
             LengthM = copy.LengthM;
-			HeightM = copy.HeightM;
+            HeightM = copy.HeightM;
+            TrackGaugeM = copy.TrackGaugeM;
+            XCoGM = copy.XCoGM;
+            YCoGM = copy.YCoGM;
+            ZCoGM = copy.ZCoGM;
             MassKG = copy.MassKG;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
@@ -680,6 +705,30 @@ namespace ORTS
             if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1] is MSTSSteamLocomotive)
                 TendersSteamLocomotive = Train.Cars[tenderIndex + 1] as MSTSSteamLocomotive;
         }
+
+        // Make the Track Gauge available to other classes
+        public override float GetTrackGaugeM()
+        {
+            TrackGaugeM = Gauge1M + Gauge2M;    // Calculate track gauge - it can be entered in ft in or M.
+            if (TrackGaugeM == 0)
+            {
+                TrackGaugeM = 1.435f;       // If track gauge value not found then assume standard gauge - 4' 8.5" or 1.435m
+            }
+            
+            return TrackGaugeM;
+        }
+
+        // Make the Centre of Gravity available to other classes
+        public override float GetCentreofGravityM()
+        {
+            CentreOfGravityM = YCoGM;
+            if (CentreOfGravityM == 0 || CentreOfGravityM > 3)
+            {
+                CentreOfGravityM = 1.8f; // if no value in wag file or is outside of bounds then set to a default value
+            }
+            return CentreOfGravityM;
+        }
+        
 
         public bool GetTrainHandbrakeStatus()
         {
