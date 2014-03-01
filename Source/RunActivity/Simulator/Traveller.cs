@@ -516,7 +516,7 @@ namespace ORTS
             if (lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)
                 return null;
 
-            return new TrackNodeCandidate(lat, lon, true);
+            return new TrackNodeCandidate((float)Math.Abs(lat), lon, true);
         }
 
         
@@ -557,7 +557,7 @@ namespace ORTS
             if (lon < -InitErrorMargin || lon > GetLength(trackSection) + InitErrorMargin)
                 return null;
 
-            return new TrackNodeCandidate(lat, lon, false);
+            return new TrackNodeCandidate((float)Math.Abs(lat), lon, false);
         }
 
         /// <summary>
