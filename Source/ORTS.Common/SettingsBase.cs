@@ -31,10 +31,10 @@ namespace ORTS.Common
 			User,
 		}
 
-		protected readonly SettingStore SettingStore;
+		protected readonly SettingsStore SettingStore;
 		protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
 
-		public SettingsBase(SettingStore settings)
+		public SettingsBase(SettingsStore settings)
 		{
 			SettingStore = settings;
 		}

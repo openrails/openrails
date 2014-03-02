@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2013 by the Open Rails project.
+﻿// COPYRIGHT 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -29,16 +29,18 @@ namespace ORTS.Common
 	/// <summary>
 	/// Base class for all means of persisting settings from the user/game.
 	/// </summary>
-	public abstract class SettingStore
+	public abstract class SettingsStore
 	{
 		protected readonly string Section;
 
-		protected SettingStore(string section)
+		protected SettingsStore(string section)
 		{
 			Section = section;
 		}
 
-		public abstract object GetUserValue(string name);
+        public abstract string[] GetUserNames();
+
+        public abstract object GetUserValue(string name);
 
 		public abstract void SetUserValue(string name, string value);
 
@@ -52,30 +54,35 @@ namespace ORTS.Common
 
 		public abstract void DeleteUserValue(string name);
 
-		public static SettingStore GetSettingStore(string filePath, string registryKey, string section)
+		public static SettingsStore GetSettingStore(string filePath, string registryKey, string section)
 		{
 			if (!String.IsNullOrEmpty(filePath) && File.Exists(filePath))
-				return new SettingStoreLocalIni(filePath, section);
+				return new SettingsStoreLocalIni(filePath, section);
 			if (!String.IsNullOrEmpty(registryKey))
-				return new SettingStoreRegistry(registryKey, section);
+				return new SettingsStoreRegistry(registryKey, section);
 			throw new ArgumentException("Neither 'filePath' nor 'registryKey' arguments are valid.");
 		}
 	}
 
 	/// <summary>
-	/// Registry implementation of <c ref="SettingStore"/>.
+    /// Registry implementation of <see cref="SettingsStore"/>.
 	/// </summary>
-	public sealed class SettingStoreRegistry : SettingStore
+	public sealed class SettingsStoreRegistry : SettingsStore
 	{
 		readonly string RegistryKey;
 		readonly RegistryKey Key;
 
-		internal SettingStoreRegistry(string registryKey, string section)
+		internal SettingsStoreRegistry(string registryKey, string section)
 			: base(section)
 		{
 			RegistryKey = String.IsNullOrEmpty(section) ? registryKey : registryKey + @"\" + section;
 			Key = Registry.CurrentUser.CreateSubKey(RegistryKey);
 		}
+
+        public override string[] GetUserNames()
+        {
+            return Key.GetValueNames();
+        }
 
 		public override object GetUserValue(string name)
 		{
@@ -114,46 +121,69 @@ namespace ORTS.Common
 	}
 
 	/// <summary>
-	/// INI file implementation of <c ref="SettingStore"/>.
+    /// INI file implementation of <see cref="SettingsStore"/>.
 	/// </summary>
-	public sealed class SettingStoreLocalIni : SettingStore
+	public sealed class SettingsStoreLocalIni : SettingsStore
 	{
 		const string DefaultSection = "ORTS";
 
 		readonly string FilePath;
 
-		internal SettingStoreLocalIni(string filePath, string section)
+		internal SettingsStoreLocalIni(string filePath, string section)
 			: base(String.IsNullOrEmpty(section) ? DefaultSection : section)
 		{
 			FilePath = filePath;
 		}
 
+        public override string[] GetUserNames()
+        {
+            var buffer = new String('\0', 256);
+            while (true)
+            {
+                var length = NativeMethods.GetPrivateProfileSection(Section, buffer, buffer.Length, FilePath);
+                if (length < buffer.Length - 2)
+                {
+                    buffer = buffer.Substring(0, length);
+                    break;
+                }
+                buffer = new String('\0', buffer.Length * 2);
+            }
+            return buffer.Split('\0').Where(s => s.Contains('=')).Select(s => s.Split('=')[0]).ToArray();
+        }
+
 		public override object GetUserValue(string name)
 		{
 			var buffer = new String('\0', 256);
-			var length = NativeMethods.GetPrivateProfileString(Section, name, null, buffer, buffer.Length, FilePath);
-			if (length == 0)
-				return null;
-			buffer = buffer.Substring(0, length);
-			var value = buffer.Split(':');
-			if (value.Length < 2)
+            while (true)
+            {
+                var length = NativeMethods.GetPrivateProfileString(Section, name, null, buffer, buffer.Length, FilePath);
+                if (length < buffer.Length - 1)
+                {
+                    buffer = buffer.Substring(0, length);
+                    break;
+                }
+                buffer = new String('\0', buffer.Length * 2);
+            }
+            if (buffer.Length == 0)
+                return null;
+            var value = buffer.Split(':');
+			if (value.Length != 2)
 			{
 				Trace.TraceWarning("Setting {0} contains invalid value {1}", name, buffer);
 				return null;
 			}
-			var valueFull = String.Join(":", value.Skip(1).ToArray());
 			switch (value[0])
 			{
 				case "string":
-					return valueFull;
+                    return Uri.UnescapeDataString(value[1]);
 				case "int":
-					return int.Parse(valueFull, CultureInfo.InvariantCulture);
+                    return int.Parse(Uri.UnescapeDataString(value[1]), CultureInfo.InvariantCulture);
 				case "bool":
-					return valueFull.Equals("true", StringComparison.InvariantCultureIgnoreCase);
+                    return value[1].Equals("true", StringComparison.InvariantCultureIgnoreCase);
 				case "string[]":
-					return valueFull.Split(',');
+                    return value[1].Split(',').Select(v => Uri.UnescapeDataString(v)).ToArray();
 				case "int[]":
-					return valueFull.Split(',').Select(v => int.Parse(v, CultureInfo.InvariantCulture)).ToArray();
+                    return value[1].Split(',').Select(v => int.Parse(Uri.UnescapeDataString(v), CultureInfo.InvariantCulture)).ToArray();
 				default:
 					Trace.TraceWarning("Setting {0} contains invalid value {1}", name, buffer);
 					return null;
@@ -162,12 +192,12 @@ namespace ORTS.Common
 
 		public override void SetUserValue(string name, string value)
 		{
-			NativeMethods.WritePrivateProfileString(Section, name, "string:" + value, FilePath);
+			NativeMethods.WritePrivateProfileString(Section, name, "string:" + Uri.EscapeDataString(value), FilePath);
 		}
 
 		public override void SetUserValue(string name, int value)
 		{
-			NativeMethods.WritePrivateProfileString(Section, name, "int:" + value.ToString(CultureInfo.InvariantCulture), FilePath);
+			NativeMethods.WritePrivateProfileString(Section, name, "int:" + Uri.EscapeDataString(value.ToString(CultureInfo.InvariantCulture)), FilePath);
 		}
 
 		public override void SetUserValue(string name, bool value)
@@ -177,12 +207,12 @@ namespace ORTS.Common
 
 		public override void SetUserValue(string name, string[] value)
 		{
-			NativeMethods.WritePrivateProfileString(Section, name, "string[]:" + String.Join(",", value), FilePath);
+			NativeMethods.WritePrivateProfileString(Section, name, "string[]:" + String.Join(",", value.Select(v => Uri.EscapeDataString(v)).ToArray()), FilePath);
 		}
 
 		public override void SetUserValue(string name, int[] value)
 		{
-			NativeMethods.WritePrivateProfileString(Section, name, "int[]:" + String.Join(",", ((int[])value).Select(v => v.ToString(CultureInfo.InvariantCulture)).ToArray()), FilePath);
+			NativeMethods.WritePrivateProfileString(Section, name, "int[]:" + String.Join(",", ((int[])value).Select(v => Uri.EscapeDataString(v.ToString(CultureInfo.InvariantCulture))).ToArray()), FilePath);
 		}
 
 		public override void DeleteUserValue(string name)
@@ -193,10 +223,13 @@ namespace ORTS.Common
 
 	internal class NativeMethods
 	{
-		[DllImport("KERNEL32.DLL", EntryPoint = "GetPrivateProfileStringW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
-		public static extern int GetPrivateProfileString(string sectionName, string keyName, string defaultValue, string value, int size, string fileName);
+        [DllImport("KERNEL32.DLL", EntryPoint = "GetPrivateProfileSectionW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int GetPrivateProfileSection(string sectionName, string value, int size, string fileName);
+
+        [DllImport("KERNEL32.DLL", EntryPoint = "GetPrivateProfileStringW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int GetPrivateProfileString(string sectionName, string keyName, string defaultValue, string value, int size, string fileName);
 
 		[DllImport("KERNEL32.DLL", EntryPoint = "WritePrivateProfileStringW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
 		public static extern int WritePrivateProfileString(string sectionName, string keyName, string value, string fileName);
-	}
+    }
 }

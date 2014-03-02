@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,14 +17,14 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MSTS;
+using ORTS.Settings;
 
 namespace ORTS.Menu
 {
     public class Folder
     {
-        public static string UserDataFolder;
-
         public readonly string Name;
         public readonly string Path;
 
@@ -39,23 +39,16 @@ namespace ORTS.Menu
             return Name;
         }
 
-        public static string FolderDataFile
+        public static List<Folder> GetFolders(UserSettings settings)
         {
-            get
-            {
-				return UserDataFolder + @"\folder.dat";
-            }
-        }
-
-        public static List<Folder> GetFolders()
-        {
+            var folderDataFile = UserSettings.UserDataFolder + @"\folder.dat";
             var folders = new List<Folder>();
 
-            if (File.Exists(FolderDataFile))
+            if (settings.Folders.Folders.Count == 0 && File.Exists(folderDataFile))
             {
                 try
                 {
-                    using (var inf = new BinaryReader(File.Open(FolderDataFile, FileMode.Open)))
+                    using (var inf = new BinaryReader(File.Open(folderDataFile, FileMode.Open)))
                     {
                         var count = inf.ReadInt32();
                         for (var i = 0; i < count; ++i)
@@ -67,6 +60,16 @@ namespace ORTS.Menu
                     }
                 }
                 catch { }
+
+                // Migrate from folder.dat to FolderSettings.
+                foreach (var folder in folders)
+                    settings.Folders.Folders[folder.Name] = folder.Path;
+                settings.Folders.Save();
+            }
+            else
+            {
+                foreach (var folder in settings.Folders.Folders)
+                    folders.Add(new Folder(folder.Key, folder.Value));
             }
 
             if (folders.Count == 0)
@@ -81,17 +84,12 @@ namespace ORTS.Menu
             return folders;
         }
 
-        public static void SetFolders(List<Folder> folders)
+        public static void SetFolders(UserSettings settings, List<Folder> folders)
         {
-            using (var outf = new BinaryWriter(File.Open(FolderDataFile, FileMode.Create)))
-            {
-                outf.Write(folders.Count);
-                foreach (var folder in folders)
-                {
-                    outf.Write(folder.Path);
-                    outf.Write(folder.Name);
-                }
-            }
+            settings.Folders.Folders.Clear();
+            foreach (var folder in folders)
+                settings.Folders.Folders[folder.Name] = folder.Path;
+            settings.Folders.Save();
         }
     }
 }

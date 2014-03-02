@@ -55,7 +55,7 @@
     <Compile Include="Coordinates.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsBase.cs" />
-    <Compile Include="SettingStore.cs" />
+    <Compile Include="SettingsStore.cs" />
     <Compile Include="VersionInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

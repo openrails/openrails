@@ -62,10 +62,11 @@ namespace ORTS
         Task<int> TestActivitiesRunner;
         bool ClearedLogs;
 
+        readonly UserSettings Settings;
 		readonly string SummaryFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
 		readonly string LogFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingLog.txt");
 
-        public TestingForm()
+        public TestingForm(UserSettings settings)
         {
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
@@ -76,6 +77,8 @@ namespace ORTS
             // Vista and later should use 9pt "Segoe UI". We'll use the
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
+
+            Settings = settings;
 
             UpdateButtons();
 
@@ -106,7 +109,7 @@ namespace ORTS
 
             TestActivityLoader = new Task<SortableBindingList<TestActivity>>(this, () =>
             {
-                return new SortableBindingList<TestActivity>((from f in Folder.GetFolders()
+                return new SortableBindingList<TestActivity>((from f in Folder.GetFolders(Settings)
                                                               from r in Route.GetRoutes(f)
                                                               from a in Activity.GetActivities(f, r)
                                                               where !(a is ORTS.Menu.ExploreActivity)

@@ -62,9 +62,17 @@
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
       <Name>MSTS.Formats</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
+      <Name>ORTS.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
       <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
       <Name>ORTS.Content</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj">
+      <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
+      <Name>ORTS.Settings</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

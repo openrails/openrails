@@ -87,8 +87,6 @@ namespace ORTS
 #if DEBUG
             Text = Text + " (debug)";
 #endif
-            Folder.UserDataFolder = UserSettings.UserDataFolder;
-            CleanupPre021();
             ShowDetails();
             UpdateEnabled();
         }
@@ -320,7 +318,7 @@ namespace ORTS
         #region Misc. buttons and options
         void buttonTesting_Click(object sender, EventArgs e)
         {
-            using (var form = new TestingForm())
+            using (var form = new TestingForm(Settings))
             {
                 form.ShowDialog(this);
             }
@@ -370,33 +368,6 @@ namespace ORTS
             SaveOptions();
             SelectedAction = UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
-        }
-
-        static void CleanupPre021()
-        {
-            // Handle cleanup from pre version 0021
-            using (var RK = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("SOFTWARE\\ORTS"))
-            {
-                if (RK != null)
-                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree("SOFTWARE\\ORTS");
-            }
-
-            if (!File.Exists(Folder.FolderDataFile))
-            {
-                // Handle name change that occured at version 0021
-                var oldFolderDataFileName = UserSettings.UserDataFolder + @"\..\ORTS\folder.dat";
-                try
-                {
-                    if (File.Exists(oldFolderDataFileName))
-                    {
-                        File.Copy(oldFolderDataFileName, Folder.FolderDataFile);
-                        Directory.Delete(System.IO.Path.GetDirectoryName(oldFolderDataFileName), true);
-                    }
-                }
-                catch
-                {
-                }
-            }
         }
         #endregion
 
@@ -459,7 +430,7 @@ namespace ORTS
             Folders.Clear();
             ShowFolderList();
 
-            new Task<List<Folder>>(this, () => Folder.GetFolders().OrderBy(f => f.Name).ToList(), (folders) =>
+            new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
             {
                 Folders = folders;
                 if (Folders.Count == 0)
@@ -485,7 +456,7 @@ namespace ORTS
 
         void SaveFolderList()
         {
-            Folder.SetFolders(Folders);
+            Folder.SetFolders(Settings, Folders);
         }
         #endregion
 

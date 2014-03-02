@@ -297,15 +297,17 @@ namespace ORTS.Settings
 
 		#endregion
 
+        public FolderSettings Folders { get; private set; }
         public InputSettings Input { get; private set; }
 
 		public UserSettings(IEnumerable<string> options)
-			: base(SettingStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
+			: base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
 		{
 			CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
 			CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
 			CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
 			Load(options);
+            Folders = new FolderSettings(options);
             Input = new InputSettings(options);
 		}
 
@@ -329,7 +331,7 @@ namespace ORTS.Settings
 
 		PropertyInfo[] GetProperties()
 		{
-			return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(pi => pi.Name != "Input").ToArray();
+			return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(pi => pi.Name != "Folders" && pi.Name != "Input").ToArray();
 		}
 
 		protected override object GetValue(string name)
@@ -354,6 +356,7 @@ namespace ORTS.Settings
 				if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
 					Save(property.Name, property.PropertyType);
 
+            Folders.Save();
             Input.Save();
 		}
 

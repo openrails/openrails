@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using GNU.Gettext;
 using MSTS.Formats;
+using ORTS.Settings;
 
 namespace ORTS.Menu
 {
