@@ -1,12 +1,11 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-02-27 20:10:51+0100\n"
-"PO-Revision-Date: 2014-03-01 10:24+0100\n"
-"Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
-"<strawberryfield@trainsimhobby.com>\n"
+"Project-Id-Version: Open Rails\n"
+"POT-Creation-Date: 2014-02-28 18:43:38+0000\n"
+"PO-Revision-Date: 2014-03-02 13:26+0100\n"
+"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: \n"
-"Language: it\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -15,380 +14,381 @@ msgstr ""
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:2074
 msgid "Switching Request Sent to the Server"
-msgstr "Richiesta di scambio inviata al Server"
+msgstr "Weichenstellanfrage an Server gesendet"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:197
 msgid "View Self"
-msgstr "Vedi il tuo treno"
+msgstr "Selbst ansehen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:588
 msgid "MSG to Server"
-msgstr "MSG al Server"
+msgstr "Nachricht an Server"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:592
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
-msgstr "MSG a tutti"
+msgstr "Nachricht an alle"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
-msgstr "Vedi un treno"
+msgstr "Zug ansehen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
 msgid "m"
-msgstr ""
+msgstr "m"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
 msgid "Remove"
-msgstr "Rimuovi"
+msgstr "Entfernen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
 msgid "Auto Switch"
-msgstr "Scambio automatico"
+msgstr "Auto-Weiche"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
-msgstr "Mostra Avatar"
+msgstr "Avatare anzeigen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
-msgstr "MSG a lista"
+msgstr "Nachricht an Ausgewählte"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:88
 msgid "Compose MSG"
-msgstr "Componi MSG"
+msgstr "Nachricht verfassen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
+#, fuzzy
 msgid "Res"
-msgstr "Scala"
+msgstr "Res"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
-msgstr "Risp. a lista"
+msgstr "Ausgewählten antworten"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
-msgstr "Percorsi"
+msgstr "Fahrstraße zeichnen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
 msgid "Pick Signals"
-msgstr "Segnali"
+msgstr "Signale vor-auswählen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
 msgid "Pick Switches"
-msgstr "Scambi"
+msgstr "Weichen vor-auswählen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
 msgid "Can Join"
-msgstr "Aggancia rotabile"
+msgstr "Kann beitreten"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
 msgid "Assist"
-msgstr ""
+msgstr "Hilfe"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
-msgstr "Segui"
+msgstr "Folgen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
-msgstr ""
+msgstr "Strafe"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
 msgid "Prefer Green"
-msgstr ""
+msgstr "Grün vorziehen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
-msgstr "Vedi in Gioco"
+msgstr "Im Spiel anschauen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
 msgid "DispatchViewer"
-msgstr "Finestra DCO"
+msgstr "Disponentenansicht"
 
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:89
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:202
 msgid "Resume"
-msgstr "Riprendi"
+msgstr "Fortsetzen"
 
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:94
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:67
 msgid "Pause"
-msgstr "Pausa"
+msgstr "Pause"
 
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:80
 msgid "GenericObjectViewerForm"
-msgstr ""
+msgstr "AllgemeinesObjektviwereFormular"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:46
 msgid "Clear All"
-msgstr "Cancella tutto"
+msgstr "Alle aufheben"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:57
 msgid "Reply Selected"
-msgstr ""
+msgstr "Ausgewählten antworten"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:102
 msgid "MessageViewer"
-msgstr "Visualizzatore Messaggi"
+msgstr "Nachrichtenansicht"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:189
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:219
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:220
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:221
 msgid "-"
-msgstr ""
+msgstr "-"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.cs:218
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
 msgid "0"
-msgstr ""
+msgstr "0"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:151
 msgid "Current SMS"
-msgstr ""
+msgstr "Aktuelle SMS"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:162
 msgid "Stream Properties"
-msgstr ""
+msgstr "Streameigenschaften"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:173
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:242
 msgid "Speed"
-msgstr "Velocità"
+msgstr "Geschwindigk.:"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:270
 msgid "Variable 2"
-msgstr "Variabile 2"
+msgstr "Variable 2"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:289
 msgid "Variable 3"
-msgstr "Variabile 3"
+msgstr "Variable 3"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:299
 msgid "Variable 1"
-msgstr "Variabile 1"
+msgstr "Variable 1"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
 msgid "Distance"
-msgstr "Distanza"
+msgstr "Entfernung"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:319
 msgid "Volume"
-msgstr ""
+msgstr "Lautstärke"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:328
 msgid ""
 "Total number of sound \r\n"
 "files in cache:"
 msgstr ""
-"Numero di suoni totale \r\n"
-"file in cache:"
+"Anzhal der Sound- \r\n"
+"dateien im Cache:"
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:348
 msgid "SoundDebugForm"
-msgstr ""
+msgstr "SoundDebugFormular"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2975
-#, csharp-format
+#, fuzzy, csharp-format
 msgid " From {0}: {1}"
-msgstr " Da {0}: {1}"
+msgstr " From {0}: {1}"
 
 #: ../../RunActivity/Physics/Train.cs:1230
 msgid "Coupler broken!"
-msgstr "Gancio rotto!"
+msgstr "Kupplung gebrochen!"
 
 #: ../../RunActivity/Physics/Train.cs:1233
 msgid "Coupler overloaded!"
-msgstr "Gancio sovraccarico!"
+msgstr "Kupplung überlastet!"
 
 #: ../../RunActivity/Physics/Train.cs:3761
 #: ../../RunActivity/Physics/Train.cs:3766
 msgid "Other train is blocking path"
-msgstr "Un altro treno sta occupando il percorso"
+msgstr "Anderer Zug blockiert Fahrstraße."
 
 #: ../../RunActivity/Physics/Train.cs:4622
 msgid "Stopped due to errors in route setting"
-msgstr "Fermato a causa di errori nel settaggio del tracciato"
+msgstr "Wegen Fehlern in den Routeneinstellungen angehalten"
 
 #: ../../RunActivity/Physics/Train.cs:5280
 #: ../../RunActivity/Physics/Train.cs:6353
 msgid "No signal in train's path"
-msgstr "Nessun segnale nel percorso del treno"
+msgstr "Kein Signal entlang der Fahrstraße"
 
 #: ../../RunActivity/Physics/Train.cs:5288
 msgid "Next signal already allocated to other train"
-msgstr "Segnale successivo già impegnato da altro treno"
+msgstr "Nächstes Signal schon anderem Zug zugewiesen"
 
 #: ../../RunActivity/Physics/Train.cs:5349
 msgid "Request to clear signal cannot be processed"
-msgstr "La richiesta di aprire il segnale non può essere eseguita"
+msgstr "Anfrage zur Signalfreigabe kann nicht verarbeitet werden"
 
 #: ../../RunActivity/Physics/Train.cs:5455
 #: ../../RunActivity/Physics/Train.cs:6473
 msgid "No switch found"
-msgstr "Scambio non trovato"
+msgstr "Keine Weiche gefunden"
 
 #: ../../RunActivity/Physics/Train.cs:6707
 msgid "Train is not back on original route"
-msgstr "Il treno non è tornato nel tracciato originale"
+msgstr "Zug nicht wieder auf ursprünglicher Fahrstraße"
 
 #: ../../RunActivity/Physics/Train.cs:6716
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
-"Il percorso originale è nella direzione inversa a quella attuale, ferma il "
-"treno prima di azionare lo scambio"
+"Ursprüngliche Farhstraße verläuft in entgegengesetzte Richtung. Zug vor "
+"umschalten anhalten."
 
 #: ../../RunActivity/Physics/Train.cs:6729
 msgid "Cannot change to Manual Mode while in Explorer Mode"
-msgstr "Non puoi passare in Modo Manuale se sei in Esplorazione Route"
+msgstr "Umschalten zum Manuellen Modus im Erkundungsmodus nicht möglich."
 
 #: ../../RunActivity/Physics/Train.cs:6822
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
-"Dovresti invertire la marcia, ma la coda del treno non è sul tracciato "
-"corretto"
+"Richtungsänderung erforderlich, aber Zugenede nicht auf richiger Fahrstraße."
 
 #: ../../RunActivity/Physics/Train.cs:7009
 msgid "Cannot clear signal behind train while in AUTO mode"
-msgstr "Non si può aprire il segnale dietro al treno in modalità AUTO"
+msgstr "Signalfreigabe hinter dem Zug im automatischen Modus nicht möglich."
 
 #: ../../RunActivity/Physics/Train.cs:7251
 #, csharp-format
 msgid "Allowed speed raised to {0}"
-msgstr "Velocità permessa raggiunta a {0}"
+msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 
 #: ../../RunActivity/Physics/Train.cs:7293
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
-msgstr "Il treno è stato fermato per problemi con: treno {0}, motivo: {1}"
+msgstr "Zug wegen Problemen mit anderem Zug angehalten: Zug {0} , Grund: {1}"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:258
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:269
 msgid "No power line!"
-msgstr "Non c'è linea elettrica!"
+msgstr "Keine Oberleitung!"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:260
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
 msgid "Power line condition overridden."
-msgstr "Ignorata la presenza della linea elettrica."
+msgstr "Oberleitungszustand ignoriert."
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:118
 msgid "Release"
-msgstr "Rilascio"
+msgstr "Lösen"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:119
 msgid "Quick Release"
-msgstr "Rilascio rapido"
+msgstr "Schnellösen"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:120
 msgid "Running"
-msgstr "In marcia"
+msgstr "Läuft"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:121
 msgid "Neutral"
-msgstr "Pronto"
+msgstr "Neutral"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:122
 msgid "Apply"
-msgstr "Attivo"
+msgstr "Anwenden"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:123
 msgid "EPApply"
-msgstr ""
+msgstr "EP anwenden"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:124
 msgid "Emergency"
-msgstr "Emergenza"
+msgstr "Notbremse"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:125
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:128
 msgid "Lap"
-msgstr "Leggero"
+msgstr "Halten"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:126
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:127
 msgid "Service"
-msgstr "Servizio"
+msgstr "Service"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:129
 msgid "Suppression"
-msgstr "Sovrapressione"
+msgstr "Unterdrückung"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:130
 msgid "Cont. Service"
-msgstr "Servizio continuo"
+msgstr "Dauerservice"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:131
 msgid "Full Service"
-msgstr "Pieno servizio"
+msgstr "Vollservice"
 
 #: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
-msgstr "Salita passeggeri completata. Puoi partire."
+msgstr "Passagiere zugestiegen. Sie können die Fahrt fortsetzen."
 
 #: ../../RunActivity/Simulator/Activity.cs:767
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
-msgstr "Salita passeggeri completata in {0:D2}:{1:D2}"
+msgstr "Verbleibende Zusteigezeit: {0:D2}:{1:D2}"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:25
 msgid "None"
-msgstr "Nessuno"
+msgstr "Keine"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:26
 msgid "Information"
-msgstr "Informazione"
+msgstr "Information"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:27
 msgid "Warning"
-msgstr "Avviso"
+msgstr "Warnung"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:28
 msgid "Error"
-msgstr "Errore"
+msgstr "Fehler"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:29
 msgid "MSG"
-msgstr ""
+msgstr "Nachricht"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:137
 msgid "<none>"
-msgstr "<nessuno>"
+msgstr "<keine>"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "reverse"
-msgstr "marcia indietro"
+msgstr "rückwärts"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "neutral"
-msgstr "folle"
+msgstr "neutral"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "forward"
-msgstr "marcia avanti"
+msgstr "vorwärts"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "locked. Close throttle, stop train then re-try."
-msgstr "bloccato. Azzera la potenza, ferma il treno e riprova."
+msgstr ""
+"gesperrt. Regler auf null stellen, Zug anhalten und nochmals versuchen."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "Throttle"
-msgstr "Acceleratore"
+msgstr "Regler"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 #: ../../RunActivity/Simulator/Confirmation.cs:152
@@ -400,7 +400,7 @@ msgstr "Acceleratore"
 #: ../../RunActivity/Simulator/Confirmation.cs:185
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "close"
-msgstr "chiuso"
+msgstr "schließen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 #: ../../RunActivity/Simulator/Confirmation.cs:152
@@ -412,31 +412,31 @@ msgstr "chiuso"
 #: ../../RunActivity/Simulator/Confirmation.cs:185
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "open"
-msgstr "aperto"
+msgstr "öffnen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "locked. Release dynamic brake then re-try."
-msgstr "bloccato. Rilascia il freno dinamico e riprova."
+msgstr "gesperrt. Dynamische Bremse lösen und nochmals versuchen."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "Wheel-slip"
-msgstr "Slittamento ruote"
+msgstr "Radschlupf"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "over"
-msgstr "terminato"
+msgstr "über"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "occurring. Tractive power greatly reduced."
-msgstr "in corso. La potenza di trazione è fortemente ridotta"
+msgstr "tritt auf. Kraftübertragung stark vermindert."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "warning"
-msgstr "preavviso"
+msgstr "Warnung"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 msgid "Power"
-msgstr "Alimentazione"
+msgstr "Leistung"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:147
@@ -454,7 +454,7 @@ msgstr "Alimentazione"
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "off"
-msgstr "spenta"
+msgstr "aus"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:147
@@ -467,531 +467,535 @@ msgstr "spenta"
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "on"
-msgstr "accesa"
+msgstr "an"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "Pantograph 1"
-msgstr "Pantografo 1"
+msgstr "Pantograph 1"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 #: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "lower"
-msgstr "abbassato"
+msgstr "senken"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 #: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "raise"
-msgstr "alzato"
+msgstr "heben"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "Pantograph 2"
-msgstr "Pantografo 2"
+msgstr "Pantograph 2"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "Player Diesel Power"
-msgstr "Accensione loco diesel principale"
+msgstr "Motor Spielerlok"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "locked. Close throttle then re-try."
-msgstr "bloccato. Chiudi l'acceleratore e riprova."
+msgstr "gepserrt. Regler auf null stellen und nochmals versuchen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:148
 msgid "Helper Diesel Power"
-msgstr "Accensione loco diesel aggiuntiva"
+msgstr "Motoren Hilfsloks"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "Diesel Tank"
-msgstr "Serbatoio nafta"
+msgstr "Dieseltank"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "re-fueled"
-msgstr "rifornito"
+msgstr "aufgetankt"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "level"
-msgstr "livello"
+msgstr "Füllung"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:152
 msgid "Regulator"
-msgstr "Regolatore"
+msgstr "Regler"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:153
 msgid "Injector 1"
-msgstr "Iniettore 1"
+msgstr "Injektor 1"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "Injector 2"
-msgstr "Iniettore 2"
+msgstr "Injektor 2"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 msgid "Blower"
-msgstr ""
+msgstr "Bläser"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 #: ../../RunActivity/Simulator/Confirmation.cs:167
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "decrease"
-msgstr "decrementa"
+msgstr "stärker"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:155
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 #: ../../RunActivity/Simulator/Confirmation.cs:167
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "increase"
-msgstr "incrementa"
+msgstr "schwächer"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:156
 msgid "Damper"
-msgstr ""
+msgstr "Dämpfer"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "Firebox Door"
-msgstr "Porta del forno"
+msgstr "Feurbüchsentür"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 msgid "Firing Rate"
-msgstr "Intensità del fuoco"
+msgstr "Schaufelrate"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:159
 msgid "Manual Firing"
-msgstr "Fochista Manuale"
+msgstr "Manueller Heizer"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:160
 msgid "Fire"
-msgstr "Fuoco"
+msgstr "Feuer"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:160
 msgid "add shovel-full"
-msgstr "aggiunta carbone"
+msgstr "max. Schaufelrate"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:161
 msgid "Cylinder Cocks"
-msgstr "Sfogo Cilindri"
+msgstr "Zylinderhähne"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:162
 #: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Tender"
-msgstr ""
+msgstr "Tender"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:162
 msgid "Coal re-filled"
-msgstr "Carbone caricato"
+msgstr "Kohle auffüllen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:162
 msgid "Coal level"
-msgstr "Livello carbone"
+msgstr "Kohlenstand"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Water re-filled"
-msgstr "Acqua caricata"
+msgstr "Wasser aufgefüllt"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Water level"
-msgstr "Livello acqua"
+msgstr "Wasserstand"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 msgid "Train Brake"
-msgstr "Freno Treno"
+msgstr "Zugbremse"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 #: ../../RunActivity/Simulator/Confirmation.cs:166
 msgid "release"
-msgstr "rilascio"
+msgstr "lösen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 #: ../../RunActivity/Simulator/Confirmation.cs:166
 #: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "apply"
-msgstr "frenatura"
+msgstr "anwenden"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:166
 msgid "Engine Brake"
-msgstr "Freno Locomotore"
+msgstr "Lokbremse"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "Dynamic Brake"
-msgstr "Freno Dinamico"
+msgstr "E-Bremse"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "setup"
-msgstr "inserito"
+msgstr "Setup"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "Emergency Brake"
-msgstr "Freno di Emergenza"
+msgstr "Notbremse"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "Bail Off"
-msgstr "Pressione freno locomotore"
+msgstr "Getrennt lösen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "disengage"
-msgstr "azzerata"
+msgstr "nicht anwenden"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "engage"
-msgstr "ripristinata"
+msgstr "anwenden"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "Brakes"
-msgstr "Freni"
+msgstr "Bremsen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "initialize"
-msgstr "armati"
+msgstr "zurücksetzen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "cannot initialize. Stop train then re-try."
-msgstr "non possono essere armati. Ferma il treno e riprova."
+msgstr "kann nicht zurückgesetzt werden. Zug anhalten und nochmals versuchen."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "Handbrake"
-msgstr "Freno a mano"
+msgstr "Handbremse"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "none"
-msgstr "nessuno"
+msgstr "keine"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "full"
-msgstr "pieno"
+msgstr "voll"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Retainers"
-msgstr "Fermi"
+msgstr "Retainer"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Exhaust"
-msgstr "Esaurito"
+msgstr "Abgas"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "High Pressure"
-msgstr "Alta Pressione"
+msgstr "hohen Druck halten"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Low Pressure"
-msgstr "Bassa Pressione"
+msgstr "niedrigen Druck halten"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Slow Direct"
-msgstr ""
+msgstr "langsam lösen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "Brake Hose"
-msgstr "Condotta freno"
+msgstr "Bremsschläuche"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "disconnect"
-msgstr "disconnetti"
+msgstr "trennen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "connect"
-msgstr "connetti"
+msgstr "verbinden"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "Sander"
-msgstr "Sabbiere"
+msgstr "Sander"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Alerter"
-msgstr "Allertatore"
+msgstr "SIFA"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "acknowledge"
-msgstr "conferma"
+msgstr "bestätigen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgid "Horn"
-msgstr "Tromba"
+msgstr "Horn"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:178
 msgid "Whistle"
-msgstr "Fischio"
+msgstr "Pfeife"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:178
 msgid "blow"
-msgstr "attivo"
+msgstr "auslösen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "Bell"
-msgstr "Campana"
+msgstr "Glocke"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "ring"
-msgstr "suona"
+msgstr "läuten"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "Headlight"
-msgstr "Fanali"
+msgstr "Spitzenlicht"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "dim"
-msgstr "a mezza luce"
+msgstr "abblenden"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "bright"
-msgstr "accesi"
+msgstr "aufblenden"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 msgid "Cab Light"
-msgstr "Luce cabina"
+msgstr "Führerstandsbeleuchtung"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "Wipers"
-msgstr "Tergicristalli"
+msgstr "Scheibenwischer"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "Cab"
-msgstr "Cabina"
+msgstr "Führerstand"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "changing is not available"
-msgstr "alternativa non diponibile"
+msgstr "wechseln nicht verfügbar."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
 msgstr ""
-"non modificabile. Chiudi l'acceleratore, metti in folle, ferma il treno e "
-"riprova."
+"wechseln gesperrt. Regler auf null stellen, Richtungswender neutral setzen, "
+"Zug anhalten und nochmal versuchen."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:185
 msgid "Doors Left"
-msgstr "Porte a Sinistra"
+msgstr "linke Türen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "Doors Right"
-msgstr "Porte a Destra"
+msgstr "rechte Türen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "Mirror"
-msgstr "Specchietto"
+msgstr "Spiegel"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "retract"
-msgstr "ripiegato"
+msgstr "einfahren"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "extend"
-msgstr "in fuori"
+msgstr "ausfahren"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:189
 msgid "Switch Ahead"
-msgstr "Scambio Davanti"
+msgstr "Weiche vorne"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:189
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "locked. Use Control+M to change signals to manual mode then re-try."
-msgstr "bloccato. Usa Ctrl+M per cambiare manualmente i segnali e riprova."
+msgstr ""
+"gesperrt. Strg + M, um in den manuellen Modus zu wechseln and nochmals "
+"versuchen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "Switch Behind"
-msgstr "Scambio Dietro"
+msgstr "Weiche hinten"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "Simulation Speed"
-msgstr "Velocità di Simulazione"
+msgstr "Simulationsgeschwindigkeit"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "reset"
-msgstr ""
+msgstr "zurücksetzen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:193
 msgid "Uncouple After"
-msgstr "Distacca Dopo"
+msgstr "Abkuppeln nach"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "Activity"
-msgstr ""
+msgstr "Aufgabe"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "quit"
-msgstr "esci"
+msgstr "beenden"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "resume"
-msgstr "riprendi"
+msgstr "fortsetzen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Replay"
-msgstr ""
+msgstr "Abspielen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Overriding camera replay. Press Escape to resume camera replay."
-msgstr "Salta il replay. Premi Esc per riprendere il replay"
+msgstr ""
+"Kamera abspielen ignorieren. Escape um Kamera abspielen zu reaktivieren."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "Location labels"
-msgstr "Nomi località"
+msgstr "Ortsmarkierungen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "sidings"
-msgstr "binari"
+msgstr "Nebengleise"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "stations"
-msgstr "stazioni"
+msgstr "Stationen"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "stations and sidings"
-msgstr "stazioni e binari"
+msgstr "Stationen und Nebengleise"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "Gearbox"
-msgstr "Cambio"
+msgstr "Getriebe"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "down"
-msgstr "giù"
+msgstr "zurükschalten"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "up"
-msgstr "su"
+msgstr "hinaufschalten"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
+#, fuzzy
 msgid "locked. Use shaft before changing gear."
-msgstr "bloccato. Usa la frizione prima di cambiare marcia."
+msgstr "gesperrt. Vor schalten Kupplung benutzen."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "Signal mode"
-msgstr "Modalità segnali"
+msgstr "Singalmodus"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "manual"
-msgstr "manuale"
+msgstr "manuell"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "auto"
-msgstr "automatico"
+msgstr "auto"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "locked. Stop train, then re-try."
-msgstr "bloccato. Ferma il treno e riprova"
+msgstr "gesperrt. Zug anhalten, dann nochmals versuchen."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:206
 #: ../../RunActivity/Simulator/Confirmation.cs:215
 #: ../../RunActivity/Simulator/Confirmation.cs:253
 #, csharp-format
 msgid "{0} {1}"
-msgstr ""
+msgstr "{0} {1}"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:210
 #, csharp-format
 msgid "{0}"
-msgstr ""
+msgstr "{0}"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:220
 #, csharp-format
 msgid "{0} to {1:0}%"
-msgstr "da {0} a {1:0}%"
+msgstr "{0} bis {1:0}%"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:225
 #, csharp-format
 msgid "{0} {1:0}% {2}"
-msgstr ""
+msgstr "{0} {1:0}% {2}"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:230
 #, csharp-format
 msgid "{0:0}% {1}"
-msgstr ""
+msgstr "{0:0}% {1}"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:235
 #, csharp-format
 msgid "{0:0}%"
-msgstr ""
+msgstr "{0:0}%"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:243
 #: ../../RunActivity/Simulator/Confirmation.cs:248
 #, csharp-format
 msgid "{0} {1:0}%"
-msgstr ""
+msgstr "{0} {1:0}%"
 
 #. Context: NonSteam
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 msgctxt "NonSteam"
 msgid "Reverser"
-msgstr "Invertitore"
+msgstr "Richtungswender"
 
 #. Context: Steam
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgctxt "Steam"
 msgid "Reverser"
-msgstr "Invertitore"
+msgstr "Steuerung"
 
 #. Context: Alerter
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgctxt "Alerter"
 msgid "sound"
-msgstr "suona"
+msgstr "Ton"
 
 #. Context: Horn
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgctxt "Horn"
 msgid "sound"
-msgstr "suona"
+msgstr "Signal"
 
 #. Context: Cab
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgctxt "Cab"
 msgid "change"
-msgstr "cambia"
+msgstr "wechseln"
 
 #. Context: Switch
 #: ../../RunActivity/Simulator/Confirmation.cs:189
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 msgctxt "Switch"
 msgid "change"
-msgstr "sposta"
+msgstr "stellen"
 
 #. Context: Labels
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgctxt "Labels"
 msgid "none"
-msgstr "nessuno"
+msgstr "keine"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1072
 msgid "Game saved"
-msgstr "Gioco salvato"
+msgstr "Spiel gespeichert"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
 msgid "Activity Events"
-msgstr "Eventi dell'Activity"
+msgstr "Aufgabenereignisse"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "successfully"
-msgstr "con successo"
+msgstr "erfolgreich"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "without success"
-msgstr "con errori"
+msgstr "erfolglos"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
 msgid "Resume and close box"
-msgstr "Riprendi e chiudi il menu"
+msgstr "Fortsetzen & Fenster schließen"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
 msgid "Quit activity"
-msgstr "Esci dall'activity"
+msgstr "Aufgabe abbrechen"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
 msgid "Status: Activity paused"
-msgstr "Stato: Activity in pausa"
+msgstr "Status: Aufgabe pausiert"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
 msgid "Close box"
-msgstr "Chiudi menu"
+msgstr "Fenster schließen"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
 msgid "Status: Activity resumed"
-msgstr "Stato: Activity ripresa"
+msgstr "Status: Aufgabe fortgesetzt"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
 msgid "End Activity"
-msgstr "Fine Activity"
+msgstr "Aufgabe beenden"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:147
 #, csharp-format
@@ -999,247 +1003,246 @@ msgid ""
 "This activity has ended {0}.\n"
 "For a detailed evaluation, see the Help Window (F1)."
 msgstr ""
-"Activity terminata {0}.\n"
-"Per una analisi dettagliata vedi la finestra di Help (F1)."
+"Sie haben die Aufgabe {0} abgeschlossen.\n"
+"Öffnen Sie das Hilfefenster (F1), um eine detaillierte Auswertung zu sehen."
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:232
 #, csharp-format
 msgid "Event: {0}"
-msgstr "Evento: {0}"
+msgstr "Ereignis: {0}"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:39
 msgid "Car Operation Menu"
-msgstr "Menu operazioni rotabile"
+msgstr "Rollmaterial-Bedienungsmenü"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
 msgid "Toggle Handbrake"
-msgstr "Inverti freno a mano"
+msgstr "Handbremse an/aus"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:63
 msgid "Toggle Power"
-msgstr "Inverti alimentazione"
+msgstr "Motor an/aus"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:76
 msgid "Toggle MU Connection"
-msgstr "Inverti connessione MU"
+msgstr "Mehrfachsteuerung an/aus"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:87
 msgid "Close window"
-msgstr "Chiudi finestra"
+msgstr "Fenster schließen"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:119
 msgid "Handbrake set"
-msgstr "Freno a mano inserito"
+msgstr "Hanbremse angezogen"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
 msgid "Handbrake off"
-msgstr "Freno a mano rilasciato"
+msgstr "Handbremse gelöst"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:135
 msgid "Power OFF command sent"
-msgstr "Coamndo di spegnimento inviato"
+msgstr "Motor-aus-Befehl gesendet"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
 msgid "Power ON command sent"
-msgstr "Comando di accensione inviato"
+msgstr "Motor-an-Befehl gesendet"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:140
 msgid "No power command for this type of car!"
-msgstr "Non c'è comando di accensione per questo rotabile"
+msgstr "Kein Motoren-Kommando für diese Art Rollmaterial!"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:156
 msgid "MU signal connected"
-msgstr "Segnale MU connesso"
+msgstr "Mehrfachsteuerung verbunden"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:158
 msgid "MU signal disconnected"
-msgstr "Segnale MU disconnesso"
+msgstr "Mehrfachsteuerungs getrennt"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:161
 msgid "No MU command for this type of car!"
-msgstr "Questo rotabile non supporta MU"
+msgstr "Keine Mehrfachsteuerung für diese Art Rollmaterial!"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:33
 msgid "Compass"
-msgstr "Bussola"
+msgstr "Kompass"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:44
 msgid "Lat:"
-msgstr ""
+msgstr "Breite:"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:47
 msgid "Lon:"
-msgstr ""
+msgstr "Länge:"
 
 #: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:34
 msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
-msgstr ""
-"Componi Messaggio (es. destinatario1, destinatario2: testo del messaggio)"
+msgstr "Nachricht verfassen (zB Empfänger1, Empfänger2: Nachricht)"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
 msgid "Help"
-msgstr "Aiuto"
+msgstr "Hilfe"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
 msgid "Key Commands"
-msgstr "Comandi tastiera"
+msgstr "Tastaturbelegung"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:69
 msgid "Briefing"
-msgstr "Presentazione"
+msgstr "Zusammenfassung"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
 msgid "Timetable"
-msgstr "Orario"
+msgstr "Fahrplan"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
 msgid "Station"
-msgstr "Stazione"
+msgstr "Station"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Arrive"
-msgstr "Arrivo"
+msgstr "Ankunft"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 msgid "Actual"
-msgstr "Attuale"
+msgstr "Tatsächlich"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Depart"
-msgstr "Partenza"
+msgstr "Abfahrt"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
 msgid "(missed)"
-msgstr "(saltata)"
+msgstr "(ausgelassen)"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:113
 msgid "Work Orders"
-msgstr "Ordini di servizio"
+msgstr "Arbeitsaufträge"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
 msgid "Task"
-msgstr "Compiti"
+msgstr "Auftrag"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
 msgid "Car(s)"
-msgstr "Carro(i)"
+msgstr "Waggon(s)"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
 msgid "Location"
-msgstr "Località"
+msgstr "Ort"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
 msgid "Status"
-msgstr "Stato"
+msgstr "Status"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
 msgid "Assemble Train"
-msgstr "Componi il treno"
+msgstr "Zug zusammenstellen"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:145
 msgid "At Location"
-msgstr "Presso"
+msgstr "Am Ort"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:149
 msgid "Drop Off"
-msgstr "Scarica"
+msgstr "Abstellen"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:153
 msgid "Pick Up"
-msgstr "Carica"
+msgstr "Aufnehmen"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:227
 msgid "Done"
-msgstr "Fatto"
+msgstr "Abgeschlossen"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
 msgid "Procedures"
-msgstr "Procedure"
+msgstr "Bedienung"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
 msgid "Next Station"
-msgstr "Prossima stazione"
+msgstr "Nächste Station"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
 msgid "Activity completed."
-msgstr "Activity completata."
+msgstr "Aufgabe abgeschlossen."
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
 msgid "Pause Menu"
-msgstr "Menu Pausa"
+msgstr "Menü Pause"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
 #, csharp-format
 msgid "Quit {1} ({0})"
-msgstr "Esci da {1} ({0})"
+msgstr "{1} beenden ({0})"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
 #, csharp-format
 msgid "Save your game ({0})"
-msgstr "Salva il gioco ({0})"
+msgstr "Spiel speichern ({0})"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
 #, csharp-format
 msgid "Continue playing ({0})"
-msgstr "Continua il gioco ({0})"
+msgstr "Weiterspielen ({0})"
 
 #: ../../RunActivity/Viewer3D/Popups/SwitchWindow.cs:48
 msgid "Switch"
-msgstr "Scambi"
+msgstr "Weiche"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
 msgid "Track Monitor"
-msgstr "Monitor Linea"
+msgstr "Streckenmonitor"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:88
 msgid "Auto Signal"
-msgstr "Segnali Automatici"
+msgstr "Auto Signal"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
 msgid "Node"
-msgstr "Nodo"
+msgstr "Node"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:90
 msgid "Manual"
-msgstr "Manuale"
+msgstr "Manuell"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
 msgid "Explorer"
-msgstr "Esplorazione"
+msgstr "Erkundung"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
 msgid "OutOfControl : "
-msgstr "Fuori Controllo:"
+msgstr "AußerKontrolle:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
 msgid "Unknown"
-msgstr "Sconosciuto"
+msgstr "Unbekannt"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
 msgid "Speed:"
-msgstr "Velocità:"
+msgstr "Geschwindigk.:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:119
 msgid "Projected:"
-msgstr "Prevista:"
+msgstr "Prognose:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
 msgid "Limit:"
-msgstr "Limite:"
+msgstr "Begrenzung:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:144
 msgid " Dist      Speed   Aspect"
-msgstr " Dist.      Vel.   Segnale"
+msgstr " Entf       Begr    Signal"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
 msgid "Train Operations"
-msgstr "Operazioni Treno"
+msgstr "Zugbedienung"

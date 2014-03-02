@@ -1,191 +1,191 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-02-23 23:18:08+0100\n"
-"PO-Revision-Date: 2014-02-24 11:37+0100\n"
+"POT-Creation-Date: 2014-02-27 20:10:51+0100\n"
+"PO-Revision-Date: 2014-02-28 11:46+0100\n"
 "Last-Translator: Zepder\n"
 "Language-Team: \n"
+"Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"Language: da\n"
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:2074
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:2074
 msgid "Switching Request Sent to the Server"
 msgstr "Sporskifte skift-anmodning sendt til serveren"
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:197
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:197
 msgid "View Self"
 msgstr "Se dig selv"
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:588
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:588
 msgid "MSG to Server"
 msgstr "Besked til server"
 
-#: ../RunActivity/Debugging/DebugViewerForm.cs:592
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:592
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
 msgstr "Besked til Alle"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
 msgstr "Vis tog"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
 msgid "m"
 msgstr "m"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
 msgid "Remove"
 msgstr "Fjern"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
 msgid "Auto Switch"
 msgstr "Auto Sporskifte"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
 msgstr "Vis Avatarer"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
 msgstr "Besked til Valgte"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
-#: ../RunActivity/Debugging/MessageViewer.Designer.cs:88
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
+#: ../../RunActivity/Debugging/MessageViewer.Designer.cs:88
 msgid "Compose MSG"
 msgstr "Skriv Besked"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
 msgid "Res"
 msgstr "Res"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
 msgstr "Besvar til Valgte"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
 msgstr "Tegn Rute"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
 msgid "Pick Signals"
 msgstr "Vælg Signaler"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
 msgid "Pick Switches"
 msgstr "Vælg Sporskifter"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
 msgid "Can Join"
 msgstr "Kan Deltage"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
 msgid "Assist"
 msgstr "Assister"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
 msgid "Normal"
 msgstr "Normal"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
 msgstr "Følg"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
 msgstr "Straf"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
 msgid "Prefer Green"
 msgstr "Foretræk Grøn"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
 msgstr "Se i Spil"
 
-#: ../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
+#: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
 msgid "DispatchViewer"
 msgstr "DispatchViewer"
 
-#: ../RunActivity/Debugging/GenericObjectViewerForm.cs:89
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:202
+#: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:89
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:202
 msgid "Resume"
 msgstr "Genoptag"
 
-#: ../RunActivity/Debugging/GenericObjectViewerForm.cs:94
-#: ../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:67
+#: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:94
+#: ../../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:67
 msgid "Pause"
 msgstr "Pause"
 
-#: ../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:80
+#: ../../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:80
 msgid "GenericObjectViewerForm"
 msgstr "GenericObjectViewerForm"
 
-#: ../RunActivity/Debugging/MessageViewer.Designer.cs:46
+#: ../../RunActivity/Debugging/MessageViewer.Designer.cs:46
 msgid "Clear All"
 msgstr "Ryd All"
 
-#: ../RunActivity/Debugging/MessageViewer.Designer.cs:57
+#: ../../RunActivity/Debugging/MessageViewer.Designer.cs:57
 msgid "Reply Selected"
 msgstr "Besvar Valgte"
 
-#: ../RunActivity/Debugging/MessageViewer.Designer.cs:102
+#: ../../RunActivity/Debugging/MessageViewer.Designer.cs:102
 msgid "MessageViewer"
 msgstr "BeskedFremviser"
 
-#: ../RunActivity/Debugging/SoundDebugForm.cs:189
-#: ../RunActivity/Debugging/SoundDebugForm.cs:219
-#: ../RunActivity/Debugging/SoundDebugForm.cs:220
-#: ../RunActivity/Debugging/SoundDebugForm.cs:221
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:189
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:219
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:220
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:221
 msgid "-"
 msgstr "-"
 
-#: ../RunActivity/Debugging/SoundDebugForm.cs:218
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:218
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
 msgid "0"
 msgstr "0"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:151
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:151
 msgid "Current SMS"
 msgstr "Nuværende Besked"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:162
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:162
 msgid "Stream Properties"
 msgstr "Stream Egenskaber"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:173
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:173
 msgid "3D"
 msgstr "3D"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:242
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:242
 msgid "Speed"
 msgstr "Hastighed"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:270
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:270
 msgid "Variable 2"
 msgstr "Variabel 2"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:289
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:289
 msgid "Variable 3"
 msgstr "Variabel 3"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:299
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:299
 msgid "Variable 1"
 msgstr "Variabel 1"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
 msgid "Distance"
 msgstr "Afstand"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:319
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:319
 msgid "Volume"
 msgstr "Lydstyrke"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:328
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:328
 msgid ""
 "Total number of sound \r\n"
 "files in cache:"
@@ -193,527 +193,559 @@ msgstr ""
 "Samlet antal af lyd-\r\n"
 "filer i cache:"
 
-#: ../RunActivity/Debugging/SoundDebugForm.Designer.cs:348
+#: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:348
 msgid "SoundDebugForm"
 msgstr "SoundDebugForm"
 
-#: ../RunActivity/Physics/Train.cs:1230
+#: ../../RunActivity/MultiPlayer/Message.cs:2975
+#, csharp-format
+msgid " From {0}: {1}"
+msgstr " Fra {0}: {1}"
+
+#: ../../RunActivity/Physics/Train.cs:1230
 msgid "Coupler broken!"
 msgstr "Kobling brudt!"
 
-#: ../RunActivity/Physics/Train.cs:1233
+#: ../../RunActivity/Physics/Train.cs:1233
 msgid "Coupler overloaded!"
 msgstr "Kobling overbelastet!"
 
-#: ../RunActivity/Physics/Train.cs:3761 ../RunActivity/Physics/Train.cs:3766
+#: ../../RunActivity/Physics/Train.cs:3761
+#: ../../RunActivity/Physics/Train.cs:3766
 msgid "Other train is blocking path"
 msgstr "Et andet tog blokerer ruten"
 
-#: ../RunActivity/Physics/Train.cs:4622
+#: ../../RunActivity/Physics/Train.cs:4622
 msgid "Stopped due to errors in route setting"
 msgstr "Stoppet pga. fejl i rute-indstillinger"
 
-#: ../RunActivity/Physics/Train.cs:5280 ../RunActivity/Physics/Train.cs:6353
+#: ../../RunActivity/Physics/Train.cs:5280
+#: ../../RunActivity/Physics/Train.cs:6353
 msgid "No signal in train's path"
 msgstr "Ingen signaler på togets rute"
 
-#: ../RunActivity/Physics/Train.cs:5288
+#: ../../RunActivity/Physics/Train.cs:5288
 msgid "Next signal already allocated to other train"
 msgstr "Næste signal er allerede tildelt et andet tog"
 
-#: ../RunActivity/Physics/Train.cs:5349
+#: ../../RunActivity/Physics/Train.cs:5349
 msgid "Request to clear signal cannot be processed"
 msgstr "Anmodning om rydning af signal kan ikke udføres"
 
-#: ../RunActivity/Physics/Train.cs:5455 ../RunActivity/Physics/Train.cs:6473
+#: ../../RunActivity/Physics/Train.cs:5455
+#: ../../RunActivity/Physics/Train.cs:6473
 msgid "No switch found"
 msgstr "Ingen sporskifter fundet"
 
-#: ../RunActivity/Physics/Train.cs:6707
+#: ../../RunActivity/Physics/Train.cs:6707
 msgid "Train is not back on original route"
 msgstr "Toget befinder sig ikke på den oprindelige rute"
 
-#: ../RunActivity/Physics/Train.cs:6716
+#: ../../RunActivity/Physics/Train.cs:6716
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Oprindelige rute er vendt fra nuværende retning, stop toget før du skifter"
 
-#: ../RunActivity/Physics/Train.cs:6729
+#: ../../RunActivity/Physics/Train.cs:6729
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Kan ikke skifte til manuel tilstand i Udforsk Rute-tilstand"
 
-#: ../RunActivity/Physics/Train.cs:6822
+#: ../../RunActivity/Physics/Train.cs:6822
 msgid "Reversal required and rear of train not on required route"
 msgstr "Vending påkrævet, og bagsiden af toget er ikke på ruten"
 
-#: ../RunActivity/Physics/Train.cs:7009
+#: ../../RunActivity/Physics/Train.cs:7009
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Kan ikke rydde signalet bag toget i AUTO-tilstand"
 
-#: ../RunActivity/Physics/Train.cs:7251
+#: ../../RunActivity/Physics/Train.cs:7251
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Tilladt hastighed hævet til {0}"
 
-#: ../RunActivity/Physics/Train.cs:7293
+#: ../../RunActivity/Physics/Train.cs:7293
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Toget stoppet pga. problemer med et andet tog: tog {0} , årsag: {1}"
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:273
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:284
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:258
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:269
 msgid "No power line!"
 msgstr "Ingen køreledninger!"
 
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:275
-#: ../RunActivity/RollingStock/MSTSElectricLocomotive.cs:286
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:260
+#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
 msgid "Power line condition overridden."
 msgstr "Kørelednings-krav tilsidesat."
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:118
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:118
 msgid "Release"
 msgstr "Frigiv"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:119
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:119
 msgid "Quick Release"
 msgstr "Frigiv Hurtigt"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:120
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:120
 msgid "Running"
 msgstr "Kører"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:121
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:121
 msgid "Neutral"
 msgstr "Frigear"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:122
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:122
 msgid "Apply"
 msgstr "Anvend"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:123
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:123
 msgid "EPApply"
 msgstr "EPAnvend"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:124
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:124
 msgid "Emergency"
 msgstr "Nødsituation"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:125
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:128
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:125
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:128
 msgid "Lap"
 msgstr "Omgang"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:126
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:127
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:126
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:127
 msgid "Service"
 msgstr "Service"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:129
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:129
 msgid "Suppression"
 msgstr "Suppression"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:130
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:130
 msgid "Cont. Service"
 msgstr "Kont. Service"
 
-#: ../RunActivity/RollingStock/MSTSNotchController.cs:131
+#: ../../RunActivity/RollingStock/MSTSNotchController.cs:131
 msgid "Full Service"
 msgstr "Fuld Service"
 
-#: ../RunActivity/Simulator/Activity.cs:774
+#: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
 msgstr "Ombordstigning fuldført. Du er nu klar til afgang."
 
-#: ../RunActivity/Simulator/Activity.cs:767
+#: ../../RunActivity/Simulator/Activity.cs:767
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr "Ombordstigning fuldført om {0:D2}:{1:D2}"
 
-#: ../RunActivity/Simulator/Confirmation.cs:138
-#: ../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:25
+msgid "None"
+msgstr "Ingen"
+
+#: ../../RunActivity/Simulator/Confirmation.cs:26
+msgid "Information"
+msgstr "Information"
+
+#: ../../RunActivity/Simulator/Confirmation.cs:27
+msgid "Warning"
+msgstr "Advarsel"
+
+#: ../../RunActivity/Simulator/Confirmation.cs:28
+msgid "Error"
+msgstr "Fejl"
+
+#: ../../RunActivity/Simulator/Confirmation.cs:29
+msgid "MSG"
+msgstr "MSG"
+
+#: ../../RunActivity/Simulator/Confirmation.cs:137
+msgid "<none>"
+msgstr "<ingen>"
+
+#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "reverse"
 msgstr "baglæns"
 
-#: ../RunActivity/Simulator/Confirmation.cs:138
-#: ../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "neutral"
 msgstr "frigear"
 
-#: ../RunActivity/Simulator/Confirmation.cs:138
-#: ../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "forward"
 msgstr "Fremad"
 
-#: ../RunActivity/Simulator/Confirmation.cs:138
-#: ../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "locked. Close throttle, stop train then re-try."
 msgstr "låst. Tag gassen af, stop toget og forsøg igen."
 
-#: ../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "Throttle"
 msgstr "Gashåndtag"
 
-#: ../RunActivity/Simulator/Confirmation.cs:139
-#: ../RunActivity/Simulator/Confirmation.cs:151
-#: ../RunActivity/Simulator/Confirmation.cs:152
-#: ../RunActivity/Simulator/Confirmation.cs:153
-#: ../RunActivity/Simulator/Confirmation.cs:155
-#: ../RunActivity/Simulator/Confirmation.cs:156
-#: ../RunActivity/Simulator/Confirmation.cs:160
-#: ../RunActivity/Simulator/Confirmation.cs:184
-#: ../RunActivity/Simulator/Confirmation.cs:185
+#: ../../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:152
+#: ../../RunActivity/Simulator/Confirmation.cs:153
+#: ../../RunActivity/Simulator/Confirmation.cs:154
+#: ../../RunActivity/Simulator/Confirmation.cs:156
+#: ../../RunActivity/Simulator/Confirmation.cs:157
+#: ../../RunActivity/Simulator/Confirmation.cs:161
+#: ../../RunActivity/Simulator/Confirmation.cs:185
+#: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "close"
 msgstr "luk"
 
-#: ../RunActivity/Simulator/Confirmation.cs:139
-#: ../RunActivity/Simulator/Confirmation.cs:151
-#: ../RunActivity/Simulator/Confirmation.cs:152
-#: ../RunActivity/Simulator/Confirmation.cs:153
-#: ../RunActivity/Simulator/Confirmation.cs:155
-#: ../RunActivity/Simulator/Confirmation.cs:156
-#: ../RunActivity/Simulator/Confirmation.cs:160
-#: ../RunActivity/Simulator/Confirmation.cs:184
-#: ../RunActivity/Simulator/Confirmation.cs:185
+#: ../../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:152
+#: ../../RunActivity/Simulator/Confirmation.cs:153
+#: ../../RunActivity/Simulator/Confirmation.cs:154
+#: ../../RunActivity/Simulator/Confirmation.cs:156
+#: ../../RunActivity/Simulator/Confirmation.cs:157
+#: ../../RunActivity/Simulator/Confirmation.cs:161
+#: ../../RunActivity/Simulator/Confirmation.cs:185
+#: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "open"
 msgstr "åbn"
 
-#: ../RunActivity/Simulator/Confirmation.cs:139
+#: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "locked. Release dynamic brake then re-try."
 msgstr "låst. Frigiv den dynamiske bremse og forsøg igen."
 
-#: ../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "Wheel-slip"
 msgstr "Hjulspin"
 
-#: ../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "over"
 msgstr "ovre"
 
-#: ../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "occurring. Tractive power greatly reduced."
 msgstr "opstår. Trækkraften stærkt reduceret."
 
-#: ../RunActivity/Simulator/Confirmation.cs:140
+#: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "warning"
 msgstr "advarsel"
 
-#: ../RunActivity/Simulator/Confirmation.cs:142
+#: ../../RunActivity/Simulator/Confirmation.cs:143
 msgid "Power"
 msgstr "Strøm"
 
-#: ../RunActivity/Simulator/Confirmation.cs:142
-#: ../RunActivity/Simulator/Confirmation.cs:146
-#: ../RunActivity/Simulator/Confirmation.cs:147
-#: ../RunActivity/Simulator/Confirmation.cs:152
-#: ../RunActivity/Simulator/Confirmation.cs:153
-#: ../RunActivity/Simulator/Confirmation.cs:158
-#: ../RunActivity/Simulator/Confirmation.cs:166
-#: ../RunActivity/Simulator/Confirmation.cs:171
-#: ../RunActivity/Simulator/Confirmation.cs:174
-#: ../RunActivity/Simulator/Confirmation.cs:176
-#: ../RunActivity/Simulator/Confirmation.cs:177
-#: ../RunActivity/Simulator/Confirmation.cs:178
-#: ../RunActivity/Simulator/Confirmation.cs:179
-#: ../RunActivity/Simulator/Confirmation.cs:180
-#: ../RunActivity/Simulator/Confirmation.cs:181
+#: ../../RunActivity/Simulator/Confirmation.cs:143
+#: ../../RunActivity/Simulator/Confirmation.cs:147
+#: ../../RunActivity/Simulator/Confirmation.cs:148
+#: ../../RunActivity/Simulator/Confirmation.cs:153
+#: ../../RunActivity/Simulator/Confirmation.cs:154
+#: ../../RunActivity/Simulator/Confirmation.cs:159
+#: ../../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:175
+#: ../../RunActivity/Simulator/Confirmation.cs:177
+#: ../../RunActivity/Simulator/Confirmation.cs:178
+#: ../../RunActivity/Simulator/Confirmation.cs:179
+#: ../../RunActivity/Simulator/Confirmation.cs:180
+#: ../../RunActivity/Simulator/Confirmation.cs:181
+#: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "off"
 msgstr "fra"
 
-#: ../RunActivity/Simulator/Confirmation.cs:142
-#: ../RunActivity/Simulator/Confirmation.cs:146
-#: ../RunActivity/Simulator/Confirmation.cs:147
-#: ../RunActivity/Simulator/Confirmation.cs:152
-#: ../RunActivity/Simulator/Confirmation.cs:153
-#: ../RunActivity/Simulator/Confirmation.cs:158
-#: ../RunActivity/Simulator/Confirmation.cs:171
-#: ../RunActivity/Simulator/Confirmation.cs:174
-#: ../RunActivity/Simulator/Confirmation.cs:180
-#: ../RunActivity/Simulator/Confirmation.cs:181
+#: ../../RunActivity/Simulator/Confirmation.cs:143
+#: ../../RunActivity/Simulator/Confirmation.cs:147
+#: ../../RunActivity/Simulator/Confirmation.cs:148
+#: ../../RunActivity/Simulator/Confirmation.cs:153
+#: ../../RunActivity/Simulator/Confirmation.cs:154
+#: ../../RunActivity/Simulator/Confirmation.cs:159
+#: ../../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:175
+#: ../../RunActivity/Simulator/Confirmation.cs:181
+#: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "on"
 msgstr "til"
 
-#: ../RunActivity/Simulator/Confirmation.cs:143
+#: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "Pantograph 1"
 msgstr "Strømaftager 1"
 
-#: ../RunActivity/Simulator/Confirmation.cs:143
-#: ../RunActivity/Simulator/Confirmation.cs:144
+#: ../../RunActivity/Simulator/Confirmation.cs:144
+#: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "lower"
 msgstr "sænk"
 
-#: ../RunActivity/Simulator/Confirmation.cs:143
-#: ../RunActivity/Simulator/Confirmation.cs:144
+#: ../../RunActivity/Simulator/Confirmation.cs:144
+#: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "raise"
 msgstr "hæv"
 
-#: ../RunActivity/Simulator/Confirmation.cs:144
+#: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "Pantograph 2"
 msgstr "Strømaftager 2"
 
-#: ../RunActivity/Simulator/Confirmation.cs:146
+#: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "Player Diesel Power"
 msgstr "Fører Diesel-motor"
 
-#: ../RunActivity/Simulator/Confirmation.cs:146
+#: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "locked. Close throttle then re-try."
 msgstr "låst. Tag gassen af og forsøg igen."
 
-#: ../RunActivity/Simulator/Confirmation.cs:147
+#: ../../RunActivity/Simulator/Confirmation.cs:148
 msgid "Helper Diesel Power"
 msgstr "Hjælper Diesel-motor"
 
-#: ../RunActivity/Simulator/Confirmation.cs:148
+#: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "Diesel Tank"
 msgstr "Diesel Tank"
 
-#: ../RunActivity/Simulator/Confirmation.cs:148
+#: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "re-fueled"
 msgstr "tanket"
 
-#: ../RunActivity/Simulator/Confirmation.cs:148
+#: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "level"
 msgstr "niveau"
 
-#: ../RunActivity/Simulator/Confirmation.cs:151
+#: ../../RunActivity/Simulator/Confirmation.cs:152
 msgid "Regulator"
 msgstr "Regulator"
 
-#: ../RunActivity/Simulator/Confirmation.cs:152
+#: ../../RunActivity/Simulator/Confirmation.cs:153
 msgid "Injector 1"
 msgstr "Indsprøjtning 1"
 
-#: ../RunActivity/Simulator/Confirmation.cs:153
+#: ../../RunActivity/Simulator/Confirmation.cs:154
 msgid "Injector 2"
 msgstr "Indsprøjtning 2"
 
-#: ../RunActivity/Simulator/Confirmation.cs:154
+#: ../../RunActivity/Simulator/Confirmation.cs:155
 msgid "Blower"
 msgstr "Blæser"
 
-#: ../RunActivity/Simulator/Confirmation.cs:154
-#: ../RunActivity/Simulator/Confirmation.cs:157
-#: ../RunActivity/Simulator/Confirmation.cs:166
-#: ../RunActivity/Simulator/Confirmation.cs:191
+#: ../../RunActivity/Simulator/Confirmation.cs:155
+#: ../../RunActivity/Simulator/Confirmation.cs:158
+#: ../../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "decrease"
 msgstr "reducer"
 
-#: ../RunActivity/Simulator/Confirmation.cs:154
-#: ../RunActivity/Simulator/Confirmation.cs:157
-#: ../RunActivity/Simulator/Confirmation.cs:166
-#: ../RunActivity/Simulator/Confirmation.cs:191
+#: ../../RunActivity/Simulator/Confirmation.cs:155
+#: ../../RunActivity/Simulator/Confirmation.cs:158
+#: ../../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "increase"
 msgstr "øg"
 
-#: ../RunActivity/Simulator/Confirmation.cs:155
+#: ../../RunActivity/Simulator/Confirmation.cs:156
 msgid "Damper"
 msgstr "spjæld"
 
-#: ../RunActivity/Simulator/Confirmation.cs:156
+#: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "Firebox Door"
 msgstr "Brændkammer-låge"
 
-#: ../RunActivity/Simulator/Confirmation.cs:157
+#: ../../RunActivity/Simulator/Confirmation.cs:158
 msgid "Firing Rate"
 msgstr "Fyringsgrad"
 
-#: ../RunActivity/Simulator/Confirmation.cs:158
+#: ../../RunActivity/Simulator/Confirmation.cs:159
 msgid "Manual Firing"
 msgstr "Håndfyring"
 
-#: ../RunActivity/Simulator/Confirmation.cs:159
+#: ../../RunActivity/Simulator/Confirmation.cs:160
 msgid "Fire"
 msgstr "Fyring"
 
-#: ../RunActivity/Simulator/Confirmation.cs:159
+#: ../../RunActivity/Simulator/Confirmation.cs:160
 msgid "add shovel-full"
 msgstr "Skovlen fyldt"
 
-#: ../RunActivity/Simulator/Confirmation.cs:160
+#: ../../RunActivity/Simulator/Confirmation.cs:161
 msgid "Cylinder Cocks"
 msgstr "Cylinder Porte"
 
-#: ../RunActivity/Simulator/Confirmation.cs:161
-#: ../RunActivity/Simulator/Confirmation.cs:162
+#: ../../RunActivity/Simulator/Confirmation.cs:162
+#: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Tender"
 msgstr "Kulvogn"
 
-#: ../RunActivity/Simulator/Confirmation.cs:161
+#: ../../RunActivity/Simulator/Confirmation.cs:162
 msgid "Coal re-filled"
 msgstr "Kul fyldt op"
 
-#: ../RunActivity/Simulator/Confirmation.cs:161
+#: ../../RunActivity/Simulator/Confirmation.cs:162
 msgid "Coal level"
 msgstr "Kul niveau"
 
-#: ../RunActivity/Simulator/Confirmation.cs:162
+#: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Water re-filled"
 msgstr "Vand fyldt op"
 
-#: ../RunActivity/Simulator/Confirmation.cs:162
+#: ../../RunActivity/Simulator/Confirmation.cs:163
 msgid "Water level"
 msgstr "Vand niveau"
 
-#: ../RunActivity/Simulator/Confirmation.cs:164
+#: ../../RunActivity/Simulator/Confirmation.cs:165
 msgid "Train Brake"
 msgstr "Togbremse"
 
-#: ../RunActivity/Simulator/Confirmation.cs:164
-#: ../RunActivity/Simulator/Confirmation.cs:165
+#: ../../RunActivity/Simulator/Confirmation.cs:165
+#: ../../RunActivity/Simulator/Confirmation.cs:166
 msgid "release"
 msgstr "løsn"
 
-#: ../RunActivity/Simulator/Confirmation.cs:164
-#: ../RunActivity/Simulator/Confirmation.cs:165
-#: ../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:165
+#: ../../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "apply"
 msgstr "anvend"
 
-#: ../RunActivity/Simulator/Confirmation.cs:165
+#: ../../RunActivity/Simulator/Confirmation.cs:166
 msgid "Engine Brake"
 msgstr "Lokomotivbremse"
 
-#: ../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "Dynamic Brake"
 msgstr "Dynamisk Bremse"
 
-#: ../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "setup"
 msgstr "setup"
 
-#: ../RunActivity/Simulator/Confirmation.cs:167
+#: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "Emergency Brake"
 msgstr "Nødbremse"
 
-#: ../RunActivity/Simulator/Confirmation.cs:168
+#: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "Bail Off"
 msgstr "Nulstil Bremser"
 
-#: ../RunActivity/Simulator/Confirmation.cs:168
+#: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "disengage"
 msgstr "frigør"
 
-#: ../RunActivity/Simulator/Confirmation.cs:168
+#: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "engage"
 msgstr "brug"
 
-#: ../RunActivity/Simulator/Confirmation.cs:169
+#: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "Brakes"
 msgstr "Bremser"
 
-#: ../RunActivity/Simulator/Confirmation.cs:169
+#: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "initialize"
 msgstr "Initialiser"
 
-#: ../RunActivity/Simulator/Confirmation.cs:169
+#: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "cannot initialize. Stop train then re-try."
 msgstr "Kan ikke initialisere. Stop toget og forsøg igen."
 
-#: ../RunActivity/Simulator/Confirmation.cs:170
+#: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "Handbrake"
 msgstr "Håndbremse"
 
-#: ../RunActivity/Simulator/Confirmation.cs:170
+#: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "none"
 msgstr "Ingen"
 
-#: ../RunActivity/Simulator/Confirmation.cs:170
+#: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "full"
 msgstr "Fuld"
 
-#: ../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Retainers"
 msgstr "Retainer"
 
-#: ../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Exhaust"
 msgstr "Udstødning"
 
-#: ../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "High Pressure"
 msgstr "Højt Tryk"
 
-#: ../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Low Pressure"
 msgstr "Lavt Tryk"
 
-#: ../RunActivity/Simulator/Confirmation.cs:171
+#: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Slow Direct"
 msgstr "Langsom"
 
-#: ../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "Brake Hose"
 msgstr "Bremseslange"
 
-#: ../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "disconnect"
 msgstr "frakobl"
 
-#: ../RunActivity/Simulator/Confirmation.cs:172
+#: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "connect"
 msgstr "tilkobl"
 
-#: ../RunActivity/Simulator/Confirmation.cs:174
+#: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "Sander"
 msgstr "Sand"
 
-#: ../RunActivity/Simulator/Confirmation.cs:175
+#: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Alerter"
 msgstr "Alarm"
 
-#: ../RunActivity/Simulator/Confirmation.cs:175
+#: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "acknowledge"
 msgstr "Godkend"
 
-#: ../RunActivity/Simulator/Confirmation.cs:176
+#: ../../RunActivity/Simulator/Confirmation.cs:177
 msgid "Horn"
 msgstr "Horn"
 
-#: ../RunActivity/Simulator/Confirmation.cs:177
+#: ../../RunActivity/Simulator/Confirmation.cs:178
 msgid "Whistle"
 msgstr "Fløjte"
 
-#: ../RunActivity/Simulator/Confirmation.cs:177
+#: ../../RunActivity/Simulator/Confirmation.cs:178
 msgid "blow"
 msgstr "blæs"
 
-#: ../RunActivity/Simulator/Confirmation.cs:178
+#: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "Bell"
 msgstr "Klokke"
 
-#: ../RunActivity/Simulator/Confirmation.cs:178
+#: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "ring"
 msgstr "ring"
 
-#: ../RunActivity/Simulator/Confirmation.cs:179
+#: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "Headlight"
 msgstr "Lys"
 
-#: ../RunActivity/Simulator/Confirmation.cs:179
+#: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "dim"
 msgstr "normal"
 
-#: ../RunActivity/Simulator/Confirmation.cs:179
+#: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "bright"
 msgstr "fjernlys"
 
-#: ../RunActivity/Simulator/Confirmation.cs:180
+#: ../../RunActivity/Simulator/Confirmation.cs:181
 msgid "Cab Light"
 msgstr "Kabinelys"
 
-#: ../RunActivity/Simulator/Confirmation.cs:181
+#: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "Wipers"
 msgstr "Vinduesviskere"
 
-#: ../RunActivity/Simulator/Confirmation.cs:182
+#: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "Cab"
 msgstr "Førerhus"
 
-#: ../RunActivity/Simulator/Confirmation.cs:182
+#: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "changing is not available"
 msgstr "skift er ikke muligt"
 
-#: ../RunActivity/Simulator/Confirmation.cs:182
+#: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
@@ -721,247 +753,247 @@ msgstr ""
 "skift deaktiveret. Tag gassen af, sæt retningsgiver til frigear, stop toget "
 "og forsøg igen."
 
-#: ../RunActivity/Simulator/Confirmation.cs:184
+#: ../../RunActivity/Simulator/Confirmation.cs:185
 msgid "Doors Left"
 msgstr "Venstre Døre"
 
-#: ../RunActivity/Simulator/Confirmation.cs:185
+#: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "Doors Right"
 msgstr "Højre Døre"
 
-#: ../RunActivity/Simulator/Confirmation.cs:186
+#: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "Mirror"
 msgstr "Spejl"
 
-#: ../RunActivity/Simulator/Confirmation.cs:186
+#: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "retract"
 msgstr "ind"
 
-#: ../RunActivity/Simulator/Confirmation.cs:186
+#: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "extend"
 msgstr "ud"
 
-#: ../RunActivity/Simulator/Confirmation.cs:188
+#: ../../RunActivity/Simulator/Confirmation.cs:189
 msgid "Switch Ahead"
 msgstr "Sporskifte Forude"
 
-#: ../RunActivity/Simulator/Confirmation.cs:188
-#: ../RunActivity/Simulator/Confirmation.cs:189
+#: ../../RunActivity/Simulator/Confirmation.cs:189
+#: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "locked. Use Control+M to change signals to manual mode then re-try."
 msgstr ""
 "låst. Brug Control+M for at skifte signaler til manuel tilstand og forsøg så "
 "igen."
 
-#: ../RunActivity/Simulator/Confirmation.cs:189
+#: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "Switch Behind"
 msgstr "Sporskifte Bagude"
 
-#: ../RunActivity/Simulator/Confirmation.cs:191
+#: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "Simulation Speed"
 msgstr "Simulerings-hastighed"
 
-#: ../RunActivity/Simulator/Confirmation.cs:191
+#: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "reset"
 msgstr "nulstil"
 
-#: ../RunActivity/Simulator/Confirmation.cs:192
+#: ../../RunActivity/Simulator/Confirmation.cs:193
 msgid "Uncouple After"
 msgstr "Frakobl efter"
 
-#: ../RunActivity/Simulator/Confirmation.cs:193
+#: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "Activity"
 msgstr "Aktivitet"
 
-#: ../RunActivity/Simulator/Confirmation.cs:193
+#: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "quit"
 msgstr "afslut"
 
-#: ../RunActivity/Simulator/Confirmation.cs:193
+#: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "resume"
 msgstr "genoptag"
 
-#: ../RunActivity/Simulator/Confirmation.cs:194
+#: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Replay"
 msgstr "genspil"
 
-#: ../RunActivity/Simulator/Confirmation.cs:194
+#: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Overriding camera replay. Press Escape to resume camera replay."
 msgstr ""
 "Tilsidesætter kamera-afspilning. Tryk på Escape for at genoptage kamera-"
 "afspilning."
 
-#: ../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "Location labels"
 msgstr "Sted etiketter"
 
-#: ../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "sidings"
 msgstr "sidespor"
 
-#: ../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "stations"
 msgstr "stationer"
 
-#: ../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "stations and sidings"
 msgstr "stationer og sidespor"
 
-#: ../RunActivity/Simulator/Confirmation.cs:196
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "Gearbox"
 msgstr "Gearkasse"
 
-#: ../RunActivity/Simulator/Confirmation.cs:196
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "down"
 msgstr "ned"
 
-#: ../RunActivity/Simulator/Confirmation.cs:196
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "up"
 msgstr "op"
 
-#: ../RunActivity/Simulator/Confirmation.cs:196
+#: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "locked. Use shaft before changing gear."
 msgstr "låst. Brug akslen, før du skifter gear. "
 
-#: ../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "Signal mode"
 msgstr "Signal tilstand"
 
-#: ../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "manual"
 msgstr "manuel"
 
-#: ../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "auto"
 msgstr "auto"
 
-#: ../RunActivity/Simulator/Confirmation.cs:197
+#: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "locked. Stop train, then re-try."
 msgstr "låst. Stop toget og forsøg igen."
 
-#: ../RunActivity/Simulator/Confirmation.cs:205
-#: ../RunActivity/Simulator/Confirmation.cs:214
-#: ../RunActivity/Simulator/Confirmation.cs:252
+#: ../../RunActivity/Simulator/Confirmation.cs:206
+#: ../../RunActivity/Simulator/Confirmation.cs:215
+#: ../../RunActivity/Simulator/Confirmation.cs:253
 #, csharp-format
 msgid "{0} {1}"
 msgstr "{0} {1}"
 
-#: ../RunActivity/Simulator/Confirmation.cs:209
+#: ../../RunActivity/Simulator/Confirmation.cs:210
 #, csharp-format
 msgid "{0}"
 msgstr "{0}"
 
-#: ../RunActivity/Simulator/Confirmation.cs:219
+#: ../../RunActivity/Simulator/Confirmation.cs:220
 #, csharp-format
 msgid "{0} to {1:0}%"
 msgstr "{0} til {1:0}%"
 
-#: ../RunActivity/Simulator/Confirmation.cs:224
+#: ../../RunActivity/Simulator/Confirmation.cs:225
 #, csharp-format
 msgid "{0} {1:0}% {2}"
 msgstr "{0} {1:0}% {2}"
 
-#: ../RunActivity/Simulator/Confirmation.cs:229
+#: ../../RunActivity/Simulator/Confirmation.cs:230
 #, csharp-format
 msgid "{0:0}% {1}"
 msgstr "{0:0}% {1}"
 
-#: ../RunActivity/Simulator/Confirmation.cs:234
+#: ../../RunActivity/Simulator/Confirmation.cs:235
 #, csharp-format
 msgid "{0:0}%"
 msgstr "{0:0}%"
 
-#: ../RunActivity/Simulator/Confirmation.cs:242
-#: ../RunActivity/Simulator/Confirmation.cs:247
+#: ../../RunActivity/Simulator/Confirmation.cs:243
+#: ../../RunActivity/Simulator/Confirmation.cs:248
 #, csharp-format
 msgid "{0} {1:0}%"
 msgstr "{0} {1:0}%"
 
 #. Context: NonSteam
-#: ../RunActivity/Simulator/Confirmation.cs:138
+#: ../../RunActivity/Simulator/Confirmation.cs:139
 msgctxt "NonSteam"
 msgid "Reverser"
 msgstr "Retningsgiver"
 
 #. Context: Steam
-#: ../RunActivity/Simulator/Confirmation.cs:150
+#: ../../RunActivity/Simulator/Confirmation.cs:151
 msgctxt "Steam"
 msgid "Reverser"
 msgstr "Retningsgiver"
 
 #. Context: Alerter
-#: ../RunActivity/Simulator/Confirmation.cs:175
+#: ../../RunActivity/Simulator/Confirmation.cs:176
 msgctxt "Alerter"
 msgid "sound"
 msgstr "lyd"
 
 #. Context: Horn
-#: ../RunActivity/Simulator/Confirmation.cs:176
+#: ../../RunActivity/Simulator/Confirmation.cs:177
 msgctxt "Horn"
 msgid "sound"
 msgstr "lyd"
 
 #. Context: Cab
-#: ../RunActivity/Simulator/Confirmation.cs:182
+#: ../../RunActivity/Simulator/Confirmation.cs:183
 msgctxt "Cab"
 msgid "change"
 msgstr "skift"
 
 #. Context: Switch
-#: ../RunActivity/Simulator/Confirmation.cs:188
-#: ../RunActivity/Simulator/Confirmation.cs:189
+#: ../../RunActivity/Simulator/Confirmation.cs:189
+#: ../../RunActivity/Simulator/Confirmation.cs:190
 msgctxt "Switch"
 msgid "change"
 msgstr "skift"
 
 #. Context: Labels
-#: ../RunActivity/Simulator/Confirmation.cs:195
+#: ../../RunActivity/Simulator/Confirmation.cs:196
 msgctxt "Labels"
 msgid "none"
 msgstr "ingen"
 
-#: ../RunActivity/Viewer3D/Viewer.cs:1072
+#: ../../RunActivity/Viewer3D/Viewer.cs:1072
 msgid "Game saved"
 msgstr "Spillet er gemt"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
 msgid "Activity Events"
 msgstr "Aktivitets Opgaver"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "successfully"
 msgstr "med succes"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "without success"
 msgstr "uden succes"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
 msgid "Resume and close box"
 msgstr "Genoptag spillet og luk vinduet"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
 msgid "Quit activity"
 msgstr "Afslut aktiviteten"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
 msgid "Status: Activity paused"
 msgstr "Status: Aktivitet på pause"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
 msgid "Close box"
 msgstr "Luk vindue"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
 msgid "Status: Activity resumed"
 msgstr "Status: Aktivitet genoptaget"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
 msgid "End Activity"
 msgstr "Afslut Aktivitet"
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:147
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:147
 #, csharp-format
 msgid ""
 "This activity has ended {0}.\n"
@@ -970,243 +1002,243 @@ msgstr ""
 "Denne aktivitet er slut {0}.\n"
 "For en detaljeret vurdering, se Hjælpevinduet (F1)."
 
-#: ../RunActivity/Viewer3D/Popups/ActivityWindow.cs:232
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:232
 #, csharp-format
 msgid "Event: {0}"
 msgstr "Opgave: {0}"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:39
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:39
 msgid "Car Operation Menu"
 msgstr "Vognsammensætning Menu"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
 msgid "Toggle Handbrake"
 msgstr "Håndbremse til/fra"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:63
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:63
 msgid "Toggle Power"
 msgstr "Motor til/fra"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:76
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:76
 msgid "Toggle MU Connection"
 msgstr "MU Forbindelse til/fra"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:87
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:87
 msgid "Close window"
 msgstr "Luk vindue"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:119
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:119
 msgid "Handbrake set"
 msgstr "Håndbremse til"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
 msgid "Handbrake off"
 msgstr "Håndbremse fra"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:135
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:135
 msgid "Power OFF command sent"
 msgstr "Kommando 'Sluk Motor' er blevet sendt"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
 msgid "Power ON command sent"
 msgstr "Kommando 'Start Motor' er blevet sendt"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:140
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:140
 msgid "No power command for this type of car!"
 msgstr "Ingen start/stop af motor for denne vogn!"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:156
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:156
 msgid "MU signal connected"
 msgstr "MU signal forbundet"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:158
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:158
 msgid "MU signal disconnected"
 msgstr "MU signal frakoblet"
 
-#: ../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:161
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:161
 msgid "No MU command for this type of car!"
 msgstr "Ingen MU kommando for denne vogn!"
 
-#: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:33
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:33
 msgid "Compass"
 msgstr "Kompas"
 
-#: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:44
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:44
 msgid "Lat:"
 msgstr "lat:"
 
-#: ../RunActivity/Viewer3D/Popups/CompassWindow.cs:47
+#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:47
 msgid "Lon:"
 msgstr "lon:"
 
-#: ../RunActivity/Viewer3D/Popups/ComposeMessage.cs:34
+#: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:34
 msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
 msgstr "Skriv besked (fx. modtager1, modtager2: besked)"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
 msgid "Help"
 msgstr "Hjælp"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
 msgid "Key Commands"
 msgstr "Tastaturbindinger"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:69
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:69
 msgid "Briefing"
 msgstr "Information"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
 msgid "Timetable"
 msgstr "Tidsplan"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
 msgid "Station"
 msgstr "Station"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Arrive"
 msgstr "Ankomst"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 msgid "Actual"
 msgstr "Aktuel"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Depart"
 msgstr "Afgang"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
 msgid "(missed)"
 msgstr "(ej til tiden)"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:113
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:113
 msgid "Work Orders"
 msgstr "Arbejdsopgaver"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
 msgid "Task"
 msgstr "Opgaver"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
 msgid "Car(s)"
 msgstr "Vogn(e)"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
 msgid "Location"
 msgstr "Sted"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
 msgid "Status"
 msgstr "Status"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
 msgid "Assemble Train"
 msgstr "Sammensæt Tog"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:145
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:145
 msgid "At Location"
 msgstr "Ved Stedet"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:149
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:149
 msgid "Drop Off"
 msgstr "Aflever"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:153
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:153
 msgid "Pick Up"
 msgstr "Afhent"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:227
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:227
 msgid "Done"
 msgstr "Færdig"
 
-#: ../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
 msgid "Procedures"
 msgstr "Procedurer"
 
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
 msgid "Next Station"
 msgstr "Næste Station"
 
-#: ../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
 msgid "Activity completed."
 msgstr "Aktivitet fuldført."
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
+#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
 msgid "Pause Menu"
 msgstr "Pause Menu"
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
+#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
 #, csharp-format
 msgid "Quit {1} ({0})"
 msgstr "Afslut {1} ({0})"
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
+#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
 #, csharp-format
 msgid "Save your game ({0})"
 msgstr "Gem dit spil ({0})"
 
-#: ../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
+#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
 #, csharp-format
 msgid "Continue playing ({0})"
 msgstr "Fortsæt spillet ({0})"
 
-#: ../RunActivity/Viewer3D/Popups/SwitchWindow.cs:48
+#: ../../RunActivity/Viewer3D/Popups/SwitchWindow.cs:48
 msgid "Switch"
 msgstr "Skift"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
 msgid "Track Monitor"
 msgstr "Spor Monitor"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:88
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:88
 msgid "Auto Signal"
 msgstr "Auto Signal"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
 msgid "Node"
 msgstr "Node"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:90
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:90
 msgid "Manual"
 msgstr "Manuel"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
 msgid "Explorer"
 msgstr "Udforsk"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
 msgid "OutOfControl : "
 msgstr "UdeAfKontrol:"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
 msgid "Unknown"
 msgstr "Ukendt"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
 msgid "Speed:"
 msgstr "Hastighed:"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:119
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:119
 msgid "Projected:"
 msgstr "Forventet:"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
 msgid "Limit:"
 msgstr "Begrænsning:"
 
-#: ../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:144
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:144
 msgid " Dist      Speed   Aspect"
 msgstr " Dist     Hastighed"
 
-#: ../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
+#: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
 msgid "Train Operations"
 msgstr "Tog Sammensætning"
