@@ -317,7 +317,8 @@ namespace ORTS
                     if (!IsMaxEquaLoadSpeed)
                     {
                         IsMaxEquaLoadSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, "You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable, or your train may derail.");
+                        // Disable warning - due concerns expressed in forums
+                      //  Simulator.Confirmer.Message(ConfirmLevel.Warning, "You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable, or your train may derail.");
                     }
                     else
                     {
@@ -344,7 +345,8 @@ namespace ORTS
                     if (!IsCriticalSpeed)
                     {
                         IsCriticalSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, "Your train has overturned.");
+                        // Disable warning - due concerns expressed in forums
+                   //     Simulator.Confirmer.Message(ConfirmLevel.Warning, "Your train has overturned.");
                     }
                     else
                     {
