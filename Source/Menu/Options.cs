@@ -16,11 +16,12 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using ORTS.Settings;
@@ -49,12 +50,22 @@ namespace ORTS
 
             Settings = settings;
 
-            var languages = new List<Language>() { new Language { Code = "", Name = "System" } };
+            // Collect all the available language codes by searching for
+            // localisation files, but always include English (base language).
+            var languageCodes = new List<string> { "en" };
             foreach (var path in Directory.GetDirectories(Path.GetDirectoryName(Application.ExecutablePath)))
                 if (Directory.GetFiles(path, "*.Messages.resources.dll").Length > 0)
-                    languages.Add(new Language { Code = Path.GetFileName(path), Name = CultureInfo.GetCultureInfo(Path.GetFileName(path)).NativeName });
+                    languageCodes.Add(Path.GetFileName(path));
 
-            comboBoxLanguage.DataSource = languages;
+            // Turn the list of codes in to a list of code + name pairs for
+            // displaying in the dropdown list.
+            comboBoxLanguage.DataSource = 
+                new[] { new Language { Code = "", Name = "System" } }
+                .Union(languageCodes
+                    .Select(lc => new Language { Code = lc, Name = CultureInfo.GetCultureInfo(lc).NativeName })
+                    .OrderBy(l => l.Name)
+                )
+                .ToList();
             comboBoxLanguage.DisplayMember = "Name";
             comboBoxLanguage.ValueMember = "Code";
             comboBoxLanguage.SelectedValue = Settings.Language;
