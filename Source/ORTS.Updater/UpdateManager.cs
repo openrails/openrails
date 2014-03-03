@@ -53,6 +53,8 @@ namespace ORTS.Updater
 
         public void Check()
         {
+            if (Settings == null)
+                return;
             try
             {
                 var client = new WebClient()
