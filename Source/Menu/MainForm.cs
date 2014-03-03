@@ -15,9 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// temporary define to include or remove timetable input display
-// #define INCLUDE_TIMETABLE_INPUT
-
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -98,6 +95,7 @@ namespace ORTS
 #if DEBUG
             Text = Text + " (debug)";
 #endif
+            panelModeTimetable.Location = panelModeActivity.Location;
             ShowDetails();
             UpdateEnabled();
         }
@@ -153,13 +151,6 @@ namespace ORTS
 
             ShowEnvironment();
 
-#if !INCLUDE_TIMETABLE_INPUT
-            TabControl.TabPageCollection tabPages = this.tabControl1.TabPages;
-            if (tabPages.ContainsKey("TimetablePage"))
-            {
-                tabPages.RemoveAt(1);
-            }
-#endif
             if (!Initialized)
             {
                 Initialized = true;
@@ -273,6 +264,14 @@ namespace ORTS
             LoadStartAtList();
             LoadORTimeTableList();
             ShowDetails();
+        }
+        #endregion
+
+        #region Mode
+        void radioButtonMode_CheckedChanged(object sender, EventArgs e)
+        {
+            panelModeActivity.Visible = radioButtonModeActivity.Checked;
+            panelModeTimetable.Visible = radioButtonModeTimetable.Checked;
         }
         #endregion
 
@@ -940,8 +939,9 @@ namespace ORTS
                 return DialogResult.None;
             }
 
-            SelectedTimetable.AITimeHrs = (int) numericUpDownAIHours.Value;
-            SelectedTimetable.AITimeMins = (int) numericUpDownAIMins.Value;
+            var time = comboBoxTimetableAITrainStart.Text.Split(':');
+            SelectedTimetable.AITimeHrs = time[0].Length > 0 ? int.Parse(time[0]) : 0;
+            SelectedTimetable.AITimeMins = time.Length > 1 ? int.Parse(time[1]) : 0;
             SelectedTimetable.AITimeRelative = radioButtonAITimeRelative.Checked;
             SelectedTimetable.AIInPlayerDirection = checkBoxAISameDirection.Checked;
             SelectedTimetable.Day = comboBoxTimetableDay.SelectedIndex;
@@ -1011,20 +1011,5 @@ namespace ORTS
             comboBoxTimetableWeather.SelectedIndex = 0;
         }
         #endregion
-
-        private void label5_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label17_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label22_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
