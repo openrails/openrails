@@ -38,6 +38,8 @@
 // #define DEBUG_REPORTS
 // #define DEBUG_DEADLOCK
 
+// #define NEWHOLD // temporary flag for new holdsignal process introduction
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -58,7 +60,7 @@ namespace ORTS
     {
         public List<TrainCar> Cars = new List<TrainCar>();           // listed front to back
         public int Number;
-        public static int TotalNumber = 0;
+        public static int TotalNumber = 1; // start at 1 (0 is reserved for player train)
         public TrainCar FirstCar
         {
             get
@@ -158,6 +160,10 @@ namespace ORTS
         public List<TrackCircuitSection> OccupiedTrack = new List<TrackCircuitSection>();
         public List<int> HoldingSignals = new List<int>();// list of signals which must not be cleared (eg station stops)
         public List<StationStop> StationStops = new List<StationStop>();  //list of station stop details
+        public List<ActivityTaskPassengerStopAt> StationTasks = null;     //used when in timetable mode to check on stations
+        public bool CheckStations = false;                                //used when in timetable mode to check on stations
+        public int NextStation = -1;                                      //next station indication
+
         public Traffic_Service_Definition TrafficService;
         public int[,] MisalignedSwitch = new int[2, 2] { { -1, -1 }, { -1, -1 } };  // misaligned switch indication per direction:
         // cell 0 : index of switch, cell 1 : required linked section; -1 if not valid
@@ -519,6 +525,35 @@ namespace ORTS
                 StationStops.Add(thisStation);
             }
 
+            CheckStations = inf.ReadBoolean();
+            NextStation = inf.ReadInt32();
+
+            int totalTasks = inf.ReadInt32();
+            if (totalTasks < 0)
+            {
+                StationTasks = null;
+            }
+            else
+            {
+                StationTasks = new List<ActivityTaskPassengerStopAt>();
+                for (int iTask = 0; iTask <= totalTasks - 1; iTask++)
+                {
+                    ActivityTaskPassengerStopAt actTask = new ActivityTaskPassengerStopAt();
+                    int dummyint = inf.ReadInt32(); // read dummy value which identifies task
+                    actTask.Restore(inf);
+           
+                    // restore links (normally done by Activity)
+                    if (iTask > 0)
+                    {
+                        actTask.PrevTask = StationTasks[StationTasks.Count - 1];
+                        actTask.PrevTask.NextTask = actTask;
+                    }
+                    StationTasks.Add(actTask);
+                }
+
+                
+            }
+
             int totalPassedSignals = inf.ReadInt32();
             for (int iPassedSignal = 0; iPassedSignal < totalPassedSignals; iPassedSignal++)
             {
@@ -801,6 +836,22 @@ namespace ORTS
             foreach (StationStop thisStop in StationStops)
             {
                 thisStop.Save(outf);
+            }
+
+            outf.Write(CheckStations);
+            outf.Write(NextStation);
+
+            if (StationTasks == null)
+            {
+                outf.Write(-1);
+            }
+            else
+            {
+                outf.Write(StationTasks.Count);
+                foreach (ActivityTaskPassengerStopAt actTask in StationTasks)
+                {
+                    actTask.Save(outf);
+                }
             }
 
             outf.Write(PassedSignalSpeeds.Count);
@@ -1150,10 +1201,17 @@ namespace ORTS
                 int SignalObjIndex = CheckSignalPassed(0, PresentPosition[0], PreviousPosition[0]);   // check if passed signal  //
                 UpdateSectionState(movedBackward);                                              // update track occupation //
                 ObtainRequiredActions(movedBackward);                                           // process list of actions //
+
+                if (TrainType == TRAINTYPE.PLAYER && CheckStations)                             // if player train is to check own stations
+                {
+                    CheckStationTask();
+                }
+
                 if (TrainType != TRAINTYPE.AI && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
                 {
                     CheckRouteActions(elapsedClockSeconds);                                     // check routepath (AI check at other point) //
                 }
+
                 UpdateRouteClearanceAhead(SignalObjIndex, movedBackward, elapsedClockSeconds);  // update route clearance  //
                 if (!(TrainType == TRAINTYPE.REMOTE && MultiPlayer.MPManager.IsClient()))
                     UpdateSignalState(movedBackward);                                               // update signal state     //
@@ -1613,6 +1671,33 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
+        /// setup station stop handling when run in timetable mode
+        /// </summary>
+
+        public void SetupStationStopHandling()
+        {
+            // loop through all stops
+
+            ActivityTaskPassengerStopAt prevTask = null;
+            ActivityTaskPassengerStopAt actTask = null;
+
+            StationTasks = new List<ActivityTaskPassengerStopAt>();
+            CheckStations = true;
+
+            foreach (StationStop actStop in StationStops)
+            {
+                PlatformItem end1 = Simulator.TDB.TrackDB.TrItemTable[actStop.PlatformItem.PlatformReference[0]] as PlatformItem;
+                PlatformItem end2 = Simulator.TDB.TrackDB.TrItemTable[actStop.PlatformItem.PlatformReference[1]] as PlatformItem;
+                actTask = new ActivityTaskPassengerStopAt(prevTask, actStop.arrivalDT, actStop.departureDT, end1, end2);
+                StationTasks.Add(actTask);
+                prevTask = actTask;
+            }
+
+            if (StationTasks.Count > 0) NextStation = 0;
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// get aspect of next signal ahead
         /// </summary>
 
@@ -1910,19 +1995,19 @@ namespace ORTS
                 while (firstObject.distance_to_train < 0.0f && SignalObjectItems.Count > 0)
                 {
 #if DEBUG_REPORTS
-                        File.AppendAllText(@"C:\temp\printproc.txt", "Passed Signal : " + firstObject.ObjectDetails.thisRef.ToString() +
-                            " with speed : " + firstObject.actual_speed.ToString() + "\n");
+                    File.AppendAllText(@"C:\temp\printproc.txt", "Passed Signal : " + firstObject.ObjectDetails.thisRef.ToString() +
+                        " with speed : " + firstObject.actual_speed.ToString() + "\n");
 #endif
                     if (firstObject.actual_speed > 0)
                     {
 #if DEBUG_REPORTS
                         File.AppendAllText(@"C:\temp\printproc.txt", "Passed speedpost : " + firstObject.ObjectDetails.thisRef.ToString() +
-                            " = " + firstObject.actual_speed.ToString()+"\n");
+                            " = " + firstObject.actual_speed.ToString() + "\n");
 
                         File.AppendAllText(@"C:\temp\printproc.txt", "Present Limits : " +
-                            "Limit : "+allowedMaxSpeedLimitMpS.ToString() + " ; " +
-                            "Signal : "+allowedMaxSpeedSignalMpS.ToString() + " ; " +
-                            "Overall : "+AllowedMaxSpeedMpS.ToString() + "\n");
+                            "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
+                            "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
+                            "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
 #endif
                         if (firstObject.actual_speed <= AllowedMaxSpeedMpS)
                         {
@@ -2184,7 +2269,7 @@ namespace ORTS
                 if (IndexNextSignal >= SignalObjectItems.Count)
                 {
                     if (CheckTrain)
-                        File.AppendAllText(@"F:\temp\checktrain.txt", "Error in UpdateSignalState: IndexNextSignal out of range : " + IndexNextSignal +
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Error in UpdateSignalState: IndexNextSignal out of range : " + IndexNextSignal +
                                              " (max value : " + SignalObjectItems.Count + ") \n");
                     listChanged = true;
                 }
@@ -3608,8 +3693,8 @@ namespace ORTS
                         {
                             SwitchToNodeControl(LastReservedSection[direction]);
 #if DEBUG_REPORTS
-                        File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
-                                        " set to NODE control for no next signal from " + NextSignalObject[direction].thisRef.ToString() + "\n");
+                            File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
+                                            " set to NODE control for no next signal from " + NextSignalObject[direction].thisRef.ToString() + "\n");
 #endif
                             if (CheckTrain)
                             {
@@ -3622,8 +3707,8 @@ namespace ORTS
                         {
                             SwitchToNodeControl(LastReservedSection[direction]);
 #if DEBUG_REPORTS
-                        File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
-                                        " set to NODE control for route to next signal not clear from " + NextSignalObject[direction].thisRef.ToString() + "\n");
+                            File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
+                                            " set to NODE control for route to next signal not clear from " + NextSignalObject[direction].thisRef.ToString() + "\n");
 #endif
                             if (CheckTrain)
                             {
@@ -3860,6 +3945,37 @@ namespace ORTS
                     thisStation.SubrouteIndex = TCRoute.activeSubpath;
                 }
             }
+
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check on station tasks, required when in timetable mode when there is no activity
+        /// </summary>
+        public void CheckStationTask()
+        {
+            if (StationTasks.Count <= 0 || NextStation >= StationTasks.Count) // no stations to check
+            {
+                return;
+            }
+
+            ActivityTaskPassengerStopAt actTask = StationTasks[NextStation];
+
+            // train is stopped
+            if (SpeedMpS == 0.0f)
+            {
+                actTask.NotifyEvent(ActivityEventType.TrainStop);
+            }
+
+            // train is moving
+            else if (Math.Abs(SpeedMpS) > 1.0)
+            {
+                actTask.NotifyEvent(ActivityEventType.TrainStart);
+                if (actTask.ActDepart.HasValue) NextStation++;
+            }
+
+            // always call timer event
+            actTask.NotifyEvent(ActivityEventType.Timer);
 
         }
 
@@ -4483,14 +4599,14 @@ namespace ORTS
                     ClaimState = false;
                 }
 
-                if (hasClaimed && !ClaimState)
-                {
-                    foreach (TCRouteElement thisElement in NextSignalObject[0].signalRoute)
-                    {
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                        thisSection.UnreserveTrain(routedForward, false);
-                    }
-                }
+//                if (hasClaimed && !ClaimState)
+//                {
+//                    foreach (TCRouteElement thisElement in NextSignalObject[0].signalRoute)
+//                    {
+//                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+//                        thisSection.UnreserveTrain(routedForward, false);
+//                    }
+//                }
             }
             else
             {
@@ -4652,10 +4768,17 @@ namespace ORTS
             {
                 return (false);
             }
+#if NEWHOLD
+            else if (thisSignal.StationHold)
+#else
             else if (thisSignal.holdState == SignalObject.HoldState.StationStop)
+#endif
             {
-                HoldingSignals.Remove(thisSignal.thisRef);
-                return (false);
+                if (StationStops != null && StationStops.Count > 0 && StationStops[0].ExitSignal != thisSignal.thisRef) // not present station stop
+                {
+                    HoldingSignals.Remove(thisSignal.thisRef);
+                    return (false);
+                }
             }
 
             return (true);  // it is our signal and we are waiting //
@@ -7256,10 +7379,10 @@ namespace ORTS
             }
 
 #if DEBUG_REPORTS
-                         File.AppendAllText(@"C:\temp\printproc.txt", "Validated speedlimit : " +
-                            "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
-                            "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
-                            "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
+            File.AppendAllText(@"C:\temp\printproc.txt", "Validated speedlimit : " +
+               "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
+               "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
+               "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
 
 #endif
             if (TrainType == TRAINTYPE.PLAYER && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
@@ -7579,7 +7702,7 @@ namespace ORTS
                             {
                                 if (thisSection.Pins[iDir, iLink].Link == lastSectionIndex)
                                 {
-                                    thisDirection = thisSection.Pins[iDir,iLink].Direction;
+                                    thisDirection = thisSection.Pins[iDir, iLink].Direction;
                                     break;
                                 }
                             }
@@ -7587,7 +7710,7 @@ namespace ORTS
 
                         if (lastIndex == 0)
                         {
-                            ValidRoute[0].Insert(0, new TCRouteElement( OccupiedTrack[isection], thisDirection, signalRef, lastSectionIndex));
+                            ValidRoute[0].Insert(0, new TCRouteElement(OccupiedTrack[isection], thisDirection, signalRef, lastSectionIndex));
                         }
                         else
                         {
@@ -7632,7 +7755,7 @@ namespace ORTS
 
                         if (lastIndex == 0)
                         {
-                            ValidRoute[0].Insert(0, new TCRouteElement( OccupiedTrack[isection], thisDirection, signalRef, lastSectionIndex));
+                            ValidRoute[0].Insert(0, new TCRouteElement(OccupiedTrack[isection], thisDirection, signalRef, lastSectionIndex));
                         }
                         else
                         {
@@ -8267,12 +8390,19 @@ namespace ORTS
                     if (!thisDeadlockInfo.TrainReferences.ContainsKey(otherTrainReferenceIndex))
                     {
                         int otherTrainElementIndex = otherTrain.ValidRoute[0].GetRouteIndexBackward(endSectionIndex, otherFirstIndex);
-                        thisDeadlockInfo.SetTrainDetails(otherTrain.Number, otherTrain.TCRoute.activeSubpath, otherTrain.Length,
-                            otherTrain.ValidRoute[0], otherTrainElementIndex);
+                        if (otherTrainElementIndex < 0) // train joins deadlock area on different node
+                        {
+                            validPassLocation = false;
+                        }
+                        else
+                        {
+                            thisDeadlockInfo.SetTrainDetails(otherTrain.Number, otherTrain.TCRoute.activeSubpath, otherTrain.Length,
+                                otherTrain.ValidRoute[0], otherTrainElementIndex);
+                        }
                     }
 
                     // if valid path for other train
-                    if (thisDeadlockInfo.TrainReferences.ContainsKey(otherTrainReferenceIndex))
+                    if (validPassLocation && thisDeadlockInfo.TrainReferences.ContainsKey(otherTrainReferenceIndex))
                     {
                         otherTrainAllocatedPaths =
                             thisDeadlockInfo.TrainReferences[thisDeadlockInfo.GetTrainAndSubpathIndex(otherTrain.Number, otherTrain.TCRoute.activeSubpath)];
@@ -8361,9 +8491,10 @@ namespace ORTS
             // otherwise, last common sections was previous sections for this train
             int lastSectionIndex = (thisTrainSection == otherTrainSection) ? thisTrainSection :
                 thisRoute[thisTrainIndex - 1].TCSectionIndex;
-
-            // if section is not a junction, check if either route not ended, if so continue up to next junction
             TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastSectionIndex];
+
+            // TODO : if section is not a junction but deadlock is allready active, wind back to last junction
+            // if section is not a junction, check if either route not ended, if so continue up to next junction
             if (lastSection.CircuitType != TrackCircuitSection.TrackCircuitType.Junction)
             {
                 bool endSectionFound = false;
@@ -8414,6 +8545,26 @@ namespace ORTS
             if (returnValue[0] < 0)
                 returnValue[0] = thisTrainIndex;
             return (returnValue);
+        }
+
+        public int FindCommonSectionEnd(TCSubpathRoute thisRoute, int thisRouteIndex, TCSubpathRoute otherRoute, int otherRouteIndex)
+        {
+            int lastIndex = otherRouteIndex;
+            int thisIndex = thisRouteIndex;
+            int otherIndex = otherRouteIndex;
+            int thisSectionIndex = thisRoute[thisIndex].TCSectionIndex;
+            int otherSectionIndex = thisRoute[otherIndex].TCSectionIndex;
+
+            while (thisSectionIndex == otherSectionIndex)
+            {
+                lastIndex = otherIndex;
+                thisIndex++;
+                otherIndex++;
+                thisSectionIndex = thisRoute[thisIndex].TCSectionIndex;
+                otherSectionIndex = thisRoute[otherIndex].TCSectionIndex;
+            }
+
+            return (lastIndex);
         }
 
         //================================================================================================//
@@ -8513,7 +8664,7 @@ namespace ORTS
                     }
                     else
                     {
-                        TCRouteElement thisElement = otherRoute[otherRouteIndex];
+                        TCRouteElement thisElement = otherRoute[thisElementIndex];
                         TrackCircuitSection thisRouteSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                         totalDistance += thisRouteSection.Length;
 
@@ -8640,24 +8791,55 @@ namespace ORTS
             if (TrafficService == null)
                 return;   // no traffic definition
 
+            // loop through traffic points
+
+            foreach (Traffic_Traffic_Item thisItem in TrafficService.TrafficDetails)
+            {
+                bool validStop = CreateStationStop(thisItem.PlatformStartID, thisItem.ArrivalTime, thisItem.DepartTime, new DateTime(0), new DateTime(0), clearingDistanceM);
+                if (!validStop)
+                {
+                    Trace.TraceInformation("Train {0} : cannot find platform {1}",
+                        Number.ToString(), thisItem.PlatformStartID.ToString());
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Create station stop list
+        /// <\summary>
+
+        public bool CreateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM)
+        {
+            int platformIndex;
             int activeSubroute = 0;
             int lastRouteIndex = 0;
 
             TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
 
-            // loop through traffic points
+            // get platform details
 
-            foreach (Traffic_Traffic_Item thisItem in TrafficService.TrafficDetails)
+            if (signalRef.PlatformXRefList.TryGetValue(platformStartID, out platformIndex))
             {
-                int platformIndex;
+                PlatformDetails thisPlatform = signalRef.PlatformDetailsList[platformIndex];
+                int sectionIndex = thisPlatform.TCSectionIndex[0];
+                int routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
 
-                // get platform details
+                // if first section not found in route, try last
 
-                if (signalRef.PlatformXRefList.TryGetValue(thisItem.PlatformStartID, out platformIndex))
+                if (routeIndex < 0)
                 {
-                    PlatformDetails thisPlatform = signalRef.PlatformDetailsList[platformIndex];
-                    int sectionIndex = thisPlatform.TCSectionIndex[0];
-                    int routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+                    sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
+                }
+
+                // if neither section found - try next subroute - keep trying till found or out of subroutes
+
+                while (routeIndex < 0 && activeSubroute < (TCRoute.TCRouteSubpaths.Count - 1))
+                {
+                    activeSubroute++;
+                    thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
+                    routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
 
                     // if first section not found in route, try last
 
@@ -8666,282 +8848,268 @@ namespace ORTS
                         sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
                         routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
                     }
+                }
 
-                    // if neither section found - try next subroute - keep trying till found or out of subroutes
+                // if neither section found - platform is not on route - skip
 
-                    while (routeIndex < 0 && activeSubroute < (TCRoute.TCRouteSubpaths.Count - 1))
+                if (routeIndex < 0)
+                {
+                    Trace.TraceWarning("Train {0} : platform {1} is not on route",
+                            Number.ToString(), platformStartID.ToString());
+                    return (false);
+                }
+
+                // determine end stop position depending on direction
+
+                TCRouteElement thisElement = thisRoute[routeIndex];
+
+                int endSectionIndex = thisElement.Direction == 0 ?
+                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1] :
+                    thisPlatform.TCSectionIndex[0];
+                int beginSectionIndex = thisElement.Direction == 0 ?
+                    thisPlatform.TCSectionIndex[0] :
+                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+
+                float endOffset = thisPlatform.TCOffset[1, thisElement.Direction];
+                float beginOffset = thisPlatform.TCOffset[0, thisElement.Direction];
+
+                float deltaLength = thisPlatform.Length - Length; // platform length - train length
+
+                TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+
+
+                int firstRouteIndex = thisRoute.GetRouteIndex(beginSectionIndex, 0);
+                if (firstRouteIndex < 0)
+                    firstRouteIndex = routeIndex;
+                lastRouteIndex = thisRoute.GetRouteIndex(endSectionIndex, 0);
+                if (lastRouteIndex < 0)
+                    lastRouteIndex = routeIndex;
+
+                // if train too long : search back for platform with same name
+
+                float fullLength = thisPlatform.Length;
+
+                if (deltaLength < 0)
+                {
+                    float actualBegin = beginOffset;
+
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[beginSectionIndex];
+
+                    // Other platforms in same section
+
+                    if (thisSection.PlatformIndex.Count > 1)
                     {
-                        activeSubroute++;
-                        thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
-                        routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
-
-                        // if first section not found in route, try last
-
-                        if (routeIndex < 0)
+                        foreach (int nextIndex in thisSection.PlatformIndex)
                         {
-                            sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
-                            routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
-                        }
-                    }
-
-                    // if neither section found - platform is not on route - skip
-
-                    if (routeIndex < 0)
-                    {
-                        Trace.TraceWarning("Train {0} : platform {1} is not on route",
-                                Number.ToString(), thisItem.PlatformStartID.ToString());
-                        break;
-                    }
-
-                    // determine end stop position depending on direction
-
-                    TCRouteElement thisElement = thisRoute[routeIndex];
-
-                    int endSectionIndex = thisElement.Direction == 0 ?
-                        thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1] :
-                        thisPlatform.TCSectionIndex[0];
-                    int beginSectionIndex = thisElement.Direction == 0 ?
-                        thisPlatform.TCSectionIndex[0] :
-                        thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
-
-                    float endOffset = thisPlatform.TCOffset[1, thisElement.Direction];
-                    float beginOffset = thisPlatform.TCOffset[0, thisElement.Direction];
-
-                    float deltaLength = thisPlatform.Length - Length; // platform length - train length
-
-                    TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
-
-
-                    int firstRouteIndex = thisRoute.GetRouteIndex(beginSectionIndex, 0);
-                    if (firstRouteIndex < 0)
-                        firstRouteIndex = routeIndex;
-                    lastRouteIndex = thisRoute.GetRouteIndex(endSectionIndex, 0);
-                    if (lastRouteIndex < 0)
-                        lastRouteIndex = routeIndex;
-
-                    // if train too long : search back for platform with same name
-
-                    float fullLength = thisPlatform.Length;
-
-                    if (deltaLength < 0)
-                    {
-                        float actualBegin = beginOffset;
-
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[beginSectionIndex];
-
-                        // Other platforms in same section
-
-                        if (thisSection.PlatformIndex.Count > 1)
-                        {
-                            foreach (int nextIndex in thisSection.PlatformIndex)
+                            if (nextIndex != platformIndex)
                             {
-                                if (nextIndex != platformIndex)
-                                {
-                                    PlatformDetails otherPlatform = signalRef.PlatformDetailsList[nextIndex];
-                                    if (String.Compare(otherPlatform.Name, thisPlatform.Name) == 0)
-                                    {
-                                        int otherSectionIndex = thisElement.Direction == 0 ?
-                                            otherPlatform.TCSectionIndex[0] :
-                                            otherPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
-                                        if (otherSectionIndex == beginSectionIndex)
-                                        {
-                                            if (otherPlatform.TCOffset[0, thisElement.Direction] < actualBegin)
-                                            {
-                                                actualBegin = otherPlatform.TCOffset[0, thisElement.Direction];
-                                                fullLength = endOffset - actualBegin;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            int addRouteIndex = thisRoute.GetRouteIndex(otherSectionIndex, 0);
-                                            float addOffset = otherPlatform.TCOffset[1, thisElement.Direction == 0 ? 1 : 0];
-                                            // offset of begin in other direction is length of available track
-
-                                            if (lastRouteIndex > 0)
-                                            {
-                                                float thisLength =
-                                                    thisRoute.GetDistanceAlongRoute(addRouteIndex, addOffset,
-                                                            lastRouteIndex, endOffset, true, signalRef);
-                                                if (thisLength > fullLength)
-                                                    fullLength = thisLength;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        deltaLength = fullLength - Length;
-                    }
-
-                    // search back along route
-
-                    if (deltaLength < 0)
-                    {
-                        float distance = fullLength + beginOffset;
-                        bool platformFound = false;
-
-                        for (int iIndex = firstRouteIndex - 1;
-                                    iIndex >= 0 && distance < 500f && platformFound;
-                                    iIndex--)
-                        {
-                            int nextSectionIndex = thisRoute[iIndex].TCSectionIndex;
-                            TrackCircuitSection nextSection = signalRef.TrackCircuitList[nextSectionIndex];
-
-                            foreach (int otherPlatformIndex in nextSection.PlatformIndex)
-                            {
-                                PlatformDetails otherPlatform = signalRef.PlatformDetailsList[otherPlatformIndex];
+                                PlatformDetails otherPlatform = signalRef.PlatformDetailsList[nextIndex];
                                 if (String.Compare(otherPlatform.Name, thisPlatform.Name) == 0)
                                 {
-                                    fullLength = otherPlatform.Length + distance;
-                                    // we miss a little bit (offset) - that's because we don't know direction of other platform
-                                    platformFound = true; // only check for one more
-                                }
-                            }
-                            distance += nextSection.Length;
-                        }
-
-                        deltaLength = fullLength - Length;
-                    }
-
-
-                    // determine stop position
-
-                    float stopOffset = endOffset - (0.5f * deltaLength);
-
-                    // beyond section : check for route validity (may not exceed route)
-
-                    if (stopOffset > endSection.Length)
-                    {
-                        float addOffset = stopOffset - endSection.Length;
-                        float overlap = 0f;
-
-                        for (int iIndex = lastRouteIndex; iIndex < thisRoute.Count && overlap < addOffset; iIndex++)
-                        {
-                            TrackCircuitSection nextSection = signalRef.TrackCircuitList[thisRoute[iIndex].TCSectionIndex];
-                            overlap += nextSection.Length;
-                        }
-
-                        if (overlap < stopOffset)
-                            stopOffset = overlap;
-                    }
-
-                    // check if stop offset beyond end signal - do not hold at signal
-
-                    int EndSignal = -1;
-                    bool HoldSignal = false;
-
-                    // check if train is to reverse in platform
-                    // if so, set signal at other end as hold signal
-
-                    int useDirection = thisElement.Direction;
-                    bool inDirection = true;
-
-                    if (TCRoute.ReversalInfo[activeSubroute].Valid)
-                    {
-                        TCReversalInfo thisReversal = TCRoute.ReversalInfo[activeSubroute];
-                        int reversalIndex = thisReversal.SignalUsed ? thisReversal.LastSignalIndex : thisReversal.LastDivergeIndex;
-                        if (reversalIndex >= 0 && reversalIndex <= lastRouteIndex) // reversal point is this section or earlier
-                        {
-                            useDirection = useDirection == 0 ? 1 : 0;
-                            inDirection = false;
-                        }
-                    }
-
-                    // check for end signal
-
-                    if (thisPlatform.EndSignals[useDirection] >= 0)
-                    {
-                        EndSignal = thisPlatform.EndSignals[useDirection];
-                        // stop location is in front of signal
-                        if (inDirection)
-                        {
-                            if (thisPlatform.DistanceToSignals[useDirection] > (stopOffset - endOffset))
-                            {
-                                HoldSignal = true;
-
-                                if ((thisPlatform.DistanceToSignals[useDirection] + (endOffset - stopOffset)) < clearingDistanceM)
-                                {
-                                    stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM - 1.0f;
-                                }
-                            }
-                            // if most of train fits in platform then stop at signal
-                            else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
-                                          (0.6 * Length))
-                            {
-                                HoldSignal = true;
-                                stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM - 1.0f;
-                                // set 1m earlier to give priority to station stop over signal
-                            }
-                        }
-                        else
-                        // end of train is beyond signal
-                        {
-                            if ((beginOffset - thisPlatform.DistanceToSignals[useDirection]) < (stopOffset - Length))
-                            {
-                                HoldSignal = true;
-
-                                if ((stopOffset - Length - beginOffset + thisPlatform.DistanceToSignals[useDirection]) < clearingDistanceM)
-                                {
-                                    stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
-                                }
-                            }
-                            // if most of train fits in platform then stop at signal
-                            else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
-                                          (0.6 * Length))
-                            {
-                                // set 1m earlier to give priority to station stop over signal
-                                stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
-
-                                // check if stop is clear of end signal (if any)
-                                if (thisPlatform.EndSignals[thisElement.Direction] != -1)
-                                {
-                                    if (stopOffset < (endOffset + thisPlatform.DistanceToSignals[thisElement.Direction]))
+                                    int otherSectionIndex = thisElement.Direction == 0 ?
+                                        otherPlatform.TCSectionIndex[0] :
+                                        otherPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                                    if (otherSectionIndex == beginSectionIndex)
                                     {
-                                        HoldSignal = true; // if train fits between signals
+                                        if (otherPlatform.TCOffset[0, thisElement.Direction] < actualBegin)
+                                        {
+                                            actualBegin = otherPlatform.TCOffset[0, thisElement.Direction];
+                                            fullLength = endOffset - actualBegin;
+                                        }
                                     }
                                     else
                                     {
-                                        stopOffset = endOffset + thisPlatform.DistanceToSignals[thisElement.Direction] - 1.0f; // stop at end signal
+                                        int addRouteIndex = thisRoute.GetRouteIndex(otherSectionIndex, 0);
+                                        float addOffset = otherPlatform.TCOffset[1, thisElement.Direction == 0 ? 1 : 0];
+                                        // offset of begin in other direction is length of available track
+
+                                        if (lastRouteIndex > 0)
+                                        {
+                                            float thisLength =
+                                                thisRoute.GetDistanceAlongRoute(addRouteIndex, addOffset,
+                                                        lastRouteIndex, endOffset, true, signalRef);
+                                            if (thisLength > fullLength)
+                                                fullLength = thisLength;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
 
-                    // build and add station stop
+                    deltaLength = fullLength - Length;
+                }
 
-                    TCRouteElement lastElement = thisRoute[lastRouteIndex];
+                // search back along route
 
-                    StationStop thisStation = new StationStop(
-                            thisItem.PlatformStartID,
-                            thisPlatform,
-                            activeSubroute,
-                            lastRouteIndex,
-                            lastElement.TCSectionIndex,
-                            thisElement.Direction,
-                            EndSignal,
-                            HoldSignal,
-                            stopOffset,
-                            thisItem.ArrivalTime,
-                            thisItem.DepartTime,
-                            StationStop.STOPTYPE.STATION_STOP);
-                    StationStops.Add(thisStation);
+                if (deltaLength < 0)
+                {
+                    float distance = fullLength + beginOffset;
+                    bool platformFound = false;
 
-                    // add signal to list of hold signals
-
-                    if (HoldSignal)
+                    for (int iIndex = firstRouteIndex - 1;
+                                iIndex >= 0 && distance < 500f && platformFound;
+                                iIndex--)
                     {
-                        HoldingSignals.Add(EndSignal);
+                        int nextSectionIndex = thisRoute[iIndex].TCSectionIndex;
+                        TrackCircuitSection nextSection = signalRef.TrackCircuitList[nextSectionIndex];
+
+                        foreach (int otherPlatformIndex in nextSection.PlatformIndex)
+                        {
+                            PlatformDetails otherPlatform = signalRef.PlatformDetailsList[otherPlatformIndex];
+                            if (String.Compare(otherPlatform.Name, thisPlatform.Name) == 0)
+                            {
+                                fullLength = otherPlatform.Length + distance;
+                                // we miss a little bit (offset) - that's because we don't know direction of other platform
+                                platformFound = true; // only check for one more
+                            }
+                        }
+                        distance += nextSection.Length;
+                    }
+
+                    deltaLength = fullLength - Length;
+                }
+
+
+                // determine stop position
+
+                float stopOffset = endOffset - (0.5f * deltaLength);
+
+                // beyond section : check for route validity (may not exceed route)
+
+                if (stopOffset > endSection.Length)
+                {
+                    float addOffset = stopOffset - endSection.Length;
+                    float overlap = 0f;
+
+                    for (int iIndex = lastRouteIndex; iIndex < thisRoute.Count && overlap < addOffset; iIndex++)
+                    {
+                        TrackCircuitSection nextSection = signalRef.TrackCircuitList[thisRoute[iIndex].TCSectionIndex];
+                        overlap += nextSection.Length;
+                    }
+
+                    if (overlap < stopOffset)
+                        stopOffset = overlap;
+                }
+
+                // check if stop offset beyond end signal - do not hold at signal
+
+                int EndSignal = -1;
+                bool HoldSignal = false;
+
+                // check if train is to reverse in platform
+                // if so, set signal at other end as hold signal
+
+                int useDirection = thisElement.Direction;
+                bool inDirection = true;
+
+                if (TCRoute.ReversalInfo[activeSubroute].Valid)
+                {
+                    TCReversalInfo thisReversal = TCRoute.ReversalInfo[activeSubroute];
+                    int reversalIndex = thisReversal.SignalUsed ? thisReversal.LastSignalIndex : thisReversal.LastDivergeIndex;
+                    if (reversalIndex >= 0 && reversalIndex <= lastRouteIndex) // reversal point is this section or earlier
+                    {
+                        useDirection = useDirection == 0 ? 1 : 0;
+                        inDirection = false;
                     }
                 }
-                else
+
+                // check for end signal
+
+                if (thisPlatform.EndSignals[useDirection] >= 0)
                 {
-                    Trace.TraceInformation("Train {0} : cannot find platform {1}",
-                            Number.ToString(), thisItem.PlatformStartID.ToString());
+                    EndSignal = thisPlatform.EndSignals[useDirection];
+                    // stop location is in front of signal
+                    if (inDirection)
+                    {
+                        if (thisPlatform.DistanceToSignals[useDirection] > (stopOffset - endOffset))
+                        {
+                            HoldSignal = true;
+
+                            if ((thisPlatform.DistanceToSignals[useDirection] + (endOffset - stopOffset)) < clearingDistanceM)
+                            {
+                                stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM - 1.0f;
+                            }
+                        }
+                        // if most of train fits in platform then stop at signal
+                        else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
+                                      (0.6 * Length))
+                        {
+                            HoldSignal = true;
+                            stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM - 1.0f;
+                            // set 1m earlier to give priority to station stop over signal
+                        }
+                    }
+                    else
+                    // end of train is beyond signal
+                    {
+                        if ((beginOffset - thisPlatform.DistanceToSignals[useDirection]) < (stopOffset - Length))
+                        {
+                            HoldSignal = true;
+
+                            if ((stopOffset - Length - beginOffset + thisPlatform.DistanceToSignals[useDirection]) < clearingDistanceM)
+                            {
+                                stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
+                            }
+                        }
+                        // if most of train fits in platform then stop at signal
+                        else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
+                                      (0.6 * Length))
+                        {
+                            // set 1m earlier to give priority to station stop over signal
+                            stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
+
+                            // check if stop is clear of end signal (if any)
+                            if (thisPlatform.EndSignals[thisElement.Direction] != -1)
+                            {
+                                if (stopOffset < (endOffset + thisPlatform.DistanceToSignals[thisElement.Direction]))
+                                {
+                                    HoldSignal = true; // if train fits between signals
+                                }
+                                else
+                                {
+                                    stopOffset = endOffset + thisPlatform.DistanceToSignals[thisElement.Direction] - 1.0f; // stop at end signal
+                                }
+                            }
+                        }
+                    }
                 }
 
+                // build and add station stop
+
+                TCRouteElement lastElement = thisRoute[lastRouteIndex];
+
+                StationStop thisStation = new StationStop(
+                        platformStartID,
+                        thisPlatform,
+                        activeSubroute,
+                        lastRouteIndex,
+                        lastElement.TCSectionIndex,
+                        thisElement.Direction,
+                        EndSignal,
+                        HoldSignal,
+                        stopOffset,
+                        arrivalTime,
+                        departTime,
+                        StationStop.STOPTYPE.STATION_STOP);
+
+                thisStation.arrivalDT = arrivalDT;
+                thisStation.departureDT = departureDT;
+
+                StationStops.Add(thisStation);
+
+                // add signal to list of hold signals
+
+                if (HoldSignal)
+                {
+                    HoldingSignals.Add(EndSignal);
+                }
             }
+            else
+            {
+                return (false);
+            }
+
 #if DEBUG_TEST
             File.AppendAllText(@"C:\temp\TCSections.txt", "\nSTATION STOPS\n\n");
 
@@ -8977,6 +9145,8 @@ namespace ORTS
                 }
             }
 #endif
+
+            return (true);
         }
 
         //================================================================================================//
@@ -10193,10 +10363,10 @@ namespace ORTS
         {
 
 #if DEBUG_REPORTS
-                File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
-                " : set alternative route no. : " + usedPath.ToString() +
-                " from section " + startSectionIndex.ToString() +
-                " (request from signal " + nextSignal.thisRef.ToString() + " )\n");
+            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
+            " : set alternative route no. : " + usedPath.ToString() +
+            " from section " + startSectionIndex.ToString() +
+            " (request from signal " + nextSignal.thisRef.ToString() + " )\n");
 #endif
 
             if (CheckTrain)
@@ -10229,9 +10399,17 @@ namespace ORTS
                 newRoute.Add(altRoute[iElement]);
             }
 
-            // continued path
+            // check for any deadlocks on abandoned path
 
             int lastAlternativeSectionIndex = thisRoute.GetRouteIndex(altRoute[altRoute.Count - 1].TCSectionIndex, startElementIndex);
+            for (int iElement = startElementIndex; iElement <= lastAlternativeSectionIndex; iElement++)
+            {
+                TrackCircuitSection abdSection = signalRef.TrackCircuitList[thisRoute[iElement].TCSectionIndex];
+                abdSection.ClearDeadlockTrap(Number);
+            }
+
+            // continued path
+
             for (int iElement = lastAlternativeSectionIndex + 1; iElement < thisRoute.Count; iElement++)
             {
                 newRoute.Add(thisRoute[iElement]);
@@ -10267,12 +10445,16 @@ namespace ORTS
                 // reset signal
                 // if train in signal mode, request clear signal
 
-                nextSignal.signalRoute = newSignalRoute;
                 nextSignal.ResetSignal(true);
+                nextSignal.signalRoute = newSignalRoute;
 
                 if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
                 {
                     InitializeSignals(true);
+                    if (NextSignalObject[0] != null)
+                    {
+                        NextSignalObject[0].requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
+                    }
                 }
             }
         }
@@ -10403,6 +10585,8 @@ namespace ORTS
             // [4] = hold signal
             public List<TCReversalInfo> ReversalInfo = new List<TCReversalInfo>();
             public List<int> LoopEnd = new List<int>();
+            public Dictionary<string, int[]> StationXRef = new Dictionary<string, int[]>(); 
+            // int[0] = subpath index, int[1] = element index, int[3] = platform ID
 
             //================================================================================================//
             /// <summary>
@@ -10531,6 +10715,7 @@ namespace ORTS
                                 TCRouteElement thisElement =
                                     new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
                                 thisSubpath.Add(thisElement);
+                                SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
                             }
                             newDir = thisNode.TrPins[currentDir].Direction;
 
@@ -10542,6 +10727,7 @@ namespace ORTS
                                 TCRouteElement thisElement =
                                     new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
                                 thisSubpath.Add(thisElement);
+                                SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
                             }
                             newDir = thisNode.TrPins[currentDir].Direction;
                         }
@@ -10688,7 +10874,10 @@ namespace ORTS
                                 TCRouteElement thisElement =
                                     new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
                                 if (thisSubpath.Count <= 0 || thisSubpath[thisSubpath.Count - 1].TCSectionIndex != thisElement.TCSectionIndex)
+                                {
                                     thisSubpath.Add(thisElement); // only add if not yet set
+                                    SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                }
                             }
                         }
                     }
@@ -10700,7 +10889,11 @@ namespace ORTS
                             {
                                 TCRouteElement thisElement =
                                 new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
-                                if (thisSubpath.Count <= 0 || thisSubpath[thisSubpath.Count - 1].TCSectionIndex != thisElement.TCSectionIndex) thisSubpath.Add(thisElement); // only add if not yet set
+                                if (thisSubpath.Count <= 0 || thisSubpath[thisSubpath.Count - 1].TCSectionIndex != thisElement.TCSectionIndex)
+                                {
+                                    thisSubpath.Add(thisElement); // only add if not yet set
+                                    SetStationReference(TCRouteSubpaths, thisElement.TCSectionIndex, orgSignals);
+                                }
                             }
                         }
                     }
@@ -10732,11 +10925,11 @@ namespace ORTS
                         foreach (TCRouteElement addedElement in addedElements)
                         {
                             thisSubpath.Add(addedElement);
+                            SetStationReference(TCRouteSubpaths, addedElement.TCSectionIndex, orgSignals);
                         }
                         thisSubpath.Add(new TCRouteElement(lastEndSection.Index, lastDirection));
                     }
                 }
-
 
                 // remove sections beyond reversal points
 
@@ -10857,7 +11050,6 @@ namespace ORTS
                     }
                 }
 
-
                 // if removed, update indices of waiting points
                 if (removed > 0)
                 {
@@ -10877,6 +11069,18 @@ namespace ORTS
 
                         int newSublistRef = newIndices[sublistRef];
                         pathDetails[0] = newSublistRef;
+                    }
+
+                    // if remove, update indices in station xref
+
+                    Dictionary<string, int[]> copyXRef = StationXRef;
+                    StationXRef.Clear();
+
+                    foreach (KeyValuePair<string, int[]> actXRef in copyXRef)
+                    {
+                        int[] oldValue = actXRef.Value;
+                        int[] newValue = new int[3] { newIndices[oldValue[0]], oldValue[1], oldValue[2] };
+                        StationXRef.Add(actXRef.Key, newValue);
                     }
                 }
 
@@ -11010,14 +11214,14 @@ namespace ORTS
                         if (printElement.StartAlternativePath != null)
                         {
                             File.AppendAllText(@"C:\temp\TCSections.txt", "\n Start Alternative Path : " +
-					    printElement.StartAlternativePath[0].ToString() +
-					    " upto section " + printElement.StartAlternativePath[1].ToString() + "\n");
+                        printElement.StartAlternativePath[0].ToString() +
+                        " upto section " + printElement.StartAlternativePath[1].ToString() + "\n");
                         }
                         if (printElement.EndAlternativePath != null)
                         {
                             File.AppendAllText(@"C:\temp\TCSections.txt", "\n End Alternative Path : " +
-					    printElement.EndAlternativePath[0].ToString() +
-					    " from section " + printElement.EndAlternativePath[1].ToString() + "\n");
+                        printElement.EndAlternativePath[0].ToString() +
+                        " from section " + printElement.EndAlternativePath[1].ToString() + "\n");
                         }
 
                         File.AppendAllText(@"C:\temp\TCSections.txt", "\n");
@@ -11841,6 +12045,11 @@ namespace ORTS
                 {
                     LoopEnd.Add(otherPath.LoopEnd[iLoopEnd]);
                 }
+
+                foreach (KeyValuePair<string, int[]> actStation in otherPath.StationXRef)
+                {
+                    StationXRef.Add(actStation.Key, actStation.Value);
+                }
             }
 
             //================================================================================================//
@@ -11891,6 +12100,8 @@ namespace ORTS
                 {
                     LoopEnd.Add(inf.ReadInt32());
                 }
+
+                // note : stationXRef only used on init, not saved
             }
 
             //================================================================================================//
@@ -11935,6 +12146,8 @@ namespace ORTS
                 {
                     outf.Write(LoopEnd[iLE]);
                 }
+
+                // note : stationXRef only used on init, need not be saved
             }
 
             //================================================================================================//
@@ -11984,6 +12197,29 @@ namespace ORTS
                 TCReversalInfo thisReversal = ReversalInfo[activeSubpath];
                 thisReversal.SignalUsed = thisReversal.Valid && thisReversal.SignalAvailable && trainLength < thisReversal.SignalOffset;
             }
+
+            //================================================================================================//
+            //
+            // build station xref list
+            //
+
+            public void SetStationReference(List<TCSubpathRoute> subpaths, int sectionIndex, Signals orgSignals)
+            {
+                TrackCircuitSection actSection = orgSignals.TrackCircuitList[sectionIndex];
+                foreach (int platformRef in actSection.PlatformIndex)
+                {
+                    PlatformDetails actPlatform = orgSignals.PlatformDetailsList[platformRef];
+
+                    string stationName = actPlatform.Name.ToLower();
+
+                    if (!StationXRef.ContainsKey(stationName))
+                    {
+                        int[] platformInfo = new int[3] { subpaths.Count - 1, subpaths[subpaths.Count - 1].Count - 1, actPlatform.PlatformReference[0] };
+                        StationXRef.Add(stationName, platformInfo);
+                    }
+                }
+            }
+
         }
 
         //================================================================================================//
@@ -13515,8 +13751,9 @@ namespace ORTS
             public int ActualArrival;
             public int ActualDepart;
             public bool Passed;
-
-
+            public DateTime arrivalDT;
+            public DateTime departureDT;
+            
             //================================================================================================//
             //
             // Constructor

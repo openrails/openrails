@@ -70,26 +70,36 @@ namespace ORTS
                 }
             }
 
-            float firstAITime = StartList.GetNextTime();
-            if (firstAITime > 0 && firstAITime < Simulator.ClockTime)
+            // prerun trains
+            PrerunAI();
+
+            clockTime = Simulator.ClockTime;
+            localTime = false;
+        }
+
+        // constructor for Timetable trains
+        // trains allready have a number - must not be changed!
+        public AI(Simulator simulator, List<AITrain> allTrains, double ClockTime)
+        {
+            Simulator = simulator;
+
+            foreach (AITrain train in allTrains)
             {
+                // set train details
+                train.TrainType = Train.TRAINTYPE.AI_NOTSTARTED;
+                AITrainDictionary.Add(train.Number, train);
+                train.AI = this;
 
-                // perform update for AI trains upto actual start time
+                train.Cars[0].Headlight = 2;//AI train always has light on
+                train.BrakeLine3PressurePSI = 0;
 
-                clockTime = firstAITime - 1.0f;
-                localTime = true;
-                PreUpdate = true;
+                // insert in start list
 
-                for (double runTime = firstAITime; runTime < Simulator.ClockTime; runTime += 5.0) // update with 5 secs interval
-                {
-                    AIUpdate((float)(runTime - clockTime), PreUpdate);
-					Simulator.Signals.Update();
-                    clockTime = runTime;
-                }
-
-                Trace.Write("\n");
-                PreUpdate = false;
+                StartList.InsertTrain(train);
             }
+
+            // prerun trains
+            PrerunAI();
 
             clockTime = Simulator.ClockTime;
             localTime = false;
@@ -137,6 +147,34 @@ namespace ORTS
             foreach (AITrain thisStartTrain in StartList)
             {
                 thisStartTrain.Save(outf);
+            }
+        }
+
+        private void PrerunAI()
+        {
+            float firstAITime = StartList.GetNextTime();
+            if (firstAITime > 0 && firstAITime < Simulator.ClockTime)
+            {
+                Trace.Write("\n Run AI : " + StartList.Count.ToString() + " ");
+
+                // perform update for AI trains upto actual start time
+
+                clockTime = firstAITime - 1.0f;
+                localTime = true;
+                PreUpdate = true;
+
+                for (double runTime = firstAITime; runTime < Simulator.ClockTime; runTime += 5.0) // update with 5 secs interval
+                {
+                    int fullsec = Convert.ToInt32(runTime);
+                    if (fullsec % 3600 == 0) Trace.Write(" " + (fullsec / 3600).ToString("00") + ":00 ");
+
+                    AIUpdate((float)(runTime - clockTime), PreUpdate);
+                    Simulator.Signals.Update(true);
+                    clockTime = runTime;
+                }
+
+                Trace.Write("\n");
+                PreUpdate = false;
             }
         }
 
@@ -328,7 +366,7 @@ namespace ORTS
                 thisTrain.actualWaitTimeS += 30;
                 if (thisTrain.actualWaitTimeS > 900)   // tried for 15 mins
                 {
-                    Trace.TraceWarning("Cannot place AI train {0} at time {1}", thisTrain.UiD, thisTrain.StartTime);
+                    Trace.TraceWarning("Cannot place AI train {0} at time {1}", thisTrain.Name, thisTrain.StartTime.ToString());
                 }
                 else
                 {

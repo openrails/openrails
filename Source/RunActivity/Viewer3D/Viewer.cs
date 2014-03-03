@@ -225,7 +225,14 @@ namespace ORTS.Viewer3D
             ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
 
             Trace.Write(" SIGCFG");
-            SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat");
+            if (File.Exists(Simulator.RoutePath + @"\sigcfg.dat_or"))
+            {
+                SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat_or");
+            }
+            else
+            {
+                SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat");
+            }
 
             Trace.Write(" TTYPE");
             TrackTypes = new TTypeDatFile(Simulator.RoutePath + @"\TTYPE.DAT");

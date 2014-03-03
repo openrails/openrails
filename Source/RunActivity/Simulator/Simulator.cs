@@ -42,6 +42,7 @@ using MSTS.Formats;
 using ORTS.MultiPlayer;
 using ORTS.Scripting;
 using ORTS.Settings;
+using ORTS.Formats;
 using ORTS.Viewer3D;
 
 namespace ORTS
@@ -75,6 +76,7 @@ namespace ORTS
         public string RoutePathName;    // ie LPS, USA1  represents the folder name
         public string RouteName;
         public string ActivityFileName;
+        public string TimetableFileName;
         public ACTFile Activity;
         public Activity ActivityRun;
         public TDBFile TDB;
@@ -147,8 +149,16 @@ namespace ORTS
             Trace.Write(" TDB");
             TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
-            Trace.Write(" SIGCFG");
-            SIGCFG = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
+            if (File.Exists(RoutePath + @"\sigcfg.dat_or"))
+            {
+                Trace.Write(" SIGCFG_OR");
+                SIGCFG = new SIGCFGFile(RoutePath + @"\sigcfg.dat_or");
+            }
+            else
+            {
+                Trace.Write(" SIGCFG");
+                SIGCFG = new SIGCFGFile(RoutePath + @"\sigcfg.dat");
+            }
 
             Trace.Write(" DAT");
             if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
@@ -217,6 +227,42 @@ namespace ORTS
             if (playerTrain != null)
                 playerTrain.PostInit();  // place player train after pre-running of AI trains
             MPManager.Instance().RememberOriginalSwitchState();
+
+            // start activity logging if required
+            if (Settings.DataLogStationStops && ActivityRun != null)
+            {
+                string stationLogFile = DeriveLogFile("Stops");
+                if (!String.IsNullOrEmpty(stationLogFile))
+                {
+                    ActivityRun.StartStationLogging(stationLogFile);
+                }
+            }
+        }
+
+        public void StartTimetable(string[] arguments)
+        {
+            Signals = new Signals(this, SIGCFG);
+            LevelCrossings = new LevelCrossings(this);
+            Trains = new TrainList();
+
+            TimetableInfo TTinfo = new TimetableInfo(this);
+
+            Train playerTrain = null;
+            List<AITrain> allTrains = TTinfo.ProcessTimetable(arguments, ref playerTrain);
+            Trains[0] = playerTrain;
+
+            AI = new AI(this, allTrains, ClockTime);
+
+            Season = (SeasonType)int.Parse(arguments[6]);
+            Weather = (WeatherType)int.Parse(arguments[7]);
+
+            if (playerTrain != null)
+            {
+                playerTrain.PostInit();  // place player train after pre-running of AI trains
+                playerTrain.SetupStationStopHandling(); // player train must now perform own station stop handling (no activity function available)
+            }
+
+//          MPManager.Instance().RememberOriginalSwitchState();
 
             // start activity logging if required
             if (Settings.DataLogStationStops && ActivityRun != null)
@@ -361,7 +407,7 @@ namespace ORTS
 
             if (Signals != null)
             {
-                if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) Signals.Update();
+                if (!MPManager.IsMultiPlayer() || MPManager.IsServer()) Signals.Update(false);
             }
 
             if (AI != null)

@@ -27,6 +27,8 @@
 // #define DEBUG_EXTRAINFO
 // DEBUG flag for debug prints
 
+// #define NEWHOLD // temporary flag for new holdsignal process introduction
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -116,6 +118,12 @@ namespace ORTS
             Efficiency = efficiency;
             Name = String.Copy(name);
             TrafficService = trafficService;
+        }
+
+        public AITrain(Simulator simulator)
+            : base(simulator)
+        {
+            TrainType = TRAINTYPE.AI_NOTSTARTED;
         }
 
         //================================================================================================//
@@ -214,7 +222,7 @@ namespace ORTS
         {
 
 #if DEBUG_CHECKTRAIN
-            if (Number == 1)
+            if (Number == 26)
             {
                 CheckTrain = true;
             }
@@ -388,7 +396,7 @@ namespace ORTS
         public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
-            if (Number == 1)
+            if (Number == 26)
             {
                 CheckTrain = true;
             }
@@ -3550,8 +3558,13 @@ namespace ORTS
 
             else if (thisItem.NextAction == AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP)
             {
+#if NEWHOLD
+                if (thisItem.ActiveItem.signal_state == MstsSignalAspect.STOP &&
+                    thisItem.ActiveItem.ObjectDetails.StationHold)
+#else
                 if (thisItem.ActiveItem.signal_state == MstsSignalAspect.STOP &&
                     thisItem.ActiveItem.ObjectDetails.holdState == SignalObject.HoldState.StationStop)
+#endif
                 {
                     actionValid = false;
 

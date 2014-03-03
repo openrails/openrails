@@ -23,6 +23,8 @@
 // #define DEBUG_DEADLOCK
 // prints details of the derived signal structure
 
+// #define NEWHOLD // temporary flag for new holdsignal process introduction
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -500,7 +502,7 @@ namespace ORTS
         /// Update : perform signal updates
         /// 
 
-        public void Update()
+        public void Update(bool preUpdate)
         {
             if (MultiPlayer.MPManager.IsClient()) return; //in MP, client will not update
 
@@ -509,9 +511,16 @@ namespace ORTS
 
                 // loop through all signals
                 // update required part
+                // in preupdate, process all
 
                 int totalSignal = signalObjects.Length - 1;
+
                 int updatestep = (totalSignal / 20) + 1;
+                if (preUpdate)
+                {
+                    updatestep = totalSignal;
+                }
+
                 for (int icount = updatecount; icount < Math.Min(totalSignal, updatecount + updatestep); icount++)
                 {
                     SignalObject signal = signalObjects[icount];
@@ -3875,11 +3884,16 @@ namespace ORTS
 
                         if (thisSection.EndSignals[0] != null)
                         {
+#if NEWHOLD
+                            thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
+                            thisDetails.DistanceToSignals[0] = distToSignal;
+#else
                             if (!thisSection.EndSignals[0].hasFixedRoute)
                             {
                                 thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
                                 thisDetails.DistanceToSignals[0] = distToSignal;
                             }
+#endif
                             break;
                         }
                     }
@@ -3911,11 +3925,16 @@ namespace ORTS
 
                         if (thisSection.EndSignals[1] != null)
                         {
+#if NEWHOLD
+                            thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
+                            thisDetails.DistanceToSignals[1] = distToSignal;
+#else
                             if (!thisSection.EndSignals[1].hasFixedRoute)
                             {
                                 thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
                                 thisDetails.DistanceToSignals[1] = distToSignal;
                             }
+#endif
                             break;
                         }
 
@@ -5028,19 +5047,22 @@ namespace ORTS
                 if (thisElement != null && thisElement.FacingPoint && DeadlockReference >= 0)
                 {
                     DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[DeadlockReference];
-                    int trainAndSubpathIndex = sectionDeadlockInfo.GetTrainAndSubpathIndex(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath);
-                    int availableRoute = sectionDeadlockInfo.TrainReferences[trainAndSubpathIndex][0];
-                    int endSectionIndex = sectionDeadlockInfo.AvailablePathList[availableRoute].EndSectionIndex;
-                    TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
+                    if (sectionDeadlockInfo.HasTrainAndSubpathIndex(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath))
+                    {
+                        int trainAndSubpathIndex = sectionDeadlockInfo.GetTrainAndSubpathIndex(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath);
+                        int availableRoute = sectionDeadlockInfo.TrainReferences[trainAndSubpathIndex][0];
+                        int endSectionIndex = sectionDeadlockInfo.AvailablePathList[availableRoute].EndSectionIndex;
+                        TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
 
-                    // no deadlock yet active
-                    if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
-                    {
-                        endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
-                    }
-                    else if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
-                    {
-                        endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
+                        // no deadlock yet active
+                        if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
+                        {
+                            endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
+                        }
+                        else if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
+                        {
+                            endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
+                        }
                     }
                 }
             }
@@ -5395,6 +5417,19 @@ namespace ORTS
             if (CircuitState.TrainPreReserved.ContainsTrain(thisTrain))
             {
                 CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Remove train clain from section
+        //
+
+        public void UnclaimTrain(Train.TrainRouted thisTrain)
+        {
+            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
+            {
+                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
             }
         }
 
@@ -5983,36 +6018,40 @@ namespace ORTS
 
                     int endSectionIndex = deadlockDetails.Value;
 
-                    TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
-
-                    // if other section allready set do not set deadlock
-                    if (otherTrain != null && endSection.IsSet(otherTrain))
-                        break;
-
-                    if (DeadlockTraps.ContainsKey(thisTrain.Number))
+                    // check if endsection still in path
+                    if (thisTrain.ValidRoute[0].GetRouteIndex(endSectionIndex, thisTrain.PresentPosition[0].RouteListIndex) >= 0)
                     {
-                        List<int> thisTrap = DeadlockTraps[thisTrain.Number];
-                        if (thisTrap.Contains(otherTrainNumber))
-                            break;  // cannot set deadlock for train which has deadlock on this end
-                    }
+                        TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
 
-                    if (endSection.DeadlockTraps.ContainsKey(otherTrainNumber))
-                    {
-                        if (!endSection.DeadlockTraps[otherTrainNumber].Contains(thisTrain.Number))
+                        // if other section allready set do not set deadlock
+                        if (otherTrain != null && endSection.IsSet(otherTrain))
+                            break;
+
+                        if (DeadlockTraps.ContainsKey(thisTrain.Number))
                         {
-                            endSection.DeadlockTraps[otherTrainNumber].Add(thisTrain.Number);
+                            List<int> thisTrap = DeadlockTraps[thisTrain.Number];
+                            if (thisTrap.Contains(otherTrainNumber))
+                                break;  // cannot set deadlock for train which has deadlock on this end
                         }
-                    }
-                    else
-                    {
-                        List<int> deadlockList = new List<int>();
-                        deadlockList.Add(thisTrain.Number);
-                        endSection.DeadlockTraps.Add(otherTrainNumber, deadlockList);
-                    }
 
-                    if (!endSection.DeadlockActives.Contains(thisTrain.Number))
-                    {
-                        endSection.DeadlockActives.Add(thisTrain.Number);
+                        if (endSection.DeadlockTraps.ContainsKey(otherTrainNumber))
+                        {
+                            if (!endSection.DeadlockTraps[otherTrainNumber].Contains(thisTrain.Number))
+                            {
+                                endSection.DeadlockTraps[otherTrainNumber].Add(thisTrain.Number);
+                            }
+                        }
+                        else
+                        {
+                            List<int> deadlockList = new List<int>();
+                            deadlockList.Add(thisTrain.Number);
+                            endSection.DeadlockTraps.Add(otherTrainNumber, deadlockList);
+                        }
+
+                        if (!endSection.DeadlockActives.Contains(thisTrain.Number))
+                        {
+                            endSection.DeadlockActives.Add(thisTrain.Number);
+                        }
                     }
                 }
             }
@@ -6868,6 +6907,8 @@ namespace ORTS
         private bool isPropagated;              // route request for this signal was propagated from previous signal
         public bool ForcePropagation = false;   // Force propagation (used in case of signals at very short distance)
 
+        public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
+
         public bool enabled
         {
             get
@@ -7001,6 +7042,7 @@ namespace ORTS
             isPropagated = inf.ReadBoolean();
             ForcePropagation = false; // preset (not stored)
             ReqNumClearAhead = inf.ReadInt32();
+            StationHold = inf.ReadBoolean();
 
             // set dummy train, route direction index will be set later on restore of train
 
@@ -7129,6 +7171,7 @@ namespace ORTS
             outf.Write(propagated);
             outf.Write(isPropagated);
             outf.Write(ReqNumClearAhead);
+            outf.Write(StationHold);
         }
 
         //================================================================================================//
@@ -7139,6 +7182,16 @@ namespace ORTS
         public MstsBlockState block_state()
         {
             return (blockState);
+        }
+
+        //================================================================================================//
+        //
+        // return station hold state
+        //
+
+        public bool isStationHold()
+        {
+            return (StationHold);
         }
 
         //================================================================================================//
@@ -7865,11 +7918,20 @@ namespace ORTS
         public void Update()
         {
             // perform route update for normal signals if enabled
-
             if (isSignalNormal())
             {
                 // if in hold, set to most restrictive for each head
 
+#if NEWHOLD
+                if (holdState != HoldState.None)
+                {
+                    foreach (SignalHead sigHead in SignalHeads)
+                    {
+                        if (holdState == HoldState.ManualLock) sigHead.SetMostRestrictiveAspect();
+                    }
+                    return;
+                }
+#else
                 if (holdState != HoldState.None)
                 {
                     foreach (SignalHead sigHead in SignalHeads)
@@ -7878,6 +7940,7 @@ namespace ORTS
                     }
                     return;
                 }
+#endif
 
                 // if enabled - perform full update and propagate if not yet done
 
@@ -8354,9 +8417,13 @@ namespace ORTS
                 {
                     // no route from this signal - reset enable and exit
                     enabledTrain = null;
-
+#if NEWHOLD
+                    // if signal on holding list, set hold state (possible for exit signal after reverse)
+                    if (thisTrain.Train.HoldingSignals.Contains(thisRef)) StationHold = true;
+#else
                     // if signal on holding list, set hold state
                     if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HoldState.None) holdState = HoldState.StationStop;
+#endif
                     return;
                 }
             }
@@ -8462,6 +8529,19 @@ namespace ORTS
 
             // check if signal must be hold
 
+#if NEWHOLD
+            bool signalHold = (holdState != HoldState.None);
+
+            // set station hold state for processing in script
+            if (enabledTrain != null)
+            {
+                StationHold = enabledTrain.Train.HoldingSignals.Contains(thisRef);
+                if ((StationHold && this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP))
+                {
+                    signalHold = true;
+                }
+            }
+#else
             bool signalHold = (holdState != HoldState.None);
             if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && holdState < HoldState.ManualLock)
             {
@@ -8475,6 +8555,15 @@ namespace ORTS
                     holdState = HoldState.None;
                     signalHold = false;
                 }
+            }
+#endif
+
+            // test if propage state still correct - if next signal for enabled train is this signal, it is not propagated
+
+            if (enabledTrain != null && enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
+                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef == thisRef)
+            {
+                isPropagated = false;
             }
 
             // test clearance for full route section
@@ -8620,7 +8709,11 @@ namespace ORTS
 
             // if claim allowed - reserve free sections and claim all other if first signal ahead of train
 
+#if NEWHOLD
+                else if (enabledTrain.Train.ClaimState && !StationHold && internalBlockState != InternalBlockstate.Reserved && !isPropagated)
+#else
                 else if (enabledTrain.Train.ClaimState && internalBlockState != InternalBlockstate.Reserved && !isPropagated)
+#endif
                 {
                     foreach (Train.TCRouteElement thisElement in thisRoute)
                     {
@@ -8641,6 +8734,13 @@ namespace ORTS
 
                         if (thisSection.CircuitState.TrainReserved == null || (thisSection.CircuitState.TrainReserved.Train != enabledTrain.Train))
                         {
+                            // deadlock has been set since signal request was issued - reject claim, break and reset claimstate
+                            if (thisSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number))
+                            {
+                                thisTrain.Train.ClaimState = false;
+                                break;
+                            }
+
                             thisSection.Claim(enabledTrain);
                         }
                     }
@@ -8682,7 +8782,7 @@ namespace ORTS
                 propagateState = false;
             }
 
-            if ( (ReqNumClearAhead > 0 || ForcePropagation) && nextSignal != null && internalBlockState == InternalBlockstate.Reserved)
+            if ((ReqNumClearAhead > 0 || ForcePropagation) && nextSignal != null && internalBlockState == InternalBlockstate.Reserved)
             {
                 nextSignal.requestClearSignal(RoutePart, enabledTrain, ReqNumClearAhead, propagateState, this);
                 propagated = true;
@@ -9030,7 +9130,9 @@ namespace ORTS
                 {
                     if (thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
                     {
-                        if (thisElement.UsedAlternativePath < 0) // if deadlock area and no path yet selected - exit loop; else follow assigned path
+                        DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[thisSection.DeadlockReference];
+                        if (sectionDeadlockInfo.HasTrainAndSubpathIndex(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath) &&
+                            thisElement.UsedAlternativePath < 0) // if deadlock area and no path yet selected - exit loop; else follow assigned path
                         {
                             deadlockArea = true;
                             break; // exits on deadlock area
@@ -10631,13 +10733,14 @@ namespace ORTS
 
         public List<int> CheckDeadlockPathAvailability(TrackCircuitSection startSection, Train thisTrain)
         {
+            List<int> useablePaths = new List<int>();
+
             // get end section for this train
             int endSectionIndex = GetEndSection(thisTrain);
             TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
 
             // get list of paths which are available
             List<int> freePaths = GetFreePaths(thisTrain);
-            List<int> useablePaths = new List<int>();
 
             // get all possible paths from train(s) in opposite direction
             List<int> usedRoutes = new List<int>();    // all routes allowed for any train
@@ -10650,26 +10753,40 @@ namespace ORTS
             foreach (int otherTrainNumber in endSection.DeadlockActives)
             {
                 Train otherTrain = thisTrain.GetOtherTrainByNumber(otherTrainNumber);
-                List<int> otherFreePaths = GetFreePaths(otherTrain);
-                foreach (int iPath in otherFreePaths)
+
+                // TODO : find proper most matching path
+                if (HasTrainAndSubpathIndex(otherTrain.Number, otherTrain.TCRoute.activeSubpath))
                 {
-                    if (!usedRoutes.Contains(iPath)) usedRoutes.Add(iPath);
-                    if (firstTrain)
+                    List<int> otherFreePaths = GetFreePaths(otherTrain);
+                    foreach (int iPath in otherFreePaths)
                     {
-                        commonRoutes.Add(iPath);
+                        if (!usedRoutes.Contains(iPath)) usedRoutes.Add(iPath);
+                        if (firstTrain)
+                        {
+                            commonRoutes.Add(iPath);
+                        }
+                    }
+
+                    if (otherFreePaths.Count == 1)
+                    {
+                        singleRoutes.Add(otherFreePaths[0]);
+                    }
+
+                    for (int cPathIndex = commonRoutes.Count - 1; cPathIndex >= 0 && !firstTrain; cPathIndex--)
+                    {
+                        if (!otherFreePaths.Contains(commonRoutes[cPathIndex]))
+                        {
+                            commonRoutes.RemoveAt(cPathIndex);
+                        }
                     }
                 }
-
-                if (otherFreePaths.Count == 1)
+                else
                 {
-                    singleRoutes.Add(otherFreePaths[0]);
-                }
-
-                for (int cPathIndex = commonRoutes.Count - 1; cPathIndex >= 0 && !firstTrain; cPathIndex--)
-                {
-                    if (!otherFreePaths.Contains(commonRoutes[cPathIndex]))
+                    // for now : set all possible routes to used and single
+                    foreach (int iroute in freePaths)
                     {
-                        commonRoutes.RemoveAt(cPathIndex);
+                        singleRoutes.Add(iroute);
+                        usedRoutes.Add(iroute);
                     }
                 }
 
@@ -10943,7 +11060,6 @@ namespace ORTS
             List<int> freePaths = new List<int>();
 
             int thisTrainAndSubpathIndex = GetTrainAndSubpathIndex(thisTrain.Number, thisTrain.TCRoute.activeSubpath);
-
             for (int iPath = 0; iPath <= TrainReferences[thisTrainAndSubpathIndex].Count - 1; iPath++)
             {
                 int pathIndex = TrainReferences[thisTrainAndSubpathIndex][iPath];
@@ -11137,7 +11253,6 @@ namespace ORTS
             }
 
             int newIndex = ++nextTrainSubpathIndex;
-
             Dictionary<int, int> newSubpathList;
             if (TrainSubpathIndex.ContainsKey(trainNumber))
             {
@@ -11156,6 +11271,50 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // check index value for specific train/subpath combination
+        // if set, return value
+        // if not set, generate value, set value and return value
+        //
+
+        public bool HasTrainAndSubpathIndex(int trainNumber, int subpathIndex)
+        {
+            if (TrainSubpathIndex.ContainsKey(trainNumber))
+            {
+                Dictionary<int, int> subpathList = TrainSubpathIndex[trainNumber];
+                if (subpathList.ContainsKey(subpathIndex))
+                {
+                    return (true);
+                }
+            }
+            return (false);
+        }
+
+        //================================================================================================//
+        //
+        // check index value for specific train/subpath combination
+        // if set, return value
+        // if not set, generate value, set value and return value
+        //
+
+        public bool RemoveTrainAndSubpathIndex(int trainNumber, int subpathIndex)
+        {
+            if (TrainSubpathIndex.ContainsKey(trainNumber))
+            {
+                Dictionary<int, int> subpathList = TrainSubpathIndex[trainNumber];
+                if (subpathList.ContainsKey(subpathIndex))
+                {
+                    subpathList.Remove(subpathIndex);
+                }
+                if (subpathList.Count <= 0)
+                {
+                    TrainSubpathIndex.Remove(trainNumber);
+                }
+            }
+            return (false);
+        }
+
+        //================================================================================================//
+        //
         // Insert train reference details
         //
 
@@ -11166,12 +11325,23 @@ namespace ORTS
 
             // search if trains path has valid equivalent
 
+            if (elementRouteIndex <= 0 || elementRouteIndex >= subpath.Count)
+            {
+                Trace.TraceWarning("Invalid route element in SetTrainDetails : value =  {0}, max. is {1}", elementRouteIndex, subpath.Count);
+                return (-1);
+            }
+
             int sectionIndex = subpath[elementRouteIndex].TCSectionIndex;
             int[] matchingPath = SearchMatchingFullPath(subpath, sectionIndex, elementRouteIndex);
 
             // matchingPath[0] == 1 : path runs short of all available paths - train ends within area - no alternative path available
             if (matchingPath[0] == 1)
             {
+                // if no other paths for this reference, remove train/subpath reference from table
+                if (!TrainReferences.ContainsKey(trainSubpathIndex))
+                {
+                    RemoveTrainAndSubpathIndex(trainNumber, subpathRef);
+                }
                 return (-1);
             }
 

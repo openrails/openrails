@@ -109,13 +109,20 @@ namespace ORTS.Processes
 
             // Look for an action to perform.
             var action = "";
-            var actions = new[] { "start", "resume", "replay", "replay_from_save", "test" };
+            var actions = new[] { "start", "resume", "replay", "replay_from_save", "test"};
             foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
                     action = possibleAction;
 
+            // Look for required type of action
+            var acttype = "";
+            var acttypes = new[] { "activity", "explorer", "timetable" };
+            foreach (var possibleActType in acttypes)
+                if (args.Contains("-" + possibleActType) || args.Contains("/" + possibleActType, StringComparer.OrdinalIgnoreCase))
+                    acttype = possibleActType;
+
             // Collect all non-action options.
-            var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1))).Select(a => a.Substring(1));
+            var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1)) && !acttype.Contains(a.Substring(1))).Select(a => a.Substring(1));
 
             // Collect all non-options as data.
             var data = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
@@ -135,7 +142,7 @@ namespace ORTS.Processes
                     case "start-profile":
                         InitLogging(settings, args);
                         InitLoading(args);
-                        Start(settings, data);
+                        Start(settings, acttype, data);
                         break;
                     case "resume":
                         InitLogging(settings, args);
@@ -157,6 +164,7 @@ namespace ORTS.Processes
                         InitLoading(args);
                         Test(settings, data);
                         break;
+
                     default:
                         MessageBox.Show("To start " + Application.ProductName + ", please run 'OpenRails.exe'.\n\n"
                                 + "If you are attempting to debug this component, please run 'OpenRails.exe' and execute the scenario you are interested in. "
@@ -242,11 +250,22 @@ namespace ORTS.Processes
 
         /// <summary>
         /// Run the specified activity from the beginning.
+        /// This is the start for MSTS Activity or Explorer mode or Timetable mode
         /// </summary>
-        void Start(UserSettings settings, string[] args)
+        void Start(UserSettings settings, string acttype, string[] args)
         {
-            InitSimulator(settings, args);
-            Simulator.Start();
+            InitSimulator(settings, args, "", acttype);
+
+            switch (acttype)
+            {
+                case "timetable":
+                    Simulator.StartTimetable(args);
+                    break;
+
+                default:
+                    Simulator.Start();
+                    break;
+            }
 
             Viewer = new Viewer(Simulator, Game);
             Viewer.Log = new CommandLog(Viewer);
@@ -270,7 +289,8 @@ namespace ORTS.Processes
             // that are likely to match the previously chosen route and activity.
             // Append the current date and time, so that each file is unique.
             // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
-            var fileStem = String.Format("{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName : Simulator.RoutePathName, DateTime.Now);
+            var fileStem = String.Format("{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName :
+                (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName), DateTime.Now);
 
             using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
             {
@@ -747,34 +767,64 @@ namespace ORTS.Processes
             File.Copy(logFileName, toFile, true);
         }
 
-        void InitSimulator(UserSettings settings, string[] args)
-        {
-            InitSimulator(settings, args, "");
-        }
-
         void InitSimulator(UserSettings settings, string[] args, string mode)
         {
-            Console.WriteLine(mode.Length > 0 ? "Mode       = {0} {1}" : "Mode       = {1}", mode, args.Length == 1 ? "Activity" : "Explore");
-            if (args.Length == 1)
+            InitSimulator(settings, args, mode, "");
+        }
+
+        void InitSimulator(UserSettings settings, string[] args, string mode, string acttype)
+        {
+            Console.WriteLine(mode.Length <= 0 ? "Mode       = {1}" : acttype.Length > 0 ? "Mode       = {0}" : "Mode       = {0} {1}", mode, acttype);
+
+            switch (acttype)
             {
-                Console.WriteLine("Activity   = {0}", args[0]);
+                case "activity":
+                    Console.WriteLine("Activity   = {0}", args[0]);
+                break;
+
+                case "explorer":
+                    Console.WriteLine("Path       = {0}", args[0]);
+                    Console.WriteLine("Consist    = {0}", args[1]);
+                    Console.WriteLine("Time       = {0}", args[2]);
+                    Console.WriteLine("Season     = {0}", args[3]);
+                    Console.WriteLine("Weather    = {0}", args[4]);
+                break;
+
+                case "timetable":
+                    Console.WriteLine("File                 = {0}", args[0]);
+                    Console.WriteLine("Train                = {0}", args[1]);
+                    Console.WriteLine("AI StartTime         = {0}", args[2]);
+                    Console.WriteLine("AI StartType         = {0}", args[3]);
+                    Console.WriteLine("AI Player Direction  = {0}", args[4]);
+                    Console.WriteLine("Day                  = {0}", args[5]);
+                    Console.WriteLine("Season               = {0}", args[6]);
+                    Console.WriteLine("Weather              = {0}", args[7]);
+                break;
+
+                default:  // old style processing without explicit action definition - to be removed later
+                    if (args.Length == 1)
+                    {
+                        Console.WriteLine("Activity   = {0}", args[0]);
+                    }
+                    else if (args.Length == 3)
+                    {
+                        Console.WriteLine("Activity   = {0}", args[0]);
+                    }
+                    else if (args.Length == 4)
+                    {
+                        Console.WriteLine("Activity   = {0}", args[0]);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Path       = {0}", args[0]);
+                        Console.WriteLine("Consist    = {0}", args[1]);
+                        Console.WriteLine("Time       = {0}", args[2]);
+                        Console.WriteLine("Season     = {0}", args[3]);
+                        Console.WriteLine("Weather    = {0}", args[4]);
+                    }
+                break;
             }
-            else if (args.Length == 3)
-            {
-                Console.WriteLine("Activity   = {0}", args[0]);
-            }
-            else if (args.Length == 4)
-            {
-                Console.WriteLine("Activity   = {0}", args[0]);
-            }
-            else
-            {
-                Console.WriteLine("Path       = {0}", args[0]);
-                Console.WriteLine("Consist    = {0}", args[1]);
-                Console.WriteLine("Time       = {0}", args[2]);
-                Console.WriteLine("Season     = {0}", args[3]);
-                Console.WriteLine("Weather    = {0}", args[4]);
-            }
+
             LogSeparator();
             if (settings.MultiplayerServer || settings.MultiplayerClient)
             {
@@ -795,10 +845,26 @@ namespace ORTS.Processes
             if (LoadingScreen == null)
                 LoadingScreen = new LoadingScreenPrimitive(Game);
 
-            if (args.Length == 1)
-                Simulator.SetActivity(args[0]);
-            else if (args.Length == 5)
-                Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+            switch (acttype)
+            {
+                case "activity":
+                    Simulator.SetActivity(args[0]);
+                    break;
+
+                case "explorer":
+                    Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+                    break;
+
+                case "timetable": // no specific setup, processed in Start_Timetable
+                    break;
+
+                default: // old style processing without explicit type definition, to be removed later
+                    if (args.Length == 1)
+                        Simulator.SetActivity(args[0]);
+                    else if (args.Length == 5)
+                        Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+                    break;
+            }
 
             if (settings.MultiplayerServer)
             {

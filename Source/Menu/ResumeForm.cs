@@ -76,6 +76,7 @@ namespace ORTS
         readonly Route Route;
         readonly Activity Activity;
         readonly MainForm MainForm;
+        readonly TimetableInfo Timetable;
 
         List<Save> Saves = new List<Save>();
         Task<List<Save>> SaveLoader;
@@ -138,9 +139,11 @@ namespace ORTS
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
-        public ResumeForm(UserSettings settings, Route route, Activity activity, MainForm parentForm)
+        public ResumeForm(UserSettings settings, Route route, MainForm.UserAction mainFormAction, Activity activity, TimetableInfo timetable,
+            MainForm parentForm)
         {
             MainForm = parentForm;
+            SelectedAction = mainFormAction;
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
             Localizer.Localize(this, catalog);
@@ -153,12 +156,24 @@ namespace ORTS
             Settings = settings;
             Route = route;
             Activity = activity;
-            Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name : catalog.GetString("Explore Route"));
+            Timetable = timetable;
+
             checkBoxReplayPauseBeforeEnd.Checked = Settings.ReplayPauseBeforeEnd;
             numericReplayPauseBeforeEnd.Value = Settings.ReplayPauseBeforeEndS;
 
             gridSaves_SelectionChanged(null, null);
-            pathNameDataGridViewTextBoxColumn.Visible = activity.FilePath == null;
+
+            if (SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame)
+            {
+                Text =String.Format("{0} - {1} - {2}", Text, route.Name, Path.GetFileNameWithoutExtension(Timetable.fileName));
+                pathNameDataGridViewTextBoxColumn.Visible = true;
+            }
+            else
+            {
+                Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name : catalog.GetString("Explore Route"));
+                pathNameDataGridViewTextBoxColumn.Visible = activity.FilePath == null;
+            }
+
             LoadSaves();
         }
 
@@ -179,7 +194,17 @@ namespace ORTS
                 var saves = new List<Save>();
                 var directory = UserSettings.UserDataFolder;
                 var build = VersionInfo.Build.Contains(" ") ? VersionInfo.Build.Substring(VersionInfo.Build.IndexOf(" ") + 1) : null;
-                var prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
+                var prefix = String.Empty;
+
+                if (SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame)
+                {
+                    prefix = Path.GetFileName(Route.Path) + " " + Path.GetFileNameWithoutExtension(Timetable.fileName);
+                }
+                else
+                {
+                    prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
+                }
+
                 if (Directory.Exists(directory))
                 {
                     foreach (var saveFile in Directory.GetFiles(directory, prefix + "*.save"))
@@ -230,7 +255,8 @@ namespace ORTS
                 if( Found(save) )
                 {
                     SelectedSaveFile = save.File;
-                    SelectedAction = MainForm.UserAction.SingleplayerResumeSave;
+                    SelectedAction = SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame ?
+                        MainForm.UserAction.SinglePlayerResumeTimetableGame : MainForm.UserAction.SingleplayerResumeSave;
                     DialogResult = DialogResult.OK;
                 }
             }
@@ -403,6 +429,11 @@ namespace ORTS
         /// </summary>
         public bool Found(Save save)
         {
+            if (SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame)
+            {
+                return true; // no additional actions required for timetable resume
+            }
+            else
             {
                 try
                 {

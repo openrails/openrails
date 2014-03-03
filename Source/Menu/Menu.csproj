@@ -178,6 +178,10 @@
       <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
       <Name>ORTS.Content</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ORTS.Formats\ORTS.Formats.csproj">
+      <Project>{0D8D312B-2C02-4B77-A795-566394A9DB95}</Project>
+      <Name>ORTS.Formats</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ORTS.Menu\ORTS.Menu.csproj">
       <Project>{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}</Project>
       <Name>ORTS.Menu</Name>

@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// temporary define to include or remove timetable input display
+// #define INCLUDE_TIMETABLE_INPUT
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -30,6 +33,7 @@ using GNU.Gettext.WinForms;
 using ORTS.Common;
 using ORTS.Menu;
 using ORTS.Settings;
+using ORTS.Formats;
 using Path = ORTS.Menu.Path;
 
 namespace ORTS
@@ -44,6 +48,8 @@ namespace ORTS
             SingleplayerReplaySaveFromSave,
             MultiplayerServer,
             MultiplayerClient,
+            SinglePlayerTimetableGame,
+            SinglePlayerResumeTimetableGame,
         }
 
         bool Initialized;
@@ -53,10 +59,12 @@ namespace ORTS
         List<Activity> Activities = new List<Activity>();
         List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
+        List<TimetableInfo> ORTimeTables = new List<TimetableInfo>();
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
         Task<List<Consist>> ConsistLoader;
         Task<List<Path>> PathLoader;
+        Task<List<TimetableInfo>> ORTimeTableLoader;
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
 
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
@@ -69,6 +77,9 @@ namespace ORTS
         public int SelectedStartWeather { get { return comboBoxStartWeather.SelectedIndex; } }
         public string SelectedSaveFile { get; set; }
         public UserAction SelectedAction { get; set; }
+        public TimetableInfo SelectedTimetable { get { return (TimetableInfo) comboBoxTimetable.SelectedItem; } }
+        public String SelectedPlayerTimetable { get { return (String) comboBoxPlayerTimetable.SelectedItem; } }
+        public String SelectedTimetableTrain { get { return (String) comboBoxPlayerTrain.SelectedItem; } }
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
@@ -120,12 +131,35 @@ namespace ORTS
                 catalog.GetString("Hard"),
                 "",
             };
+
+            string[] Days = 
+            {
+                catalog.GetString("Monday"),
+                catalog.GetString("Tuesday"),
+                catalog.GetString("Wednesday"),
+                catalog.GetString("Thursday"),
+                catalog.GetString("Friday"),
+                catalog.GetString("Saturday"),
+                catalog.GetString("Sunday"),
+            };
+
             this.comboBoxStartSeason.Items.AddRange(Seasons);
             this.comboBoxStartWeather.Items.AddRange(Weathers);
             this.comboBoxDifficulty.Items.AddRange(Difficulties);
 
+            this.comboBoxTimetableSeason.Items.AddRange(Seasons);
+            this.comboBoxTimetableWeather.Items.AddRange(Weathers);
+            this.comboBoxTimetableDay.Items.AddRange(Days);
+
             ShowEnvironment();
 
+#if !INCLUDE_TIMETABLE_INPUT
+            TabControl.TabPageCollection tabPages = this.tabControl1.TabPages;
+            if (tabPages.ContainsKey("TimetablePage"))
+            {
+                tabPages.RemoveAt(1);
+            }
+#endif
             if (!Initialized)
             {
                 Initialized = true;
@@ -144,6 +178,8 @@ namespace ORTS
                 ConsistLoader.Cancel();
             if (PathLoader != null)
                 PathLoader.Cancel();
+            if (ORTimeTableLoader != null)
+                ORTimeTableLoader.Cancel();
 
             // Remove any deleted saves
 			if (Directory.Exists(UserSettings.DeletedSaveFolder))
@@ -235,6 +271,7 @@ namespace ORTS
         {
             LoadActivityList();
             LoadStartAtList();
+            LoadORTimeTableList();
             ShowDetails();
         }
         #endregion
@@ -242,6 +279,7 @@ namespace ORTS
         #region Activities
         void comboBoxActivity_SelectedIndexChanged(object sender, EventArgs e)
         {
+            comboBoxTimetable.SelectedItem = null;
             ShowLocomotiveList();
             ShowStartAtList();
             ShowEnvironment();
@@ -335,14 +373,24 @@ namespace ORTS
         void buttonStart_Click(object sender, EventArgs e)
         {
             SaveOptions();
-            SelectedAction = UserAction.SingleplayerNewGame;
-            if (SelectedActivity != null)
-                DialogResult = DialogResult.OK;
+
+            if (SelectedAction == UserAction.SinglePlayerTimetableGame && SelectedTimetable != null)
+            {
+                DialogResult = CheckAndBuildTimetableInfo();
+            }
+            else
+            {
+                SelectedAction = UserAction.SingleplayerNewGame;
+                if (SelectedActivity != null)
+                {
+                    DialogResult = DialogResult.OK;
+                }
+            }
         }
 
         void buttonResume_Click(object sender, EventArgs e)
         {
-            using (var form = new ResumeForm(Settings, SelectedRoute, SelectedActivity, this))
+            using (var form = new ResumeForm(Settings, SelectedRoute, SelectedAction, SelectedActivity, SelectedTimetable, this))
             {
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
@@ -848,5 +896,135 @@ namespace ORTS
             public static extern int LockWindowUpdate(IntPtr hwnd);
         }
         #endregion
+
+        #region ORTimeTable
+        void LoadORTimeTableList()
+        {
+            if (ORTimeTableLoader != null)
+                ORTimeTableLoader.Cancel();
+
+            ORTimeTables.Clear();
+            ShowORTimetableList();
+
+            var selectedFolder = SelectedFolder;
+            var selectedRoute = SelectedRoute;
+            ORTimeTableLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (ortimetables) =>
+            {
+                ORTimeTables = ortimetables;
+                ShowORTimetableList();
+            });
+        }
+        #endregion
+
+        #region ORTimetableList
+        void ShowORTimetableList()
+        {
+            comboBoxTimetable.Items.Clear();
+            foreach (var timetable in ORTimeTables)
+                comboBoxTimetable.Items.Add(timetable);
+            UpdateEnabled();
+        }
+
+        private void ComboBoxTimetable_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SelectedAction = UserAction.SinglePlayerTimetableGame;
+            ShowORSubTimetableList();
+            ClearTrainList();
+            PresetTimetableAdditionalInfo();
+        }
+
+        private DialogResult CheckAndBuildTimetableInfo()
+        {
+            if (SelectedTimetableTrain == null)
+            {
+                return DialogResult.None;
+            }
+
+            SelectedTimetable.AITimeHrs = (int) numericUpDownAIHours.Value;
+            SelectedTimetable.AITimeMins = (int) numericUpDownAIMins.Value;
+            SelectedTimetable.AITimeRelative = radioButtonAITimeRelative.Checked;
+            SelectedTimetable.AIInPlayerDirection = checkBoxAISameDirection.Checked;
+            SelectedTimetable.Day = comboBoxTimetableDay.SelectedIndex;
+            SelectedTimetable.Season = comboBoxTimetableSeason.SelectedIndex;
+            SelectedTimetable.Weather = comboBoxTimetableWeather.SelectedIndex;
+
+            return DialogResult.OK;
+        }
+        #endregion
+
+        #region ORSubTimetable
+        void ShowORSubTimetableList()
+        {
+            comboBoxPlayerTimetable.Items.Clear();
+            if (SelectedTimetable != null)
+            {
+                foreach (ORTS.Formats.TTPreInfo ttInfo in SelectedTimetable.ORTTList)
+                {
+                    comboBoxPlayerTimetable.Items.Add(ttInfo.Description);
+                }
+                if (comboBoxPlayerTimetable.Items.Count == 1) comboBoxPlayerTimetable.SelectedIndex = 0;
+            }
+            else
+            {
+                comboBoxPlayerTimetable.Items.Clear();
+                comboBoxPlayerTimetable.SelectedItem = null;
+            }
+        }
+        #endregion
+
+        #region ORSubTimetableList
+        private void comboboxPlayerTimetable_selectedIndexChanged(object sender, EventArgs e)
+        {
+            ShowORTimetableTrainList();
+        }
+        #endregion
+
+        #region ORTimetableTrain
+        void ShowORTimetableTrainList()
+        {
+            comboBoxPlayerTrain.Items.Clear();
+            if (comboBoxTimetable.SelectedIndex >= 0)
+            {
+                List<String> usedTrains = SelectedTimetable.ORTTList[comboBoxPlayerTimetable.SelectedIndex].Trains;
+                usedTrains.Sort();
+
+                foreach (String train in usedTrains)
+                {
+                    comboBoxPlayerTrain.Items.Add(train);
+                }
+            }
+        }
+
+        void ClearTrainList()
+        {
+            comboBoxPlayerTrain.Items.Clear();
+        }
+        #endregion
+
+        #region TimetableAdditionInfo
+        void PresetTimetableAdditionalInfo()
+        {
+            radioButtonAITimeAbsolute.Checked = false;
+            radioButtonAITimeRelative.Checked = true;
+            comboBoxTimetableDay.SelectedIndex = 0;
+            comboBoxTimetableSeason.SelectedIndex = 1;
+            comboBoxTimetableWeather.SelectedIndex = 0;
+        }
+        #endregion
+
+        private void label5_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label17_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label22_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

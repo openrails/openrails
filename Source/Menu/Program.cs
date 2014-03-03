@@ -77,6 +77,12 @@ namespace ORTS
                         case MainForm.UserAction.MultiplayerServer:
                             parameters.Add("-multiplayerserver");
                             break;
+                        case MainForm.UserAction.SinglePlayerTimetableGame:
+                            parameters.Add("-start");
+                            break;
+                        case MainForm.UserAction.SinglePlayerResumeTimetableGame:
+                            parameters.Add("-resume");
+                            break;
                     }
                     switch (MainForm.SelectedAction)
                     {
@@ -86,7 +92,7 @@ namespace ORTS
                             if (MainForm.SelectedActivity is ORTS.Menu.ExploreActivity)
                             {
                                 var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
-                                parameters.Add(String.Format("\"{0}\" \"{1}\" {2} {3} {4}",
+                                parameters.Add(String.Format("-explorer \"{0}\" \"{1}\" {2} {3} {4}",
                                     exploreActivity.Path.FilePath,
                                     exploreActivity.Consist.FilePath,
                                     exploreActivity.StartTime,
@@ -95,12 +101,28 @@ namespace ORTS
                             }
                             else
                             {
-                                parameters.Add(String.Format("\"{0}\"", MainForm.SelectedActivity.FilePath));
+                                parameters.Add(String.Format("-activity \"{0}\"", MainForm.SelectedActivity.FilePath));
                             }
                             break;
                         case MainForm.UserAction.SingleplayerResumeSave:
                         case MainForm.UserAction.SingleplayerReplaySave:
                         case MainForm.UserAction.SingleplayerReplaySaveFromSave:
+                            parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
+                            break;
+                        case MainForm.UserAction.SinglePlayerTimetableGame:
+                            parameters.Add(String.Format("-timetable \"{0}\" \"{1}:{2}\" \"{3}:{4}\" {5} {6} {7} {8} {9}",
+                                MainForm.SelectedTimetable.fileName,
+                                MainForm.SelectedPlayerTimetable,
+                                MainForm.SelectedTimetableTrain,
+                                MainForm.SelectedTimetable.AITimeHrs.ToString("00"),
+                                MainForm.SelectedTimetable.AITimeMins.ToString("00"),
+                                MainForm.SelectedTimetable.AITimeRelative ? String.Copy("R") : String.Copy("A"),
+                                MainForm.SelectedTimetable.AIInPlayerDirection.ToString(),
+                                MainForm.SelectedTimetable.Day,
+                                MainForm.SelectedTimetable.Season,
+                                MainForm.SelectedTimetable.Weather));
+                            break;
+                        case MainForm.UserAction.SinglePlayerResumeTimetableGame:
                             parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
                             break;
                     }
