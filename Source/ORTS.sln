@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Parsers", "ORTS.Parser
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Formats", "ORTS.Formats\ORTS.Formats.csproj", "{0D8D312B-2C02-4B77-A795-566394A9DB95}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Updater", "ORTS.Updater\ORTS.Updater.csproj", "{88108A94-0389-43FF-A75C-C55BD202FC8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -85,6 +87,10 @@ Global
 		{0D8D312B-2C02-4B77-A795-566394A9DB95}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{0D8D312B-2C02-4B77-A795-566394A9DB95}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{0D8D312B-2C02-4B77-A795-566394A9DB95}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{88108A94-0389-43FF-A75C-C55BD202FC8D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{88108A94-0389-43FF-A75C-C55BD202FC8D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{88108A94-0389-43FF-A75C-C55BD202FC8D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{88108A94-0389-43FF-A75C-C55BD202FC8D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

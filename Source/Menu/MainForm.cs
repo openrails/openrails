@@ -32,6 +32,8 @@ using ORTS.Menu;
 using ORTS.Settings;
 using ORTS.Formats;
 using Path = ORTS.Menu.Path;
+using ORTS.Updater;
+using System.Diagnostics;
 
 namespace ORTS
 {
@@ -63,6 +65,7 @@ namespace ORTS
         Task<List<Path>> PathLoader;
         Task<List<TimetableInfo>> ORTimeTableLoader;
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
+        readonly UpdateManager UpdateManager;
 
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
@@ -98,6 +101,7 @@ namespace ORTS
             panelModeTimetable.Location = panelModeActivity.Location;
             ShowDetails();
             UpdateEnabled();
+            UpdateManager = new UpdateManager(System.IO.Path.GetDirectoryName(Application.ExecutablePath));
         }
 
         void MainForm_Shown(object sender, EventArgs e)
@@ -151,6 +155,8 @@ namespace ORTS
 
             ShowEnvironment();
 
+            CheckForUpdate();
+
             if (!Initialized)
             {
                 Initialized = true;
@@ -182,7 +188,27 @@ namespace ORTS
                 File.Delete(file);
         }
 
-        private void LoadLanguage()
+        void CheckForUpdate()
+        {
+            new Task<UpdateManager>(this, () =>
+            {
+                UpdateManager.Clean();
+                UpdateManager.Check();
+                return null;
+            }, _ =>
+            {
+                if (UpdateManager.LatestUpdateError != null)
+                    linkLabelUpdate.Text = catalog.GetString("Update check failed");
+                else if (UpdateManager.LatestUpdate != null && UpdateManager.LatestUpdate.Version != ORTS.Common.VersionInfo.Version)
+                    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LatestUpdate.Version);
+                else
+                    linkLabelUpdate.Text = "";
+                linkLabelUpdate.Enabled = true;
+                linkLabelUpdate.Visible = linkLabelUpdate.Text.Length > 0 && !linkLabelRestart.Visible;
+            });
+        }
+
+        void LoadLanguage()
         {
             if (Settings.Language.Length > 0)
             {
@@ -353,6 +379,43 @@ namespace ORTS
         #endregion
 
         #region Misc. buttons and options
+        void linkLabelUpdate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            if (UpdateManager.LatestUpdateError != null)
+            {
+                MessageBox.Show(catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LatestUpdateError), Application.ProductName);
+                return;
+            }
+
+            linkLabelUpdate.Text = catalog.GetStringFmt("Updating to {0}...", UpdateManager.LatestUpdate.Version);
+            linkLabelUpdate.Enabled = false;
+            linkLabelUpdate.Visible = true;
+            new Task<UpdateManager>(this, () =>
+            {
+                UpdateManager.Update();
+                return null;
+            }, _ =>
+            {
+                if (UpdateManager.UpdateError != null)
+                {
+                    MessageBox.Show(catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.UpdateError), Application.ProductName);
+                    linkLabelUpdate.Visible = false;
+                    CheckForUpdate();
+                }
+                else
+                {
+                    linkLabelUpdate.Visible = false;
+                    linkLabelRestart.Visible = true;
+                }
+            });
+        }
+
+        void linkLabelRestart_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(System.IO.Path.Combine(UpdateManager.BasePath, "OpenRails.exe"));
+            Application.Exit();
+        }
+
         void buttonTesting_Click(object sender, EventArgs e)
         {
             using (var form = new TestingForm(Settings))

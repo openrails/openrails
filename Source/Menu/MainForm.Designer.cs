@@ -101,6 +101,8 @@ namespace ORTS
             this.comboBoxTimetable = new System.Windows.Forms.ComboBox();
             this.label15 = new System.Windows.Forms.Label();
             this.comboBoxTimetableAITrainStart = new System.Windows.Forms.ComboBox();
+            this.linkLabelUpdate = new System.Windows.Forms.LinkLabel();
+            this.linkLabelRestart = new System.Windows.Forms.LinkLabel();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
@@ -907,6 +909,32 @@ namespace ORTS
             this.comboBoxTimetableAITrainStart.Size = new System.Drawing.Size(73, 21);
             this.comboBoxTimetableAITrainStart.TabIndex = 1;
             // 
+            // linkLabelUpdate
+            // 
+            this.linkLabelUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkLabelUpdate.Location = new System.Drawing.Point(623, 9);
+            this.linkLabelUpdate.Name = "linkLabelUpdate";
+            this.linkLabelUpdate.Size = new System.Drawing.Size(219, 16);
+            this.linkLabelUpdate.TabIndex = 37;
+            this.linkLabelUpdate.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.linkLabelUpdate.UseMnemonic = false;
+            this.linkLabelUpdate.Visible = false;
+            this.linkLabelUpdate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelUpdate_LinkClicked);
+            // 
+            // linkLabelRestart
+            // 
+            this.linkLabelRestart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.linkLabelRestart.Location = new System.Drawing.Point(623, 9);
+            this.linkLabelRestart.Name = "linkLabelRestart";
+            this.linkLabelRestart.Size = new System.Drawing.Size(219, 16);
+            this.linkLabelRestart.TabIndex = 38;
+            this.linkLabelRestart.TabStop = true;
+            this.linkLabelRestart.Text = "Restart to apply update";
+            this.linkLabelRestart.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.linkLabelRestart.UseMnemonic = false;
+            this.linkLabelRestart.Visible = false;
+            this.linkLabelRestart.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelRestart_LinkClicked);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -917,6 +945,8 @@ namespace ORTS
             this.Controls.Add(this.radioButtonModeTimetable);
             this.Controls.Add(this.radioButtonModeActivity);
             this.Controls.Add(this.label25);
+            this.Controls.Add(this.linkLabelRestart);
+            this.Controls.Add(this.linkLabelUpdate);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.buttonFolderEdit);
             this.Controls.Add(this.panelDetails);
@@ -1029,5 +1059,7 @@ namespace ORTS
         private System.Windows.Forms.ComboBox comboBoxTimetable;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.ComboBox comboBoxTimetableAITrainStart;
+        private System.Windows.Forms.LinkLabel linkLabelUpdate;
+        private System.Windows.Forms.LinkLabel linkLabelRestart;
     }
 }

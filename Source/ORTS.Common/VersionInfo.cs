@@ -59,7 +59,7 @@ namespace ORTS.Common
                 {
                     var version = f.ReadLine();
                     if (!String.IsNullOrEmpty(Revision))
-                        return version + "." + Revision;
+                        return version + Revision;
                 }
             }
             catch
