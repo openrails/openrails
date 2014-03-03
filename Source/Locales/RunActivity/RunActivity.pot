@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-02-27 20:10:51+0100\n"
-"PO-Revision-Date: 2014-02-27 20:10:53+0100\n"
+"POT-Creation-Date: 2014-03-03 22:35:20+0100\n"
+"PO-Revision-Date: 2014-03-03 22:35:21+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -199,68 +199,68 @@ msgstr ""
 msgid " From {0}: {1}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1230
+#: ../../RunActivity/Physics/Train.cs:1288
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1233
+#: ../../RunActivity/Physics/Train.cs:1291
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:3761
-#: ../../RunActivity/Physics/Train.cs:3766
+#: ../../RunActivity/Physics/Train.cs:3846
+#: ../../RunActivity/Physics/Train.cs:3851
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4622
+#: ../../RunActivity/Physics/Train.cs:4738
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5280
-#: ../../RunActivity/Physics/Train.cs:6353
+#: ../../RunActivity/Physics/Train.cs:5403
+#: ../../RunActivity/Physics/Train.cs:6476
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5288
+#: ../../RunActivity/Physics/Train.cs:5411
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5349
+#: ../../RunActivity/Physics/Train.cs:5472
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5455
-#: ../../RunActivity/Physics/Train.cs:6473
+#: ../../RunActivity/Physics/Train.cs:5578
+#: ../../RunActivity/Physics/Train.cs:6596
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6707
+#: ../../RunActivity/Physics/Train.cs:6830
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6716
+#: ../../RunActivity/Physics/Train.cs:6839
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6729
+#: ../../RunActivity/Physics/Train.cs:6852
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6822
+#: ../../RunActivity/Physics/Train.cs:6945
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7009
+#: ../../RunActivity/Physics/Train.cs:7132
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7251
+#: ../../RunActivity/Physics/Train.cs:7374
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7293
+#: ../../RunActivity/Physics/Train.cs:7416
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -323,6 +323,42 @@ msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:131
 msgid "Full Service"
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:998
+msgid "Tender coal supply is empty. Your loco will fail."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1012
+msgid "Tender water supply is empty. Your loco will fail."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1066
+msgid "Fire has dropped too far. Your loco will fail."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1142
+msgid ""
+"FireMass is getting low. Your fireman will shovel faster, but don't wear him "
+"out."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1748
+msgid ""
+"You are exceeding the maximum recommended speed. Continued operation at this "
+"speed may cause damage."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1936
+msgid "Water level dropped too far. Plug has fused and loco has failed."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1943
+msgid "Boiler overfull and priming."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1949
+msgid "Boiler no longer priming."
 msgstr ""
 
 #: ../../RunActivity/Simulator/Activity.cs:774
@@ -941,7 +977,7 @@ msgctxt "Labels"
 msgid "none"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1072
+#: ../../RunActivity/Viewer3D/Viewer.cs:1079
 msgid "Game saved"
 msgstr ""
 

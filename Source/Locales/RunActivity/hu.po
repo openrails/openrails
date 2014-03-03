@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-02-27 20:09:44+0100\n"
-"PO-Revision-Date: 2014-02-27 20:10+0100\n"
+"POT-Creation-Date: 2014-03-03 22:08:40+0100\n"
+"PO-Revision-Date: 2014-03-03 22:22+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -84,15 +84,15 @@ msgstr ""
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
 msgid "Assist"
-msgstr ""
+msgstr "Segítő"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
 msgid "Normal"
-msgstr ""
+msgstr "Normál"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
-msgstr ""
+msgstr "Követés"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
@@ -104,7 +104,7 @@ msgstr ""
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
-msgstr ""
+msgstr "Megtekintés játékban"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
 msgid "DispatchViewer"
@@ -200,73 +200,73 @@ msgstr ""
 msgid " From {0}: {1}"
 msgstr " Feladó {0}: {1}"
 
-#: ../../RunActivity/Physics/Train.cs:1230
+#: ../../RunActivity/Physics/Train.cs:1288
 msgid "Coupler broken!"
 msgstr "Vonatszakadás!"
 
-#: ../../RunActivity/Physics/Train.cs:1233
+#: ../../RunActivity/Physics/Train.cs:1291
 msgid "Coupler overloaded!"
 msgstr "A kapcsoló túlterhelt!"
 
-#: ../../RunActivity/Physics/Train.cs:3761
-#: ../../RunActivity/Physics/Train.cs:3766
+#: ../../RunActivity/Physics/Train.cs:3846
+#: ../../RunActivity/Physics/Train.cs:3851
 msgid "Other train is blocking path"
 msgstr "Másik vonat foglalja a vágányt"
 
-#: ../../RunActivity/Physics/Train.cs:4622
+#: ../../RunActivity/Physics/Train.cs:4738
 msgid "Stopped due to errors in route setting"
 msgstr "Pályával kapcsolatos hiba miatt megállítva"
 
-#: ../../RunActivity/Physics/Train.cs:5280
-#: ../../RunActivity/Physics/Train.cs:6353
+#: ../../RunActivity/Physics/Train.cs:5403
+#: ../../RunActivity/Physics/Train.cs:6476
 msgid "No signal in train's path"
 msgstr "Nincs jelző a vonat vágányútján"
 
-#: ../../RunActivity/Physics/Train.cs:5288
+#: ../../RunActivity/Physics/Train.cs:5411
 msgid "Next signal already allocated to other train"
 msgstr "A következő jelző már másik vonatnak lett beállítve"
 
-#: ../../RunActivity/Physics/Train.cs:5349
+#: ../../RunActivity/Physics/Train.cs:5472
 msgid "Request to clear signal cannot be processed"
 msgstr "A kérelem a jelző szabaddá tételére nem értelmezhető"
 
-#: ../../RunActivity/Physics/Train.cs:5455
-#: ../../RunActivity/Physics/Train.cs:6473
+#: ../../RunActivity/Physics/Train.cs:5578
+#: ../../RunActivity/Physics/Train.cs:6596
 msgid "No switch found"
 msgstr "Nem található váltó"
 
-#: ../../RunActivity/Physics/Train.cs:6707
+#: ../../RunActivity/Physics/Train.cs:6830
 msgid "Train is not back on original route"
 msgstr "A vonat még nem tért vissza az eredeti útvonalára"
 
-#: ../../RunActivity/Physics/Train.cs:6716
+#: ../../RunActivity/Physics/Train.cs:6839
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Az eredeti útvonal az ellenkező irányba vezet, állítsd meg a vonatot a "
 "váltás előtt"
 
-#: ../../RunActivity/Physics/Train.cs:6729
+#: ../../RunActivity/Physics/Train.cs:6852
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Nem lehet helyi forgalomirányításra váltani vonalbejárás közben"
 
-#: ../../RunActivity/Physics/Train.cs:6822
+#: ../../RunActivity/Physics/Train.cs:6945
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 "Visszafogás lenne szükséges, de a vonat vége nincs a megfelelő vágányúton"
 
-#: ../../RunActivity/Physics/Train.cs:7009
+#: ../../RunActivity/Physics/Train.cs:7132
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 "Nem lehet a vonat mögötti jelzőt szabaddá tenni központi forgalomirányítás "
 "felügyelete alatt"
 
-#: ../../RunActivity/Physics/Train.cs:7251
+#: ../../RunActivity/Physics/Train.cs:7374
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "A megengedett sebesség {0}-ra emelkedett"
 
-#: ../../RunActivity/Physics/Train.cs:7293
+#: ../../RunActivity/Physics/Train.cs:7416
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -333,6 +333,46 @@ msgstr "Folyamatos üzem"
 msgid "Full Service"
 msgstr "Teljes üzem"
 
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:998
+msgid "Tender coal supply is empty. Your loco will fail."
+msgstr "A szerkocsi szénkészlete kifogyott. A mozdony meg fog állni."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1012
+msgid "Tender water supply is empty. Your loco will fail."
+msgstr "A szerkocsi vízkészlete kifogyott. A mozdony meg fog állni."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1066
+msgid "Fire has dropped too far. Your loco will fail."
+msgstr "A tűz túl kicsire esett össze. A mozdony meg fog állni."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1142
+msgid ""
+"FireMass is getting low. Your fireman will shovel faster, but don't wear him "
+"out."
+msgstr "A tűz túl kicsi. A fűtő gyorsabban fog lapátolni, de ne fáraszd ki őt!"
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1748
+msgid ""
+"You are exceeding the maximum recommended speed. Continued operation at this "
+"speed may cause damage."
+msgstr ""
+"A mozdony elérte a lehetséges legnagyobb sebességét. Ezen a sebességen "
+"továbbhaladva meg fog hibásodni."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1936
+msgid "Water level dropped too far. Plug has fused and loco has failed."
+msgstr ""
+"A vízszint túl alacsonyra esett vissza. A kazán kilágyult, és a mozdony "
+"meghibásodott."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1943
+msgid "Boiler overfull and priming."
+msgstr "A kazán túltöltődött, és a hengertérbe víz került."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1949
+msgid "Boiler no longer priming."
+msgstr "A vízszint ismét megfelelő."
+
 #: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
 msgstr "Az utasok le- és felszállása befejeződött. A vonat indítható."
@@ -345,7 +385,7 @@ msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:25
 msgid "None"
-msgstr ""
+msgstr "Nincs"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:26
 msgid "Information"
@@ -955,7 +995,7 @@ msgctxt "Labels"
 msgid "none"
 msgstr "nincsenek"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1072
+#: ../../RunActivity/Viewer3D/Viewer.cs:1079
 msgid "Game saved"
 msgstr "A játékállás elmentve."
 

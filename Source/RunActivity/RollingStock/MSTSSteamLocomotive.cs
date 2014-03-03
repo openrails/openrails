@@ -1006,7 +1006,7 @@ namespace ORTS
             {
                 if (!CoalIsExhausted)
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Tender coal supply is empty. Your loco will fail.");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Tender coal supply is empty. Your loco will fail."));
                 }
                 CoalIsExhausted = true;
             }
@@ -1020,7 +1020,7 @@ namespace ORTS
             {
                 if (!WaterIsExhausted)
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Tender water supply is empty. Your loco will fail.");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Tender water supply is empty. Your loco will fail."));
                 }
                 WaterIsExhausted = true;
             }
@@ -1074,7 +1074,7 @@ namespace ORTS
                 BurnRateRawLBpS = 0.0f; // If fire is no longer effective set burn rate to zero, change later to allow graduate ramp down
                 if (!FireIsExhausted)
                 {
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Fire has dropped too far. Your loco will fail.");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Fire has dropped too far. Your loco will fail."));
                     FireIsExhausted = true; // fire has run out of fuel.
                 }
             }
@@ -1150,7 +1150,7 @@ namespace ORTS
                             FuelBoost = true; // boost shoveling 
                             if (!StokerIsMechanical)  // Don't display message if stoker in operation
                             {
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, "FireMass is getting low. Your fireman will shovel faster, but don't wear him out.");
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
                             }
                         }
                     }
@@ -1756,7 +1756,7 @@ namespace ORTS
                 {
                     if (!IsGearedSpeedExcess)
                         IsGearedSpeedExcess = true;     // set excess speed flag
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "You are exceeding the maximum recommended speed. Continued operation at this speed may cause damage.");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("You are exceeding the maximum recommended speed. Continued operation at this speed may cause damage."));
                 }
                 else
                 {
@@ -1944,20 +1944,20 @@ namespace ORTS
             if (WaterFraction < 0.7f)
             {
                 if (!FusiblePlugIsBlown)
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Water level dropped too far. Plug has fused and loco has failed.");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Water level dropped too far. Plug has fused and loco has failed."));
                 FusiblePlugIsBlown = true; // if water level has dropped, then fusible plug will blow , see "water model"
             }
             // Check for priming            
             if (WaterFraction >= 0.91f)
             {
                 if (!BoilerIsPriming)
-                    Simulator.Confirmer.Message(ConfirmLevel.Warning, "Boiler overfull and priming.");
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("Boiler overfull and priming."));
                 BoilerIsPriming = true;
             }
             else if (WaterFraction < 0.90f)
             {
                 if (BoilerIsPriming)
-                    Simulator.Confirmer.Message(ConfirmLevel.Information, "Boiler no longer priming.");
+                    Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer3D.Viewer.Catalog.GetString("Boiler no longer priming."));
                 BoilerIsPriming = false;
             }
         }
