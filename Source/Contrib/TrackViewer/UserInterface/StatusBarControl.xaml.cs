@@ -93,11 +93,11 @@ namespace ORTS.TrackViewer.UserInterface
             SetTrackIndexStatus(trackViewer);
 
             SetTrackItemStatus(trackViewer);
-            
+
+            AddFPS(trackViewer);
             AddVectorSectionStatus(trackViewer);
             AddPATfileStatus(trackViewer);
             AddTrainpathStatus(trackViewer);
-
         }
 
         /// <summary>
@@ -247,6 +247,17 @@ namespace ORTS.TrackViewer.UserInterface
                 statusAdditional.Text += string.Format(" {7}: {3}, {4} [{1} {2}] [{5} {6}] <{0}>",
                     curNode.pathFlags, (int)curNode.nextMainNode, (int)curNode.nextSidingNode,
                     curPDP.X, curPDP.Z, curPDP.junctionFlag, curPDP.invalidFlag, trackViewer.drawPATfile.fileName);
+            }
+        }
+
+        /// <summary>
+        /// Add the FPS to the statusbar (Frames Per Second)
+        /// </summary>
+        private void AddFPS(TrackViewer trackViewer)
+        {
+            if (Properties.Settings.Default.statusShowFPS)
+            {
+                statusAdditional.Text += string.Format(" FPS={0:F1} ", trackViewer.FrameRate.SmoothedValue);
             }
         }
 

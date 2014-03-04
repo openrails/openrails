@@ -100,10 +100,11 @@ namespace ORTS.TrackViewer
     /// </summary>
     public class TrackViewer : Microsoft.Xna.Framework.Game
     {
-        public readonly static string TrackViewerVersion = "2014/03/01";
+        public readonly static string TrackViewerVersion = "2014/03/04";
+        public string ContentPath { get; private set; }
+             
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        SpriteFont itemFont;
 
         public Folder installFolder;
         public List<Route> routes;
@@ -127,7 +128,7 @@ namespace ORTS.TrackViewer
 
         private MenuControl menuControl;
         private StatusBarControl statusBarControl;
-
+        public SmoothedData FrameRate { get; private set; }
 
         private bool lostFocus;  //when we have lost focus, we do not want to enable shifting with mouse
         private int skipDrawAmount = 0; // number of times we want to skip draw because nothing happened
@@ -136,6 +137,8 @@ namespace ORTS.TrackViewer
         public TrackViewer()
         {
             graphics = new GraphicsDeviceManager(this);
+            ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
+           
             Content.RootDirectory = "Content";
             //graphics.PreferredBackBufferHeight = screenH;
             //graphics.PreferredBackBufferWidth  = screenW;
@@ -150,7 +153,7 @@ namespace ORTS.TrackViewer
             //we do not a very fast behaviour, but we do need to get all key presses
             IsFixedTimeStep = true;
             TargetElapsedTime = TimeSpan.FromSeconds(0.05);
-
+            FrameRate = new SmoothedData();
         }
 
         public void setAliasing()
@@ -236,10 +239,7 @@ namespace ORTS.TrackViewer
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            itemFont = Content.Load<SpriteFont>("statusfont");
-            new Font("Arial", 14, FontStyle.Bold);
-
-            BasicShapes.LoadContent(GraphicsDevice, spriteBatch, itemFont, this);
+            BasicShapes.LoadContent(GraphicsDevice, spriteBatch, ContentPath);
         }
 
 
@@ -277,7 +277,8 @@ namespace ORTS.TrackViewer
                 return;
             }
 
-            DrawTrackDB.ClearHighlightOverrides(); // when update is called, we are not searching
+            BasicShapes.Update(GraphicsDevice);
+            DrawTrackDB.ClearHighlightOverrides(); // when update is called, we are not searching via menu
 
             // First check all the buttons that can be kept down.
             if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { drawArea.ShiftLeft(); skipDrawAmount = 0; }
@@ -379,13 +380,15 @@ namespace ORTS.TrackViewer
             // This is not really a game State, because it is not used interactively. In fact, Draw itself is
             // probably not called because the program is doing other things
             BeginDraw();
-            GraphicsDevice.Clear(Color.LightGreen);
+            GraphicsDevice.Clear(DrawColors.colorsNormal["clearwindow"]);
             spriteBatch.Begin();
-            Vector2 stringSize = itemFont.MeasureString(message);
             // it is better to have integer locations, otherwise text is difficult to read
-            Vector2 messageLocation = new Vector2((float) Math.Round((screenW - stringSize.X) / 2), 
-                                                  (float) Math.Round((screenH - stringSize.Y) / 2));
-            spriteBatch.DrawString(itemFont, message, messageLocation, Color.Black);
+            Vector2 messageLocation = new Vector2((float) Math.Round(screenW / 2f), (float) Math.Round(screenH / 2f));
+            BasicShapes.DrawStringLoading(messageLocation, Color.Black, message);
+
+            // we have to redo the, because we now first have to load the characters into textures.
+            BasicShapes.Update(GraphicsDevice);
+            BasicShapes.DrawStringLoading(messageLocation, Color.Black, message);
             spriteBatch.End();
             EndDraw();
         }
@@ -426,6 +429,8 @@ namespace ORTS.TrackViewer
 
             if (drawPATfile != null && Properties.Settings.Default.showPATfile) drawPATfile.Draw(drawArea);
             if (pathEditor != null && Properties.Settings.Default.showTrainpath) pathEditor.Draw(drawArea);
+
+            CalculateFPS(gameTime);
             
             statusBarControl.Update(this, drawArea.mouseLocation);
 
@@ -437,7 +442,12 @@ namespace ORTS.TrackViewer
 
             base.Draw(gameTime);
             skipDrawAmount = maxSkipDrawAmount;
-            var jp = drawTrackDB.closestTrack;
+        }
+
+        void CalculateFPS(GameTime gameTime)
+        {
+            float elapsedRealTime = (float)gameTime.ElapsedRealTime.TotalSeconds;
+            FrameRate.Update(elapsedRealTime, 1f / elapsedRealTime);
         }
 
         /// <summary>

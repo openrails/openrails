@@ -430,5 +430,17 @@ namespace ORTS.TrackViewer.Properties {
                 this["showTrainpath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool statusShowFPS {
+            get {
+                return ((bool)(this["statusShowFPS"]));
+            }
+            set {
+                this["statusShowFPS"] = value;
+            }
+        }
     }
 }

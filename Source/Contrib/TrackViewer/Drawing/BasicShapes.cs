@@ -33,22 +33,25 @@ namespace ORTS.TrackViewer.Drawing
     static class BasicShapes
     {
         private static SpriteBatch spriteBatch;
-        private static SpriteFont spriteFont;
-
+        
         //size of a identifying feature in the texture (in pixels), so we can scale as needed
         private static Dictionary<string, float> textureScales = new Dictionary<string, float>();
         private static Dictionary<string, Vector2> textureOffsets = new Dictionary<string, Vector2>();
         private static Dictionary<string,Texture2D> textures = new Dictionary<string,Texture2D>();
+
+        private static ORTS.Viewer3D.Popups.WindowTextManager TextManager;
+        private static ORTS.Viewer3D.Popups.WindowTextFont itemfont;    // for items like platform, siding, ...
+        private static ORTS.Viewer3D.Popups.WindowTextFont loadingfont; // for loading message
+
 
         /// <summary>
         /// Some initialization needed for actual drawing
         /// </summary>
         /// <param name="graphicsDevice"></param>
         /// <param name="spriteBatchIn"></param>
-        public static void LoadContent(GraphicsDevice graphicsDevice, SpriteBatch spriteBatchIn, SpriteFont spriteFontIn, TrackViewer trackviewer)
+        public static void LoadContent(GraphicsDevice graphicsDevice, SpriteBatch spriteBatchIn, string contentPath)
         {
             spriteBatch = spriteBatchIn;
-            spriteFont = spriteFontIn;
             textures["blankPixel"] = new Texture2D(graphicsDevice, 1, 1);
             textures["blankPixel"].SetData(new[] { Color.White });
 
@@ -71,44 +74,66 @@ namespace ORTS.TrackViewer.Drawing
             textureOffsets["crossedRing"] = new Vector2(diameter / 2, diameter / 2);
 
 
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "signal", "Signal",12, 11);
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "hazard", "Hazard");
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "signal", "Signal",12, 11);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "hazard", "Hazard");
 
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "pathNormal", "pathNormal",31,31);
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "pathStart", "pathStart",31,31);
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "pathEnd", "pathEnd",31,31);
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "pathWait", "pathWait",31,31);
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "pathUncouple", "pathUncouple", 31, 31);
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "pathReverse", "pathReverse", 31, 31);
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "pathSiding", "pathSiding", 31, 31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathNormal", "pathNormal",31,31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathStart", "pathStart",31,31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathEnd", "pathEnd",31,31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathWait", "pathWait",31,31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathUncouple", "pathUncouple", 31, 31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathReverse", "pathReverse", 31, 31);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pathSiding", "pathSiding", 31, 31);
 
             // textures modified from http://www.iconsdb.com
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "sound", "Sound", 5, 5);
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "carspawner", "CarSpawner");
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "pickup", "Pickup");
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "platform", "Platform");
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "sound", "Sound");
-            LoadAndHighlightTexture(graphicsDevice, trackviewer, "playerTrain", "steamTrain",31,31);
-
-            
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "sound", "Sound", 5, 5);
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "carspawner", "CarSpawner");
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "pickup", "Pickup");
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "platform", "Platform");
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "sound", "Sound");
+            LoadAndHighlightTexture(graphicsDevice, contentPath, "playerTrain", "steamTrain",31,31);
 
             prepareArcDrawing();
+
+            TextManager = new ORTS.Viewer3D.Popups.WindowTextManager();
+            itemfont = TextManager.Get("Segoe UI", 10, System.Drawing.FontStyle.Regular, 0);
+            loadingfont = TextManager.Get("Segoe UI", 10, System.Drawing.FontStyle.Regular, 0);
+            
+            
+        }
+
+        /// <summary>
+        /// Update, because Textmanager only loads the needed characters when it knows it needs to print it.
+        /// </summary>
+        public static void Update(GraphicsDevice graphicsDevice)
+        {
+            TextManager.Load(graphicsDevice);
         }
 
         /// <summary>
         /// Create both a normal and a highlighted texture by loading, adding highlight and doing automipmap
         /// </summary>
         /// <param name="graphicsDevice">graphics device needed to create new textures</param>
-        /// <param name="trackviewer">main Game needed to load from file</param>
+        /// <param name="contentPath">main Game needed to load from file</param>
         /// <param name="textureName">the name by which we can find the texture back later</param>
         /// <param name="fileName">the name of the file (without extension)</param>
-        private static void LoadAndHighlightTexture(GraphicsDevice graphicsDevice, TrackViewer trackviewer, string textureName, string fileName)
+        private static void LoadAndHighlightTexture(GraphicsDevice graphicsDevice, string contentPath, string textureName, string fileName)
         {
-            LoadAndHighlightTexture( graphicsDevice, trackviewer, textureName, fileName, 0, 0);
+            LoadAndHighlightTexture( graphicsDevice, contentPath, textureName, fileName, 0, 0);
         }
-        private static void LoadAndHighlightTexture(GraphicsDevice graphicsDevice, TrackViewer trackviewer, string textureName, string fileName, int offsetX, int offsetY)
+        private static void LoadAndHighlightTexture(GraphicsDevice graphicsDevice, string contentPath, string textureName, string fileName, int offsetX, int offsetY)
         {
-            Texture2D tempTexture = trackviewer.Content.Load<Texture2D>(fileName);
+            string fullFilename = System.IO.Path.Combine(contentPath, fileName +".png");
+            Texture2D tempTexture;
+            try
+            {
+                tempTexture = Texture2D.FromFile(graphicsDevice, fullFilename);
+                //Texture2D tempTexture = contentPath.Content.Update<Texture2D>(fileName);
+            }
+            catch
+            {
+                tempTexture = textures["disc"];
+            }
             textures[textureName] = ColorScaledTexture(tempTexture, graphicsDevice, 0); // No scaling, but it is adding automipmap
             textureScales[textureName] = textures[textureName].Width;
             textureOffsets[textureName] = new Vector2(offsetX, offsetY);
@@ -393,16 +418,16 @@ namespace ORTS.TrackViewer.Drawing
         public static void DrawString(Vector2 point, Color color, string message )
         {
             // text is better readable when on integer locations
-            Vector2 intPoint = new Vector2((float)Math.Round(point.X), (float)Math.Round(point.Y));
-            try
-            {
-                spriteBatch.DrawString(spriteFont, message, intPoint, color);
-            }
-            catch
-            {
-                spriteBatch.DrawString(spriteFont, "unknown characters", intPoint, Color.Blue);
-            }
+            Point intPoint = new Point((int)Math.Round(point.X), (int)Math.Round(point.Y));
+            itemfont.Draw(spriteBatch, new Rectangle(), intPoint, message, ORTS.Viewer3D.Popups.LabelAlignment.Left, color);
         }
+        public static void DrawStringLoading(Vector2 point, Color color, string message)
+        {
+            // text is better readable when on integer locations
+            Point intPoint = new Point((int)Math.Round(point.X), (int)Math.Round(point.Y));
+            loadingfont.Draw(spriteBatch, new Rectangle(), intPoint, message, ORTS.Viewer3D.Popups.LabelAlignment.Center, color);
+        }
+
 
         /// <summary>
         /// Draw one of the (predefined) textures at the given location with the given angle
