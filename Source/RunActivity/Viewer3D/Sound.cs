@@ -1421,7 +1421,7 @@ namespace ORTS.Viewer3D
                     return SoundStream.SoundSource.DistanceSquared;
                 case MSTS.Formats.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Formats.Variable_Trigger.Events.Speed_Inc_Past:
-                    return Math.Abs(car.SpeedMpS);
+                    return Math.Abs(car.SpeedMpS * 3.6f );  //We need to convert KPH in the SMS file to MPS for internal use...
                 case MSTS.Formats.Variable_Trigger.Events.Variable1_Dec_Past:
                 case MSTS.Formats.Variable_Trigger.Events.Variable1_Inc_Past:
                     return car.Variable1;
