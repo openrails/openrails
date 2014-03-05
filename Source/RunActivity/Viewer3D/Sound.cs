@@ -943,7 +943,7 @@ namespace ORTS.Viewer3D
             switch (control)
             {
                 case MSTS.Formats.VolumeCurve.Controls.DistanceControlled: return SoundSource.DistanceSquared;
-                case MSTS.Formats.VolumeCurve.Controls.SpeedControlled: return Math.Abs(car.SpeedMpS);
+                case MSTS.Formats.VolumeCurve.Controls.SpeedControlled: return Math.Abs(car.SpeedMpS * 3.6f);
                 case MSTS.Formats.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
                 case MSTS.Formats.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
                 case MSTS.Formats.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
