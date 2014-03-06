@@ -943,7 +943,7 @@ namespace ORTS.Viewer3D
             switch (control)
             {
                 case MSTS.Formats.VolumeCurve.Controls.DistanceControlled: return SoundSource.DistanceSquared;
-                case MSTS.Formats.VolumeCurve.Controls.SpeedControlled: return Math.Abs(car.SpeedMpS * 3.6f);
+                case MSTS.Formats.VolumeCurve.Controls.SpeedControlled: return Math.Abs(car.SpeedMpS);
                 case MSTS.Formats.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
                 case MSTS.Formats.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
                 case MSTS.Formats.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
@@ -1421,7 +1421,7 @@ namespace ORTS.Viewer3D
                     return SoundStream.SoundSource.DistanceSquared;
                 case MSTS.Formats.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Formats.Variable_Trigger.Events.Speed_Inc_Past:
-                    return Math.Abs(car.SpeedMpS * 3.6f );  //We need to convert KPH in the SMS file to MPS for internal use...
+                    return Math.Abs(car.SpeedMpS);  //We need to convert KPH in the SMS file to MPS for internal use...
                 case MSTS.Formats.Variable_Trigger.Events.Variable1_Dec_Past:
                 case MSTS.Formats.Variable_Trigger.Events.Variable1_Inc_Past:
                     return car.Variable1;
