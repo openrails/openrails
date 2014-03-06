@@ -177,10 +177,6 @@ namespace ORTS.Settings
 		[Default(false)]
 		public bool DoubleWire { get; set; }
 
-		// Experimental settings for loading stuttering:
-		[Default(0)]
-		public int LoadingDelay { get; set; }
-
         // Experimental settings for alternative path processing
         [Default(false)]
         public bool UseLocationPassingPaths { get; set; }

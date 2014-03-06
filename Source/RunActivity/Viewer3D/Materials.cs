@@ -81,7 +81,6 @@ namespace ORTS.Viewer3D
                         return SharedMaterialManager.MissingTexture;
 
                     Textures.Add(path, texture);
-                    Thread.Sleep(Viewer.Settings.LoadingDelay);
                     return texture;
                 }
                 catch (InvalidDataException error)

@@ -121,7 +121,6 @@ namespace ORTS
             checkPerformanceTuner.Checked = settings.PerformanceTuner;
             numericPerformanceTunerTarget.Value = settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = settings.DoubleWire;
-            numericLoadingDelay.Value = Settings.LoadingDelay;
             trackDayAmbientLight.Value = settings.DayAmbientLight;
             checkUseMSTSEnv.Checked = settings.UseMSTSEnv;
             checkUseLocationPassingPaths.Checked = settings.UseLocationPassingPaths;
@@ -275,7 +274,6 @@ namespace ORTS
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
-            Settings.LoadingDelay = (int)numericLoadingDelay.Value;
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.UseMSTSEnv = checkUseMSTSEnv.Checked;
             Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
