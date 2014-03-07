@@ -1139,7 +1139,10 @@ namespace ORTS.Viewer3D
                 SoundCommand.Run();
                 SoundStream.LastTriggered = this;
 #if DEBUGSCR
-                Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", SoundStream.Index, TriggerID, SoundCommand.FileName);
+                if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                    Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", SoundStream.ALSoundSource.SoundSourceID, TriggerID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
+                else
+                    Console.WriteLine("({0})DiscreteTrigger: {1}", SoundStream.ALSoundSource.SoundSourceID, TriggerID);
 #endif
             }
             // If the SoundSource is not active, should deactivate the SoundStream also
@@ -1189,7 +1192,7 @@ namespace ORTS.Viewer3D
                 }
                 UpdateTriggerDistance();
 #if DEBUGSCR
-                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.Index, car.DistanceM, triggerDistance);
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
 #endif
 
             }
@@ -1237,8 +1240,8 @@ namespace ORTS.Viewer3D
                 SoundCommand.Run();
                 SoundStream.LastTriggered = this;
 #if DEBUGSCR
-                if (!string.IsNullOrEmpty(SoundCommand.FileName))
-                    Console.WriteLine("({0})InitialTrigger: {1}", SoundStream.Index, SoundCommand.FileName);
+                if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
+                    Console.WriteLine("({0})InitialTrigger: {1}", SoundStream.ALSoundSource.SoundSourceID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);
 #endif
             }
 
@@ -1387,22 +1390,22 @@ namespace ORTS.Viewer3D
                 ORTSStartLoop sl = SoundCommand as ORTSStartLoop;
                 if (sl != null)
                 {
-                    Console.WriteLine("({0})StartLoop ({1} {2}): {3} ", SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), sl.FileName);
+                    Console.WriteLine("({0})StartLoop ({1} {2}): {3} ", SoundStream.ALSoundSource.SoundSourceID, SMS.Event.ToString(), SMS.Threshold.ToString(), sl.Files[sl.iFile]);
                 }
                 ORTSStartLoopRelease slr = SoundCommand as ORTSStartLoopRelease;
                 if (slr != null)
                 {
-                    Console.WriteLine("({0})StartLoopRelease ({1} {2}): {3} ", SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), slr.FileName);
+                    Console.WriteLine("({0})StartLoopRelease ({1} {2}): {3} ", SoundStream.ALSoundSource.SoundSourceID, SMS.Event.ToString(), SMS.Threshold.ToString(), slr.Files[slr.iFile]);
                 }
                 ORTSReleaseLoopRelease rlr = SoundCommand as ORTSReleaseLoopRelease;
                 if (rlr != null)
                 {
-                    Console.WriteLine("({0})ReleaseLoopRelease ({1} {2}): {3} ", SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), rlr.FileName);
+                    Console.WriteLine("({0})ReleaseLoopRelease ({1} {2}) ", SoundStream.ALSoundSource.SoundSourceID, SMS.Event.ToString(), SMS.Threshold.ToString());
                 }
                 ORTSReleaseLoopReleaseWithJump rlrwj = SoundCommand as ORTSReleaseLoopReleaseWithJump;
                 if (rlrwj != null)
                 {
-                    Console.WriteLine("({0})ReleaseLoopReleaseWithJump ({1} {2}): {3} ", SoundStream.Index, SMS.Event.ToString(), SMS.Threshold.ToString(), rlrwj.FileName);
+                    Console.WriteLine("({0})ReleaseLoopReleaseWithJump ({1} {2}) ", SoundStream.ALSoundSource.SoundSourceID, SMS.Event.ToString(), SMS.Threshold.ToString());
                 }
 #endif
             }
@@ -1421,7 +1424,7 @@ namespace ORTS.Viewer3D
                     return SoundStream.SoundSource.DistanceSquared;
                 case MSTS.Formats.Variable_Trigger.Events.Speed_Dec_Past:
                 case MSTS.Formats.Variable_Trigger.Events.Speed_Inc_Past:
-                    return Math.Abs(car.SpeedMpS);  //We need to convert KPH in the SMS file to MPS for internal use...
+                    return Math.Abs(car.SpeedMpS);
                 case MSTS.Formats.Variable_Trigger.Events.Variable1_Dec_Past:
                 case MSTS.Formats.Variable_Trigger.Events.Variable1_Inc_Past:
                     return car.Variable1;
@@ -1703,7 +1706,7 @@ namespace ORTS.Viewer3D
         /// <summary>
         /// Index of the file to play inside <see cref="Files"/> vector
         /// </summary>
-        protected int iFile;
+        public int iFile;
 
         public ORTSSoundPlayCommand(SoundStream ortsStream, MSTS.Formats.SoundPlayCommand mstsSoundPlayCommand)
             : base(ortsStream)

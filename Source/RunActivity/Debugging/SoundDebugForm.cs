@@ -81,21 +81,16 @@ namespace ORTS.Debugging
             for (int i = 0; i < inactiveSoundList.Nodes.Count; i++)
                 inactiveSoundList.Nodes[i].Nodes.Clear();
 
-            foreach (List<SoundSourceBase> src in SoundSources.Values)
-                foreach (SoundSourceBase ssb in src)
+            foreach (var src in SoundSources.Values)
+                foreach (var ssb in src)
                 {
                     if (ssb is SoundSource)
                     {
-                        SoundSource ss = (SoundSource)ssb;
-                        TreeNode node = null;
+                        var ss = (SoundSource)ssb;
+                        TreeNode node;
 
-                        string nodeString;
-                        if (ss.Car != null)
-                            nodeString = ss.Car.UiD.ToString();
-                        else
-                            nodeString = "-";
-                        nodeString += ": " + ss.SMSFileName + " ";
-                        string nodeKey = nodeString + ss.GetHashCode().ToString();
+                        var nodeString = String.Format("{0}: {1} ", ss.Car != null ? ss.Car.UiD.ToString() : "-", ss.SMSFileName);
+                        var nodeKey = nodeString + ss.GetHashCode().ToString();
 
                         if (ss.Active)
                         {
@@ -119,12 +114,12 @@ namespace ORTS.Debugging
                         }
                         node.Tag = ss;
 
-                        foreach (SoundStream soundStream in ss.SoundStreams)
+                        foreach (var soundStream in ss.SoundStreams)
                         {
-                            string[] soundData = soundStream.ALSoundSource.GetPlayingData();
-                            string streamString = soundData[0] + " " + soundData[1] + " (cue: " + soundData[2] + ")" + " " + soundData[3];
-                            node.Nodes.Add(streamString, streamString);
-                            int index = node.Nodes.IndexOfKey(streamString);
+                            var streamString = String.Format("{0} {1} (cue: {2}) {3}", soundStream.ALSoundSource.GetPlayingData());
+                            var streamKey = streamString + soundStream.GetHashCode().ToString();
+                            node.Nodes.Add(streamKey, streamString);
+                            node.Nodes[streamKey].Tag = soundStream;
                         }
                     }
                     else
@@ -132,24 +127,11 @@ namespace ORTS.Debugging
                     }
                 }
 
-            // Clean up
-            for (int i = 0; i < activeSoundList.Nodes.Count; i++)
-            {
-                if (activeSoundList.Nodes[i].Nodes.Count == 0)
-                    activeSoundList.Nodes[i].Remove();
-                else
-                    activeSoundList.Nodes[i].Text = activeSoundList.Nodes[i].Text.Split('(')[0] + "(" + activeSoundList.Nodes[i].Nodes.Count.ToString() + ")";
-            }
-            for (int i = 0; i < inactiveSoundList.Nodes.Count; i++)
-            {
-                if (inactiveSoundList.Nodes[i].Nodes.Count == 0)
-                    inactiveSoundList.Nodes[i].Remove();
-                else
-                    inactiveSoundList.Nodes[i].Text = inactiveSoundList.Nodes[i].Text.Split('(')[0] + "(" + inactiveSoundList.Nodes[i].Nodes.Count.ToString() + ")";
-            }
+            CleanUp(activeSoundList.Nodes);
+            CleanUp(inactiveSoundList.Nodes);
 
             // Fill selected node's data
-            TreeNode selectedNode = activeSoundList.SelectedNode;
+            var selectedNode = activeSoundList.SelectedNode;
             if (selectedNode == null)
                 selectedNode = inactiveSoundList.SelectedNode;
 
@@ -230,6 +212,17 @@ namespace ORTS.Debugging
             inactiveSoundList.EndUpdate();
 
             cache.Text = SoundItem.AllPieces.Count.ToString();
+        }
+
+        private void CleanUp(TreeNodeCollection nodes)
+        {
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i].Nodes.Count == 0)
+                    nodes[i].Remove();
+                else
+                    nodes[i].Text = String.Format("{0}({1})", nodes[i].Text.Split('(')[0], nodes[i].Nodes.Count.ToString());
+            }
         }
 
         private void SoundDebugForm_FormClosing(object sender, FormClosingEventArgs e)
