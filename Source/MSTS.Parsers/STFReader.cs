@@ -977,12 +977,13 @@ namespace MSTS.Parsers
             if ((validUnits & UNITS.SpeedDefaultMPH) > 0)
                 switch (suffix)
                 {
-                    case "": return 1.0; // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
-                    case "m/s": return 2.23693629;
-                    case "mph": return 1.0;
-                    case "kph": return 0.621371;
-                    case "km/h": return 0.621371;
-                } 
+                    case "": return 0.44704;
+                    case "m/s": return 1.0;
+                    case "mph": return 0.44704;
+                    case "kph": return 0.27778;
+                    case "km/h": return 0.27778;
+                    case "kmh": return 0.27778; // Misspelled unit accepted by MSTS, documented in Richter-Realmuto's 
+                }
             if ((validUnits & UNITS.Frequency) > 0)
                 switch (suffix)
                 {

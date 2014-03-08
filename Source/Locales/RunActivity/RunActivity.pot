@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-03-03 22:35:20+0100\n"
-"PO-Revision-Date: 2014-03-03 22:35:21+0100\n"
+"POT-Creation-Date: 2014-03-09 00:11:37+0100\n"
+"PO-Revision-Date: 2014-03-09 00:11:39+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -135,14 +135,14 @@ msgstr ""
 msgid "MessageViewer"
 msgstr ""
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:189
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:219
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:220
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:221
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:171
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:201
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:202
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:203
 msgid "-"
 msgstr ""
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:218
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:200
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
 msgid "0"
 msgstr ""
@@ -325,39 +325,39 @@ msgstr ""
 msgid "Full Service"
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:998
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:999
 msgid "Tender coal supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1012
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1013
 msgid "Tender water supply is empty. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1066
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1067
 msgid "Fire has dropped too far. Your loco will fail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1142
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1143
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1748
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1749
 msgid ""
 "You are exceeding the maximum recommended speed. Continued operation at this "
 "speed may cause damage."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1936
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1937
 msgid "Water level dropped too far. Plug has fused and loco has failed."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1943
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1944
 msgid "Boiler overfull and priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1949
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1950
 msgid "Boiler no longer priming."
 msgstr ""
 

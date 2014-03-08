@@ -121,10 +121,10 @@ namespace ORTS
         public float BrakePipeChargingRatePSIpS;
         public Interpolator2D TractiveForceCurves;
         public Interpolator2D DynamicBrakeForceCurves;
-        public float DynamicBrakeSpeed1MpH = 3;
-        public float DynamicBrakeSpeed2MpH = 18;
-        public float DynamicBrakeSpeed3MpH = 23;
-        public float DynamicBrakeSpeed4MpH = 35;
+        public float DynamicBrakeSpeed1MpS = MpS.FromKpH(5);
+        public float DynamicBrakeSpeed2MpS = MpS.FromKpH(30);
+        public float DynamicBrakeSpeed3MpS = MpS.FromKpH(999);
+        public float DynamicBrakeSpeed4MpS = MpS.FromKpH(999);
         public float MaxDynamicBrakeForceN;
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
@@ -275,10 +275,10 @@ namespace ORTS
                 interp[100] = 0;
                 DynamicBrakeForceCurves[0] = interp;
                 interp = new Interpolator(4);
-                interp[DynamicBrakeSpeed1MpH] = 0;
-                interp[DynamicBrakeSpeed2MpH] = MaxDynamicBrakeForceN;
-                interp[DynamicBrakeSpeed3MpH] = MaxDynamicBrakeForceN;
-                interp[DynamicBrakeSpeed4MpH] = 0;
+                interp[DynamicBrakeSpeed1MpS] = 0;
+                interp[DynamicBrakeSpeed2MpS] = MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed3MpS] = MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed4MpS] = 0;
                 DynamicBrakeForceCurves[1] = interp;
             }
         }
@@ -388,10 +388,10 @@ namespace ORTS
                 case "engine(orts(ortsemergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(orts(ortsemergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
                 case "engine(orts(ortswheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
-                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
-                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
-                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
-                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4MpH = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
