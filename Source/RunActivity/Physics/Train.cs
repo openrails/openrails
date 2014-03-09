@@ -1639,6 +1639,22 @@ namespace ORTS
 
             if (TrainType == TRAINTYPE.PLAYER)
             {
+                if (Simulator.Activity != null)
+                {
+                    for (int i = 0; i < Cars.Count; i++)
+                    {
+                        if (Cars[i] is MSTSSteamLocomotive)
+                        {
+                            (Cars[i] as MSTSSteamLocomotive).FuelController.CurrentValue = (float)Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100f;
+                            (Cars[i] as MSTSSteamLocomotive).WaterController.CurrentValue = (float)Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100f;
+                        }
+                        else if (Cars[i] is MSTSDieselLocomotive)
+                        {
+                            (Cars[i] as MSTSDieselLocomotive).FuelController.CurrentValue = (float)Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100f;
+                        }
+                    }
+                }
+
                 DatalogTrainSpeed = Simulator.Settings.DataLogTrainSpeed;
                 DatalogTSInterval = Simulator.Settings.DataLogTSInterval;
 
