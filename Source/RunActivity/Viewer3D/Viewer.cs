@@ -534,7 +534,7 @@ namespace ORTS.Viewer3D
                 }
                 else
                 {
-                    Simulator.Confirmer.Warning("Cab view not available");
+                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Cab view not available"));
                 }
             }
 			else if (AbovegroundCamera != null 
@@ -596,7 +596,7 @@ namespace ORTS.Viewer3D
 				ComposeMessageWindow.InitMessage();
 			}
             if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
-			if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePauseMenu)) { if (Simulator.Confirmer != null) Simulator.Confirmer.Information("In MP, use Alt-F4 to quit directly"); }
+			if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePauseMenu)) { if (Simulator.Confirmer != null) Simulator.Confirmer.Information(Viewer.Catalog.GetString("In MP, use Alt-F4 to quit directly")); }
 
             if (UserInput.IsPressed(UserCommands.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
 			if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommands.GamePause)) Simulator.Paused = !Simulator.Paused;
@@ -647,7 +647,7 @@ namespace ORTS.Viewer3D
                 }
                 else
                 {
-                    Simulator.Confirmer.Warning("Cab view not available");
+                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Cab view not available"));
                 }
             }
             if( UserInput.IsPressed( UserCommands.CameraOutsideFront ) ) {
@@ -663,7 +663,7 @@ namespace ORTS.Viewer3D
             if (UserInput.IsPressed(UserCommands.CameraVibrate))
             {
                 Program.Simulator.CarVibrating = (Program.Simulator.CarVibrating + 1) % 4;
-                Simulator.Confirmer.Message(ConfirmLevel.Information, "Vibrating at level " + Program.Simulator.CarVibrating);
+                Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Vibrating at level {0}", Program.Simulator.CarVibrating));
                 Settings.CarVibratingLevel = Program.Simulator.CarVibrating;
                 Settings.Save("CarVibratingLevel");
             }
@@ -671,8 +671,8 @@ namespace ORTS.Viewer3D
             if (UserInput.IsPressed(UserCommands.CameraCabRotate))
             {
 				Simulator.CabRotating = (Simulator.CabRotating + 1) % 4; //cab rotation can be shared by cab and land, 1 means cab rotate 1/4, land rotate 3/4
-				if (Simulator.Confirmer != null && Simulator.CabRotating!=0) Simulator.Confirmer.Message(ConfirmLevel.Information, "Rotating cab " + Simulator.CabRotating + "/4, rotating land " + (4 - Simulator.CabRotating) + "/4");
-				else if (Simulator.Confirmer != null) Simulator.Confirmer.Message(ConfirmLevel.Information, "Will not ratate cab and land");
+				if (Simulator.Confirmer != null && Simulator.CabRotating!=0) Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Rotating cab {0}/4, rotating land {1}/4", Simulator.CabRotating, (4 - Simulator.CabRotating)));
+				else if (Simulator.Confirmer != null) Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetString("Will not ratate cab and land"));
             }
             //hit 9 key, get back to player train
             if( UserInput.IsPressed( UserCommands.CameraJumpBackPlayer ) ) {
@@ -695,8 +695,8 @@ namespace ORTS.Viewer3D
             if( UserInput.IsPressed( UserCommands.CameraFree ) ) {
                 CheckReplaying();
                 new UseFreeRoamCameraCommand( Log );
-                Simulator.Confirmer.Message(ConfirmLevel.None, String.Format(
-                    "{0} viewpoints stored. Use Shift+8 to restore viewpoints.", FreeRoamCameraList.Count-1));
+                Simulator.Confirmer.Message(ConfirmLevel.None, Catalog.GetPluralStringFmt(
+                    "{0} viewpoint stored. Use Shift+8 to restore viewpoints.", "{0} viewpoints stored. Use Shift+8 to restore viewpoints.", FreeRoamCameraList.Count - 1));
             }
             if (UserInput.IsPressed(UserCommands.CameraPreviousFree))
             {

@@ -7403,8 +7403,8 @@ namespace ORTS
 #endif
             if (TrainType == TRAINTYPE.PLAYER && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
             {
-                var message = Viewer.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric));
-                Simulator.Confirmer.Message(ConfirmLevel.Information, message);
+                Simulator.Confirmer.Message(ConfirmLevel.Information, 
+                    Viewer.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedLimit(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric)));
             }
         }
 

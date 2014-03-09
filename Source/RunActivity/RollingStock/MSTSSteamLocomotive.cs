@@ -1164,7 +1164,7 @@ namespace ORTS
                         FuelBoost = false; // disable boost shoveling 
                         if (!StokerIsMechanical)  // Don't display message if stoker in operation
                         {
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, "FireMass is back within limits. Your fireman will shovel as per normal.");
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer3D.Viewer.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
                         }
                     }
                 }

@@ -144,8 +144,8 @@ namespace ORTS.MultiPlayer
 				}
 			}
 
-			System.Console.WriteLine(this.Username + " quit");
-			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.Username + " quit.");
+			System.Console.WriteLine("{0} quit", this.Username);
+			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetStringFmt("{0} quit.", this.Username));
 			Client.Close();
 			if (this.Train != null && this.status != Status.Removed) //remember the location of the train in case the player comes back later, if he is not removed by the dispatcher
 			{

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-03-09 00:11:37+0100\n"
-"PO-Revision-Date: 2014-03-09 00:11:39+0100\n"
+"POT-Creation-Date: 2014-03-09 21:11:42+0100\n"
+"PO-Revision-Date: 2014-03-09 21:11:44+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -194,10 +194,98 @@ msgstr ""
 msgid "SoundDebugForm"
 msgstr ""
 
-#: ../../RunActivity/MultiPlayer/Message.cs:2975
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:116
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:128
+msgid "Connection to the server is lost, will play as single mode"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:145
+msgid "Alt-E to gain control of your train"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:643
+msgid "Dispatcher does not allow hand throw at this time"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:687
+msgid "main route"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:687
+msgid "side route"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1461
+msgid "You are the new dispatcher. Enjoy!"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1591
+msgid "Name conflicted with people in the game, will play in single mode"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1666
+#: ../../RunActivity/MultiPlayer/MPManager.cs:132
+msgid "You gained back the control of your train"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1876
+msgid "Server quits, will play as single mode"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2157
+#: ../../RunActivity/MultiPlayer/Message.cs:2403
+msgid "Trains uncoupled, gain back control by Alt-E"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2541
+#: ../../RunActivity/MultiPlayer/Message.cs:2649
+msgid "Trains coupled, hit \\ then Shift-? to release brakes"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:3094
+msgid "You are an assistant now, will be able to handle switches and signals."
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:3100
+msgid "You are no longer an assistant."
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:686
+#, csharp-format
+msgid "Switched, current route is {0}"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1468
+#, csharp-format
+msgid "New dispatcher is {0}"
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1887
+#: ../../RunActivity/MultiPlayer/OnlinePlayer.cs:148
+#, csharp-format
+msgid "{0} quit."
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1959
+#, csharp-format
+msgid "{0} lost."
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2979
 #, csharp-format
 msgid " From {0}: {1}"
 msgstr ""
+
+#: ../../RunActivity/MultiPlayer/MPManager.cs:748
+msgid "Missing car, have substituted with other one."
+msgstr ""
+
+#: ../../RunActivity/MultiPlayer/MPManager.cs:396
+#, csharp-format
+msgid "Cannot decouple: train has {0} player, need to completely stop."
+msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
+msgstr[0] ""
+msgstr[1] ""
 
 #: ../../RunActivity/Physics/Train.cs:1288
 msgid "Coupler broken!"
@@ -207,60 +295,60 @@ msgstr ""
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:3846
-#: ../../RunActivity/Physics/Train.cs:3851
+#: ../../RunActivity/Physics/Train.cs:3862
+#: ../../RunActivity/Physics/Train.cs:3867
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4738
+#: ../../RunActivity/Physics/Train.cs:4754
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5403
-#: ../../RunActivity/Physics/Train.cs:6476
+#: ../../RunActivity/Physics/Train.cs:5419
+#: ../../RunActivity/Physics/Train.cs:6492
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5411
+#: ../../RunActivity/Physics/Train.cs:5427
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5472
+#: ../../RunActivity/Physics/Train.cs:5488
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5578
-#: ../../RunActivity/Physics/Train.cs:6596
+#: ../../RunActivity/Physics/Train.cs:5594
+#: ../../RunActivity/Physics/Train.cs:6612
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6830
+#: ../../RunActivity/Physics/Train.cs:6846
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6839
+#: ../../RunActivity/Physics/Train.cs:6855
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6852
+#: ../../RunActivity/Physics/Train.cs:6868
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6945
+#: ../../RunActivity/Physics/Train.cs:6961
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7132
+#: ../../RunActivity/Physics/Train.cs:7148
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7374
+#: ../../RunActivity/Physics/Train.cs:7391
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7416
+#: ../../RunActivity/Physics/Train.cs:7432
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -341,6 +429,10 @@ msgstr ""
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1156
+msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1749
@@ -977,9 +1069,39 @@ msgctxt "Labels"
 msgid "none"
 msgstr ""
 
+#: ../../RunActivity/Viewer3D/Viewer.cs:537
+#: ../../RunActivity/Viewer3D/Viewer.cs:650
+msgid "Cab view not available"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:599
+msgid "In MP, use Alt-F4 to quit directly"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:675
+msgid "Will not ratate cab and land"
+msgstr ""
+
 #: ../../RunActivity/Viewer3D/Viewer.cs:1079
 msgid "Game saved"
 msgstr ""
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:666
+#, csharp-format
+msgid "Vibrating at level {0}"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:674
+#, csharp-format
+msgid "Rotating cab {0}/4, rotating land {1}/4"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:698
+#, csharp-format
+msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
+msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
+msgstr[0] ""
+msgstr[1] ""
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
 msgid "Activity Events"
@@ -1266,4 +1388,56 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
 msgid "Train Operations"
 msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:477
+msgid "water"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:478
+msgid "coal"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:479
+msgid "diesel oil"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:480
+msgid "wood"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:590
+msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:598
+#, csharp-format
+msgid "Refill: Distance to {0} supply is {1}."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:604
+#, csharp-format
+msgid "Refill: Loco must be stationary to refill {0}."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:610
+#, csharp-format
+msgid "Refill: Loco speed must exceed {0}."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
+#, csharp-format
+msgid "Refill: Loco speed must not exceed {0}."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+#, csharp-format
+msgid "Refill: {0} supply now replenished."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:599
+#, csharp-format
+msgid "{0} meter"
+msgid_plural "{0} meters"
+msgstr[0] ""
+msgstr[1] ""
 

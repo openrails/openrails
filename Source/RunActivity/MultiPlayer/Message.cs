@@ -22,6 +22,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS;
@@ -646,7 +647,8 @@ namespace ORTS.MultiPlayer
 		{
 			if (!MPManager.Instance().AmAider && MPManager.Instance().TrySwitch == false)
 			{
-				if (handThrown && Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("Dispatcher does not allow hand throw at this time");
+				if (handThrown && Program.Simulator.Confirmer != null)
+                    Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("Dispatcher does not allow hand throw at this time"));
 				OK = false;
 				return;
 			}
@@ -689,7 +691,8 @@ namespace ORTS.MultiPlayer
                 //trj.SelectedRoute = Selection; //although the new signal system request Signals.RequestSetSwitch, client may just change
 				if (user == MPManager.GetUserName() && HandThrown == true)//got the message with my name, will confirm with the player
 				{
-					Program.Simulator.Confirmer.Information("Switched, current route is " + (Selection == 0? "main":"side") + " route");
+					Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetStringFmt("Switched, current route is {0}",
+                        Selection == 0 ? Viewer3D.Viewer.Catalog.GetString("main route") : Viewer3D.Viewer.Catalog.GetString("side route")));
 					return;
 				}
 			}
@@ -1461,15 +1464,17 @@ namespace ORTS.MultiPlayer
                 Program.Server = new Server(Program.Client.UserName + ' ' + Program.Client.Code, Program.Client);
                 if (Program.DebugViewer != null) Program.DebugViewer.firstShow = true;
 				MPManager.Instance().RememberOriginalSwitchState();
-				System.Console.WriteLine("You are the new dispatcher, enjoy");
-				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("You are the new dispatcher, enjoy");
+                Trace.TraceInformation("You are the new dispatcher. Enjoy!");
+				if (Program.Simulator.Confirmer != null)
+                    Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("You are the new dispatcher. Enjoy!"));
 				//System.Console.WriteLine(this.ToString());
 			}
 			else
 			{
 				MPManager.Instance().NotServer = true;
-				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("New dispatcher is " + user);
-				System.Console.WriteLine("New dispatcher is " + user);
+				if (Program.Simulator.Confirmer != null)
+                    Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetStringFmt("New dispatcher is {0}", user));
+                Trace.TraceInformation("New dispatcher is {0}", user);
 			}
 		}
 	}
@@ -1575,7 +1580,7 @@ namespace ORTS.MultiPlayer
 		{
 			if (MPManager.GetUserName() == user || user == "All")
 			{
-				System.Console.WriteLine(level + ": " + msgx);
+				Console.WriteLine("{0}: {1}", level, msgx);
 				if (Program.Simulator.Confirmer != null && level == "Error")
 					Program.Simulator.Confirmer.Message(ConfirmLevel.Error, msgx);
 
@@ -1586,12 +1591,12 @@ namespace ORTS.MultiPlayer
 				}
 				else if (level == "SameNameError" && !MPManager.IsServer())//someone with my name but I have been admitted into the game, will ignore it, otherwise, will quit
 				{
-					System.Console.WriteLine(MPManager.OnlineTrains.Players.Count);
+					Console.WriteLine(MPManager.OnlineTrains.Players.Count);
 
 					if (MPManager.OnlineTrains.Players.Count < 1)
 					{
 						if (Program.Simulator.Confirmer != null)
-							Program.Simulator.Confirmer.Message(ConfirmLevel.Error, "Name conflicted with people in the game, will play in single mode");
+							Program.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer3D.Viewer.Catalog.GetString("Name conflicted with people in the game, will play in single mode"));
 						throw new SameNameError();//this is a fatal error, thus the client will be stopped in ClientComm
 					}
 				}
@@ -1666,7 +1671,7 @@ namespace ORTS.MultiPlayer
 				Train train = Program.Simulator.PlayerLocomotive.Train;
 				train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Program.Simulator.PlayerLocomotive;
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Information("You gained back the control of your train");
+					Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("You gained back the control of your train"));
 				MPManager.Instance().RemoveUncoupledTrains(train);
 			}
 			else if (level == "Confirm") //server inform me that a train is now remote
@@ -1875,7 +1880,8 @@ namespace ORTS.MultiPlayer
 			bool ServerQuit = false;
 			if (Program.Client != null && user.Contains("ServerHasToQuit")) //the server quits, will send a message with ServerHasToQuit\tServerName
 			{
-				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Error("Server quits, will play as single mode");
+				if (Program.Simulator.Confirmer != null)
+                    Program.Simulator.Confirmer.Error(Viewer3D.Viewer.Catalog.GetString("Server quits, will play as single mode"));
 				user = user.Replace("ServerHasToQuit\t", ""); //get the user name of server from the message
 				ServerQuit = true;
 			}
@@ -1885,7 +1891,8 @@ namespace ORTS.MultiPlayer
 				p = MPManager.OnlineTrains.Players[user];
 			}
 			if (p == null) return;
-			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.user + " quit.");
+            if (Program.Simulator.Confirmer != null)
+                Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetStringFmt("{0} quit.", this.user));
 			if (MPManager.IsServer())
 			{
 				if (p.protect == true) { p.protect = false; return; }
@@ -1956,7 +1963,8 @@ namespace ORTS.MultiPlayer
 				p = MPManager.OnlineTrains.Players[user];
 			}
 			if (p == null) return;
-			if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information(this.user + " lost.");
+			if (Program.Simulator.Confirmer != null)
+                Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetStringFmt("{0} lost.", this.user));
 			if (p.protect == true) { p.protect = false; return; }
 			MPManager.BroadCast((new MSGQuit(user)).ToString()); //if the server, will broadcast a quit to every one
 			//if the one quit controls my train, I will gain back the control
@@ -2153,9 +2161,8 @@ namespace ORTS.MultiPlayer
 
 			if (t.Cars.Contains(Program.Simulator.PlayerLocomotive) || newT.Cars.Contains(Program.Simulator.PlayerLocomotive))
 			{
-				string info = "Trains uncoupled, gain back control by Alt-E";
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Information(info);
+                    Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
 			}
 
 			/*
@@ -2416,9 +2423,8 @@ namespace ORTS.MultiPlayer
 
 				if (train.Cars.Contains(Program.Simulator.PlayerLocomotive) || train2.Cars.Contains(Program.Simulator.PlayerLocomotive))
 				{
-					string info = "Trains uncoupled, gain back control by Alt-E";
 					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Information(info);
+                        Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("Trains uncoupled, gain back control by Alt-E"));
 				}
 
 				//if (whichIsPlayer == 0 && MPManager.OnlineTrains.findTrain(user) != null) MPManager.OnlineTrains.Players[user].Train = train;
@@ -2555,9 +2561,8 @@ namespace ORTS.MultiPlayer
 			mDirection = (int)t.MUDirection;
 			if (t.Cars.Contains(Program.Simulator.PlayerLocomotive))
 			{
-				string info = "Trains coupled, hit \\ then Shift-? to release brakes";
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Information(info);
+                    Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
 			}
 			MPManager.Instance().AddOrRemoveTrain(oldT, false); //remove the old train
 		}
@@ -2667,9 +2672,8 @@ namespace ORTS.MultiPlayer
 
 			if (train.Cars.Contains(Program.Simulator.PlayerLocomotive))
 			{
-				string info = "Trains coupled, hit \\ then Shift-? to release brakes";
 				if (Program.Simulator.Confirmer != null)
-					Program.Simulator.Confirmer.Information(info);
+                    Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
 			}
 		}
 	}
@@ -3113,12 +3117,14 @@ namespace ORTS.MultiPlayer
 			if (MPManager.GetUserName() == this.user && add == true)
 			{
 				MPManager.Instance().AmAider = true;
-				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("You are an assistant now, will be able to handle switches and signals.");
+				if (Program.Simulator.Confirmer != null)
+                    Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("You are an assistant now, will be able to handle switches and signals."));
 			}
 			if (MPManager.GetUserName() == this.user && add == false)
 			{
 				MPManager.Instance().AmAider = false;
-				if (Program.Simulator.Confirmer != null) Program.Simulator.Confirmer.Information("You are no longer an assistant.");
+				if (Program.Simulator.Confirmer != null)
+                    Program.Simulator.Confirmer.Information(Viewer3D.Viewer.Catalog.GetString("You are no longer an assistant."));
 			}
 		}
 

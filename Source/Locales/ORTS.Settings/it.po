@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenRails\n"
 "POT-Creation-Date: 2014-02-24 19:35:33+0000\n"
-"PO-Revision-Date: 2014-02-25 22:19+0100\n"
+"PO-Revision-Date: 2014-03-06 20:58+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
 "<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: \n"
@@ -47,11 +47,11 @@ msgstr "Gioco muove lo scambio dietro"
 
 #: ../../ORTS.Settings/InputSettings.cs:50
 msgid "Game Switch Picked"
-msgstr ""
+msgstr "Gioco muove lo scambio selezionato"
 
 #: ../../ORTS.Settings/InputSettings.cs:51
 msgid "Game Signal Picked"
-msgstr ""
+msgstr "Gioco modifica il segnale selezionato"
 
 #: ../../ORTS.Settings/InputSettings.cs:52
 msgid "Game Switch With Mouse"
@@ -139,55 +139,55 @@ msgstr "Display Bussola"
 
 #: ../../ORTS.Settings/InputSettings.cs:75
 msgid "Debug Speed Up"
-msgstr ""
+msgstr "Debug Accelera tempo"
 
 #: ../../ORTS.Settings/InputSettings.cs:76
 msgid "Debug Speed Down"
-msgstr ""
+msgstr "Debug Rallenta tempo"
 
 #: ../../ORTS.Settings/InputSettings.cs:77
 msgid "Debug Speed Reset"
-msgstr ""
+msgstr "Debug Velocità normale"
 
 #: ../../ORTS.Settings/InputSettings.cs:78
 msgid "Debug Overcast Increase"
-msgstr ""
+msgstr "Debug Aumenta nuvolosità"
 
 #: ../../ORTS.Settings/InputSettings.cs:79
 msgid "Debug Overcast Decrease"
-msgstr ""
+msgstr "Debug Diminuisce nuvolosità"
 
 #: ../../ORTS.Settings/InputSettings.cs:80
 msgid "Debug Fog Increase"
-msgstr ""
+msgstr "Debug Aumenta la nebbia"
 
 #: ../../ORTS.Settings/InputSettings.cs:81
 msgid "Debug Fog Decrease"
-msgstr ""
+msgstr "Debug Diminuisce la nebbia"
 
 #: ../../ORTS.Settings/InputSettings.cs:82
 msgid "Debug Weather Change"
-msgstr ""
+msgstr "Debug Cambia meteo"
 
 #: ../../ORTS.Settings/InputSettings.cs:83
 msgid "Debug Clock Forwards"
-msgstr ""
+msgstr "Debug Avanza l'orario"
 
 #: ../../ORTS.Settings/InputSettings.cs:84
 msgid "Debug Clock Backwards"
-msgstr ""
+msgstr "Debug Retrocedi l'orario"
 
 #: ../../ORTS.Settings/InputSettings.cs:85
 msgid "Debug Logger"
-msgstr ""
+msgstr "Debug Scrivi log"
 
 #: ../../ORTS.Settings/InputSettings.cs:86
 msgid "Debug Lock Shadows"
-msgstr ""
+msgstr "Debug blocca ombre"
 
 #: ../../ORTS.Settings/InputSettings.cs:87
 msgid "Debug Dump Keymap"
-msgstr ""
+msgstr "Debug scrive elenco comandi su file"
 
 #: ../../ORTS.Settings/InputSettings.cs:88
 msgid "Debug Log Render Frame"
@@ -199,31 +199,31 @@ msgstr ""
 
 #: ../../ORTS.Settings/InputSettings.cs:90
 msgid "Debug Signalling"
-msgstr ""
+msgstr "Debug Segnalamento"
 
 #: ../../ORTS.Settings/InputSettings.cs:91
 msgid "Debug Reset Wheel Slip"
-msgstr ""
+msgstr "Debug Annulla slittamento"
 
 #: ../../ORTS.Settings/InputSettings.cs:92
 msgid "Debug Toggle Advanced Adhesion"
-msgstr ""
+msgstr "Debug Attiva/Disattiva aderenza avanzata"
 
 #: ../../ORTS.Settings/InputSettings.cs:93
 msgid "Debug Sound Form"
-msgstr ""
+msgstr "Debug Finestra suoni"
 
 #: ../../ORTS.Settings/InputSettings.cs:94
 msgid "Debug Physics Form"
-msgstr ""
+msgstr "Debug Finestra dati fisici"
 
 #: ../../ORTS.Settings/InputSettings.cs:95
 msgid "Debug Precipitation Increase"
-msgstr ""
+msgstr "Debug Aumenta le precipitazioni"
 
 #: ../../ORTS.Settings/InputSettings.cs:96
 msgid "Debug Precipitation Decrease"
-msgstr ""
+msgstr "Debug Diminuisci le precipitazioni"
 
 #: ../../ORTS.Settings/InputSettings.cs:98
 msgid "Camera Cab"

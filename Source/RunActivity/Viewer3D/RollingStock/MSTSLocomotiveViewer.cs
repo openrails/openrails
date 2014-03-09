@@ -474,10 +474,10 @@ namespace ORTS.Viewer3D.RollingStock
         /// </summary>
         public Dictionary<uint, string> PickupTypeDictionary = new Dictionary<uint, string>()
         {
-            {(uint)MSTSLocomotive.PickupType.FuelWater, "water"},
-            {(uint)MSTSLocomotive.PickupType.FuelCoal, "coal"},
-            {(uint)MSTSLocomotive.PickupType.FuelDiesel, "diesel oil"},
-            {(uint)MSTSLocomotive.PickupType.FuelWood, "wood"}
+            {(uint)MSTSLocomotive.PickupType.FuelWater, Viewer.Catalog.GetString("water")},
+            {(uint)MSTSLocomotive.PickupType.FuelCoal, Viewer.Catalog.GetString("coal")},
+            {(uint)MSTSLocomotive.PickupType.FuelDiesel, Viewer.Catalog.GetString("diesel oil")},
+            {(uint)MSTSLocomotive.PickupType.FuelWood, Viewer.Catalog.GetString("wood")}
         };
 
         /// <summary>
@@ -587,7 +587,7 @@ namespace ORTS.Viewer3D.RollingStock
             var match = GetMatchingPickup(loco.Train);
             if (match == null)
             {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, "Refill: No suitable pick-up point anywhere, so refilling immediately.");
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: No suitable pick-up point anywhere, so refilling immediately."));
                 loco.RefillImmediately();
                 return;
             }
@@ -595,32 +595,33 @@ namespace ORTS.Viewer3D.RollingStock
             float distanceToPickupM = GetDistanceToM(match) - 1f; // Deduct an extra 1 meter as pickups are never on the centre line of the track.
             if (distanceToPickupM > match.IntakePoint.WidthM / 2)
             {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: Distance to {0} supply is {1:F0} meters.",
-                    PickupTypeDictionary[(uint)match.Pickup.PickupType], distanceToPickupM));
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Distance to {0} supply is {1}.",
+                    PickupTypeDictionary[(uint)match.Pickup.PickupType], Viewer.Catalog.GetPluralString("{0} meter", "{0} meters", (long)distanceToPickupM)));
                 return;
             }
             if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MinMpS == 0f)
             {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: Loco must be stationary to refill {0}.",
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco must be stationary to refill {0}.",
                     PickupTypeDictionary[(uint)match.Pickup.PickupType]));
                 return;
             }
             if (loco.SpeedMpS < match.Pickup.SpeedRange.MinMpS)
             {
-                var speedLimitMpH = MpS.ToMpH(match.Pickup.SpeedRange.MinMpS);
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: Loco speed must exceed {0:F0} mph.", speedLimitMpH));
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must exceed {0}.", 
+                    FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MinMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
             if (loco.SpeedMpS > match.Pickup.SpeedRange.MinMpS)
             {
                 var speedLimitMpH = MpS.ToMpH(match.Pickup.SpeedRange.MaxMpS);
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: Loco speed must not exceed {0} mph.", speedLimitMpH));
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must not exceed {0}.", 
+                    FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MaxMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
             float fraction = loco.GetFilledFraction(match.Pickup.PickupType);
             if (fraction > 0.99)
             {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, String.Format("Refill: {0} supply now replenished.",
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: {0} supply now replenished.",
                     PickupTypeDictionary[(uint)match.Pickup.PickupType]));
                 return;
             }
