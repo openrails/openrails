@@ -4710,29 +4710,6 @@ namespace ORTS
                         Trace.TraceWarning("Train {0} in Signal control but route to signal not cleared - switching to Node control",
                                 Number);
 
-                        File.AppendAllText(@"C:\temp\passtrain.txt",
-                                "Train " + Number.ToString() + " in Section : " + PresentPosition[0].TCSectionIndex.ToString() +
-                                " = " + PresentPosition[0].RouteListIndex + "\n");
-                        File.AppendAllText(@"C:\temp\passtrain.txt",
-                                "Signal " + thisSignal.thisRef.ToString() + " in Section : " +
-                                thisSignal.TCReference.ToString() + "\n");
-                        File.AppendAllText(@"C:\temp\passtrain.txt",
-                                "This section : " + nextSection.Index.ToString() + "\n");
-
-                        bool signalFound = false;
-
-                        for (int iSection = PresentPosition[0].RouteListIndex + 1; iSection < ValidRoute[0].Count && !signalFound; iSection++)
-                        {
-                            TrackCircuitSection printSection = signalRef.TrackCircuitList[ValidRoute[0][iSection].TCSectionIndex];
-                            File.AppendAllText(@"C:\temp\passtrain.txt",
-                                    "Section : " + printSection.Index.ToString() + "\n");
-                            if (printSection.CircuitState.TrainReserved != null)
-                            {
-                                File.AppendAllText(@"C:\temp\passtrain.txt",
-                                    "Reserved : " + printSection.CircuitState.TrainReserved.Train.Number.ToString() + "\n");
-                            }
-                        }
-
                         if (thisSignal.enabledTrain == thisRouted)
                         {
                             thisSignal.ResetSignal(true);
