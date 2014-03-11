@@ -58,6 +58,7 @@ namespace ORTS.TrackViewer.Editing
 
         // Detailed information on kind of nodes and some of its details
         public TrainpathNodeType Type { get; set; }
+        public bool IsBroken { get; protected set; }
 
         // From simple linking
         public TrainpathNode NextMainNode { get; set; }     // next path node on main path
@@ -271,8 +272,16 @@ namespace ORTS.TrackViewer.Editing
         public override void determineOrientation(TrainpathNode previousNode, int linkingTVNIndex)
         {
             Traveller traveller = placeTravellerAfterJunction(linkingTVNIndex);
-            traveller.ReverseDirection(); // the TVN is from the previous node, so backwards. Therefore:reverse
-            _trackAngle = traveller.RotY;
+            if (traveller != null)
+            {
+                traveller.ReverseDirection(); // the TVN is from the previous node, so backwards. Therefore:reverse
+                _trackAngle = traveller.RotY;
+            }
+            else
+            {
+                _trackAngle = 0; // just set it to some default
+                IsBroken = true;
+            }
         }
 
         /// <summary>
@@ -283,14 +292,21 @@ namespace ORTS.TrackViewer.Editing
         public Traveller placeTravellerAfterJunction(int linkingTVNIndex)
         {
             // it is a junction. Place a traveller onto the tracknode and find the orientation from it.
-            TrackNode linkingTN = trackDB.TrackNodes[linkingTVNIndex];
-            Traveller traveller = new Traveller(tsectionDat, trackDB.TrackNodes, linkingTN,
-                                        location.TileX, location.TileZ, location.Location.X, location.Location.Z, Traveller.TravellerDirection.Forward);
-            if (linkingTN.JunctionIndexAtStart() != this.junctionIndex)
-            {   // the tracknode is oriented in the other direction.
-                traveller.ReverseDirection();
+            try
+            {   //for broken paths the tracknode doesn't exit or the traveller cannot be placed.
+                TrackNode linkingTN = trackDB.TrackNodes[linkingTVNIndex];
+                Traveller traveller = new Traveller(tsectionDat, trackDB.TrackNodes, linkingTN,
+                                            location.TileX, location.TileZ, location.Location.X, location.Location.Z, Traveller.TravellerDirection.Forward);
+                if (linkingTN.JunctionIndexAtStart() != this.junctionIndex)
+                {   // the tracknode is oriented in the other direction.
+                    traveller.ReverseDirection();
+                }
+                return traveller;
             }
-            return traveller;
+            catch
+            {
+                return null;
+            }
         }
     }
 
@@ -364,9 +380,15 @@ namespace ORTS.TrackViewer.Editing
         public TrainpathVectorNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat)
             : base(pdp, trackDB, tsectionDat)
         {
-            // if the next statement yields an exception, then the path is not OK! We will not yet catch this.
-            Traveller traveller = new Traveller(tsectionDat, trackDB.TrackNodes, this.location);
-            CopyDataFromTraveller(traveller);
+            try
+            {
+                Traveller traveller = new Traveller(tsectionDat, trackDB.TrackNodes, this.location);
+                CopyDataFromTraveller(traveller);
+            }
+            catch
+            {
+                IsBroken = true;
+            }
 
             ForwardOriented = true; // only initial setting
 
@@ -426,6 +448,11 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="linkingTVNIndex">the index of the Track Vector Node linking the previous node to this node</param>
         public override void determineOrientation(TrainpathNode previousNode, int linkingTVNIndex)
         {
+            if (IsBroken)
+            {   // do not update the orientation. Just use default
+                return;
+            }
+
             // this is a non-junction node. linkingTVNIndex should be the same as TVNIndex.
             ForwardOriented = !this.IsEarlierOnTrackThan(previousNode);
 

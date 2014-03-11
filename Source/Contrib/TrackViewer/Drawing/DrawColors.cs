@@ -58,13 +58,14 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public static void Initialize(ORTS.TrackViewer.UserInterface.MenuControl menuControl)
         {
-    
-            //menuControl.updateSettings(); // update the settings based on menu state.
 
+            colorsNormal["clearwindowinset"] = Color.LightBlue;
             colorsNormal["pathMain"] = Color.Yellow;
             colorsNormal["pathSiding"] = Color.Orange;
+            colorsNormal["pathBroken"] = Color.Salmon;
             colorsNormal["activeNode"] = Color.Purple;
             colorsNormal["nodeCandidate"] = Color.Blue;
+            colorsNormal["brokenNode"] = Color.Red;
             colorsNormal["siding"] = Color.Sienna;
             colorsNormal["platform"] = Color.Aqua;
             colorsNormal["text"] = Color.Black;

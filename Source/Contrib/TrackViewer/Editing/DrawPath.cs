@@ -204,9 +204,7 @@ namespace ORTS.TrackViewer.Editing
                     break;
                 default:
                     if ((trainpathNode.NextMainNode == null) && (trainpathNode.NextSidingNode != null))
-                    {
-
-                        // siding node;
+                    {   // siding node;
                         drawArea.DrawTexture(trainpathNode.location, "pathSiding", angle, pathPointSize, minPixelSize);
                     }
                     else
@@ -215,6 +213,11 @@ namespace ORTS.TrackViewer.Editing
                     }
                     break;
             }
+
+            if (trainpathNode.IsBroken)
+            {
+                drawArea.DrawSimpleTexture(trainpathNode.location, "crossedRing", pathPointSize/2, 0, DrawColors.colorsNormal["brokenNode"]);
+            }       
             
         }
 
@@ -230,6 +233,11 @@ namespace ORTS.TrackViewer.Editing
         /// direction of the vector node</remarks>
         void DrawPathOnVectorNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode, int TVNIndex)
         {
+            if (currentNode.IsBroken || nextNode.IsBroken)
+            {
+                DrawPathBrokenNode(drawArea, colors, currentNode, nextNode);
+                return;
+            }
             TrackNode tn = trackDB.TrackNodes[TVNIndex];
 
             //Default situation (and most occuring) is to draw the complete vector node 
@@ -375,6 +383,11 @@ namespace ORTS.TrackViewer.Editing
                 drawArea.DrawLine(trackSection.SectionSize.Width, colors["trackStraight"], thisLocation,
                     length, tvs.AY, startOffset);
             }
+        }
+
+        void DrawPathBrokenNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode)
+        {
+            drawArea.DrawLine(1f, colors["pathBroken"] , currentNode.location, nextNode.location);
         }
     }
 }

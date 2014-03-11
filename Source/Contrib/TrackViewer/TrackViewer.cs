@@ -19,7 +19,6 @@
 //
 //TODO list for Trackviewer      
 // Ideas from others
-//      Uncouple texture
 //      Be able to list the issues directly without going through the ORTS logfile
 //      Make it XNA independent.
 //      Import & export.
@@ -100,7 +99,7 @@ namespace ORTS.TrackViewer
     /// </summary>
     public class TrackViewer : Microsoft.Xna.Framework.Game
     {
-        public readonly static string TrackViewerVersion = "2014/03/04";
+        public readonly static string TrackViewerVersion = "2014/03/11";
         public string ContentPath { get; private set; }
              
         GraphicsDeviceManager graphics;
@@ -118,7 +117,7 @@ namespace ORTS.TrackViewer
         public DrawTrackDB drawTrackDB;
         
         public DrawArea drawArea;
-        public DrawArea drawAreaInset;
+        public ShadowDrawArea drawAreaInset;
         public DrawScaleRuler drawScaleRuler;
         public DrawTrains drawTrains;
         public DrawWorldTiles drawWorldTiles;
@@ -153,7 +152,7 @@ namespace ORTS.TrackViewer
             //we do not a very fast behaviour, but we do need to get all key presses
             IsFixedTimeStep = true;
             TargetElapsedTime = TimeSpan.FromSeconds(0.05);
-            FrameRate = new SmoothedData();
+            FrameRate = new SmoothedData(0.5f);
         }
 
         public void setAliasing()
@@ -186,7 +185,7 @@ namespace ORTS.TrackViewer
             drawTrains = new DrawTrains();
             drawScaleRuler = new DrawScaleRuler();
             drawArea = new DrawArea(drawScaleRuler);
-            drawAreaInset = new DrawArea(null);
+            drawAreaInset = new ShadowDrawArea(null);
             drawAreaInset.strictChecking = true;
             setSubwindowSizes();
             
@@ -224,12 +223,12 @@ namespace ORTS.TrackViewer
             int statusbarHeight = statusBarControl.statusbarHeight;
             menuControl.setScreenSize(screenW, menuHeight);
             statusBarControl.setScreenSize(screenW, statusbarHeight, screenH);
-            
-            drawArea.setScreenSize(0, menuHeight, screenW, screenH - statusbarHeight - menuHeight);
-            drawAreaInset.setScreenSize(screenW - screenW/insetRatio, menuHeight + 1, screenW / insetRatio, screenH / insetRatio);
-            drawScaleRuler.SetLowerLeftPoint(10, screenH - statusbarHeight - 10);
-        }
 
+            drawArea.SetScreenSize(0, menuHeight, screenW, screenH - statusbarHeight - menuHeight);
+            drawAreaInset.SetScreenSize(screenW - screenW / insetRatio, menuHeight + 1, screenW / insetRatio, screenH / insetRatio);
+            drawScaleRuler.SetLowerLeftPoint(10, screenH - statusbarHeight - 10);
+
+        }
  
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -240,8 +239,8 @@ namespace ORTS.TrackViewer
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             BasicShapes.LoadContent(GraphicsDevice, spriteBatch, ContentPath);
+            drawAreaInset.LoadContent(GraphicsDevice, spriteBatch, 2, 2, 2);
         }
-
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -350,6 +349,7 @@ namespace ORTS.TrackViewer
             }
 
             drawArea.update();
+            drawAreaInset.update();
             drawAreaInset.Follow(drawArea, 10f);
 
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSignals)) menuControl.menuToggleShowSignals();
@@ -399,6 +399,14 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+
+            // Even if there is nothing new to draw for main window, we might still need to draw for the shadow textures.
+            if (drawTrackDB != null)
+            {
+                drawAreaInset.DrawShadowTextures(drawTrackDB.DrawTracks, DrawColors.colorsNormal["clearwindowinset"]);
+            }
+            
+            // if there is nothing to draw, be done.
             if (--skipDrawAmount > 0)
             {
                 return;
@@ -420,8 +428,9 @@ namespace ORTS.TrackViewer
 
             if (Properties.Settings.Default.showInset)
             {
-                drawAreaInset.DrawBackground(Color.LightBlue);
-                drawTrackDB.DrawTracks(drawAreaInset);
+                drawAreaInset.DrawBackground(DrawColors.colorsNormal["clearwindowinset"]);
+                //drawTrackDB.DrawTracks(drawAreaInset); //replaced by next line
+                drawAreaInset.DrawShadowedTextures(); 
                 drawTrackDB.DrawHighlights(drawAreaInset, false);
                 drawAreaInset.DrawBorder(Color.Red, drawArea);
                 drawAreaInset.DrawBorder(Color.Black);
@@ -444,6 +453,7 @@ namespace ORTS.TrackViewer
             skipDrawAmount = maxSkipDrawAmount;
         }
 
+ 
         void CalculateFPS(GameTime gameTime)
         {
             float elapsedRealTime = (float)gameTime.ElapsedRealTime.TotalSeconds;
@@ -462,7 +472,6 @@ namespace ORTS.TrackViewer
             }
         }
  
-
         /// <summary>
         /// Open up a dialog so the user can select the install directory 
         /// (which should contain a sub-directory called ROUTES).
@@ -647,7 +656,6 @@ namespace ORTS.TrackViewer
             CenterAround(drawTrackDB.TrackNodeHighlightOverrideRoad(TrackNumberIndex));
         }
 
-
         /// <summary>
         /// Find a trackItem and center around it and highlight it
         /// </summary>
@@ -670,7 +678,6 @@ namespace ORTS.TrackViewer
             CenterAround(itemLocation);
         }
 
-
         /// <summary>
         /// Center around a certain world-location. In particular, outside the normal Draw/Update loop. So it does a draw itself
         /// To be used from additional windows (like search).
@@ -692,11 +699,12 @@ namespace ORTS.TrackViewer
 
         void runDebug()
         {
+            //Properties.Settings.Default.statusShowFPS = false;
             //setDefaultRoute();
             //setPath(paths[0]);
             //drawArea.zoomToTile();
             //drawArea.zoomCentered(-15);
-            ////CenterAroundTrackNode(200);
+            //////CenterAroundTrackNode(200);
             //drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);
 
             //pathEditor.EditingIsActive = true;

@@ -261,6 +261,7 @@ namespace ORTS.TrackViewer.Drawing
             foreach (double distanceKey in existingKeys)
             {
                 TrackCandidate trackCandidate = sortedTrackCandidates[distanceKey];
+                if (trackCandidate.trackNode == null) continue;
                 TrackSection trackSection = tsectionDat.TrackSections.Get(trackCandidate.vectorSection.SectionIndex);
                 DistanceLon distanceLon = (trackSection.SectionCurve == null)
                     ? calcRealDistanceSquaredStraight(trackCandidate.vectorSection, trackSection)

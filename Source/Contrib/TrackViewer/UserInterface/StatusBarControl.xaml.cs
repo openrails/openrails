@@ -106,7 +106,9 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="trackViewer"></param>
         private void SetTrackIndexStatus(TrackViewer trackViewer)
         {
-            statusTrIndex.Text = string.Format("{0} ", trackViewer.drawTrackDB.closestTrack.TrackNode.Index);
+            TrackNode tn = trackViewer.drawTrackDB.closestTrack.TrackNode;
+            if (tn == null) return;
+            statusTrIndex.Text = string.Format("{0} ", tn.Index);
             //debug: statusAdditional.Text += Math.Sqrt((double)trackViewer.drawTrackDB.closestTrack.ClosestMouseDistanceSquared);
         }
 

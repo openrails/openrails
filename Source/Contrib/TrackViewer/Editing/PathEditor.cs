@@ -418,7 +418,7 @@ namespace ORTS.TrackViewer.Editing
             float distance = drawTrackDB.closestTrack.DistanceAlongTrack;
 
             // find location
-            WorldLocation location = drawTrackDB.FindLocation(tni, tvsi, distance);
+            WorldLocation location = drawTrackDB.FindLocation(tni, tvsi, distance, true);
 
             // fill the properties of the activeTrackLocation 
             activeTrackLocation.TVNIndex = tni_int;

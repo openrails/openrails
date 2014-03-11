@@ -365,8 +365,11 @@ namespace ORTS.TrackViewer.Drawing
             // determine then lenght of the arc, and divide that by the maximum we allow;
             // All angles go in steps of minAngleDegree
             float arcLength = radius * MathHelper.ToRadians(arcDegrees);
-            // line below is a bit hearistic. perhaps I should figure out in more detail what it should be.
-            maxStraightPixels = (float)(Math.Min(Math.Ceiling(radius/3 + 1),15));
+            // We draw straight lines. The error in the middle of the line is: error = radius - radius*cos(alpha/2).
+            // Here alpha is the angle drawn for a single arc-segment. Approximately error ~ radius * alpha^2/8.
+            // The amount of pixels in the line is about L ~ radius * alpha => L ~ sqrt(8 * radius * error). 
+            // We found that for thight curves, error can not be larger than half a pixel (otherwise it becomes visible)
+            maxStraightPixels = (float)Math.Sqrt(4*radius);   
             float numberStraightLines = (float)Math.Ceiling(arcLength / maxStraightPixels);
             // amount of minAngleDegrees we need to cover: 
             int arcStepsRemaining = (int) (Math.Round(arcDegrees/minAngleDegree)); 
