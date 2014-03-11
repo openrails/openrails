@@ -314,13 +314,11 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public abstract void Update();
         /// <summary>
-        /// Internal reset request by touched systems other than the alerter button.
+        /// Called when an event happens (like the alerter button pressed)
         /// </summary>
-        public abstract void AlerterReset();
-        /// <summary>
-        /// Reset request by the alerter button.
-        /// </summary>
-        public abstract void AlerterPressed();
+        /// <param name="evt">The event happened</param>
+        /// <param name="message">The message the event wants to communicate. May be empty.</param>
+        public abstract void HandleEvent(TCSEvent evt, string message);
         /// <summary>
         /// Called by signalling code externally to stop the train in certain circumstances.
         /// </summary>
@@ -365,6 +363,22 @@ namespace ORTS.Scripting.Api
         StopAndProceed,
         Stop,
         Permission,
+    }
+
+    public enum TCSEvent
+    {
+        /// <summary>
+        /// Reset request by pressing the alerter button.
+        /// </summary>
+        AlerterPressed,
+        /// <summary>
+        /// Alerter button was released.
+        /// </summary>
+        AlerterReleased,
+        /// <summary>
+        /// Internal reset request by touched systems other than the alerter button.
+        /// </summary>
+        AlerterReset,
     }
 
 

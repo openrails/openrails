@@ -221,7 +221,7 @@ namespace ORTS
             Script.SetCurrentSpeedLimitMpS = (value) => this.CurrentSpeedLimitMpS = value;
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
             Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
-            Script.SetVigilanceAlarm = (value) => this.SetVigilanceAlarm(value);
+            Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
             Script.TriggerSoundInfo1 = () => this.HandleEvent(Event.TrainControlSystemInfo1, Script);
             Script.TriggerSoundInfo2 = () => this.HandleEvent(Event.TrainControlSystemInfo2, Script);
             Script.TriggerSoundPenalty1 = () => this.HandleEvent(Event.TrainControlSystemPenalty1, Script);
@@ -265,25 +265,38 @@ namespace ORTS
 
             foreach (var foundItem in Locomotive.Train.MUDirection == Direction.Reverse ? TrainInfo.ObjectInfoBackward : TrainInfo.ObjectInfoForward)
             {
-                if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL)
+                switch (foundItem.ItemType)
                 {
-                    signalsFound++;
-                    if (signalsFound > SignalSpeedLimits.Count)
-                    {
-                        SignalSpeedLimits.Add(foundItem.AllowedSpeedMpS);
-                        SignalAspects.Add((Aspect)foundItem.SignalState);
-                        SignalDistances.Add(foundItem.DistanceToTrainM);
-                    }
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL:
+                        signalsFound++;
+                        if (signalsFound > SignalSpeedLimits.Count)
+                        {
+                            SignalSpeedLimits.Add(foundItem.AllowedSpeedMpS);
+                            SignalAspects.Add((Aspect)foundItem.SignalState);
+                            SignalDistances.Add(foundItem.DistanceToTrainM);
+                        }
+                        break;
+
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST:
+                        postsFound++;
+                        if (postsFound > PostSpeedLimits.Count)
+                        {
+                            PostSpeedLimits.Add(foundItem.AllowedSpeedMpS);
+                            PostDistances.Add(foundItem.DistanceToTrainM);
+                        }
+                        break;
+
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.AUTHORITY:
+                        signalsFound++;
+                        if (signalsFound > SignalSpeedLimits.Count)
+                        {
+                            SignalSpeedLimits.Add(0f);
+                            SignalAspects.Add(Aspect.Stop);
+                            SignalDistances.Add(foundItem.DistanceToTrainM);
+                        }
+                        break;
                 }
-                else if (foundItem.ItemType == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST)
-                {
-                    postsFound++;
-                    if (postsFound > PostSpeedLimits.Count)
-                    {
-                        PostSpeedLimits.Add(foundItem.AllowedSpeedMpS);
-                        PostDistances.Add(foundItem.DistanceToTrainM);
-                    }
-                }
+
                 if (searchFor == Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL && signalsFound > forsight ||
                     searchFor == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST && postsFound > forsight)
                 {
@@ -351,23 +364,26 @@ namespace ORTS
             PostDistances.Clear();
 
             // Auto-clear alerter when not in cabview
-            if (Locomotive.AlerterSnd && Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
-                Script.AlerterPressed();
+            if (Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
+            {
+                if (AlerterButtonPressed)
+                    AlerterPressed(false);
+                else if (Locomotive.AlerterSnd)
+                    AlerterPressed(true);
+            }
 
-            Script.Update(); 
+            Script.Update();
         }
 
         public void AlerterPressed(bool pressed)
         {
             AlerterButtonPressed = pressed;
-            if (Script != null)
-                Script.AlerterPressed();
+            SendEvent(pressed ? TCSEvent.AlerterPressed : TCSEvent.AlerterReleased);
         }
 
         public void AlerterReset()
         {
-            if (Script != null)
-                Script.AlerterReset();
+            SendEvent(TCSEvent.AlerterReset);
         }
 
         public void SetEmergency()
@@ -378,15 +394,15 @@ namespace ORTS
                 Locomotive.TrainBrakeController.SetEmergency();
         }
 
-        /// <summary>
-        /// Auto-clear alerter when not in cabview, otherwise call for sound
-        /// </summary>
-        void SetVigilanceAlarm(bool value)
+        void SendEvent(TCSEvent evt)
         {
-            if (value && Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
-                Script.AlerterPressed();
-            else
-                Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
+            SendEvent(evt, String.Empty);
+        }
+
+        void SendEvent(TCSEvent evt, string message)
+        {
+            if (Script != null)
+                Script.HandleEvent(evt, message);
         }
     }
 
@@ -460,27 +476,29 @@ namespace ORTS
                 SetPenaltyApplicationDisplay(false);
         }
 
-        public override void AlerterReset()
+        public override void HandleEvent(TCSEvent evt, string message)
         {
-            AlerterPressed();
-        }
-
-        public override void AlerterPressed()
-        {
-            if (!Activated || VigilanceEmergency)
-                return;
-
-            if (VigilanceMonitor != null)
+            switch(evt)
             {
-                VigilanceAlarmTimer.Start();
-                VigilanceAlarm = VigilanceAlarmTimer.Triggered;
-                if (AlerterSound())
-                    SetVigilanceAlarm(false);
-            }
+                case TCSEvent.AlerterPressed:
+                case TCSEvent.AlerterReleased:
+                case TCSEvent.AlerterReset:
+                    if (!Activated || VigilanceEmergency)
+                        return;
 
-            if (OverspeedMonitor != null)
-                if (OverspeedWarning && OverspeedMonitor.ResetOnResetButton)
-                    OverspeedAlarmTimer.Start();
+                    if (VigilanceMonitor != null)
+                    {
+                        VigilanceAlarmTimer.Start();
+                        VigilanceAlarm = VigilanceAlarmTimer.Triggered;
+                        if (AlerterSound())
+                            SetVigilanceAlarm(false);
+                    }
+
+                    if (OverspeedMonitor != null)
+                        if (OverspeedWarning && OverspeedMonitor.ResetOnResetButton)
+                            OverspeedAlarmTimer.Start();
+                    break;
+            }
         }
 
         public override void SetEmergency()
@@ -543,7 +561,7 @@ namespace ORTS
                 if (VigilanceMonitor.ResetOnZeroSpeed && SpeedMpS() < 0.1f
                     || SpeedMpS() <= VigilanceMonitor.ResetLevelMpS)
                 {
-                    AlerterPressed();
+                    HandleEvent(TCSEvent.AlerterPressed, String.Empty);
                     return;
                 }
                 if (!VigilanceEmergencyTimer.Started)

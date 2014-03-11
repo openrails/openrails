@@ -892,8 +892,8 @@ namespace MSTS.Parsers
                     case "ft^3": return 28.3168;
                     case "*(in^3)": return 0.0163871;
                     case "in^3": return 0.0163871;
-                    case "*(m^3)": return 0.001;
-                    case "m^3": return 0.001;
+                    case "*(m^3)": return 1000;
+                    case "m^3": return 1000;
                     case "l": return 1;
                     case "g-uk": return 4.546f;
                     case "g-us": return 3.785f;
@@ -953,7 +953,7 @@ namespace MSTS.Parsers
                 {
                     case "": return 1.0;
                     case "v": return 1;
-                    case "kv": return 0.001;
+                    case "kv": return 1000;
                 } 
             if ((validUnits & UNITS.MassRateDefaultLBpH) > 0)
                 switch (suffix)
@@ -971,6 +971,7 @@ namespace MSTS.Parsers
                     case "mph": return 0.44704;
                     case "kph": return 0.27778;
                     case "km/h": return 0.27778;
+                    case "kmph": return 0.27778;
                     case "kmh": return 0.27778; // Misspelled unit accepted by MSTS, documented in Richter-Realmuto's 
                     // "Manual for .eng- and .wag-files of the MS Train Simulator 1.0". and used in Bernina
                 }
@@ -982,6 +983,7 @@ namespace MSTS.Parsers
                     case "mph": return 0.44704;
                     case "kph": return 0.27778;
                     case "km/h": return 0.27778;
+                    case "kmph": return 0.27778;
                     case "kmh": return 0.27778; // Misspelled unit accepted by MSTS, documented in Richter-Realmuto's 
                 }
             if ((validUnits & UNITS.Frequency) > 0)
@@ -990,7 +992,7 @@ namespace MSTS.Parsers
                     case "": return 1.0;
                     case "hz": return 1;
                     case "rps": return 1;
-                    case "rpm": return 1 / 60;
+                    case "rpm": return 1.0 / 60;
                 }
             if ((validUnits & UNITS.Force) > 0)
                 switch (suffix)
@@ -1071,7 +1073,7 @@ namespace MSTS.Parsers
                 {
                     case "": return 1.0;
                     case "degc": return 1;
-                    case "degf": return 100/180;
+                    case "degf": return 100.0/180;
                 }
             if ((validUnits & UNITS.RotationalInertia) > 0)
                 switch (suffix)
