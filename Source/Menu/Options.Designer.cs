@@ -48,6 +48,9 @@
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
             this.checkMSTSBINSound = new System.Windows.Forms.CheckBox();
             this.tabPageVideo = new System.Windows.Forms.TabPage();
+            this.label11 = new System.Windows.Forms.Label();
+            this.numericDistantMountainsViewingDistance = new System.Windows.Forms.NumericUpDown();
+            this.checkDistantMountains = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.numericViewingDistance = new System.Windows.Forms.NumericUpDown();
             this.labelFOVHelp = new System.Windows.Forms.Label();
@@ -115,9 +118,7 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.label11 = new System.Windows.Forms.Label();
-            this.numericDistantMountainsViewingDistance = new System.Windows.Forms.NumericUpDown();
-            this.checkDistantMountains = new System.Windows.Forms.CheckBox();
+            this.checkAlerterDisableExternal = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -125,6 +126,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundVolumePercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             this.tabPageVideo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericDistantMountainsViewingDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericViewingDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericViewingFOV)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericCab2DStretch)).BeginInit();
@@ -143,7 +145,6 @@
             this.tabPageDataLogger.SuspendLayout();
             this.tabPageEvaluate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericDistantMountainsViewingDistance)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -159,7 +160,7 @@
             // 
             // numericBrakePipeChargingRate
             // 
-            this.numericBrakePipeChargingRate.Location = new System.Drawing.Point(6, 52);
+            this.numericBrakePipeChargingRate.Location = new System.Drawing.Point(6, 75);
             this.numericBrakePipeChargingRate.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -182,7 +183,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(66, 54);
+            this.label4.Location = new System.Drawing.Point(66, 77);
             this.label4.Margin = new System.Windows.Forms.Padding(3);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(159, 13);
@@ -192,7 +193,7 @@
             // checkGraduatedRelease
             // 
             this.checkGraduatedRelease.AutoSize = true;
-            this.checkGraduatedRelease.Location = new System.Drawing.Point(6, 29);
+            this.checkGraduatedRelease.Location = new System.Drawing.Point(6, 52);
             this.checkGraduatedRelease.Name = "checkGraduatedRelease";
             this.checkGraduatedRelease.Size = new System.Drawing.Size(162, 17);
             this.checkGraduatedRelease.TabIndex = 1;
@@ -223,7 +224,7 @@
             // checkSuppressConfirmations
             // 
             this.checkSuppressConfirmations.AutoSize = true;
-            this.checkSuppressConfirmations.Location = new System.Drawing.Point(6, 78);
+            this.checkSuppressConfirmations.Location = new System.Drawing.Point(6, 101);
             this.checkSuppressConfirmations.Name = "checkSuppressConfirmations";
             this.checkSuppressConfirmations.Size = new System.Drawing.Size(170, 17);
             this.checkSuppressConfirmations.TabIndex = 4;
@@ -233,7 +234,7 @@
             // checkViewDispatcher
             // 
             this.checkViewDispatcher.AutoSize = true;
-            this.checkViewDispatcher.Location = new System.Drawing.Point(6, 101);
+            this.checkViewDispatcher.Location = new System.Drawing.Point(6, 124);
             this.checkViewDispatcher.Name = "checkViewDispatcher";
             this.checkViewDispatcher.Size = new System.Drawing.Size(116, 17);
             this.checkViewDispatcher.TabIndex = 5;
@@ -242,9 +243,9 @@
             // 
             // tabOptions
             // 
-            this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tabOptions.Controls.Add(this.tabPageGeneral);
             this.tabOptions.Controls.Add(this.tabPageAudio);
             this.tabOptions.Controls.Add(this.tabPageVideo);
@@ -265,6 +266,7 @@
             this.tabPageGeneral.Controls.Add(this.comboBoxLanguage);
             this.tabPageGeneral.Controls.Add(this.checkViewDispatcher);
             this.tabPageGeneral.Controls.Add(this.checkSuppressConfirmations);
+            this.tabPageGeneral.Controls.Add(this.checkAlerterDisableExternal);
             this.tabPageGeneral.Controls.Add(this.checkAlerter);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
             this.tabPageGeneral.Controls.Add(this.checkGraduatedRelease);
@@ -280,7 +282,7 @@
             // labelLanguage
             // 
             this.labelLanguage.AutoSize = true;
-            this.labelLanguage.Location = new System.Drawing.Point(133, 127);
+            this.labelLanguage.Location = new System.Drawing.Point(133, 150);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
             this.labelLanguage.Size = new System.Drawing.Size(55, 13);
@@ -291,7 +293,7 @@
             // 
             this.comboBoxLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLanguage.FormattingEnabled = true;
-            this.comboBoxLanguage.Location = new System.Drawing.Point(6, 124);
+            this.comboBoxLanguage.Location = new System.Drawing.Point(6, 147);
             this.comboBoxLanguage.Name = "comboBoxLanguage";
             this.comboBoxLanguage.Size = new System.Drawing.Size(121, 21);
             this.comboBoxLanguage.TabIndex = 6;
@@ -404,6 +406,55 @@
             this.tabPageVideo.Text = "Video";
             this.tabPageVideo.UseVisualStyleBackColor = true;
             // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(86, 231);
+            this.label11.Margin = new System.Windows.Forms.Padding(3);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(110, 13);
+            this.label11.TabIndex = 18;
+            this.label11.Text = "Viewing distance (km)";
+            // 
+            // numericDistantMountainsViewingDistance
+            // 
+            this.numericDistantMountainsViewingDistance.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 229);
+            this.numericDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericDistantMountainsViewingDistance.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.numericDistantMountainsViewingDistance.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.numericDistantMountainsViewingDistance.Name = "numericDistantMountainsViewingDistance";
+            this.numericDistantMountainsViewingDistance.Size = new System.Drawing.Size(54, 20);
+            this.numericDistantMountainsViewingDistance.TabIndex = 17;
+            this.toolTip1.SetToolTip(this.numericDistantMountainsViewingDistance, "Distance to see mountains");
+            this.numericDistantMountainsViewingDistance.Value = new decimal(new int[] {
+            40,
+            0,
+            0,
+            0});
+            // 
+            // checkDistantMountains
+            // 
+            this.checkDistantMountains.AutoSize = true;
+            this.checkDistantMountains.Location = new System.Drawing.Point(6, 206);
+            this.checkDistantMountains.Name = "checkDistantMountains";
+            this.checkDistantMountains.Size = new System.Drawing.Size(110, 17);
+            this.checkDistantMountains.TabIndex = 16;
+            this.checkDistantMountains.Text = "Distant mountains";
+            this.checkDistantMountains.UseVisualStyleBackColor = true;
+            // 
             // label14
             // 
             this.label14.AutoSize = true;
@@ -496,7 +547,7 @@
             this.numericCab2DStretch.Size = new System.Drawing.Size(54, 20);
             this.numericCab2DStretch.TabIndex = 12;
             this.toolTip1.SetToolTip(this.numericCab2DStretch, "0 to clip cab view, 100 to stretch it. For cab views that match the display, use " +
-                    "100.");
+        "100.");
             // 
             // labelCab2DStretch
             // 
@@ -774,7 +825,7 @@
             this.buttonExport.TabIndex = 4;
             this.buttonExport.Text = "Export";
             this.toolTip1.SetToolTip(this.buttonExport, "Generate a listing of your keyboard assignments.  \r\nThe output is placed on your " +
-                    "desktop.");
+        "desktop.");
             this.buttonExport.UseVisualStyleBackColor = true;
             this.buttonExport.Click += new System.EventHandler(this.buttonExport_Click);
             // 
@@ -804,9 +855,9 @@
             // 
             // panelKeys
             // 
-            this.panelKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelKeys.AutoScroll = true;
             this.panelKeys.Location = new System.Drawing.Point(6, 6);
             this.panelKeys.Name = "panelKeys";
@@ -1166,7 +1217,7 @@
             this.label18.Size = new System.Drawing.Size(368, 26);
             this.label18.TabIndex = 0;
             this.label18.Text = "Use DataLogger to record your simulation data (in-game command: F12).\r\nPlease rem" +
-                "ember that the size of the dump file grows with the simulation time!";
+    "ember that the size of the dump file grows with the simulation time!";
             // 
             // checkDataLogMisc
             // 
@@ -1308,54 +1359,15 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             // 
-            // label11
+            // checkAlerterDisableExternal
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(86, 231);
-            this.label11.Margin = new System.Windows.Forms.Padding(3);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(110, 13);
-            this.label11.TabIndex = 18;
-            this.label11.Text = "Viewing distance (km)";
-            // 
-            // numericDistantMountainsViewingDistance
-            // 
-            this.numericDistantMountainsViewingDistance.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 229);
-            this.numericDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericDistantMountainsViewingDistance.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numericDistantMountainsViewingDistance.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.numericDistantMountainsViewingDistance.Name = "numericDistantMountainsViewingDistance";
-            this.numericDistantMountainsViewingDistance.Size = new System.Drawing.Size(54, 20);
-            this.numericDistantMountainsViewingDistance.TabIndex = 17;
-            this.toolTip1.SetToolTip(this.numericDistantMountainsViewingDistance, "Distance to see mountains");
-            this.numericDistantMountainsViewingDistance.Value = new decimal(new int[] {
-            40,
-            0,
-            0,
-            0});
-            // 
-            // checkDistantMountains
-            // 
-            this.checkDistantMountains.AutoSize = true;
-            this.checkDistantMountains.Location = new System.Drawing.Point(6, 206);
-            this.checkDistantMountains.Name = "checkDistantMountains";
-            this.checkDistantMountains.Size = new System.Drawing.Size(110, 17);
-            this.checkDistantMountains.TabIndex = 16;
-            this.checkDistantMountains.Text = "Distant mountains";
-            this.checkDistantMountains.UseVisualStyleBackColor = true;
+            this.checkAlerterDisableExternal.AutoSize = true;
+            this.checkAlerterDisableExternal.Location = new System.Drawing.Point(22, 29);
+            this.checkAlerterDisableExternal.Name = "checkAlerterDisableExternal";
+            this.checkAlerterDisableExternal.Size = new System.Drawing.Size(174, 17);
+            this.checkAlerterDisableExternal.TabIndex = 0;
+            this.checkAlerterDisableExternal.Text = "Disable alerter in external views";
+            this.checkAlerterDisableExternal.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1383,6 +1395,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).EndInit();
             this.tabPageVideo.ResumeLayout(false);
             this.tabPageVideo.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericDistantMountainsViewingDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericViewingDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericViewingFOV)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericCab2DStretch)).EndInit();
@@ -1405,7 +1418,6 @@
             this.tabPageEvaluate.ResumeLayout(false);
             this.tabPageEvaluate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericDistantMountainsViewingDistance)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1501,5 +1513,6 @@
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.NumericUpDown numericDistantMountainsViewingDistance;
         private System.Windows.Forms.CheckBox checkDistantMountains;
+        private System.Windows.Forms.CheckBox checkAlerterDisableExternal;
     }
 }

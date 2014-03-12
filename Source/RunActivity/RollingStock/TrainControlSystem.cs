@@ -59,6 +59,7 @@ namespace ORTS
 
         public bool AlerterButtonPressed;
         public bool Activated;
+        bool IsAlerterEnabled;
 
         string ScriptName;
         string SoundFileName;
@@ -172,6 +173,8 @@ namespace ORTS
 
         public void Initialize()
         {
+            IsAlerterEnabled = Simulator.Settings.Alerter;
+
             if (ScriptName != null && ScriptName != "MSTS")
             {
                 var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
@@ -207,7 +210,7 @@ namespace ORTS
             Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
             Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
             Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
-            Script.IsAlerterEnabled = () => Simulator.Settings.Alerter;
+            Script.IsAlerterEnabled = () => this.IsAlerterEnabled;
             Script.AlerterSound = () => Locomotive.AlerterSnd;
             Script.SetHorn = (value) => Locomotive.SignalEvent(value ? Event.HornOn : Event.HornOff);
             Script.SetFullBrake = () => Locomotive.TrainBrakeController.SetFullBrake();
@@ -363,14 +366,8 @@ namespace ORTS
             PostSpeedLimits.Clear();
             PostDistances.Clear();
 
-            // Auto-clear alerter when not in cabview
-            if (Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab)
-            {
-                if (AlerterButtonPressed)
-                    AlerterPressed(false);
-                else if (Locomotive.AlerterSnd)
-                    AlerterPressed(true);
-            }
+            IsAlerterEnabled = Simulator.Settings.Alerter
+                & !(Simulator.Settings.AlerterDisableExternal & Simulator.Confirmer.Viewer.Camera.Style != ORTS.Viewer3D.Camera.Styles.Cab);
 
             Script.Update();
         }
@@ -528,8 +525,8 @@ namespace ORTS
 
         void UpdateVigilance()
         {
-            if (!IsAlerterEnabled())
-                return;
+            if (AlerterSound() && !IsAlerterEnabled())
+                HandleEvent(TCSEvent.AlerterPressed, String.Empty);
 
             VigilanceAlarm = VigilanceAlarmTimer.Triggered;
             VigilanceEmergency = VigilanceEmergencyTimer.Triggered;

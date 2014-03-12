@@ -77,6 +77,7 @@ namespace ORTS
 
             // General tab
             checkAlerter.Checked = Settings.Alerter;
+            checkAlerterDisableExternal.Checked = Settings.AlerterDisableExternal;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             checkSuppressConfirmations.Checked = Settings.SuppressConfirmations;
@@ -230,6 +231,7 @@ namespace ORTS
 
             // General tab
             Settings.Alerter = checkAlerter.Checked;
+            Settings.AlerterDisableExternal = checkAlerterDisableExternal.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.SuppressConfirmations = checkSuppressConfirmations.Checked;

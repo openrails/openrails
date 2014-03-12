@@ -1886,8 +1886,8 @@ namespace ORTS
         {
             switch (evt)
             {
-                case Event.VigilanceAlarmOn: { AlerterSnd = true; Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.On); break; }
-                case Event.VigilanceAlarmOff: { AlerterSnd = false; Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.Off); break; }
+                case Event.VigilanceAlarmOn: { AlerterSnd = true; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.On); break; }
+                case Event.VigilanceAlarmOff: { AlerterSnd = false; if (Simulator.Settings.Alerter) Simulator.Confirmer.Confirm(CabControl.Alerter, CabSetting.Off); break; }
                 case Event.BellOn: { Bell = true; if (Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.On); break; }
                 case Event.BellOff: { Bell = false; Simulator.Confirmer.Confirm(CabControl.Bell, CabSetting.Off); break; }
                 case Event.HornOn:

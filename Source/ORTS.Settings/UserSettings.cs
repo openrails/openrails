@@ -87,7 +87,9 @@ namespace ORTS.Settings
 		// General settings:
 		[Default(false)]
 		public bool Alerter { get; set; }
-		[Default(false)]
+        [Default(false)]
+        public bool AlerterDisableExternal { get; set; }
+        [Default(false)]
 		public bool GraduatedRelease { get; set; }
 		[Default(21)]
 		public int BrakePipeChargingRate { get; set; }
