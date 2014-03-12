@@ -1227,30 +1227,6 @@ namespace ORTS.Viewer3D.RollingStock
             return (float)((data - Control.MinValue) / (Control.MaxValue - Control.MinValue));
         }
 
-        protected float GetRangeFractionLoadMeter()
-        {
-            var minValuePos = 0;
-            var data = Locomotive.GetDataOf(Control);
-            if (data >= 0)
-            {
-                if (data < minValuePos)
-                    return 0;
-                if (data > Control.MaxValue)
-                    return 1;
-
-                return (float)((data - minValuePos) / (Control.MaxValue - minValuePos));
-            }
-            else    // Dynamic Break
-            {
-                if (data > minValuePos)
-                    return 0;
-                if (data < Control.MinValue)
-                    return -1;
-
-                return -(float)((Math.Abs(data) - minValuePos) / (Math.Abs(Control.MinValue) - minValuePos));
-            }
-        }
-
         [CallOnThread("Updater")]
         public virtual void PrepareFrame(RenderFrame frame)
         {
@@ -1405,70 +1381,31 @@ namespace ORTS.Viewer3D.RollingStock
             var xratio = (float)Viewer.DisplaySize.X / 640;
             var yratio = (float)Viewer.CabHeightPixels / 480;
 
-            float percent, xpos, ypos;
-            if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Control.ControlType != CABViewControlTypes.FIREBOX)
-            {
-                percent = GetRangeFractionLoadMeter();
-                LoadMeterPositive = percent >= 0;
-                Gauge.Direction = LoadMeterPositive ? 0 : 1;
-                percent = Math.Abs(percent);
-            }
-            else if (IsFire)
-            {
-                percent = 1;
-            }
-            else
-            {
-                percent = GetRangeFraction();
-            }
+            float percent, xpos, ypos, zeropos;
+
+            percent = IsFire ? 1f : GetRangeFraction();
+            LoadMeterPositive = percent >= 0;
 
             if (Gauge.Orientation == 0)  // gauge horizontal
             {
                 ypos = (float)Gauge.Height;
-                var adjustGaugeWidth = (float)Gauge.Width * (float)Control.MaxValue / (float)(Control.MaxValue - Control.MinValue);
-                if (Gauge.Direction == 0)  // bar grows from left
-                {
-                    if ((Control.MinValue < 0) && LoadMeterPositive)
-                        xpos = adjustGaugeWidth * percent;
-                    else
-                        xpos = (float)Gauge.Width * percent;
-                }
-                else  // bar grows from right
-                {
-                    if ((Control.MinValue < 0) && !LoadMeterPositive)
-                        xpos = (adjustGaugeWidth - 1) * percent;
-                    else
-                        xpos = (float)Gauge.Width * percent;
-                }
+                zeropos = (float)(Gauge.Width * -Control.MinValue / (Control.MaxValue - Control.MinValue));
+                xpos = (float)Gauge.Width * percent;
             }
             else  // gauge vertical
             {
                 xpos = (float)Gauge.Width;
-                var adjustGaugeHeight = (float)Gauge.Height * (float)Control.MaxValue / (float)(Control.MaxValue - Control.MinValue);
-                // Gauge.Direction is considered later below, no need to deal with it here, just calculate as if bar gown from bottom
-                if (Control.MinValue < 0 && !LoadMeterPositive)
-                    ypos = (adjustGaugeHeight - 1) * percent;
-                else
-                    ypos = (float)Gauge.Height * percent;
+                zeropos = (float)(Gauge.Height * -Control.MinValue / (Control.MaxValue - Control.MinValue));
+                ypos = (float)Gauge.Height * percent;
             }
 
             if (Gauge.ControlStyle == CABViewControlStyles.SOLID || Gauge.ControlStyle == CABViewControlStyles.LIQUID)
             {
                 if (Control.MinValue < 0)
                 {
-                    if (LoadMeterPositive)  // left hand start position
-                    {
-                        // gauge width - area  offset to center
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + (float)Gauge.Width * (float)Control.MinValue / (float)(Control.MinValue - Control.MaxValue)));
-                    }
-                    else
-                    {
-                        var centDrec = (int)(xratio * (Control.PositionX + (float)Gauge.Width * (float)Control.MinValue / (float)(Control.MinValue - Control.MaxValue)));
-                        DestinationRectangle.X = centDrec - (int)(xratio * xpos);
-                    }
-                    // Cab view vertical position adjusted to allow for clip or stretch.
+                    DestinationRectangle.X = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos)));
                     DestinationRectangle.Y = (int)(yratio * Control.PositionY) + Viewer.CabYOffsetPixels;
-                    DestinationRectangle.Width = (int)(xratio * xpos);
+                    DestinationRectangle.Width = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
                     DestinationRectangle.Height = (int)(yratio * ypos);
                 }
                 else
@@ -1507,7 +1444,7 @@ namespace ORTS.Viewer3D.RollingStock
                 DestinationRectangle.Width = (int)(xratio * Gauge.Area.Width);
                 DestinationRectangle.Height = (int)(yratio * Gauge.Area.Height);
 
-                // Adjust coal texture height, because it mustn't show up at the bootom of door (see Scotsman)
+                // Adjust coal texture height, because it mustn't show up at the bottom of door (see Scotsman)
                 // TODO: cut the texture at the bottom instead of stretching
                 if (Gauge is CVCFirebox)
                     DestinationRectangle.Height = Math.Min(DestinationRectangle.Height, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - DestinationRectangle.Y);
