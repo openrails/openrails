@@ -28,6 +28,9 @@ namespace Tests
 {
     public class STF
     {
+        const double Metre3ToLitres = 1000;
+        const double PascalToPSI = 0.0001450377438972831;
+
         [Fact]
         public void EmptyFile()
         {
@@ -380,10 +383,13 @@ namespace Tests
         public void UnitConversionBase_MSTS_Pressure()
         {
             // Note: This unit returns values in PSI, not pascal.
-            const double PascalToPSI = 0.0001450377438972831;
+            // TODO: UnitConversionTest("1.2pascal", 1.2 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
             // TODO: UnitConversionTest("1.2pascal", 1.2 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
+            // TODO: UnitConversionTest("1.2mbar", 120 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
             // TODO: UnitConversionTest("1.2mbar", 120 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
+            UnitConversionTest("1.2bar", 120000 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
             UnitConversionTest("1.2bar", 120000 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
+            UnitConversionTest("1.2psi", 8273.7084 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
             UnitConversionTest("1.2psi", 8273.7084 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
         }
 
@@ -423,11 +429,23 @@ namespace Tests
         public void UnitConversionBase_MSTS_Time()
         {
             // TODO: UnitConversionTest("1.2us", 0.0000012, STFReader.UNITS.Time);
+            // TODO: UnitConversionTest("1.2us", 0.0000012, STFReader.UNITS.TimeDefaultM);
+            // TODO: UnitConversionTest("1.2us", 0.0000012, STFReader.UNITS.TimeDefaultH);
             // TODO: UnitConversionTest("1.2ms", 0.0012, STFReader.UNITS.Time);
+            // TODO: UnitConversionTest("1.2ms", 0.0012, STFReader.UNITS.TimeDefaultM);
+            // TODO: UnitConversionTest("1.2ms", 0.0012, STFReader.UNITS.TimeDefaultH);
             UnitConversionTest("1.2s", 1.2, STFReader.UNITS.Time);
+            UnitConversionTest("1.2s", 1.2, STFReader.UNITS.TimeDefaultM);
+            UnitConversionTest("1.2s", 1.2, STFReader.UNITS.TimeDefaultH);
             // TODO: UnitConversionTest("1.2min", 72, STFReader.UNITS.Time);
+            // TODO: UnitConversionTest("1.2min", 72, STFReader.UNITS.TimeDefaultM);
+            // TODO: UnitConversionTest("1.2min", 72, STFReader.UNITS.TimeDefaultH);
             UnitConversionTest("1.2h", 4320, STFReader.UNITS.Time);
+            UnitConversionTest("1.2h", 4320, STFReader.UNITS.TimeDefaultM);
+            UnitConversionTest("1.2h", 4320, STFReader.UNITS.TimeDefaultH);
             // TODO: UnitConversionTest("1.2d", 103680, STFReader.UNITS.Time);
+            // TODO: UnitConversionTest("1.2d", 103680, STFReader.UNITS.TimeDefaultM);
+            // TODO: UnitConversionTest("1.2d", 103680, STFReader.UNITS.TimeDefaultH);
         }
 
         /* Base units for velocity available in MSTS:
@@ -438,7 +456,9 @@ namespace Tests
         public void UnitConversionBase_MSTS_Velocity()
         {
             UnitConversionTest("1.2kmh", 0.3333333333333333, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2kmh", 0.3333333333333333, STFReader.UNITS.SpeedDefaultMPH);
             UnitConversionTest("1.2mph", 0.536448, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2mph", 0.536448, STFReader.UNITS.SpeedDefaultMPH);
         }
 
         /* Base units for voltage available in MSTS:
@@ -462,7 +482,9 @@ namespace Tests
         public void UnitConversionBase_MSTS_Volume()
         {
             UnitConversionTest("1.2l", 1.2, STFReader.UNITS.Volume);
+            UnitConversionTest("1.2l", 1.2, STFReader.UNITS.VolumeDefaultFT3);
             UnitConversionTest("1.2gal", 4.5424941408, STFReader.UNITS.Volume); // Note: US gallons.
+            UnitConversionTest("1.2gal", 4.5424941408, STFReader.UNITS.VolumeDefaultFT3); // Note: US gallons.
         }
 
         [Fact]
@@ -501,14 +523,15 @@ namespace Tests
         public void UnitConversionDerived_MSTS_Velocity()
         {
             UnitConversionTest("1.2m/s", 1.2, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2m/s", 1.2, STFReader.UNITS.SpeedDefaultMPH);
             UnitConversionTest("1.2km/h", 0.333333333333333, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2km/h", 0.333333333333333, STFReader.UNITS.SpeedDefaultMPH);
         }
 
         [Fact]
         public void UnitConversionDerived_MSTS_Volume()
         {
             // Note: This unit returns values in litres, not cubic metres.
-            const double Metre3ToLitres = 1000;
             // TODO: UnitConversionTest("1.2mm^3", 0.0000000012 * Metre3ToLitres, STFReader.UNITS.Volume);
             // TODO: UnitConversionTest("1.2cm^3", 0.0000012 * Metre3ToLitres, STFReader.UNITS.Volume);
             UnitConversionTest("1.2m^3", 1.2 * Metre3ToLitres, STFReader.UNITS.Volume);
@@ -518,6 +541,45 @@ namespace Tests
             // TODO: UnitConversionTest("1.2\'^3", 0.0339802159104 * Metre3ToLitres, STFReader.UNITS.Volume);
             UnitConversionTest("1.2ft^3", 0.0339802159104 * Metre3ToLitres, STFReader.UNITS.Volume);
             // TODO: UnitConversionTest("1.2mil^3", 5001818190.5286955008 * Metre3ToLitres, STFReader.UNITS.Volume);
+        }
+
+        /* Default unit for pressure in MSTS is seconds.
+         */
+        [Fact]
+        public void UnitConversionDefault_MSTS_Pressure()
+        {
+            UnitConversionTest("1.2", 4062.984 * PascalToPSI, STFReader.UNITS.PressureDefaultInHg);
+            UnitConversionTest("1.2", 120000 * PascalToPSI, STFReader.UNITS.PressureDefaultPSI);
+        }
+
+        /* Default unit for time in MSTS is seconds.
+         */
+        [Fact]
+        public void UnitConversionDefault_MSTS_Time()
+        {
+            UnitConversionTest("1.2", 1.2, STFReader.UNITS.Time);
+            UnitConversionTest("1.2", 72, STFReader.UNITS.TimeDefaultM);
+            UnitConversionTest("1.2", 4320, STFReader.UNITS.TimeDefaultH);
+        }
+
+        /* Default unit for velocity in MSTS is UNKNOWN.
+         */
+        [Fact]
+        public void UnitConversionDefault_MSTS_Velocity()
+        {
+            //UnitConversionTest("1.2", UNKNOWN, STFReader.UNITS.Speed);
+            UnitConversionTest("1.2", 0.536448, STFReader.UNITS.SpeedDefaultMPH);
+        }
+
+        /* Default unit for volume in MSTS is UNKNOWN.
+         */
+        [Fact]
+        public void UnitConversionDefault_MSTS_Volume()
+        {
+            // Note: This unit returns values in litres, not cubic metres.
+            //UnitConversionTest("1.2", UNKNOWN, STFReader.UNITS.Volume);
+            // Note: This unit is broken and returns values in ft^3, not cubic metres.
+            UnitConversionTest("1.2", 0.0339802159104 * Metre3ToLitres, STFReader.UNITS.VolumeDefaultFT3);
         }
 
         /* The following units are currently accepted by Open Rails but have no bearing in MSTS:
