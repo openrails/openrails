@@ -44,6 +44,9 @@ namespace ORTS.Processes
     [ServiceContract]
     public interface ITrainLocationUpdater
     {
+        /// <summary>
+        /// Return a string giving the location of the train
+        /// </summary>
         [OperationContract]
         string getTrainLocation();
     }
@@ -57,7 +60,7 @@ namespace ORTS.Processes
 
         public string getTrainLocation()
         {
-            ///this is the actual message sent from ORTS to trackviewer
+            //this is the actual message sent from ORTS to trackviewer
             return string.Format("FrontTDB:{0}:{1}:{2}:{3}", traveller.TileX, traveller.TileZ, traveller.Location.X, traveller.Location.Z);
         }
     }
@@ -106,7 +109,8 @@ namespace ORTS.Processes
         /// <summary>
         /// This routine needs to be called from ORTS to set the train status.
         /// </summary>
-        /// <param name="traveller"></param>
+        /// <param name="trainType">Type of train (AI, player) ...</param>
+        /// <param name="traveller">The traveller giving the location of the train</param>
         public static void SendTrainStatusToTrackviewer(ORTS.Train.TRAINTYPE trainType, Traveller traveller)
         {
             if (host == null) StartServer();

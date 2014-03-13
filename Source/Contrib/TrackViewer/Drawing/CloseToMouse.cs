@@ -35,10 +35,11 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class CloseToMouse
     {
+        /// <summary>Distance squared from the mouse to the closest item</summary>
         protected float closestMouseDistanceSquared;
-        public string type;  // type to be used in statusbar
-
-        // Distance (squared) from mouse to the closest item
+        /// <summary>type to be used in statusbar</summary>
+        public string type;
+        /// <summary>Distance (squared) from mouse to the closest item.</summary>
         public virtual float ClosestMouseDistanceSquared { get { return closestMouseDistanceSquared; } }
 
         /// <summary>
@@ -83,17 +84,30 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class CloseToMouseJunctionOrEnd:CloseToMouse
     {
-        public TrackNode junctionOrEndNode;
+        /// <summary>Tracknode of the closest junction or end node</summary>
+        public TrackNode junctionOrEndNode { get; private set; }
+
+        /// <summary>
+        /// Reset the calculation of which item (junction) is closest to the mouse
+        /// </summary>
         public override void Reset()
         {
             base.Reset();
             junctionOrEndNode = null;
         }
 
+        /// <summary>
+        /// Constructor, creating an empty object
+        /// </summary>
         public CloseToMouseJunctionOrEnd()
         {
         }
 
+        /// <summary>
+        /// Constructor that immediately sets the closest item (and distance)
+        /// </summary>
+        /// <param name="junctionOrEndNode">Actual tracknode to store as closest item</param>
+        /// <param name="type">Type to use for printing out</param>
         public CloseToMouseJunctionOrEnd(TrackNode junctionOrEndNode, string type)
         {
             closestMouseDistanceSquared = 0;
@@ -126,12 +140,20 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class CloseToMouseItem:CloseToMouse
     {
-        public TrItem trItem;
+        /// <summary>Link to the item that is closest to the mouse</summary>
+        public TrItem trItem { get; set; }
 
+        /// <summary>
+        /// Constructor, creating an empty object
+        /// </summary>
         public CloseToMouseItem()
         {
         }
 
+        /// <summary>
+        /// Constructor that immediately sets the closest item (and distance)
+        /// </summary>
+        /// <param name="item">track item to store as closest item</param>
         public CloseToMouseItem(TrItem item)
         {
             trItem = item;
@@ -155,8 +177,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="location">Location to check</param>
         /// <param name="mouseLocation">Current mouse location</param>
         /// <param name="trItem">The track Item that will be stored when it is indeed the closest</param>
-        /// <param name="type">The type of item (needed for later printing in statusbar)</param>
-        public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, TrItem trItem)
+         public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, TrItem trItem)
         {
             float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
 
@@ -189,11 +210,15 @@ namespace ORTS.TrackViewer.Drawing
         // The biggest issue is for a long track close to a region with lots junctions and hence small track segments
         private const int maxNumberOfCandidates = 50;
 
-        //Properties
+        /// <summary>Tracknode that is closest</summary>
         public TrackNode TrackNode { get { calcRealDistances(); return sortedTrackCandidates.First().Value.trackNode; } }
+        /// <summary>Vectorsection within the tracnode</summary>
         public TrVectorSection VectorSection { get { calcRealDistances(); return sortedTrackCandidates.First().Value.vectorSection; } }
+        /// <summary>Index of vector section that is closest to the mouse</summary>
         public int TrackVectorSectionIndex { get { calcRealDistances(); return sortedTrackCandidates.First().Value.trackVectorSectionIndex; } }
+        /// <summary>Distance along the track describing precisely where the mouse is</summary>
         public float DistanceAlongTrack { get { calcRealDistances(); return sortedTrackCandidates.First().Value.distanceAlongSection; } }
+        /// <summary>Distance (squared) between mouse and closest track location</summary>
         public override float ClosestMouseDistanceSquared { get { calcRealDistances(); return (float)sortedTrackCandidates.First().Key; } }
 
         /// <summary>
@@ -205,6 +230,11 @@ namespace ORTS.TrackViewer.Drawing
             this.tsectionDat = tsectionDat;
         }
 
+        /// <summary>
+        /// Constructor that immediately sets the closest item (and distance)
+        /// </summary>
+        /// <param name="tn">Tracknode that will be stored as closest item</param>
+        /// <param name="tsectionDat">The track section Dat file that we can use to calculate the distance to the track</param>
         public CloseToMouseTrack(TSectionDatFile tsectionDat, TrackNode tn)
         {
             this.tsectionDat = tsectionDat;

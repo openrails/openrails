@@ -109,7 +109,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Set the track coloring depening on user choise
         /// </summary>
-        /// <param name="doColoring"></param>
+        /// <param name="doColoring">Boolean describing whether tracks will be colored or not (i.e. using a flat color)</param>
+        /// <param name="doTiles">Boolean describing whether tiles will be shown or not</param>
         public static void setTrackColors(bool doColoring, bool doTiles)
         {
             if (doTiles)

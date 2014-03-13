@@ -17,7 +17,7 @@
 //
 //
 //
-//TODO list for Trackviewer      
+//TO-DO list for Trackviewer      
 // Ideas from others
 //      Be able to list the issues directly without going through the ORTS logfile
 //      Make it XNA independent.
@@ -27,10 +27,11 @@
 //
 // Release issues 
 //      Always: 1. Update SVN. 
-//              2. look at all todos and remove temporary changes. 
+//              2. look at all to-dos and remove temporary changes. 
 //              3. update version. 
 //              4. remove debug. 
-//              5. test
+//              5. Set xml compiler version on, check all xml warnings, and turn it off again.
+//              6. test
 //
 // Little things
 //      Add y to statusbar, but perhaps only for items?
@@ -99,40 +100,65 @@ namespace ORTS.TrackViewer
     /// </summary>
     public class TrackViewer : Microsoft.Xna.Framework.Game
     {
-        public readonly static string TrackViewerVersion = "2014/03/11";
+        /// <summary>String showing the version of the program</summary>
+        public readonly static string TrackViewerVersion = "2014/03/13";
+        /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
              
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        public Folder installFolder;
-        public List<Route> routes;
-        public List<Path> paths;
-        public Route route;    // Route, ie with a path c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's
-        private Route defaultRoute; // Route that was used last time
+        /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
+        public Folder InstallFolder { get; private set; }
+        /// <summary>List of available routes (in the install directory)</summary>
+        public List<Route> Routes { get; private set; }
+        /// <summary>List of available paths in the current route</summary>
+        public List<Path> Paths { get; private set; }
+        /// <summary>Route, ie with a path c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's</summary>
+        public Route CurrentRoute { get; private set; } 
+        /// <summary>Route that was used last time</summary>
+        private Route DefaultRoute;
+        /// <summary>Width of the drawing screen in pixels</summary>
+        public int ScreenW { get; private set; }
+        /// <summary>Height of the drawing screen in pixels</summary>
+        public int ScreenH { get; private set; }
 
-        public int screenW;
-        public int screenH;
+        /// <summary>(Draw)trackDB, that also contains the track data base and the track section data</summary>
+        public DrawTrackDB drawTrackDB { get; private set; }
 
-        public DrawTrackDB drawTrackDB;
-        
-        public DrawArea drawArea;
-        public ShadowDrawArea drawAreaInset;
-        public DrawScaleRuler drawScaleRuler;
-        public DrawTrains drawTrains;
-        public DrawWorldTiles drawWorldTiles;
+        /// <summary>Main draw area</summary>
+        public DrawArea drawArea { get; private set; }
+        /// <summary>Draw area for the inset</summary>
+        ShadowDrawArea drawAreaInset;
+        /// <summary>The scale ruler to draw on screen</summary>
+        DrawScaleRuler drawScaleRuler;
+        /// <summary>The routines to draw trains from runactivy</summary>
+        DrawTrains drawTrains;
+        /// <summary>The routines to draw the world tiles</summary>
+        DrawWorldTiles drawWorldTiles;
 
-        public PathEditor pathEditor;
-        public DrawPATfile drawPATfile;      
+        /// <summary>The Path editor</summary>
+        public PathEditor pathEditor { get; private set; }
+        /// <summary>The routines to draw the .pat file</summary>
+        public DrawPATfile drawPATfile;
 
-        private MenuControl menuControl;
-        private StatusBarControl statusBarControl;
+        /// <summary>The menu at the top</summary>
+        MenuControl menuControl;
+        /// <summary>The status bar at the bottom</summary>
+        StatusBarControl statusBarControl;
+        /// <summary>The frame rate</summary>
         public SmoothedData FrameRate { get; private set; }
 
+        /// <summary></summary>
         private bool lostFocus;  //when we have lost focus, we do not want to enable shifting with mouse
+        /// <summary></summary>
         private int skipDrawAmount = 0; // number of times we want to skip draw because nothing happened
+        /// <summary></summary>
         private const int maxSkipDrawAmount = 10;
 
+        /// <summary>
+        /// Constructor. This is where it all starts.
+        /// </summary>
         public TrackViewer()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -141,8 +167,8 @@ namespace ORTS.TrackViewer
             Content.RootDirectory = "Content";
             //graphics.PreferredBackBufferHeight = screenH;
             //graphics.PreferredBackBufferWidth  = screenW;
-            screenH = graphics.PreferredBackBufferHeight;
-            screenW = graphics.PreferredBackBufferWidth;
+            ScreenH = graphics.PreferredBackBufferHeight;
+            ScreenW = graphics.PreferredBackBufferWidth;
             setAliasing();
             graphics.IsFullScreen = false;
             Window.AllowUserResizing = true;
@@ -155,15 +181,19 @@ namespace ORTS.TrackViewer
             FrameRate = new SmoothedData(0.5f);
         }
 
+        /// <summary>
+        /// Set aliasing depending on the settings (set in the menu)
+        /// </summary>
         public void setAliasing()
         {
-            graphics.PreferMultiSampling = Properties.Settings.Default.doAntiAliasing; // Personally, I do not think anti-aliasing looks crisp at all
+            // Personally, I do not think anti-aliasing looks crisp at all
+            graphics.PreferMultiSampling = Properties.Settings.Default.doAntiAliasing;
         }
 
         void Window_ClientSizeChanged(object sender, EventArgs e)
         {
-            screenW = Window.ClientBounds.Width;
-            screenH = Window.ClientBounds.Height;
+            ScreenW = Window.ClientBounds.Width;
+            ScreenH = Window.ClientBounds.Height;
             setSubwindowSizes();
         }
 
@@ -201,10 +231,10 @@ namespace ORTS.TrackViewer
                 }
                 catch {}
             }
-            installFolder = new Folder("default", Properties.Settings.Default.installDirectory);
+            InstallFolder = new Folder("default", Properties.Settings.Default.installDirectory);
             try
             {
-                findRoutes(installFolder);
+                findRoutes(InstallFolder);
             }
             catch
             {
@@ -221,12 +251,12 @@ namespace ORTS.TrackViewer
             int insetRatio = 10;
             int menuHeight = menuControl.menuHeight;
             int statusbarHeight = statusBarControl.statusbarHeight;
-            menuControl.setScreenSize(screenW, menuHeight);
-            statusBarControl.setScreenSize(screenW, statusbarHeight, screenH);
+            menuControl.setScreenSize(ScreenW, menuHeight);
+            statusBarControl.setScreenSize(ScreenW, statusbarHeight, ScreenH);
 
-            drawArea.SetScreenSize(0, menuHeight, screenW, screenH - statusbarHeight - menuHeight);
-            drawAreaInset.SetScreenSize(screenW - screenW / insetRatio, menuHeight + 1, screenW / insetRatio, screenH / insetRatio);
-            drawScaleRuler.SetLowerLeftPoint(10, screenH - statusbarHeight - 10);
+            drawArea.SetScreenSize(0, menuHeight, ScreenW, ScreenH - statusbarHeight - menuHeight);
+            drawAreaInset.SetScreenSize(ScreenW - ScreenW / insetRatio, menuHeight + 1, ScreenW / insetRatio, ScreenH / insetRatio);
+            drawScaleRuler.SetLowerLeftPoint(10, ScreenH - statusbarHeight - 10);
 
         }
  
@@ -345,7 +375,7 @@ namespace ORTS.TrackViewer
 
             if (TVUserInput.IsMouseRightButtonPressed() && pathEditor!= null && pathEditor.EditingIsActive)
             {
-                pathEditor.PopupContextMenu(TVUserInput.MouseState.X, TVUserInput.MouseState.Y);
+                pathEditor.PopupContextMenu(TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
             }
 
             drawArea.update();
@@ -369,6 +399,10 @@ namespace ORTS.TrackViewer
             
         }
 
+        /// <summary>
+        /// Delegate that can be called by routines such that we can draw it to the screen
+        /// </summary>
+        /// <param name="message">Message to draw</param>
         public delegate void messageDelegate(string message);
         
         /// <summary>
@@ -383,7 +417,7 @@ namespace ORTS.TrackViewer
             GraphicsDevice.Clear(DrawColors.colorsNormal["clearwindow"]);
             spriteBatch.Begin();
             // it is better to have integer locations, otherwise text is difficult to read
-            Vector2 messageLocation = new Vector2((float) Math.Round(screenW / 2f), (float) Math.Round(screenH / 2f));
+            Vector2 messageLocation = new Vector2((float) Math.Round(ScreenW / 2f), (float) Math.Round(ScreenH / 2f));
             BasicShapes.DrawStringLoading(messageLocation, Color.Black, message);
 
             // we have to redo the, because we now first have to load the characters into textures.
@@ -481,9 +515,9 @@ namespace ORTS.TrackViewer
             string folderPath = "";
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            if (installFolder != null)
+            if (InstallFolder != null)
             {
-                folderBrowserDialog.SelectedPath = installFolder.Path;
+                folderBrowserDialog.SelectedPath = InstallFolder.Path;
             }
             folderBrowserDialog.ShowNewFolderButton = false;
             DialogResult dialogResult = folderBrowserDialog.ShowDialog();
@@ -499,10 +533,10 @@ namespace ORTS.TrackViewer
                 {
                     Folder newInstallFolder = new Folder("installFolder", folderPath);
                     findRoutes(newInstallFolder);
-                    installFolder = newInstallFolder;
+                    InstallFolder = newInstallFolder;
              
                     // make sure the current route is disabled,
-                    route = null;
+                    CurrentRoute = null;
                     drawTrackDB = null;
 
                     Properties.Settings.Default.installDirectory = folderPath;
@@ -527,18 +561,18 @@ namespace ORTS.TrackViewer
             if (newRoutes.Count > 0)
             {
                 // set default route
-                defaultRoute = newRoutes[0];
+                DefaultRoute = newRoutes[0];
                 foreach (Route tryRoute in newRoutes)
                 {
                     string dirName = tryRoute.Path.Split('\\').Last();
                     if (dirName == Properties.Settings.Default.defaultRoute)
                     {
-                        defaultRoute = tryRoute;
+                        DefaultRoute = tryRoute;
                     }
                 }
                 //setRoute(defaultRoute);
 
-                routes = newRoutes;
+                Routes = newRoutes;
                 menuControl.populateRoutes();
             }
             else
@@ -553,13 +587,13 @@ namespace ORTS.TrackViewer
         /// </summary>
         public void setDefaultRoute()
         {
-            setRoute(defaultRoute);
+            setRoute(DefaultRoute);
         }
 
         /// <summary>
         /// Set and load a new route
         /// </summary>
-        /// <param name="newRoutePath">The directory name of the route</param>
+        /// <param name="newRoute">The route to load, containing amongst other the directory name of the route</param>
         public void setRoute(Route newRoute)
         {
             if (newRoute == null) return;
@@ -570,24 +604,24 @@ namespace ORTS.TrackViewer
             {
                 messageDelegate messageHandler = new messageDelegate(DrawLoadingMessage);
                 drawTrackDB = new DrawTrackDB(newRoute.Path, messageHandler);
-                route = newRoute;
+                CurrentRoute = newRoute;
 
-                Properties.Settings.Default.defaultRoute = route.Path.Split('\\').Last();
-                if (Properties.Settings.Default.zoomRoutePath != route.Path)
+                Properties.Settings.Default.defaultRoute = CurrentRoute.Path.Split('\\').Last();
+                if (Properties.Settings.Default.zoomRoutePath != CurrentRoute.Path)
                 {
                     Properties.Settings.Default.zoomScale = -1; // To disable the use of zoom reset
                 }
                 Properties.Settings.Default.Save();
                 drawArea.zoomReset(drawTrackDB);
                 drawAreaInset.zoomReset(drawTrackDB);
-                Window.Title = "TrackViewer: " + drawTrackDB.routeName;
+                Window.Title = "TrackViewer: " + drawTrackDB.RouteName;
             }
             catch
             {
                 MessageBox.Show("Route cannot be loaded. Sorry");
             }
 
-            if (route == null) return;
+            if (CurrentRoute == null) return;
 
             try
             {
@@ -597,7 +631,7 @@ namespace ORTS.TrackViewer
 
             try
             {
-                drawWorldTiles.SetRoute(route.Path);
+                drawWorldTiles.SetRoute(CurrentRoute.Path);
             }
             catch { }
 
@@ -610,8 +644,8 @@ namespace ORTS.TrackViewer
         /// </summary>
         private void findPaths()
         {
-            List<Path> newPaths = Path.GetPaths(route).OrderBy(r => r.Name).ToList();
-            paths = newPaths;
+            List<Path> newPaths = Path.GetPaths(CurrentRoute).OrderBy(r => r.Name).ToList();
+            Paths = newPaths;
             menuControl.populatePaths();
             setPath(null);   
         }
@@ -701,11 +735,12 @@ namespace ORTS.TrackViewer
         {
             //Properties.Settings.Default.statusShowFPS = false;
             //setDefaultRoute();
-            //setPath(paths[0]);
+            //setPath(Paths[0]);
             //drawArea.zoomToTile();
             //drawArea.zoomCentered(-15);
             //////CenterAroundTrackNode(200);
-            //drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);
+            //drawArea.ShiftToLocation(pathEditor.CurrentLocation);
+            ////drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);
 
             //pathEditor.EditingIsActive = true;
             //pathEditor.ExtendPathFull();

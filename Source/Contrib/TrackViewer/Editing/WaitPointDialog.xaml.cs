@@ -21,6 +21,13 @@ namespace ORTS.TrackViewer.Editing
     /// </summary>
     public partial class WaitPointDialog : Window
     {
+        /// <summary>
+        /// Create the dialog to edit the metadata of the waitpoint dialog.
+        /// </summary>
+        /// <param name="mouseX">Current X-location of the mouse to determine popup location</param>
+        /// <param name="mouseY">Current Y-location of the mouse to determine popu location</param>
+        /// <param name="currentWaitTimeS">Current value of the wait time (only valid if wait until is zero)</param>
+        /// <param name="currentWaitUntil">Current value of the wait-until time</param>
         public WaitPointDialog(int mouseX, int mouseY, int currentWaitTimeS, int currentWaitUntil)
         {
             InitializeComponent();
@@ -57,10 +64,13 @@ namespace ORTS.TrackViewer.Editing
             DialogResult = false;
         }
 
+        ///<summary>Return whether the 'until' check-box has been selected or not</summary>
         public bool UntilSelected()
         {
             return (bool)selectUntil.IsChecked;
         }
+
+        ///<summary>Return the selected wait time in seconds</summary>
         public int GetWaitTime()
         {
             return 60*(Convert.ToInt32(waitTimeHours.Text) * 60 + Convert.ToInt32(waitTimeMinutes.Text));

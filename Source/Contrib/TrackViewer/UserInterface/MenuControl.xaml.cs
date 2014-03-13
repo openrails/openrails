@@ -55,6 +55,7 @@ namespace ORTS.TrackViewer.UserInterface
     /// </summary>
     public partial class MenuControl : System.Windows.Controls.UserControl
     {
+        /// <summary>Height of the menu in pixels</summary>
         public int menuHeight;
         private TrackViewer trackViewer;
         private ElementHost elementHost;
@@ -231,8 +232,8 @@ namespace ORTS.TrackViewer.UserInterface
         public void populateRoutes()
         {
             menuSelectRoute.Items.Clear();
-            if (trackViewer.routes == null) return;
-            foreach (ORTS.Menu.Route route in trackViewer.routes)
+            if (trackViewer.Routes == null) return;
+            foreach (ORTS.Menu.Route route in trackViewer.Routes)
             {
                 MenuItem menuItem = new MenuItem();
                 menuItem.Header = route.Name;
@@ -251,7 +252,7 @@ namespace ORTS.TrackViewer.UserInterface
         private void menuSelectRoute_Click(object sender, RoutedEventArgs e)
         {
             MenuItem selectedMenuItem = sender as MenuItem;
-            foreach (ORTS.Menu.Route route in trackViewer.routes)
+            foreach (ORTS.Menu.Route route in trackViewer.Routes)
             {
                 if (route.Name == (string)selectedMenuItem.Header)
                 {
@@ -275,8 +276,8 @@ namespace ORTS.TrackViewer.UserInterface
         public void populatePaths()
         {
             menuSelectPath.Items.Clear();
-            if (trackViewer.paths == null) return;
-            foreach (ORTS.Menu.Path path in trackViewer.paths)
+            if (trackViewer.Paths == null) return;
+            foreach (ORTS.Menu.Path path in trackViewer.Paths)
             {
                 MenuItem menuItem = new MenuItem();
                 menuItem.Header = makeHeader(path);
@@ -317,7 +318,7 @@ namespace ORTS.TrackViewer.UserInterface
         {
             MenuItem selectedMenuItem = sender as MenuItem;
 
-            foreach (ORTS.Menu.Path path in trackViewer.paths)
+            foreach (ORTS.Menu.Path path in trackViewer.Paths)
             {
                 if (makeHeader(path) == (string)selectedMenuItem.Header)
                 {
@@ -369,7 +370,7 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuZoomSave_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.drawArea.Save(trackViewer.route.Path);
+            trackViewer.drawArea.Save(trackViewer.CurrentRoute.Path);
         }
 
         private void menuZoomRestore_Click(object sender, RoutedEventArgs e)
@@ -384,54 +385,81 @@ namespace ORTS.TrackViewer.UserInterface
             trackViewer.setAliasing();
         }
 
+        /// <summary>
+        /// Toggle whether the sidings are shown
+        /// </summary>
         public void menuToggleShowSidings()
         {
             menuShowSidingMarkers.IsChecked = !menuShowSidingMarkers.IsChecked;
             UpdateMenuSettings();
         }
 
+        /// <summary>
+        /// Toggle whether the siding names are shown
+        /// </summary>
         public void menuToggleShowSidingNames()
         {
             menuShowSidingNames.IsChecked = !menuShowSidingNames.IsChecked;
             UpdateMenuSettings();
         }
 
+        /// <summary>
+        /// Toggle whether the platforms are shown
+        /// </summary>
         public void menuToggleShowPlatforms()
         {
             menuShowPlatformMarkers.IsChecked = !menuShowPlatformMarkers.IsChecked;
             UpdateMenuSettings();
         }
 
+        /// <summary>
+        /// Toggle whether the platform names are shown
+        /// </summary>
         public void menuToggleShowPlatformNames()
         {
             menuShowPlatformNames.IsChecked = !menuShowPlatformNames.IsChecked;
             UpdateMenuSettings();
         }
 
+        /// <summary>
+        /// Toggle whether the train path is shown
+        /// </summary>
         public void menuToggleShowTrainpath()
         {
             menuShowTrainpath.IsChecked = !menuShowTrainpath.IsChecked;
             UpdateMenuSettings();
         }
 
+        /// <summary>
+        /// Toggle whether the PATfile (.pat file) is shown
+        /// </summary>
         public void menuToggleShowPATFile()
         {
             menuShowPATfile.IsChecked = !menuShowPATfile.IsChecked;
             UpdateMenuSettings();
         }
 
+        /// <summary>
+        /// Toggle whether the signals are shown
+        /// </summary>
         public void menuToggleShowSignals()
         {
             menuShowSignals.IsChecked = !menuShowSignals.IsChecked;
             UpdateMenuSettings();
         }
-
+        
+        /// <summary>
+        /// Toggle whether the speedlimits are shown
+        /// </summary>
         public void menuToggleShowSpeedLimits()
         {
             menuShowSpeedLimits.IsChecked = !menuShowSpeedLimits.IsChecked;
             UpdateMenuSettings();
         }
 
+        /// <summary>
+        /// Toggle whether the mile posts are shown
+        /// </summary>
         public void menuToggleShowMilePosts()
         {
             menuShowMileposts.IsChecked = !menuShowMileposts.IsChecked;

@@ -46,10 +46,15 @@ namespace ORTS.TrackViewer.UserInterface
     /// </summary>
     public partial class StatusBarControl : UserControl
     {
-        public int statusbarHeight;
+        /// <summary>Height of the statusbar in pixels</summary>
+        public int statusbarHeight { get; private set; }
         private TrackViewer trackViewer;
         private ElementHost elementHost;
 
+        /// <summary>
+        /// Constructor for the statusbar
+        /// </summary>
+        /// <param name="trackViewer">Track viewer object that contains all the information we want to show the status for</param>
         public StatusBarControl(TrackViewer trackViewer)
         {
             this.trackViewer = trackViewer;
@@ -69,10 +74,11 @@ namespace ORTS.TrackViewer.UserInterface
         }
 
         /// <summary>
-        /// set the size of the menu control (also after rescaling)
+        /// set the size of the statusbar control (also after rescaling)
         /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
+        /// <param name="width">Width of the statusbar</param>
+        /// <param name="height">Height of the statusbar</param>
+        /// <param name="yBottom">Y-value in screen pixels at the bottom of the statusbar</param>
         public void setScreenSize(int width, int height, int yBottom)
         {
             elementHost.Location = new System.Drawing.Point(0, yBottom-height);

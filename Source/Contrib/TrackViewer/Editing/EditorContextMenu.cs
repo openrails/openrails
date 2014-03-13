@@ -52,8 +52,10 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Popup the context menu at the given location. Also disable updates related to mouse movement while menu is open.
         /// </summary>
-        /// <param name="mouseX"></param>
-        /// <param name="mouseY"></param>
+        /// <param name="mouseX">X-screen location of the mouse</param>
+        /// <param name="mouseY">Y-screen location of the mouse</param>
+        /// <param name="menuHeaders">Name of the various context menu headers, indexed by contextMenuAction</param>
+        /// <param name="menuEnabled">Booleans whether the action (indexed by contextMenuAction) is currently enabled</param>
         public void PopupContextMenu(int mouseX, int mouseY, 
                                      Dictionary<contextMenuAction, string> menuHeaders,
                                      Dictionary<contextMenuAction, bool> menuEnabled)

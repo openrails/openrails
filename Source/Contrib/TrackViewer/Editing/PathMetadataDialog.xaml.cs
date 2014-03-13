@@ -19,6 +19,10 @@ namespace ORTS.TrackViewer.Editing
     /// </summary>
     public partial class PathMetadataDialog : Window
     {
+        /// <summary>
+        /// Create the dialog to edit the path metadata, and fill it with current values
+        /// </summary>
+        /// <param name="metadata">Array of string, containing ID, name, start and end</param>
         public PathMetadataDialog(string[] metadata)
         {
             InitializeComponent();
@@ -40,6 +44,10 @@ namespace ORTS.TrackViewer.Editing
             DialogResult = false;
         }
 
+        /// <summary>
+        /// Return the meta data of the path (ID, name, start and end) as edited by the user.
+        /// </summary>
+        /// <returns>string array containing the meta data</returns>
         public string[] GetMetadata()
         {
             string[] metadata = { pathID.Text, pathName.Text, pathStart.Text, pathEnd.Text };

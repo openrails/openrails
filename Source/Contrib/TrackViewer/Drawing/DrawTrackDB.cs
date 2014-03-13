@@ -48,37 +48,58 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class DrawTrackDB
     {
-        private TrackDB trackDB;
-        public TSectionDatFile tsectionDat; // needed for DrawPath
-        public TDBFile tdbFile; // needed for DrawPath
+        /// <summary>Track Section Data, public such that other classes have access as well</summary>
+        public TSectionDatFile tsectionDat { get; private set; }
+        /// <summary>Track database, public such that other classes have access as well</summary>
+        public TrackDB trackDB { get; private set; }
 
+        /// <summary>Road track database</summary>
         private RoadTrackDB roadTrackDB;
+        /// <summary>Direction-angle of track (needed for signal), indexed by TrItemID </summary>
         private Dictionary<uint, float> signalAngles = new Dictionary<uint, float>();
+        /// <summary>Direction-angle of track indexed by tracknode index (of the endnode)</summary>
         private Dictionary<uint, float> endnodeAngles = new Dictionary<uint, float>();
+        /// <summary>(approximate) world location of the sidings indexed by siding name</summary>
         public Dictionary<string, WorldLocation> sidingLocations;
+        /// <summary>(approximate) world location og the platforms indexed by platform name</summary>
         public Dictionary<string, WorldLocation> platformLocations;
 
 
-        public string routeName;
+        /// <summary>Name of the route</summary>
+        public string RouteName { get; private set; }
+        /// <summary>Full filename of the route</summary>
         private string roadTrackFileName;
 
         // Maximal and minimal tile numbers from the track database
-        public int maxTileX; 
-        public int minTileX;
-        public int maxTileZ;
-        public int minTileZ;
+        /// <summary>Maximum of the TileX index found in the track database</summary>
+        public int MaxTileX { get; private set; }
+        /// <summary>Minimum of the TileX index found in the track database</summary>
+        public int MinTileX { get; private set; }
+        /// <summary>Maximum of the TileZ index found in the track database</summary>
+        public int MaxTileZ { get; private set; }
+        /// <summary>Minimum of the TileZ index found in the track database</summary>
+        public int MinTileZ { get; private set; }
 
+        /// <summary>Rail (so not road) track closest to the mouse</summary>
         private CloseToMouseTrack closestRailTrack;
+        /// <summary>Road track closest to the mouse</summary>
         public CloseToMouseTrack closestRoadTrack;
-        public CloseToMouseTrack closestTrack; // closest of rail and road track, for statusbar
+        /// <summary>Either Road or Rail track (but must be drawn) that is closest to the mouse</summary>
+        public CloseToMouseTrack closestTrack;
+        /// <summary>The drawn junction or end node that is closest to the mouse</summary>
         public CloseToMouseJunctionOrEnd closestJunctionOrEnd = new CloseToMouseJunctionOrEnd();
+        /// <summary>The drawn track item (either road or rail) that is closest to the mouse</summary>
         public CloseToMouseItem closestTrItem = new CloseToMouseItem();
 
+        /// <summary>Normally highlights are based on mouse location. When searching this is overridden</summary>
         private static Boolean IsHighlightOverridden = false;
+        /// <summary>Normally highlights are based on mouse location. When searching this is overridden</summary>
         static Boolean IsHighlightOverriddenTrItem = false;
 
-        static bool IsItemNameCreated = false; // If the itemNames have not been created, this is false;
-        public static Dictionary<TrItem.trItemType,string> itemName;
+        /// <summary>If the itemNames have not been created, this is false</summary>
+        static bool IsItemNameCreated = false;
+        /// <summary>Name of the item type indexed by the type itself</summary>
+        public static Dictionary<TrItem.trItemType, string> itemName;
 
         // various fields to optimize drawing efficiency
         int tileXIndexStart;
@@ -90,18 +111,18 @@ namespace ORTS.TrackViewer.Drawing
         /// Constructor
         /// </summary>
         /// <param name="RoutePath">Path to the route directory</param>
+        /// <param name="messageDelegate">The delegate that will deal with the message we want to send to the user</param>
         public DrawTrackDB(string RoutePath, TrackViewer.messageDelegate messageDelegate)
         {
             if (!IsItemNameCreated) CreateItemNames();
 
             messageDelegate("Loading trackfile .trk ...");
             TRKFile TRK = new TRKFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
-            routeName = TRK.Tr_RouteFile.Name;
+            RouteName = TRK.Tr_RouteFile.Name;
 
             messageDelegate("Loading track database .tdb ...");
             TDBFile TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
-            trackDB = TDB.TrackDB;
-            tdbFile = TDB;
+            this.trackDB = TDB.TrackDB;
             FindExtremeTiles();
 
             messageDelegate("Loading tsection.dat ...");
@@ -119,7 +140,7 @@ namespace ORTS.TrackViewer.Drawing
             FindSignalOrientations();
             FindEndnodeOrientations();
             FindSidingsAndPlatforms();
-            FillAvailableIndices();
+            FillAvailableIndexes();
 
             closestRailTrack = new CloseToMouseTrack(tsectionDat);
             closestRoadTrack = new CloseToMouseTrack(tsectionDat);
@@ -147,10 +168,10 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         private void FindExtremeTiles()
         {
-            minTileX = +1000000;
-            minTileZ = +1000000;
-            maxTileX = -1000000;
-            maxTileZ = -1000000;
+            MinTileX = +1000000;
+            MinTileZ = +1000000;
+            MaxTileX = -1000000;
+            MaxTileZ = -1000000;
             for (var tni = 0; tni < trackDB.TrackNodes.Length; tni++)
             {
                 TrackNode tn = trackDB.TrackNodes[tni];
@@ -161,10 +182,10 @@ namespace ORTS.TrackViewer.Drawing
                     for (int tvsi = 0; tvsi < tn.TrVectorNode.TrVectorSections.Length; tvsi++)
                     {
                         TrVectorSection tvs = tn.TrVectorNode.TrVectorSections[tvsi];
-                        if (tvs.TileX < minTileX) { minTileX = tvs.TileX; };
-                        if (tvs.TileZ < minTileZ) { minTileZ = tvs.TileZ; };
-                        if (tvs.TileX > maxTileX) { maxTileX = tvs.TileX; };
-                        if (tvs.TileZ > maxTileZ) { maxTileZ = tvs.TileZ; };
+                        if (tvs.TileX < MinTileX) { MinTileX = tvs.TileX; };
+                        if (tvs.TileZ < MinTileZ) { MinTileZ = tvs.TileZ; };
+                        if (tvs.TileX > MaxTileX) { MaxTileX = tvs.TileX; };
+                        if (tvs.TileZ > MaxTileZ) { MaxTileZ = tvs.TileZ; };
                     }
                 }
             }
@@ -290,7 +311,7 @@ namespace ORTS.TrackViewer.Drawing
         #region Cache available tracknodes, items, etc per tile
         /// <summary>
         /// In preparation of actual drawing we first have to know which tiles are visible.
-        /// And then we translate the visible tiles to array/list start and stop indices to be used
+        /// And then we translate the visible tiles to array/list start and stop indexes to be used
         /// </summary>
         /// <param name="drawArea">The area upon which we draw, which determines the visible tiles</param>
         void PrepareDrawing(DrawArea drawArea)
@@ -298,51 +319,51 @@ namespace ORTS.TrackViewer.Drawing
             // determine the min and max values of the tiles that we actually need to draw
             // in some cases (e.g. during initialization) the drawing area itself is really outside the track database,
             // so we have to account for that.
-            int actualTileXLeft  = Math.Max(Math.Min(drawArea.LocationUpperLeft.TileX , maxTileX), minTileX);
-            int actualTileXRight = Math.Min(Math.Max(drawArea.LocationLowerRight.TileX, minTileX), maxTileX);
-            int actualTileZBot   = Math.Max(Math.Min(drawArea.LocationLowerRight.TileZ, maxTileZ), minTileZ);
-            int actualTileZTop   = Math.Min(Math.Max(drawArea.LocationUpperLeft.TileZ , minTileZ), maxTileZ);
+            int actualTileXLeft  = Math.Max(Math.Min(drawArea.LocationUpperLeft.TileX , MaxTileX), MinTileX);
+            int actualTileXRight = Math.Min(Math.Max(drawArea.LocationLowerRight.TileX, MinTileX), MaxTileX);
+            int actualTileZBot   = Math.Max(Math.Min(drawArea.LocationLowerRight.TileZ, MaxTileZ), MinTileZ);
+            int actualTileZTop   = Math.Min(Math.Max(drawArea.LocationUpperLeft.TileZ , MinTileZ), MaxTileZ);
 
-            SetTileIndices(actualTileXLeft, actualTileXRight, actualTileZBot, actualTileZTop);
+            SetTileIndexes(actualTileXLeft, actualTileXRight, actualTileZBot, actualTileZTop);
         }
 
         /// <summary>
-        /// Translate the min and max values of the tileX and tileY into indices to be used in 'availability' lists
+        /// Translate the min and max values of the tileX and tileY into indexes to be used in 'availability' lists
         /// </summary>
-        private void SetTileIndices(int actualTileXLeft, int actualTileXRight, int actualTileZBot, int actualTileZTop)
+        private void SetTileIndexes(int actualTileXLeft, int actualTileXRight, int actualTileZBot, int actualTileZTop)
         {
-            tileXIndexStart = actualTileXLeft - minTileX;
-            tileXIndexStop = actualTileXRight - minTileX;
-            tileZIndexStart = actualTileZBot - minTileZ;
-            tileZIndexStop = actualTileZTop - minTileZ;
+            tileXIndexStart = actualTileXLeft - MinTileX;
+            tileXIndexStop = actualTileXRight - MinTileX;
+            tileZIndexStart = actualTileZBot - MinTileZ;
+            tileZIndexStop = actualTileZTop - MinTileZ;
         }
 
         /// <summary>
         /// For each of the various types of tracknodes we list the ones per tile.
         /// </summary>
-        List<TrackNode>[,] availableRailVectorNodeIndices;
-        List<TrackNode>[,] availableRoadVectorNodeIndices;
-        List<TrackNode>[,] availablePointNodeIndices;
-        List<TrItem>[,] availableRailItemIndices;
-        List<TrItem>[,] availableRoadItemIndices;
+        List<TrackNode>[,] availableRailVectorNodeIndexes;
+        List<TrackNode>[,] availableRoadVectorNodeIndexes;
+        List<TrackNode>[,] availablePointNodeIndexes;
+        List<TrItem>[,] availableRailItemIndexes;
+        List<TrItem>[,] availableRoadItemIndexes;
 
         /// <summary>
         /// Run over the track databases, find the locations of nodes and items, and add the nodes and items to the correct
         /// 'available' list, indexed by tile.
         /// </summary>
-        void FillAvailableIndices()
+        void FillAvailableIndexes()
         {
-            SetTileIndices(minTileX, maxTileX, minTileZ, maxTileZ);
-            availableRailVectorNodeIndices = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
-            availableRoadVectorNodeIndices = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
-            availablePointNodeIndices      = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
-            availableRailItemIndices       = new List<TrItem>   [tileXIndexStop + 1, tileZIndexStop + 1];
-            availableRoadItemIndices       = new List<TrItem>   [tileXIndexStop + 1, tileZIndexStop + 1];
-            InitIndexedLists(availableRailVectorNodeIndices);
-            InitIndexedLists(availableRoadVectorNodeIndices);
-            InitIndexedLists(availablePointNodeIndices);
-            InitIndexedLists(availableRailItemIndices);
-            InitIndexedLists(availableRoadItemIndices);
+            SetTileIndexes(MinTileX, MaxTileX, MinTileZ, MaxTileZ);
+            availableRailVectorNodeIndexes = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
+            availableRoadVectorNodeIndexes = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
+            availablePointNodeIndexes      = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
+            availableRailItemIndexes       = new List<TrItem>   [tileXIndexStop + 1, tileZIndexStop + 1];
+            availableRoadItemIndexes       = new List<TrItem>   [tileXIndexStop + 1, tileZIndexStop + 1];
+            InitIndexedLists(availableRailVectorNodeIndexes);
+            InitIndexedLists(availableRoadVectorNodeIndexes);
+            InitIndexedLists(availablePointNodeIndexes);
+            InitIndexedLists(availableRailItemIndexes);
+            InitIndexedLists(availableRoadItemIndexes);
 
             // find rail track tracknodes
             for (uint tni = 0; tni < trackDB.TrackNodes.Length; tni++)
@@ -352,7 +373,7 @@ namespace ORTS.TrackViewer.Drawing
 
                 if (tn.TrVectorNode == null)
                 {   // so junction or endnode
-                    AddLocationToAvailableList(UiDLocation(tn.UiD), availablePointNodeIndices, tn);
+                    AddLocationToAvailableList(UiDLocation(tn.UiD), availablePointNodeIndexes, tn);
                 }
                 else
                 {   // vector nodes
@@ -362,7 +383,7 @@ namespace ORTS.TrackViewer.Drawing
                         if (tvs == null) continue;
                         List<WorldLocation> locationList = FindLocationList(tni, tvsi, true);
                         foreach (WorldLocation location in locationList) {
-                            AddLocationToAvailableList(location, availableRailVectorNodeIndices, tn);
+                            AddLocationToAvailableList(location, availableRailVectorNodeIndexes, tn);
                         }
                     }
                 }
@@ -386,7 +407,7 @@ namespace ORTS.TrackViewer.Drawing
                             List<WorldLocation> locationList = FindLocationList(tni, tvsi, false);
                             foreach (WorldLocation location in locationList)
                             {
-                                AddLocationToAvailableList(location, availableRoadVectorNodeIndices, tn);
+                                AddLocationToAvailableList(location, availableRoadVectorNodeIndexes, tn);
                             }
                         }
                     }
@@ -396,7 +417,7 @@ namespace ORTS.TrackViewer.Drawing
             // find rail track items
             foreach (TrItem trackItem in trackDB.TrItemTable)
             {
-                AddLocationToAvailableList(itemLocation(trackItem), availableRailItemIndices, trackItem);
+                AddLocationToAvailableList(itemLocation(trackItem), availableRailItemIndexes, trackItem);
             }
 
             // find road track items
@@ -404,32 +425,32 @@ namespace ORTS.TrackViewer.Drawing
             {
                 foreach (TrItem trackItem in roadTrackDB.TrItemTable)
                 {
-                    AddLocationToAvailableList(itemLocation(trackItem), availableRoadItemIndices, trackItem);
+                    AddLocationToAvailableList(itemLocation(trackItem), availableRoadItemIndexes, trackItem);
                 }
             }
  
             // remove double entries
-            MakeUniqueLists(ref availableRailVectorNodeIndices);
-            MakeUniqueLists(ref availableRoadVectorNodeIndices);
-            MakeUniqueLists(ref availablePointNodeIndices);
-            MakeUniqueLists(ref availableRailItemIndices);
-            MakeUniqueLists(ref availableRoadItemIndices);
+            MakeUniqueLists(ref availableRailVectorNodeIndexes);
+            MakeUniqueLists(ref availableRoadVectorNodeIndexes);
+            MakeUniqueLists(ref availablePointNodeIndexes);
+            MakeUniqueLists(ref availableRailItemIndexes);
+            MakeUniqueLists(ref availableRoadItemIndexes);
         }
 
         /// <summary>
-        /// From the location find the tile and then the corresponding indices for our arrays/lists
-        /// And then add the given item to the given list at the correct indices
+        /// From the location find the tile and then the corresponding indexes for our arrays/lists
+        /// And then add the given item to the given list at the correct indexes
         /// </summary>
         /// <typeparam name="T">Type of the item we want to add to the list.</typeparam>
-        /// <param name="location">Worldlocation of the item, that gives us the tile indices</param>
+        /// <param name="location">Worldlocation of the item, that gives us the tile indexes</param>
         /// <param name="ArrayOfListsToAddTo">To which list we have to add the item</param>
         /// <param name="item">The item we want to add to the list, at the correct index</param>
         void AddLocationToAvailableList<T>(WorldLocation location, List<T>[,] ArrayOfListsToAddTo, T item)
         {
             //possibly the location is out of the allowed region (e.g. because possibly undefined).
-            if (location.TileX < minTileX || location.TileX > maxTileX || location.TileZ < minTileZ || location.TileZ > maxTileZ) return;
-            int TileXIndex = location.TileX - minTileX;
-            int TileZIndex = location.TileZ - minTileZ;
+            if (location.TileX < MinTileX || location.TileX > MaxTileX || location.TileZ < MinTileZ || location.TileZ > MaxTileZ) return;
+            int TileXIndex = location.TileX - MinTileX;
+            int TileZIndex = location.TileZ - MinTileZ;
             ArrayOfListsToAddTo[TileXIndex, TileZIndex].Add(item);
         }
 
@@ -469,7 +490,9 @@ namespace ORTS.TrackViewer.Drawing
         /// For a vector section, generate a list of world-locations that are used to determine whether or not the
         /// vector section will be drawn when a tile is visible
         /// </summary>
-        /// <param name="tvs">The track vector section</param>
+        /// <param name="tracknodeindex">Index of the tracknode</param>
+        /// <param name="TrackVectorSectionIndex">Index of the vector section in the tracknode</param>
+        /// <param name="useRailTracks">Must we use rail or road tracks</param>
         /// <returns>A list of world locations on the vector section</returns>
         List<WorldLocation> FindLocationList(uint tracknodeindex, int TrackVectorSectionIndex, bool useRailTracks)
         {
@@ -505,7 +528,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrackNode tn in availableRailVectorNodeIndices[xindex, zindex])
+                    foreach (TrackNode tn in availableRailVectorNodeIndexes[xindex, zindex])
                     {
                         if (hasBeenDrawn[tn.Index]) continue;
                         DrawVectorNode(drawArea, tn, DrawColors.colorsNormal, closestRailTrack);
@@ -530,7 +553,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrackNode tn in availableRailVectorNodeIndices[xindex, zindex])
+                    foreach (TrackNode tn in availableRailVectorNodeIndexes[xindex, zindex])
                     {
                         DrawVectorNode(drawArea, tn, DrawColors.colorsRoads, closestRoadTrack);
                     }
@@ -663,7 +686,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrackNode tn in availablePointNodeIndices[xindex, zindex])
+                    foreach (TrackNode tn in availablePointNodeIndexes[xindex, zindex])
                     {
                         if (tn.TrJunctionNode != null && Properties.Settings.Default.showJunctionNodes)
                         {
@@ -717,7 +740,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrItem trackItem in availableRailItemIndices[xindex, zindex])
+                    foreach (TrItem trackItem in availableRailItemIndexes[xindex, zindex])
                     {
                         drawTrackItem(drawArea, trackItem, DrawColors.colorsNormal);
                     }
@@ -738,7 +761,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrItem trackItem in availableRoadItemIndices[xindex, zindex])
+                    foreach (TrItem trackItem in availableRoadItemIndexes[xindex, zindex])
                     {
                         drawTrackItem(drawArea, trackItem, DrawColors.colorsNormal);
                     }
@@ -1098,6 +1121,10 @@ namespace ORTS.TrackViewer.Drawing
         private static CloseToMouseJunctionOrEnd searchJunctionOrEnd;
         private static CloseToMouseTrack searchTrack;
         private static CloseToMouseItem searchTrItem;
+
+        /// <summary>
+        /// Clear all override highlights, returning to highlights based on mouse location
+        /// </summary>
         public static void ClearHighlightOverrides()
         {
             IsHighlightOverriddenTrItem = false;
@@ -1139,17 +1166,17 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
-        /// find the WorldLocation given the indices to the vector node, vector section and distance into the section.
+        /// find the WorldLocation given the indexes to the vector node, vector section and distance into the section.
         /// </summary>
         /// <param name="trackNodeIndex"></param>
         /// <param name="trackVectorSectionIndex"></param>
         /// <param name="distanceAlongSection"></param>
-        /// <returns></returns>
-        public WorldLocation FindLocation(uint trackNodeIndex, int trackVectorSectionIndex, float distanceAlongSection, bool UseRailTracks)
+        /// <param name="useRailTracks">Must we use rail or road tracks</param>
+        public WorldLocation FindLocation(uint trackNodeIndex, int trackVectorSectionIndex, float distanceAlongSection, bool useRailTracks)
         {
             try
             {
-                TrackNode tn = UseRailTracks ?              
+                TrackNode tn = useRailTracks ?              
                     trackDB.TrackNodes[trackNodeIndex]: roadTrackDB.TrackNodes[trackNodeIndex];
                 
                 TrVectorSection tvs = tn.TrVectorNode.TrVectorSections[trackVectorSectionIndex];

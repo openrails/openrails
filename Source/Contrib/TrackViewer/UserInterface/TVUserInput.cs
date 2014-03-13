@@ -48,17 +48,25 @@ namespace ORTS.TrackViewer.UserInterface
     /// </summary>
     public static class TVUserInput
     {
+        /// <summary>Boolean describing whether the keyboard and/or mouse state has been changed</summary>
         public static bool Changed = false;  // flag UpdaterProcess that its time to handle keyboard input
-        public static bool ComposingMessage = false;
-        public static KeyboardState KeyboardState;
-        public static MouseState MouseState;
+        //public static bool ComposingMessage = false;
+        static KeyboardState KeyboardState;
+        static MouseState MouseState;
         static KeyboardState LastKeyboardState;
         static MouseState LastMouseState;
-        
+
+        /// <summary>Return the current x-location of the mouse pointer</summary>
+        public static int MouseLocationX { get { return MouseState.X; } }
+        /// <summary>Return the current y-location of the mouse pointer</summary>
+        public static int MouseLocationY { get { return MouseState.Y; } }
 
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys key);
 
+        /// <summary>
+        /// Call this to update the mouse and keyboard states.
+        /// </summary>
         public static void Update()
         {
             //if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.Instance().ComposingText) return;
@@ -127,6 +135,9 @@ namespace ORTS.TrackViewer.UserInterface
             return keys.ToArray();
         }
 
+        /// <summary>
+        /// Legacy routine. Should be called when the inputs have been handled.
+        /// </summary>
         public static void Handled()
         {
             Changed = false;
@@ -134,58 +145,90 @@ namespace ORTS.TrackViewer.UserInterface
             //    RDState.Handled();
         }
 
+        /// <summary>
+        /// return whether the key belonging to the given command is pressed since last update
+        /// </summary>
+        /// <param name="command">The command (a key-combination should have been defined for the command)</param>
         public static bool IsPressed(TVUserCommands command)
         {
-            if (ComposingMessage == true) return false;
+            //if (ComposingMessage == true) return false;
             //if (RDState != null && RDState.IsPressed(command))
             //    return true;
             var setting = TVInputSettings.Commands[(int)command];
             return setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState);
         }
 
+        /// <summary>
+        /// return whether the key belonging to the given command is released since last update
+        /// </summary>
+        /// <param name="command">The command (a key-combination should have been defined for the command)</param>
         public static bool IsReleased(TVUserCommands command)
         {
-            if (ComposingMessage == true) return false;
+            //if (ComposingMessage == true) return false;
             //if (RDState != null && RDState.IsReleased(command))
             //    return true;
             var setting = TVInputSettings.Commands[(int)command];
             return !setting.IsKeyDown(KeyboardState) && setting.IsKeyDown(LastKeyboardState);
         }
 
+        /// <summary>
+        /// return whether the key belonging to the given command is down
+        /// </summary>
+        /// <param name="command">The command (a key-combination should have been defined for the command)</param>
         public static bool IsDown(TVUserCommands command)
         {
-            if (ComposingMessage == true) return false;
+            //if (ComposingMessage == true) return false;
             //if (RDState != null && RDState.IsDown(command))
             //    return true;
             var setting = TVInputSettings.Commands[(int)command];
             return setting.IsKeyDown(KeyboardState);
         }
 
+        ///<summary>Return whether the mouse has moved since last update</summary>
         public static bool IsMouseMoved() { return MouseState.X != LastMouseState.X || MouseState.Y != LastMouseState.Y; }
+        ///<summary>Return the amount of x-pixels the mouse moved</summary>
         public static int MouseMoveX() { return MouseState.X - LastMouseState.X; }
+        ///<summary>Return the amount of y-pixels the mouse moved</summary>
         public static int MouseMoveY() { return MouseState.Y - LastMouseState.Y; }
 
+        ///<summary>Return whether the mouse wheel has changed since the last update</summary>
         public static bool IsMouseWheelChanged() { return MouseState.ScrollWheelValue != LastMouseState.ScrollWheelValue; }
+        ///<summary>Return the amount of change in mousewheel</summary>
         public static int MouseWheelChange() { return MouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue; }
 
+        ///<summary>Return whether left mouse button is down</summary>
         public static bool IsMouseLeftButtonDown() { return MouseState.LeftButton == ButtonState.Pressed; }
+        ///<summary>Return whether left mouse button has been pressed since last update</summary>
         public static bool IsMouseLeftButtonPressed() { return MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released; }
+        ///<summary>Return whether left mouse button has been released since last update</summary>
         public static bool IsMouseLeftButtonReleased() { return MouseState.LeftButton == ButtonState.Released && LastMouseState.LeftButton == ButtonState.Pressed; }
 
+        ///<summary>Return whether middle mouse button is down</summary>
         public static bool IsMouseMiddleButtonDown() { return MouseState.MiddleButton == ButtonState.Pressed; }
+        ///<summary>Return whether middle mouse button has been pressed since last update</summary>
         public static bool IsMouseMiddleButtonPressed() { return MouseState.MiddleButton == ButtonState.Pressed && LastMouseState.MiddleButton == ButtonState.Released; }
+        ///<summary>Return whether middle mouse button has been released since last update</summary>
         public static bool IsMouseMiddleButtonReleased() { return MouseState.MiddleButton == ButtonState.Released && LastMouseState.MiddleButton == ButtonState.Pressed; }
 
+        ///<summary>Return whether right mouse button is down</summary>
         public static bool IsMouseRightButtonDown() { return MouseState.RightButton == ButtonState.Pressed; }
+        ///<summary>Return whether right mouse button has been pressed since last update</summary>
         public static bool IsMouseRightButtonPressed() { return MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released; }
+        ///<summary>Return whether right mouse button has been released since last update</summary>
         public static bool IsMouseRightButtonReleased() { return MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed; }
 
+        ///<summary>Return whether extra mouse button 1 is down</summary>
         public static bool IsMouseXButton1Down() { return MouseState.XButton1 == ButtonState.Pressed; }
+        ///<summary>Return whether extra mouse button 1 has been pressed since last update</summary>
         public static bool IsMouseXButton1Pressed() { return MouseState.XButton1 == ButtonState.Pressed && LastMouseState.XButton1 == ButtonState.Released; }
+        ///<summary>Return whether extra mouse button 1 has been released since last update</summary>
         public static bool IsMouseXButton1Released() { return MouseState.XButton1 == ButtonState.Released && LastMouseState.XButton1 == ButtonState.Pressed; }
 
+        ///<summary>Return whether extra mouse button 2 is down</summary>
         public static bool IsMouseXButton2Down() { return MouseState.XButton2 == ButtonState.Pressed; }
+        ///<summary>Return whether extra mouse button 2 has been pressed since last update</summary>
         public static bool IsMouseXButton2Pressed() { return MouseState.XButton2 == ButtonState.Pressed && LastMouseState.XButton2 == ButtonState.Released; }
+        ///<summary>Return whether extra mouse button 2 has been released since last update</summary>
         public static bool IsMouseXButton2Released() { return MouseState.XButton2 == ButtonState.Released && LastMouseState.XButton2 == ButtonState.Pressed; }
     }
 }

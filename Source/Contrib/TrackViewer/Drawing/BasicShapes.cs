@@ -47,11 +47,12 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Some initialization needed for actual drawing
         /// </summary>
-        /// <param name="graphicsDevice"></param>
-        /// <param name="spriteBatchIn"></param>
+        /// <param name="graphicsDevice">The graphics device used</param>
+        /// <param name="spriteBatchIn">The spritebatch to use for drawing</param>
+        /// <param name="contentPath">The full directory name where content like .png files can be found</param>
         public static void LoadContent(GraphicsDevice graphicsDevice, SpriteBatch spriteBatchIn, string contentPath)
         {
-            spriteBatch = spriteBatchIn;
+            spriteBatch = spriteBatchIn; 
             textures["blankPixel"] = new Texture2D(graphicsDevice, 1, 1);
             textures["blankPixel"].SetData(new[] { Color.White });
 
@@ -123,11 +124,11 @@ namespace ORTS.TrackViewer.Drawing
         }
         private static void LoadAndHighlightTexture(GraphicsDevice graphicsDevice, string contentPath, string textureName, string fileName, int offsetX, int offsetY)
         {
-            string fullFilename = System.IO.Path.Combine(contentPath, fileName +".png");
+            string fullFileName = System.IO.Path.Combine(contentPath, fileName +".png");
             Texture2D tempTexture;
             try
             {
-                tempTexture = Texture2D.FromFile(graphicsDevice, fullFilename);
+                tempTexture = Texture2D.FromFile(graphicsDevice, fullFileName);
                 //Texture2D tempTexture = contentPath.Content.Update<Texture2D>(fileName);
             }
             catch
@@ -164,7 +165,7 @@ namespace ORTS.TrackViewer.Drawing
         /// private method to create a texture2D containing a circle
         /// </summary>
         /// <param name="graphicsDevice"></param>
-        /// <param name="radius">radius of the circle in pixels (diameter is 2*radius + 1)</param>
+        /// <param name="outerRadius">Outer radius (diameter) of the circle in pixels</param>
         /// <returns>The white texture</returns>
         private static Texture2D CreateCircleTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
@@ -197,7 +198,7 @@ namespace ORTS.TrackViewer.Drawing
         /// private method to create a texture2D containing a disc (filled circle)
         /// </summary>
         /// <param name="graphicsDevice"></param>
-        /// <param name="radius">radius of the circle in pixels (diameter is 2*radius + 1)</param>
+        /// <param name="outerRadius">Outer radius (diameter) of the circle in pixels</param>
         /// <returns>The white texture</returns>
         private static Texture2D CreateDiscTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
@@ -230,7 +231,7 @@ namespace ORTS.TrackViewer.Drawing
         /// private method to create a texture2D containing a ring (circle with thick border)
         /// </summary>
         /// <param name="graphicsDevice"></param>
-        /// <param name="radius">radius of the circle in pixels (diameter is 2*radius + 1)</param>
+        /// <param name="outerRadius">Outer radius (diameter) of the circle in pixels</param>
         /// <returns>The white texture</returns>
         private static Texture2D CreateRingTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
@@ -265,7 +266,7 @@ namespace ORTS.TrackViewer.Drawing
         /// private method to create a texture2D containing a ring (circle with thick border), with a cross in the middle
         /// </summary>
         /// <param name="graphicsDevice"></param>
-        /// <param name="radius">radius of the circle in pixels (diameter is 2*radius + 1)</param>
+        /// <param name="outerRadius">Outer radius (diameter) of the circle in pixels</param>
         /// <returns>The white texture</returns>
         private static Texture2D CreateCrossedRingTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
@@ -439,6 +440,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="textureName">name by which the texture is internally known</param>
         /// <param name="angle">Angle used to rotate the texture</param>
         /// <param name="size">Size of the texture in pixels</param>
+        /// <param name="color">Color mask for the texture to draw (white will not affect the texture)</param>
         public static void DrawTexture(Vector2 point, string textureName, float angle, float size, Color color)
         {
             float scaledSize = size/ textureScales[textureName];

@@ -34,10 +34,18 @@ namespace ORTS.TrackViewer.Drawing
     {
         WorldLocation trainLocation = null;
 
+        /// <summary>
+        /// Default Constructor
+        /// </summary>
         public DrawTrains()
         {
         }
 
+        /// <summary>
+        /// Update the train location from RunActivity and shift the drawArea to its location (if found)
+        /// </summary>
+        /// <param name="drawArea"></param>
+        /// <returns>Whether an updated location could be found.</returns>
         public bool Update(DrawArea drawArea)
         {
             // Get location from RunActivity
@@ -50,6 +58,10 @@ namespace ORTS.TrackViewer.Drawing
             return false;
         }
 
+        /// <summary>
+        /// Draw a train at location of the player train
+        /// </summary>
+        /// <param name="drawArea">The drawarea to draw upon</param>
         public void Draw(DrawArea drawArea)
         {
             if (trainLocation != null)

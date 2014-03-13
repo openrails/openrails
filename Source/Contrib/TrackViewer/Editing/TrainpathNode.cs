@@ -47,35 +47,67 @@ using ORTS.Common;
 
 namespace ORTS.TrackViewer.Editing
 {
-    //
-    public enum TrainpathNodeType { Start, End, Other, Stop, SidingStart, SidingEnd, Uncouple, Reverse, Invalid };
+    /// <summary>
+    /// Enumerate the various types of nodes that are available
+    /// </summary>
+    public enum TrainpathNodeType { 
+        /// <summary>Node is the start node </summary>
+        Start,
+        /// <summary>Node is the end node (and not just the last node) </summary>
+        End,
+        /// <summary>Node is a regular node </summary>
+        Other,
+        /// <summary>Node is a wait/stop node</summary>
+        Stop,
+        /// <summary>Node is a junction node at the start of a siding </summary>
+        SidingStart,
+        /// <summary>Node is a junction node at the end of a siding</summary>
+        SidingEnd,
+        /// <summary>Node is a (un)couple point</summary>
+        Uncouple,
+        /// <summary>Node is a reversal node</summary>
+        Reverse,
+        /// <summary>Node is not well-defined in .pat file</summary>
+        Invalid //todo functionality should be replaced by IsBroken.
+    };
 
-    // abstract because we only allow either junction of vector nodes
+    /// <summary>
+    /// base class for all nodes in a trainpath (as defined by MSTS .pat file).
+    /// The class is abstract because we only allow either junction of vector nodes
+    /// </summary>
     public abstract class TrainpathNode
     {
-        //directly from MSTS .pat info:
-        public WorldLocation location { get; set; }      // coordinates for this path node
+        /// <summary> World location of the node, coming directly from .pat file </summary>
+        public WorldLocation location { get; set; }
 
-        // Detailed information on kind of nodes and some of its details
+        /// <summary> Stores the type of node (see TrainPathNode)</summary>
         public TrainpathNodeType Type { get; set; }
+        /// <summary> True if the node is broken, meaning that its location can no longer be found in the track data base
+        /// By having it independent of the NodeType, we can keep the kind of node that was intended, even if it is currently not in the right place.</summary>
         public bool IsBroken { get; protected set; }
 
-        // From simple linking
-        public TrainpathNode NextMainNode { get; set; }     // next path node on main path
-        public TrainpathNode NextSidingNode { get; set; }   // next path node on siding path
-        public TrainpathNode PrevNode { get; set; }         // previous path node. Preferably on main track.
-        public bool HasSidingPath { get; set; }      // Is there, next to the track to the NextMainNode, also a parallel Siding path?
+        // From simple linking:
+        /// <summary>Next path node on main path</summary>
+        public TrainpathNode NextMainNode { get; set; }
+        /// <summary>Next path node on siding path</summary>
+        public TrainpathNode NextSidingNode { get; set; }
+        /// <summary>Previous path node on main path (unless it is on a siding path</summary>
+        public TrainpathNode PrevNode { get; set; }
+        /// <summary>Is there, next to the track to the NextMainNode, also a parallel Siding path?</summary>
+        public bool HasSidingPath { get; set; }
         
         //To find these, both the current node and the next node need to be known.
-        public int NextMainTVNIndex { get; set; }   // index of main vector node leaving this path node
-        public int NextSidingTVNIndex { get; set; } // index of siding vector node leaving this path node
+        /// <summary>Index of main vector node leaving this path node</summary>
+        public int NextMainTVNIndex { get; set; }
+        /// <summary>Index of siding vector node leaving this path node</summary>
+        public int NextSidingTVNIndex { get; set; }
 
-        // angle that denotes the 2D direction of the path in radians
-        protected float _trackAngle;
-        public float TrackAngle { get { return _trackAngle; } }
+        /// <summary>Angle that denotes the 2D direction of the path in radians</summary>
+        public float TrackAngle { get; protected set; }
 
-        // Just to prevent having to drag these around
+        /// <summary>Reference to the track database to be able to search it</summary>
         protected TrackDB trackDB;
+        /// <summary>Reference to the track section data to be able to search it</summary>
         protected TSectionDatFile tsectionDat;
 
         /// <summary>
@@ -165,6 +197,11 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="linkingTVNIndex">the index of the Track Vector Node linking the previous node to this node</param>
         public abstract void determineOrientation(TrainpathNode previousNode, int linkingTVNIndex);
 
+        /// <summary>
+        /// Get the 'flags' of the current node, describing to MSTS what kind of node it is, 
+        /// as well as some details for specific nodes like wait and (un)couple point
+        /// </summary>
+        /// <returns>string containing 8-digit hexedecimal coded flags</returns>
         public virtual string GetFlags()
         {
             return "00000000";
@@ -172,17 +209,32 @@ namespace ORTS.TrackViewer.Editing
 
     }
 
-    // Subclass dedicated to junction nodes.
+    /// <summary>
+    /// Class to describe junction nodes that are part of a train path.
+    /// </summary>
     public class TrainpathJunctionNode : TrainpathNode
     {
-        public int junctionIndex { get; set; }      // index of junction node
-        public bool IsFacingPoint { get; set; }     // true if this node entered from the facing point end
+        /// <summary>index of junction node (in the track data base</summary>
+        public int junctionIndex { get; set; }
+        /// <summary>true if this node entered from the facing point end</summary>
+        public bool IsFacingPoint { get; set; }
 
+        /// <summary>
+        /// Basic constructor using another node for the trackDB and tsectionDB
+        /// </summary>
+        /// <param name="otherNode">Just another node that already has trackDB and tsectionDB set</param>
         public TrainpathJunctionNode(TrainpathNode otherNode)
             :base(otherNode)
         {
         }
 
+        /// <summary>
+        /// Constructor based on the data given in the .pat file
+        /// </summary>
+        /// <param name="tpn">TrPathNode as defined in the .pat file</param>
+        /// <param name="pdp">Corresponding PDP in the .patfile</param>
+        /// <param name="trackDB"></param>
+        /// <param name="tsectionDat"></param>
         public TrainpathJunctionNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat) 
             : base(pdp, trackDB, tsectionDat)
         {
@@ -202,12 +254,9 @@ namespace ORTS.TrackViewer.Editing
             return newNode;
         }
 
-
         /// <summary>
         /// Find the activeNodeAsJunction or endNode closest to the given location
         /// </summary>
-        /// <param name="location">Location for which we want to find the node</param>
-        /// <param name="trackDB">track database containing the trackNodes</param>
         /// <param name="wantJunctionNode">true if a activeNodeAsJunction is wanted, false for a endNode</param>
         /// <returns>tracknode index of the closes node</returns>
         public int FindJunctionOrEndIndex(bool wantJunctionNode)
@@ -220,7 +269,7 @@ namespace ORTS.TrackViewer.Editing
                 if (tn == null) continue;
                 if (wantJunctionNode && (tn.TrJunctionNode == null)) continue;
                 if (!wantJunctionNode && !tn.TrEndNode) continue;
-                if (tn.UiD.WorldTileX != location.TileX || tn.UiD.WorldTileZ != location.TileZ) continue;
+                if (tn.UiD.TileX != location.TileX || tn.UiD.TileZ != location.TileZ) continue;
 
                 float dx = tn.UiD.X - location.Location.X;
                 dx += (tn.UiD.TileX - location.TileX) * 2048;
@@ -275,11 +324,11 @@ namespace ORTS.TrackViewer.Editing
             if (traveller != null)
             {
                 traveller.ReverseDirection(); // the TVN is from the previous node, so backwards. Therefore:reverse
-                _trackAngle = traveller.RotY;
+                TrackAngle = traveller.RotY;
             }
             else
             {
-                _trackAngle = 0; // just set it to some default
+                TrackAngle = 0; // just set it to some default
                 IsBroken = true;
             }
         }
@@ -310,36 +359,62 @@ namespace ORTS.TrackViewer.Editing
         }
     }
 
+    /// <summary>
+    /// Node as part of a train path that is not on a junction but on a vector node. It contains all the relevant extra data
+    /// like where exactly on the vector node it is. It also contains all relevant extra data related to the type it is 
+    /// (e.g. for wait points and (un)couple points
+    /// </summary>
     public class TrainpathVectorNode : TrainpathNode
     {
-        float trackAngleForward;    // angle that denotes the forward direction of track where this node is
+        /// <summary>Angle that denotes the forward direction of track where this node is</summary>
+        float trackAngleForward;
 
         //For non-junction nodes:
-        public int TVNIndex { get; set; }                // track Vector Node index of the non-junction node
-        public int trackVectorSectionIndex { get; set; } // the index of the vector section within the vector node.
-        public float trackSectionOffset { get; set; }    // the offset into the track vector section.
-        public int WaitTimeS { get; set; }               // number of seconds to wait after stopping at this node
-        public int WaitUntil { get; set; }               // clock time to wait until if not zero
-        public int NCars { get; set; }                   // number of cars to uncouple, negative means keep rear
+        /// <summary>track Vector Node index of the non-junction node</summary>
+        public int TVNIndex { get; set; }
+        /// <summary>The index of the vector section within the vector node</summary>
+        public int trackVectorSectionIndex { get; set; }
+        /// <summary>the offset into the track vector section.</summary>
+        public float trackSectionOffset { get; set; }
+        /// <summary>number of seconds to wait after stopping at this node</summary>
+        public int WaitTimeS { get; set; } 
+        /// <summary>clock time to wait until if not zero</summary>
+        public int WaitUntil { get; set; }
+        /// <summary>number of cars to uncouple, negative means keep rear</summary>
+        public int NCars { get; set; }
 
-        // is the path oriented forward  or not (with respect of orientation of track itself
         private bool _forwardOriented = true;
+        /// <summary>is the path oriented forward  or not (with respect of orientation of track itself</summary>
         public bool ForwardOriented
         {
             get { return _forwardOriented; }
-            set { _forwardOriented = value; _trackAngle = trackAngleForward + (_forwardOriented ? 0 : (float)Math.PI); }
+            set { _forwardOriented = value; TrackAngle = trackAngleForward + (_forwardOriented ? 0 : (float)Math.PI); }
         }
 
+        /// <summary>
+        /// basic constructor setting only trackDB and tsectionDat
+        /// </summary>
+        /// <param name="trackDB"></param>
+        /// <param name="tsectionDat"></param>
         public TrainpathVectorNode(TrackDB trackDB, TSectionDatFile tsectionDat)
             :base(trackDB, tsectionDat)
         {
         }
 
+        /// <summary>
+        /// Basic constructor using another node for the trackDB and tsectionDB
+        /// </summary>
+        /// <param name="otherNode">Just another node that already has trackDB and tsectionDB set</param>
         public TrainpathVectorNode(TrainpathNode otherNode)
             :base(otherNode)
         {
         }
 
+        /// <summary>
+        /// Constructor where location is copied from the given traveller
+        /// </summary>
+        /// <param name="otherNode">just another node to have access to trackDB and tsectiondat</param>
+        /// <param name="traveller">The traveller that contains the exact location and distance on track to initialize the node</param>
         public TrainpathVectorNode(TrainpathNode otherNode, Traveller traveller)
             :base(otherNode)
         {

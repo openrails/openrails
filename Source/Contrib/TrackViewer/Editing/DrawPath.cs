@@ -42,23 +42,22 @@ namespace ORTS.TrackViewer.Editing
     /// </summary>
     public class DrawPath
     {
-        private TrainpathNode currentMainNode;     // Current node, so we can center the view area around it 
+        /// <summary>Return the last drawn node</summary>
+        public TrainpathNode CurrentMainNode { get; private set; }
 
-        public TrainpathNode CurrentNode { get { return currentMainNode; } }
-
-        private DrawTrackDB drawTrackDB;
         private TrackDB trackDB;
         private TSectionDatFile tsectionDat;
 
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="trackDB"></param>
+        /// <param name="tsectionDat"></param>
         /// <param name="path">Contains the information (mainly filepath) needed for loading the .pat file</param>
-        public DrawPath (DrawTrackDB drawTrackDB, ORTS.Menu.Path path)
+        public DrawPath (TrackDB trackDB, TSectionDatFile tsectionDat, ORTS.Menu.Path path)
         {
-            this.drawTrackDB = drawTrackDB;
-            this.trackDB = drawTrackDB.tdbFile.TrackDB;
-            this.tsectionDat = drawTrackDB.tsectionDat;
+            this.trackDB = trackDB;
+            this.tsectionDat = tsectionDat;
         }
 
  
@@ -66,28 +65,30 @@ namespace ORTS.TrackViewer.Editing
         /// Draw the actual path coded in the PATfile (for a number of nodes that can be extended or reduced)
         /// </summary>
         /// <param name="drawArea">Area to draw upon</param>
+        /// <param name="firstNode">The first node of the path to draw</param>
         /// <param name="numberToDraw">The requested number of nodes to draw</param>
         /// <param name="drawnMainNodes">List (to be filled) of main-track nodes that were actually drawn and can therefore be selected for editing</param>
-        /// <param name="drawnTrackNodeIndices">List (to be filled) of tracknode indices with drawn node pairs on the track</param>
+        /// <param name="drawnTrackNodeIndexes">List (to be filled) of tracknode indexes with drawn node pairs on the track</param>
+        /// <returns>the number of nodes actually drawn (not taking into account nodes on a siding)</returns>
         public int Draw(DrawArea drawArea, 
                          TrainpathNode firstNode,
                          int numberToDraw, 
                          List<TrainpathNode> drawnMainNodes, 
-                         Dictionary<int, List<TrainpathNode>> drawnTrackNodeIndices)
+                         Dictionary<int, List<TrainpathNode>> drawnTrackNodeIndexes)
         {
             //List of all nodes that need to be drawn.
             List<TrainpathNode> drawnNodes = new List<TrainpathNode>();
  
             // start of path
             TrainpathNode currentSidingNode = null; // we start without siding path
-            currentMainNode = firstNode;
-            if (currentMainNode == null)
+            CurrentMainNode = firstNode;
+            if (CurrentMainNode == null)
             {
                 return 0;
             }
          
-            drawnNodes.Add(currentMainNode);
-            drawnMainNodes.Add(currentMainNode);    
+            drawnNodes.Add(CurrentMainNode);
+            drawnMainNodes.Add(CurrentMainNode);    
             
             // We want to draw only a certain number of nodes. And if there is a siding, for the siding
             // we also want to draw the same number of nodes from where it splits from the main track
@@ -99,7 +100,7 @@ namespace ORTS.TrackViewer.Editing
                 if (currentSidingNode != null)
                 {
                     //finish the complete siding path if the main path is at end of siding already
-                    int sidingNodesToDraw = (currentMainNode.Type == TrainpathNodeType.SidingEnd) ? Int32.MaxValue : 1;
+                    int sidingNodesToDraw = (CurrentMainNode.Type == TrainpathNodeType.SidingEnd) ? Int32.MaxValue : 1;
                     while (sidingNodesToDraw >= 1)
                     {
                         //while tracking a siding, it has its own next node
@@ -119,29 +120,29 @@ namespace ORTS.TrackViewer.Editing
                     }
                 }
 
-                WorldLocation curMainLoc = currentMainNode.location;
+                WorldLocation curMainLoc = CurrentMainNode.location;
                 
                 // Draw the start of a siding path, so from this main line point to the next siding node.
                 // If there is a next siding node, we also reset the currentSidingNode
                 // but probably it is not allowed to have siding on a siding
-                TrainpathNode nextSidingNode = currentMainNode.NextSidingNode;             
+                TrainpathNode nextSidingNode = CurrentMainNode.NextSidingNode;             
                 if (nextSidingNode != null)
                 {
-                    DrawPathOnVectorNode(drawArea, DrawColors.colorsPathSiding, currentMainNode, nextSidingNode, currentMainNode.NextSidingTVNIndex);
+                    DrawPathOnVectorNode(drawArea, DrawColors.colorsPathSiding, CurrentMainNode, nextSidingNode, CurrentMainNode.NextSidingTVNIndex);
                     drawnNodes.Add(nextSidingNode);
                     currentSidingNode = nextSidingNode;
                 }
 
                 // From this mainline point to the next
-                TrainpathNode nextMainNode = currentMainNode.NextMainNode;
+                TrainpathNode nextMainNode = CurrentMainNode.NextMainNode;
                 if (nextMainNode != null)
                 {
-                    DrawPathOnVectorNode(drawArea, DrawColors.colorsPathMain, currentMainNode, nextMainNode, currentMainNode.NextMainTVNIndex);
+                    DrawPathOnVectorNode(drawArea, DrawColors.colorsPathMain, CurrentMainNode, nextMainNode, CurrentMainNode.NextMainTVNIndex);
                     drawnNodes.Add(nextMainNode);
                     drawnMainNodes.Add(nextMainNode);
-                    NoteAsDrawn(drawnTrackNodeIndices, currentMainNode, nextMainNode);
+                    NoteAsDrawn(drawnTrackNodeIndexes, CurrentMainNode, nextMainNode);
 
-                    currentMainNode = nextMainNode;
+                    CurrentMainNode = nextMainNode;
                     numberDrawn++;
                 }
                 else
@@ -162,14 +163,14 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Add the from and to Node to the list of drawn nodes for the trackindex
         /// </summary>
-        private static void NoteAsDrawn(Dictionary<int, List<TrainpathNode>> drawnTrackNodeIndices, TrainpathNode fromNode, TrainpathNode toNode)
+        private static void NoteAsDrawn(Dictionary<int, List<TrainpathNode>> drawnTrackNodeIndexes, TrainpathNode fromNode, TrainpathNode toNode)
         {
-            if (!drawnTrackNodeIndices.ContainsKey(fromNode.NextMainTVNIndex))
+            if (!drawnTrackNodeIndexes.ContainsKey(fromNode.NextMainTVNIndex))
             {
-                drawnTrackNodeIndices[fromNode.NextMainTVNIndex] = new List<TrainpathNode>();
+                drawnTrackNodeIndexes[fromNode.NextMainTVNIndex] = new List<TrainpathNode>();
             }
-            drawnTrackNodeIndices[fromNode.NextMainTVNIndex].Add(fromNode);
-            drawnTrackNodeIndices[fromNode.NextMainTVNIndex].Add(toNode);
+            drawnTrackNodeIndexes[fromNode.NextMainTVNIndex].Add(fromNode);
+            drawnTrackNodeIndexes[fromNode.NextMainTVNIndex].Add(toNode);
         }
 
         /// <summary>

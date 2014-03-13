@@ -58,28 +58,42 @@ namespace ORTS.TrackViewer.Drawing
         // we need doubles instead of floats for accuracy when zoomed in
         // Actually we get rid of this when we split offsetX into offsetTileX and offsetX.
         // but this complicates some math
-        protected double scale; // scale  (from world size to pixels, so in pixels/meter)
-        private   double fullScale; // scale at maximum window.
-        protected double offsetX; // world-location X corresponding to left side of drawing area
-        protected double offsetZ; // world-location Y correspoding to bottom of the drawing area
-        protected int areaOffsetX; // location of the top-left corner of this drawArea 
-        protected int areaOffsetY; // y-location of the top-left corner of this drawArea
-        protected int areaW = 1230; // width of the drawArea in pixels
-        protected int areaH = 700; // height of the drawArea in pixels
-        private static float shiftRatioDefault = 0.10f; // Ratio used for shifting
+        /// <summary>scale  (from world size to pixels, so in pixels/meter)</summary>
+        protected double scale;
+        /// <summary>scale at maximum window.</summary>
+        private double fullScale;
+        /// <summary>world-location X corresponding to left side of drawing area</summary>
+        protected double offsetX;
+        /// <summary>// world-location Z correspoding to bottom of the drawing area</summary>
+        protected double offsetZ;
+        /// <summary>X location of the top-left corner of this drawArea </summary>
+        protected int areaOffsetX;
+        /// <summary>Y location of the top-left corner of this drawArea</summary>
+        protected int areaOffsetY;
+        /// <summary> width of the drawArea in pixels</summary>
+        protected int areaW = 1230;
+        /// <summary> height of the drawArea in pixels</summary>
+        protected int areaH = 700;
+        /// <summary>Ratio used for shifting (percentage shift per update)</summary>
+        private static float shiftRatioDefault = 0.10f; 
 
-        // Zooming might affect also other things. In this case we only support drawScaleRuler
-        // a better implementation would use delegates to deal with this
+        /// <summary> Zooming might affect also other things. In this case we only support drawScaleRuler
+        /// a better implementation would use delegates to deal with this</summary>
         private DrawScaleRuler drawScaleRuler;
-        
+
+        /// <summary>The discrete scale giving the meters per pixel in nice numbers</summary>
         private DiscreteScale metersPerPixel;
 
 
+        /// <summary>WorldLocation of the mouse (so where in the real worlds is the current mouse position</summary>
         public WorldLocation mouseLocation { get; set; }
-        public WorldLocation LocationUpperLeft {get; private set;} // location of Upper Left point in real world coordinates
-        public WorldLocation LocationLowerRight { get; private set; } // location of Upper Left point in real world coordinates
-           
-        public bool strictChecking = false;  // do we check out-of bounds strict or not.
+        /// <summary>location of Upper Left point in real world coordinates</summary>
+        public WorldLocation LocationUpperLeft { get; private set; }
+        /// <summary>location of Upper Left point in real world coordinates</summary>
+        public WorldLocation LocationLowerRight { get; private set; }
+
+        /// <summary>do we check out-of bounds strictly or not.</summary>
+        public bool strictChecking = false;
 
         /// <summary>
         /// constructor
@@ -89,7 +103,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             metersPerPixel = new DiscreteScale();
             mouseLocation = new WorldLocation(0, 0, 0, 0, 0);  // default mouse location far far away
-            SetDrawArea(-1, 1, -1, 1, false); // just have a default
+            SetDrawArea(-1, 1, -1, 1); // just have a default
             this.drawScaleRuler = drawScaleRuler;
        }
 
@@ -150,8 +164,8 @@ namespace ORTS.TrackViewer.Drawing
             LocationLowerRight = getWorldLocation(areaW, areaH);
             
             //mouse location is given in parent window location, so correct offset
-            mouseLocation = getWorldLocation(UserInterface.TVUserInput.MouseState.X - areaOffsetX, 
-                                             UserInterface.TVUserInput.MouseState.Y - areaOffsetY);
+            mouseLocation = getWorldLocation(UserInterface.TVUserInput.MouseLocationX - areaOffsetX, 
+                                             UserInterface.TVUserInput.MouseLocationY - areaOffsetY);
         }
 
         /// <summary>
@@ -160,11 +174,11 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawTrackDB">Track database used to determine what the complete track area is</param>
         public void zoomReset(DrawTrackDB drawTrackDB)
         {
-            float minX = drawTrackDB.minTileX * 2048 - 1024f;
-            float minZ = drawTrackDB.minTileZ * 2048 - 1024f;
-            float maxX = drawTrackDB.maxTileX * 2048 + 1024f;
-            float maxZ = drawTrackDB.maxTileZ * 2048 + 1024f;
-            SetDrawArea(minX, maxX, minZ, maxZ, false);
+            float minX = drawTrackDB.MinTileX * 2048 - 1024f;
+            float minZ = drawTrackDB.MinTileZ * 2048 - 1024f;
+            float maxX = drawTrackDB.MaxTileX * 2048 + 1024f;
+            float maxZ = drawTrackDB.MaxTileZ * 2048 + 1024f;
+            SetDrawArea(minX, maxX, minZ, maxZ);
         }
 
         /// <summary>
@@ -172,9 +186,9 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="minX">minimal real world X location</param>
         /// <param name="maxX">maximal real world X location</param>
-        /// <param name="minY">minimal real world Z location</param>
-        /// <param name="maxY">maximal real world Z location</param>
-        public virtual void SetDrawArea(float minX, float maxX, float minZ, float maxZ, bool continuesScale)
+        /// <param name="minZ">minimal real world Z location</param>
+        /// <param name="maxZ">maximal real world Z location</param>
+        public virtual void SetDrawArea(float minX, float maxX, float minZ, float maxZ)
         { 
             float scaleX = areaW / (maxX - minX);
             float scaleY = areaH / (maxZ - minZ);
@@ -209,7 +223,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Do a single zoom step around the mouse location
         /// </summary>
-        /// <param name="scaleFactor">The zoom-in factor</param>
+        /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
         public void zoomAroundMouse(int scaleSteps)
         {
             zoomAround(getAreaVector(mouseLocation), scaleSteps);
@@ -234,7 +248,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Do a single zoom step around the center of the drawing area.
         /// </summary>
-        /// <param name="scalefactor">The zoom-in factor</param>
+        /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
         public void zoomCentered(int scaleSteps)
         {
             zoomAround(new Vector2(areaW / 2, areaH / 2), scaleSteps);
@@ -245,7 +259,7 @@ namespace ORTS.TrackViewer.Drawing
         /// This is the routine where the actually zooming happens.
         /// </summary>
         /// <param name="fixedAreaLocation">x- and y-coordinates (in pixels) of the fixed position</param>
-        /// <param name="scaleFactor">The zoom-in factor</param>
+        /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
         public void zoomAround(Vector2 fixedAreaLocation, int scaleSteps)
         {
             // prevent too much zooming out
@@ -306,8 +320,8 @@ namespace ORTS.TrackViewer.Drawing
         /// Adjust the scale etc to follow another drawArea, showing either the full scale or at max a scale
         /// that is maxScaleRatio difference
         /// </summary>
-        /// <param name="drawarea">The other drawArea that needs to be followed</param>
-        /// <param name="maxScaleDifference">Maximal difference in scale</param>
+        /// <param name="otherArea">The other drawArea that needs to be followed</param>
+        /// <param name="maxScaleRatio">Maximal allowed ratio between this scale and the scale of the otherArea</param>
         public void Follow(DrawArea otherArea, float maxScaleRatio)
         {
             double otherScale = otherArea.scale;
@@ -479,6 +493,14 @@ namespace ORTS.TrackViewer.Drawing
             if (OutOfArea(point1) && OutOfArea(point2)) return;
             BasicShapes.DrawLine(getWindowSize(width), color, getWindowVector(point1), getWindowVector(point2));
         }
+
+        /// <summary>
+        /// Basic method to draw a line between two points without checking whether it is out of bounds or not. Coordinates are in area coordinates.
+        /// </summary>
+        /// <param name="width"> Width of the line to draw in meters </param>
+        /// <param name="color"> Color of the line</param>
+        /// <param name="point1"> WorldLocation of the first point of the line</param>
+        /// <param name="point2"> WorldLocation of to the last point of the line</param>
         public void DrawLineAlways(float width, Color color, WorldLocation point1, WorldLocation point2)
         {
             BasicShapes.DrawLine(getWindowSize(width), color, getWindowVector(point1), getWindowVector(point2));
@@ -531,6 +553,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="radius">Radius of the curvature of the arc</param>
         /// <param name="angle">Angle (in degrees east of North) of the first part of the arc</param>
         /// <param name="arcDegrees">Number of degrees in the arc (360 would be full circle)</param>
+        /// <param name="arcDegreesOffset">Offset of the number of degrees (meaning, do not draw the first arcDegreesOffset degrees</param>
         public void DrawArc(float width, Color color, WorldLocation point, float radius, float angle, float arcDegrees, float arcDegreesOffset)
         {
             WorldLocation beginPoint; // (possibly approximate) location of begin-point
@@ -633,13 +656,13 @@ namespace ORTS.TrackViewer.Drawing
         /// Draw the border (in world coordinates) of another area (e.g. showing a zoom window).
         /// </summary>
         /// <param name="color">The color of the border line</param>
-        /// <param name="drawArea">The other area of which the border needs to be drawn</param>
-        public void DrawBorder(Color color, DrawArea OtherDrawArea)
+        /// <param name="otherDrawArea">The other area of which the border needs to be drawn</param>
+        public void DrawBorder(Color color, DrawArea otherDrawArea)
         {
-            WorldLocation locationUpperLeft  = OtherDrawArea.getWorldLocation(0                  , 0);
-            WorldLocation locationUpperRight = OtherDrawArea.getWorldLocation(OtherDrawArea.areaW, 0);
-            WorldLocation locationLowerLeft  = OtherDrawArea.getWorldLocation(0                  , OtherDrawArea.areaH);
-            WorldLocation locationLowerRight = OtherDrawArea.getWorldLocation(OtherDrawArea.areaW, OtherDrawArea.areaH);
+            WorldLocation locationUpperLeft  = otherDrawArea.getWorldLocation(0                  , 0);
+            WorldLocation locationUpperRight = otherDrawArea.getWorldLocation(otherDrawArea.areaW, 0);
+            WorldLocation locationLowerLeft  = otherDrawArea.getWorldLocation(0                  , otherDrawArea.areaH);
+            WorldLocation locationLowerRight = otherDrawArea.getWorldLocation(otherDrawArea.areaW, otherDrawArea.areaH);
 
             DrawLine(1, color, locationUpperLeft, locationUpperRight);
             DrawLine(1, color, locationUpperLeft, locationLowerLeft);
@@ -679,7 +702,6 @@ namespace ORTS.TrackViewer.Drawing
         /// Draw a simple texture, like ring, disc, determined by its name. In contrast to regular textures
         /// here we support color as well, because that is not predefined
         /// </summary>
-        
         /// <param name="location">Location to draw (the center) of the texture</param>
         /// <param name="size">size in meters of the texture</param>
         /// <param name="textureName">Name of the simple texture, like disc, ring, </param>
@@ -694,13 +716,25 @@ namespace ORTS.TrackViewer.Drawing
 
     }
 
+    /// <summary>
+    /// Class to model a discrete scale (so not continuous). The idea is that the values of the scale are
+    /// nice round numbers for the user, while still trying to have the ratio between a step on the scale
+    /// and the next step to be almost constant.
+    /// The default scale has 24 steps per decade, each 8 steps being about a ratio of 2, each 4 steps about sqrt(2). 
+    /// The actual value of the scale is then (some round number) * 10^(some integer power).
+    /// </summary>
     public class DiscreteScale
     {
+        /// <summary>The nice and round numbers between 10 and 100 to be used for the stpes</summary>
         private static int[] discreteSteps = { 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90 };
+        /// <summary>The index giving which round number is to be used</summary>
         private int stepIndex = 0;
+        /// <summary>The power of ten to be used</summary>
         private int powerOfTen = 0;
 
-        public double ScaleValue { get { return discreteSteps[stepIndex] * Math.Pow(10.0, (double) powerOfTen); } }
+        /// <summary>Return the value of the scale (should be (some round number) * 10^(some integer power)</summary>
+        public double ScaleValue { get { return discreteSteps[stepIndex] * Math.Pow(10.0, (double)powerOfTen); } }
+        /// <summary>Return 1 divided by the value of the scale</summary>
         public double InverseScaleValue { get { return 1.0 / ScaleValue; } }
 
         /// <summary>
@@ -725,6 +759,10 @@ namespace ORTS.TrackViewer.Drawing
             return ScaleValue / previousValue;
         }
 
+        /// <summary>
+        /// Set the scale to a value approximating the requested value (rounding down)
+        /// </summary>
+        /// <param name="requestedValue">value you want the scale to be close to</param>
         public void ApproximateTo(double requestedValue)
         {
             powerOfTen = Convert.ToInt32(Math.Floor(Math.Log10(requestedValue))) - 1;
@@ -738,6 +776,11 @@ namespace ORTS.TrackViewer.Drawing
             }
         }
 
+        /// <summary>
+        /// Return the steps it takes to go from the current value to value*ratio. 
+        /// </summary>
+        /// <param name="ratio">Ratio that needs to be converted to steps. Can be smaller than one</param>
+        /// <returns>the number of steps. Will be negative when ratio smaller than 1</returns>
         public int StepsNeededForRatio(double ratio)
         {
             DiscreteScale newScale = new DiscreteScale();

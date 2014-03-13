@@ -39,15 +39,21 @@ namespace ORTS.TrackViewer.Editing
     /// </summary>
     public class DrawPATfile
     {
-
+        /// <summary>the parsed .pat file information</summary>
         private PATFile patFile;
+        /// <summary>The filename of the .pat file</summary>
         public string fileName;
 
-        private int numberToDraw = 4;   // Number of nodes that will be drawn. Start with a few
-        private int currentMainNodeIndex;       // Number of the currentIndex
+        /// <summary>Number of nodes that will be drawn. Start with a few</summary>
+        private int numberToDraw = 4;
+        /// <summary>Index of the last main node that has been drawn</summary>
+        private int currentMainNodeIndex;
 
+        /// <summary>Return the last drawn node</summary>
         public TrPathNode CurrentNode { get { return patFile.TrPathNodes[currentMainNodeIndex]; } }
+        /// <summary>return the (Path Data Point?) belonging to the last drawn node</summary>
         public TrackPDP CurrentPDP { get { return patFile.TrackPDPs[(int)CurrentNode.fromPDP]; } }
+        /// <summary>Return the location of the last drawn node</summary>
         public WorldLocation CurrentLocation { get { return getPDPLocation(CurrentPDP); } }
 
         /// <summary>

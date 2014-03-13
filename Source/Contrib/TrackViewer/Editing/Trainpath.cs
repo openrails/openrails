@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 //
-// This class is a copy of AIPath.cs with additional methods.  But because of editing we cannot use subclassing
-//  And changing AIPath.cs is a bit overdone, probably
+// This class started as a copy of AIPath.cs with additional methods.  But it became more extensive and cleaned up in places
+// Hence a different class
 
 using System;
 using System.Collections.Generic;
@@ -41,20 +41,28 @@ namespace ORTS.TrackViewer.Editing
         MSTS.Formats.TrackDB trackDB;
         TSectionDatFile tsectionDat;
         
-        public virtual TrainpathNode FirstNode { get; set; }    // path starting node
+        /// <summary>Link to the first node of the path (starting point)</summary>
+        public virtual TrainpathNode FirstNode { get; set; }
 
-        public virtual bool HasEnd { get; set; } // Does the path have a real end node?
+        /// <summary>Does the path have a real end node?</summary>
+        public virtual bool HasEnd { get; set; }
 
         // adminstration of various path properties
+        /// <summary>Full file path of the .pat file that contained the train path</summary>
         public string FilePath { get; set; }
-        public string PathName { get; set; } //name of the path to be able to print it.
+        /// <summary>Name of the path as stored in the .pat file</summary>
+        public string PathName { get; set; }
+        /// <summary>Name of the start point as stored in the .pat file</summary>
         public string PathStart { get; set; }
-        public string pathEnd { get; set; }
+        /// <summary>Name of the end point as stored in the .pat file</summary>
+        public string PathEnd { get; set; }
+        /// <summary>identification name as stored in the .pat file</summary>
         public string PathID { get; set; }
+        /// <summary>Flags associated with the path (not the nodes)</summary>
         public PathFlags PathFlags { get; set; }
 
         /// <summary>
-        /// Constructor for a new path
+        /// Basic constructor creating an empty path, but storing track database and track section data
         /// </summary>
         /// <param name="trackDB"></param>
         /// <param name="tsectionDat"></param>
@@ -64,18 +72,20 @@ namespace ORTS.TrackViewer.Editing
             this.tsectionDat = tsectionDat;
 
             PathName = "";
-            pathEnd = "<unknown>";
+            PathEnd = "<unknown>";
             PathStart = "<unknown>";
             PathID = "<unknown>";
             HasEnd = false;
         }
-
  
         /// <summary>
         /// Creates an trainpath from PAT file information.
         /// First creates all the nodes and then links them together into a main list
         /// with optional parallel siding list.
         /// </summary>
+        /// <param name="trackDB"></param>
+        /// <param name="tsectionDat"></param>
+        /// <param name="filePath">file name including path of the .pat file</param>
         public Trainpath(TrackDB trackDB, TSectionDatFile tsectionDat, string filePath)
         {
             this.trackDB = trackDB;
@@ -86,7 +96,7 @@ namespace ORTS.TrackViewer.Editing
             PathID = patFile.PathID;
             PathName = patFile.Name;
             PathStart = patFile.Start;
-            pathEnd = patFile.End;
+            PathEnd = patFile.End;
             PathFlags = patFile.Flags;
 
             List<TrainpathNode> Nodes = new List<TrainpathNode>();
@@ -103,8 +113,8 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Create the initial list of nodes from the patFile. No linking or preoccessing
         /// </summary>
-        /// <param name="tsectiondat"></param>
-        /// <param name="patFile"></param>
+        /// <param name="patFile">Patfile object containing the various unprocessed Track Path Nodes</param>
+        /// <param name="Nodes">The list that is going to be filled with as-of-yet unlinked and almost unprocessed path nodes</param>
         private void createNodes(PATFile patFile, List<TrainpathNode> Nodes)
         {
             foreach (TrPathNode tpn in patFile.TrPathNodes)
@@ -117,8 +127,8 @@ namespace ORTS.TrackViewer.Editing
         /// Link the various nodes to each other. Do some initial processing on the path, like finding linking TVNs
         /// and determining whether junctions are facing or not.
         /// </summary>
-        /// <param name="patFile"></param>
-        /// <returns></returns>
+        /// <param name="patFile">Patfile object containing the various unprocessed Track Path Nodes</param>
+        /// <param name="Nodes">The list of as-of-yet unlinked processed path nodes</param>
         private bool LinkNodes(PATFile patFile, List<TrainpathNode> Nodes)
         {
             // Connect the various nodes to each other
@@ -255,15 +265,18 @@ namespace ORTS.TrackViewer.Editing
 
     }
 
+    /// <summary>
+    /// Class that extends TrainPath with History functions like Undo and redo.
+    /// </summary>
     public class TrainpathWithHistory : Trainpath
     {
         List<TrainpathNode> firstNodes;  // list of firstnodes of complete paths
         List<bool> hasEnds; // list of booleans describing whether path does or does not have end
         int currentIndex; // current FirstNode and HasEnd are indexed by currentIndex
 
-        // This needs to be extensive, because it is being used in base constructor, so before body of tonstructor of this class
+        /// <summary>Link to the first node of the train path</summary>
         public override TrainpathNode FirstNode
-        {
+        {   // This needs to be extensive, because it is being used in base constructor, so before body of tonstructor of this class
             get
             {
                 if (firstNodes == null) return null;
@@ -284,9 +297,9 @@ namespace ORTS.TrackViewer.Editing
             }
         }
 
-        // This needs to be extensive, because it is being used in base constructor, so before body of tonstructor of this class
+        /// <summary>Does the path have a well-defined end point or not</summary>
         public override bool HasEnd
-        {
+        {   // This needs to be extensive, because it is being used in base constructor, so before body of tonstructor of this class
             get
             {
                 if (hasEnds == null) return false;
@@ -307,11 +320,23 @@ namespace ORTS.TrackViewer.Editing
             }
         }
 
-
+        /// <summary>
+        /// Basic constructor creating an empty path, but storing track database and track section data
+        /// </summary>
+        /// <param name="trackDB"></param>
+        /// <param name="tsectionDat"></param>
         public TrainpathWithHistory(TrackDB trackDB, TSectionDatFile tsectionDat)
             : base(trackDB, tsectionDat)
         { }
 
+        /// <summary>
+        /// Creates an trainpath from PAT file information.
+        /// First creates all the nodes and then links them together into a main list
+        /// with optional parallel siding list.
+        /// </summary>
+        /// <param name="trackDB"></param>
+        /// <param name="tsectionDat"></param>
+        /// <param name="filePath">file name including path of the .pat file</param>
         public TrainpathWithHistory(TrackDB trackDB, TSectionDatFile tsectionDat, string filePath)
             : base(trackDB, tsectionDat, filePath)
         { }

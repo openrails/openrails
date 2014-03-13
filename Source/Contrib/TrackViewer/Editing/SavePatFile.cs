@@ -161,8 +161,8 @@ namespace ORTS.TrackViewer.Editing
         /// Add a single TrPathNode. Make sure the pdp's are updated as needed.
         /// </summary>
         /// <param name="node">path node, needed for location, and various flags</param>
-        /// <param name="nextMainIndexToWrite">Index of the next main node</param>
-        /// <param name="nextSidingIndexToWrite">Index of the next siding node</param>
+        /// <param name="nextMainIndex">Index of the next main node</param>
+        /// <param name="nextSidingIndex">Index of the next siding node</param>
         private static void AddNode(TrainpathNode node, uint nextMainIndex, uint nextSidingIndex)
         {
             int pdpIndex;
@@ -178,7 +178,7 @@ namespace ORTS.TrackViewer.Editing
                 int junctionIndex = (node as TrainpathJunctionNode).junctionIndex;
                 if (pdpOfJunction.ContainsKey(junctionIndex))
                 {
-                    ///this junction is already in the list of PDPs, so use another PDP index;
+                    //this junction is already in the list of PDPs, so use another PDP index;
                     pdpIndex = pdpOfJunction[junctionIndex];
                 }
                 else
@@ -232,7 +232,7 @@ namespace ORTS.TrackViewer.Editing
             //}
             file.WriteLine("\tName ( \"" + trainpath.PathName + "\" )");
             file.WriteLine("\tTrPathStart ( \""  + trainpath.PathStart + "\" )");
-            file.WriteLine("\tTrPathEnd ( \"" + trainpath.pathEnd + "\" )");
+            file.WriteLine("\tTrPathEnd ( \"" + trainpath.PathEnd + "\" )");
             file.Write    ("\tTrPathNodes ( ");
             file.WriteLine(trpathnodes.Count());
             foreach (string line in trpathnodes) {

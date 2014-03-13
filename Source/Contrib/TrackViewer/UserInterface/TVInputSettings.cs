@@ -37,36 +37,66 @@ using ORTS.Settings;
 
 namespace ORTS.TrackViewer.UserInterface
 {
-
+    /// <summary>
+    /// Enumeration of all possible key-based commands that can be given by user. Link to key combinations is given later
+    /// </summary>
     public enum TVUserCommands
     {
+        /// <summary>command for zooming in</summary>
         ZoomIn,
+        /// <summary>command for zooming out</summary>
         ZoomOut,
+        /// <summary>command for resetting zoom</summary>
         ZoomReset,
+        /// <summary>command for zooming in to tile-size</summary>
         ZoomToTile,
+        /// <summary>command for shifting view window left</summary>
         ShiftLeft,
+        /// <summary>command for shifting view window right</summary>
         ShiftRight,
+        /// <summary>command for shifting view window up</summary>
         ShiftUp,
+        /// <summary>command for shifting view window down</summary>
         ShiftDown,
+        /// <summary>command for shifting to a specific location</summary>
         ShiftToLocation,
+        /// <summary>command for extending a train path</summary>
         ExtendPath,
+        /// <summary>command for showing the full train path</summary>
         ExtendPathFull,
+        /// <summary>command for reducing the drawn part of a train path</summary>
         ReducePath,
+        /// <summary>command for showing only start node of a train path</summary>
         ReducePathFull,
+        /// <summary>command for debugging the key map</summary>
         DebugDumpKeymap,
+        /// <summary>command for quitting the application</summary>
         Quit,
+        /// <summary>command for performing debug steps</summary>
         Debug,
+        /// <summary>command for toggling showing sidings</summary>
         ToggleShowSidings,
+        /// <summary>command for toggling showing siding names</summary>
         ToggleShowSidingNames,
+        /// <summary>command for toggling showing platforms</summary>
         ToggleShowPlatforms,
+        /// <summary>command for toggling showing platform names</summary>
         ToggleShowPlatformNames,
+        /// <summary>command for toggling showing signals</summary>
         ToggleShowSignals,
+        /// <summary>command for toggling showing the raw .pat file train path</summary>
         ToggleShowPATFile,
+        /// <summary>command for toggling showing the train path</summary>
         ToggleShowTrainpath,
+        /// <summary>key </summary>
         ToggleShowSpeedLimits,
+        /// <summary>command for toggling showing mile posts</summary>
         ToggleShowMilePosts,
+        /// <summary>command for allowing slow zoom with mouse</summary>
         MouseZoomSlow,
+        /// <summary>command for redo in editor</summary>
         EditorRedo,
+        /// <summary>command for undo in editor</summary>
         EditorUndo,
     }
 
@@ -81,11 +111,17 @@ namespace ORTS.TrackViewer.UserInterface
     }
     */
 
+    /// <summary>
+    /// static class to map keyboard combinations to enumeration
+    /// </summary>
     public static class TVInputSettings
     {
+        /// <summary>
+        /// Array of commands that have been defined and for which a key-combination can and should be defined below
+        /// </summary>
         public static UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(TVUserCommands)).Length];
         
-        public static readonly string[] KeyboardLayout = new[] {
+        static readonly string[] KeyboardLayout = new[] {
             "[01 ]   [3B ][3C ][3D ][3E ]   [3F ][40 ][41 ][42 ]   [43 ][44 ][57 ][58 ]   [37 ][46 ][11D]",
             "                                                                                            ",
             "[29 ][02 ][03 ][04 ][05 ][06 ][07 ][08 ][09 ][0A ][0B ][0C ][0D ][0E     ]   [52 ][47 ][49 ]",
@@ -95,6 +131,9 @@ namespace ORTS.TrackViewer.UserInterface
             "[1D   ][    ][38  ][39                          ][    ][    ][    ][1D   ]   [4B ][50 ][4D ]",
         };
 
+        /// <summary>
+        /// Set the default mapping from keys or key-combinations to commands
+        /// </summary>
         public static void SetDefaults()
         { 
             Commands[(int)TVUserCommands.ZoomIn]     = new ORTS.Settings.UserCommandKeyInput(0x0D);

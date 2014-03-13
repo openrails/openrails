@@ -38,9 +38,13 @@ namespace ORTS.TrackViewer.UserInterface
     /// The kind of items that can be searched from the search control
     /// </summary>
     public enum SearchableItem {
+        /// <summary>Search for (rail) track node</summary>
         TrackNode,
+        /// <summary>Search for (rail) track item</summary>
         TrackItem,
+        /// <summary>Search for road track node</summary>
         TrackNodeRoad,
+        /// <summary>Search for road track item</summary>
         TrackItemRoad,
     }
 
@@ -56,6 +60,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// Constructor
         /// </summary>
         /// <param name="trackViewer">Trackviewer so we can perform a callback</param>
+        /// <param name="searchItem">Type of item that needs to be searched</param>
         public SearchControl(TrackViewer trackViewer, SearchableItem searchItem)
         {
             InitializeComponent();

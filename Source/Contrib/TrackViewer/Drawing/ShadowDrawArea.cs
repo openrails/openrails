@@ -15,41 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This class extends DrawArea. DrawArea itself is a class that handles all translation of real world coordinates 
-/// to pixels. This class creates the possibility to create a cache of (part of) what is drawn on the drawArea
-/// Redrawing some things completely, even when not necessary, creates a large overhead. Here re-drawing is prevented
-/// by drawing first to a texture, only when needed, saving the texture, and drawing the texture on screen each pass.
-/// In this way the expensive drawing routine is only called when needed.
-/// 
-/// In this class we have two 'shadow' textures. The drawing area itself will be drawn upon in a number of subblocks
-/// Ninner * Ninner. Around that a number of blocks will also be drawn (but not immediately visible) to a total of
-/// Nouter * Nouter. Together these blocks will be drawn on a combined texture.
-/// Once the combined texture is ready, it is easy to shift the location: Simply a different part of the combined texture
-/// will be shown, and no (costly) redrawing is needed, until we get out of bounds.
-/// Also zooming is possibly, by zooming in or out of the combined texture. Redrawing will be done on zooming in and out
-/// soon afterwards, because zooming effects are visible.
-/// 
-/// Since for the expensive drawing routine the actual number of pixels it draws to is not very relevant (the expense
-/// is more in the amount of things that need to be drawn, not in the rendering to pixels itself), we also
-/// oversample the drawing a bit: we draw at (for instance) twice the resolution. This gives much better zoom behaviour.
-/// 
-/// 
-/// More visible blocks reduces the time needed to draw a sub-block, improving performance but costing more time to have complete
-/// visible region redrawn (since total draw time is not changed)
-/// More non-visible blocks reduces a bit performance (but in many cases only in background), but reduces
-/// the number of needed redraw when shifting.
-///
-/// The most important methods are
-///     Constructor (which does nothing specifically to shadowing)
-///     SetScreenSize. Set the size of the screen in pixels to draw upon. Also called after window resize
-///     LoadContent. This is where the amount of blocks to be used are defined
-///     
-///     Normal use of a drawArea would be
-///         somewhere in Game.Draw method:      DrawSomething(drawArea);
-///     For use shadowing use this instead:
-///         somewhere in Game.Draw method:                          yourShadowDrawArea.DrawShadowedTexture();
-///         Also in the Game.Draw, but before spriteBatch.begin:    yourShadowDrawArea.DrawShadowTextures(DrawSomething, background color);
-///
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,6 +24,43 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.TrackViewer.Drawing
 {
+    ///<summary>
+    /// This class extends DrawArea. DrawArea itself is a class that handles all translation of real world coordinates 
+    /// to pixels. This class creates the possibility to create a cache of (part of) what is drawn on the drawArea
+    /// Redrawing some things completely, even when not necessary, creates a large overhead. Here re-drawing is prevented
+    /// by drawing first to a texture, only when needed, saving the texture, and drawing the texture on screen each pass.
+    /// In this way the expensive drawing routine is only called when needed.
+    /// 
+    /// In this class we have two 'shadow' textures. The drawing area itself will be drawn upon in a number of subblocks
+    /// Ninner * Ninner. Around that a number of blocks will also be drawn (but not immediately visible) to a total of
+    /// Nouter * Nouter. Together these blocks will be drawn on a combined texture.
+    /// Once the combined texture is ready, it is easy to shift the location: Simply a different part of the combined texture
+    /// will be shown, and no (costly) redrawing is needed, until we get out of bounds.
+    /// Also zooming is possibly, by zooming in or out of the combined texture. Redrawing will be done on zooming in and out
+    /// soon afterwards, because zooming effects are visible.
+    /// 
+    /// Since for the expensive drawing routine the actual number of pixels it draws to is not very relevant (the expense
+    /// is more in the amount of things that need to be drawn, not in the rendering to pixels itself), we also
+    /// oversample the drawing a bit: we draw at (for instance) twice the resolution. This gives much better zoom behaviour.
+    /// 
+    /// 
+    /// More visible blocks reduces the time needed to draw a sub-block, improving performance but costing more time to have complete
+    /// visible region redrawn (since total draw time is not changed)
+    /// More non-visible blocks reduces a bit performance (but in many cases only in background), but reduces
+    /// the number of needed redraw when shifting.
+    ///
+    /// The most important methods are
+    ///     Constructor (which does nothing specifically to shadowing)
+    ///     SetScreenSize. Set the size of the screen in pixels to draw upon. Also called after window resize
+    ///     LoadContent. This is where the amount of blocks to be used are defined
+    ///     
+    ///     Normal use of a drawArea would be
+    ///         somewhere in Game.Draw method:      DrawSomething(drawArea);
+    ///     For use shadowing use this instead:
+    ///         somewhere in Game.Draw method:                          yourShadowDrawArea.DrawShadowedTexture();
+    ///         Also in the Game.Draw, but before spriteBatch.begin:    yourShadowDrawArea.DrawShadowTextures(DrawSomething, background color);
+    ///
+    ///</summary>
     public class ShadowDrawArea: DrawArea
     {
         #region private Fields
@@ -95,9 +97,9 @@ namespace ORTS.TrackViewer.Drawing
         int Nouter;    // Number of (1D) blocks total.
         int Nborder { get { return (Nouter - Ninner) / 2; } } // number of blocks in border
         int Nsampling; // Oversampling rate.
-        int[] xOrder; // array containing the x-indices of the subblocks in the order they need to be drawn
-        int[] zOrder; // array containing the z-indices of the subblocks in the order they need to be drawn
-        int[,] orderFromLocation; // array that contains the order-index, given the x, and z-indices of the subblock.
+        int[] xOrder; // array containing the x-indexes of the subblocks in the order they need to be drawn
+        int[] zOrder; // array containing the z-indexes of the subblocks in the order they need to be drawn
+        int[,] orderFromLocation; // array that contains the order-index, given the x, and z-indexes of the subblock.
 
         #endregion
 
@@ -256,7 +258,10 @@ namespace ORTS.TrackViewer.Drawing
             }
         }
 
-        // delegate so the calling class can give a routine that is used for actual drawing
+        /// <summary>
+        /// Delegate so the calling class can give a routine that is used for actual drawing
+        /// </summary>
+        /// <param name="drawArea">The draw area to draw upon</param>
         public delegate void DrawingDelegate(DrawArea drawArea);
 
         /// <summary>
