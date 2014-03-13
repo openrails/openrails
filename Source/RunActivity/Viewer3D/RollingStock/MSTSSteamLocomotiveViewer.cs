@@ -68,6 +68,8 @@ namespace ORTS.Viewer3D.RollingStock
                 foreach (var drawer in emitter.Value)
                     drawer.Initialize(viewer.TextureManager.Get(steamTexture));
             }
+
+            Pulse_Rate = (MathHelper.Pi * SteamLocomotive.DriverWheelRadiusM);
         }
 
         /// <summary>
@@ -248,8 +250,6 @@ namespace ORTS.Viewer3D.RollingStock
             var steamUsageLBpS = car.CylinderSteamUsageLBpS + car.BlowerSteamUsageLBpS + car.BasicSteamUsageLBpS + (car.SafetyIsOn ? car.SafetyValveUsageLBpS : 0);
             var cockSteamUsageLBps = car.CylCockSteamUsageLBpS;
             var safetySteamUsageLBps = car.SafetyValveUsageLBpS;
-            // TODO: Expected assignment:
-            //var steamVolumeM3pS = Kg.FromLb(steamUsageLBpS) * SteamVaporDensityAt100DegC1BarM3pKG;
             var steamVolumeM3pS = Kg.FromLb(steamUsageLBpS) * SteamVaporDensityAt100DegC1BarM3pKG;
             var cocksVolumeM3pS = Kg.FromLb(cockSteamUsageLBps) * SteamVaporDensityAt100DegC1BarM3pKG;
             var safetyVolumeM3pS = Kg.FromLb(safetySteamUsageLBps) * SteamVaporDensityAt100DegC1BarM3pKG;
@@ -263,19 +263,17 @@ namespace ORTS.Viewer3D.RollingStock
             foreach (var drawer in SafetyValves)
                 drawer.SetOutput(car.SafetyIsOn ? safetyVolumeM3pS : 0);
 
+            Throttlepercent = car.ThrottlePercent > 0 ? car.ThrottlePercent / 10f : 0f;
+
             foreach (var drawer in Stack)
             {
-
-                Throttlepercent = Math.Max(car.ThrottlePercent / 10f, 0f);
-
-                Pulse_Rate = (MathHelper.Pi * SteamLocomotive.DriverWheelRadiusM);
-
                 if (car.Direction == Direction.Forward)
                 {
                     if (pulse == 0.25f)
                         if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + (Pulse_Rate / 4))
                         {
                             pulse = 1.0f;
+                            car.SteamPulse = true;
                         }
                     if (pulse == 1.0f)
                         if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + Pulse_Rate)
@@ -290,6 +288,7 @@ namespace ORTS.Viewer3D.RollingStock
                         if (Viewer.PlayerTrain.DistanceTravelledM < old_Distance_Travelled - (Pulse_Rate / 4))
                         {
                             pulse = 1.0f;
+                            car.SteamPulse = true;
                         }
                     if (pulse == 1.0f)
                         if (Viewer.PlayerTrain.DistanceTravelledM < old_Distance_Travelled - Pulse_Rate)

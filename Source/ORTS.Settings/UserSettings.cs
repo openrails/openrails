@@ -87,7 +87,7 @@ namespace ORTS.Settings
 		// General settings:
 		[Default(false)]
 		public bool Alerter { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool AlerterDisableExternal { get; set; }
         [Default(false)]
 		public bool GraduatedRelease { get; set; }

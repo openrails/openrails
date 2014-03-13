@@ -85,6 +85,10 @@ namespace ORTS
         SteamEjector2Off,
         SteamEjector2On,
         SteamHeatChange, // NOTE: Currently not used in Open Rails.
+        SteamPulse1,
+        SteamPulse2,
+        SteamPulse3,
+        SteamPulse4,
         SteamSafetyValveOff,
         SteamSafetyValveOn,
         ThrottleChange,
@@ -92,11 +96,15 @@ namespace ORTS
         TrainBrakePressureDecrease,
         TrainBrakePressureIncrease,
         TrainControlSystemActivate,
+        TrainControlSystemAlert1,
+        TrainControlSystemAlert2,
         TrainControlSystemDeactivate,
         TrainControlSystemInfo1,
         TrainControlSystemInfo2,
         TrainControlSystemPenalty1,
         TrainControlSystemPenalty2,
+        TrainControlSystemWarning1,
+        TrainControlSystemWarning2,
         Uncouple,
         UncoupleB, // NOTE: Currently not used in Open Rails.
         UncoupleC, // NOTE: Currently not used in Open Rails.
@@ -232,6 +240,15 @@ namespace ORTS
                         case 112: return Event.TrainControlSystemDeactivate;
                         case 113: return Event.TrainControlSystemPenalty1;
                         case 114: return Event.TrainControlSystemPenalty2;
+                        case 115: return Event.TrainControlSystemWarning1;
+                        case 116: return Event.TrainControlSystemWarning2;
+                        case 117: return Event.TrainControlSystemAlert1;
+                        case 118: return Event.TrainControlSystemAlert2;
+                        
+                        case 121: return Event.SteamPulse1;
+                        case 122: return Event.SteamPulse2;
+                        case 123: return Event.SteamPulse3;
+                        case 124: return Event.SteamPulse4;
                         //
 
                         default: return 0;

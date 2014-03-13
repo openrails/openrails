@@ -225,10 +225,14 @@ namespace ORTS
             Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
             Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
             Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
+            Script.TriggerSoundAlert1 = () => this.HandleEvent(Event.TrainControlSystemAlert1, Script);
+            Script.TriggerSoundAlert2 = () => this.HandleEvent(Event.TrainControlSystemAlert2, Script);
             Script.TriggerSoundInfo1 = () => this.HandleEvent(Event.TrainControlSystemInfo1, Script);
             Script.TriggerSoundInfo2 = () => this.HandleEvent(Event.TrainControlSystemInfo2, Script);
             Script.TriggerSoundPenalty1 = () => this.HandleEvent(Event.TrainControlSystemPenalty1, Script);
             Script.TriggerSoundPenalty2 = () => this.HandleEvent(Event.TrainControlSystemPenalty2, Script);
+            Script.TriggerSoundWarning1 = () => this.HandleEvent(Event.TrainControlSystemWarning1, Script);
+            Script.TriggerSoundWarning2 = () => this.HandleEvent(Event.TrainControlSystemWarning2, Script);
             Script.TriggerSoundSystemActivate = () => this.HandleEvent(Event.TrainControlSystemActivate, Script);
             Script.TriggerSoundSystemDeactivate = () => this.HandleEvent(Event.TrainControlSystemDeactivate, Script);
             Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;

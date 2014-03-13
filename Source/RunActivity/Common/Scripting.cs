@@ -252,6 +252,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<bool> SetHorn;
         /// <summary>
+        /// Trigger Alert1 sound event
+        /// </summary>
+        public Action TriggerSoundAlert1;
+        /// <summary>
+        /// Trigger Alert2 sound event
+        /// </summary>
+        public Action TriggerSoundAlert2;
+        /// <summary>
         /// Trigger Info1 sound event
         /// </summary>
         public Action TriggerSoundInfo1;
@@ -267,6 +275,14 @@ namespace ORTS.Scripting.Api
         /// Trigger Penalty2 sound event
         /// </summary>
         public Action TriggerSoundPenalty2;
+        /// <summary>
+        /// Trigger Warning1 sound event
+        /// </summary>
+        public Action TriggerSoundWarning1;
+        /// <summary>
+        /// Trigger Warning2 sound event
+        /// </summary>
+        public Action TriggerSoundWarning2;
         /// <summary>
         /// Trigger Activate sound event
         /// </summary>

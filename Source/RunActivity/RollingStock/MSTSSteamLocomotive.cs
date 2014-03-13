@@ -79,6 +79,8 @@ namespace ORTS
         bool safety4IsOn = false; // Safety valve #4 is on and opertaing
         bool IsGearedSteamLoco = false; // Indicates that it is a geared locomotive
         bool IsGearedSpeedExcess = false; // Flag indicating that geared locomotive speed has been exceeded 
+        public bool SteamPulse; // Render process sets it to true when a pulse sound event must be engaged
+        int PulseNumber;
 
         // state variables
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
@@ -882,6 +884,20 @@ namespace ORTS
             Variable1 = (Simulator.UseAdvancedAdhesion ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable2 = Math.Min(CylinderPressurePSI / MaxBoilerPressurePSI * 100f, 100f);
             Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRate.SmoothedValue * 100;
+            // SteamPulse is controlled by particle emitter display code
+            if (SteamPulse)
+            {
+                SteamPulse = false;
+                switch (PulseNumber)
+                {
+                    case 0: SignalEvent(Event.SteamPulse1); break;
+                    case 1: SignalEvent(Event.SteamPulse2); break;
+                    case 2: SignalEvent(Event.SteamPulse3); break;
+                    case 3: SignalEvent(Event.SteamPulse4); break;
+                }
+                PulseNumber++;
+                PulseNumber %= 4;
+            }
 
             throttle = ThrottlePercent / 100;
             cutoff = Math.Abs(Train.MUReverserPercent / 100);
@@ -2718,7 +2734,6 @@ namespace ORTS
         /// <returns>Matching controller or null</returns>
         public override MSTSNotchController GetRefillController(uint type)
         {
-            MSTSNotchController controller;
             if (type == (uint)PickupType.FuelCoal) return FuelController;
             if (type == (uint)PickupType.FuelWater) return WaterController;
             return null;
