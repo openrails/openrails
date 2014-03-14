@@ -1,119 +1,84 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectGuid>{79C3A70B-7535-40CB-8448-91AB87CBAE44}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{79C3A70B-7535-40CB-8448-91AB87CBAE44}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ORTS.TrackViewer</RootNamespace>
-    <AssemblyName>TrackViewer</AssemblyName>
+    <AssemblyName>Contrib.TrackViewer</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <XnaFrameworkVersion>v3.1</XnaFrameworkVersion>
-    <XnaPlatform>Windows</XnaPlatform>
-    <XnaCrossPlatformGroupID>40537efa-41f7-423a-a9b8-bc96041bfc69</XnaCrossPlatformGroupID>
-    <ApplicationIcon>ORTS.ico</ApplicationIcon>
-    <Thumbnail>
-    </Thumbnail>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <StartupObject>ORTS.TrackViewer.Program</StartupObject>
-    <ManifestCertificateThumbprint>F06F96E1089658BDB20A5F291745A6F828AE1C48</ManifestCertificateThumbprint>
-    <ManifestKeyFile>TrackViewer_TemporaryKey.pfx</ManifestKeyFile>
-    <GenerateManifests>false</GenerateManifests>
-    <SignManifests>false</SignManifests>
-    <PublishUrl>D:\TS cold\tv publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <PublishWizardCompleted>true</PublishWizardCompleted>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetZone>LocalIntranet</TargetZone>
-    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <FileAlignment>512</FileAlignment>
+    <ApplicationIcon>..\..\ORTS.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\Program\Contrib\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_SIGNALLING</DefineConstants>
+    <OutputPath>..\..\..\Program\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;WINDOWS;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>x86</PlatformTarget>
-    <XnaCompressContent>false</XnaCompressContent>
-    <DocumentationFile>
-    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\x86\Release</OutputPath>
-    <DefineConstants>TRACE;WINDOWS</DefineConstants>
+    <OutputPath>..\..\..\Program\</OutputPath>
+    <DefineConstants>TRACE;WINDOWS;NEW_SIGNALLING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>x86</PlatformTarget>
-    <XnaCompressContent>true</XnaCompressContent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=MSIL" />
-    <Reference Include="mscorlib">
-    </Reference>
-    <Reference Include="PresentationCore, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Microsoft.Xna.Framework.Game, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="mscorlib" />
+    <Reference Include="PresentationCore">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="PresentationFramework">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System">
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.ServiceModel, Version=3.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL" />
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml">
-    </Reference>
-    <Reference Include="System.Xml.Linq">
-    </Reference>
-    <Reference Include="UIAutomationProvider">
-    </Reference>
     <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="WindowsFormsIntegration">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Drawing\CloseToMouse.cs" />
-    <Compile Include="Drawing\ShadowDrawArea.cs" />
-    <Compile Include="Editing\PathEditor.cs" />
-    <Compile Include="Editing\DrawPath.cs" />
     <Compile Include="Drawing\BasicShapes.cs" />
+    <Compile Include="Drawing\CloseToMouse.cs" />
     <Compile Include="Drawing\DrawArea.cs" />
-    <Compile Include="Editing\DrawPATfile.cs" />
+    <Compile Include="Drawing\DrawColors.cs" />
     <Compile Include="Drawing\DrawScaleRuler.cs" />
     <Compile Include="Drawing\DrawTrackDB.cs" />
     <Compile Include="Drawing\DrawTrains.cs" />
     <Compile Include="Drawing\DrawWorldTiles.cs" />
+    <Compile Include="Drawing\ShadowDrawArea.cs" />
+    <Compile Include="Editing\DrawPATfile.cs" />
+    <Compile Include="Editing\DrawPath.cs" />
     <Compile Include="Editing\EditorContextMenu.cs" />
-    <Compile Include="Editing\Trainpath.cs" />
-    <Compile Include="Editing\TrainpathNode.cs" />
+    <Compile Include="Editing\PathEditor.cs" />
     <Compile Include="Editing\PathMetadataDialog.xaml.cs">
       <DependentUpon>PathMetadataDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Editing\SavePatFile.cs" />
+    <Compile Include="Editing\Trainpath.cs" />
+    <Compile Include="Editing\TrainpathNode.cs" />
     <Compile Include="Editing\UncouplePointDialog.xaml.cs">
       <SubType>Code</SubType>
       <DependentUpon>UncouplePointDialog.xaml</DependentUpon>
@@ -121,8 +86,8 @@
     <Compile Include="Editing\WaitPointDialog.xaml.cs">
       <DependentUpon>WaitPointDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -134,88 +99,18 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="TrackViewer.cs" />
-    <Compile Include="UserInterface\SearchControl.xaml.cs">
-      <DependentUpon>SearchControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UserInterface\TrackviewerIPC.cs" />
-    <Compile Include="UserInterface\TVInputSettings.cs" />
     <Compile Include="UserInterface\MenuControl.xaml.cs">
       <DependentUpon>MenuControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Drawing\DrawColors.cs" />
+    <Compile Include="UserInterface\SearchControl.xaml.cs">
+      <DependentUpon>SearchControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserInterface\StatusBarControl.xaml.cs">
       <DependentUpon>StatusBarControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserInterface\TVUserInput.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Xna.Framework.3.1">
-      <Visible>False</Visible>
-      <ProductName>Microsoft XNA Framework Redistributable 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\MSTS.Formats\MSTS.Formats.csproj">
-      <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
-      <Name>MSTS.Formats</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\MSTS.Parsers\MSTS.Parsers.csproj">
-      <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
-      <Name>MSTS.Parsers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj">
-      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
-      <Name>ORTS.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Content\ORTS.Content.csproj">
-      <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
-      <Name>ORTS.Content</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Menu\ORTS.Menu.csproj">
-      <Project>{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}</Project>
-      <Name>ORTS.Menu</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj">
-      <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
-      <Name>ORTS.Settings</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\RunActivity\RunActivity.csproj">
-      <Project>{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}</Project>
-      <Name>RunActivity</Name>
-    </ProjectReference>
+    <Compile Include="UserInterface\TrackviewerIPC.cs" />
+    <Compile Include="UserInterface\TVInputSettings.cs" />
+    <Compile Include="UserInterface\TVUserInput.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Editing\PathMetadataDialog.xaml">
@@ -245,7 +140,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -300,7 +194,32 @@
     <Content Include="Content\Steamtrain.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="ORTS.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\MSTS.Formats\MSTS.Formats.csproj">
+      <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
+      <Name>MSTS.Formats</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj">
+      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
+      <Name>ORTS.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ORTS.Content\ORTS.Content.csproj">
+      <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
+      <Name>ORTS.Content</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ORTS.Menu\ORTS.Menu.csproj">
+      <Project>{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}</Project>
+      <Name>ORTS.Menu</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj">
+      <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
+      <Name>ORTS.Settings</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RunActivity\RunActivity.csproj">
+      <Project>{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}</Project>
+      <Name>RunActivity</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
