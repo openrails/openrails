@@ -31,12 +31,9 @@ namespace ORTS.Viewer3D.RollingStock
         const float LBToKG = 0.45359237f;
         const float SteamVaporDensityAt100DegC1BarM3pKG = 1.694f;
         float Throttlepercent;
-        float Burn_Rate;
-        float Steam_Rate;
         float Color_Value;
         float Pulse_Rate = 1.0f;
         float pulse = 0.25f;
-        float steamcolor = 1.0f;
         float old_Distance_Travelled = 0.0f;
 
         MSTSSteamLocomotive SteamLocomotive { get { return (MSTSSteamLocomotive)Car; } }

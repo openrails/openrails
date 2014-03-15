@@ -120,8 +120,6 @@ namespace ORTS
 
         float fieldWb;
 
-        ArrayList fieldTableCurrent;
-        ArrayList fieldTableField;
         public float NominalRevolutionsRad;
         public float NominalVoltageV;
         public float NominalCurrentA;
@@ -129,16 +127,11 @@ namespace ORTS
         public float UpdateField()
         {
             float temp = 0.0f;
-            if ((fieldTableCurrent == null) || (fieldTableField == null))
-            {
-                temp = (NominalVoltageV - (ArmatureResistanceOhms + FieldResistanceOhms) * NominalCurrentA) / (NominalRevolutionsRad);
-                if (fieldCurrentA <= NominalCurrentA)
-                    fieldWb = temp * fieldCurrentA / NominalCurrentA;
-                else
-                    fieldWb = temp;
-            }
+            temp = (NominalVoltageV - (ArmatureResistanceOhms + FieldResistanceOhms) * NominalCurrentA) / (NominalRevolutionsRad);
+            if (fieldCurrentA <= NominalCurrentA)
+                fieldWb = temp * fieldCurrentA / NominalCurrentA;
             else
-                throw new NotImplementedException("Not implemented");
+                fieldWb = temp;
             temp *= (1.0f - shuntRatio);
             return temp;
         }

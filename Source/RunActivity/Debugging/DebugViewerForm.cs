@@ -101,28 +101,8 @@ namespace ORTS.Debugging
 
 	   //the train selected by leftclicking the mouse
 	public Train PickedTrain;
-      /// <summary>
-      /// True when the user has the "Move left" pressed.
-      /// </summary>
-    private bool LeftButtonDown;
 
       /// <summary>
-      /// True when the user has the "Move right" pressed.
-      /// </summary>
-    private bool RightButtonDown;
-
-      /// <summary>
-      /// True when the user has the "Move up" pressed.
-      /// </summary>
-    private bool UpButtonDown;
-
-      /// <summary>
-      /// True when the user has the "Move down" pressed.
-      /// </summary>
-    private bool DownButtonDown;
-
-
-       /// <summary>
       /// Defines the area to view, in meters.
       /// </summary>
       private RectangleF ViewWindow;
@@ -225,25 +205,6 @@ namespace ORTS.Debugging
       {
 		  if (Viewer.DebugViewerEnabled == false) { this.Visible = false; firstShow = true; return; }
 		  else this.Visible = true;
-         if (DownButtonDown)
-         {
-            ShiftViewDown();
-         }
-
-         if (UpButtonDown)
-         {
-            ShiftViewUp();
-         }
-
-         if (LeftButtonDown)
-         {
-            ShiftViewLeft();
-         }
-
-         if (RightButtonDown)
-         {
-            ShiftViewRight();
-         }
 
 		 if (Program.Simulator.GameTime - lastUpdateTime < 1) return;
 		 lastUpdateTime = Program.Simulator.GameTime;
@@ -1076,9 +1037,9 @@ namespace ORTS.Debugging
                     break;
             }
             trackNode = new Traveller(position);
-            var distance = 0f;
 
 #if !NEW_SIGNALLING
+            var distance = 0f;
             while (true)
             {
                 var signal = Program.Simulator.Signals.FindNearestSignal(trackNode);

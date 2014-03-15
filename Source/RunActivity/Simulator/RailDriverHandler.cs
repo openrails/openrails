@@ -39,7 +39,6 @@ namespace ORTS
         byte[] WriteBuffer;                 // Buffer for sending data to RailDriver
         bool Active;                        // True when RailDriver values are used to control player loco
         RailDriverState State;              // Interpreted data from RailDriver passed to UserInput
-        bool FullRangeThrottle;             // True if full range throttle and no dynamic brake, no way to set this at the moment
 
         // calibration values, defaults for the developer's RailDriver
         float FullReversed = 225;
@@ -117,16 +116,8 @@ namespace ORTS
                     Console.WriteLine(output);
 #endif
                 State.DirectionPercent = Percentage(rdata[1], FullReversed, Neutral, FullForward);
-                if (FullRangeThrottle)
-                {
-                    State.ThrottlePercent = Percentage(rdata[2], FullThrottle, DynamicBrake);
-                    State.DynamicBrakePercent = -100;
-                }
-                else
-                {
-                    State.ThrottlePercent = Percentage(rdata[2], ThrottleIdle, FullThrottle);
-                    State.DynamicBrakePercent = Percentage(rdata[2], ThrottleIdle, DynamicBrakeSetup, DynamicBrake);
-                }
+                State.ThrottlePercent = Percentage(rdata[2], ThrottleIdle, FullThrottle);
+                State.DynamicBrakePercent = Percentage(rdata[2], ThrottleIdle, DynamicBrakeSetup, DynamicBrake);
                 State.TrainBrakePercent = Percentage(rdata[3], AutoBrakeRelease, FullAutoBrake);
                 State.EngineBrakePercent = Percentage(rdata[4], IndependentBrakeRelease, IndependentBrakeFull);
                 float a = .01f * State.EngineBrakePercent;

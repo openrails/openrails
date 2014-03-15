@@ -39,7 +39,6 @@ namespace ORTS.Viewer3D
         readonly PrecipitationPrimitive Primitive;
 
         float windStrength;
-        float intensity; // Particles per second
 
         public PrecipitationViewer(Viewer viewer)
         {

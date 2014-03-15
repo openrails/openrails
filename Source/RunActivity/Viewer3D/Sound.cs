@@ -1969,8 +1969,8 @@ namespace ORTS.Viewer3D
 #endif
         TrackNode[] trackNodes;
         TrItem[] trItems;
-        private AIPath _aiPath;
 #if !NEW_SIGNALLING
+        private AIPath _aiPath;
         private TrackAuthority _ta;
 #endif
 
@@ -2030,6 +2030,7 @@ namespace ORTS.Viewer3D
             AIPathNode retval = null;
             AIPathNode p = node;
 
+#if !NEW_SIGNALLING
             if (_aiPath != null)
             {
                 AIPathNode c = _aiPath.FirstNode;
@@ -2043,6 +2044,7 @@ namespace ORTS.Viewer3D
                 if (c == null)
                     retval = null;
             }
+#endif
 
             return retval;
         }

@@ -75,10 +75,8 @@ namespace ORTS.MultiPlayer
 		public List<string> aiderList;
 		public Dictionary<string, OnlinePlayer> lostPlayer = new Dictionary<string,OnlinePlayer>();
 		public bool NotServer = true;
-		public static DispatchViewer DispatcherWindow;
 		public bool CheckSpad = true;
 		public static bool PreferGreen = true;
-		Viewer Viewer;
 		public string MD5Check = "";
 
 		public void AddUncoupledTrains(Train t)
@@ -365,15 +363,9 @@ namespace ORTS.MultiPlayer
 
 		}
 #endif
-
-		public static void StopDispatcher()
-		{
-			if (DispatcherWindow != null) { if (MPManager.Instance().Viewer != null) MPManager.Instance().Viewer.DebugViewerEnabled = false; DispatcherWindow.Visible = false; }
-		}
 		//nicely shutdown listening threads, and notify the server/other player
 		static public void Stop()
 		{
-			StopDispatcher();
 			if (Program.Client != null && Program.Server == null)
 			{
 				Program.Client.Send((new MSGQuit(GetUserName())).ToString()); //client notify server

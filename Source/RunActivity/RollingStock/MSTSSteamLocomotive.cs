@@ -335,12 +335,7 @@ namespace ORTS
         float MaxPistonSpeedFtpM;   // Piston speed @ max performance for the locomotive
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
         float absSpeedMpS;
-        float t;
         float CriticalSpeedTractiveEffortLbf;  // Speed at which the piston speed reaches it maximum recommended value
-        float currentSpeedMpS;
-        float currentWheelSpeedMpS;
-        float maxForceN;
-        float maxPowerW;
         float cutoff;
         public float DrvWheelWeightKg; // weight on locomotive drive wheel, includes drag factor
         float NumSafetyValves;  // Number of safety valves fitted to locomotive - typically 1 to 4
@@ -922,7 +917,7 @@ namespace ORTS
             UpdateBoiler(elapsedClockSeconds);
             UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedMpS);
             UpdateMotion(elapsedClockSeconds, cutoff, absSpeedMpS);
-            UpdateMotiveForce(elapsedClockSeconds, t, currentSpeedMpS, currentWheelSpeedMpS);
+            UpdateMotiveForce(elapsedClockSeconds, 0, 0, 0);
             UpdateAuxiliaries(elapsedClockSeconds, absSpeedMpS);
             #endregion
 
