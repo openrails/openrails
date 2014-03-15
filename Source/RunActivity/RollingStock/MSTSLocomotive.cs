@@ -379,8 +379,9 @@ namespace ORTS
                 case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(stf); break;
-                case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(stf); break;
+                case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new Interpolator2D(stf, false); break;
+                case "engine(ortstractioncharacteristics": TractiveForceCurves = new Interpolator2D(stf, true); break;
+                case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new Interpolator2D(stf, false); break;
                 case "engine(ortscontinuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(orts(ortssanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(orts(ortspowerondelay": PowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
