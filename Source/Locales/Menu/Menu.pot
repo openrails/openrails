@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-03-12 12:28:27+0100\n"
-"PO-Revision-Date: 2014-03-12 12:28:28+0100\n"
+"POT-Creation-Date: 2014-03-16 11:37:03+0100\n"
+"PO-Revision-Date: 2014-03-16 11:37:03+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -12,12 +12,12 @@ msgstr ""
 
 
 #: ../../Menu/FolderForm.Designer.cs:56
-#: ../../Menu/Options.Designer.cs:157
+#: ../../Menu/Options.Designer.cs:158
 msgid "OK"
 msgstr ""
 
 #: ../../Menu/FolderForm.Designer.cs:67
-#: ../../Menu/Options.Designer.cs:211
+#: ../../Menu/Options.Designer.cs:212
 #: ../../Menu/TestingForm.Designer.cs:84
 msgid "Cancel"
 msgstr ""
@@ -287,7 +287,7 @@ msgid "Logging"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:202
-#: ../../Menu/Options.Designer.cs:1387
+#: ../../Menu/Options.Designer.cs:1399
 msgid "Options"
 msgstr ""
 
@@ -432,35 +432,35 @@ msgstr ""
 msgid "Open Rails"
 msgstr ""
 
-#: ../../Menu/Options.cs:213
+#: ../../Menu/Options.cs:214
 msgid "Click to change this key"
 msgstr ""
 
-#: ../../Menu/Options.cs:229
+#: ../../Menu/Options.cs:230
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
 msgstr ""
 
-#: ../../Menu/Options.cs:306
+#: ../../Menu/Options.cs:308
 msgid "Remove all custom key assignments?"
 msgstr ""
 
-#: ../../Menu/Options.cs:317
+#: ../../Menu/Options.cs:319
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
 msgstr ""
 
-#: ../../Menu/Options.cs:326
+#: ../../Menu/Options.cs:328
 msgid "No errors found."
 msgstr ""
 
-#: ../../Menu/Options.cs:351
+#: ../../Menu/Options.cs:353
 msgid "Please restart Open Rails in order to load the new language."
 msgstr ""
 
-#: ../../Menu/Options.cs:340
+#: ../../Menu/Options.cs:342
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -468,298 +468,302 @@ msgid ""
 "{2:F0}° horizontal FOV on 16:9"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:191
+#: ../../Menu/Options.Designer.cs:192
 msgid "Brake pipe charging rate (PSI/s)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:200
+#: ../../Menu/Options.Designer.cs:201
 msgid "Graduated release air brakes"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:221
+#: ../../Menu/Options.Designer.cs:222
 msgid "Alerter"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:231
+#: ../../Menu/Options.Designer.cs:232
 msgid "Suppress control confirmations"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:241
+#: ../../Menu/Options.Designer.cs:242
 msgid "Dispatcher window"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:279
+#: ../../Menu/Options.Designer.cs:280
 msgid "General"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:290
+#: ../../Menu/Options.Designer.cs:291
 msgid "Language"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:314
+#: ../../Menu/Options.Designer.cs:310
+msgid "Disable alerter in external views"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:325
 msgid "Audio"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:348
+#: ../../Menu/Options.Designer.cs:359
 msgid "% Sound Volume"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:358
+#: ../../Menu/Options.Designer.cs:369
 msgid "Sound detail level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:379
+#: ../../Menu/Options.Designer.cs:390
 msgid "MSTS Bin compatible sound"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:406
+#: ../../Menu/Options.Designer.cs:417
 msgid "Video"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:417
+#: ../../Menu/Options.Designer.cs:428
 msgid "Viewing distance (km)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:455
+#: ../../Menu/Options.Designer.cs:466
 msgid "Distant mountains"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:466
+#: ../../Menu/Options.Designer.cs:477
 msgid "Viewing distance (m)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:503
+#: ../../Menu/Options.Designer.cs:514
 msgid "XXX"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:536
+#: ../../Menu/Options.Designer.cs:547
 msgid "Viewing vertical FOV"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:560
+#: ../../Menu/Options.Designer.cs:571
 msgid "% Cab 2D stretch"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:570
+#: ../../Menu/Options.Designer.cs:581
 msgid "World object density"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:615
+#: ../../Menu/Options.Designer.cs:626
 msgid "Glass on in-game windows"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:626
+#: ../../Menu/Options.Designer.cs:637
 msgid "Window size"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:635
+#: ../../Menu/Options.Designer.cs:646
 msgid "Dynamic shadows"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:645
+#: ../../Menu/Options.Designer.cs:656
 msgid "Overhead wire"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:665
+#: ../../Menu/Options.Designer.cs:677
 msgid "Simulation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:676
+#: ../../Menu/Options.Designer.cs:688
 msgid "Optimal curve speed factor"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:710
+#: ../../Menu/Options.Designer.cs:722
 msgid "Curve resistance multiplier at zero speed"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:743
+#: ../../Menu/Options.Designer.cs:755
 msgid "Curve resistance speed dependent"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:753
+#: ../../Menu/Options.Designer.cs:765
 msgid "Override non-electrified route line-voltage"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:764
+#: ../../Menu/Options.Designer.cs:776
 msgid "Adhesion Moving Average Filter Size"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:791
+#: ../../Menu/Options.Designer.cs:803
 msgid "Break couplers"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:801
+#: ../../Menu/Options.Designer.cs:813
 msgid "Use advanced adhesion model"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:816
+#: ../../Menu/Options.Designer.cs:828
 msgid "Keyboard"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:826
+#: ../../Menu/Options.Designer.cs:838
 msgid "Export"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:839
+#: ../../Menu/Options.Designer.cs:851
 msgid "Defaults"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:851
+#: ../../Menu/Options.Designer.cs:863
 msgid "Check"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:893
+#: ../../Menu/Options.Designer.cs:905
 msgid "Experimental"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:903
+#: ../../Menu/Options.Designer.cs:915
 msgid "Use MSTS Environments"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:913
+#: ../../Menu/Options.Designer.cs:925
 msgid "Always use highest detail objects"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:925
+#: ../../Menu/Options.Designer.cs:937
 msgid "Use location-linked passing path processing"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:952
+#: ../../Menu/Options.Designer.cs:964
 msgid "Ambient daylight brightness"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:961
+#: ../../Menu/Options.Designer.cs:973
 msgid "Target frame rate"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:999
+#: ../../Menu/Options.Designer.cs:1011
 msgid "Automatically tune settings to keep performance level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1009
+#: ../../Menu/Options.Designer.cs:1021
 msgid "Double overhead wires"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1019
+#: ../../Menu/Options.Designer.cs:1031
 msgid "Extend object maximum viewing distance to horizon"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1029
+#: ../../Menu/Options.Designer.cs:1041
 msgid "Gauge (mm)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1066
+#: ../../Menu/Options.Designer.cs:1078
 msgid "Minimum length (m)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1104
+#: ../../Menu/Options.Designer.cs:1116
 msgid "Level"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1115
+#: ../../Menu/Options.Designer.cs:1127
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1139
+#: ../../Menu/Options.Designer.cs:1151
 msgid "Super-elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1148
+#: ../../Menu/Options.Designer.cs:1160
 msgid "Load DDS textures in preference to ACE"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1167
+#: ../../Menu/Options.Designer.cs:1179
 msgid "DataLogger"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1208
+#: ../../Menu/Options.Designer.cs:1220
 msgid "Speed units"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1229
+#: ../../Menu/Options.Designer.cs:1241
 msgid "Log miscellaneous data"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1239
+#: ../../Menu/Options.Designer.cs:1251
 msgid "Log performance data"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1249
+#: ../../Menu/Options.Designer.cs:1261
 msgid "Start logging with the simulation start"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1260
+#: ../../Menu/Options.Designer.cs:1272
 msgid "Separator"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1269
+#: ../../Menu/Options.Designer.cs:1281
 msgid "Log physics data"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1284
+#: ../../Menu/Options.Designer.cs:1296
 msgid "Evaluation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1317
+#: ../../Menu/Options.Designer.cs:1329
 msgid "Interval (sec)"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1326
+#: ../../Menu/Options.Designer.cs:1338
 msgid "Log station stops"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1359
+#: ../../Menu/Options.Designer.cs:1371
 msgid "Log train speed"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1369
-msgid "Disable alerter in external views"
+#: ../../Menu/Options.Designer.cs:1381
+msgid "Curve speed dependent"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1219
+#: ../../Menu/Options.Designer.cs:1231
 msgid ""
 "Use DataLogger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
 "time!"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:333
+#: ../../Menu/Options.Designer.cs:344
 msgid "Sound Volume 0-100"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:441
-#: ../../Menu/Options.Designer.cs:985
+#: ../../Menu/Options.Designer.cs:452
+#: ../../Menu/Options.Designer.cs:997
 msgid "Distance to see mountains"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:840
+#: ../../Menu/Options.Designer.cs:852
 msgid "Load the factory default key assignments."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:852
+#: ../../Menu/Options.Designer.cs:864
 msgid "Check for incorrect key assignments."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:940
+#: ../../Menu/Options.Designer.cs:952
 msgid "Default is 100"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1090
+#: ../../Menu/Options.Designer.cs:1102
 msgid "Shortest curve to have elevation"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1129
+#: ../../Menu/Options.Designer.cs:1141
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:549
+#: ../../Menu/Options.Designer.cs:560
 msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:827
+#: ../../Menu/Options.Designer.cs:839
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."

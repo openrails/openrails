@@ -270,7 +270,6 @@ namespace ORTS.Viewer3D.RollingStock
                         if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + (Pulse_Rate / 4))
                         {
                             pulse = 1.0f;
-                            car.SteamPulse = true;
                         }
                     if (pulse == 1.0f)
                         if (Viewer.PlayerTrain.DistanceTravelledM > old_Distance_Travelled + Pulse_Rate)
@@ -285,7 +284,6 @@ namespace ORTS.Viewer3D.RollingStock
                         if (Viewer.PlayerTrain.DistanceTravelledM < old_Distance_Travelled - (Pulse_Rate / 4))
                         {
                             pulse = 1.0f;
-                            car.SteamPulse = true;
                         }
                     if (pulse == 1.0f)
                         if (Viewer.PlayerTrain.DistanceTravelledM < old_Distance_Travelled - Pulse_Rate)

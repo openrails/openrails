@@ -79,8 +79,9 @@ namespace ORTS
         bool safety4IsOn = false; // Safety valve #4 is on and opertaing
         bool IsGearedSteamLoco = false; // Indicates that it is a geared locomotive
         bool IsGearedSpeedExcess = false; // Flag indicating that geared locomotive speed has been exceeded 
-        public bool SteamPulse; // Render process sets it to true when a pulse sound event must be engaged
-        int PulseNumber;
+
+        float PulseTracker;
+        int NextPulse = 1;
 
         // state variables
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
@@ -323,7 +324,6 @@ namespace ORTS
         const int CylStrokesPerCycle = 2;  // each cylinder does 2 strokes for every wheel rotation, within each stroke
         float DrvWheelRevRpS;       // number of revolutions of the drive wheel per minute based upon speed.
         float PistonSpeedFtpM;      // Piston speed of locomotive
-        const float FeetinMile = 5280.0f;   // Feet in a mile
         float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
         float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
         float DrawBarPullLbsF;      // Drawbar pull in lbf
@@ -482,7 +482,7 @@ namespace ORTS
             MotiveForceGearRatio = SteamGearRatio;
             // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
             // Max Geared speed = ((MaxPistonSpeed / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
-            MaxGearedSpeedMpS =   pS.FrompM(Me.FromMi(((MaxSteamGearPistonRateRpM / SteamGearRatio) * (float)Math.PI * Me.ToFt(DriverWheelRadiusM) * 2.0f) / FeetinMile));  
+            MaxGearedSpeedMpS = pS.FrompM(MaxSteamGearPistonRateRpM / SteamGearRatio * MathHelper.Pi * DriverWheelRadiusM * 2.0f);
             }
             else
             {
@@ -499,7 +499,7 @@ namespace ORTS
             
             // Cylinder piston shaft volume needs to be calculated and deducted from sweptvolume - assume diameter of the cylinder minus one-half of the piston-rod area. Let us assume that the latter is 3 square inches
             CylinderPistonShaftFt3 = Me2.ToFt2(Me2.FromIn2(((float)Math.PI * (CylinderPistonShaftDiaIn / 2.0f) * (CylinderPistonShaftDiaIn / 2.0f)) / 2.0f));
-            CylinderPistonAreaFt2 = (float)Math.PI * (Me.ToFt(CylinderDiameterM / 2.0f) * Me.ToFt(CylinderDiameterM / 2.0f)); 
+            CylinderPistonAreaFt2 = Me2.ToFt2(MathHelper.Pi * CylinderDiameterM * CylinderDiameterM / 4.0f); 
             CylinderSweptVolumeFT3pFT = ((CylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
             
             // Cylinder Steam Usage	= SweptVolumeToTravelRatioFT3pFT x cutoff x {(speed x (SteamDensity (CylPress) - SteamDensity (CylBackPress)) 
@@ -592,7 +592,7 @@ namespace ORTS
             BurnRateLBpStoKGpS.ScaleY(BurnRateMultiplier);
 
             // Calculate the maximum boiler heat input based on the steam generation rate
-            MaxBoilerHeatInBTUpS = Kg.ToLb(BurnRateLBpStoKGpS[TheoreticalMaxSteamOutputLBpS]) * KJpKg.ToBTUpLb(FuelCalorificKJpKG) * BoilerEfficiency[TheoreticalMaxSteamOutputLBpS];
+            MaxBoilerHeatInBTUpS = W.ToBTUpS(W.FromKW(BurnRateLBpStoKGpS[TheoreticalMaxSteamOutputLBpS] * FuelCalorificKJpKG * BoilerEfficiency[TheoreticalMaxSteamOutputLBpS]));
 
         #region Initialise Locomotive in a Hot or Cold Start Condition
 
@@ -879,19 +879,19 @@ namespace ORTS
             Variable1 = (Simulator.UseAdvancedAdhesion ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable2 = Math.Min(CylinderPressurePSI / MaxBoilerPressurePSI * 100f, 100f);
             Variable3 = FiringIsManual ? FiringRateController.CurrentValue * 100 : FuelRate.SmoothedValue * 100;
-            // SteamPulse is controlled by particle emitter display code
-            if (SteamPulse)
+
+            const int rotations = 2;
+            const int fullLoop = 10 * rotations;
+            int numPulses = NumCylinders * 2 * rotations;
+
+            PulseTracker += Variable1 / fullLoop * numPulses * elapsedClockSeconds;
+
+            if (PulseTracker > NextPulse)
             {
-                SteamPulse = false;
-                switch (PulseNumber)
-                {
-                    case 0: SignalEvent(Event.SteamPulse1); break;
-                    case 1: SignalEvent(Event.SteamPulse2); break;
-                    case 2: SignalEvent(Event.SteamPulse3); break;
-                    case 3: SignalEvent(Event.SteamPulse4); break;
-                }
-                PulseNumber++;
-                PulseNumber %= 4;
+                SignalEvent((Event)((int)Event.SteamPulse1 + NextPulse - 1));
+                PulseTracker %= numPulses;
+                NextPulse %= numPulses;
+                NextPulse++;
             }
 
             throttle = ThrottlePercent / 100;
@@ -1644,7 +1644,7 @@ namespace ORTS
         private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS)
         {
             // Calculate speed of locomotive in wheel rpm - used to determine changes in performance based upon speed.
-            DrvWheelRevRpS = Me.ToFt(absSpeedMpS) / (2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM));
+            DrvWheelRevRpS = absSpeedMpS / (2.0f * MathHelper.Pi * DriverWheelRadiusM);
             // Determine if Superheater in use
             if (HasSuperheater)
             {
@@ -1746,7 +1746,7 @@ namespace ORTS
         {
            // Caculate the piston speed
            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
-            PistonSpeedFtpM = (2.0f * Me.ToFt(CylinderStrokeM)) * ((FeetinMile * MpS.ToMpH(absSpeedMpS)) / ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) );
+            PistonSpeedFtpM = Me.ToFt(pS.TopM(CylinderStrokeM * 2f * DrvWheelRevRpS));
             CylinderEfficiencyRate = MathHelper.Clamp(CylinderEfficiencyRate, 0.6f, 1.2f); // Clamp Cylinder Efficiency Rate to between 0.6 & 1.2
             TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MeanEffectivePressurePSI * CylinderEfficiencyRate;
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
@@ -1821,7 +1821,7 @@ namespace ORTS
 
            // Calculate max velocity of the locomotive based upon above piston speed
 
-            MaxLocoSpeedMpH = MaxPistonSpeedFtpM * ((2.0f * (float)Math.PI * Me.ToFt(DriverWheelRadiusM)) * 60.0f) / (FeetinMile * (2.0f * Me.ToFt(CylinderStrokeM)));
+            MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
 
             const float TractiveEffortFactor = 0.85f;
             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor;

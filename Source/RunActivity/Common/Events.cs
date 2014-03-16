@@ -89,6 +89,18 @@ namespace ORTS
         SteamPulse2,
         SteamPulse3,
         SteamPulse4,
+        SteamPulse5,
+        SteamPulse6,
+        SteamPulse7,
+        SteamPulse8,
+        SteamPulse9,
+        SteamPulse10,
+        SteamPulse11,
+        SteamPulse12,
+        SteamPulse13,
+        SteamPulse14,
+        SteamPulse15,
+        SteamPulse16,
         SteamSafetyValveOff,
         SteamSafetyValveOn,
         ThrottleChange,
@@ -249,6 +261,18 @@ namespace ORTS
                         case 122: return Event.SteamPulse2;
                         case 123: return Event.SteamPulse3;
                         case 124: return Event.SteamPulse4;
+                        case 125: return Event.SteamPulse5;
+                        case 126: return Event.SteamPulse6;
+                        case 127: return Event.SteamPulse7;
+                        case 128: return Event.SteamPulse8;
+                        case 129: return Event.SteamPulse9;
+                        case 130: return Event.SteamPulse10;
+                        case 131: return Event.SteamPulse11;
+                        case 132: return Event.SteamPulse12;
+                        case 133: return Event.SteamPulse13;
+                        case 134: return Event.SteamPulse14;
+                        case 135: return Event.SteamPulse15;
+                        case 136: return Event.SteamPulse16;
                         //
 
                         default: return 0;
