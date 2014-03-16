@@ -63,7 +63,7 @@ namespace ORTS.Viewer3D.RollingStock
                 else if (emitter.Key.ToLowerInvariant() == "whistlefx")
                     Whistle.AddRange(emitter.Value);
                 foreach (var drawer in emitter.Value)
-                    drawer.Initialize(viewer.TextureManager.Get(steamTexture));
+                    drawer.Initialize(steamTexture);
             }
 
             Pulse_Rate = (MathHelper.Pi * SteamLocomotive.DriverWheelRadiusM);

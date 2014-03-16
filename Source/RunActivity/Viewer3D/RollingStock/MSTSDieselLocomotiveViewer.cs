@@ -44,7 +44,7 @@ namespace ORTS.Viewer3D.RollingStock
                 Exhaust.AddRange(drawers);
             }
             foreach (var drawer in Exhaust)
-                drawer.Initialize(viewer.TextureManager.Get(dieselTexture));
+                drawer.Initialize(dieselTexture);
         }
 
 

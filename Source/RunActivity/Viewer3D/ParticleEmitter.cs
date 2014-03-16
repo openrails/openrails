@@ -68,9 +68,10 @@ namespace ORTS.Viewer3D
         public const float DurationVariation = 0.5f; // Duration varies +/-50%
 
         readonly Viewer Viewer;
-        readonly ParticleEmitterMaterial Material;
         readonly float EmissionHoleM2 = 1;
         readonly ParticleEmitterPrimitive Emitter;
+
+        ParticleEmitterMaterial Material;
 
 #if DEBUG_EMITTER_INPUT
         const int InputCycleLimit = 600;
@@ -82,7 +83,6 @@ namespace ORTS.Viewer3D
         public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
             Viewer = viewer;
-            Material = (ParticleEmitterMaterial)viewer.MaterialManager.Load("ParticleEmitter");
             EmissionHoleM2 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
             Emitter = new ParticleEmitterPrimitive(viewer.GraphicsDevice, data, worldPosition);
 #if DEBUG_EMITTER_INPUT
@@ -91,9 +91,9 @@ namespace ORTS.Viewer3D
 #endif
         }
 
-        public void Initialize(Texture2D texture)
+        public void Initialize(string textureName)
         {
-            Material.Texture = texture;
+            Material = (ParticleEmitterMaterial)Viewer.MaterialManager.Load("ParticleEmitter", textureName);
         }
 
         public void SetOutput(float volumeM3pS)
@@ -418,9 +418,10 @@ namespace ORTS.Viewer3D
 
         IEnumerator<EffectPass> ShaderPasses;
 
-        public ParticleEmitterMaterial(Viewer viewer)
+        public ParticleEmitterMaterial(Viewer viewer, string textureName)
             : base(viewer, null)
         {
+            Texture = viewer.TextureManager.Get(textureName);
             ShaderPasses = Viewer.MaterialManager.ParticleEmitterShader.Techniques["ParticleEmitterTechnique"].Passes.GetEnumerator();
         }
 

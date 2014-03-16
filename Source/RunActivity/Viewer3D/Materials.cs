@@ -231,7 +231,7 @@ namespace ORTS.Viewer3D
                         Materials[materialKey] = new PopupWindowMaterial(Viewer);
                         break;
                     case "ParticleEmitter":
-                        Materials[materialKey] = new ParticleEmitterMaterial(Viewer);
+                        Materials[materialKey] = new ParticleEmitterMaterial(Viewer, textureName);
                         break;
                     case "Precip":
                         Materials[materialKey] = new PrecipitationMaterial(Viewer);
