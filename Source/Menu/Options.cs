@@ -107,6 +107,7 @@ namespace ORTS
             checkCurveResistanceSpeedDependent.Checked = settings.CurveResistanceSpeedDependent;
             numericCurveResistanceZeroSpeedFactor.Value = (decimal)settings.CurveResistanceZeroSpeedFactor;
             numericCurveResistanceOptimalSpeed.Value = (decimal)settings.CurveResistanceOptimalSpeed;
+            checkCurveSpeedDependent.Checked = settings.CurveSpeedDependent;
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -261,6 +262,7 @@ namespace ORTS
             Settings.CurveResistanceSpeedDependent = checkCurveResistanceSpeedDependent.Checked;
             Settings.CurveResistanceZeroSpeedFactor = (float)numericCurveResistanceZeroSpeedFactor.Value;
             Settings.CurveResistanceOptimalSpeed = (float)numericCurveResistanceOptimalSpeed.Value;
+            Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
             
             // Keyboard tab
             // These are edited live.

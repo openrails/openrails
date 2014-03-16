@@ -41,6 +41,7 @@
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
             this.labelLanguage = new System.Windows.Forms.Label();
             this.comboBoxLanguage = new System.Windows.Forms.ComboBox();
+            this.checkAlerterDisableExternal = new System.Windows.Forms.CheckBox();
             this.tabPageAudio = new System.Windows.Forms.TabPage();
             this.numericSoundVolumePercent = new System.Windows.Forms.NumericUpDown();
             this.soundVolumeLabel = new System.Windows.Forms.Label();
@@ -118,7 +119,7 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkAlerterDisableExternal = new System.Windows.Forms.CheckBox();
+            this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -243,9 +244,9 @@
             // 
             // tabOptions
             // 
-            this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.tabOptions.Controls.Add(this.tabPageGeneral);
             this.tabOptions.Controls.Add(this.tabPageAudio);
             this.tabOptions.Controls.Add(this.tabPageVideo);
@@ -298,6 +299,16 @@
             this.comboBoxLanguage.Size = new System.Drawing.Size(121, 21);
             this.comboBoxLanguage.TabIndex = 6;
             this.comboBoxLanguage.SelectedIndexChanged += new System.EventHandler(this.comboBoxLanguage_SelectedIndexChanged);
+            // 
+            // checkAlerterDisableExternal
+            // 
+            this.checkAlerterDisableExternal.AutoSize = true;
+            this.checkAlerterDisableExternal.Location = new System.Drawing.Point(22, 29);
+            this.checkAlerterDisableExternal.Name = "checkAlerterDisableExternal";
+            this.checkAlerterDisableExternal.Size = new System.Drawing.Size(174, 17);
+            this.checkAlerterDisableExternal.TabIndex = 0;
+            this.checkAlerterDisableExternal.Text = "Disable alerter in external views";
+            this.checkAlerterDisableExternal.UseVisualStyleBackColor = true;
             // 
             // tabPageAudio
             // 
@@ -547,7 +558,7 @@
             this.numericCab2DStretch.Size = new System.Drawing.Size(54, 20);
             this.numericCab2DStretch.TabIndex = 12;
             this.toolTip1.SetToolTip(this.numericCab2DStretch, "0 to clip cab view, 100 to stretch it. For cab views that match the display, use " +
-        "100.");
+                    "100.");
             // 
             // labelCab2DStretch
             // 
@@ -647,6 +658,7 @@
             // 
             // tabPageSimulation
             // 
+            this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.label20);
             this.tabPageSimulation.Controls.Add(this.numericCurveResistanceOptimalSpeed);
             this.tabPageSimulation.Controls.Add(this.label16);
@@ -825,7 +837,7 @@
             this.buttonExport.TabIndex = 4;
             this.buttonExport.Text = "Export";
             this.toolTip1.SetToolTip(this.buttonExport, "Generate a listing of your keyboard assignments.  \r\nThe output is placed on your " +
-        "desktop.");
+                    "desktop.");
             this.buttonExport.UseVisualStyleBackColor = true;
             this.buttonExport.Click += new System.EventHandler(this.buttonExport_Click);
             // 
@@ -855,9 +867,9 @@
             // 
             // panelKeys
             // 
-            this.panelKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.panelKeys.AutoScroll = true;
             this.panelKeys.Location = new System.Drawing.Point(6, 6);
             this.panelKeys.Name = "panelKeys";
@@ -1217,7 +1229,7 @@
             this.label18.Size = new System.Drawing.Size(368, 26);
             this.label18.TabIndex = 0;
             this.label18.Text = "Use DataLogger to record your simulation data (in-game command: F12).\r\nPlease rem" +
-    "ember that the size of the dump file grows with the simulation time!";
+                "ember that the size of the dump file grows with the simulation time!";
             // 
             // checkDataLogMisc
             // 
@@ -1359,15 +1371,15 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             // 
-            // checkAlerterDisableExternal
+            // checkCurveSpeedDependent
             // 
-            this.checkAlerterDisableExternal.AutoSize = true;
-            this.checkAlerterDisableExternal.Location = new System.Drawing.Point(22, 29);
-            this.checkAlerterDisableExternal.Name = "checkAlerterDisableExternal";
-            this.checkAlerterDisableExternal.Size = new System.Drawing.Size(174, 17);
-            this.checkAlerterDisableExternal.TabIndex = 0;
-            this.checkAlerterDisableExternal.Text = "Disable alerter in external views";
-            this.checkAlerterDisableExternal.UseVisualStyleBackColor = true;
+            this.checkCurveSpeedDependent.AutoSize = true;
+            this.checkCurveSpeedDependent.Location = new System.Drawing.Point(6, 176);
+            this.checkCurveSpeedDependent.Name = "checkCurveSpeedDependent";
+            this.checkCurveSpeedDependent.Size = new System.Drawing.Size(140, 17);
+            this.checkCurveSpeedDependent.TabIndex = 6;
+            this.checkCurveSpeedDependent.Text = "Curve speed dependent";
+            this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1514,5 +1526,6 @@
         private System.Windows.Forms.NumericUpDown numericDistantMountainsViewingDistance;
         private System.Windows.Forms.CheckBox checkDistantMountains;
         private System.Windows.Forms.CheckBox checkAlerterDisableExternal;
+        private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
     }
 }

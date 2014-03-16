@@ -147,6 +147,8 @@ namespace ORTS.Settings
         public float CurveResistanceZeroSpeedFactor { get; set; }
         [Default(0.75f)]
         public float CurveResistanceOptimalSpeed { get; set; }
+        [Default(false)]
+        public bool CurveSpeedDependent { get; set; }
 
 
 		// Experimental settings for super-elevation:

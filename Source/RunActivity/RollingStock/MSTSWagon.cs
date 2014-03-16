@@ -110,6 +110,9 @@ namespace ORTS
         float XCoGM; // Centre of Gravity - X value
         float YCoGM; // Centre of Gravity - Y value
         float ZCoGM; // Centre of Gravity - Z value
+        float UnbalancedSuperElevationM; // Unbalanced Superelevation
+        public bool IsPassenger;
+        public bool IsEngine;
 
         /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
@@ -182,7 +185,9 @@ namespace ORTS
 		            string typeString = stf.ReadString();
 		            IsFreight = String.Compare(typeString,"Freight") == 0 ? true : false;
 		            IsTender = String.Compare(typeString,"Tender") == 0 ? true : false;
-		            break;
+                    IsPassenger = String.Compare(typeString, "Carriage") == 0 ? true : false;
+                    IsEngine = String.Compare(typeString, "Engine") == 0 ? true : false;
+                    break;
                 case "wagon(freightanim":
                     stf.MustMatch("(");
                     FreightShapeFileName = stf.ReadString();
@@ -210,6 +215,7 @@ namespace ORTS
                     ZCoGM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsunbalancedsuperelevation": UnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (MassKG < 0.1f) MassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -330,6 +336,7 @@ namespace ORTS
             XCoGM = copy.XCoGM;
             YCoGM = copy.YCoGM;
             ZCoGM = copy.ZCoGM;
+            UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             MassKG = copy.MassKG;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
@@ -728,7 +735,35 @@ namespace ORTS
             }
             return CentreOfGravityM;
         }
-        
+
+        // Make the Unbalanced SuperElevation available to other classes
+        public override float GetUnbalancedSuperElevationM()
+        {
+            if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.45) // If UnbalancedSuperElevationM > 12", or equal to zero, then set a default value
+            {
+                if (IsFreight)
+                {
+                    UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 3"
+                }
+                else if (IsPassenger)
+                {
+                    UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
+                }
+                else if (IsEngine)
+                {
+                    UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
+                }
+                else if (IsTender)
+                {
+                    UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
+                }
+                else
+                {
+                    UnbalancedSuperElevationM = Me.FromIn(0.01f);  // if no value in wag file or is outside of bounds then set to a default value
+                }
+            }
+            return UnbalancedSuperElevationM;
+        }
 
         public bool GetTrainHandbrakeStatus()
         {
