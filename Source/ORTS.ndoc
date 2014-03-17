@@ -1,9 +1,18 @@
 <project SchemaVersion="1.3">
     <assemblies>
-        <assembly location=".\Launcher\..\..\Program\OpenRails.exe" documentation=".\Launcher\..\..\Program\OpenRails.xml" />
-        <assembly location=".\RunActivity\..\..\Program\RunActivity.exe" documentation=".\RunActivity\..\..\Program\RunActivity.xml" />
-        <assembly location=".\Menu\..\..\Program\Menu.exe" documentation=".\Menu\..\..\Program\Menu.xml" />
-        <assembly location=".\Tests\..\..\Program\Tests.dll" documentation="" />
+        <assembly location="..\Program\Menu.exe" documentation="..\Program\Menu.xml" />
+        <assembly location="..\Program\MSTS.Formats.dll" documentation="..\Program\MSTS.Formats.xml" />
+        <assembly location="..\Program\MSTS.Parsers.dll" documentation="..\Program\MSTS.Parsers.xml" />
+        <assembly location="..\Program\OpenRails.exe" documentation="..\Program\OpenRails.xml" />
+        <assembly location="..\Program\ORTS.Common.dll" documentation="..\Program\ORTS.Common.xml" />
+        <assembly location="..\Program\ORTS.Content.dll" documentation="..\Program\ORTS.Content.xml" />
+        <assembly location="..\Program\ORTS.Formats.dll" documentation="..\Program\ORTS.Formats.xml" />
+        <assembly location="..\Program\ORTS.IO.dll" documentation="..\Program\ORTS.IO.xml" />
+        <assembly location="..\Program\ORTS.Menu.dll" documentation="..\Program\ORTS.Menu.xml" />
+        <assembly location="..\Program\ORTS.Parsers.dll" documentation="..\Program\ORTS.Parsers.xml" />
+        <assembly location="..\Program\ORTS.Settings.dll" documentation="..\Program\ORTS.Settings.xml" />
+        <assembly location="..\Program\ORTS.Updater.dll" documentation="..\Program\ORTS.Updater.xml" />
+        <assembly location="..\Program\RunActivity.exe" documentation="..\Program\RunActivity.xml" />
     </assemblies>
     <documenters>
         <documenter name="MSDN">
@@ -12,12 +21,6 @@
             <property name="Title" value="Open Rails" />
             <property name="OutputTarget" value="Web" />
             <property name="Preliminary" value="True" />
-            <property name="SdkDocVersion" value="SDK_v3_5" />
-            <property name="SdkDocVersionString" value="VS.90" />
-            <property name="CleanIntermediates" value="True" />
-        </documenter>
-        <documenter name="XML">
-            <property name="OutputFile" value=".\doc\doc.xml" />
             <property name="SdkDocVersion" value="SDK_v3_5" />
             <property name="SdkDocVersionString" value="VS.90" />
         </documenter>
