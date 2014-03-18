@@ -214,11 +214,12 @@ namespace ORTS
         float TrackGaugeM;  // Track gauge - read in MSTSWagon
         float CentreOfGravityM; // get centre of gravity - read in MSTSWagon
         float SuperelevationM; // Super elevation on the curve
-      //  float UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 3"
-        float UnbalancedSuperElevationM = Me.FromIn(0.01f);  // Unbalanced superelevation has a maximum value of 3"
+        float UnbalancedSuperElevationM;  // Unbalanced superelevation
         float SuperElevationTotalM; // Total superelevation
         bool IsMaxEquaLoadSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
         bool IsCriticalSpeed = true; // Has the critical speed around the curve been reached, is is the wagon about to overturn?
+        float RouteSpeedMpS; // Max Route Speed Limit
+        const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
         
           public virtual void Initialize()
         {
@@ -264,19 +265,35 @@ namespace ORTS
 
             // get curve radius
 
+            RouteSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+             
             if (CurveSpeedDependent)  // Function enabled by menu selection
             {
 
+
                 if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
                 {
-
-                    // Set Superelevation value - based upon standard figures
-
-                    if (CurrentCurveRadius > 3200)
+                    
+                    if (CurrentCurveRadius > 2000)
                     {
-                        SuperelevationM = 0.0f;  // Assume no superelevation
+                        if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
+                        {
+                            // Calculate superelevation based upon the route speed limit and the curve radius
+                            // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
+
+                            SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
+
+                            SuperelevationM = MathHelper.Clamp(SuperelevationM, 0.0f, 0.150f); // If superelevation is greater then 6" (150mm) then limit to this value
+                          
+                        }
+                        else
+                        {
+                            SuperelevationM = 0.0f;  // Assume no superelevation if conventional mixed route
+                        }
+
                     }
-                    else if (CurrentCurveRadius <= 3200 & CurrentCurveRadius > 1600)
+                    // Set Superelevation value - based upon standard figures
+                    else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
                     {
                         SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
                     }
@@ -316,7 +333,7 @@ namespace ORTS
 
                     SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
 
-                    float MaxEquaLoadSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * 9.81f * CurrentCurveRadius) / TrackGaugeM);
+                    float MaxEquaLoadSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
 
                     // Test current speed to see if greater then "safe" speed around the curve
                     if (s > MaxEquaLoadSpeedMps)
@@ -344,7 +361,7 @@ namespace ORTS
                     const float KgtoTonne = 0.001f;
                     float CentrifrugalForceN = MassKG * KgtoTonne * (KC / CentreOfGravityM);
 
-                    float CriticalSpeedMpS = (float)Math.Sqrt((CentrifrugalForceN * 9.81f * CurrentCurveRadius) / (MassKG * KgtoTonne));
+                    float CriticalSpeedMpS = (float)Math.Sqrt((CentrifrugalForceN * GravitationalAccelerationMpS2 * CurrentCurveRadius) / (MassKG * KgtoTonne));
 
                     if (s > CriticalSpeedMpS)
                     {
@@ -408,7 +425,7 @@ namespace ORTS
                 }
             }
 
-            CurveForceN *= 9.81f * MassKG *0.001f;
+            CurveForceN *= GravitationalAccelerationMpS2 * MassKG *0.001f;
         }
 
         /// <summary>

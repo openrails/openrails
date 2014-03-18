@@ -739,15 +739,15 @@ namespace ORTS
         // Make the Unbalanced SuperElevation available to other classes
         public override float GetUnbalancedSuperElevationM()
         {
-            if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.45) // If UnbalancedSuperElevationM > 12", or equal to zero, then set a default value
+            if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.5) // If UnbalancedSuperElevationM > 12", or equal to zero, then set a default value
             {
                 if (IsFreight)
                 {
-                    UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 3"
+                    UnbalancedSuperElevationM = Me.FromIn(0.0f);  // Unbalanced superelevation has a maximum value of 0"
                 }
                 else if (IsPassenger)
                 {
-                    UnbalancedSuperElevationM = Me.FromIn(6.0f);  // Unbalanced superelevation has a maximum value of 6"
+                    UnbalancedSuperElevationM = Me.FromIn(3.0f);  // Unbalanced superelevation has a maximum value of 6"
                 }
                 else if (IsEngine)
                 {
