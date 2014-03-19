@@ -233,7 +233,7 @@ namespace ORTS
         public virtual void Update(float elapsedClockSeconds)
         {
             // gravity force, M32 is up component of forward vector
-            GravityForceN = MassKG * 9.8f * WorldPosition.XNAMatrix.M32;
+            GravityForceN = MassKG * GravitationalAccelerationMpS2 * WorldPosition.XNAMatrix.M32;
             CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
             UpdateCurveForce();
             UpdateCurveSpeedLimit();
@@ -250,6 +250,8 @@ namespace ORTS
             UpdateSoundPosition();
         }
 
+
+        #region Calculate permissible speeds around curves
         /// <summary>
         /// Reads current curve radius and computes the maximum recommended speed around the curve based upon the 
         /// superelevation of the track
@@ -261,7 +263,7 @@ namespace ORTS
             TrackGaugeM = GetTrackGaugeM();
             UnbalancedSuperElevationM = GetUnbalancedSuperElevationM();
           
-          #region Calculate permissible speeds around curves
+       
 
             // get curve radius
 
@@ -386,12 +388,14 @@ namespace ORTS
                     IsCriticalSpeed = false;   // reset flag for IsCriticalSpeed reached
                     IsMaxEquaLoadSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
                 }
-          #endregion
+          
 
             }
 
 
         }
+
+        #endregion
 
         /// <summary>
         /// Reads current curve radius and computes the CurveForceN friction. Can be overriden by calling
@@ -400,16 +404,16 @@ namespace ORTS
         /// </summary>
         public virtual void UpdateCurveForce()
         {
-            float radius = CurrentCurveRadius;
+          //  float radius = CurrentCurveRadius;
             float speedLimitMpS = 0f;
             if (this.Train != null)
                 speedLimitMpS = this.Train.AllowedMaxSpeedMpS;
             else
                 speedLimitMpS = 0f;
 
-            if (radius > 0)
+            if (CurrentCurveRadius > 0)
             {
-                CurveForceN = 500f / (radius - 30f);
+                CurveForceN = 500f / (CurrentCurveRadius - 30f);
             }
             else
                 CurveForceN = 0f;
@@ -821,10 +825,9 @@ namespace ORTS
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
             RealXNAMatrix = WorldPosition.XNAMatrix;
-            if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0 || this.Train.tilted)
-            {
+          
                 SuperElevation(speed, Program.Simulator.UseSuperElevation, traveler);
-            }
+         
             // calculate truck angles
             for (int i = 1; i < Parts.Count; i++)
             {
@@ -871,7 +874,10 @@ namespace ORTS
         public void SuperElevation(float speed, int superEV, Traveller traveler)
         {
             CurrentCurveRadius = traveler.GetCurrentCurveRadius();
-            
+                      
+           // ignore the rest of superelevation if option is not selected under menu options TAB
+          if (Program.Simulator.UseSuperElevation > 0 || Program.Simulator.CarVibrating > 0 || this.Train.tilted)
+          { 
 
             if (prevElev < -30f) { prevElev += 40f; return; }//avoid the first two updates as they are not valid
             speed = (float) Math.Abs(speed);//will make computation easier later, as we only deal with abs value
@@ -948,6 +954,7 @@ namespace ORTS
                 SuperElevationMatrix = Matrix.Invert(SuperElevationMatrix);
             }
             catch { SuperElevationMatrix = Matrix.Identity; }
+          }
         }
 
         public float accumedAcceTime = 4f;
