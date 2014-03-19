@@ -485,22 +485,30 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuSearchTrackNode_Click(object sender, RoutedEventArgs e)
         {
-            new SearchControl(trackViewer, SearchableItem.TrackNode).ShowDialog();
+            var searchControl = new SearchControl(trackViewer, SearchableItem.TrackNode);
+            TrackViewer.Localize(searchControl);
+            searchControl.ShowDialog();
         }
 
         private void menuSearchTrackItem_Click(object sender, RoutedEventArgs e)
         {
-            new SearchControl(trackViewer, SearchableItem.TrackItem).ShowDialog();
+            var searchControl = new SearchControl(trackViewer, SearchableItem.TrackItem);
+            TrackViewer.Localize(searchControl);
+            searchControl.ShowDialog();
         }
 
         private void menuSearchTrackNodeRoad_Click(object sender, RoutedEventArgs e)
         {
-            new SearchControl(trackViewer, SearchableItem.TrackNodeRoad).ShowDialog();
+            var searchControl = new SearchControl(trackViewer, SearchableItem.TrackNodeRoad);
+            TrackViewer.Localize(searchControl);
+            searchControl.ShowDialog();
         }
 
         private void menuSearchTrackItemRoad_Click(object sender, RoutedEventArgs e)
         {
-            new SearchControl(trackViewer, SearchableItem.TrackItemRoad).ShowDialog();
+            var searchControl = new SearchControl(trackViewer, SearchableItem.TrackItemRoad);
+            TrackViewer.Localize(searchControl);
+            searchControl.ShowDialog();
         }
 
 

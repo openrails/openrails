@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-02-27 20:10:51+0100\n"
-"PO-Revision-Date: 2014-02-28 11:46+0100\n"
+"POT-Creation-Date: 2014-03-16 11:37:11+0100\n"
+"PO-Revision-Date: 2014-03-18 22:03+0100\n"
 "Last-Translator: Zepder\n"
 "Language-Team: \n"
 "Language: da\n"
@@ -12,19 +12,19 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:2074
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:2035
 msgid "Switching Request Sent to the Server"
 msgstr "Sporskifte skift-anmodning sendt til serveren"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:197
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:177
 msgid "View Self"
 msgstr "Se dig selv"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:588
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
 msgstr "Besked til server"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:592
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:553
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
 msgstr "Besked til Alle"
@@ -136,14 +136,14 @@ msgstr "Besvar Valgte"
 msgid "MessageViewer"
 msgstr "BeskedFremviser"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:189
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:219
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:220
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:221
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:171
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:201
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:202
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:203
 msgid "-"
 msgstr "-"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:218
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:200
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
 msgid "0"
 msgstr "0"
@@ -197,74 +197,164 @@ msgstr ""
 msgid "SoundDebugForm"
 msgstr "SoundDebugForm"
 
-#: ../../RunActivity/MultiPlayer/Message.cs:2975
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:116
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:128
+msgid "Connection to the server is lost, will play as single mode"
+msgstr "Forbindelsen til serveren er gået tabt, fortsætter som singleplayer"
+
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:145
+msgid "Alt-E to gain control of your train"
+msgstr "Alt-E for at få kontrol over dit tog"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:643
+msgid "Dispatcher does not allow hand throw at this time"
+msgstr "Speditøren tillader ikke at give sorteper videre nu"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:687
+msgid "main route"
+msgstr "hoved rute"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:687
+msgid "side route"
+msgstr "side rute"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1461
+msgid "You are the new dispatcher. Enjoy!"
+msgstr "Du er den nye speditør. God fornøjelse!"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1591
+msgid "Name conflicted with people in the game, will play in single mode"
+msgstr "Navn konflikter med folk i spillet, fortsætter som singleplayer"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1666
+#: ../../RunActivity/MultiPlayer/MPManager.cs:130
+msgid "You gained back the control of your train"
+msgstr "Du fik igen kontrol over dit tog"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1876
+msgid "Server quits, will play as single mode"
+msgstr "Serveren lukkes, fortsætter som singleplayer"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2157
+#: ../../RunActivity/MultiPlayer/Message.cs:2403
+msgid "Trains uncoupled, gain back control by Alt-E"
+msgstr "Tog frakoblet, få kontrollen tilbage med Alt-E"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2541
+#: ../../RunActivity/MultiPlayer/Message.cs:2649
+msgid "Trains coupled, hit \\ then Shift-? to release brakes"
+msgstr "Tog sammenkoblet, tryk \\ derefter Shift-? for at frigøre bremserne"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:3094
+msgid "You are an assistant now, will be able to handle switches and signals."
+msgstr ""
+"Du er en assistent nu, som vil være i stand til at håndtere sporskiftere og "
+"signaler."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:3100
+msgid "You are no longer an assistant."
+msgstr "Du er ikke længere en assistent"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:686
+#, csharp-format
+msgid "Switched, current route is {0}"
+msgstr "Skiftet, aktuelle rute er {0}"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1468
+#, csharp-format
+msgid "New dispatcher is {0}"
+msgstr "Ny speditør er {0}"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1887
+#: ../../RunActivity/MultiPlayer/OnlinePlayer.cs:148
+#, csharp-format
+msgid "{0} quit."
+msgstr "{0} afslut."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1959
+#, csharp-format
+msgid "{0} lost."
+msgstr "{0} tabt."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2979
 #, csharp-format
 msgid " From {0}: {1}"
 msgstr " Fra {0}: {1}"
 
-#: ../../RunActivity/Physics/Train.cs:1230
+#: ../../RunActivity/MultiPlayer/MPManager.cs:740
+msgid "Missing car, have substituted with other one."
+msgstr "Mangler vogn, er erstattet med en anden."
+
+#: ../../RunActivity/MultiPlayer/MPManager.cs:388
+#, csharp-format
+msgid "Cannot decouple: train has {0} player, need to completely stop."
+msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
+msgstr[0] "Kan ikke frakoble: toget har {0} spiller, nødt til helt at stoppe."
+msgstr[1] "Kan ikke frakoble: toget har {0} spillere, nødt til helt at stoppe."
+
+#: ../../RunActivity/Physics/Train.cs:1288
 msgid "Coupler broken!"
 msgstr "Kobling brudt!"
 
-#: ../../RunActivity/Physics/Train.cs:1233
+#: ../../RunActivity/Physics/Train.cs:1291
 msgid "Coupler overloaded!"
 msgstr "Kobling overbelastet!"
 
-#: ../../RunActivity/Physics/Train.cs:3761
-#: ../../RunActivity/Physics/Train.cs:3766
+#: ../../RunActivity/Physics/Train.cs:3862
+#: ../../RunActivity/Physics/Train.cs:3867
 msgid "Other train is blocking path"
 msgstr "Et andet tog blokerer ruten"
 
-#: ../../RunActivity/Physics/Train.cs:4622
+#: ../../RunActivity/Physics/Train.cs:4731
 msgid "Stopped due to errors in route setting"
 msgstr "Stoppet pga. fejl i rute-indstillinger"
 
-#: ../../RunActivity/Physics/Train.cs:5280
-#: ../../RunActivity/Physics/Train.cs:6353
+#: ../../RunActivity/Physics/Train.cs:5396
+#: ../../RunActivity/Physics/Train.cs:6469
 msgid "No signal in train's path"
 msgstr "Ingen signaler på togets rute"
 
-#: ../../RunActivity/Physics/Train.cs:5288
+#: ../../RunActivity/Physics/Train.cs:5404
 msgid "Next signal already allocated to other train"
 msgstr "Næste signal er allerede tildelt et andet tog"
 
-#: ../../RunActivity/Physics/Train.cs:5349
+#: ../../RunActivity/Physics/Train.cs:5465
 msgid "Request to clear signal cannot be processed"
 msgstr "Anmodning om rydning af signal kan ikke udføres"
 
-#: ../../RunActivity/Physics/Train.cs:5455
-#: ../../RunActivity/Physics/Train.cs:6473
+#: ../../RunActivity/Physics/Train.cs:5571
+#: ../../RunActivity/Physics/Train.cs:6589
 msgid "No switch found"
 msgstr "Ingen sporskifter fundet"
 
-#: ../../RunActivity/Physics/Train.cs:6707
+#: ../../RunActivity/Physics/Train.cs:6823
 msgid "Train is not back on original route"
 msgstr "Toget befinder sig ikke på den oprindelige rute"
 
-#: ../../RunActivity/Physics/Train.cs:6716
+#: ../../RunActivity/Physics/Train.cs:6832
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Oprindelige rute er vendt fra nuværende retning, stop toget før du skifter"
 
-#: ../../RunActivity/Physics/Train.cs:6729
+#: ../../RunActivity/Physics/Train.cs:6845
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Kan ikke skifte til manuel tilstand i Udforsk Rute-tilstand"
 
-#: ../../RunActivity/Physics/Train.cs:6822
+#: ../../RunActivity/Physics/Train.cs:6938
 msgid "Reversal required and rear of train not on required route"
 msgstr "Vending påkrævet, og bagsiden af toget er ikke på ruten"
 
-#: ../../RunActivity/Physics/Train.cs:7009
+#: ../../RunActivity/Physics/Train.cs:7125
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Kan ikke rydde signalet bag toget i AUTO-tilstand"
 
-#: ../../RunActivity/Physics/Train.cs:7251
+#: ../../RunActivity/Physics/Train.cs:7368
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Tilladt hastighed hævet til {0}"
 
-#: ../../RunActivity/Physics/Train.cs:7293
+#: ../../RunActivity/Physics/Train.cs:7409
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Toget stoppet pga. problemer med et andet tog: tog {0} , årsag: {1}"
@@ -328,6 +418,64 @@ msgstr "Kont. Service"
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:131
 msgid "Full Service"
 msgstr "Fuld Service"
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1010
+msgid "Tender coal supply is empty. Your loco will fail."
+msgstr "Kulvognen er tom. Dit lokomotiv vil fejle."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1024
+msgid "Tender water supply is empty. Your loco will fail."
+msgstr "Kulvognens vandforsyning er tom. Dit lokomotiv vil fejle."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1078
+msgid "Fire has dropped too far. Your loco will fail."
+msgstr "Ilden er gået ud. Dit lokomotiv vil fejle."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1154
+msgid ""
+"FireMass is getting low. Your fireman will shovel faster, but don't wear him "
+"out."
+msgstr ""
+"Fyrkassens niveau er lav: Din fyrbøder må skovle hurtigere, men slid ham "
+"ikke op."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1167
+msgid "FireMass is back within limits. Your fireman will shovel as per normal."
+msgstr ""
+"Fyrkassens niveau er inden for grænsen. Din fyrbøder kan skovle som normalt."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1760
+msgid ""
+"You are exceeding the maximum recommended speed. Continued operation at this "
+"speed may cause damage."
+msgstr ""
+"Du overskrider den maksimalt anbefalede hastighed. Fortsat kørsel ved denne "
+"hastighed kan forårsage skade."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1948
+msgid "Water level dropped too far. Plug has fused and loco has failed."
+msgstr ""
+"Vand niveau er for lavt. Smelteproppen er smeltet og lokomotivet har fejlet."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1955
+msgid "Boiler overfull and priming."
+msgstr "Kedlen overfyldt, medriven af vand i cylinderen. (priming)."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1961
+msgid "Boiler no longer priming."
+msgstr "Ingen medriven af vand til cylinderne (no priming)."
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:327
+msgid ""
+"You are travelling too fast for this curve. Slow down, your passengers are "
+"feeling uncomfortable, or your train may derail."
+msgstr ""
+"Du kører for hurtigt for denne kurve. Sæt farten ned, dine passagerer føler "
+"sig utilpas eller dit tog kan blive afsporet."
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:354
+msgid "Your train has overturned."
+msgstr "Dit tog er væltet."
 
 #: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
@@ -543,7 +691,7 @@ msgstr "spjæld"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "Firebox Door"
-msgstr "Brændkammer-låge"
+msgstr "Fyrkasse-låge"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:158
 msgid "Firing Rate"
@@ -951,9 +1099,39 @@ msgctxt "Labels"
 msgid "none"
 msgstr "ingen"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1072
+#: ../../RunActivity/Viewer3D/Viewer.cs:537
+#: ../../RunActivity/Viewer3D/Viewer.cs:650
+msgid "Cab view not available"
+msgstr "Førerhus ikke tilgængelig"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:599
+msgid "In MP, use Alt-F4 to quit directly"
+msgstr "I MP, brug Alt-F4 for at afslutte direkte."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:675
+msgid "Will not ratate cab and land"
+msgstr "Vil ikke rotere førerhus og jorden"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:1079
 msgid "Game saved"
 msgstr "Spillet er gemt"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:666
+#, csharp-format
+msgid "Vibrating at level {0}"
+msgstr "Vibration på niveau {0}"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:674
+#, csharp-format
+msgid "Rotating cab {0}/4, rotating land {1}/4"
+msgstr "Roterer førerhus {0}/4, roterer jorden {1}/4"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:698
+#, csharp-format
+msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
+msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
+msgstr[0] "{0} synspunkt gemt. Brug Shift +8 for at genskabe synspunkter."
+msgstr[1] "{0} synspunkter gemt. Brug Shift +8 for at genskabe synspunkter."
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
 msgid "Activity Events"
@@ -1242,3 +1420,56 @@ msgstr " Dist     Hastighed"
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
 msgid "Train Operations"
 msgstr "Tog Sammensætning"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:477
+msgid "water"
+msgstr "vand"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:478
+msgid "coal"
+msgstr "kul"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:479
+msgid "diesel oil"
+msgstr "dieselolie"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:480
+msgid "wood"
+msgstr "træ"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:590
+msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
+msgstr ""
+"Påfyldning: Ingen passende afhentningspunkt nogen steder, så påfyld straks"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:598
+#, csharp-format
+msgid "Refill: Distance to {0} supply is {1}."
+msgstr "Påfyldning: Afstand til {0}-forsyning er {1}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:604
+#, csharp-format
+msgid "Refill: Loco must be stationary to refill {0}."
+msgstr "Påfyldning: Lokomotivet skal holde stille ved påfyldning af {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:610
+#, csharp-format
+msgid "Refill: Loco speed must exceed {0}."
+msgstr "Påfyldning: Lokomotivets hastighed skal være højere end {0}"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
+#, csharp-format
+msgid "Refill: Loco speed must not exceed {0}."
+msgstr "Påfyldning: Lokomotivets hastighed må ikke overstige {0}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+#, csharp-format
+msgid "Refill: {0} supply now replenished."
+msgstr "Påfyldning: {0} genopfyldes."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:599
+#, csharp-format
+msgid "{0} meter"
+msgid_plural "{0} meters"
+msgstr[0] "{0} meter"
+msgstr[1] "{0} meter"

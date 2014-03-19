@@ -86,6 +86,8 @@ using Microsoft.Xna.Framework.Storage;
 
 using System.Windows.Forms;
 using System.Drawing;
+using System.Reflection;
+using GNU.Gettext;
 using ORTS.Menu;
 using ORTS.Common;
 using ORTS.TrackViewer.Drawing;
@@ -156,6 +158,8 @@ namespace ORTS.TrackViewer
         /// <summary></summary>
         private const int maxSkipDrawAmount = 10;
 
+        public static GettextResourceManager catalog = new GettextResourceManager("Contrib");
+
         /// <summary>
         /// Constructor. This is where it all starts.
         /// </summary>
@@ -210,6 +214,9 @@ namespace ORTS.TrackViewer
             statusBarControl = new StatusBarControl(this);
             DrawColors.Initialize(menuControl);
             menuControl = new MenuControl(this);
+
+            Localize(statusBarControl);
+            Localize(menuControl);
             
             drawWorldTiles = new DrawWorldTiles();
             drawTrains = new DrawTrains();
@@ -500,7 +507,7 @@ namespace ORTS.TrackViewer
         public void Quit()
         {
 
-            if (MessageBox.Show("Do you really want to Quit?", "Question", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (MessageBox.Show(catalog.GetString("Do you really want to Quit?"), "Question", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 this.Exit();
             }
@@ -544,7 +551,7 @@ namespace ORTS.TrackViewer
                 }
                 catch
                 {
-                    MessageBox.Show("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ...");
+                    MessageBox.Show(catalog.GetString("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ..."));
                 }
             }
         }
@@ -598,7 +605,7 @@ namespace ORTS.TrackViewer
         {
             if (newRoute == null) return;
 
-            DrawLoadingMessage("Loading route...");
+            DrawLoadingMessage(catalog.GetString("Loading route..."));
 
             try
             {
@@ -618,7 +625,7 @@ namespace ORTS.TrackViewer
             }
             catch
             {
-                MessageBox.Show("Route cannot be loaded. Sorry");
+                MessageBox.Show(catalog.GetString("Route cannot be loaded. Sorry"));
             }
 
             if (CurrentRoute == null) return;
@@ -663,10 +670,10 @@ namespace ORTS.TrackViewer
             }
             else
             {
-                DrawLoadingMessage("Loading .pat file ...");
+                DrawLoadingMessage(catalog.GetString("Loading .pat file ..."));
                 drawPATfile = new DrawPATfile(path);
 
-                DrawLoadingMessage("Processing .pat file ...");
+                DrawLoadingMessage(catalog.GetString("Processing .pat file ..."));
                 pathEditor = new PathEditor(drawTrackDB, path);
                 DrawLoadingMessage(" ...");
             }   
@@ -745,6 +752,24 @@ namespace ORTS.TrackViewer
             //pathEditor.EditingIsActive = true;
             //pathEditor.ExtendPathFull();
             ////Exit();
+        }
+
+        public static void Localize(System.Windows.FrameworkElement element)
+        {
+            foreach (var child in System.Windows.LogicalTreeHelper.GetChildren(element))
+                if (child is System.Windows.FrameworkElement)
+                    Localize(child as System.Windows.FrameworkElement);
+
+            var objType = element.GetType();
+            PropertyInfo property;
+            string[] propertyTags = { "Content", "Header", "Text", "Title", "ToolTip" };
+
+            foreach (var tag in propertyTags)
+            {
+                property = objType.GetProperty(tag);
+                if (property != null && property.CanRead && property.CanWrite && property.GetValue(element, null) is String)
+                    property.SetValue(element, catalog.GetString(property.GetValue(element, null) as string), null);
+            }
         }
     }
 }

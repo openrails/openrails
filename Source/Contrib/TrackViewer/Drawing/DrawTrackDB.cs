@@ -116,16 +116,16 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (!IsItemNameCreated) CreateItemNames();
 
-            messageDelegate("Loading trackfile .trk ...");
+            messageDelegate(TrackViewer.catalog.GetString("Loading trackfile .trk ..."));
             TRKFile TRK = new TRKFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             RouteName = TRK.Tr_RouteFile.Name;
 
-            messageDelegate("Loading track database .tdb ...");
+            messageDelegate(TrackViewer.catalog.GetString("Loading track database .tdb ..."));
             TDBFile TDB = new TDBFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
             this.trackDB = TDB.TrackDB;
             FindExtremeTiles();
 
-            messageDelegate("Loading tsection.dat ...");
+            messageDelegate(TrackViewer.catalog.GetString("Loading tsection.dat ..."));
             string BasePath = Path.GetDirectoryName(Path.GetDirectoryName(RoutePath));
             if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
                 tsectionDat = new TSectionDatFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
@@ -136,7 +136,7 @@ namespace ORTS.TrackViewer.Drawing
 
             roadTrackFileName = RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb";
 
-            messageDelegate("Finding the angles to draw signals ...");
+            messageDelegate(TrackViewer.catalog.GetString("Finding the angles to draw signals ..."));
             FindSignalOrientations();
             FindEndnodeOrientations();
             FindSidingsAndPlatforms();
