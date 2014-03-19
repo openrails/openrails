@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Resources;
 using System.Collections;
+using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace GNU.Gettext.Xgettext
 {
@@ -132,6 +135,8 @@ namespace GNU.Gettext.Xgettext
 
             if (ReadResources(inputFile))
                 ProcessPattern(ExtractMode.MsgidFromResx, @"\.\s*ApplyResources\s*\([^\\""]*\s*,\s*" + CsharpStringPattern + @"\s*\)\s*;", text, inputFile);
+
+            ReadXaml(inputFile);
 
             // Custom patterns
             foreach (string pattern in Options.SearchPatterns)
@@ -331,6 +336,32 @@ namespace GNU.Gettext.Xgettext
                 }
             }
             return true;
+        }
+        
+        private void ReadXaml(string inputFile)
+        {
+            // The method is based on xaml2po.py script
+            if (Path.GetExtension(inputFile) != ".xaml")
+                return;
+            
+            Dictionary<string, XAttribute> attributes;
+            var attributeTags = "Title Content Text Header ToolTip".ToLower().Split(' ');
+            var nameTags = "TextBlock Button".ToLower().Split(' ');
+            var xaml = XDocument.Load(inputFile, LoadOptions.SetLineInfo);
+
+            foreach (var node in xaml.Descendants())
+            {
+                if (nameTags.Contains(node.Name.LocalName.ToLower()) && (string)node != String.Empty)
+                    MergeWithEntry(String.Empty, (string)node, String.Empty, inputFile, ((IXmlLineInfo)node).LineNumber);
+                
+                attributes = new Dictionary<string, XAttribute>();
+                foreach (var attribute in node.Attributes())
+                    attributes.Add(attribute.Name.LocalName.ToLower(), attribute);
+                
+                foreach (var tag in attributeTags)
+                    if (attributes.Keys.Contains(tag))
+                        MergeWithEntry(String.Empty, (string)attributes[tag], String.Empty, inputFile, ((IXmlLineInfo)attributes[tag]).LineNumber);
+            }
         }
 
         private string ExtractResourceString(string controlId)

@@ -188,8 +188,11 @@ namespace GNU.Gettext.Xgettext
 			message = new StringBuilder();
             try
             {
-				if (options.InputFiles.Count == 0)
-					options.InputFiles.Add("*.cs");
+                if (options.InputFiles.Count == 0)
+                {
+                    options.InputFiles.Add("*.cs");
+                    options.InputFiles.Add("*.xaml");
+                }
 				if (options.InputDirs.Count == 0)
 					options.InputDirs.Add(Environment.CurrentDirectory);
 
