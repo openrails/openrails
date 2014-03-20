@@ -48,7 +48,7 @@ namespace ORTS.Processes
         /// Return a string giving the location of the train
         /// </summary>
         [OperationContract]
-        string getTrainLocation();
+        string GetTrainLocation();
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ namespace ORTS.Processes
     {
         public static Traveller traveller;      
 
-        public string getTrainLocation()
+        public string GetTrainLocation()
         {
             //this is the actual message sent from ORTS to trackviewer
             return string.Format("FrontTDB:{0}:{1}:{2}:{3}", traveller.TileX, traveller.TileZ, traveller.Location.X, traveller.Location.Z);
@@ -98,13 +98,13 @@ namespace ORTS.Processes
 
         }
 
-        /// <summary>
-        /// stop the server. Currently not being called because only proof of concept.
-        /// </summary>
-        static void StopServer()
-        {
-            host.Close();
-        }
+        ///// <summary>
+        ///// stop the server. Currently not being called because only proof of concept.
+        ///// </summary>
+        //static void StopServer()
+        //{
+        //    host.Close();
+        //}
 
         /// <summary>
         /// This routine needs to be called from ORTS to set the train status.
@@ -147,20 +147,29 @@ namespace ORTS.Processes
         {
             if (pipeProxy == null) StartClient();
             
-            WorldLocation trainLocation=null;
+            WorldLocation trainLocation;
             Regex findTravellerRegex = new Regex("FrontTDB:(?<tileX>[^:]*):(?<tileZ>[^:]*):(?<x>[^:]*):(?<z>[^:]*)");
 
             try
             {
                 // the regular expression should not be an issue, since we create the string itself above.
-                string locationString = pipeProxy.getTrainLocation();
+                string locationString = pipeProxy.GetTrainLocation();
                 Match match = findTravellerRegex.Match(locationString);
                 if (match.Success)
                 {
-                    trainLocation = new WorldLocation(Convert.ToInt32(match.Groups["tileX"].Value), Convert.ToInt32(match.Groups["tileZ"].Value), Convert.ToSingle(match.Groups["x"].Value), 0, Convert.ToSingle(match.Groups["z"].Value));
+                    trainLocation = new WorldLocation(Convert.ToInt32(match.Groups["tileX"].Value, System.Globalization.CultureInfo.InvariantCulture),
+                                                      Convert.ToInt32(match.Groups["tileZ"].Value, System.Globalization.CultureInfo.InvariantCulture),
+                                                      Convert.ToSingle(match.Groups["x"].Value), 0,
+                                                      Convert.ToSingle(match.Groups["z"].Value));
+                }
+                else
+                {
+                    trainLocation = null;
                 }
             }
-            catch { }
+            catch {
+                trainLocation = null;
+            }
             return trainLocation;
         }
     }

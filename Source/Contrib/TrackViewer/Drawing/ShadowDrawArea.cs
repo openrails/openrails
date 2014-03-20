@@ -76,7 +76,7 @@ namespace ORTS.TrackViewer.Drawing
         bool needToRedraw      = true;
         bool needToRedrawLater = true;
         bool[] needToDrawRectangle; // Array of booleans describing which of the rectangles still need to be redrawn
-        int nextRectangleToDraw = 0; // integer from 0 to Nblocks-1, describing which of the subblocks will be drawn
+        int nextRectangleToDraw; // integer from 0 to Nblocks-1, describing which of the subblocks will be drawn
 
         GraphicsDevice graphicsDevice;  // we need a graphics device so we can draw to texture
         SpriteBatch spriteBatch;        // also for drawing to texture
@@ -168,8 +168,8 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (graphicsDevice == null) { return; }
             
-            blockW = (areaW * Nsampling + Ninner - 1) / Ninner; // in case areaW*Nsampling is not a multiple of Ninner this
-            blockH = (areaH * Nsampling + Ninner - 1) / Ninner; // makes sure block size at least covers all of area, to prevent constant redrawing
+            blockW = (AreaW * Nsampling + Ninner - 1) / Ninner; // in case areaW*Nsampling is not a multiple of Ninner this
+            blockH = (AreaH * Nsampling + Ninner - 1) / Ninner; // makes sure block size at least covers all of area, to prevent constant redrawing
 
             if (shadowRenderTargetCombined != null)
             {
@@ -312,34 +312,34 @@ namespace ORTS.TrackViewer.Drawing
         private void DetermineRedrawingNeeds()
         {
             //Real widths of inset and combined shadow texture
-            double insetRealW = areaW / scale;
-            double insetRealH = areaH / scale;
+            double insetRealW = AreaW / Scale;
+            double insetRealH = AreaH / Scale;
             double shadowRealW = Nouter * blockW / shadowScale;
             double shadowRealH = Nouter * blockH / shadowScale;
 
             // we really need to redraw if we are out of bounds
-            if (offsetX < shadowOffsetX) { needToRedraw = true; }
-            if (offsetZ < shadowOffsetZ) { needToRedraw = true; }
-            if (offsetX + insetRealW > shadowOffsetX + shadowRealW) { needToRedraw = true; }
-            if (offsetZ + insetRealH > shadowOffsetZ + shadowRealH) { needToRedraw = true; }
+            if (OffsetX < shadowOffsetX) { needToRedraw = true; }
+            if (OffsetZ < shadowOffsetZ) { needToRedraw = true; }
+            if (OffsetX + insetRealW > shadowOffsetX + shadowRealW) { needToRedraw = true; }
+            if (OffsetZ + insetRealH > shadowOffsetZ + shadowRealH) { needToRedraw = true; }
 
             // we will also redraw if zoom is getting too small. 
             // Visible performance is very much affected by this!
-            if (Nsampling * scale > 2.0 * shadowScale) { needToRedraw = true; }
+            if (Nsampling * Scale > 2.0 * shadowScale) { needToRedraw = true; }
             // when Nsampling * scale becomes too small, we will redraw because of out-of-bounds anyway
 
             if (needToRedraw) { return; }
 
-            if (Nsampling * scale > 1.1 * shadowScale) { needToRedrawLater = true; }
-            if (Nsampling * scale < 0.9 * shadowScale) { needToRedrawLater = true; }
+            if (Nsampling * Scale > 1.1 * shadowScale) { needToRedrawLater = true; }
+            if (Nsampling * Scale < 0.9 * shadowScale) { needToRedrawLater = true; }
 
             double ShiftLimitInBlocks = (Nborder > 1) ? Nborder - 1 : 0.5;
             double shiftLimitX = ShiftLimitInBlocks * blockW / shadowScale;
             double shiftLimitZ = ShiftLimitInBlocks * blockH / shadowScale;
-            if (offsetX              < shadowOffsetX               + shiftLimitX) { ShiftBlocks(ShiftDirection.Right); }
-            if (offsetZ              < shadowOffsetZ               + shiftLimitZ) { ShiftBlocks(ShiftDirection.Up); }
-            if (offsetX + insetRealW > shadowOffsetX + shadowRealW - shiftLimitX) { ShiftBlocks(ShiftDirection.Left); }
-            if (offsetZ + insetRealH > shadowOffsetZ + shadowRealH - shiftLimitZ) { ShiftBlocks(ShiftDirection.Down); }
+            if (OffsetX              < shadowOffsetX               + shiftLimitX) { ShiftBlocks(ShiftDirection.Right); }
+            if (OffsetZ              < shadowOffsetZ               + shiftLimitZ) { ShiftBlocks(ShiftDirection.Up); }
+            if (OffsetX + insetRealW > shadowOffsetX + shadowRealW - shiftLimitX) { ShiftBlocks(ShiftDirection.Left); }
+            if (OffsetZ + insetRealH > shadowOffsetZ + shadowRealH - shiftLimitZ) { ShiftBlocks(ShiftDirection.Down); }
             
                 //double ringW = Nborder * blockW / shadowScale;
                 //double ringH = Nborder * blockH / shadowScale;
@@ -484,21 +484,20 @@ namespace ORTS.TrackViewer.Drawing
             }
         }
 
-
         /// <summary>
         /// Set the scale and offset such that the visible subblocks fit perfectly on the (parent) draw Area
         /// </summary>
         private void SetNativeScales()
         {
             // the amount of pixels/meter is Nsampling larger for the whole inner region than in the parent area.
-            shadowScale = Nsampling * scale;
+            shadowScale = Nsampling * Scale;
 
             // offsetX is the left-world location of the parent area, so also WorldX
             // in the shadow area, it is the same world location
             // But in pixels it is given by pixelX = Nborder * blockW.
             // pixelX = shadowScale * (offsetX - shadowOffsetX)
-            shadowOffsetX = offsetX - Nborder * blockW / shadowScale;
-            shadowOffsetZ = offsetZ - Nborder * blockH / shadowScale;
+            shadowOffsetX = OffsetX - Nborder * blockW / shadowScale;
+            shadowOffsetZ = OffsetZ - Nborder * blockH / shadowScale;
 
         }
 
@@ -509,23 +508,32 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawRoutine">The actual drawing routine delegate</param>
         private void RenderASingleBlockTexture(Color backgroundColor, DrawingDelegate drawRoutine)
         {
-            //drawing area depends on rectangle we want to draw
-            shadowDrawArea.scale   = shadowScale;
-            shadowDrawArea.offsetX = shadowOffsetX + xOrder[nextRectangleToDraw] * blockW / shadowScale;
-            shadowDrawArea.offsetZ = shadowOffsetZ + zOrder[nextRectangleToDraw] * blockH / shadowScale;
-            shadowDrawArea.update();
+            // we wrap this in a try, because we have seen that in some conditions this might crash otherwise
+            // Crashes seem to be related to the interaction between XNA and our program: our routines might be
+            // called at wrong time for some reason. Possibly XNA simply interrupts a long 'Draw'-call to do an
+            // update in between. As a result, spritebatch state might be wrong, and we crash.
+            // Very difficult to track and see what is really going on. Therefore: simple try and catch.
+            try
+            {
+                //drawing area depends on rectangle we want to draw
+                shadowDrawArea.Scale = shadowScale;
+                shadowDrawArea.OffsetX = shadowOffsetX + xOrder[nextRectangleToDraw] * blockW / shadowScale;
+                shadowDrawArea.OffsetZ = shadowOffsetZ + zOrder[nextRectangleToDraw] * blockH / shadowScale;
+                shadowDrawArea.Update();
 
-            // Rendering the tracks to a single texture
-            graphicsDevice.SetRenderTarget(0, shadowRenderTargetSingle[nextRectangleToDraw]);
-            graphicsDevice.Clear(backgroundColor);
-            spriteBatch.Begin();
-            drawRoutine(shadowDrawArea);
-            //shadowDrawArea.DrawBorder(Color.Black);  //debug
-            spriteBatch.End();
-            graphicsDevice.SetRenderTarget(0, null);
-            shadowMapsSingle[nextRectangleToDraw] = shadowRenderTargetSingle[nextRectangleToDraw].GetTexture();
+                // Rendering the tracks to a single texture
+                graphicsDevice.SetRenderTarget(0, shadowRenderTargetSingle[nextRectangleToDraw]);
+                graphicsDevice.Clear(backgroundColor);
+                spriteBatch.Begin();
+                drawRoutine(shadowDrawArea);
+                //shadowDrawArea.DrawBorder(Color.Black);  //debug
+                spriteBatch.End();
+                graphicsDevice.SetRenderTarget(0, null);
+                shadowMapsSingle[nextRectangleToDraw] = shadowRenderTargetSingle[nextRectangleToDraw].GetTexture();
 
-            needToDrawRectangle[nextRectangleToDraw] = false;
+                needToDrawRectangle[nextRectangleToDraw] = false;
+            }
+            catch { }
         }
 
         /// <summary>
@@ -576,17 +584,17 @@ namespace ORTS.TrackViewer.Drawing
             //  in the shadow map we have    pixelW = shadowScale * worldW.
             //  This leads to pixelW = areaW * shadowScale / scale
            
-            float scaleRatio = (float)(scale / shadowScale);
+            float scaleRatio = (float)(Scale / shadowScale);
             Vector2 scaleAsVector = new Vector2(scaleRatio);
             Microsoft.Xna.Framework.Rectangle? sourceRectangle = new Microsoft.Xna.Framework.Rectangle(
-                Convert.ToInt32(shadowScale * (offsetX - shadowOffsetX)),
+                Convert.ToInt32(shadowScale * (OffsetX - shadowOffsetX)),
                 //Convert.ToInt32(shadowScale * (offsetZ - shadowOffsetZ)),
-                Convert.ToInt32(blockH * Nouter - shadowScale * (areaH / scale + offsetZ - shadowOffsetZ)),
-                Convert.ToInt32(areaW * shadowScale / scale),
-                Convert.ToInt32(areaH * shadowScale / scale));
+                Convert.ToInt32(blockH * Nouter - shadowScale * (AreaH / Scale + OffsetZ - shadowOffsetZ)),
+                Convert.ToInt32(AreaW * shadowScale / Scale),
+                Convert.ToInt32(AreaH * shadowScale / Scale));
 
   
-            Vector2 position = new Vector2(areaOffsetX, areaOffsetY);
+            Vector2 position = new Vector2(AreaOffsetX, AreaOffsetY);
             Vector2 origin = Vector2.Zero;
 
             spriteBatch.Draw(shadowMapCombined, position, sourceRectangle, Color.White, 0, origin, scaleAsVector, SpriteEffects.None, 0);

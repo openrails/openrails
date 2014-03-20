@@ -49,8 +49,8 @@ namespace ORTS.TrackViewer.UserInterface
     public static class TVUserInput
     {
         /// <summary>Boolean describing whether the keyboard and/or mouse state has been changed</summary>
-        public static bool Changed = false;  // flag UpdaterProcess that its time to handle keyboard input
-        //public static bool ComposingMessage = false;
+        public static bool Changed;  // flag UpdaterProcess that its time to handle keyboard input
+        //public static bool ComposingMessage;
         static KeyboardState KeyboardState;
         static MouseState MouseState;
         static KeyboardState LastKeyboardState;

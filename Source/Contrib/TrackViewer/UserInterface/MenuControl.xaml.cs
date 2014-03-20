@@ -38,7 +38,6 @@ using System.Windows.Forms.Integration;
 using System.Collections.ObjectModel;
 using ORTS.TrackViewer.Properties;
 using ORTS.TrackViewer.Drawing; // for colors
-using ORTS.TrackViewer.Editing; // for context menu
 namespace ORTS.TrackViewer.UserInterface
 {
     /// <summary>
@@ -79,7 +78,7 @@ namespace ORTS.TrackViewer.UserInterface
             elementHost.Child = this;
             System.Windows.Forms.Control.FromHandle(trackViewer.Window.Handle).Controls.Add(elementHost);
 
-            initUserSettings();
+            InitUserSettings();
 
         }
 
@@ -88,7 +87,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public void setScreenSize(int width, int height)
+        public void SetScreenSize(int width, int height)
         {
             elementHost.Size = new System.Drawing.Size(width, height);
         }
@@ -96,7 +95,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Init various settings from the stored user settings.
         /// </summary>
-        public void initUserSettings()
+        public void InitUserSettings()
         {
             PopulateColors(Properties.Settings.Default.backgroundColorName);
 
@@ -134,8 +133,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             UpdateMenuSettings();  // to be sure some other settings are done correctly
 
-            menuDoAntiAliasing.IsChecked = Properties.Settings.Default.doAntiAliasing;
-
+            //menuDoAntiAliasing.IsChecked = Properties.Settings.Default.doAntiAliasing; todo
         }
 
         /// <summary>
@@ -143,6 +141,11 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         void UpdateMenuSettings()
         {
+            menuShowPATfile.IsEnabled = !menuEnableEditing.IsChecked;
+            if (!menuShowPATfile.IsEnabled) {
+                menuShowPATfile.IsChecked = false;
+            }
+
             Properties.Settings.Default.showInset = menuShowInset.IsChecked;
             Properties.Settings.Default.showWorldTiles = menuShowWorldTiles.IsChecked;
             Properties.Settings.Default.colorTracks = menuColorTracks.IsChecked;
@@ -181,10 +184,9 @@ namespace ORTS.TrackViewer.UserInterface
             menuStatusShowPATfile.IsEnabled = menuShowPATfile.IsChecked;
             menuStatusShowTrainpath.IsEnabled = menuShowTrainpath.IsChecked;
 
-            menuSavePath.IsEnabled = (trackViewer.pathEditor != null);
-            menuNewPath.IsEnabled = (trackViewer.pathEditor != null
-                                  && menuEnableEditing.IsChecked);
-            menuEnableEditing.IsEnabled = (trackViewer.pathEditor != null);
+            menuSavePath.IsEnabled = (trackViewer.PathEditor != null);
+            menuNewPath.IsEnabled = (trackViewer.CurrentRoute != null);
+            menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
             menuEditMetadata.IsEnabled = menuEnableEditing.IsChecked;
 
         }
@@ -202,34 +204,34 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuZoomIn_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.drawArea.zoomCentered(-4);
+            trackViewer.DrawArea.ZoomCentered(-4);
         }
 
         private void menuZoomOut_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.drawArea.zoomCentered(4);
+            trackViewer.DrawArea.ZoomCentered(4);
         }
 
         private void menuZoomReset_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.drawArea.zoomReset(trackViewer.drawTrackDB);
+            trackViewer.DrawArea.ZoomReset(trackViewer.DrawTrackDB);
         }
 
         private void menuZoomToTile_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.drawArea.ZoomToTileCentered();
+            trackViewer.DrawArea.ZoomToTileCentered();
         }
 
         private void menuInstallFolder_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.selectInstallFolder();
-            populateRoutes();
+            trackViewer.SelectInstallFolder();
+            PopulateRoutes();
         }
 
         /// <summary>
         /// Update the menu to show the available routes
         /// </summary>
-        public void populateRoutes()
+        public void PopulateRoutes()
         {
             menuSelectRoute.Items.Clear();
             if (trackViewer.Routes == null) return;
@@ -256,7 +258,7 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 if (route.Name == (string)selectedMenuItem.Header)
                 {
-                    trackViewer.setRoute(route);
+                    trackViewer.SetRoute(route);
                     return;
                 }
             }
@@ -267,13 +269,14 @@ namespace ORTS.TrackViewer.UserInterface
         /// </summary>
         private void menuReloadRoute_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.setDefaultRoute();
+            trackViewer.SetDefaultRoute();
+            UpdateMenuSettings();
         }
 
         /// <summary>
         /// Update the menu to show the available paths.
         /// </summary>
-        public void populatePaths()
+        public void PopulatePaths()
         {
             menuSelectPath.Items.Clear();
             if (trackViewer.Paths == null) return;
@@ -294,21 +297,21 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Update the menu to make sure all the platforms are listed
         /// </summary>
-        public void populatePlatforms()
+        public void PopulatePlatforms()
         {
-            if (trackViewer.drawTrackDB == null) return;
-            if (trackViewer.drawTrackDB.platformLocations == null) return;
-            menuPlatformCombobox.ItemsSource = trackViewer.drawTrackDB.platformLocations.Keys.OrderBy(a => a.ToString());
+            if (trackViewer.DrawTrackDB == null) return;
+            if (trackViewer.DrawTrackDB.PlatformLocations == null) return;
+            menuPlatformCombobox.ItemsSource = trackViewer.DrawTrackDB.PlatformLocations.Keys.OrderBy(a => a.ToString());
         }
 
         /// <summary>
         /// Update the menu to make sure all the sidings are listed
         /// </summary>
-        public void populateSidings()
+        public void PopulateSidings()
         {
-            if (trackViewer.drawTrackDB == null) return;
-            if (trackViewer.drawTrackDB.sidingLocations == null) return;
-            menuSidingCombobox.ItemsSource = trackViewer.drawTrackDB.sidingLocations.Keys.OrderBy(a => a.ToString());
+            if (trackViewer.DrawTrackDB == null) return;
+            if (trackViewer.DrawTrackDB.SidingLocations == null) return;
+            menuSidingCombobox.ItemsSource = trackViewer.DrawTrackDB.SidingLocations.Keys.OrderBy(a => a.ToString());
         }
 
         /// <summary>
@@ -322,8 +325,9 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 if (makeHeader(path) == (string)selectedMenuItem.Header)
                 {
-                    trackViewer.setPath(path);
-                    trackViewer.pathEditor.EditingIsActive = menuEnableEditing.IsChecked;
+                    trackViewer.SetPath(path);
+                    trackViewer.PathEditor.EditingIsActive = menuEnableEditing.IsChecked;
+                    menuShowTrainpath.IsChecked = true;
                     UpdateMenuSettings();
                     return;
                 }
@@ -350,10 +354,10 @@ namespace ORTS.TrackViewer.UserInterface
             shortcuts += "D:  Shift right\n";
             shortcuts += "W:  Shift up\n";
             shortcuts += "C:  Shift to center of current path node\n";
-            shortcuts += "PgUp:  Goto next path node\n";
-            shortcuts += "PgDn:  Goto previous path node\n";
-            shortcuts += "shift-PgUp:  Goto last path node\n";
-            shortcuts += "shift-PgDn:  Goto first path node\n";
+            shortcuts += "PgUp:  Show more of the path\n";
+            shortcuts += "PgDn:  Show less of the path\n";
+            shortcuts += "shift-PgUp:  Show the full path\n";
+            shortcuts += "shift-PgDn:  Show only start point of path\n";
             shortcuts += "ctrl-Z: Undo in path editor\n";
             shortcuts += "ctrl-Y: Redo in path editor\n";
             MessageBox.Show(shortcuts);
@@ -370,25 +374,25 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuZoomSave_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.drawArea.Save(trackViewer.CurrentRoute.Path);
+            trackViewer.DrawArea.Save(trackViewer.CurrentRoute.Path);
         }
 
         private void menuZoomRestore_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.drawArea.Restore();
+            trackViewer.DrawArea.Restore();
         }
 
         private void menuDoAntiAliasing_Click(object sender, RoutedEventArgs e)
         {
-            Properties.Settings.Default.doAntiAliasing = menuDoAntiAliasing.IsChecked;
+            //Properties.Settings.Default.doAntiAliasing = menuDoAntiAliasing.IsChecked;todo
             Properties.Settings.Default.Save();
-            trackViewer.setAliasing();
+            trackViewer.SetAliasing();
         }
 
         /// <summary>
         /// Toggle whether the sidings are shown
         /// </summary>
-        public void menuToggleShowSidings()
+        public void MenuToggleShowSidings()
         {
             menuShowSidingMarkers.IsChecked = !menuShowSidingMarkers.IsChecked;
             UpdateMenuSettings();
@@ -397,7 +401,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Toggle whether the siding names are shown
         /// </summary>
-        public void menuToggleShowSidingNames()
+        public void MenuToggleShowSidingNames()
         {
             menuShowSidingNames.IsChecked = !menuShowSidingNames.IsChecked;
             UpdateMenuSettings();
@@ -406,7 +410,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Toggle whether the platforms are shown
         /// </summary>
-        public void menuToggleShowPlatforms()
+        public void MenuToggleShowPlatforms()
         {
             menuShowPlatformMarkers.IsChecked = !menuShowPlatformMarkers.IsChecked;
             UpdateMenuSettings();
@@ -415,7 +419,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Toggle whether the platform names are shown
         /// </summary>
-        public void menuToggleShowPlatformNames()
+        public void MenuToggleShowPlatformNames()
         {
             menuShowPlatformNames.IsChecked = !menuShowPlatformNames.IsChecked;
             UpdateMenuSettings();
@@ -424,7 +428,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Toggle whether the train path is shown
         /// </summary>
-        public void menuToggleShowTrainpath()
+        public void MenuToggleShowTrainpath()
         {
             menuShowTrainpath.IsChecked = !menuShowTrainpath.IsChecked;
             UpdateMenuSettings();
@@ -433,7 +437,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Toggle whether the PATfile (.pat file) is shown
         /// </summary>
-        public void menuToggleShowPATFile()
+        public void MenuToggleShowPatFile()
         {
             menuShowPATfile.IsChecked = !menuShowPATfile.IsChecked;
             UpdateMenuSettings();
@@ -442,7 +446,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Toggle whether the signals are shown
         /// </summary>
-        public void menuToggleShowSignals()
+        public void MenuToggleShowSignals()
         {
             menuShowSignals.IsChecked = !menuShowSignals.IsChecked;
             UpdateMenuSettings();
@@ -451,7 +455,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Toggle whether the speedlimits are shown
         /// </summary>
-        public void menuToggleShowSpeedLimits()
+        public void MenuToggleShowSpeedLimits()
         {
             menuShowSpeedLimits.IsChecked = !menuShowSpeedLimits.IsChecked;
             UpdateMenuSettings();
@@ -460,7 +464,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Toggle whether the mile posts are shown
         /// </summary>
-        public void menuToggleShowMilePosts()
+        public void MenuToggleShowMilePosts()
         {
             menuShowMileposts.IsChecked = !menuShowMileposts.IsChecked;
             UpdateMenuSettings();
@@ -470,16 +474,16 @@ namespace ORTS.TrackViewer.UserInterface
         {
             string platformName = menuPlatformCombobox.SelectedItem as string;
             if (platformName == null) return;
-            if (trackViewer.drawTrackDB.platformLocations.ContainsKey(platformName))
-                trackViewer.drawArea.ShiftToLocation(trackViewer.drawTrackDB.platformLocations[platformName]);
+            if (trackViewer.DrawTrackDB.PlatformLocations.ContainsKey(platformName))
+                trackViewer.DrawArea.ShiftToLocation(trackViewer.DrawTrackDB.PlatformLocations[platformName]);
         }
 
         private void menuSidingCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             string sidingName = menuSidingCombobox.SelectedItem as string;
             if (sidingName == null) return;
-            if (trackViewer.drawTrackDB.sidingLocations.ContainsKey(sidingName))
-                trackViewer.drawArea.ShiftToLocation(trackViewer.drawTrackDB.sidingLocations[sidingName]);
+            if (trackViewer.DrawTrackDB.SidingLocations.ContainsKey(sidingName))
+                trackViewer.DrawArea.ShiftToLocation(trackViewer.DrawTrackDB.SidingLocations[sidingName]);
 
         }
 
@@ -540,56 +544,45 @@ namespace ORTS.TrackViewer.UserInterface
 
         }
 
- 
-        /// <summary>
-        /// A certain item in the context menu has been clicked. Execute the corresponding action
-        /// </summary>
-        private void contextExecuteAction_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem menuItem = sender as MenuItem;
-            trackViewer.pathEditor.ExecuteAction(menuItem.CommandParameter);
-        }
-
         private void menuEnableEditing_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.pathEditor.EditingIsActive = menuEnableEditing.IsChecked;
+            trackViewer.PathEditor.EditingIsActive = menuEnableEditing.IsChecked;
             UpdateMenuSettings();
         }
 
         private void menuNewPath_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.pathEditor.NewPath();
-            trackViewer.pathEditor.EditingIsActive = menuEnableEditing.IsChecked;
+            trackViewer.NewPath();
+            menuEnableEditing.IsChecked = true;
+            menuShowTrainpath.IsChecked = true;
+            trackViewer.PathEditor.EditingIsActive = true;
             UpdateMenuSettings();
         }
 
         private void menuSavePath_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.pathEditor.SavePath();
+            trackViewer.PathEditor.SavePath();
         }
 
         private void menuEditMetadata_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.pathEditor.EditMetaData();
+            trackViewer.PathEditor.EditMetaData();
         }
 
         private void menuKnownLimitations_Click(object sender, RoutedEventArgs e)
         {
             string limitations = String.Empty;
-            limitations += "At least the following items are missing or incomplete\n";
-            limitations += "* Handling broken points\n";
-            limitations += "* Handling broken paths\n";
-            limitations += "* Documentation\n";
-            limitations += "\n";
-            limitations += "The following items are planned additional functionalities not yet implemented\n";
-            limitations += "* Give warning when discarding an edited path\n";
-            limitations += "* Moving wait/uncouple/reverse/end/start points with mouse\n";
+            limitations += "The following items are planned additional functionalities not yet implemented:\n";
+            limitations += "* Complex modifications of paths (while retaining rest of path).\n";
+            limitations += "* Correction of broken points.\n";
+            limitations += "* Moving wait/uncouple/reverse/end/start points with mouse.\n";
             limitations += "* Using mouse clicks for 'take other exit', 'remove siding', 'edit point'...\n";
             limitations += "\n";
-            limitations += "Testing the save-paths with MSTS has not been done.\n";
-            limitations += "Possible still open issues are (feedback would be nice)\n";
-            limitations += "* Height of points (y-value) not saved/stored\n";
-            limitations += "* Details of wait and (un)couple points might not make complete sense\n"; 
+            limitations += "Further comments:\n";
+            limitations += "* Documentation is available (under source directory), but not finished.\n";
+            limitations += "* Testing the save-paths with MSTS has not been done.\n";
+            limitations += "* Possible still open issues are (feedback would be nice).\n";
+            limitations += "* Details of wait and (un)couple points might not make complete sense.\n"; 
             limitations += "\n";
             MessageBox.Show(limitations);
         }

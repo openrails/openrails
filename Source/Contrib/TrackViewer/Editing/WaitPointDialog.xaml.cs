@@ -73,7 +73,8 @@ namespace ORTS.TrackViewer.Editing
         ///<summary>Return the selected wait time in seconds</summary>
         public int GetWaitTime()
         {
-            return 60*(Convert.ToInt32(waitTimeHours.Text) * 60 + Convert.ToInt32(waitTimeMinutes.Text));
+            return 60 * (Convert.ToInt32(waitTimeHours.Text, System.Globalization.CultureInfo.InvariantCulture) * 60
+                       + Convert.ToInt32(waitTimeMinutes.Text, System.Globalization.CultureInfo.InvariantCulture));
         }
 
         /// <summary>

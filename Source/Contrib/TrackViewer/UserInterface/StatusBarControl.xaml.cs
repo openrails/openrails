@@ -47,8 +47,7 @@ namespace ORTS.TrackViewer.UserInterface
     public partial class StatusBarControl : UserControl
     {
         /// <summary>Height of the statusbar in pixels</summary>
-        public int statusbarHeight { get; private set; }
-        private TrackViewer trackViewer;
+        public int StatusbarHeight { get; private set; }
         private ElementHost elementHost;
 
         /// <summary>
@@ -57,10 +56,9 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="trackViewer">Track viewer object that contains all the information we want to show the status for</param>
         public StatusBarControl(TrackViewer trackViewer)
         {
-            this.trackViewer = trackViewer;
             InitializeComponent();
 
-            statusbarHeight = (int) tvStatusbar.Height;
+            StatusbarHeight = (int) tvStatusbar.Height;
 
             //ElementHost object helps us to connect a WPF User Control.
             elementHost = new ElementHost();
@@ -79,7 +77,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="width">Width of the statusbar</param>
         /// <param name="height">Height of the statusbar</param>
         /// <param name="yBottom">Y-value in screen pixels at the bottom of the statusbar</param>
-        public void setScreenSize(int width, int height, int yBottom)
+        public void SetScreenSize(int width, int height, int yBottom)
         {
             elementHost.Location = new System.Drawing.Point(0, yBottom-height);
             elementHost.Size = new System.Drawing.Size(width, height);
@@ -112,7 +110,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="trackViewer"></param>
         private void SetTrackIndexStatus(TrackViewer trackViewer)
         {
-            TrackNode tn = trackViewer.drawTrackDB.closestTrack.TrackNode;
+            TrackNode tn = trackViewer.DrawTrackDB.ClosestTrack.TrackNode;
             if (tn == null) return;
             statusTrIndex.Text = string.Format("{0} ", tn.Index);
             //debug: statusAdditional.Text += Math.Sqrt((double)trackViewer.drawTrackDB.closestTrack.ClosestMouseDistanceSquared);
@@ -136,19 +134,19 @@ namespace ORTS.TrackViewer.UserInterface
             statusTrItemType.Text = statusTrItemIndex.Text =
                 statusTrItemLocationX.Text = statusTrItemLocationZ.Text = string.Empty;
 
-            ORTS.TrackViewer.Drawing.CloseToMouseItem closestItem = trackViewer.drawTrackDB.closestTrItem;
-            ORTS.TrackViewer.Drawing.CloseToMouseJunctionOrEnd closestJunction = trackViewer.drawTrackDB.closestJunctionOrEnd;
+            ORTS.TrackViewer.Drawing.CloseToMouseItem closestItem = trackViewer.DrawTrackDB.ClosestTrackItem;
+            ORTS.TrackViewer.Drawing.CloseToMouseJunctionOrEnd closestJunction = trackViewer.DrawTrackDB.ClosestJunctionOrEnd;
             if (closestItem != null && closestItem.IsCloserThan(closestJunction))
             {
-                statusTrItemType.Text = closestItem.type;
-                statusTrItemIndex.Text = string.Format("{0} ", closestItem.trItem.TrItemId);
-                statusTrItemLocationX.Text = string.Format("{0,3:F3} ", closestItem.trItem.X);
-                statusTrItemLocationZ.Text = string.Format("{0,3:F3} ", closestItem.trItem.Z);
+                statusTrItemType.Text = closestItem.Type;
+                statusTrItemIndex.Text = string.Format("{0} ", closestItem.TRItem.TrItemId);
+                statusTrItemLocationX.Text = string.Format("{0,3:F3} ", closestItem.TRItem.X);
+                statusTrItemLocationZ.Text = string.Format("{0,3:F3} ", closestItem.TRItem.Z);
             }
-            else if (closestJunction.junctionOrEndNode != null)
+            else if (closestJunction.JunctionOrEndNode != null)
             {
-                statusTrItemType.Text = closestJunction.type;
-                TrackNode node = closestJunction.junctionOrEndNode;
+                statusTrItemType.Text = closestJunction.Type;
+                TrackNode node = closestJunction.JunctionOrEndNode;
                 statusTrItemIndex.Text = string.Format("{0} ", node.Index);
                 statusTrItemLocationX.Text = string.Format("{0,3:F3} ", node.UiD.X);
                 statusTrItemLocationZ.Text = string.Format("{0,3:F3} ", node.UiD.Z);
@@ -174,14 +172,14 @@ namespace ORTS.TrackViewer.UserInterface
         {
             if (Properties.Settings.Default.statusShowVectorSections)
             {
-                TrVectorSection tvs = trackViewer.drawTrackDB.closestTrack.VectorSection;
+                TrVectorSection tvs = trackViewer.DrawTrackDB.ClosestTrack.VectorSection;
                 if (tvs == null) return;
                 uint shapeIndex = tvs.ShapeIndex;
                 string shapeName = "Unknown:" + shapeIndex.ToString();
                 try
                 {
                     // Try to find a fixed track
-                    TrackShape shape = trackViewer.drawTrackDB.tsectionDat.TrackShapes.Get(shapeIndex);
+                    TrackShape shape = trackViewer.DrawTrackDB.TsectionDat.TrackShapes.Get(shapeIndex);
                     shapeName = shape.FileName;
                 }
                 catch
@@ -189,7 +187,7 @@ namespace ORTS.TrackViewer.UserInterface
                     // try to find a dynamic track
                     try
                     {
-                        TrackPath trackPath = trackViewer.drawTrackDB.tsectionDat.TSectionIdx.TrackPaths[tvs.ShapeIndex];
+                        TrackPath trackPath = trackViewer.DrawTrackDB.TsectionDat.TSectionIdx.TrackPaths[tvs.ShapeIndex];
                         shapeName = "<dynamic ?>";
                         foreach (uint trackSection in trackPath.TrackSections)
                         {
@@ -207,8 +205,8 @@ namespace ORTS.TrackViewer.UserInterface
                 }
                 statusAdditional.Text += string.Format(" VectorSection ({3}/{4}) filename={2} Index={0} shapeIndex={1}",
                     tvs.SectionIndex, shapeIndex, shapeName,
-                        trackViewer.drawTrackDB.closestTrack.TrackVectorSectionIndex + 1,
-                        trackViewer.drawTrackDB.closestTrack.TrackNode.TrVectorNode.TrVectorSections.Count());
+                        trackViewer.DrawTrackDB.ClosestTrack.TrackVectorSectionIndex + 1,
+                        trackViewer.DrawTrackDB.ClosestTrack.TrackNode.TrVectorNode.TrVectorSections.Count());
             }
         }
 
@@ -218,14 +216,14 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="trackViewer"></param>
         private void AddTrainpathStatus(TrackViewer trackViewer)
         {
-            if (Properties.Settings.Default.statusShowTrainpath && (trackViewer.pathEditor != null))
+            if (Properties.Settings.Default.statusShowTrainpath && (trackViewer.PathEditor != null))
             {
-                if (trackViewer.pathEditor.HasValidPath)
+                if (trackViewer.PathEditor.HasValidPath)
                 {
                     //statusAdditional.Text += string.Format("|{0}->{1}|", trackViewer.pathEditor.numberToDraw, trackViewer.pathEditor.numberDrawn);
-                    ORTS.TrackViewer.Editing.TrainpathNode curNode = trackViewer.pathEditor.CurrentNode;
+                    ORTS.TrackViewer.Editing.TrainpathNode curNode = trackViewer.PathEditor.CurrentNode;
                     statusAdditional.Text += string.Format(" {0}: TVNs=[{1} {2}] ({3}, {4})",
-                        trackViewer.pathEditor.fileName, curNode.NextMainTVNIndex, curNode.NextSidingTVNIndex,
+                        trackViewer.PathEditor.FileName, curNode.NextMainTvnIndex, curNode.NextSidingTvnIndex,
                         curNode.Type, curNode.HasSidingPath);
                     TrainpathVectorNode curVectorNode = curNode as TrainpathVectorNode;
                     if (curVectorNode != null)
@@ -248,13 +246,13 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="trackViewer"></param>
         private void AddPATfileStatus(TrackViewer trackViewer)
         {
-            if (Properties.Settings.Default.statusShowPATfile && (trackViewer.drawPATfile != null))
+            if (Properties.Settings.Default.statusShowPATfile && (trackViewer.DrawPATfile != null))
             {
-                TrPathNode curNode = trackViewer.drawPATfile.CurrentNode;
-                TrackPDP curPDP = trackViewer.drawPATfile.CurrentPDP;
+                TrPathNode curNode = trackViewer.DrawPATfile.CurrentNode;
+                TrackPDP curPDP = trackViewer.DrawPATfile.CurrentPdp;
                 statusAdditional.Text += string.Format(" {7}: {3}, {4} [{1} {2}] [{5} {6}] <{0}>",
                     curNode.pathFlags, (int)curNode.nextMainNode, (int)curNode.nextSidingNode,
-                    curPDP.X, curPDP.Z, curPDP.junctionFlag, curPDP.invalidFlag, trackViewer.drawPATfile.fileName);
+                    curPDP.X, curPDP.Z, curPDP.junctionFlag, curPDP.invalidFlag, trackViewer.DrawPATfile.FileName);
             }
         }
 

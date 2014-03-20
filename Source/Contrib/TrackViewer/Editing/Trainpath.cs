@@ -57,7 +57,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Name of the end point as stored in the .pat file</summary>
         public string PathEnd { get; set; }
         /// <summary>identification name as stored in the .pat file</summary>
-        public string PathID { get; set; }
+        public string PathId { get; set; }
         /// <summary>Flags associated with the path (not the nodes)</summary>
         public PathFlags PathFlags { get; set; }
 
@@ -71,10 +71,10 @@ namespace ORTS.TrackViewer.Editing
             this.trackDB = trackDB;
             this.tsectionDat = tsectionDat;
 
-            PathName = "";
+            PathName = "<unknown>";
             PathEnd = "<unknown>";
             PathStart = "<unknown>";
-            PathID = "<unknown>";
+            PathId = "new";
             HasEnd = false;
         }
  
@@ -93,7 +93,7 @@ namespace ORTS.TrackViewer.Editing
             this.FilePath = filePath;
             
             PATFile patFile = new PATFile(filePath);
-            PathID = patFile.PathID;
+            PathId = patFile.PathID;
             PathName = patFile.Name;
             PathStart = patFile.Start;
             PathEnd = patFile.End;
@@ -118,7 +118,7 @@ namespace ORTS.TrackViewer.Editing
         private void createNodes(PATFile patFile, List<TrainpathNode> Nodes)
         {
             foreach (TrPathNode tpn in patFile.TrPathNodes)
-                Nodes.Add(TrainpathNode.createPathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], trackDB, tsectionDat));
+                Nodes.Add(TrainpathNode.CreatePathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], trackDB, tsectionDat));
             FirstNode = Nodes[0];
             FirstNode.Type = TrainpathNodeType.Start;
         }
@@ -138,25 +138,25 @@ namespace ORTS.TrackViewer.Editing
                 TrainpathNode node = Nodes[i];
                 TrPathNode tpn = patFile.TrPathNodes[i];
 
-                // find TVNindex to next main node.
+                // find TvnIndex to next main node.
                 if (tpn.HasNextMainNode)
                 {
                     node.NextMainNode = Nodes[(int)tpn.nextMainNode];
                     node.NextMainNode.PrevNode = node;
-                    node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode);
+                    node.NextMainTvnIndex = node.FindTvnIndex(node.NextMainNode);
                     if (node is TrainpathJunctionNode)
                     {
-                        (node as TrainpathJunctionNode).SetFacingPoint(node.NextMainTVNIndex);
+                        (node as TrainpathJunctionNode).SetFacingPoint(node.NextMainTvnIndex);
                     }
-                    if (node.NextMainTVNIndex < 0)
+                    if (node.NextMainTvnIndex <= 0)
                     {
-                        node.NextMainNode = null;
+                        //node.NextMainNode = null;
                         //Trace.TraceWarning("Cannot find main track for node {1} in path {0}", FilePath, numberDrawn);
                         fatalerror = true;
                     }
                 }
 
-                // find TVNindex to next siding node
+                // find TvnIndex to next siding node
                 if (tpn.HasNextSidingNode)
                 {
                     node.NextSidingNode = Nodes[(int)tpn.nextSidingNode];
@@ -164,11 +164,11 @@ namespace ORTS.TrackViewer.Editing
                     {
                         node.NextSidingNode.PrevNode = node;
                     }
-                    node.NextSidingTVNIndex = node.FindTVNIndex(node.NextSidingNode);
+                    node.NextSidingTvnIndex = node.FindTvnIndex(node.NextSidingNode);
                     if (node is TrainpathJunctionNode) { 
-                        (node as TrainpathJunctionNode).SetFacingPoint(node.NextSidingTVNIndex); 
+                        (node as TrainpathJunctionNode).SetFacingPoint(node.NextSidingTvnIndex); 
                     }
-                    if (node.NextSidingTVNIndex < 0)
+                    if (node.NextSidingTvnIndex < 0)
                     {
                         node.NextSidingNode = null;
                         //Trace.TraceWarning("Cannot find siding track for node {1} in path {0}", FilePath, numberDrawn);
@@ -236,14 +236,14 @@ namespace ORTS.TrackViewer.Editing
                 while (currentSidingNode.NextSidingNode != null)
                 {
                     TrainpathNode nextSidingNode = currentSidingNode.NextSidingNode;
-                    nextSidingNode.determineOrientation(currentSidingNode, currentSidingNode.NextSidingTVNIndex);
+                    nextSidingNode.DetermineOrientation(currentSidingNode, currentSidingNode.NextSidingTvnIndex);
                     currentSidingNode = nextSidingNode;
                 }
 
                 // In case a main node has two nodes leading to it (siding and main), then
                 // the main track will override.
                 TrainpathNode nextMainNode = currentMainNode.NextMainNode;
-                nextMainNode.determineOrientation(currentMainNode, currentMainNode.NextMainTVNIndex);
+                nextMainNode.DetermineOrientation(currentMainNode, currentMainNode.NextMainTvnIndex);
                 currentMainNode = nextMainNode;
             }
 
@@ -258,7 +258,7 @@ namespace ORTS.TrackViewer.Editing
             }
 
             //Determine direction of first point. By using second point, the direction will be reversed
-            FirstNode.determineOrientation(FirstNode.NextMainNode, FirstNode.NextMainTVNIndex);
+            FirstNode.DetermineOrientation(FirstNode.NextMainNode, FirstNode.NextMainTvnIndex);
             TrainpathVectorNode FirstNodeAsVector = FirstNode as TrainpathVectorNode;
             FirstNodeAsVector.ForwardOriented = !FirstNodeAsVector.ForwardOriented;
         }
@@ -327,7 +327,8 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="tsectionDat"></param>
         public TrainpathWithHistory(TrackDB trackDB, TSectionDatFile tsectionDat)
             : base(trackDB, tsectionDat)
-        { }
+        {
+        }
 
         /// <summary>
         /// Creates an trainpath from PAT file information.
@@ -339,7 +340,8 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="filePath">file name including path of the .pat file</param>
         public TrainpathWithHistory(TrackDB trackDB, TSectionDatFile tsectionDat, string filePath)
             : base(trackDB, tsectionDat, filePath)
-        { }
+        {   // firstNodes, hasEnds and currentIndex are created in calls from base constructor to FirstNode and HasEnd
+        }
 
         /// <summary>
         /// Undo operation. Pretty simple. Just use the previous path in the list if available.
@@ -347,6 +349,11 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void Undo()
         {
+            if (firstNodes == null)
+            {   // there is no path yet
+                return;
+            }
+
             currentIndex--;
             if (currentIndex < 0) { currentIndex = 0; }
         }
@@ -357,6 +364,11 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void Redo()
         {
+            if (firstNodes == null)
+            {   // there is no path yet
+                return;
+            }
+
             currentIndex++;
             if (currentIndex >= firstNodes.Count) { currentIndex = firstNodes.Count - 1; }
         }
@@ -369,6 +381,11 @@ namespace ORTS.TrackViewer.Editing
         public void StoreCurrentPath()
         {
             // first clear all possible stored-redo parts
+            if (firstNodes == null)
+            {   // there is no path yet
+                return;
+            }
+
             int newCount = currentIndex + 1;
             if (hasEnds.Count > newCount) {
                 hasEnds.RemoveRange(newCount, hasEnds.Count - newCount);

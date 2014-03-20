@@ -17,18 +17,31 @@
 //
 // TO-DO list for path editor
 // === Not finished, so do before release
+//  Crash on anti-alias
 //
 // ==== new/improved functionality
-//  selecting the tn to draw can be better
-//  signal orientation can be faster
-//  xml comments
-//  popup for no end
-//  saving path still has code parts I do not know how to
+//  hasSidingPath not set when doing editing!
+//  I want a reason for a broken path to be shown.
+//      paths where nodes are find but links is broken are not correctly denoted as broken
+//  add ambiguitynodes
+//  end node on trendnode
+//  new field:      PathHasBrokenNodes
+//  add popup asking for save when path is broken. Also when there is a still a tail.
 //
-//  Dealing with broken nodes
-//      being able to recognize them in the first place, and not abort on reading it.
-//      How to draw tracks?
-//      make it easy to reposition
+//  icons in context menu
+//  saving path still has code parts I do not know how to do
+//  struct for history. Or perhaps trainpathwithhistory should contain a list of trainpaths, so no longer inherit? Or perhaps inherit but still contain a list?
+//
+//  Add ambiguitiy nodes when starting to edit
+//  Make a 'visit_all_nodes'??
+//  snap to junction for broken node
+//  Statusbar info on editing status ('broken', 'modified', ...)
+//  
+//  Cutting and reshaping a path
+//      field: StartOfTail
+//      allow to cut
+//      allow to reconnect
+//
 //  Add mouse-click actions for
 //      take other exit
 //      edit wait time for uncouple?
@@ -36,13 +49,7 @@
 //      probably it makes sense to make 'rings' red when close enough, signifying mouse capture
 //          and then changing, moving=dragging etc are all possible. Would be really sweet.
 //
-//  Improved handling
-//      Take other exit for passing paths
-//      Option to cut and reconnect a path manually (in case take other exit is not able to handle it)
-//      Possibly 'Main TVN' is not the right one? I now use TrPins[1].Link
-//
-//  Issues
-//      getting y correct might be an issue 
+
 
 using System;
 using System.Collections.Generic;
@@ -60,44 +67,44 @@ namespace ORTS.TrackViewer.Editing
     /// Enumeration of the various actions that can be taken via the editor context menu. 
     /// The enumeration order determines the order in the context menu as well
     /// </summary>
-    public enum contextMenuAction
+    public enum ContextMenuAction
     {
         /// <summary>Action to take the other exit</summary>
-        takeOtherExit,
-        /// <summary>Action to add a reversal node</summary>
-        addReverse,
-        /// <summary>Action to add an end node</summary>
-        addEnd,
-        /// <summary>Action to add a wait point</summary>
-        addWait,
-        /// <summary>Action to add an (un)couple point</summary>
-        addUncouple,
+        TakeOtherExit,
         /// <summary>Action to add a passing path</summary>
-        addPassingPath,
-        /// <summary>Separator, so no real action</summary>
-        separator1,
+        AddPassingPath,
         /// <summary>Action to remove a reversal point</summary>
-        removeReverse,
+        RemoveReverse,
         /// <summary>Action to remove a wait point</summary>
-        removeWait,
+        RemoveWait,
         /// <summary>Action to remove an (un)couple point</summary>
-        removeUncouple,
+        RemoveUncouple,
         /// <summary>Action to remove a passing path</summary>
-        removePassingPath,
-        /// <summary>Remove the end node</summary>
-        removeEnd,
-        /// <summary>Separator, so no real action</summary>
-        separator2,
+        RemovePassingPath,
         /// <summary>Edit the current wait/(un)couple point</summary>
-        editPoint,
-        /// <summary>Separator, so no real action</summary>
-        separator3,
-        /// <summary>Add the start node</summary>
-        addStart,
+        EditPoint,
+        /// <summary>Remove the end node</summary>
+        RemoveEnd,
         /// <summary>Remove the start node</summary>
-        removeStart,
+        RemoveStart,
         /// <summary>Change the direction at the start node</summary>
-        otherStartDirection,        
+        OtherStartDirection,      
+        /// <summary>Separator, so no real action</summary>
+        Separator1,
+        /// <summary>Action to add a reversal node</summary>
+        AddReverse,
+        /// <summary>Action to add an end node</summary>
+        AddEnd,
+        /// <summary>Action to add a wait point</summary>
+        AddWait,
+        /// <summary>Action to add an (un)couple point</summary>
+        AddUncouple,
+        /// <summary>Add the start node</summary>
+        AddStart,
+        /// <summary>Separator, so no real action</summary>
+        Separator2,
+        /// <summary>Draw the path only to here</summary>
+        DrawUntilHere,
     }
 
     ///
@@ -115,7 +122,29 @@ namespace ORTS.TrackViewer.Editing
     /// 
     public class PathEditor
     {
-        bool oneTimeDisallowAdd = false; // in case we just removed a node, prevent adding an extra node during first redraw
+        #region Public members
+        /// <summary>Editing is active or not</summary>
+        public bool EditingIsActive { 
+            get {return _editingIsActive;}
+            set { _editingIsActive = value; OnActiveOrPathChanged(); }
+        }
+        /// <summary>If context menu is open, updating active node and track is disabled</summary>
+        public bool EnableMouseUpdate { get; set; }
+
+        /// <summary>Name of the file with the .pat definition</summary>
+        public string FileName { get; private set; }
+        /// <summary>Does the path have a path</summary>
+        public bool HasValidPath { get { return (trainpath.FirstNode != null); } }
+
+        // some redirections to the drawPath
+        /// <summary>Return current node (last drawn) node</summary>
+        public TrainpathNode CurrentNode { get { return drawPath.CurrentMainNode; } }
+        /// <summary>Return the location of the current (last drawn) node</summary>
+        public WorldLocation CurrentLocation { get { return CurrentNode.Location; } }
+        #endregion
+
+        #region Private members
+        bool oneTimeDisallowAdd; // in case we just removed a node, prevent adding an extra node during first redraw
 
         DrawTrackDB drawTrackDB; // We need to know what has been drawn, especially to get track closest to mouse
         TrackDB trackDB;
@@ -128,54 +157,66 @@ namespace ORTS.TrackViewer.Editing
         TrainpathNode activeNode;           // active Node (if present) for which actions can be performed
         TrainpathVectorNode activeTrackLocation;  // dynamic node that follows the mouse and is on track, but is not part of path
 
-        Dictionary<contextMenuAction, string> contextMenuHeaders; //names shown in the contextMenu
-        Dictionary<contextMenuAction, bool> contextMenuEnabled;  //is the specific contextMenu item enabled or not.
+        Dictionary<ContextMenuAction, string> contextMenuHeaders; //names shown in the contextMenu
+        Dictionary<ContextMenuAction, bool> contextMenuEnabled;  //is the specific contextMenu item enabled or not.
 
         EditorContextMenu editorContextMenu; // the context menu
 
         int numberToDraw = 4; // number of nodes to draw, start with a bit
+        readonly int maxNumberNodesToCheckForReconnect = 10; // maximum number of nodes we will try before we conclude not reconnection is possible.
         bool allowAddingNodes;  // if at end of path, do we allow adding a node to the path.
 
         int mouseX, mouseY;
 
-        /// <summary>Editing is active or not</summary>
-        public bool EditingIsActive { get; set; }
-        /// <summary>If context menu is open, updating active node and track is disabled</summary>
-        public bool EnableMouseUpdate { get; set; }
+        bool _editingIsActive;
+        #endregion
+        
+        /// <summary>
+        /// base constructor that only stores the information of the tracks.
+        /// </summary>
+        /// <param name="drawTrackDB"></param>
+        private PathEditor(DrawTrackDB drawTrackDB)
+        {
+            this.drawTrackDB = drawTrackDB;
+            this.trackDB = drawTrackDB.TrackDB;
+            this.tsectionDat = drawTrackDB.TsectionDat;
 
-        /// <summary>Name of the file with the .pat definition</summary>
-        public string fileName { get; private set; }
-        /// <summary>Does the path have a path</summary>
-        public bool HasValidPath { get { return (trainpath.FirstNode != null); } }
+            trackNodes = drawTrackDB.TrackDB.TrackNodes;
+            TrackExtensionMethods.StoreMainRoutes(trackDB.TrackNodes, tsectionDat); // we might be calling this more than once, but so be it.
 
-        // some redirections to the drawPath
-        /// <summary>Return current node (last drawn) node</summary>
-        public TrainpathNode CurrentNode { get { return drawPath.CurrentMainNode; } }
-        /// <summary>Return the location of the current (last drawn) node</summary>
-        public WorldLocation CurrentLocation { get { return CurrentNode.location; } }
+            EnableMouseUpdate = true;
+
+            drawPath = new DrawPath(trackDB, tsectionDat);
+
+            activeTrackLocation = new TrainpathVectorNode(trackDB, tsectionDat);
+            CreateContextMenuEntries();
+        }
+
+        /// <summary>
+        /// Constructor. This will create a new empty path.
+        /// </summary>
+        /// <param name="drawTrackDBIn">The (draw)trackDB that also is the reference to the track data base and track section data</param>
+        /// <param name="pathsDirectory">The directory where paths will be stored</param>
+        public PathEditor(DrawTrackDB drawTrackDBIn, string pathsDirectory)
+            :this(drawTrackDBIn)
+        {
+            trainpath = new TrainpathWithHistory(trackDB, tsectionDat);
+            FileName = trainpath.PathId + ".pat";
+            trainpath.FilePath = System.IO.Path.Combine(pathsDirectory, FileName);
+            EditingIsActive = true;
+        }
 
         /// <summary>
         /// Constructor. This will actually load the .pat from file and create menus as needed
         /// </summary>
-        /// <param name="drawTrackDB">The (draw)trackDB that also is the reference to the track data base and track section data</param>
+        /// <param name="drawTrackDBIn">The (draw)trackDB that also is the reference to the track data base and track section data</param>
         /// <param name="path">Path to the .pat file</param>
-        public PathEditor(DrawTrackDB drawTrackDB, ORTS.Menu.Path path)
+        public PathEditor(DrawTrackDB drawTrackDBIn, ORTS.Menu.Path path)
+            :this(drawTrackDBIn)
         {
-            this.drawTrackDB = drawTrackDB;
-            this.trackDB = drawTrackDB.trackDB;
-            this.tsectionDat = drawTrackDB.tsectionDat;
-
-            trackNodes = drawTrackDB.trackDB.TrackNodes;
-
-            fileName = path.FilePath.Split('\\').Last();
-            trainpath = new TrainpathWithHistory(drawTrackDB.trackDB, drawTrackDB.tsectionDat, path.FilePath);
-            drawPath = new DrawPath(drawTrackDB.trackDB, drawTrackDB.tsectionDat, path);
-
+            FileName = path.FilePath.Split('\\').Last();
+            trainpath = new TrainpathWithHistory(trackDB, tsectionDat, path.FilePath);
             EditingIsActive = false;
-            EnableMouseUpdate = true;
-
-            activeTrackLocation = new TrainpathVectorNode(drawTrackDB.trackDB, drawTrackDB.tsectionDat);
-            CreateContextMenuEntries();
         }
 
         /// <summary>
@@ -184,28 +225,29 @@ namespace ORTS.TrackViewer.Editing
         private void CreateContextMenuEntries()
         {
             if (!(contextMenuHeaders == null)) return;
-            contextMenuHeaders = new Dictionary<contextMenuAction, string>();
-            contextMenuHeaders[contextMenuAction.removeEnd] = "Remove end point";
-            contextMenuHeaders[contextMenuAction.removeReverse] = "Remove reversal point";
-            contextMenuHeaders[contextMenuAction.removeWait] = "Remove wait point";
-            contextMenuHeaders[contextMenuAction.removeUncouple] = "Remove (un)couple point";
-            contextMenuHeaders[contextMenuAction.removeStart] = "Remove start point";
-            contextMenuHeaders[contextMenuAction.removePassingPath] = "Remove passing path";
+            contextMenuHeaders = new Dictionary<ContextMenuAction, string>();
+            contextMenuHeaders[ContextMenuAction.RemoveEnd] = "Remove end point";
+            contextMenuHeaders[ContextMenuAction.RemoveReverse] = "Remove reversal point";
+            contextMenuHeaders[ContextMenuAction.RemoveWait] = "Remove wait point";
+            contextMenuHeaders[ContextMenuAction.RemoveUncouple] = "Remove (un)couple point";
+            contextMenuHeaders[ContextMenuAction.RemoveStart] = "Remove start point";
+            contextMenuHeaders[ContextMenuAction.RemovePassingPath] = "Remove passing path";
 
-            contextMenuHeaders[contextMenuAction.addEnd] = "Place end point";
-            contextMenuHeaders[contextMenuAction.addReverse] = "Place reversal point";
-            contextMenuHeaders[contextMenuAction.addWait] = "Place wait point";
-            contextMenuHeaders[contextMenuAction.addUncouple] = "Place (un)couple point";
-            contextMenuHeaders[contextMenuAction.addStart] = "Place start point";
-            contextMenuHeaders[contextMenuAction.addPassingPath] = "Add passing path";
+            contextMenuHeaders[ContextMenuAction.AddEnd] = "Place end point";
+            contextMenuHeaders[ContextMenuAction.AddReverse] = "Place reversal point";
+            contextMenuHeaders[ContextMenuAction.AddWait] = "Place wait point";
+            contextMenuHeaders[ContextMenuAction.AddUncouple] = "Place (un)couple point";
+            contextMenuHeaders[ContextMenuAction.AddStart] = "Place start point";
+            contextMenuHeaders[ContextMenuAction.AddPassingPath] = "Add passing path";
 
-            contextMenuHeaders[contextMenuAction.editPoint] = "Edit point data";
-            contextMenuHeaders[contextMenuAction.takeOtherExit] = "Take other exit";
-            contextMenuHeaders[contextMenuAction.otherStartDirection] = "Change start direction";
+            contextMenuHeaders[ContextMenuAction.EditPoint] = "Edit point data";
+            contextMenuHeaders[ContextMenuAction.TakeOtherExit] = "Take other exit";
+            contextMenuHeaders[ContextMenuAction.OtherStartDirection] = "Change start direction";
 
+            contextMenuHeaders[ContextMenuAction.DrawUntilHere] = "Draw path until here";
 
-            contextMenuEnabled = new Dictionary<contextMenuAction, bool>();
-            foreach (contextMenuAction item in Enum.GetValues(typeof(contextMenuAction)))
+            contextMenuEnabled = new Dictionary<ContextMenuAction, bool>();
+            foreach (ContextMenuAction item in Enum.GetValues(typeof(ContextMenuAction)))
             {
                 contextMenuEnabled[item] = true; // Only default value;
             }
@@ -218,57 +260,66 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void SetContextMenuState()
         {
-            if (trainpath.FirstNode == null)
-            {   // path is empty
-                foreach (contextMenuAction action in Enum.GetValues(typeof(contextMenuAction)))
-                {
-                    contextMenuEnabled[action] = false;
-                }
-                contextMenuEnabled[contextMenuAction.addStart] = true;
+            //lets start with everything off.
+            foreach (ContextMenuAction action in Enum.GetValues(typeof(ContextMenuAction)))
+            {
+                contextMenuEnabled[action] = false;
+            }
+
+            if (!ORTS.TrackViewer.Properties.Settings.Default.showTrainpath)
+            {
                 return;
             }
 
-            contextMenuEnabled[contextMenuAction.addStart] = false;
+            if (trainpath.FirstNode == null)
+            {   // path is empty    
+                contextMenuEnabled[ContextMenuAction.AddStart] = true;
+                return;
+            }
+
+            contextMenuEnabled[ContextMenuAction.AddStart] = false;
             if (trainpath.HasEnd)
             {   // if there is an end, some things are simply not allowed
-                contextMenuEnabled[contextMenuAction.removeEnd] = (activeNode.Type == TrainpathNodeType.End);
-                contextMenuEnabled[contextMenuAction.addEnd] = false;
-                contextMenuEnabled[contextMenuAction.addReverse] = false;
-                contextMenuEnabled[contextMenuAction.removeReverse] = false; // removing a reverse point would not allow to have same end-point
-                contextMenuEnabled[contextMenuAction.addStart] = false;
-                contextMenuEnabled[contextMenuAction.otherStartDirection] = false;
-                contextMenuEnabled[contextMenuAction.removeStart] = false;
+                contextMenuEnabled[ContextMenuAction.RemoveEnd] = (activeNode.Type == TrainpathNodeType.End);
+                contextMenuEnabled[ContextMenuAction.AddEnd] = false;
+                contextMenuEnabled[ContextMenuAction.AddReverse] = false;
+                contextMenuEnabled[ContextMenuAction.RemoveReverse] = false; // removing a reverse point would not allow to have same end-point
+                contextMenuEnabled[ContextMenuAction.AddStart] = false;
+                contextMenuEnabled[ContextMenuAction.OtherStartDirection] = false;
+                contextMenuEnabled[ContextMenuAction.RemoveStart] = false;
             }
             else
             {
-                contextMenuEnabled[contextMenuAction.removeEnd] = false;
-                contextMenuEnabled[contextMenuAction.addEnd] = (activeTrackLocation.location != null
+                contextMenuEnabled[ContextMenuAction.RemoveEnd] = false;
+                contextMenuEnabled[ContextMenuAction.AddEnd] = (activeTrackLocation.Location != null
                                                             && !activeTrackLocation.PrevNode.HasSidingPath);
-                contextMenuEnabled[contextMenuAction.addReverse] = (activeTrackLocation.location != null
+                contextMenuEnabled[ContextMenuAction.AddReverse] = (activeTrackLocation.Location != null
                                                             && !activeTrackLocation.PrevNode.HasSidingPath);
-                contextMenuEnabled[contextMenuAction.removeReverse] = (activeNode.Type == TrainpathNodeType.Reverse);
-                contextMenuEnabled[contextMenuAction.takeOtherExit] = (activeNode.Type != TrainpathNodeType.SidingStart)
+                contextMenuEnabled[ContextMenuAction.RemoveReverse] = (activeNode.Type == TrainpathNodeType.Reverse);
+                contextMenuEnabled[ContextMenuAction.TakeOtherExit] = (activeNode.Type != TrainpathNodeType.SidingStart)
                                                             && (activeNode is TrainpathJunctionNode)
                                                             && (activeNode as TrainpathJunctionNode).IsFacingPoint
                                                             && (activeNode.NextMainNode != null);
-                contextMenuEnabled[contextMenuAction.removeStart] = (activeNode == trainpath.FirstNode);
-                contextMenuEnabled[contextMenuAction.otherStartDirection] = (activeNode == trainpath.FirstNode);
+                contextMenuEnabled[ContextMenuAction.RemoveStart] = (activeNode == trainpath.FirstNode);
+                contextMenuEnabled[ContextMenuAction.OtherStartDirection] = (activeNode == trainpath.FirstNode);
             }
 
             //not related to end-of-path
-            contextMenuEnabled[contextMenuAction.removePassingPath] = (activeNode.Type == TrainpathNodeType.SidingStart);
-            contextMenuEnabled[contextMenuAction.removeWait] = (activeNode.Type == TrainpathNodeType.Stop);
-            contextMenuEnabled[contextMenuAction.removeUncouple] = (activeNode.Type == TrainpathNodeType.Uncouple);
-            contextMenuEnabled[contextMenuAction.addWait] = (activeTrackLocation.location != null
+            contextMenuEnabled[ContextMenuAction.RemovePassingPath] = (activeNode.Type == TrainpathNodeType.SidingStart);
+            contextMenuEnabled[ContextMenuAction.RemoveWait] = (activeNode.Type == TrainpathNodeType.Stop);
+            contextMenuEnabled[ContextMenuAction.RemoveUncouple] = (activeNode.Type == TrainpathNodeType.Uncouple);
+            contextMenuEnabled[ContextMenuAction.AddWait] = (activeTrackLocation.Location != null
                                                             && !activeTrackLocation.PrevNode.HasSidingPath);
-            contextMenuEnabled[contextMenuAction.addUncouple] = (activeTrackLocation.location != null
+            contextMenuEnabled[ContextMenuAction.AddUncouple] = (activeTrackLocation.Location != null
                                                             && !activeTrackLocation.PrevNode.HasSidingPath);
-            contextMenuEnabled[contextMenuAction.editPoint] = (activeNode.Type == TrainpathNodeType.Stop
+            contextMenuEnabled[ContextMenuAction.EditPoint] = (activeNode.Type == TrainpathNodeType.Stop
                                                             || activeNode.Type == TrainpathNodeType.Uncouple);
 
+            contextMenuEnabled[ContextMenuAction.DrawUntilHere] = true; // can always be done?
+
             //items for which the calculations are more complex.
-            contextMenuEnabled[contextMenuAction.takeOtherExit] = canTakeOtherExit(false);
-            contextMenuEnabled[contextMenuAction.addPassingPath] = canTakeOtherExit(true);
+            contextMenuEnabled[ContextMenuAction.TakeOtherExit] = CanTakeOtherExit(false);
+            contextMenuEnabled[ContextMenuAction.AddPassingPath] = CanTakeOtherExit(true);
 
         }
 
@@ -276,7 +327,7 @@ namespace ORTS.TrackViewer.Editing
         /// Figure out whether it is possible to take other exit from active node
         /// </summary>
         /// <param name="needToReconnect">boolean describing whether a reconnect is needed (instead of just really going somewhere else.</param>
-        bool canTakeOtherExit(bool needToReconnect)
+        bool CanTakeOtherExit(bool needToReconnect)
         {
             TrainpathJunctionNode activeNodeAsJunction = activeNode as TrainpathJunctionNode;
 
@@ -292,7 +343,7 @@ namespace ORTS.TrackViewer.Editing
 
             if (trainpath.HasEnd || needToReconnect)
             {   // see if we can reconnect without affecting the end-point
-                int newTVN = GetOtherExitTVNindex(activeNodeAsJunction);
+                int newTVN = GetOtherExitTvnIndex(activeNodeAsJunction);
                 TrainpathJunctionNode reconnectNode = FindReconnectNode(activeNodeAsJunction, newTVN);
                 return (reconnectNode != null);
             }
@@ -309,51 +360,54 @@ namespace ORTS.TrackViewer.Editing
         public void ExecuteAction(object e)
         {
             trainpath.StoreCurrentPath();
-            contextMenuAction action = (contextMenuAction)e;
+            ContextMenuAction action = (ContextMenuAction)e;
             switch (action)
             {
-                case contextMenuAction.removeEnd:
+                case ContextMenuAction.RemoveEnd:
                     ActionRemoveEndPoint();
                     break;
-                case contextMenuAction.removeWait:
-                case contextMenuAction.removeUncouple:
+                case ContextMenuAction.RemoveWait:
+                case ContextMenuAction.RemoveUncouple:
                     ActionRemoveWaitUncouplePoint();
                     break;
-                case contextMenuAction.removeReverse:
+                case ContextMenuAction.RemoveReverse:
                     ActionRemoveReversePoint();
                     break;
-                case contextMenuAction.removePassingPath:
+                case ContextMenuAction.RemovePassingPath:
                     ActionRemoveSidingPath();
                     break;
-                case contextMenuAction.addEnd:
+                case ContextMenuAction.AddEnd:
                     ActionAddEndPoint();
                     break;
-                case contextMenuAction.addReverse:
+                case ContextMenuAction.AddReverse:
                     ActionAddReversePoint();
                     break;
-                case contextMenuAction.addWait:
+                case ContextMenuAction.AddWait:
                     ActionAddWaitPoint();
                     break;
-                case contextMenuAction.addUncouple:
+                case ContextMenuAction.AddUncouple:
                     ActionAddUncouplePoint();
                     break;
-                case contextMenuAction.takeOtherExit:
+                case ContextMenuAction.TakeOtherExit:
                     ActionTakeOtherExit();
                     break;
-                case contextMenuAction.addPassingPath:
+                case ContextMenuAction.AddPassingPath:
                     ActionAddPassingPath();
                     break;
-                case contextMenuAction.addStart:
+                case ContextMenuAction.AddStart:
                     ActionAddStartPoint();
                     break;
-                case contextMenuAction.removeStart:
+                case ContextMenuAction.RemoveStart:
                     ActionRemoveStartPoint();
                     break;
-                case contextMenuAction.otherStartDirection:
+                case ContextMenuAction.OtherStartDirection:
                     ActionOtherStartDirection();
                     break;
-                case contextMenuAction.editPoint:
+                case ContextMenuAction.EditPoint:
                     ActionEditPointData(activeNode as TrainpathVectorNode);
+                    break;
+                case ContextMenuAction.DrawUntilHere:
+                    ActionDrawUntilHere(activeNode);
                     break;
                 default:
                     break;
@@ -375,24 +429,20 @@ namespace ORTS.TrackViewer.Editing
 
             int numberDrawn = drawPath.Draw(drawArea, trainpath.FirstNode, numberToDraw, drawnNodes, drawnTrackIndexes);
 
-            if (!EditingIsActive)
-            {
-                return;
-            }
-
             if (numberDrawn < numberToDraw)
             {
                 // Apparently we were not able to draw all nodes. Reset maximum number to draw, and possibly add a node
                 numberToDraw = numberDrawn;
                 if (EditingIsActive && allowAddingNodes && !(CurrentNode.Type == TrainpathNodeType.End))
                 {
-                    if (AddAdditionalNode(CurrentNode, true) != null)
-                    {
-                        numberToDraw = numberDrawn + 1;
-                    }
+                    AddAdditionalNode(CurrentNode, true);
                 }
             }
 
+            if (!EditingIsActive)
+            {
+                return;
+            }
 
             if (EnableMouseUpdate)
             {
@@ -402,12 +452,12 @@ namespace ORTS.TrackViewer.Editing
 
             if (activeNode != null)
             {
-                drawArea.DrawSimpleTexture(activeNode.location, "ring", 4f, 3, DrawColors.colorsNormal["activeNode"]);
+                drawArea.DrawSimpleTexture(activeNode.Location, "ring", 8f, 7, DrawColors.colorsNormal["activeNode"]);
 
             }
-            if (activeTrackLocation != null && activeTrackLocation.location != null)
+            if (activeTrackLocation != null && activeTrackLocation.Location != null)
             {
-                drawArea.DrawSimpleTexture(activeTrackLocation.location, "ring", 4f, 3, DrawColors.colorsNormal["nodeCandidate"]);
+                drawArea.DrawSimpleTexture(activeTrackLocation.Location, "ring", 8f, 7, DrawColors.colorsNormal["nodeCandidate"]);
             }
 
         }
@@ -424,7 +474,7 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode closestNode = null;
             foreach (TrainpathNode node in drawnMainNodes)
             {
-                float distanceSquared = CloseToMouse.GetGroundDistanceSquared(node.location, drawArea.mouseLocation);
+                float distanceSquared = CloseToMouse.GetGroundDistanceSquared(node.Location, drawArea.MouseLocation);
                 // by using '<=' instead of '<' we should get the latest one, which overrides earlier ones
                 if (distanceSquared <= closestMouseDistanceSquared)
                 {
@@ -443,33 +493,33 @@ namespace ORTS.TrackViewer.Editing
         void FindActiveTrackLocation(Dictionary<int, List<TrainpathNode>> drawnTrackIndexes)
         {
 
-            uint tni = drawTrackDB.closestTrack.TrackNode.Index;
+            uint tni = drawTrackDB.ClosestTrack.TrackNode.Index;
             int tni_int = (int)tni;
 
             if (!drawnTrackIndexes.ContainsKey(tni_int) && trainpath.FirstNode != null)
             {
-                activeTrackLocation.location = null;
+                activeTrackLocation.Location = null;
                 return;
             }
 
-            int tvsi = drawTrackDB.closestTrack.TrackVectorSectionIndex;
-            float distance = drawTrackDB.closestTrack.DistanceAlongTrack;
+            int tvsi = drawTrackDB.ClosestTrack.TrackVectorSectionIndex;
+            float distance = drawTrackDB.ClosestTrack.DistanceAlongTrack;
 
             // find location
             WorldLocation location = drawTrackDB.FindLocation(tni, tvsi, distance, true);
 
             // fill the properties of the activeTrackLocation 
-            activeTrackLocation.TVNIndex = tni_int;
-            activeTrackLocation.trackVectorSectionIndex = tvsi;
-            activeTrackLocation.trackSectionOffset = distance;
-            activeTrackLocation.location = location;
+            activeTrackLocation.TvnIndex = tni_int;
+            activeTrackLocation.TrackVectorSectionIndex = tvsi;
+            activeTrackLocation.TrackSectionOffset = distance;
+            activeTrackLocation.Location = location;
 
             if (trainpath.FirstNode != null)
             {   //Only in case this is not the first path.
                 TrainpathNode prevNode = FindPrevNodeOfActiveTrack(drawnTrackIndexes[tni_int]);
                 if (prevNode == null)
                 {
-                    activeTrackLocation.location = null;
+                    activeTrackLocation.Location = null;
                 }
                 else
                 {
@@ -525,9 +575,9 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode prevNode = firstNodeToRemove.PrevNode;
             prevNode.NextMainNode = null;
             prevNode.NextSidingNode = null; // should not be needed
-            prevNode.NextSidingTVNIndex = 0;
+            prevNode.NextSidingTvnIndex = 0;
             // Since we already know the TVN, simply add a node (meaning removing the end will extend the path. 
-            AddAdditionalNode(prevNode, prevNode.NextMainTVNIndex, true);
+            AddAdditionalNode(prevNode, prevNode.NextMainTvnIndex, true);
         }
 
         /// <summary>
@@ -603,6 +653,7 @@ namespace ORTS.TrackViewer.Editing
             trainpath.FirstNode = new TrainpathVectorNode(activeTrackLocation);
             trainpath.FirstNode.Type = TrainpathNodeType.Start;
             AddAdditionalNode(trainpath.FirstNode, true);
+            numberToDraw++; //make sure the second point is drawn.
             oneTimeDisallowAdd = false; // we do want to add an extra node if possible
         }
 
@@ -629,7 +680,7 @@ namespace ORTS.TrackViewer.Editing
             newNode.Type = TrainpathNodeType.Reverse;
             lastNode.NextMainNode = newNode;
             lastNode.NextSidingNode = null; // should not be needed
-            lastNode.NextMainTVNIndex = newNode.TVNIndex;
+            lastNode.NextMainTvnIndex = newNode.TvnIndex;
             newNode.PrevNode = lastNode;
 
             newNode.ForwardOriented = !newNode.ForwardOriented; // reverse because, well, this is a reverse point.
@@ -724,22 +775,28 @@ namespace ORTS.TrackViewer.Editing
         void ActionTakeOtherExit()
         {
             TrainpathJunctionNode junctionNode = activeNode as TrainpathJunctionNode;
-            int newTVNindex = GetOtherExitTVNindex(junctionNode);
-            TrainpathJunctionNode reconnectNode = FindReconnectNode(junctionNode, newTVNindex);
+            int newTvnIndex = GetOtherExitTvnIndex(junctionNode);
+            TrainpathJunctionNode reconnectNode = FindReconnectNode(junctionNode, newTvnIndex);
 
+            
             if (reconnectNode == null)
             {   //really take other exit and discard rest of path
-                junctionNode.NextMainTVNIndex = newTVNindex;
+                junctionNode.NextMainTvnIndex = newTvnIndex;
                 RemoveNodeAndAllFollowing(activeNode.NextMainNode);
                 return;
             }
 
+            //correct NumberToDraw with nodes we will remove
+            int numberOfNodesInOldTrack = GetNodeNumber(reconnectNode) - GetNodeNumber(activeNode);
+            numberToDraw -= numberOfNodesInOldTrack;
+
             //we can reconnect, so create a path to reconnection point
-            TrainpathNode lastNodeNewPath = CreatePartialPath(activeNode, newTVNindex, reconnectNode, true);
+            TrainpathNode lastNodeNewPath = CreatePartialPath(activeNode, newTvnIndex, reconnectNode, true);
 
             //Reconnect.
             lastNodeNewPath.NextMainNode = reconnectNode;
             reconnectNode.PrevNode = lastNodeNewPath;
+
         }
 
         /// <summary>
@@ -748,12 +805,14 @@ namespace ORTS.TrackViewer.Editing
         void ActionAddPassingPath()
         {
             TrainpathJunctionNode junctionNode = activeNode as TrainpathJunctionNode;
-            int newTVNindex = GetOtherExitTVNindex(junctionNode);
-            TrainpathJunctionNode reconnectNode = FindReconnectNode(junctionNode, newTVNindex);
+            int newTvnIndex = GetOtherExitTvnIndex(junctionNode);
+            TrainpathJunctionNode reconnectNode = FindReconnectNode(junctionNode, newTvnIndex);
             //we have checked that we can reconnect before, so reconnectNode cannot be zero.
-
+            
             activeNode.Type = TrainpathNodeType.SidingStart;
-            TrainpathNode lastNodeSidingPath = CreatePartialPath(activeNode, newTVNindex, reconnectNode, false);
+            int oldNumberToDraw = numberToDraw;
+            TrainpathNode lastNodeSidingPath = CreatePartialPath(activeNode, newTvnIndex, reconnectNode, false);
+            numberToDraw = oldNumberToDraw;
 
             //reconnect. At this point, newNode is already the same node as reconnectNode. We will discard it
             lastNodeSidingPath.NextSidingNode = reconnectNode;
@@ -761,26 +820,39 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
+        /// Draw the path only until the given node, and not further.
+        /// </summary>
+        /// <param name="node">Node to draw until</param>
+        void ActionDrawUntilHere(TrainpathNode node)
+        {
+            int newNumberToDraw = GetNodeNumber(node);
+            if (newNumberToDraw >= 0)
+            {
+                numberToDraw = newNumberToDraw;
+            }
+        }
+
+        /// <summary>
         /// Create a partial path from the current node, along the new track vector index, until we can reconnect again
         /// </summary>
         /// <param name="currentNode">Starting place of the new partial path</param>
-        /// <param name="newTVNindex">Index of the new track vector node along which the path starts</param>
+        /// <param name="newTvnIndex">Index of the new track vector node along which the path starts</param>
         /// <param name="reconnectNode">Node at we will reconnect to current path again</param>
-        /// <param name="IsMainPath">Do we add the node to the main path or not</param>
+        /// <param name="isMainPath">Do we add the node to the main path or not</param>
         /// <returns>The last node on the partial path, just before the reconnect node.</returns>
-        TrainpathNode CreatePartialPath(TrainpathNode currentNode, int newTVNindex, TrainpathJunctionNode reconnectNode, bool IsMainPath)
+        TrainpathNode CreatePartialPath(TrainpathNode currentNode, int newTvnIndex, TrainpathJunctionNode reconnectNode, bool isMainPath)
         {
-            TrainpathNode newNode = AddAdditionalNode(currentNode, newTVNindex, IsMainPath);
+            TrainpathNode newNode = AddAdditionalNode(currentNode, newTvnIndex, isMainPath);
             do
             {
                 TrainpathJunctionNode newNodeAsJunction = newNode as TrainpathJunctionNode;
-                if (newNodeAsJunction != null && (newNodeAsJunction.junctionIndex == reconnectNode.junctionIndex))
+                if (newNodeAsJunction != null && (newNodeAsJunction.JunctionIndex == reconnectNode.JunctionIndex))
                 {
                     //we have reached the reconnection point
                     break;
                 }
                 currentNode = newNode;
-                newNode = AddAdditionalNode(currentNode, IsMainPath);
+                newNode = AddAdditionalNode(currentNode, isMainPath);
 
             } while (newNode != null); // if we get here, something is wrong, because we checked we could reconnect
 
@@ -802,13 +874,12 @@ namespace ORTS.TrackViewer.Editing
 
             prevNode.NextMainNode = newNode;
             prevNode.NextSidingNode = null; // should not be needed
-            prevNode.NextMainTVNIndex = newNode.TVNIndex;
+            prevNode.NextMainTvnIndex = newNode.TvnIndex;
             newNode.PrevNode = prevNode;
 
             newNode.NextMainNode = nextNode;
             newNode.NextSidingNode = null; // should not be needed
             nextNode.PrevNode = newNode;
-
 
             //remove possible ambiguity node 
             if (prevNode.Type == TrainpathNodeType.Other && prevNode is TrainpathVectorNode)
@@ -824,7 +895,8 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
-        /// Remove a intermediate vector node. Possibly add a ambiguity node if needed
+        /// Remove a intermediate vector node. Possibly add a ambiguity node if needed.
+        /// Also the 'NumberToDraw' will be updated.
         /// </summary>
         /// <param name="curNode">Node to be removed</param>
         void RemoveIntermediatePoint(TrainpathVectorNode curNode)
@@ -832,11 +904,12 @@ namespace ORTS.TrackViewer.Editing
             TrainpathNode prevNode = curNode.PrevNode;
             prevNode.NextMainNode = curNode.NextMainNode;
             prevNode.NextSidingNode = null; // should not be needed
-            //lastNodeSidingPath.NextMainTVNIndex should be the same still
+            //lastNodeSidingPath.NextMainTvnIndex should be the same still
             if (prevNode.NextMainNode != null)
             {   // there might not be a next node.
                 prevNode.NextMainNode.PrevNode = prevNode;
             }
+            numberToDraw--;
 
             //Check if we need to add an ambiguity node
             if ((prevNode is TrainpathJunctionNode) && (prevNode.NextMainNode is TrainpathJunctionNode))
@@ -844,7 +917,7 @@ namespace ORTS.TrackViewer.Editing
                 TrainpathJunctionNode prevJunctionNode = prevNode as TrainpathJunctionNode;
                 if (IsSimpleSidingStart(prevJunctionNode))
                 {
-                    TrainpathVectorNode halfwayNode = CreateHalfWayNode(prevJunctionNode, prevJunctionNode.NextMainTVNIndex);
+                    TrainpathVectorNode halfwayNode = CreateHalfWayNode(prevJunctionNode, prevJunctionNode.NextMainTvnIndex);
                     halfwayNode.PrevNode = prevNode;
                     AddIntermediateNode(halfwayNode);
                 }
@@ -852,12 +925,12 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
-        /// Add an additional node, where the next track node is not yet given
+        /// Add an additional node, where the next track node is not yet given. Also the 'NumberToDraw' will be updated.
         /// </summary>
         /// <param name="lastNode">currently last node</param>
-        /// <param name="IsMainPath">Do we add the node to the main path or not</param>
+        /// <param name="isMainPath">Do we add the node to the main path or not</param>
         /// <returns>The newly created (unlinked) path node</returns>
-        public TrainpathNode AddAdditionalNode(TrainpathNode lastNode, bool IsMainPath)
+        public TrainpathNode AddAdditionalNode(TrainpathNode lastNode, bool isMainPath)
         {
             if (oneTimeDisallowAdd == true)
             {
@@ -867,120 +940,122 @@ namespace ORTS.TrackViewer.Editing
 
             if (lastNode is TrainpathVectorNode)
             {
-                return AddAdditionalNode(lastNode, (lastNode as TrainpathVectorNode).TVNIndex, IsMainPath);
+                return AddAdditionalNode(lastNode, (lastNode as TrainpathVectorNode).TvnIndex, isMainPath);
             }
 
             TrainpathJunctionNode junctionNode = lastNode as TrainpathJunctionNode;
-            TrackNode trackNode = trackNodes[junctionNode.junctionIndex];
+            TrackNode trackNode = trackNodes[junctionNode.JunctionIndex];
             if (trackNode.TrEndNode) return null;  // if it happens to be the end of a path, forget about it.
 
             if (junctionNode.IsFacingPoint)
             {
-                return AddAdditionalNode(lastNode, trackNode.MainTVN(), IsMainPath);
+                return AddAdditionalNode(lastNode, trackNode.MainTvn(), isMainPath);
             }
             else
             {
-                return AddAdditionalNode(lastNode, trackNode.TrailingTVN(), IsMainPath);
+                return AddAdditionalNode(lastNode, trackNode.TrailingTvn(), isMainPath);
             }
         }
 
         /// <summary>
-        /// Add an additional node starting at the given node, following the TVNIndex,
-        /// but take care of a possible need for disambiguity
+        /// Add an additional node starting at the given node, following the TvnIndex,
+        /// but take care of a possible need for disambiguity. Also the 'NumberToDraw' will be updated.
         /// </summary>
         /// <param name="lastNode">Node after which a new node needs to be added</param>
-        /// <param name="TVNIndex">TrackVectorNode index of the track the path needs to be on</param>
-        /// <param name="IsMainPath">Do we add the node to the main path or not</param>
+        /// <param name="TvnIndex">TrackVectorNode index of the track the path needs to be on</param>
+        /// <param name="isMainPath">Do we add the node to the main path or not</param>
         /// <returns>The newly created path node</returns>
-        TrainpathNode AddAdditionalNode(TrainpathNode lastNode, int TVNIndex, bool IsMainPath)
+        TrainpathNode AddAdditionalNode(TrainpathNode lastNode, int TvnIndex, bool isMainPath)
         {
             if (lastNode is TrainpathVectorNode)
             {
-                return AddAdditionalJunctionNode(lastNode, (lastNode as TrainpathVectorNode).TVNIndex, IsMainPath);
+                return AddAdditionalJunctionNode(lastNode, (lastNode as TrainpathVectorNode).TvnIndex, isMainPath);
             }
 
             TrainpathJunctionNode junctionNode = lastNode as TrainpathJunctionNode;
             if (IsSimpleSidingStart(junctionNode))
             {   // start of a simple siding. So the next node should be a node to remove ambiguity.
-                TrainpathVectorNode halfwayNode = CreateHalfWayNode(junctionNode, TVNIndex);
-                return AddAdditionalVectorNode(junctionNode, halfwayNode, IsMainPath);
+                TrainpathVectorNode halfwayNode = CreateHalfWayNode(junctionNode, TvnIndex);
+                return AddAdditionalVectorNode(junctionNode, halfwayNode, isMainPath);
             }
             else
             {
-                return AddAdditionalJunctionNode(junctionNode, TVNIndex, IsMainPath);
+                return AddAdditionalJunctionNode(junctionNode, TvnIndex, isMainPath);
             }
         }
 
         /// <summary>
         /// Add an additional node, from the current last node along the next TrackNodeVector (given by index)
-        /// AdditionalNode will always be a activeNodeAsJunction.
+        /// The added node will always be a junction node. Also the 'NumberToDraw' will be updated.
         /// </summary>
         /// <param name="lastNode">Currently last node of path</param>
-        /// <param name="nextTVNIndex">TrackNodeVector index along which to place the track</param>
-        /// <param name="IsMainPath">Are we adding a node on the main path (alternative is passing path)</param>
+        /// <param name="nextTvnIndex">TrackNodeVector index along which to place the track</param>
+        /// <param name="isMainPath">Are we adding a node on the main path (alternative is passing path)</param>
         /// <returns>The newly created junction path node</returns>
-        TrainpathJunctionNode AddAdditionalJunctionNode(TrainpathNode lastNode, int nextTVNIndex, bool IsMainPath)
+        TrainpathJunctionNode AddAdditionalJunctionNode(TrainpathNode lastNode, int nextTvnIndex, bool isMainPath)
         {
             // we add a new activeNodeAsJunction
             TrainpathJunctionNode newNode = new TrainpathJunctionNode(lastNode);
 
-            TrackNode linkingTrackNode = trackNodes[nextTVNIndex];
+            TrackNode linkingTrackNode = trackNodes[nextTvnIndex];
             if (linkingTrackNode == null)
             {
                 return null; // apparently there is some issue in the track.
             }
 
-            newNode.junctionIndex = GetNextJunctionIndex(lastNode, nextTVNIndex);
-            TrackNode newJunctionTrackNode = trackNodes[newNode.junctionIndex];
-            newNode.location = DrawTrackDB.UiDLocation(newJunctionTrackNode.UiD);
+            newNode.JunctionIndex = GetNextJunctionIndex(lastNode, nextTvnIndex);
+            TrackNode newJunctionTrackNode = trackNodes[newNode.JunctionIndex];
+            newNode.Location = DrawTrackDB.UidLocation(newJunctionTrackNode.UiD);
 
             // simple linking
-            if (IsMainPath)
+            if (isMainPath)
             {
-                lastNode.NextMainTVNIndex = nextTVNIndex;
+                lastNode.NextMainTvnIndex = nextTvnIndex;
                 lastNode.NextMainNode = newNode;
                 newNode.PrevNode = lastNode;
             }
             else
             {
-                lastNode.NextSidingTVNIndex = nextTVNIndex;
+                lastNode.NextSidingTvnIndex = nextTvnIndex;
                 lastNode.NextSidingNode = newNode;
             }
 
-            newNode.SetFacingPoint(GetLeavingTVNIndex(newNode.junctionIndex, nextTVNIndex)); //setfacing point works on nextmainTVNindex
-            newNode.determineOrientation(lastNode, nextTVNIndex);
+            newNode.SetFacingPoint(GetLeavingTvnIndex(newNode.JunctionIndex, nextTvnIndex)); //setfacing point works on nextmainTvnIndex
+            newNode.DetermineOrientation(lastNode, nextTvnIndex);
 
+            numberToDraw++; // We want to keep the path drawn to the same node as before adding a node
             return newNode;
         }
 
         /// <summary>
-        /// Add a new vector path node at the location of nodeCandidate.
+        /// Add a new vector path node at the location of nodeCandidate. Also the 'NumberToDraw' will be updated.
         /// </summary>
         /// <param name="lastNode">node that will be predecessor of the new nodeCandidate</param>
         /// <param name="nodeCandidate">partial trainpath vector node describing the current mouse location</param>
-        /// <param name="IsMainPath">Do we add the node to the main path or not</param>
+        /// <param name="isMainPath">Do we add the node to the main path or not</param>
         /// <returns>The newly created vector node</returns>
-        TrainpathVectorNode AddAdditionalVectorNode(TrainpathNode lastNode, TrainpathVectorNode nodeCandidate, bool IsMainPath)
+        TrainpathVectorNode AddAdditionalVectorNode(TrainpathNode lastNode, TrainpathVectorNode nodeCandidate, bool isMainPath)
         {
             // we add a new activeNodeAsJunction
             TrainpathVectorNode newNode = new TrainpathVectorNode(nodeCandidate);
 
-            newNode.determineOrientation(lastNode, newNode.TVNIndex);
+            newNode.DetermineOrientation(lastNode, newNode.TvnIndex);
 
             // simple linking
-            if (IsMainPath)
+            if (isMainPath)
             {
-                lastNode.NextMainTVNIndex = newNode.NextMainTVNIndex;
+                lastNode.NextMainTvnIndex = newNode.NextMainTvnIndex;
                 lastNode.NextMainNode = newNode;
                 newNode.PrevNode = lastNode;
             }
             else
             {
-                lastNode.NextSidingTVNIndex = newNode.NextMainTVNIndex;
-                newNode.NextSidingTVNIndex = newNode.NextMainTVNIndex;
+                lastNode.NextSidingTvnIndex = newNode.NextMainTvnIndex;
+                newNode.NextSidingTvnIndex = newNode.NextMainTvnIndex;
                 lastNode.NextSidingNode = newNode;
             }
 
+            numberToDraw++; // We want to keep the path drawn to the same node as before adding a node
             return newNode;
         }
 
@@ -989,51 +1064,51 @@ namespace ORTS.TrackViewer.Editing
         /// and the next junction. Needed specially for disambiguity.
         /// </summary>
         /// <param name="junctionNode">The junction node where we start</param>
-        /// <param name="TVNIndex">The TrackVectorNode index for the path</param>
+        /// <param name="TvnIndex">The TrackVectorNode index for the path</param>
         /// <returns>An unlinked vectorNode at the midpoint.</returns>
-        TrainpathVectorNode CreateHalfWayNode(TrainpathJunctionNode junctionNode, int TVNIndex)
+        TrainpathVectorNode CreateHalfWayNode(TrainpathJunctionNode junctionNode, int TvnIndex)
         {   // The idea here is to use all the code in traveller to make life easier.
 
-            Traveller traveller = junctionNode.placeTravellerAfterJunction(TVNIndex);
+            Traveller traveller = junctionNode.PlaceTravellerAfterJunction(TvnIndex);
 
-            TrackNode nextJunctionTrackNode = trackNodes[GetNextJunctionIndex(junctionNode, TVNIndex)];
-            WorldLocation nextJunctionLocation = DrawTrackDB.UiDLocation(nextJunctionTrackNode.UiD);
+            TrackNode nextJunctionTrackNode = trackNodes[GetNextJunctionIndex(junctionNode, TvnIndex)];
+            WorldLocation nextJunctionLocation = DrawTrackDB.UidLocation(nextJunctionTrackNode.UiD);
 
             //move the traveller halfway through the next vector section
             float distanceToTravel = traveller.DistanceTo(nextJunctionLocation) / 2;
             traveller.Move(distanceToTravel);
 
             TrainpathVectorNode halfwayNode = new TrainpathVectorNode(junctionNode, traveller);
-            halfwayNode.determineOrientation(junctionNode, TVNIndex);
+            halfwayNode.DetermineOrientation(junctionNode, TvnIndex);
 
             return halfwayNode;
         }
 
         /// <summary>
         /// Determine whether we can reconnect from the current junction node to the main track, if we take 
-        /// the new TVNindex
+        /// the new TvnIndex
         /// </summary>
         /// <param name="startJunctionNode">junction node (which is a facing point) that is the start of an alternative path</param>
-        /// <param name="newTVNindex">index of the track vector node that is intended to be used for reconnection</param>
+        /// <param name="newTvnIndex">index of the track vector node that is intended to be used for reconnection</param>
         /// <returns></returns>
-        TrainpathJunctionNode FindReconnectNode(TrainpathJunctionNode startJunctionNode, int newTVNindex)
+        TrainpathJunctionNode FindReconnectNode(TrainpathJunctionNode startJunctionNode, int newTvnIndex)
         {
             //First find the list of nodes we might be able to reconnect to. They should all be junction nodes
             List<TrainpathJunctionNode> reconnectNodes = FindReconnectNodeCandidates(startJunctionNode);
 
-            //next we need to follow the new path from the newTVNindex, and see whether we can reconnect
-            int junctionIndex = startJunctionNode.junctionIndex;
-            int TVNindex = newTVNindex;
-            int junctionsToCheck = 10;
+            //next we need to follow the new path from the newTvnIndex, and see whether we can reconnect
+            int junctionIndex = startJunctionNode.JunctionIndex;
+            int TvnIndex = newTvnIndex;
+            int junctionsToCheck = maxNumberNodesToCheckForReconnect;
             while (junctionsToCheck > 0)
             {
-                int nextJunctionIndex = GetNextJunctionIndex(junctionIndex, TVNindex);
+                int nextJunctionIndex = GetNextJunctionIndex(junctionIndex, TvnIndex);
                 foreach (TrainpathJunctionNode reconnectNode in reconnectNodes)
                 {
-                    if (reconnectNode.junctionIndex == nextJunctionIndex)
+                    if (reconnectNode.JunctionIndex == nextJunctionIndex)
                     {   // we found a link, but we still need to check if we don't connect from the trailing side
                         TrackNode junctionTrackNode = trackNodes[nextJunctionIndex];
-                        if (TVNindex == junctionTrackNode.TrailingTVN())
+                        if (TvnIndex == junctionTrackNode.TrailingTvn())
                         {   // too bad, we reconnect from the wrong side. It also does not make sense to continue searching
                             return null;
                         }
@@ -1044,8 +1119,8 @@ namespace ORTS.TrackViewer.Editing
                     }
                 }
                 junctionIndex = nextJunctionIndex;
-                TVNindex = GetLeavingTVNIndex(junctionIndex, TVNindex);
-                if (TVNindex < 0)
+                TvnIndex = GetLeavingTvnIndex(junctionIndex, TvnIndex);
+                if (TvnIndex < 0)
                 {
                     return null;
                 }
@@ -1095,22 +1170,92 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
+        /// Once the editing becomes active for this path, we make sure the path is 'clean' according to our standards
+        /// </summary>
+        void OnActiveOrPathChanged()
+        {
+            if (!EditingIsActive) { return; }
+            SnapAllJunctionNodes();
+            AddMissingAmbiguityNodes();
+        }
+
+        /// <summary>
+        /// Make sure the junction nodes of have the exact location of the junctions in the track database.
+        /// This is to make sure changes in the track database are taken over in the path
+        /// </summary>
+        void SnapAllJunctionNodes()
+        {
+            TrainpathNode mainNode = trainpath.FirstNode;
+            while (mainNode != null)
+            {
+                //siding path. For this routine we do not care if junctions are done twice
+                TrainpathNode sidingNode = mainNode.NextSidingNode;
+                while (sidingNode != null)
+                {
+                    if (sidingNode is TrainpathJunctionNode && !sidingNode.IsBroken)
+                    {
+                        sidingNode.Location = DrawTrackDB.UidLocation(trackDB.TrackNodes[(sidingNode as TrainpathJunctionNode).JunctionIndex].UiD);
+                    }
+                    sidingNode = sidingNode.NextSidingNode;
+                }
+
+                
+                if (mainNode is TrainpathJunctionNode && !mainNode.IsBroken)
+                {
+                    mainNode.Location = DrawTrackDB.UidLocation(trackDB.TrackNodes[(mainNode as TrainpathJunctionNode).JunctionIndex].UiD);
+                }
+                mainNode = mainNode.NextMainNode;
+            }
+        }
+
+
+        /// <summary>
+        /// Not all paths have enough ambiguity nodes to distinghuish between two possible paths. Here we add them
+        /// </summary>
+        void AddMissingAmbiguityNodes()
+        {
+            //todo
+        }
+
+        /// <summary>
         /// From the current pathnode and the linking tracknode, fin the junctionIndex of the next junction (or possibly end-point)
         /// </summary>
         /// <param name="node">The current node</param>
         /// <param name="linkingTrackNodeIndex">The index of the tracknode leaving the node</param>
         /// <returns>The index of the junction index at the end of the track (as seen from the node)</returns>
-        private int GetNextJunctionIndex(TrainpathNode node, int linkingTrackNodeIndex)
+        int GetNextJunctionIndex(TrainpathNode node, int linkingTrackNodeIndex)
         {
             if (node is TrainpathJunctionNode)
             {
-                return GetNextJunctionIndex((node as TrainpathJunctionNode).junctionIndex, linkingTrackNodeIndex);
+                return GetNextJunctionIndex((node as TrainpathJunctionNode).JunctionIndex, linkingTrackNodeIndex);
             }
 
             TrackNode linkingTrackNode = trackNodes[linkingTrackNodeIndex];
             return (node as TrainpathVectorNode).ForwardOriented
                 ? linkingTrackNode.JunctionIndexAtEnd()
                 : linkingTrackNode.JunctionIndexAtStart();
+        }
+
+        /// <summary>
+        /// Calculate the number of this node in the total path. FirstNode is 1. The node needs to be on mainpath,
+        /// otherwise -1 will be returned.
+        /// </summary>
+        /// <param name="node">Node for which to calculate the number</param>
+        /// <returns>The sequential number of the node in the main path. -1 in case node is not on main path.</returns>
+        int GetNodeNumber(TrainpathNode node)
+        {
+            int numberFound = 1;
+            TrainpathNode mainNode = trainpath.FirstNode;
+            while (mainNode != null && mainNode != node)
+            {
+                numberFound++;
+                mainNode = mainNode.NextMainNode;
+            }
+            if (mainNode == null)
+            {
+                return -1;
+            }
+            return numberFound;
         }
 
         /// <summary>
@@ -1139,20 +1284,20 @@ namespace ORTS.TrackViewer.Editing
         /// When having a choice (in case of facing point), it will take the main node.
         /// </summary>
         /// <param name="junctionIndex">index of junction tracknode</param>
-        /// <param name="incomingTVNindex">index of incoming vector node</param>
+        /// <param name="incomingTvnIndex">index of incoming vector node</param>
         /// <returns>index of the leaving vector node or -1 if none found.</returns>
-        int GetLeavingTVNIndex(int junctionIndex, int incomingTVNindex)
+        int GetLeavingTvnIndex(int junctionIndex, int incomingTvnIndex)
         {
             TrackNode junctionTrackNode = trackNodes[junctionIndex];
             if (junctionTrackNode.TrEndNode)
             {
                 return -1;
             }
-            if (incomingTVNindex == junctionTrackNode.TrailingTVN())
+            if (incomingTvnIndex == junctionTrackNode.TrailingTvn())
             {
-                return junctionTrackNode.MainTVN();
+                return junctionTrackNode.MainTvn();
             }
-            return junctionTrackNode.TrailingTVN();
+            return junctionTrackNode.TrailingTvn();
         }
 
         /// <summary>
@@ -1160,16 +1305,16 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="junctionNode">Node for which to find the other exit</param>
         /// <returns>The index of the other leaving vector node.</returns>
-        int GetOtherExitTVNindex(TrainpathJunctionNode junctionNode)
+        int GetOtherExitTvnIndex(TrainpathJunctionNode junctionNode)
         {
-            TrackNode trackNode = trackNodes[junctionNode.junctionIndex];
-            if (junctionNode.NextMainTVNIndex == trackNode.MainTVN())
+            TrackNode trackNode = trackNodes[junctionNode.JunctionIndex];
+            if (junctionNode.NextMainTvnIndex == trackNode.MainTvn())
             {
-                return trackNode.SidingTVN();
+                return trackNode.SidingTvn();
             }
             else
             {
-                return trackNode.MainTVN();
+                return trackNode.MainTvn();
             }
         }
 
@@ -1181,9 +1326,9 @@ namespace ORTS.TrackViewer.Editing
         {
             if (junctionNode.IsFacingPoint)
             {
-                TrackNode trackNode = trackNodes[junctionNode.junctionIndex];
-                return (GetNextJunctionIndex(junctionNode, trackNode.MainTVN()) ==
-                        GetNextJunctionIndex(junctionNode, trackNode.SidingTVN()));
+                TrackNode trackNode = trackNodes[junctionNode.JunctionIndex];
+                return (GetNextJunctionIndex(junctionNode, trackNode.MainTvn()) ==
+                        GetNextJunctionIndex(junctionNode, trackNode.SidingTvn()));
             }
             else
             {
@@ -1196,12 +1341,12 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void EditMetaData()
         {
-            string[] metadata = { trainpath.PathID, trainpath.PathName, trainpath.PathStart, trainpath.PathEnd };
+            string[] metadata = { trainpath.PathId, trainpath.PathName, trainpath.PathStart, trainpath.PathEnd };
             PathMetadataDialog metadataDialog = new PathMetadataDialog(metadata);
             if (metadataDialog.ShowDialog() == true)
             {
                 metadata = metadataDialog.GetMetadata();
-                trainpath.PathID = metadata[0];
+                trainpath.PathId = metadata[0];
                 trainpath.PathName = metadata[1];
                 trainpath.PathStart = metadata[2];
                 trainpath.PathEnd = metadata[3];
@@ -1214,14 +1359,6 @@ namespace ORTS.TrackViewer.Editing
         public void SavePath()
         {
             SavePatFile.WritePatFile(trainpath);
-        }
-
-        /// <summary>
-        /// Create a new empty path. Old path will be deleted.
-        /// </summary>
-        public void NewPath()
-        {
-            trainpath = new TrainpathWithHistory(trackDB, tsectionDat);
         }
 
         /// <summary>
@@ -1238,6 +1375,7 @@ namespace ORTS.TrackViewer.Editing
             {
                 allowAddingNodes = false;
             }
+            editorContextMenu.CloseContextMenu();
         }
 
         /// <summary>
@@ -1247,6 +1385,7 @@ namespace ORTS.TrackViewer.Editing
         {
             allowAddingNodes = false;
             numberToDraw = int.MaxValue;
+            editorContextMenu.CloseContextMenu();
         }
 
         /// <summary>
@@ -1255,6 +1394,7 @@ namespace ORTS.TrackViewer.Editing
         public void ReducePath()
         {
             if (--numberToDraw < 1) numberToDraw = 1;
+            editorContextMenu.CloseContextMenu();
         }
 
         /// <summary>
@@ -1263,6 +1403,7 @@ namespace ORTS.TrackViewer.Editing
         public void ReducePathFull()
         {
             numberToDraw = 1;
+            editorContextMenu.CloseContextMenu();
         }
 
         /// <summary>
@@ -1271,6 +1412,7 @@ namespace ORTS.TrackViewer.Editing
         public void Undo()
         {
             trainpath.Undo();
+            editorContextMenu.CloseContextMenu();
         }
 
         /// <summary>
@@ -1279,24 +1421,68 @@ namespace ORTS.TrackViewer.Editing
         public void Redo()
         {
             trainpath.Redo();
+            editorContextMenu.CloseContextMenu();
         }
     }
 
     /// <summary>
     /// Extension methods to give TVN index (trackVectorNode index) for a junction/switch or for a vector node
     /// </summary>
-    public static class ExtensionMethods
+    public static class TrackExtensionMethods
     {
+        /// <summary>The TrPin index of the main route of a junction node</summary>
+        private static uint[] mainRouteIndex;
+        /// <summary>The TrPin index of the siding route of a junction node</summary>
+        private static uint[] sidingRouteIndex;
+
+        /// <summary>
+        /// Find the indices we need to use for TrPins in the various junction nodes in case we want to use either main
+        /// or siding path. That information is available in the trackshapes in the tsectionDat.
+        /// </summary>
+        /// <param name="trackNodes">The tracknodes</param>
+        /// <param name="tsectionDat">Track section Data</param>
+        public static void StoreMainRoutes(TrackNode[] trackNodes, TSectionDatFile tsectionDat)
+        {
+            mainRouteIndex = new uint[trackNodes.Length];
+            sidingRouteIndex = new uint[trackNodes.Length];
+            for (int tni = 0; tni < trackNodes.Length; tni++)
+            {
+                TrackNode tn = trackNodes[tni];
+                if (tn == null) continue;
+                if (tn.TrJunctionNode == null) continue;
+                uint mainRoute = 0;
+
+                uint trackShapeIndex = tn.TrJunctionNode.ShapeIndex;
+                try
+                {
+                    TrackShape trackShape = tsectionDat.TrackShapes[trackShapeIndex];
+                    mainRoute = trackShape.MainRoute;
+                }
+                catch { }
+
+                mainRouteIndex[tni] = tn.Inpins + mainRoute;
+                if (mainRoute == 0)
+                {   // sidingRouteIndex is simply the next
+                    sidingRouteIndex[tni] = tn.Inpins + 1;
+                }
+                else
+                {   // sidingRouteIndex is the first
+                    sidingRouteIndex[tni] = tn.Inpins;
+                }
+            }
+        }
+
         /// <summary>Return the vector node index of the trailing path leaving this junction</summary>
-        public static int TrailingTVN(this TrackNode trackNode) { return trackNode.TrPins[0].Link; }
+        public static int TrailingTvn(this TrackNode trackNode) { return trackNode.TrPins[0].Link; }
         /// <summary>Return the vector node index of the main path leaving this junction (main being defined as the first one defined)</summary>
-        public static int MainTVN(this TrackNode trackNode) { return trackNode.TrPins[1].Link; }
+        public static int MainTvn(this TrackNode trackNode) { return trackNode.TrPins[mainRouteIndex[trackNode.Index]].Link; }
         /// <summary>Return the vector node index of the siding path leaving this junction (siding being defined as the second one defined)</summary>
-        public static int SidingTVN(this TrackNode trackNode) { return trackNode.TrPins[2].Link; }
+        public static int SidingTvn(this TrackNode trackNode) { return trackNode.TrPins[sidingRouteIndex[trackNode.Index]].Link; }
 
         /// <summary>Return the vector node index at the begin of this vector node</summary>
         public static int JunctionIndexAtStart(this TrackNode trackNode) { return trackNode.TrPins[0].Link; }
         /// <summary>Return the vector node index at the end of this vector node</summary>
         public static int JunctionIndexAtEnd(this TrackNode trackNode) { return trackNode.TrPins[1].Link; }
     }
+
 }

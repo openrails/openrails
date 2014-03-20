@@ -26,6 +26,7 @@
 //          if we are going to write own routines, then use stringbuilder
 //
 // Release issues 
+//      Crash on anti-alias?
 //      Always: 1. Update SVN. 
 //              2. look at all to-dos and remove temporary changes. 
 //              3. update version. 
@@ -102,14 +103,11 @@ namespace ORTS.TrackViewer
     /// </summary>
     public class TrackViewer : Microsoft.Xna.Framework.Game
     {
+        #region Public members
         /// <summary>String showing the version of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/03/13";
+        public readonly static string TrackViewerVersion = "2014/03/20";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
-             
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
         public Folder InstallFolder { get; private set; }
         /// <summary>List of available routes (in the install directory)</summary>
@@ -117,19 +115,30 @@ namespace ORTS.TrackViewer
         /// <summary>List of available paths in the current route</summary>
         public List<Path> Paths { get; private set; }
         /// <summary>Route, ie with a path c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's</summary>
-        public Route CurrentRoute { get; private set; } 
+        public Route CurrentRoute { get; private set; }
         /// <summary>Route that was used last time</summary>
         private Route DefaultRoute;
         /// <summary>Width of the drawing screen in pixels</summary>
         public int ScreenW { get; private set; }
         /// <summary>Height of the drawing screen in pixels</summary>
         public int ScreenH { get; private set; }
-
         /// <summary>(Draw)trackDB, that also contains the track data base and the track section data</summary>
-        public DrawTrackDB drawTrackDB { get; private set; }
-
+        public DrawTrackDB DrawTrackDB { get; private set; }
         /// <summary>Main draw area</summary>
-        public DrawArea drawArea { get; private set; }
+        public DrawArea DrawArea { get; private set; }
+        /// <summary>The frame rate</summary>
+        public SmoothedData FrameRate { get; private set; }
+
+        /// <summary>The Path editor</summary>
+        public PathEditor PathEditor { get; private set; }
+        /// <summary>The routines to draw the .pat file</summary>
+        public DrawPATfile DrawPATfile { get; private set; }
+
+        #endregion
+        #region Private members
+        GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+
         /// <summary>Draw area for the inset</summary>
         ShadowDrawArea drawAreaInset;
         /// <summary>The scale ruler to draw on screen</summary>
@@ -139,24 +148,18 @@ namespace ORTS.TrackViewer
         /// <summary>The routines to draw the world tiles</summary>
         DrawWorldTiles drawWorldTiles;
 
-        /// <summary>The Path editor</summary>
-        public PathEditor pathEditor { get; private set; }
-        /// <summary>The routines to draw the .pat file</summary>
-        public DrawPATfile drawPATfile;
-
         /// <summary>The menu at the top</summary>
         MenuControl menuControl;
         /// <summary>The status bar at the bottom</summary>
         StatusBarControl statusBarControl;
-        /// <summary>The frame rate</summary>
-        public SmoothedData FrameRate { get; private set; }
 
         /// <summary></summary>
         private bool lostFocus;  //when we have lost focus, we do not want to enable shifting with mouse
         /// <summary></summary>
-        private int skipDrawAmount = 0; // number of times we want to skip draw because nothing happened
+        private int skipDrawAmount; // number of times we want to skip draw because nothing happened
         /// <summary></summary>
         private const int maxSkipDrawAmount = 10;
+        #endregion
 
         public static GettextResourceManager catalog = new GettextResourceManager("Contrib");
 
@@ -173,7 +176,7 @@ namespace ORTS.TrackViewer
             //graphics.PreferredBackBufferWidth  = screenW;
             ScreenH = graphics.PreferredBackBufferHeight;
             ScreenW = graphics.PreferredBackBufferWidth;
-            setAliasing();
+            SetAliasing();
             graphics.IsFullScreen = false;
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += new System.EventHandler(Window_ClientSizeChanged);
@@ -188,10 +191,10 @@ namespace ORTS.TrackViewer
         /// <summary>
         /// Set aliasing depending on the settings (set in the menu)
         /// </summary>
-        public void setAliasing()
+        public void SetAliasing()
         {
             // Personally, I do not think anti-aliasing looks crisp at all
-            graphics.PreferMultiSampling = Properties.Settings.Default.doAntiAliasing;
+            graphics.PreferMultiSampling = false; //todo crashes Properties.Settings.Default.doAntiAliasing;
         }
 
         void Window_ClientSizeChanged(object sender, EventArgs e)
@@ -221,9 +224,9 @@ namespace ORTS.TrackViewer
             drawWorldTiles = new DrawWorldTiles();
             drawTrains = new DrawTrains();
             drawScaleRuler = new DrawScaleRuler();
-            drawArea = new DrawArea(drawScaleRuler);
+            DrawArea = new DrawArea(drawScaleRuler);
             drawAreaInset = new ShadowDrawArea(null);
-            drawAreaInset.strictChecking = true;
+            drawAreaInset.StrictChecking = true;
             setSubwindowSizes();
             
 
@@ -257,11 +260,11 @@ namespace ORTS.TrackViewer
         {
             int insetRatio = 10;
             int menuHeight = menuControl.menuHeight;
-            int statusbarHeight = statusBarControl.statusbarHeight;
-            menuControl.setScreenSize(ScreenW, menuHeight);
-            statusBarControl.setScreenSize(ScreenW, statusbarHeight, ScreenH);
+            int statusbarHeight = statusBarControl.StatusbarHeight;
+            menuControl.SetScreenSize(ScreenW, menuHeight);
+            statusBarControl.SetScreenSize(ScreenW, statusbarHeight, ScreenH);
 
-            drawArea.SetScreenSize(0, menuHeight, ScreenW, ScreenH - statusbarHeight - menuHeight);
+            DrawArea.SetScreenSize(0, menuHeight, ScreenW, ScreenH - statusbarHeight - menuHeight);
             drawAreaInset.SetScreenSize(ScreenW - ScreenW / insetRatio, menuHeight + 1, ScreenW / insetRatio, ScreenH / insetRatio);
             drawScaleRuler.SetLowerLeftPoint(10, ScreenH - statusbarHeight - 10);
 
@@ -296,7 +299,7 @@ namespace ORTS.TrackViewer
         protected override void Update(GameTime gameTime)
         {
             // Even if not active, still do update from trains
-            if (drawTrains.Update(drawArea)) skipDrawAmount = 0; 
+            if (drawTrains.Update(DrawArea)) skipDrawAmount = 0; 
 
             if (!this.IsActive)
             {
@@ -317,13 +320,13 @@ namespace ORTS.TrackViewer
             DrawTrackDB.ClearHighlightOverrides(); // when update is called, we are not searching via menu
 
             // First check all the buttons that can be kept down.
-            if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { drawArea.ShiftLeft(); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ShiftRight)) { drawArea.ShiftRight(); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ShiftUp)) {drawArea.ShiftUp(); skipDrawAmount=0;}
-            if (TVUserInput.IsDown(TVUserCommands.ShiftDown)) { drawArea.ShiftDown(); skipDrawAmount = 0; }
+            if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { DrawArea.ShiftLeft(); skipDrawAmount = 0; }
+            if (TVUserInput.IsDown(TVUserCommands.ShiftRight)) { DrawArea.ShiftRight(); skipDrawAmount = 0; }
+            if (TVUserInput.IsDown(TVUserCommands.ShiftUp)) {DrawArea.ShiftUp(); skipDrawAmount=0;}
+            if (TVUserInput.IsDown(TVUserCommands.ShiftDown)) { DrawArea.ShiftDown(); skipDrawAmount = 0; }
 
-            if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { drawArea.zoomIn(); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) {drawArea.zoomOut(); skipDrawAmount = 0;}
+            if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { DrawArea.ZoomIn(); skipDrawAmount = 0; }
+            if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) {DrawArea.ZoomOut(); skipDrawAmount = 0;}
 
             if (TVUserInput.Changed)
             {
@@ -334,70 +337,70 @@ namespace ORTS.TrackViewer
 
             if (TVUserInput.IsPressed(TVUserCommands.ZoomReset))
             {
-                drawArea.zoomReset(drawTrackDB);
-                drawAreaInset.zoomReset(drawTrackDB);  // needed in case window was resized
+                DrawArea.ZoomReset(DrawTrackDB);
+                drawAreaInset.ZoomReset(DrawTrackDB);  // needed in case window was resized
             }
-            if (TVUserInput.IsPressed(TVUserCommands.ZoomToTile)) drawArea.zoomToTile();
+            if (TVUserInput.IsPressed(TVUserCommands.ZoomToTile)) DrawArea.ZoomToTile();
 
-            if (drawPATfile != null && Properties.Settings.Default.showPATfile)
+            if (DrawPATfile != null && Properties.Settings.Default.showPATfile)
             {
-                if (TVUserInput.IsPressed(TVUserCommands.ExtendPath))     drawPATfile.extendPath();
-                if (TVUserInput.IsPressed(TVUserCommands.ExtendPathFull)) drawPATfile.extendPathFull();
-                if (TVUserInput.IsPressed(TVUserCommands.ReducePath))     drawPATfile.reducePath();
-                if (TVUserInput.IsPressed(TVUserCommands.ReducePathFull)) drawPATfile.reducePathFull();
-                if (TVUserInput.IsDown(TVUserCommands.ShiftToLocation)) drawArea.ShiftToLocation(drawPATfile.CurrentLocation);
+                if (TVUserInput.IsPressed(TVUserCommands.ExtendPath))     DrawPATfile.ExtendPath();
+                if (TVUserInput.IsPressed(TVUserCommands.ExtendPathFull)) DrawPATfile.ExtendPathFull();
+                if (TVUserInput.IsPressed(TVUserCommands.ReducePath))     DrawPATfile.ReducePath();
+                if (TVUserInput.IsPressed(TVUserCommands.ReducePathFull)) DrawPATfile.ReducePathFull();
+                if (TVUserInput.IsDown(TVUserCommands.ShiftToLocation)) DrawArea.ShiftToLocation(DrawPATfile.CurrentLocation);
             }
 
-            if (pathEditor != null && Properties.Settings.Default.showTrainpath)
+            if (PathEditor != null && Properties.Settings.Default.showTrainpath)
             {
-                if (TVUserInput.IsPressed(TVUserCommands.ExtendPath))     pathEditor.ExtendPath();
-                if (TVUserInput.IsPressed(TVUserCommands.ExtendPathFull)) pathEditor.ExtendPathFull();
-                if (TVUserInput.IsPressed(TVUserCommands.ReducePath))     pathEditor.ReducePath();
-                if (TVUserInput.IsPressed(TVUserCommands.ReducePathFull)) pathEditor.ReducePathFull();
-                if (TVUserInput.IsDown(TVUserCommands.ShiftToLocation)) drawArea.ShiftToLocation(pathEditor.CurrentLocation);
+                if (TVUserInput.IsPressed(TVUserCommands.ExtendPath))     PathEditor.ExtendPath();
+                if (TVUserInput.IsPressed(TVUserCommands.ExtendPathFull)) PathEditor.ExtendPathFull();
+                if (TVUserInput.IsPressed(TVUserCommands.ReducePath))     PathEditor.ReducePath();
+                if (TVUserInput.IsPressed(TVUserCommands.ReducePathFull)) PathEditor.ReducePathFull();
+                if (TVUserInput.IsDown(TVUserCommands.ShiftToLocation)) DrawArea.ShiftToLocation(PathEditor.CurrentLocation);
 
-                if (TVUserInput.IsPressed(TVUserCommands.EditorUndo)) pathEditor.Undo();
-                if (TVUserInput.IsPressed(TVUserCommands.EditorRedo)) pathEditor.Redo();
-                if (TVUserInput.IsMouseXButton1Pressed()) pathEditor.Undo();
-                if (TVUserInput.IsMouseXButton2Pressed()) pathEditor.Redo();
+                if (TVUserInput.IsPressed(TVUserCommands.EditorUndo)) PathEditor.Undo();
+                if (TVUserInput.IsPressed(TVUserCommands.EditorRedo)) PathEditor.Redo();
+                if (TVUserInput.IsMouseXButton1Pressed()) PathEditor.Undo();
+                if (TVUserInput.IsMouseXButton2Pressed()) PathEditor.Redo();
             }
 
 
             if (TVUserInput.IsMouseMoved() && TVUserInput.IsMouseLeftButtonDown())
             {
-                drawArea.ShiftArea(TVUserInput.MouseMoveX(), TVUserInput.MouseMoveY());
+                DrawArea.ShiftArea(TVUserInput.MouseMoveX(), TVUserInput.MouseMoveY());
             }
             if (TVUserInput.IsMouseWheelChanged())
             {
                 int mouseWheelChange = TVUserInput.MouseWheelChange();
                 if (TVUserInput.IsDown(TVUserCommands.MouseZoomSlow))
                 {
-                    drawArea.zoomAroundMouse(mouseWheelChange > 0 ? -1 : 1);  
+                    DrawArea.ZoomAroundMouse(mouseWheelChange > 0 ? -1 : 1);  
                 }
                 else
                 {
-                    drawArea.zoomAroundMouse(-mouseWheelChange / 40);
+                    DrawArea.ZoomAroundMouse(-mouseWheelChange / 40);
                 }
             }
 
-            if (TVUserInput.IsMouseRightButtonPressed() && pathEditor!= null && pathEditor.EditingIsActive)
+            if (TVUserInput.IsMouseRightButtonPressed() && PathEditor!= null && PathEditor.EditingIsActive)
             {
-                pathEditor.PopupContextMenu(TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
+                PathEditor.PopupContextMenu(TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
             }
 
-            drawArea.update();
-            drawAreaInset.update();
-            drawAreaInset.Follow(drawArea, 10f);
+            DrawArea.Update();
+            drawAreaInset.Update();
+            drawAreaInset.Follow(DrawArea, 10f);
 
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSignals)) menuControl.menuToggleShowSignals();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidings)) menuControl.menuToggleShowSidings();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidingNames)) menuControl.menuToggleShowSidingNames();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPlatforms)) menuControl.menuToggleShowPlatforms();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPlatformNames)) menuControl.menuToggleShowPlatformNames();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSpeedLimits)) menuControl.menuToggleShowSpeedLimits();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowMilePosts)) menuControl.menuToggleShowMilePosts();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowTrainpath)) menuControl.menuToggleShowTrainpath();
-            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPATFile)) menuControl.menuToggleShowPATFile();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSignals)) menuControl.MenuToggleShowSignals();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidings)) menuControl.MenuToggleShowSidings();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidingNames)) menuControl.MenuToggleShowSidingNames();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPlatforms)) menuControl.MenuToggleShowPlatforms();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPlatformNames)) menuControl.MenuToggleShowPlatformNames();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSpeedLimits)) menuControl.MenuToggleShowSpeedLimits();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowMilePosts)) menuControl.MenuToggleShowMilePosts();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowTrainpath)) menuControl.MenuToggleShowTrainpath();
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPatFile)) menuControl.MenuToggleShowPatFile();
 
 
             if (TVUserInput.IsPressed(TVUserCommands.Debug)) runDebug();
@@ -410,7 +413,7 @@ namespace ORTS.TrackViewer
         /// Delegate that can be called by routines such that we can draw it to the screen
         /// </summary>
         /// <param name="message">Message to draw</param>
-        public delegate void messageDelegate(string message);
+        public delegate void MessageDelegate(string message);
         
         /// <summary>
         /// Simplified Draw routine that only shows background and a message. 
@@ -442,9 +445,9 @@ namespace ORTS.TrackViewer
         {
 
             // Even if there is nothing new to draw for main window, we might still need to draw for the shadow textures.
-            if (drawTrackDB != null)
+            if (DrawTrackDB != null)
             {
-                drawAreaInset.DrawShadowTextures(drawTrackDB.DrawTracks, DrawColors.colorsNormal["clearwindowinset"]);
+                drawAreaInset.DrawShadowTextures(DrawTrackDB.DrawTracks, DrawColors.colorsNormal["clearwindowinset"]);
             }
             
             // if there is nothing to draw, be done.
@@ -454,39 +457,39 @@ namespace ORTS.TrackViewer
             }
 
             GraphicsDevice.Clear(DrawColors.colorsNormal["clearwindow"]);
-            if (drawTrackDB == null) return;
+            if (DrawTrackDB == null) return;
 
             spriteBatch.Begin();
-            drawWorldTiles.Draw(drawArea);
-            drawArea.DrawTileGrid();
+            drawWorldTiles.Draw(DrawArea);
+            DrawArea.DrawTileGrid();
             
-            drawTrackDB.DrawRoads(drawArea);
-            drawTrackDB.DrawTracks(drawArea);
-            drawTrackDB.DrawJunctionAndEndNodes(drawArea);
-            drawTrackDB.DrawTrackItems(drawArea);
-            drawTrackDB.DrawRoadTrackItems(drawArea);
-            drawTrackDB.DrawHighlights(drawArea, true);
+            DrawTrackDB.DrawRoads(DrawArea);
+            DrawTrackDB.DrawTracks(DrawArea);
+            DrawTrackDB.DrawJunctionAndEndNodes(DrawArea);
+            DrawTrackDB.DrawTrackItems(DrawArea);
+            DrawTrackDB.DrawRoadTrackItems(DrawArea);
+            DrawTrackDB.DrawHighlights(DrawArea, true);
 
             if (Properties.Settings.Default.showInset)
             {
                 drawAreaInset.DrawBackground(DrawColors.colorsNormal["clearwindowinset"]);
                 //drawTrackDB.DrawTracks(drawAreaInset); //replaced by next line
                 drawAreaInset.DrawShadowedTextures(); 
-                drawTrackDB.DrawHighlights(drawAreaInset, false);
-                drawAreaInset.DrawBorder(Color.Red, drawArea);
+                DrawTrackDB.DrawHighlights(drawAreaInset, false);
+                drawAreaInset.DrawBorder(Color.Red, DrawArea);
                 drawAreaInset.DrawBorder(Color.Black);
             }
 
-            if (drawPATfile != null && Properties.Settings.Default.showPATfile) drawPATfile.Draw(drawArea);
-            if (pathEditor != null && Properties.Settings.Default.showTrainpath) pathEditor.Draw(drawArea);
+            if (DrawPATfile != null && Properties.Settings.Default.showPATfile) DrawPATfile.Draw(DrawArea);
+            if (PathEditor != null && Properties.Settings.Default.showTrainpath) PathEditor.Draw(DrawArea);
 
             CalculateFPS(gameTime);
             
-            statusBarControl.Update(this, drawArea.mouseLocation);
+            statusBarControl.Update(this, DrawArea.MouseLocation);
 
             drawScaleRuler.Draw();
 
-            drawTrains.Draw(drawArea);
+            drawTrains.Draw(DrawArea);
 
             spriteBatch.End();
 
@@ -517,7 +520,7 @@ namespace ORTS.TrackViewer
         /// Open up a dialog so the user can select the install directory 
         /// (which should contain a sub-directory called ROUTES).
         /// </summary>
-        public void selectInstallFolder ()
+        public void SelectInstallFolder ()
         {
             string folderPath = "";
 
@@ -544,7 +547,7 @@ namespace ORTS.TrackViewer
              
                     // make sure the current route is disabled,
                     CurrentRoute = null;
-                    drawTrackDB = null;
+                    DrawTrackDB = null;
 
                     Properties.Settings.Default.installDirectory = folderPath;
                     Properties.Settings.Default.Save();
@@ -580,7 +583,7 @@ namespace ORTS.TrackViewer
                 //setRoute(defaultRoute);
 
                 Routes = newRoutes;
-                menuControl.populateRoutes();
+                menuControl.PopulateRoutes();
             }
             else
             {
@@ -592,16 +595,16 @@ namespace ORTS.TrackViewer
         /// <summary>
         /// Load the default route. This would be either the route used last time, the current route, or else the first available route.
         /// </summary>
-        public void setDefaultRoute()
+        public void SetDefaultRoute()
         {
-            setRoute(DefaultRoute);
+            SetRoute(DefaultRoute);
         }
 
         /// <summary>
         /// Set and load a new route
         /// </summary>
         /// <param name="newRoute">The route to load, containing amongst other the directory name of the route</param>
-        public void setRoute(Route newRoute)
+        public void SetRoute(Route newRoute)
         {
             if (newRoute == null) return;
 
@@ -609,8 +612,8 @@ namespace ORTS.TrackViewer
 
             try
             {
-                messageDelegate messageHandler = new messageDelegate(DrawLoadingMessage);
-                drawTrackDB = new DrawTrackDB(newRoute.Path, messageHandler);
+                MessageDelegate messageHandler = new MessageDelegate(DrawLoadingMessage);
+                DrawTrackDB = new DrawTrackDB(newRoute.Path, messageHandler);
                 CurrentRoute = newRoute;
 
                 Properties.Settings.Default.defaultRoute = CurrentRoute.Path.Split('\\').Last();
@@ -619,9 +622,9 @@ namespace ORTS.TrackViewer
                     Properties.Settings.Default.zoomScale = -1; // To disable the use of zoom reset
                 }
                 Properties.Settings.Default.Save();
-                drawArea.zoomReset(drawTrackDB);
-                drawAreaInset.zoomReset(drawTrackDB);
-                Window.Title = "TrackViewer: " + drawTrackDB.RouteName;
+                DrawArea.ZoomReset(DrawTrackDB);
+                drawAreaInset.ZoomReset(DrawTrackDB);
+                Window.Title = "TrackViewer: " + DrawTrackDB.RouteName;
             }
             catch
             {
@@ -642,8 +645,8 @@ namespace ORTS.TrackViewer
             }
             catch { }
 
-            menuControl.populatePlatforms();
-            menuControl.populateSidings();
+            menuControl.PopulatePlatforms();
+            menuControl.PopulateSidings();
         }
 
         /// <summary>
@@ -653,57 +656,65 @@ namespace ORTS.TrackViewer
         {
             List<Path> newPaths = Path.GetPaths(CurrentRoute).OrderBy(r => r.Name).ToList();
             Paths = newPaths;
-            menuControl.populatePaths();
-            setPath(null);   
+            menuControl.PopulatePaths();
+            SetPath(null);   
         }
 
         /// <summary>
         /// Once a path has been selected, do the necessary loading.
         /// </summary>
         /// <param name="path">Path (with FilePath) that has to be loaded</param>
-        internal void setPath(Path path)
+        internal void SetPath(Path path)
         {
             if (path == null)
             {
-                drawPATfile = null;
-                pathEditor = null;
+                DrawPATfile = null;
+                PathEditor = null;
             }
             else
             {
                 DrawLoadingMessage(catalog.GetString("Loading .pat file ..."));
-                drawPATfile = new DrawPATfile(path);
+                DrawPATfile = new DrawPATfile(path);
 
                 DrawLoadingMessage(catalog.GetString("Processing .pat file ..."));
-                pathEditor = new PathEditor(drawTrackDB, path);
+                PathEditor = new PathEditor(DrawTrackDB, path);
                 DrawLoadingMessage(" ...");
             }   
+        }
+
+        internal void NewPath()
+        {
+
+            string pathsDirectory = System.IO.Path.Combine(CurrentRoute.Path, "PATHS");
+            PathEditor = new PathEditor(DrawTrackDB, pathsDirectory);
+            DrawPATfile = null;
         }
 
         /// <summary>
         /// Find a track node, center around it and highlight it
         /// </summary>
-        /// <param name="TrackNumberIndex">Index of the track node</param>
-        public void CenterAroundTrackNode(int TrackNumberIndex)
+        /// <param name="trackNumberIndex">Index of the track node</param>
+        public void CenterAroundTrackNode(int trackNumberIndex)
         {
-            CenterAround(drawTrackDB.TrackNodeHighlightOverride(TrackNumberIndex));
+            CenterAround(DrawTrackDB.TrackNodeHighlightOverride(trackNumberIndex));
         }
 
         /// <summary>
         /// Find a Road track node, center around it and highlight it
         /// </summary>
-        /// <param name="TrackNumberIndex">Index of the track node</param>
-        public void CenterAroundTrackNodeRoad(int TrackNumberIndex)
+        /// <param name="trackNumberIndex">Index of the track node</param>
+        public void CenterAroundTrackNodeRoad(int trackNumberIndex)
         {
-            CenterAround(drawTrackDB.TrackNodeHighlightOverrideRoad(TrackNumberIndex));
+            CenterAround(DrawTrackDB.TrackNodeHighlightOverrideRoad(trackNumberIndex));
         }
 
         /// <summary>
         /// Find a trackItem and center around it and highlight it
         /// </summary>
-        /// <param name="TrackItemIndex">Index of the track item</param>
-        public void CenterAroundTrackItem(int TrackItemIndex)
+        /// <param name="trackItemIndex">Index of the track item</param>
+        public void CenterAroundTrackItem(int trackItemIndex)
         {
-            WorldLocation itemLocation = drawTrackDB.TrackItemHighlightOverride(TrackItemIndex);
+            WorldLocation itemLocation = DrawTrackDB.TrackItemHighlightOverride(trackItemIndex);
             if (itemLocation == null) return;
             CenterAround(itemLocation);
         }
@@ -711,10 +722,10 @@ namespace ORTS.TrackViewer
         /// <summary>
         /// Find a road trackItem and center around it and highlight it
         /// </summary>
-        /// <param name="TrackItemIndex">Index of the track item</param>
-        public void CenterAroundTrackItemRoad(int TrackItemIndex)
+        /// <param name="trackItemIndex">Index of the track item</param>
+        public void CenterAroundTrackItemRoad(int trackItemIndex)
         {
-            WorldLocation itemLocation = drawTrackDB.TrackItemHighlightOverrideRoad(TrackItemIndex);
+            WorldLocation itemLocation = DrawTrackDB.TrackItemHighlightOverrideRoad(trackItemIndex);
             if (itemLocation == null) return;
             CenterAround(itemLocation);
         }
@@ -728,9 +739,9 @@ namespace ORTS.TrackViewer
         {
             if (centerLocation == null) return;
 
-            drawArea.ShiftToLocation(centerLocation);
-            drawArea.mouseLocation = centerLocation;
-            drawAreaInset.Follow(drawArea, 10f);
+            DrawArea.ShiftToLocation(centerLocation);
+            DrawArea.MouseLocation = centerLocation;
+            drawAreaInset.Follow(DrawArea, 10f);
             BeginDraw();
             skipDrawAmount = 0; // make sure the draw is really done.
             Draw(new GameTime());
@@ -741,11 +752,11 @@ namespace ORTS.TrackViewer
         void runDebug()
         {
             //Properties.Settings.Default.statusShowFPS = false;
-            //setDefaultRoute();
-            //setPath(Paths[0]);
-            //drawArea.zoomToTile();
-            //drawArea.zoomCentered(-15);
-            //////CenterAroundTrackNode(200);
+            //SetDefaultRoute();
+            //SetPath(Paths[0]);
+            //DrawArea.ZoomToTile();
+            //DrawArea.ZoomCentered(-15);
+            ////CenterAroundTrackNode(200);
             //drawArea.ShiftToLocation(pathEditor.CurrentLocation);
             ////drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);
 

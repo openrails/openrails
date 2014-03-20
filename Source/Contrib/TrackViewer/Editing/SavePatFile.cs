@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Windows.Forms;
 
 namespace ORTS.TrackViewer.Editing
 {
@@ -44,10 +45,21 @@ namespace ORTS.TrackViewer.Editing
         public static void WritePatFile(Trainpath trainpath)
         {
             if (trainpath == null) return;
+            if (!trainpath.HasEnd)
+            {
+                DialogResult dialogResult = MessageBox.Show(
+                        "The current path does not have a well-defined end-point.\n" +
+                        "Do you want to continue?",
+                        "Trackviewer Path Editor", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                if (dialogResult == DialogResult.Cancel)
+                {
+                    return;
+                }
+            }
+
             if (GetFileName(trainpath))
             {
                 CreatePDPsAndTrpathNodes(trainpath);
-                // todo. Create popup asking whether to write when path does not have a real end.
                 WriteToFile(trainpath);
             }
         }
@@ -62,7 +74,7 @@ namespace ORTS.TrackViewer.Editing
             Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
             dlg.OverwritePrompt = true;
             dlg.InitialDirectory = Path.GetDirectoryName(trainpath.FilePath);
-            dlg.FileName = trainpath.PathID;
+            dlg.FileName = trainpath.PathId;
             dlg.DefaultExt = ".pat";
             dlg.Filter = "PAT Files (.pat)|*.pat";
             if (dlg.ShowDialog() == true)
@@ -167,16 +179,16 @@ namespace ORTS.TrackViewer.Editing
         {
             int pdpIndex;
             string trackPDPstart = String.Format("\tTrackPDP ( {0,6:D} {1,6:D} {2,9} {3,9:F3} {4,9:F3}",
-                node.location.TileX, node.location.TileZ, 
-                node.location.Location.X.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")),
-                node.location.Location.Y.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")),
-                node.location.Location.Z.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")));
+                node.Location.TileX, node.Location.TileZ, 
+                node.Location.Location.X.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")),
+                node.Location.Location.Y.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")),
+                node.Location.Location.Z.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")));
 
             pdpIndex = trackPDPs.Count(); // default PDP index
             if (node is TrainpathJunctionNode)
             {
-                int junctionIndex = (node as TrainpathJunctionNode).junctionIndex;
-                if (pdpOfJunction.ContainsKey(junctionIndex))
+                int junctionIndex = (node as TrainpathJunctionNode).JunctionIndex;
+                if (!node.IsBroken && pdpOfJunction.ContainsKey(junctionIndex))
                 {
                     //this junction is already in the list of PDPs, so use another PDP index;
                     pdpIndex = pdpOfJunction[junctionIndex];
@@ -222,7 +234,7 @@ namespace ORTS.TrackViewer.Editing
             }
             file.WriteLine(")");
             file.WriteLine("TrackPath (");
-            file.WriteLine("\tTrPathName ( \"" + trainpath.PathID + "\" )");
+            file.WriteLine("\tTrPathName ( \"" + trainpath.PathId + "\" )");
 
             //if (trainpath.PathFlags != null) // currently the flags are perhaps not consistently read from PATfile. TODO
             //{

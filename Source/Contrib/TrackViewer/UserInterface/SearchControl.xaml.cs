@@ -93,7 +93,7 @@ namespace ORTS.TrackViewer.UserInterface
         {
             try
             {
-                int Index = Convert.ToInt32(textboxIndex.Text);
+                int Index = Convert.ToInt32(textboxIndex.Text, System.Globalization.CultureInfo.InvariantCulture);
                 switch (searchItem)
                 {
                     case SearchableItem.TrackNode:

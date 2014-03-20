@@ -18,17 +18,22 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         ContextMenu contextMenu;
         PathEditor pathEditor;
-        Dictionary<contextMenuAction, MenuItem> menuItems = new Dictionary<contextMenuAction, MenuItem>();
+        Dictionary<ContextMenuAction, MenuItem> menuItems = new Dictionary<ContextMenuAction, MenuItem>();
+        MenuItem noActionPossibleMenuItem;
 
          /// <summary>
         /// Create the context menu. Needs to be done only once.
         /// </summary>
-        public EditorContextMenu(PathEditor pathEditor, Dictionary<contextMenuAction,string> menuHeaders)
+        public EditorContextMenu(PathEditor pathEditor, Dictionary<ContextMenuAction,string> menuHeaders)
         {
             this.pathEditor = pathEditor;
             contextMenu = new ContextMenu();
 
-            foreach (contextMenuAction action in Enum.GetValues(typeof(contextMenuAction)))
+            noActionPossibleMenuItem = new MenuItem();
+            noActionPossibleMenuItem.Header = "No action possible\nPerhaps paths are not drawn.";
+            contextMenu.Items.Add(noActionPossibleMenuItem);
+
+            foreach (ContextMenuAction action in Enum.GetValues(typeof(ContextMenuAction)))
             {
                 if (!menuHeaders.ContainsKey(action))
                 {
@@ -57,21 +62,32 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="menuHeaders">Name of the various context menu headers, indexed by contextMenuAction</param>
         /// <param name="menuEnabled">Booleans whether the action (indexed by contextMenuAction) is currently enabled</param>
         public void PopupContextMenu(int mouseX, int mouseY, 
-                                     Dictionary<contextMenuAction, string> menuHeaders,
-                                     Dictionary<contextMenuAction, bool> menuEnabled)
+                                     Dictionary<ContextMenuAction, string> menuHeaders,
+                                     Dictionary<ContextMenuAction, bool> menuEnabled)
         {
             pathEditor.EnableMouseUpdate = false;
+            bool someActionIsPossible = false;
             
-            foreach (contextMenuAction action in Enum.GetValues(typeof(contextMenuAction)))
+            foreach (ContextMenuAction action in Enum.GetValues(typeof(ContextMenuAction)))
             {
                 if (menuHeaders.ContainsKey(action))
                 {
                     menuItems[action].IsEnabled = menuEnabled[action];
+                    menuItems[action].Visibility = menuEnabled[action] ? Visibility.Visible : Visibility.Collapsed;
+                    someActionIsPossible = someActionIsPossible || menuEnabled[action];
                 }
             }
 
+            noActionPossibleMenuItem.Visibility = someActionIsPossible ? Visibility.Collapsed : Visibility.Visible;
+
             contextMenu.PlacementRectangle = new Rect((double)mouseX, (double)mouseY, 20, 20);
             contextMenu.IsOpen = true;
+        }
+
+        public void CloseContextMenu()
+        {
+            if (contextMenu == null) {return;}
+            contextMenu.IsOpen = false;
         }
 
         /// <summary>

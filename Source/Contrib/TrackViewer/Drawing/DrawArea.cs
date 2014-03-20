@@ -59,21 +59,21 @@ namespace ORTS.TrackViewer.Drawing
         // Actually we get rid of this when we split offsetX into offsetTileX and offsetX.
         // but this complicates some math
         /// <summary>scale  (from world size to pixels, so in pixels/meter)</summary>
-        protected double scale;
+        protected double Scale { get; set; }
         /// <summary>scale at maximum window.</summary>
-        private double fullScale;
+        private double fullScale { get; set; }
         /// <summary>world-location X corresponding to left side of drawing area</summary>
-        protected double offsetX;
+        protected double OffsetX { get; set; }
         /// <summary>// world-location Z correspoding to bottom of the drawing area</summary>
-        protected double offsetZ;
+        protected double OffsetZ { get; set; }
         /// <summary>X location of the top-left corner of this drawArea </summary>
-        protected int areaOffsetX;
+        protected int AreaOffsetX { get; set; }
         /// <summary>Y location of the top-left corner of this drawArea</summary>
-        protected int areaOffsetY;
+        protected int AreaOffsetY { get; set; }
         /// <summary> width of the drawArea in pixels</summary>
-        protected int areaW = 1230;
+        protected int AreaW = 1230;
         /// <summary> height of the drawArea in pixels</summary>
-        protected int areaH = 700;
+        protected int AreaH = 700;
         /// <summary>Ratio used for shifting (percentage shift per update)</summary>
         private static float shiftRatioDefault = 0.10f; 
 
@@ -86,14 +86,14 @@ namespace ORTS.TrackViewer.Drawing
 
 
         /// <summary>WorldLocation of the mouse (so where in the real worlds is the current mouse position</summary>
-        public WorldLocation mouseLocation { get; set; }
+        public WorldLocation MouseLocation { get; set; }
         /// <summary>location of Upper Left point in real world coordinates</summary>
         public WorldLocation LocationUpperLeft { get; private set; }
         /// <summary>location of Upper Left point in real world coordinates</summary>
         public WorldLocation LocationLowerRight { get; private set; }
 
         /// <summary>do we check out-of bounds strictly or not.</summary>
-        public bool strictChecking = false;
+        public bool StrictChecking { get; set; }
 
         /// <summary>
         /// constructor
@@ -102,7 +102,7 @@ namespace ORTS.TrackViewer.Drawing
         public DrawArea(DrawScaleRuler drawScaleRuler)
         {
             metersPerPixel = new DiscreteScale();
-            mouseLocation = new WorldLocation(0, 0, 0, 0, 0);  // default mouse location far far away
+            MouseLocation = new WorldLocation(0, 0, 0, 0, 0);  // default mouse location far far away
             SetDrawArea(-1, 1, -1, 1); // just have a default
             this.drawScaleRuler = drawScaleRuler;
        }
@@ -117,13 +117,13 @@ namespace ORTS.TrackViewer.Drawing
         public virtual void SetScreenSize(int areaOffsetX, int areaOffsetY, int areaWidth, int areaHeight)
         {
             // we also need to reset the fullscale;
-            double fullScaleX = fullScale * areaWidth / this.areaW;
-            double fullScaleY = fullScale * areaHeight / this.areaH;
+            double fullScaleX = fullScale * areaWidth / this.AreaW;
+            double fullScaleY = fullScale * areaHeight / this.AreaH;
             fullScale = Math.Min(fullScaleX, fullScaleY);
-            this.areaOffsetX = areaOffsetX;
-            this.areaOffsetY = areaOffsetY;
-            this.areaW = areaWidth;
-            this.areaH = areaHeight;
+            this.AreaOffsetX = areaOffsetX;
+            this.AreaOffsetY = areaOffsetY;
+            this.AreaW = areaWidth;
+            this.AreaH = areaHeight;
         }
 
         /// <summary>
@@ -132,9 +132,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="routePath">The string describing the route Path to identify the zoom</param>
         public void Save(string routePath)
         {
-            Properties.Settings.Default.zoomOffsetX = offsetX;
-            Properties.Settings.Default.zoomOffsetZ = offsetZ;
-            Properties.Settings.Default.zoomScale = scale;
+            Properties.Settings.Default.zoomOffsetX = OffsetX;
+            Properties.Settings.Default.zoomOffsetZ = OffsetZ;
+            Properties.Settings.Default.zoomScale = Scale;
             Properties.Settings.Default.zoomRoutePath = routePath;
             Properties.Settings.Default.Save();
         }
@@ -146,33 +146,33 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (Properties.Settings.Default.zoomScale > -1)
             {
-                offsetX = Properties.Settings.Default.zoomOffsetX;
-                offsetZ = Properties.Settings.Default.zoomOffsetZ;
+                OffsetX = Properties.Settings.Default.zoomOffsetX;
+                OffsetZ = Properties.Settings.Default.zoomOffsetZ;
                 metersPerPixel.ApproximateTo(1.0f / Properties.Settings.Default.zoomScale);
-                scale = metersPerPixel.InverseScaleValue;
-                postZoomTasks();
+                Scale = metersPerPixel.InverseScaleValue;
+                PostZoomTasks();
             }
         }
 
         /// <summary>
         /// Update whatever needs updating. Currently only mouseLocation and boundary tiles
         /// </summary>
-        public void update()
+        public void Update()
         {
             // find the grids that are actually drawn.
-            LocationUpperLeft  = getWorldLocation(0, 0);
-            LocationLowerRight = getWorldLocation(areaW, areaH);
+            LocationUpperLeft  = GetWorldLocation(0, 0);
+            LocationLowerRight = GetWorldLocation(AreaW, AreaH);
             
             //mouse location is given in parent window location, so correct offset
-            mouseLocation = getWorldLocation(UserInterface.TVUserInput.MouseLocationX - areaOffsetX, 
-                                             UserInterface.TVUserInput.MouseLocationY - areaOffsetY);
+            MouseLocation = GetWorldLocation(UserInterface.TVUserInput.MouseLocationX - AreaOffsetX, 
+                                             UserInterface.TVUserInput.MouseLocationY - AreaOffsetY);
         }
 
         /// <summary>
         /// Reset zoom area to show complete track
         /// </summary>
         /// <param name="drawTrackDB">Track database used to determine what the complete track area is</param>
-        public void zoomReset(DrawTrackDB drawTrackDB)
+        public void ZoomReset(DrawTrackDB drawTrackDB)
         {
             float minX = drawTrackDB.MinTileX * 2048 - 1024f;
             float minZ = drawTrackDB.MinTileZ * 2048 - 1024f;
@@ -190,68 +190,68 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="maxZ">maximal real world Z location</param>
         public virtual void SetDrawArea(float minX, float maxX, float minZ, float maxZ)
         { 
-            float scaleX = areaW / (maxX - minX);
-            float scaleY = areaH / (maxZ - minZ);
+            float scaleX = AreaW / (maxX - minX);
+            float scaleY = AreaH / (maxZ - minZ);
             //make square tiles
-            scale = Math.Min(scaleX, scaleY);
-            metersPerPixel.ApproximateTo(1.0f / scale);
-            scale = metersPerPixel.InverseScaleValue;
-            fullScale = scale;
+            Scale = Math.Min(scaleX, scaleY);
+            metersPerPixel.ApproximateTo(1.0f / Scale);
+            Scale = metersPerPixel.InverseScaleValue;
+            fullScale = Scale;
             // center the window. Equation we use is areaX = scale * (worldX - offsetX)
             // or offsetX = worldX - areaX/scale. 
-            offsetX = (maxX + minX) / 2 - areaW / 2 / scale;
-            offsetZ = (maxZ + minZ) / 2 - areaH / 2 / scale;
-            postZoomTasks();
+            OffsetX = (maxX + minX) / 2 - AreaW / 2 / Scale;
+            OffsetZ = (maxZ + minZ) / 2 - AreaH / 2 / Scale;
+            PostZoomTasks();
         }
         
         /// <summary>
         /// Do a single (small) zoom, seeing more details in the viewer
         /// </summary>
-        public void zoomIn()
+        public void ZoomIn()
         {
-            zoomAroundMouse(-1);
+            ZoomAroundMouse(-1);
         }
 
         /// <summary>
         /// Do a single (small) zoom, seeing less details
         /// </summary>
-        public void zoomOut()
+        public void ZoomOut()
         {
-            zoomAroundMouse(1);
+            ZoomAroundMouse(1);
         }
 
         /// <summary>
         /// Do a single zoom step around the mouse location
         /// </summary>
         /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
-        public void zoomAroundMouse(int scaleSteps)
+        public void ZoomAroundMouse(int scaleSteps)
         {
-            zoomAround(getAreaVector(mouseLocation), scaleSteps);
+            ZoomAround(GetAreaVector(MouseLocation), scaleSteps);
         }
 
         /// <summary>
         /// Do a single zoom-in step around the center of the drawing area.
         /// </summary>
-        public void zoomInCentered()
+        public void ZoomInCentered()
         {
-            zoomCentered(-1);
+            ZoomCentered(-1);
         }
 
         /// <summary>
         /// Do a single zoom-out step around the center of the drawing area.
         /// </summary>
-        public void zoomOutCentered()
+        public void ZoomOutCentered()
         {
-            zoomCentered(1);
+            ZoomCentered(1);
         }
 
         /// <summary>
         /// Do a single zoom step around the center of the drawing area.
         /// </summary>
         /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
-        public void zoomCentered(int scaleSteps)
+        public void ZoomCentered(int scaleSteps)
         {
-            zoomAround(new Vector2(areaW / 2, areaH / 2), scaleSteps);
+            ZoomAround(new Vector2(AreaW / 2, AreaH / 2), scaleSteps);
         }
 
         /// <summary>
@@ -260,10 +260,10 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="fixedAreaLocation">x- and y-coordinates (in pixels) of the fixed position</param>
         /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
-        public void zoomAround(Vector2 fixedAreaLocation, int scaleSteps)
+        public void ZoomAround(Vector2 fixedAreaLocation, int scaleSteps)
         {
             // prevent too much zooming out
-            if ((scaleSteps > 0) && maxZoomOutReached()) return;
+            if ((scaleSteps > 0) && MaxZoomOutReached()) return;
 
             // equation is areaX = scale * (worldX - offsetX)
             // for a fixed point (in area location) we have
@@ -271,24 +271,24 @@ namespace ORTS.TrackViewer.Drawing
             //  fixedX/scale_old + offsetX_old = fixedX/scale_new + offsetX_new = worldX
             //  offsetX_new = offsetX_old + fixedX * (scale_new/scale_old - 1) / scale_new
             float scaleFactor = 1.0f/(float)metersPerPixel.AddStep(scaleSteps); // 1.0/xxx because scale is inverse of metersPerPixel
-            scale = metersPerPixel.InverseScaleValue;
-            offsetX +=          fixedAreaLocation.X  * (scaleFactor - 1) / scale;
-            offsetZ += (areaH - fixedAreaLocation.Y) * (scaleFactor - 1) / scale;
-            postZoomTasks();
+            Scale = metersPerPixel.InverseScaleValue;
+            OffsetX +=          fixedAreaLocation.X  * (scaleFactor - 1) / Scale;
+            OffsetZ += (AreaH - fixedAreaLocation.Y) * (scaleFactor - 1) / Scale;
+            PostZoomTasks();
         }
 
         /// <summary>
         /// Zoom to such a scale that a single tile will fit (in either X or Z-direction)
         /// </summary>
-        public void zoomToTile()
+        public void ZoomToTile()
         {
             //normal equation: areaX = scale * (worldX - offsetX)
             //zoom to tile: screenW = scale_new * 2048
-            double scaleX = areaW / 2048.0;
-            double scaleY = areaH / 2048.0;
+            double scaleX = AreaW / 2048.0;
+            double scaleY = AreaH / 2048.0;
             double newScale = Math.Min(scaleX, scaleY);
-            int stepsNeeded = metersPerPixel.StepsNeededForRatio(scale / newScale );
-            zoomAroundMouse(stepsNeeded);
+            int stepsNeeded = metersPerPixel.StepsNeededForRatio(Scale / newScale );
+            ZoomAroundMouse(stepsNeeded);
         }
 
         /// <summary>
@@ -296,24 +296,24 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public void ZoomToTileCentered()
         {
-            double scaleX = areaW / 2048.0;
-            double scaleY = areaH / 2048.0;
+            double scaleX = AreaW / 2048.0;
+            double scaleY = AreaH / 2048.0;
             double newScale = Math.Min(scaleX, scaleY);
-            zoomCentered(metersPerPixel.StepsNeededForRatio(scale / newScale ));
+            ZoomCentered(metersPerPixel.StepsNeededForRatio(Scale / newScale ));
         }
 
         /// <summary>
         /// Determines whether the maximum allowed zoom is reached
         /// </summary>
         /// <returns>true when we should no longer zoom-out</returns>
-        public bool maxZoomOutReached()
+        public bool MaxZoomOutReached()
         {
-            return (scale < fullScale/2);
+            return (Scale < fullScale/2);
         }
 
-        private void postZoomTasks()
+        private void PostZoomTasks()
         {
-            if (drawScaleRuler != null) drawScaleRuler.SetCurrentRuler(scale);
+            if (drawScaleRuler != null) drawScaleRuler.SetCurrentRuler(Scale);
         }
 
         /// <summary>
@@ -324,17 +324,17 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="maxScaleRatio">Maximal allowed ratio between this scale and the scale of the otherArea</param>
         public void Follow(DrawArea otherArea, float maxScaleRatio)
         {
-            double otherScale = otherArea.scale;
-            double otherScaleCorrected = otherScale * this.areaW / otherArea.areaW; // Correct for different screen size
-            scale = Math.Max(fullScale, otherScaleCorrected/maxScaleRatio);
+            double otherScale = otherArea.Scale;
+            double otherScaleCorrected = otherScale * this.AreaW / otherArea.AreaW; // Correct for different screen size
+            Scale = Math.Max(fullScale, otherScaleCorrected/maxScaleRatio);
             // center on the same center as otherArea
             // other.screenW/2 = otherScale * (WorldX - other.offsetX)
             // this.screenW/2  = this.Scale * (WorldX - this.offsetX);
             // so WorldX = other.offsetX + other.screenW/2 / otherScale
-            this.offsetX = otherArea.offsetX + otherArea.areaW / 2 / otherArea.scale - this.areaW / 2 / this.scale;
-            this.offsetZ = otherArea.offsetZ + otherArea.areaH / 2 / otherArea.scale - this.areaH / 2 / this.scale;
-            mouseLocation = otherArea.mouseLocation;
-            postZoomTasks();
+            this.OffsetX = otherArea.OffsetX + otherArea.AreaW / 2 / otherArea.Scale - this.AreaW / 2 / this.Scale;
+            this.OffsetZ = otherArea.OffsetZ + otherArea.AreaH / 2 / otherArea.Scale - this.AreaH / 2 / this.Scale;
+            MouseLocation = otherArea.MouseLocation;
+            PostZoomTasks();
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public void ShiftLeft()
         {
-            offsetX -= shiftRatioDefault * areaW / scale / 2;
+            OffsetX -= shiftRatioDefault * AreaW / Scale / 2;
         }
 
         /// <summary>
@@ -350,7 +350,7 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public void ShiftRight()
         {
-            offsetX += shiftRatioDefault * areaW / scale / 2;
+            OffsetX += shiftRatioDefault * AreaW / Scale / 2;
         }
 
         /// <summary>
@@ -358,7 +358,7 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public void ShiftUp()
         {
-            offsetZ += shiftRatioDefault * areaH / scale / 2;
+            OffsetZ += shiftRatioDefault * AreaH / Scale / 2;
         }
 
         /// <summary>
@@ -366,7 +366,7 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public void ShiftDown()
         {
-            offsetZ -= shiftRatioDefault * areaH / scale / 2;
+            OffsetZ -= shiftRatioDefault * AreaH / Scale / 2;
         }
 
         /// <summary>
@@ -376,8 +376,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="pixelsY">Number of pixels to shift in Y direction</param>
         public void ShiftArea(int pixelsX, int pixelsY)
         {
-            offsetX -= pixelsX / scale;
-            offsetZ += pixelsY / scale;
+            OffsetX -= pixelsX / Scale;
+            OffsetZ += pixelsY / Scale;
         }
 
         /// <summary>
@@ -391,10 +391,9 @@ namespace ORTS.TrackViewer.Drawing
             // Similarly
             double worldX = location.TileX * 2048 + location.Location.X;
             double worldZ = location.TileZ * 2048 + location.Location.Z;
-            offsetX = worldX - areaW / (2 * scale);
-            offsetZ = worldZ - areaH / (2 * scale);
+            OffsetX = worldX - AreaW / (2 * Scale);
+            OffsetZ = worldZ - AreaH / (2 * Scale);
         }
-
 
         /// <summary>
         /// Translate world sizes to screen pixels (rounded up to make sure something is drawn).
@@ -402,9 +401,9 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="worldSize">size in the real world in meters</param>
         /// <returns>size in window pixels</returns>
-        private float getWindowSize(float worldSize)
+        private float GetWindowSize(float worldSize)
         {
-            return (float) Math.Ceiling ( scale * worldSize);
+            return (float) Math.Ceiling ( Scale * worldSize);
         }
 
         /// <summary>
@@ -412,12 +411,12 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="location">location in World coordinates (including tiles)</param>
         /// <returns>location on the drawing area in a 2d vector (in pixels)</returns>
-        private Vector2 getAreaVector(WorldLocation location)
+        private Vector2 GetAreaVector(WorldLocation location)
         {
             double x = location.TileX * 2048 + location.Location.X;
             double y = location.TileZ * 2048 + location.Location.Z;
-            return new Vector2((float)(        scale * ( x - offsetX)),
-                               (float)(areaH - scale * ( y - offsetZ)));
+            return new Vector2((float)(        Scale * ( x - OffsetX)),
+                               (float)(AreaH - Scale * ( y - OffsetZ)));
         }
 
         /// <summary>
@@ -425,11 +424,11 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="location">location in World coordinates (including tiles)</param>
         /// <returns>location on the parent window in a 2d vector (in pixels)</returns>
-        private Vector2 getWindowVector(WorldLocation location)
+        private Vector2 GetWindowVector(WorldLocation location)
         {
-            Vector2 windowVector = getAreaVector(location);
-            windowVector.X += areaOffsetX;
-            windowVector.Y += areaOffsetY;
+            Vector2 windowVector = GetAreaVector(location);
+            windowVector.X += AreaOffsetX;
+            windowVector.Y += AreaOffsetY;
             return windowVector; 
         }
 
@@ -439,9 +438,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="areaX">X-location (in pixels relative to drawing area)</param>
         /// <param name="areaY">Y-location (in pixels relative to drawing area)</param>
         /// <returns>location on the parent window in a 2d vector</returns>
-        private Vector2 getWindowVector(int areaX, int areaY)
+        private Vector2 GetWindowVector(int areaX, int areaY)
         {
-            return new Vector2(areaX + areaOffsetX, areaY + areaOffsetY);
+            return new Vector2(areaX + AreaOffsetX, areaY + AreaOffsetY);
         }
 
         /// <summary>
@@ -450,10 +449,10 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="areaX">X-coordinate on the area (in pixels)</param>
         /// <param name="areaY">Y-coordinate on the area (in pixels)</param>
         /// <returns>Corresponding world location</returns>
-        private WorldLocation getWorldLocation(int areaX, int areaY)
+        private WorldLocation GetWorldLocation(int areaX, int areaY)
         {
-            double x = (offsetX + (        areaX) / scale);
-            double z = (offsetZ + (areaH - areaY) / scale);
+            double x = (OffsetX + (        areaX) / Scale);
+            double z = (OffsetZ + (AreaH - areaY) / Scale);
             //WorldLocation location = new WorldLocation(0, 0, x, 0, z);
             //we now do pre-normalization. This normalization is more efficient than Coordinates.normalization
             int tileX = (int) x / 2048;
@@ -472,12 +471,12 @@ namespace ORTS.TrackViewer.Drawing
         /// <returns>Boolean describing describing whether the point is out</returns>
         public bool OutOfArea(WorldLocation point)
         {
-            Vector2 areaVector = getAreaVector(point);
-            float leeway = (strictChecking) ? 0 : areaW;
+            Vector2 areaVector = GetAreaVector(point);
+            float leeway = (StrictChecking) ? 0 : AreaW;
             if (areaVector.X < -leeway) return true;
             if (areaVector.Y < -leeway) return true;
-            if (areaVector.X > areaW + leeway) return true;
-            if (areaVector.Y > areaH + leeway) return true;
+            if (areaVector.X > AreaW + leeway) return true;
+            if (areaVector.Y > AreaH + leeway) return true;
             return false;
         }
 
@@ -491,7 +490,7 @@ namespace ORTS.TrackViewer.Drawing
         public void DrawLine(float width, Color color, WorldLocation point1, WorldLocation point2)
         {
             if (OutOfArea(point1) && OutOfArea(point2)) return;
-            BasicShapes.DrawLine(getWindowSize(width), color, getWindowVector(point1), getWindowVector(point2));
+            BasicShapes.DrawLine(GetWindowSize(width), color, GetWindowVector(point1), GetWindowVector(point2));
         }
 
         /// <summary>
@@ -503,7 +502,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="point2"> WorldLocation of to the last point of the line</param>
         public void DrawLineAlways(float width, Color color, WorldLocation point1, WorldLocation point2)
         {
-            BasicShapes.DrawLine(getWindowSize(width), color, getWindowVector(point1), getWindowVector(point2));
+            BasicShapes.DrawLine(GetWindowSize(width), color, GetWindowVector(point1), GetWindowVector(point2));
         }
 
         /// <summary>
@@ -539,8 +538,8 @@ namespace ORTS.TrackViewer.Drawing
             // rotation in the window/draw area is angle right/south of right-horizontal
             // hence a 90 degree correction
             // To prevent double calculations, offset is already taken into account here
-            BasicShapes.DrawLine(getWindowSize(width), color, getWindowVector(beginPoint), 
-                getWindowSize(length), angle-MathHelper.Pi/2);
+            BasicShapes.DrawLine(GetWindowSize(width), color, GetWindowVector(beginPoint), 
+                GetWindowSize(length), angle-MathHelper.Pi/2);
         }
 
         /// <summary>
@@ -576,12 +575,9 @@ namespace ORTS.TrackViewer.Drawing
             endPoint.Location.Z += length * (float)Math.Cos(angle + arcRad/2);
             if (OutOfArea(beginPoint) && OutOfArea(endPoint)) return;
             // for the 90 degree offset, see DrawLine
-            BasicShapes.DrawArc(getWindowSize(width), color, getWindowVector(point),
-                getWindowSize(radius), angle - MathHelper.Pi / 2, arcDegrees, arcDegreesOffset);
+            BasicShapes.DrawArc(GetWindowSize(width), color, GetWindowVector(point),
+                GetWindowSize(radius), angle - MathHelper.Pi / 2, arcDegrees, arcDegreesOffset);
         }
-
-    
-
 
         /// <summary>
         /// Draw a vertical line trough the given world line, all the way from bottom to top. 1 pixel wide.
@@ -590,9 +586,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="point">Worldlocation through which to draw the line</param>
         private void DrawLineVertical(Color color, WorldLocation point)
         {
-            Vector2 middle = getWindowVector(point);
-            Vector2 top = getWindowVector(0, 0);
-            Vector2 bot = getWindowVector(0, areaH);
+            Vector2 middle = GetWindowVector(point);
+            Vector2 top = GetWindowVector(0, 0);
+            Vector2 bot = GetWindowVector(0, AreaH);
             bot.X = middle.X;
             top.X = middle.X;
             BasicShapes.DrawLine(1, color, bot, top);
@@ -605,9 +601,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="point">Worldlocation through which to draw the line</param>
         private void DrawLineHorizontal(Color color, WorldLocation point)
         {
-            Vector2 middle = getWindowVector(point);
-            Vector2 left = getWindowVector(0,0);
-            Vector2 right = getWindowVector(areaW, 0);
+            Vector2 middle = GetWindowVector(point);
+            Vector2 left = GetWindowVector(0,0);
+            Vector2 right = GetWindowVector(AreaW, 0);
             right.Y = middle.Y;
             left.Y  = middle.Y;
             BasicShapes.DrawLine(1, color, left, right);
@@ -636,7 +632,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="color">The background color you want</param>
         public void DrawBackground(Color color)
         {
-            BasicShapes.DrawLine(areaW, color, getWindowVector(areaW/2, 0), getWindowVector(areaW/2, areaH));
+            BasicShapes.DrawLine(AreaW, color, GetWindowVector(AreaW/2, 0), GetWindowVector(AreaW/2, AreaH));
         }
 
         /// <summary>
@@ -646,10 +642,10 @@ namespace ORTS.TrackViewer.Drawing
         public void DrawBorder(Color color)
         {
             // We do not use DrawBorder below to prevent a line not being drawn because of OutOfArea
-            BasicShapes.DrawLine(1, color, getWindowVector(0    , 0    ), getWindowVector(0    , areaH));
-            BasicShapes.DrawLine(1, color, getWindowVector(areaW, 0    ), getWindowVector(areaW, areaH));
-            BasicShapes.DrawLine(1, color, getWindowVector(0    , 0    ), getWindowVector(areaW, 0    ));
-            BasicShapes.DrawLine(1, color, getWindowVector(0    , areaH), getWindowVector(areaW, areaH));
+            BasicShapes.DrawLine(1, color, GetWindowVector(0    , 0    ), GetWindowVector(0    , AreaH));
+            BasicShapes.DrawLine(1, color, GetWindowVector(AreaW, 0    ), GetWindowVector(AreaW, AreaH));
+            BasicShapes.DrawLine(1, color, GetWindowVector(0    , 0    ), GetWindowVector(AreaW, 0    ));
+            BasicShapes.DrawLine(1, color, GetWindowVector(0    , AreaH), GetWindowVector(AreaW, AreaH));
         }
 
         /// <summary>
@@ -659,10 +655,10 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="otherDrawArea">The other area of which the border needs to be drawn</param>
         public void DrawBorder(Color color, DrawArea otherDrawArea)
         {
-            WorldLocation locationUpperLeft  = otherDrawArea.getWorldLocation(0                  , 0);
-            WorldLocation locationUpperRight = otherDrawArea.getWorldLocation(otherDrawArea.areaW, 0);
-            WorldLocation locationLowerLeft  = otherDrawArea.getWorldLocation(0                  , otherDrawArea.areaH);
-            WorldLocation locationLowerRight = otherDrawArea.getWorldLocation(otherDrawArea.areaW, otherDrawArea.areaH);
+            WorldLocation locationUpperLeft  = otherDrawArea.GetWorldLocation(0                  , 0);
+            WorldLocation locationUpperRight = otherDrawArea.GetWorldLocation(otherDrawArea.AreaW, 0);
+            WorldLocation locationLowerLeft  = otherDrawArea.GetWorldLocation(0                  , otherDrawArea.AreaH);
+            WorldLocation locationLowerRight = otherDrawArea.GetWorldLocation(otherDrawArea.AreaW, otherDrawArea.AreaH);
 
             DrawLine(1, color, locationUpperLeft, locationUpperRight);
             DrawLine(1, color, locationUpperLeft, locationLowerLeft);
@@ -680,7 +676,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (OutOfArea(location)) return;
             Vector2 textOffset = new Vector2(3, 3); // We offset the top-left corner to make sure the text is not on the marker.
-            BasicShapes.DrawString(getWindowVector(location)+textOffset, DrawColors.colorsNormal["text"], message); 
+            BasicShapes.DrawString(GetWindowVector(location)+textOffset, DrawColors.colorsNormal["text"], message); 
         }
 
         /// <summary>
@@ -694,8 +690,8 @@ namespace ORTS.TrackViewer.Drawing
         public void DrawTexture(WorldLocation location, string textureName, float angle, float size, int minPixelSize)
         {
             if (OutOfArea(location)) return;
-            float pixelSize = (float)Math.Max(getWindowSize(size), minPixelSize);
-            BasicShapes.DrawTexture(getWindowVector(location), textureName, angle, pixelSize, Color.White);
+            float pixelSize = (float)Math.Max(GetWindowSize(size), minPixelSize);
+            BasicShapes.DrawTexture(GetWindowVector(location), textureName, angle, pixelSize, Color.White);
         }
 
         /// <summary>
@@ -710,8 +706,8 @@ namespace ORTS.TrackViewer.Drawing
         public void DrawSimpleTexture(WorldLocation location, string textureName, float size, int minPixelSize, Color color)
         {
             if (OutOfArea(location)) return;
-            float pixelSize = (float)Math.Max(getWindowSize(size), minPixelSize);
-            BasicShapes.DrawTexture(getWindowVector(location), textureName, 0, pixelSize, color);
+            float pixelSize = (float)Math.Max(GetWindowSize(size), minPixelSize);
+            BasicShapes.DrawTexture(GetWindowVector(location), textureName, 0, pixelSize, color);
         }
 
     }
@@ -728,9 +724,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>The nice and round numbers between 10 and 100 to be used for the stpes</summary>
         private static int[] discreteSteps = { 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 27, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 90 };
         /// <summary>The index giving which round number is to be used</summary>
-        private int stepIndex = 0;
+        private int stepIndex;
         /// <summary>The power of ten to be used</summary>
-        private int powerOfTen = 0;
+        private int powerOfTen;
 
         /// <summary>Return the value of the scale (should be (some round number) * 10^(some integer power)</summary>
         public double ScaleValue { get { return discreteSteps[stepIndex] * Math.Pow(10.0, (double)powerOfTen); } }

@@ -36,19 +36,19 @@ namespace ORTS.TrackViewer.Drawing
     public class CloseToMouse
     {
         /// <summary>Distance squared from the mouse to the closest item</summary>
-        protected float closestMouseDistanceSquared;
+        protected float ClosestDistanceSquared { get; set; }
         /// <summary>type to be used in statusbar</summary>
-        public string type;
+        public string Type { get; protected set; }
         /// <summary>Distance (squared) from mouse to the closest item.</summary>
-        public virtual float ClosestMouseDistanceSquared { get { return closestMouseDistanceSquared; } }
+        public virtual float ClosestMouseDistanceSquared { get { return ClosestDistanceSquared; } }
 
         /// <summary>
         /// Reset the distance to far far away, so everything else we see will be closer. reset default type
         /// </summary>
         public virtual void Reset()
         {
-            closestMouseDistanceSquared = float.MaxValue;
-            type = "none";
+            ClosestDistanceSquared = float.MaxValue;
+            Type = "none";
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace ORTS.TrackViewer.Drawing
     public class CloseToMouseJunctionOrEnd:CloseToMouse
     {
         /// <summary>Tracknode of the closest junction or end node</summary>
-        public TrackNode junctionOrEndNode { get; private set; }
+        public TrackNode JunctionOrEndNode { get; private set; }
 
         /// <summary>
         /// Reset the calculation of which item (junction) is closest to the mouse
@@ -93,7 +93,7 @@ namespace ORTS.TrackViewer.Drawing
         public override void Reset()
         {
             base.Reset();
-            junctionOrEndNode = null;
+            JunctionOrEndNode = null;
         }
 
         /// <summary>
@@ -110,9 +110,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="type">Type to use for printing out</param>
         public CloseToMouseJunctionOrEnd(TrackNode junctionOrEndNode, string type)
         {
-            closestMouseDistanceSquared = 0;
-            this.junctionOrEndNode = junctionOrEndNode;
-            this.type = type;
+            ClosestDistanceSquared = 0;
+            this.JunctionOrEndNode = junctionOrEndNode;
+            this.Type = type;
         }
 
         /// <summary>
@@ -125,11 +125,11 @@ namespace ORTS.TrackViewer.Drawing
         public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, TrackNode junctionOrEndNode, string type)
         {
             float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
-            if (distanceSquared < closestMouseDistanceSquared)
+            if (distanceSquared < ClosestDistanceSquared)
             {
-                closestMouseDistanceSquared = distanceSquared;
-                this.junctionOrEndNode = junctionOrEndNode;
-                this.type = type;
+                ClosestDistanceSquared = distanceSquared;
+                this.JunctionOrEndNode = junctionOrEndNode;
+                this.Type = type;
             }
         }
 
@@ -141,7 +141,7 @@ namespace ORTS.TrackViewer.Drawing
     public class CloseToMouseItem:CloseToMouse
     {
         /// <summary>Link to the item that is closest to the mouse</summary>
-        public TrItem trItem { get; set; }
+        public TrItem TRItem { get; set; }
 
         /// <summary>
         /// Constructor, creating an empty object
@@ -156,9 +156,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="item">track item to store as closest item</param>
         public CloseToMouseItem(TrItem item)
         {
-            trItem = item;
-            closestMouseDistanceSquared = 0;
-            type = DrawTrackDB.itemName[item.ItemType];
+            TRItem = item;
+            ClosestDistanceSquared = 0;
+            Type = DrawTrackDB.itemName[item.ItemType];
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace ORTS.TrackViewer.Drawing
         public override void Reset()
         {
             base.Reset();
-            trItem = null;
+            TRItem = null;
        }
 
         
@@ -181,11 +181,11 @@ namespace ORTS.TrackViewer.Drawing
         {
             float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
 
-            if (distanceSquared < closestMouseDistanceSquared)
+            if (distanceSquared < ClosestDistanceSquared)
             {
-                closestMouseDistanceSquared = distanceSquared;
-                this.trItem = trItem;
-                this.type = DrawTrackDB.itemName[trItem.ItemType];
+                ClosestDistanceSquared = distanceSquared;
+                this.TRItem = trItem;
+                this.Type = DrawTrackDB.itemName[trItem.ItemType];
             }
         }
     }
@@ -201,7 +201,7 @@ namespace ORTS.TrackViewer.Drawing
         private SortedList<double, TrackCandidate> sortedTrackCandidates;
         private WorldLocation storedMouseLocation;
 
-        private bool realDistancesAreCalculated = false;
+        private bool realDistancesAreCalculated;
 
         // The next one is a bit tricky. The problem is that the first culling is done based on the trackvector section location
         // Which is only at one side of the section. So the other end might be quiet far away.
@@ -265,7 +265,7 @@ namespace ORTS.TrackViewer.Drawing
         public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, TrackNode trackNode, TrVectorSection vectorSection, int tvsi)
         {
             storedMouseLocation = mouseLocation;
-            float distanceSquared = WorldLocation.GetDistanceSquared(location, mouseLocation);
+            float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
             // to make unique distances becasue the also act as Key
             double distanceSquaredIndexed = ((double)distanceSquared) * (1 + 1e-16 * trackNode.Index);
             if (distanceSquaredIndexed < sortedTrackCandidates.Last().Key)

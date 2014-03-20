@@ -61,18 +61,18 @@ namespace ORTS.TrackViewer.Editing
         {
             if ((bool)selectUncouple.IsChecked)
             {
-                return - Convert.ToInt32(Ncars.Text);
+                return -Convert.ToInt32(Ncars.Text, System.Globalization.CultureInfo.InvariantCulture);
             }
             else
             {
-                return Convert.ToInt32(Ncars.Text);
+                return Convert.ToInt32(Ncars.Text, System.Globalization.CultureInfo.InvariantCulture);
             }   
         }
 
         /// <summary>Return the selected wait-times (in seconds)</summary>
         public int GetWaitTime()
         {
-            return Convert.ToInt32(waitTimeS.Text);
+            return Convert.ToInt32(waitTimeS.Text, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>

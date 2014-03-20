@@ -42,7 +42,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>the parsed .pat file information</summary>
         private PATFile patFile;
         /// <summary>The filename of the .pat file</summary>
-        public string fileName;
+        public string FileName { get; private set; }
 
         /// <summary>Number of nodes that will be drawn. Start with a few</summary>
         private int numberToDraw = 4;
@@ -52,9 +52,9 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Return the last drawn node</summary>
         public TrPathNode CurrentNode { get { return patFile.TrPathNodes[currentMainNodeIndex]; } }
         /// <summary>return the (Path Data Point?) belonging to the last drawn node</summary>
-        public TrackPDP CurrentPDP { get { return patFile.TrackPDPs[(int)CurrentNode.fromPDP]; } }
+        public TrackPDP CurrentPdp { get { return patFile.TrackPDPs[(int)CurrentNode.fromPDP]; } }
         /// <summary>Return the location of the last drawn node</summary>
-        public WorldLocation CurrentLocation { get { return getPDPLocation(CurrentPDP); } }
+        public WorldLocation CurrentLocation { get { return GetPdpLocation(CurrentPdp); } }
 
         /// <summary>
         /// Constructor
@@ -62,7 +62,7 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="path">Contains the information (mainly filepath) needed for loading the .pat file</param>
         public DrawPATfile (ORTS.Menu.Path path)
         {
-            fileName = path.FilePath.Split('\\').Last();
+            FileName = path.FilePath.Split('\\').Last();
             patFile = new PATFile(path.FilePath);
         }
 
@@ -87,9 +87,9 @@ namespace ORTS.TrackViewer.Editing
                     if (nextNodeIndexOnSiding > 0) // because also this path can run off at the end
                     {
                         TrPathNode curNode = patFile.TrPathNodes[currentSidingNodeIndex];
-                        WorldLocation curLoc = getPDPLocation(patFile.TrackPDPs[(int)curNode.fromPDP]);
+                        WorldLocation curLoc = GetPdpLocation(patFile.TrackPDPs[(int)curNode.fromPDP]);
                         TrPathNode nextNode = patFile.TrPathNodes[nextNodeIndexOnSiding];
-                        WorldLocation nextLoc = getPDPLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
+                        WorldLocation nextLoc = GetPdpLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
 
                         drawArea.DrawLine(1, DrawColors.colorsNormal["pathSiding"], curLoc, nextLoc);
                     }
@@ -97,7 +97,7 @@ namespace ORTS.TrackViewer.Editing
                 }
 
                 TrPathNode curMainNode = patFile.TrPathNodes[currentMainNodeIndex];
-                WorldLocation curMainLoc = getPDPLocation(patFile.TrackPDPs[(int)curMainNode.fromPDP]);
+                WorldLocation curMainLoc = GetPdpLocation(patFile.TrackPDPs[(int)curMainNode.fromPDP]);
                 
                 // from this main line point to the next siding node.
                 // If there is a next siding node, we also reset the currentSidingNodeIndex
@@ -107,7 +107,7 @@ namespace ORTS.TrackViewer.Editing
                 {
                     // draw the start of a siding path
                     TrPathNode nextNode = patFile.TrPathNodes[nextSidingNodeIndex];
-                    WorldLocation nextLoc = getPDPLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
+                    WorldLocation nextLoc = GetPdpLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
 
                     drawArea.DrawLine(1, DrawColors.colorsNormal["pathSiding"], curMainLoc, nextLoc);
                     currentSidingNodeIndex = nextSidingNodeIndex;
@@ -118,7 +118,7 @@ namespace ORTS.TrackViewer.Editing
                 if (nextMainNodeIndex >= 0)
                 {
                     TrPathNode nextNode = patFile.TrPathNodes[nextMainNodeIndex];
-                    WorldLocation nextLoc = getPDPLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
+                    WorldLocation nextLoc = GetPdpLocation(patFile.TrackPDPs[(int)nextNode.fromPDP]);
 
                     drawArea.DrawLine(1, DrawColors.colorsNormal["pathMain"], curMainLoc, nextLoc);
                     currentMainNodeIndex = nextMainNodeIndex;
@@ -132,7 +132,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="pdp">The trackPDP</param>
         /// <returns>The corresponding world location</returns>
-        private static WorldLocation getPDPLocation(TrackPDP pdp)
+        private static WorldLocation GetPdpLocation(TrackPDP pdp)
         {
             return new WorldLocation(pdp.TileX, pdp.TileZ, pdp.X, pdp.Y, pdp.Z);
         }
@@ -140,7 +140,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Draw more sections of the path
         /// </summary>
-        public void extendPath()
+        public void ExtendPath()
         {
             int maxNumber = patFile.TrPathNodes.Count-1;
             if (++numberToDraw > maxNumber) numberToDraw = maxNumber;
@@ -149,7 +149,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Draw the full (complete) path
         /// </summary>
-        public void extendPathFull()
+        public void ExtendPathFull()
         {
             numberToDraw = patFile.TrPathNodes.Count - 1;
         }
@@ -157,7 +157,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Draw less sections of the path
         /// </summary>
-        public void reducePath()
+        public void ReducePath()
         {
             if (--numberToDraw < 0) numberToDraw = 0;
         }
@@ -165,7 +165,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Go to initial node and draw no path sections
         /// </summary>
-        public void reducePathFull()
+        public void ReducePathFull()
         {
             numberToDraw = 0;
         }

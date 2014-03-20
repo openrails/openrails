@@ -57,21 +57,20 @@ namespace ORTS.TrackViewer.Drawing
             textures["blankPixel"].SetData(new[] { Color.White });
 
             int diameter = 64; // Needs to be power of two for mipmapping
-            int radius = (diameter - 2) / 2;
             textures["circle"] = CreateCircleTexture(graphicsDevice, diameter);
-            textureScales["circle"] = radius;
+            textureScales["circle"] = diameter;
             textureOffsets["circle"] = new Vector2(diameter/2, diameter/2);
 
             textures["disc"] = CreateDiscTexture(graphicsDevice, diameter);
-            textureScales["disc"] = radius;
+            textureScales["disc"] = diameter;
             textureOffsets["disc"] = new Vector2(diameter / 2, diameter / 2);
 
             textures["ring"] = CreateRingTexture(graphicsDevice, diameter);
-            textureScales["ring"] = radius;
+            textureScales["ring"] = diameter;
             textureOffsets["ring"] = new Vector2(diameter / 2, diameter / 2);
 
             textures["crossedRing"] = CreateCrossedRingTexture(graphicsDevice, diameter);
-            textureScales["crossedRing"] = radius;
+            textureScales["crossedRing"] = diameter;
             textureOffsets["crossedRing"] = new Vector2(diameter / 2, diameter / 2);
 
 
@@ -263,7 +262,7 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
-        /// private method to create a texture2D containing a ring (circle with thick border), with a cross in the middle
+        /// private method to create a texture2D containing a  (circle with thick border), with a cross in the middle
         /// </summary>
         /// <param name="graphicsDevice"></param>
         /// <param name="outerRadius">Outer radius (diameter) of the circle in pixels</param>
@@ -392,7 +391,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 int arcSteps = Math.Min(arcStepsRemaining, arcStepsPerLine); //angle steps we cover in this line
                 point = center + centerToPointDirection * (radius-sign*width/2);  // correct for width of line
-                float length = radius * arcSteps * minAngleRad;
+                float length = radius * arcSteps * minAngleRad + 1; // the +1 to prevent white lines in between arc sections
                 
                 spriteBatch.Draw(textures["blankPixel"], point, null, color,
                        angle, Vector2.Zero, new Vector2(length, width),
