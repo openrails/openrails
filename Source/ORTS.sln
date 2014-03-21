@@ -29,8 +29,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Formats", "ORTS.Format
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Updater", "ORTS.Updater\ORTS.Updater.csproj", "{88108A94-0389-43FF-A75C-C55BD202FC8D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Contrib", "Contrib", "{0CFBCEF9-66E9-4618-96BF-327B78583F42}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackViewer", "Contrib\TrackViewer\TrackViewer.csproj", "{79C3A70B-7535-40CB-8448-91AB87CBAE44}"
 EndProject
 Global
@@ -102,8 +100,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{79C3A70B-7535-40CB-8448-91AB87CBAE44} = {0CFBCEF9-66E9-4618-96BF-327B78583F42}
 	EndGlobalSection
 EndGlobal
