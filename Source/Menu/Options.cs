@@ -127,6 +127,7 @@ namespace ORTS
             checkUseMSTSEnv.Checked = settings.UseMSTSEnv;
             checkUseLocationPassingPaths.Checked = settings.UseLocationPassingPaths;
             checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
+            checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
 
             // DataLogger tab
             comboDataLoggerSeparator.Text = settings.DataLoggerSeparator;
@@ -282,6 +283,7 @@ namespace ORTS
             Settings.UseMSTSEnv = checkUseMSTSEnv.Checked;
             Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
+            Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
             
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.Text;

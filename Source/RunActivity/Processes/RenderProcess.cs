@@ -19,6 +19,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Viewer3D;
@@ -37,9 +38,10 @@ namespace ORTS.Processes
         public Viewer Viewer { get { return Game.State is GameStateViewer3D ? (Game.State as GameStateViewer3D).Viewer : null; } }
 
         public Profiler Profiler { get; private set; }
-        public Game Game { get; private set; }
 
-        public Vector2 WindowSize { get; private set; }
+        Game Game;
+        Form GameForm;
+        Point GameWindowSize;
 
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
 
@@ -66,13 +68,14 @@ namespace ORTS.Processes
         {
             Profiler = new Profiler("Render");
             Game = game;
+            GameForm = (Form)Control.FromHandle(Game.Window.Handle);
             Profiler.SetThread();
 
             Game.Window.Title = "Open Rails";
             GraphicsDeviceManager = new GraphicsDeviceManager(game);
 
             var windowSizeParts = Game.Settings.WindowSize.Split(new[] { 'x' }, 2);
-            WindowSize = new Vector2(Convert.ToInt32(windowSizeParts[0]), Convert.ToInt32(windowSizeParts[1]));
+            GameWindowSize = new Point(Convert.ToInt32(windowSizeParts[0]), Convert.ToInt32(windowSizeParts[1]));
 
             FrameRate = new SmoothedData();
             FrameTime = new SmoothedDataWithPercentiles();
@@ -86,14 +89,16 @@ namespace ORTS.Processes
 
             // Set up the rest of the graphics according to the settings.
             GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Game.Settings.VerticalSync;
-            GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
-            GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;
+            GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
+            GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth32;
             GraphicsDeviceManager.IsFullScreen = false;
             GraphicsDeviceManager.PreferMultiSampling = true;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
 
             if (Game.Settings.FullScreen)
                 ToggleFullScreen();
+
+            SynchronizeGraphicsDeviceManager();
         }
 
         void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
@@ -213,7 +218,7 @@ namespace ORTS.Processes
 
             if (ToggleFullScreenRequested)
             {
-                GraphicsDeviceManager.ToggleFullScreen();
+                SynchronizeGraphicsDeviceManager();
                 ToggleFullScreenRequested = false;
             }
 
@@ -227,6 +232,30 @@ namespace ORTS.Processes
                 // Swap frames and start the next update (non-threaded updater does the whole update).
                 SwapFrames(ref CurrentFrame, ref NextFrame);
                 Game.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalRealTime.TotalSeconds);
+            }
+        }
+
+        void SynchronizeGraphicsDeviceManager()
+        {
+            if (IsFullScreen)
+            {
+                var screen = Game.Settings.FastFullScreenAltTab ? Screen.FromControl(GameForm) : Screen.PrimaryScreen;
+                GraphicsDeviceManager.PreferredBackBufferWidth = screen.Bounds.Width;
+                GraphicsDeviceManager.PreferredBackBufferHeight = screen.Bounds.Height;
+            }
+            else
+            {
+                GraphicsDeviceManager.PreferredBackBufferWidth = GameWindowSize.X;
+                GraphicsDeviceManager.PreferredBackBufferHeight = GameWindowSize.Y;
+            }
+            if (Game.Settings.FastFullScreenAltTab)
+            {
+                GameForm.FormBorderStyle = IsFullScreen ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.FixedSingle;
+                GraphicsDeviceManager.ApplyChanges();
+            }
+            else if (GraphicsDeviceManager.IsFullScreen != IsFullScreen)
+            {
+                GraphicsDeviceManager.ToggleFullScreen();
             }
         }
 
@@ -313,24 +342,12 @@ namespace ORTS.Processes
             frame2 = temp;
         }
 
-        bool ToggleFullScreenRequested = false;
+        bool IsFullScreen;
+        bool ToggleFullScreenRequested;
         [CallOnThread("Updater")]
         public void ToggleFullScreen()
         {
-            var IsFullScreen = !GraphicsDeviceManager.IsFullScreen;
-            if (IsFullScreen)
-            {
-                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.PrimaryScreen;
-                GraphicsDeviceManager.PreferredBackBufferWidth = screen.Bounds.Width;
-                GraphicsDeviceManager.PreferredBackBufferHeight = screen.Bounds.Height;
-                GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
-                GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth32;
-            }
-            else
-            {
-                GraphicsDeviceManager.PreferredBackBufferWidth = (int)WindowSize.X;
-                GraphicsDeviceManager.PreferredBackBufferHeight = (int)WindowSize.Y;
-            }
+            IsFullScreen = !IsFullScreen;
             ToggleFullScreenRequested = true;
         }
 

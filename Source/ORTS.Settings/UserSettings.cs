@@ -192,6 +192,9 @@ namespace ORTS.Settings
         [Default(false)]
         public bool UseMSTSEnv { get; set; }
 
+        [Default(false)]
+        public bool FastFullScreenAltTab { get; set; }
+
 		// Data Logger settings:
 		[Default("comma")]
 		public string DataLoggerSeparator { set; get; }

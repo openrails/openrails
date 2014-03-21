@@ -67,6 +67,7 @@
             this.checkDynamicShadows = new System.Windows.Forms.CheckBox();
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
+            this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
             this.label20 = new System.Windows.Forms.Label();
             this.numericCurveResistanceOptimalSpeed = new System.Windows.Forms.NumericUpDown();
             this.label16 = new System.Windows.Forms.Label();
@@ -119,7 +120,7 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
+            this.checkFastFullScreenAltTab = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -677,6 +678,16 @@
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
             // 
+            // checkCurveSpeedDependent
+            // 
+            this.checkCurveSpeedDependent.AutoSize = true;
+            this.checkCurveSpeedDependent.Location = new System.Drawing.Point(6, 176);
+            this.checkCurveSpeedDependent.Name = "checkCurveSpeedDependent";
+            this.checkCurveSpeedDependent.Size = new System.Drawing.Size(140, 17);
+            this.checkCurveSpeedDependent.TabIndex = 6;
+            this.checkCurveSpeedDependent.Text = "Curve speed dependent";
+            this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
+            // 
             // label20
             // 
             this.label20.AutoSize = true;
@@ -878,6 +889,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkFastFullScreenAltTab);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
             this.tabPageExperimental.Controls.Add(this.checkLODAlwaysMaximum);
             this.tabPageExperimental.Controls.Add(this.checkUseLocationPassingPaths);
@@ -1371,15 +1383,15 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             // 
-            // checkCurveSpeedDependent
+            // checkBoxFastFullscreenAltTab
             // 
-            this.checkCurveSpeedDependent.AutoSize = true;
-            this.checkCurveSpeedDependent.Location = new System.Drawing.Point(6, 176);
-            this.checkCurveSpeedDependent.Name = "checkCurveSpeedDependent";
-            this.checkCurveSpeedDependent.Size = new System.Drawing.Size(140, 17);
-            this.checkCurveSpeedDependent.TabIndex = 6;
-            this.checkCurveSpeedDependent.Text = "Curve speed dependent";
-            this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
+            this.checkFastFullScreenAltTab.AutoSize = true;
+            this.checkFastFullScreenAltTab.Location = new System.Drawing.Point(6, 358);
+            this.checkFastFullScreenAltTab.Name = "checkBoxFastFullscreenAltTab";
+            this.checkFastFullScreenAltTab.Size = new System.Drawing.Size(129, 17);
+            this.checkFastFullScreenAltTab.TabIndex = 28;
+            this.checkFastFullScreenAltTab.Text = "Fast full-screen alt-tab";
+            this.checkFastFullScreenAltTab.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1527,5 +1539,6 @@
         private System.Windows.Forms.CheckBox checkDistantMountains;
         private System.Windows.Forms.CheckBox checkAlerterDisableExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
+        private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
     }
 }
