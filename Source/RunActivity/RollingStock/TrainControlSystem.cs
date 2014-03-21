@@ -26,6 +26,7 @@ using System.Linq;
 using System.Reflection;
 using MSTS.Formats;
 using MSTS.Parsers;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Viewer3D.Popups;
 
@@ -63,6 +64,7 @@ namespace ORTS
 
         string ScriptName;
         string SoundFileName;
+        string ParametersFileName;
         TrainControlSystem Script;
 
         public Dictionary<TrainControlSystem, string> Sounds = new Dictionary<TrainControlSystem, string>();
@@ -99,6 +101,7 @@ namespace ORTS
                 case "engine(awsmonitor": AWSMonitor = new MonitoringDevice(stf); break;
                 case "engine(ortstraincontrolsystem" : ScriptName = stf.ReadStringBlock(null); break;
                 case "engine(ortstraincontrolsystemsound": SoundFileName = stf.ReadStringBlock(null); break;
+                case "engine(ortstraincontrolsystemparameters": ParametersFileName = stf.ReadStringBlock(null); break;
             }
         }
 
@@ -181,6 +184,11 @@ namespace ORTS
                 Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as TrainControlSystem;
             }
 
+            if (ParametersFileName != null)
+            {
+                ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
+            }
+
             if (Script == null)
             {
                 Script = new MSTSTrainControlSystem();
@@ -207,7 +215,9 @@ namespace ORTS
             Script.DistanceM = () => Locomotive.DistanceM;
             Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.GetIsEmergency();
             Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.GetIsFullBrake();
+            Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;
             Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
+            Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? KPa.ToBar(KPa.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI)) : float.MaxValue;
             Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
             Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
             Script.IsAlerterEnabled = () => this.IsAlerterEnabled;
@@ -250,6 +260,10 @@ namespace ORTS
                 Locomotive.Train.SignalEvent(Event.Pantograph1Down);
                 Locomotive.Train.SignalEvent(Event.Pantograph2Down);
             };
+            Script.GetBoolParameter = (arg1, arg2, arg3) => LoadParameter<bool>(arg1, arg2, arg3);
+            Script.GetIntParameter = (arg1, arg2, arg3) => LoadParameter<int>(arg1, arg2, arg3);
+            Script.GetFloatParameter = (arg1, arg2, arg3) => LoadParameter<float>(arg1, arg2, arg3);
+            Script.GetStringParameter = (arg1, arg2, arg3) => LoadParameter<string>(arg1, arg2, arg3);
 
             Script.Initialize();
             Activated = true;
@@ -404,6 +418,20 @@ namespace ORTS
         {
             if (Script != null)
                 Script.HandleEvent(evt, message);
+        }
+
+        T LoadParameter<T>(string sectionName, string keyName, T defaultValue)
+        {
+            var buffer = new String('\0', 256);
+
+            var length = ORTS.Common.NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, ParametersFileName);
+            if (length > 0)
+            {
+                buffer.Trim();
+                return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else
+                return defaultValue;
         }
     }
 

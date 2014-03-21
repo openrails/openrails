@@ -221,7 +221,7 @@ namespace ORTS.Common
 		}
 	}
 
-	internal class NativeMethods
+	public sealed class NativeMethods
 	{
         [DllImport("KERNEL32.DLL", EntryPoint = "GetPrivateProfileSectionW", SetLastError = true, CharSet = CharSet.Unicode, ExactSpelling = true)]
         public static extern int GetPrivateProfileSection(string sectionName, string value, int size, string fileName);

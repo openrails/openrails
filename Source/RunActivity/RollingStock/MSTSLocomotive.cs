@@ -360,6 +360,7 @@ namespace ORTS
 
                 case "engine(ortstraincontrolsystem":
                 case "engine(ortstraincontrolsystemsound":
+                case "engine(ortstraincontrolsystemparameters":
                 case "engine(vigilancemonitor":
                 case "engine(emergencystopmonitor":
                 case "engine(awsmonitor":

@@ -189,6 +189,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<int, float> NextPostDistanceM;
         /// <summary>
+        /// Train's length
+        /// </summary>
+        public Func<float> TrainLengthM;
+        /// <summary>
         /// Train's actual absolute speed.
         /// </summary>
         public Func<float> SpeedMpS;
@@ -208,6 +212,10 @@ namespace ORTS.Scripting.Api
         /// True if train brake controller is in full service position, otherwise false.
         /// </summary>
         public Func<bool> IsBrakeFullService;
+        /// <summary>
+        /// Train brake pipe pressure. Returns float.MaxValue if no data is available.
+        /// </summary>
+        public Func<float> BrakePipePressureBar;
 
         // TODO: The following will be available in .NET 4 as normal Func:
         public delegate TResult Func5<T1, T2, T3, T4, T5, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
@@ -320,6 +328,22 @@ namespace ORTS.Scripting.Api
         /// Will be whown on ASPECT_DISPLAY cabcontrol.
         /// </summary>
         public Action<Aspect> SetNextSignalAspect;
+        /// <summary>
+        /// Get bool parameter in the INI file.
+        /// </summary>
+        public Func<string, string, bool, bool> GetBoolParameter;
+        /// <summary>
+        /// Get int parameter in the INI file.
+        /// </summary>
+        public Func<string, string, int, int> GetIntParameter;
+        /// <summary>
+        /// Get int parameter in the INI file.
+        /// </summary>
+        public Func<string, string, float, float> GetFloatParameter;
+        /// <summary>
+        /// Get string parameter in the INI file.
+        /// </summary>
+        public Func<string, string, string, string> GetStringParameter;
 
         /// <summary>
         /// Called once at initialization time.
