@@ -44,6 +44,7 @@ namespace ORTS.Viewer3D
         public Vector3 Location { get { return cameraLocation.Location; } }
         public WorldLocation CameraWorldLocation { get { return cameraLocation; } }
         protected int MouseScrollValue;
+        protected internal float FieldOfView;
 
         protected Matrix xnaView;
         public Matrix XnaView { get { return xnaView; } }
@@ -78,25 +79,31 @@ namespace ORTS.Viewer3D
         protected Camera(Viewer viewer)
         {
             Viewer = viewer;
+            FieldOfView = Viewer.Settings.ViewingFOV;
         }
 
         protected Camera(Viewer viewer, Camera previousCamera) // maintain visual continuity
             : this(viewer)
         {
             if (previousCamera != null)
+            {
                 cameraLocation = previousCamera.CameraWorldLocation;
+                FieldOfView = previousCamera.FieldOfView;
+            }
         }
 
         [CallOnThread("Updater")]
         protected internal virtual void Save(BinaryWriter output)
         {
             cameraLocation.Save(output);
+            output.Write(FieldOfView);
         }
 
         [CallOnThread("Render")]
         protected internal virtual void Restore(BinaryReader input)
         {
             cameraLocation.Restore(input);
+            FieldOfView = input.ReadInt32();
         }
 
         /// <summary>
@@ -104,6 +111,8 @@ namespace ORTS.Viewer3D
         /// </summary>
         public virtual void Reset()
         {
+            FieldOfView = Viewer.Settings.ViewingFOV;
+            ScreenChanged();
         }
 
         /// <summary>
@@ -154,7 +163,7 @@ namespace ORTS.Viewer3D
         {
             var aspectRatio = (float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y;
             var farPlaneDistance = SkyConstants.skyRadius + 100;  // so far the sky is the biggest object in view
-            var fovWidthRadians = MathHelper.ToRadians(Viewer.Settings.ViewingFOV);
+            var fovWidthRadians = MathHelper.ToRadians(FieldOfView);
             if (Viewer.Settings.DistantMountains)
                 XnaDistantMountainProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, MathHelper.Clamp(Viewer.Settings.ViewingDistance - 500, 500, 1500), Viewer.Settings.DistantMountainsViewingDistance);
             xnaProjection = Matrix.CreatePerspectiveFieldOfView(fovWidthRadians, aspectRatio, NearPlane, Viewer.Settings.ViewingDistance);
@@ -245,6 +254,21 @@ namespace ORTS.Viewer3D
             return speed;
         }
 
+        protected virtual void ZoomIn(float speed)
+        {
+        }
+
+        // <CJComment> To Do: Add a way to record this zoom operation. </CJComment>
+        protected void ZoomByMouseWheel(float speed)
+        {
+            // Will not zoom-in-out when help windows is up.
+            // TODO: Propery input processing through WindowManager.
+            if (UserInput.IsMouseWheelChanged() && !Viewer.HelpWindow.Visible)
+            {
+                var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange() / 10, 1, 135);
+                new FieldOfViewCommand(Viewer.Log, fieldOfView);
+            }
+        }
 
         /// <summary>
         /// Returns a position in XNA space relative to the camera's tile
@@ -539,19 +563,6 @@ namespace ORTS.Viewer3D
             cameraLocation.Normalize();
         }
 
-        protected virtual void ZoomIn(float speed)
-        {
-        }
-
-        // <CJComment> To Do: Add a way to record this zoom operation. </CJComment>
-        protected void ZoomByMouseWheel(float speed, float factor)
-        {
-            // Will not zoom-in-out when help windows is up.
-            // TODO: Propery input processing through WindowManager.
-            if (UserInput.IsMouseWheelChanged() && !Viewer.HelpWindow.Visible)
-                ZoomIn(Math.Sign(UserInput.MouseWheelChange()) * speed * factor);
-        }
-
         /// <summary>
         /// A margin of half a step (increment/2) is used to prevent hunting once the target is reached.
         /// </summary>
@@ -619,7 +630,7 @@ namespace ORTS.Viewer3D
             if (UserInput.IsDown(UserCommands.CameraPanDown)) PanUp(-speed);
             if (UserInput.IsDown(UserCommands.CameraZoomIn)) ZoomIn(speed * ZoomFactor);
             if (UserInput.IsDown(UserCommands.CameraZoomOut)) ZoomIn(-speed * ZoomFactor);
-            ZoomByMouseWheel(speed, ZoomFactor * 2);  // * 2 to get similar speed as with keypress
+            ZoomByMouseWheel(speed);
 
             if (UserInput.IsPressed(UserCommands.CameraPanRight) || UserInput.IsPressed(UserCommands.CameraPanLeft))
             {
@@ -1021,11 +1032,11 @@ namespace ORTS.Viewer3D
         {
             MoveCar();
 
-            var speed = GetSpeed(elapsedTime) * ZoomFactor;
+            var speed = GetSpeed(elapsedTime);
 
-            if (UserInput.IsDown(UserCommands.CameraZoomOut)) ZoomIn(speed);
-            if (UserInput.IsDown(UserCommands.CameraZoomIn)) ZoomIn(-speed);
-            ZoomByMouseWheel(speed, ZoomFactor * 20);// * 20 to get similar speed as with keypress
+            if (UserInput.IsDown(UserCommands.CameraZoomOut)) ZoomIn(speed * ZoomFactor);
+            if (UserInput.IsDown(UserCommands.CameraZoomIn)) ZoomIn(-speed * ZoomFactor);
+            ZoomByMouseWheel(speed);
 
             if (UserInput.IsPressed(UserCommands.CameraZoomOut) || UserInput.IsPressed(UserCommands.CameraZoomIn))
             {
@@ -1193,6 +1204,9 @@ namespace ORTS.Viewer3D
             if (UserInput.IsDown(UserCommands.CameraRotateDown) || UserInput.IsDown(UserCommands.CameraPanDown)) RotateDown(speed);
             if (UserInput.IsDown(UserCommands.CameraRotateLeft) || UserInput.IsDown(UserCommands.CameraPanLeft)) RotateRight(-speed);
             if (UserInput.IsDown(UserCommands.CameraRotateRight) || UserInput.IsDown(UserCommands.CameraPanRight)) RotateRight(speed);
+            
+            // Zoom
+            ZoomByMouseWheel(speed);
 
             // Support for replaying camera rotation movements
             if (UserInput.IsPressed(UserCommands.CameraRotateUp) || UserInput.IsPressed(UserCommands.CameraRotateDown)
@@ -1571,6 +1585,7 @@ namespace ORTS.Viewer3D
                     CameraAltitudeOffset = 0;
                 }
             }
+            ZoomByMouseWheel(speed);
 
             var trainCars = Viewer.SelectedTrain.Cars;
             if (UserInput.IsPressed(UserCommands.CameraCarNext))

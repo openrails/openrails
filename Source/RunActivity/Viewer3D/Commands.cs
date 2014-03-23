@@ -1481,4 +1481,23 @@ namespace ORTS.Viewer3D
             // Report();
         }
     }
+
+    [Serializable]
+    public class FieldOfViewCommand : UseCameraCommand
+    {
+        float FieldOfView;
+
+        public FieldOfViewCommand(CommandLog log, float fieldOfView)
+            : base(log)
+        {
+            FieldOfView = fieldOfView;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.Camera.FieldOfView = FieldOfView;
+            Receiver.Camera.ScreenChanged();
+        }
+    }
 }
