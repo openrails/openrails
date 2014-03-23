@@ -36,6 +36,7 @@ namespace ORTS.Viewer3D.Popups
 		public static Texture2D WhiteTexture;
 		public static Texture2D ScrollbarTexture;
 		public static Texture2D LabelShadowTexture;
+        public static Texture2D NoticeTexture;
         public static Texture2D PauseTexture;
 
         // This is all a bit of a hack, since SpriteBatch does not expose its own internal Flush() method. What we do
@@ -67,9 +68,9 @@ namespace ORTS.Viewer3D.Popups
         internal Point ScreenSize = new Point(10000, 10000); // Arbitrary but necessary.
 		ResolveTexture2D Screen;
 
-		public WindowManager(Viewer viewer)
-		{
-			Viewer = viewer;
+        public WindowManager(Viewer viewer)
+        {
+            Viewer = viewer;
             WindowManagerMaterial = new BasicBlendedMaterial(viewer, "WindowManager");
             PopupWindowMaterial = (PopupWindowMaterial)Viewer.MaterialManager.Load("PopupWindow");
             TextManager = new WindowTextManager();
@@ -96,12 +97,13 @@ namespace ORTS.Viewer3D.Popups
             if (LabelShadowTexture == null)
                 // TODO: This should happen on the loader thread.
                 LabelShadowTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "WindowLabelShadow.png"));
-            if (PauseTexture == null)
+            if (NoticeTexture == null)
             {
                 var size = 256;
                 var background = new Color(Color.Black, 0.5f);
                 var borderRadius = size / 7;
                 var data = new Color[size * size * 2];
+
                 // Rounded corner background.
                 for (var y = 0; y < size; y++)
                     for (var x = 0; x < size; x++)
@@ -111,13 +113,21 @@ namespace ORTS.Viewer3D.Popups
                             || (Math.Sqrt((x - borderRadius) * (x - borderRadius) + (y - size + borderRadius) * (y - size + borderRadius)) < borderRadius)
                             || (Math.Sqrt((x - size + borderRadius) * (x - size + borderRadius) + (y - size + borderRadius) * (y - size + borderRadius)) < borderRadius))
                             data[y * size + x] = background;
+
+                // Notice texture is just the rounded corner background.
+                NoticeTexture = new Texture2D(Viewer.GraphicsDevice, size, size, 1, TextureUsage.None, SurfaceFormat.Color);
+                NoticeTexture.SetData(data, 0, size * size, SetDataOptions.Discard);
+
+                // Clone the background for pause texture (it has two states).
                 Array.Copy(data, 0, data, size * size, size * size);
+
                 // Play ">" symbol.
                 for (var y = size / 7; y < size - size / 7; y++)
                 {
                     for (var x = size / 7; x < size - size / 7 - 2 * Math.Abs(y - size / 2); x++)
                         data[y * size + x] = Color.White;
                 }
+
                 // Pause "||" symbol.
                 for (var y = size + size / 7; y < 2 * size - size / 7; y++)
                 {
@@ -126,6 +136,7 @@ namespace ORTS.Viewer3D.Popups
                     for (var x = size * 4 / 7; x < size * 5 / 7; x++)
                         data[y * size + x] = Color.White;
                 }
+
                 PauseTexture = new Texture2D(Viewer.GraphicsDevice, size, size * 2, 1, TextureUsage.None, SurfaceFormat.Color);
                 PauseTexture.SetData(data);
             }

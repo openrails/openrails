@@ -66,6 +66,7 @@ namespace ORTS.Viewer3D
         public WindowManager WindowManager { get; private set; }
         public QuitWindow QuitWindow { get; private set; } // Escape window
         public MessagesWindow MessagesWindow { get; private set; } // Game message window (special, always visible)
+        public NoticeWindow NoticeWindow { get; private set; } // Game notices window (special)
         public PauseWindow PauseWindow { get; private set; } // Game paused window (special)
         public HelpWindow HelpWindow { get; private set; } // F1 window
         public TrackMonitorWindow TrackMonitorWindow { get; private set; } // F4 window
@@ -310,6 +311,7 @@ namespace ORTS.Viewer3D
             WindowManager = new WindowManager(this);
             QuitWindow = new QuitWindow(WindowManager);
             MessagesWindow = new MessagesWindow(WindowManager);
+            NoticeWindow = new NoticeWindow(WindowManager);
             PauseWindow = new PauseWindow(WindowManager);
             HelpWindow = new HelpWindow(WindowManager);
             TrackMonitorWindow = new TrackMonitorWindow(WindowManager);
