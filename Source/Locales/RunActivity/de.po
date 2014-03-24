@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Open Rails\n"
-"POT-Creation-Date: 2014-03-07 18:43:33+0000\n"
-"PO-Revision-Date: 2014-03-08 12:54+0100\n"
+"POT-Creation-Date: 2014-03-21 18:43:41+0000\n"
+"PO-Revision-Date: 2014-03-22 12:57+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -12,19 +12,19 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:2074
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:2035
 msgid "Switching Request Sent to the Server"
 msgstr "Weichenstellanfrage an Server gesendet"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:197
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:177
 msgid "View Self"
 msgstr "Selbst ansehen"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:588
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
 msgstr "Nachricht an Server"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:592
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:553
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
 msgstr "Nachricht an alle"
@@ -59,9 +59,8 @@ msgid "Compose MSG"
 msgstr "Nachricht verfassen"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
-#, fuzzy
 msgid "Res"
-msgstr "Res"
+msgstr "Auflösung"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
@@ -137,14 +136,14 @@ msgstr "Ausgewählten antworten"
 msgid "MessageViewer"
 msgstr "Nachrichtenansicht"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:189
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:219
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:220
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:221
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:171
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:201
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:202
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:203
 msgid "-"
 msgstr "-"
 
-#: ../../RunActivity/Debugging/SoundDebugForm.cs:218
+#: ../../RunActivity/Debugging/SoundDebugForm.cs:200
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:337
 msgid "0"
 msgstr "0"
@@ -198,10 +197,103 @@ msgstr ""
 msgid "SoundDebugForm"
 msgstr "SoundDebugFormular"
 
-#: ../../RunActivity/MultiPlayer/Message.cs:2975
-#, fuzzy, csharp-format
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:116
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:128
+msgid "Connection to the server is lost, will play as single mode"
+msgstr "Serververbindung unterbrochen. Fortsetzung als Einzelspieler."
+
+#: ../../RunActivity/MultiPlayer/ClientComm.cs:145
+msgid "Alt-E to gain control of your train"
+msgstr "Alt-E um den Zug unter Ihre Kontrolle zu bringen."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:643
+msgid "Dispatcher does not allow hand throw at this time"
+msgstr "Disponent erlaubt derzeit keine manuelle Weichenstellung."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:687
+msgid "main route"
+msgstr "Hauptausgang"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:687
+msgid "side route"
+msgstr "Nebenausgang"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1461
+msgid "You are the new dispatcher. Enjoy!"
+msgstr "Sie sind der neue Disponent. Viel Spaß!"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1591
+msgid "Name conflicted with people in the game, will play in single mode"
+msgstr "Nickname im Spiel dupliziert. Fortsetzung als Einzelspieler."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1666
+#: ../../RunActivity/MultiPlayer/MPManager.cs:130
+msgid "You gained back the control of your train"
+msgstr "Sie haben Ihren Zug wieder unter eigener Kontrolle."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1876
+msgid "Server quits, will play as single mode"
+msgstr "Server beendet das Spiel, Fortsetzung als Einzelspieler."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2157
+#: ../../RunActivity/MultiPlayer/Message.cs:2403
+msgid "Trains uncoupled, gain back control by Alt-E"
+msgstr ""
+"Züge abgekuppelt. Alt-E um den Zug wieder unter Ihre Kontrolle zu bringen."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2541
+#: ../../RunActivity/MultiPlayer/Message.cs:2649
+msgid "Trains coupled, hit \\ then Shift-? to release brakes"
+msgstr "Züge zusammengekuppelt. \\ und danach Shift-? um Bremsen zu lösen."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:3094
+msgid "You are an assistant now, will be able to handle switches and signals."
+msgstr "Sie sind jetzt ein Assisten und können Weichen und Signale schalten."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:3100
+msgid "You are no longer an assistant."
+msgstr "Sie sind kein Assistent mehr."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:686
+#, csharp-format
+msgid "Switched, current route is {0}"
+msgstr "Weiche gestellt, aktueller Fahrweg ist {0}."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1468
+#, csharp-format
+msgid "New dispatcher is {0}"
+msgstr "Neuer Disponent: {0}"
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1887
+#: ../../RunActivity/MultiPlayer/OnlinePlayer.cs:148
+#, csharp-format
+msgid "{0} quit."
+msgstr "{0} beendet."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:1959
+#, csharp-format
+msgid "{0} lost."
+msgstr "{0} verloren."
+
+#: ../../RunActivity/MultiPlayer/Message.cs:2979
+#, csharp-format
 msgid " From {0}: {1}"
 msgstr "Von {0}: {1}"
+
+#: ../../RunActivity/MultiPlayer/MPManager.cs:740
+msgid "Missing car, have substituted with other one."
+msgstr "Fehlender Waggon durch anderen ersetzt."
+
+#: ../../RunActivity/MultiPlayer/MPManager.cs:388
+#, csharp-format
+msgid "Cannot decouple: train has {0} player, need to completely stop."
+msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
+msgstr[0] ""
+"Abkuppeln nicht möglich: Zug von {0} Spieler bedient; muss vollständig "
+"anhalten."
+msgstr[1] ""
+"Abkuppeln nicht möglich: Zug von {0} Spielern bedient; muss vollständig "
+"anhalten."
 
 #: ../../RunActivity/Physics/Train.cs:1288
 msgid "Coupler broken!"
@@ -211,63 +303,63 @@ msgstr "Kupplung gebrochen!"
 msgid "Coupler overloaded!"
 msgstr "Kupplung überlastet!"
 
-#: ../../RunActivity/Physics/Train.cs:3846
-#: ../../RunActivity/Physics/Train.cs:3851
+#: ../../RunActivity/Physics/Train.cs:3862
+#: ../../RunActivity/Physics/Train.cs:3867
 msgid "Other train is blocking path"
 msgstr "Anderer Zug blockiert Fahrstraße."
 
-#: ../../RunActivity/Physics/Train.cs:4738
+#: ../../RunActivity/Physics/Train.cs:4731
 msgid "Stopped due to errors in route setting"
 msgstr "Wegen Fehlern in den Routeneinstellungen angehalten"
 
-#: ../../RunActivity/Physics/Train.cs:5403
-#: ../../RunActivity/Physics/Train.cs:6476
+#: ../../RunActivity/Physics/Train.cs:5396
+#: ../../RunActivity/Physics/Train.cs:6469
 msgid "No signal in train's path"
 msgstr "Kein Signal entlang der Fahrstraße"
 
-#: ../../RunActivity/Physics/Train.cs:5411
+#: ../../RunActivity/Physics/Train.cs:5404
 msgid "Next signal already allocated to other train"
 msgstr "Nächstes Signal schon anderem Zug zugewiesen"
 
-#: ../../RunActivity/Physics/Train.cs:5472
+#: ../../RunActivity/Physics/Train.cs:5465
 msgid "Request to clear signal cannot be processed"
 msgstr "Anfrage zur Signalfreigabe kann nicht verarbeitet werden"
 
-#: ../../RunActivity/Physics/Train.cs:5578
-#: ../../RunActivity/Physics/Train.cs:6596
+#: ../../RunActivity/Physics/Train.cs:5571
+#: ../../RunActivity/Physics/Train.cs:6589
 msgid "No switch found"
 msgstr "Keine Weiche gefunden"
 
-#: ../../RunActivity/Physics/Train.cs:6830
+#: ../../RunActivity/Physics/Train.cs:6823
 msgid "Train is not back on original route"
 msgstr "Zug nicht wieder auf ursprünglicher Fahrstraße"
 
-#: ../../RunActivity/Physics/Train.cs:6839
+#: ../../RunActivity/Physics/Train.cs:6832
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Ursprüngliche Farhstraße verläuft in entgegengesetzte Richtung. Zug vor "
 "umschalten anhalten."
 
-#: ../../RunActivity/Physics/Train.cs:6852
+#: ../../RunActivity/Physics/Train.cs:6845
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Umschalten zum Manuellen Modus im Erkundungsmodus nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:6945
+#: ../../RunActivity/Physics/Train.cs:6938
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 "Richtungsänderung erforderlich, aber Zugenede nicht auf richiger Fahrstraße."
 
-#: ../../RunActivity/Physics/Train.cs:7132
+#: ../../RunActivity/Physics/Train.cs:7125
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Signalfreigabe hinter dem Zug im automatischen Modus nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:7374
+#: ../../RunActivity/Physics/Train.cs:7368
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 
-#: ../../RunActivity/Physics/Train.cs:7416
+#: ../../RunActivity/Physics/Train.cs:7409
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Zug wegen Problemen mit anderem Zug angehalten: Zug {0} , Grund: {1}"
@@ -332,19 +424,19 @@ msgstr "Dauerservice"
 msgid "Full Service"
 msgstr "Vollservice"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:998
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1010
 msgid "Tender coal supply is empty. Your loco will fail."
 msgstr "Der Kohlentender ist leer. Ihre Lokomotive wird liegenbleiben."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1012
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1024
 msgid "Tender water supply is empty. Your loco will fail."
 msgstr "Der Wassertender ist leer. Ihre Lokomotive wird liegenbleiben."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1066
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1078
 msgid "Fire has dropped too far. Your loco will fail."
 msgstr "Das Feuer ist zu schwach geworden. Ihre Lokomotive wird liegenbleiben."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1142
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1154
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
@@ -352,7 +444,13 @@ msgstr ""
 "Die Feuermasse wird gering. Ihr Heizer wird schneller schaufeln, aber lassen "
 "Sie ihn sich nicht überarbeiten."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1748
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1167
+msgid "FireMass is back within limits. Your fireman will shovel as per normal."
+msgstr ""
+"Die Feuermasse hat sich normalisiert. Ihr Heizer wird wieder normal "
+"schaufeln."
+
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1760
 msgid ""
 "You are exceeding the maximum recommended speed. Continued operation at this "
 "speed may cause damage."
@@ -360,19 +458,31 @@ msgstr ""
 "Sie überschreiten die maximal empfohlene Geschwindigkeit. Längerer Betrieb "
 "bei dieser Geschwindigkeit kann Beschädigungen verursachen."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1936
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1948
 msgid "Water level dropped too far. Plug has fused and loco has failed."
 msgstr ""
 "Der Wasserstand ist zu weit abgesunken. Die Bleistopfen sind gescholzen und "
 "die Lokomotive ist liegengeblieben."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1943
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1955
 msgid "Boiler overfull and priming."
 msgstr "Kessel übervoll, aber Wasserzufuhr nicht unterbrochen."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1949
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1961
 msgid "Boiler no longer priming."
 msgstr "Wasserzufuhr zum Kessel unterbrochen."
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:345
+msgid ""
+"You are travelling too fast for this curve. Slow down, your passengers are "
+"feeling uncomfortable, or your train may derail."
+msgstr ""
+"Sie fahren zu schnell für diese Kurve. Verlangsamen Sie die Fahrt, um den "
+"Passagierkomfort zu erhöhen und eine Entgleisung zu verhindern."
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:372
+msgid "Your train has overturned."
+msgstr "Ihr Zug hat sich überschlagen."
 
 #: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
@@ -896,9 +1006,8 @@ msgid "up"
 msgstr "hinaufschalten"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
-#, fuzzy
 msgid "locked. Use shaft before changing gear."
-msgstr "gesperrt. Vor schalten Kupplung benutzen."
+msgstr "gesperrt. Vor schalten  Getriebeschaltwelle benutzen."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "Signal mode"
@@ -997,9 +1106,39 @@ msgctxt "Labels"
 msgid "none"
 msgstr "keine"
 
+#: ../../RunActivity/Viewer3D/Viewer.cs:537
+#: ../../RunActivity/Viewer3D/Viewer.cs:650
+msgid "Cab view not available"
+msgstr "Führerstandsansicht nicht verfügbar."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:599
+msgid "In MP, use Alt-F4 to quit directly"
+msgstr "Benutzen Sie Alt-F4, um den Mehrspielermodus direkt zu beenden."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:675
+msgid "Will not ratate cab and land"
+msgstr "Führerstand und Umgebung werden nicht mehr mitgedreht."
+
 #: ../../RunActivity/Viewer3D/Viewer.cs:1079
 msgid "Game saved"
 msgstr "Spiel gespeichert"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:666
+#, csharp-format
+msgid "Vibrating at level {0}"
+msgstr "Vibrationslevel {0}"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:674
+#, csharp-format
+msgid "Rotating cab {0}/4, rotating land {1}/4"
+msgstr "Führerstands-Drehung {0}/4, Umgebungs-Drehung {1}/4"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:698
+#, csharp-format
+msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
+msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
+msgstr[0] "{0} Kameraeinstellung gespeichert. Shift+8 zum Reaktivieren."
+msgstr[1] "{0} Kameraeinstellungen gespeichert. Shift+8 zum Reaktivieren."
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
 msgid "Activity Events"
@@ -1288,3 +1427,56 @@ msgstr " Entf       Begr    Signal"
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
 msgid "Train Operations"
 msgstr "Zugbedienung"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:477
+msgid "water"
+msgstr "Wasser"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:478
+msgid "coal"
+msgstr "Kohle"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:479
+msgid "diesel oil"
+msgstr "Diesel"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:480
+msgid "wood"
+msgstr "Holz"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:590
+msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
+msgstr ""
+"Auftanken: Keine geeignete Tankstelle auf der Route. Wird sofort aufgefüllt."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:598
+#, csharp-format
+msgid "Refill: Distance to {0} supply is {1}."
+msgstr "Auftanken: Entfernung zur nächsten {0}-Tankstelle: {1}."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:604
+#, csharp-format
+msgid "Refill: Loco must be stationary to refill {0}."
+msgstr "Auftanken: Lokomotive muss stillstehen, um {0} auftanken zu können."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:610
+#, csharp-format
+msgid "Refill: Loco speed must exceed {0}."
+msgstr "Auftanken: Geschwindigkeit muss größer als {0} sein."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
+#, csharp-format
+msgid "Refill: Loco speed must not exceed {0}."
+msgstr "Auftanken: Geschwindigkeit darf nicht größer als {0} sein."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+#, csharp-format
+msgid "Refill: {0} supply now replenished."
+msgstr "Auftanken: {0} Vorrat jetzt ergänzt."
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:599
+#, csharp-format
+msgid "{0} meter"
+msgid_plural "{0} meters"
+msgstr[0] "{0} Meter"
+msgstr[1] "{0} Meter"

@@ -1,85 +1,86 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2014-03-24 17:54:54+0100\n"
-"PO-Revision-Date: 2014-03-24 17:59+0100\n"
-"Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
+"Project-Id-Version: Open Rails\n"
+"POT-Creation-Date: 2014-03-21 18:43:27+0000\n"
+"PO-Revision-Date: 2014-03-22 13:10+0100\n"
+"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: \n"
-"Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: de\n"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:513
 msgid "Do you really want to Quit?"
-msgstr "Tényleg ki szeretnél lépni?"
+msgstr "Wollen Sie TrackViewer wirklich beenden?"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:557
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
 msgstr ""
-"Érvénytelen telepítési könyvtár.\n"
-"A telepítési könyvtárnak tartalmaznia kell ROUTES, GLOBAL, stb. könyvtárakat"
+"Der ausgewählte Ordner ist kein gültiger Installationsordner.\n"
+"Der Installationsordner muss die Unterordner ROUTES, GLOBAL, etc. enthalten."
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:611
 msgid "Loading route..."
-msgstr "Pálya betöltése..."
+msgstr "Lade Route..."
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:631
 msgid "Route cannot be loaded. Sorry"
-msgstr "A pályát nem lehet betölteni. Elnézést"
+msgstr "Route konnte nicht geladen werden. Sorry."
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:676
 msgid "Loading .pat file ..."
-msgstr ".pat fájl betöltése..."
+msgstr "Lade .pat Datei..."
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:679
 msgid "Processing .pat file ..."
-msgstr ".pat fájl feldolgozása..."
+msgstr "Lese .pat Datei..."
 
 #: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:119
 msgid "Loading trackfile .trk ..."
-msgstr "Vágányfájl (.trk) betöltése"
+msgstr "Lade .trk Schienendatei..."
 
 #: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:123
 msgid "Loading track database .tdb ..."
-msgstr "Vágányadatbázis (.tdb) betöltése"
+msgstr "Lade .tdb Schienendatenbank..."
 
 #: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:128
 msgid "Loading tsection.dat ..."
-msgstr "tsection.dat betöltése..."
+msgstr "Lade tsection.dat Datei..."
 
 #: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:139
 msgid "Finding the angles to draw signals ..."
-msgstr "Szögek meghatározása a jelzők rajzolásához"
+msgstr "Scuhe Winkel um Signale anzuzeigen..."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:77
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml.cs:68
+#, fuzzy
 msgid "elementHost"
 msgstr "elementHost"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:4
 msgid "Path metadata"
-msgstr "Útvonal metaadatai"
+msgstr "Fahrstraßen-Beschreibungsdaten"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:7
 msgid "Path ID"
-msgstr "Útvonal azonosítója"
+msgstr "Fahrstraßen-ID"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:11
 msgid "Path name"
-msgstr "Útvonal neve"
+msgstr "Name der Fahrstraße"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:15
 msgid "Path start"
-msgstr "Útvonal kezdete"
+msgstr "Start der Fahrstraße"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:19
 msgid "Path end"
-msgstr "Útvonal vége"
+msgstr "Ende der Fahrstraße"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:23
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
@@ -91,360 +92,359 @@ msgstr " OK "
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:17
 msgid " Cancel "
-msgstr " Mégse "
+msgstr "Abbrechen"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:4
 msgid "(Un)couple Point"
-msgstr "(Le)csatolási pont"
+msgstr "Ab- / Ankuppelpunkt"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:7
 msgid "Uncouple  "
-msgstr "Lecsatolni"
+msgstr "Abkuppeln"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:8
 msgid "Couple  "
-msgstr "Csatolni"
+msgstr "Ankuppeln"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
+#, fuzzy
 msgid "cars, wait for "
-msgstr "kocsit, várakozás"
+msgstr "Waggons, warten auf"
 
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:12
 msgid "seconds"
-msgstr "másodpercig"
+msgstr "Sekunden"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:4
 msgid "Wait Point"
-msgstr "Várakozási pont"
+msgstr "Wartepunkt"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:7
 msgid "Wait until  "
-msgstr "Időpontig"
+msgstr "Warten bis"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:8
 msgid "Wait time"
-msgstr "Időtartam"
+msgstr "Wartezeit"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:9
 msgid " = "
-msgstr ":"
+msgstr " = "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:11
 msgid "hours"
-msgstr "óra"
+msgstr "Stunden"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:13
 msgid "minutes"
-msgstr "perc"
+msgstr "Minuten"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
 msgid "File"
-msgstr "Fájl"
+msgstr "Datei"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route"
-msgstr "Pálya (újra)betöltése"
+msgstr "Route (erneut) laden"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
 msgid "Select install folder"
-msgstr "Telepítési könyvtár kiválasztása"
+msgstr "Installationsordner auswählen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:11
 msgid "Select route"
-msgstr "Pálya kiválasztása"
+msgstr "Route auswählen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:13
 msgid "Search by index"
-msgstr "Keresés index alapján"
+msgstr "Nach Index durchsuchen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:14
 msgid "Search trackNode"
-msgstr "Vágánycsomópont keresése"
+msgstr "trackNode suchen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:15
 msgid "Search trackNode for roads"
-msgstr "Közúti csomópont keresése"
+msgstr "trackNode nach Straßen durchsuchen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:16
 msgid "Search trackItem"
-msgstr "Vágányelem keresése"
+msgstr "trackItem suchen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:17
 msgid "Search trackItem for roads"
-msgstr "Közútelem keresése"
+msgstr "trackItem nach Straßen durchsuchen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:20
 msgid "Quit (Q)"
-msgstr "Kilépés"
+msgstr "Beenden (Q)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:22
 msgid "View"
-msgstr "Nézet"
+msgstr "Ansicht"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:23
 msgid "Center around platform"
-msgstr "Peron középre igazítása"
+msgstr "Auf Bahnsteig zentrieren"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:26
 msgid "Center around siding"
-msgstr "Mellékvágány középre igazítása"
+msgstr "Auf Nebengleis zentrieren"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:30
 msgid "Show inset"
-msgstr "Kis átnézeti kép"
+msgstr "Minikarte anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:31
 msgid "Show world tiles"
-msgstr "Használt tile-ok"
+msgstr "World Tiles anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:32
 msgid "Show scale ruler"
-msgstr "Méretskála"
+msgstr "Maßstabsinfo anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:33
 msgid "Use miles i.s.o. meters"
-msgstr "Mérföld használata méter helyett"
+msgstr "Meilen statt Metern verwenden"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:35
 msgid "Save current zoom"
-msgstr "Jelenlegi nagyítás elmentése"
+msgstr "Aktuelle Zoomeinstellung speichern"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:36
 msgid "Restore saved zoom"
-msgstr "Elmentett nagyítás visszaállítása"
+msgstr "Gespeicherte Zoomeinstellung laden"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:38
 msgid "Zoom in (=)"
-msgstr "Nagyítás"
+msgstr "Hineinzoomen (=)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:39
 msgid "Zoom out (-)"
-msgstr "Kicsinyítés"
+msgstr "Herauszoomen (-)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:40
 msgid "Zoom to tile (z)"
-msgstr "Tile-ra nagyítás"
+msgstr "Auf Tile zoomen (z)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:41
 msgid "Zoom reset (r)"
-msgstr "Eredeti nagyítás"
+msgstr "Zoom zurücksetzen (r)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:47
 msgid "Tracks"
-msgstr "Vágányok"
+msgstr "Gleise"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:48
 msgid "Color tracks"
-msgstr "Vágányok színezése"
+msgstr "Farbige Gleise"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
 msgid "Junctions/ends"
-msgstr "Váltók/végpontok"
+msgstr "Weichen/Gleisenden"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
 msgid "Show junctions"
-msgstr "Váltók"
+msgstr "Weichen anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:51
 msgid "Show end nodes"
-msgstr "Végpontok"
+msgstr "EndNodes anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
 msgid "Sidings"
-msgstr "Mellékvágányok"
+msgstr "Nebengleise"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
 msgid "Show siding markers (F9)"
-msgstr "Mellékvágányjelölők"
+msgstr "Nebengleismarker anzeigen (F9)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
 msgid "Show siding names (shift-F9)"
-msgstr "Mellékvágánynevek"
+msgstr "Nebengleisnamen anzeigen (Umschalt-F9)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
 msgid "Platforms"
-msgstr "Peronok"
+msgstr "Bahnsteige"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
 msgid "Show platform markers (F8)"
-msgstr "Peronjelölők"
+msgstr "Bahnsteigmarker anzeigen (F8)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:59
 msgid "Show platform names (shift-F8)"
-msgstr "Peronnevek"
+msgstr "Bahnsteignamen anzeigen (Umschalt-F8)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
 msgid "Interactives"
-msgstr "Interaktív elemek"
+msgstr "Interaktive Funktionen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
 msgid "Show signals (F7)"
-msgstr "Jelzők"
+msgstr "Signale anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
 msgid "Show level crossings"
-msgstr "Útátjárók"
+msgstr "Bahnübergänge anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
 msgid "Show hazards"
-msgstr "Veszélyelemek"
+msgstr "Gefahrenstellen anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
 msgid "Show fuel/pickups"
-msgstr "Üzemanyag-felvételi helyek"
+msgstr "Tankstellen anziegen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
 msgid "Show sound regions"
-msgstr "Hangtartományok"
+msgstr "Soundregionen anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
 msgid "Posts"
-msgstr "Jelek/kitűzések"
+msgstr "Pfosten"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
 msgid "Show speed limits (F5)"
-msgstr "Lassújelek"
+msgstr "Geschwindigkeitsbegrenzungen anzeigen (F5)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
 msgid "Show mileposts (shift F5)"
-msgstr "Mérföldkövek"
+msgstr "Meilen-/Kilometrierungspfosten anzeigen (Shift-F5)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
 msgid "Paths"
-msgstr "Útvonalak"
+msgstr "Fahrstraßen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
 msgid "Show path (F11)"
-msgstr "Útvonal"
+msgstr "Fahrstraße anzeigen (F11)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:74
 msgid "Show raw path from .pat file (shift F11)"
-msgstr "Nyers útvonal a .pat fájlból"
+msgstr "Groben Pfad laut .pat Datei anzeigen (Umschalt-F11)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
 msgid "Roads"
-msgstr "Utak"
+msgstr "Straßen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
 msgid "Draw roads"
-msgstr "Utak rajzolása"
+msgstr "Straßen zeichnen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
 msgid "Show car spawners"
-msgstr "Autótermés"
+msgstr "CarSpawner anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:79
 msgid "Show road crossings"
-msgstr "Útátjárók"
+msgstr "Straßenkreuzungen anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
 msgid "Statusbar"
-msgstr "Állapotsor"
+msgstr "Statusleiste"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
 msgid "Show vector section info"
-msgstr "Vektorszakasz-információ"
+msgstr "VektorSection-Info anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:85
 msgid "Show PAT file info"
-msgstr "PAT fájl információ"
+msgstr "Infos zur .pat Datei anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
 msgid "Show Path info"
-msgstr "Útvonal-információ"
+msgstr "Fahrstraßeninfo anzeigen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
 msgid "Preferences"
-msgstr "Beállítások"
+msgstr "Einstellungen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
 msgid "Select background color"
-msgstr "Háttérszín kiválasztása"
+msgstr "Hintergrundfarbe auswählen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:93
 msgid "Path-Editor"
-msgstr "Útvonalszerkesztő"
+msgstr "Farstraßen-Editor"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:94
 msgid "==Supporting MSTS paths only=="
-msgstr "==Csak az MSTS útvonalakat támogatja=="
+msgstr "==Unterstützt nur MSTS-Fahrstraßen=="
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
 msgid "Select path"
-msgstr "Útvonal kiválasztása"
+msgstr "Fahrstraße auswählen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
 msgid "Path Editor is under construction!"
-msgstr "Az útvonalszerkesztő készítés alatt!"
+msgstr "Fahrstraße in Arbeit!"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:98
 msgid "Save path"
-msgstr "Útvonal mentése"
+msgstr "Fahrstraße speichern"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
 msgid "Enable editing"
-msgstr "Szerkesztés engedélyezése"
+msgstr "Bearbeitung aktivieren"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
 msgid "New path"
-msgstr "Új útvonal"
+msgstr "Neue Fahrstraße"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
 msgid "Edit path metadata"
-msgstr "Útvonal metaadatainak szerkesztése"
+msgstr "Fahrstraßen-Beschreibungsdaten bearbeiten"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:102
 msgid "Known limitations"
-msgstr "Ismert korlátok"
+msgstr "Bekannte Einschränkungen"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
 msgid "Help"
-msgstr "Súgó"
+msgstr "Hilfe"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
 msgid "Shortcuts"
-msgstr "Billentyűparancsok"
+msgstr "Tastenbelegung"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:106
 msgid "About"
-msgstr "Névjegy"
+msgstr "Über Trackviewer"
 
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:4
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:13
 msgid "Search"
-msgstr "Keresés"
+msgstr "Suchen"
 
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 msgid "Cancel"
-msgstr "Mégse"
+msgstr "Abbrechen"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
 msgid "Shows tileX and tileZ of the world location at the mouse pointer"
-msgstr "TileX és TileZ megjelenítése az egérmutató alatt"
+msgstr "Zeigt tileX und tileZ der worldposition beim Mauszeiger an."
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
 msgid "Shows X-coordinate (without tileX) at the mouse pointer"
-msgstr "X-koordináta megjelenítése (TileX nélkül) az egérmutató alatt"
+msgstr "Zeigt X-Koordinate (ohne tileX) beim Mauszeiger an."
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:48
 msgid "Shows Z-coordinate (without tileZ) at the mouse pointer"
-msgstr "Z-koordináta megjelenítése (TileZ nélkül) az egérmutató alatt"
+msgstr "Zeigt Z-Koordinate (ohne tileZ) beim Mauszeiger an."
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:54
 msgid "Trackindex"
-msgstr "Vágányindex"
+msgstr "Gleisindex"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:60
 msgid "Index in the Track DataBase (.tdb) file"
-msgstr "Index a vágányadatbázisban (.tdb)"
+msgstr "Index in der Schienendatenbankdatei (.tdb)"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:66
+#, fuzzy
 msgid "Item"
-msgstr "Elem"
+msgstr "Element"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:98
 msgid "Any other relevant information. Make your choice via Statusbar menu"
-msgstr "Más kapcsolódó információk. Az Állapotsor menüben választható"
-
-#~ msgid "Anti aliasing (needs restart)"
-#~ msgstr "Anti-aliasing (újraindítás szükséges)"
+msgstr "Andere relevante Infos, bitte im Menüpunkt \"Statusleiste\" auswählen"

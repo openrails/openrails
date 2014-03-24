@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-03-09 21:11:42+0100\n"
-"PO-Revision-Date: 2014-03-13 21:24+0100\n"
+"POT-Creation-Date: 2014-03-16 11:37:11+0100\n"
+"PO-Revision-Date: 2014-03-16 20:32+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
 "<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: \n"
@@ -13,19 +13,19 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:2074
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:2035
 msgid "Switching Request Sent to the Server"
 msgstr "Richiesta di scambio inviata al Server"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:197
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:177
 msgid "View Self"
 msgstr "Vedi il tuo treno"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:588
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
 msgstr "MSG al Server"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:592
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:553
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
 msgstr "MSG a tutti"
@@ -228,7 +228,7 @@ msgid "Name conflicted with people in the game, will play in single mode"
 msgstr "Il nome è in conflitto con un altro giocatore, giocherai singolarmente"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1666
-#: ../../RunActivity/MultiPlayer/MPManager.cs:132
+#: ../../RunActivity/MultiPlayer/MPManager.cs:130
 msgid "You gained back the control of your train"
 msgstr "Hai ripreso il controllo del tuo treno"
 
@@ -280,11 +280,11 @@ msgstr "{0} è stato perso."
 msgid " From {0}: {1}"
 msgstr " Da {0}: {1}"
 
-#: ../../RunActivity/MultiPlayer/MPManager.cs:748
+#: ../../RunActivity/MultiPlayer/MPManager.cs:740
 msgid "Missing car, have substituted with other one."
 msgstr "Rotabile mancante; è stato sostituito con un altro."
 
-#: ../../RunActivity/MultiPlayer/MPManager.cs:396
+#: ../../RunActivity/MultiPlayer/MPManager.cs:388
 #, csharp-format
 msgid "Cannot decouple: train has {0} player, need to completely stop."
 msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
@@ -308,59 +308,59 @@ msgstr "Gancio sovraccarico!"
 msgid "Other train is blocking path"
 msgstr "Un altro treno sta occupando il percorso"
 
-#: ../../RunActivity/Physics/Train.cs:4754
+#: ../../RunActivity/Physics/Train.cs:4731
 msgid "Stopped due to errors in route setting"
 msgstr "Fermato a causa di errori nel settaggio del tracciato"
 
-#: ../../RunActivity/Physics/Train.cs:5419
-#: ../../RunActivity/Physics/Train.cs:6492
+#: ../../RunActivity/Physics/Train.cs:5396
+#: ../../RunActivity/Physics/Train.cs:6469
 msgid "No signal in train's path"
 msgstr "Nessun segnale nel percorso del treno"
 
-#: ../../RunActivity/Physics/Train.cs:5427
+#: ../../RunActivity/Physics/Train.cs:5404
 msgid "Next signal already allocated to other train"
 msgstr "Segnale successivo già impegnato da altro treno"
 
-#: ../../RunActivity/Physics/Train.cs:5488
+#: ../../RunActivity/Physics/Train.cs:5465
 msgid "Request to clear signal cannot be processed"
 msgstr "La richiesta di aprire il segnale non può essere eseguita"
 
-#: ../../RunActivity/Physics/Train.cs:5594
-#: ../../RunActivity/Physics/Train.cs:6612
+#: ../../RunActivity/Physics/Train.cs:5571
+#: ../../RunActivity/Physics/Train.cs:6589
 msgid "No switch found"
 msgstr "Scambio non trovato"
 
-#: ../../RunActivity/Physics/Train.cs:6846
+#: ../../RunActivity/Physics/Train.cs:6823
 msgid "Train is not back on original route"
 msgstr "Il treno non è tornato nel tracciato originale"
 
-#: ../../RunActivity/Physics/Train.cs:6855
+#: ../../RunActivity/Physics/Train.cs:6832
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Il percorso originale è nella direzione inversa a quella attuale, ferma il "
 "treno prima di azionare lo scambio"
 
-#: ../../RunActivity/Physics/Train.cs:6868
+#: ../../RunActivity/Physics/Train.cs:6845
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Non puoi passare in Modo Manuale se sei in Esplorazione Route"
 
-#: ../../RunActivity/Physics/Train.cs:6961
+#: ../../RunActivity/Physics/Train.cs:6938
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 "Dovresti invertire la marcia, ma la coda del treno non è sul tracciato "
 "corretto"
 
-#: ../../RunActivity/Physics/Train.cs:7148
+#: ../../RunActivity/Physics/Train.cs:7125
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Non si può aprire il segnale dietro al treno in modalità AUTO"
 
-#: ../../RunActivity/Physics/Train.cs:7391
+#: ../../RunActivity/Physics/Train.cs:7368
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Velocità permessa raggiunta a {0}"
 
-#: ../../RunActivity/Physics/Train.cs:7432
+#: ../../RunActivity/Physics/Train.cs:7409
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Il treno è stato fermato per problemi con: treno {0}, motivo: {1}"
@@ -425,30 +425,30 @@ msgstr "Servizio continuo"
 msgid "Full Service"
 msgstr "Pieno servizio"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:999
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1010
 msgid "Tender coal supply is empty. Your loco will fail."
 msgstr "Carbone esaurito nel tender. La tua locomotiva è fuori servizio"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1013
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1024
 msgid "Tender water supply is empty. Your loco will fail."
 msgstr "Acqua esaurita nel tender. La tua locomotiva è fuori servizio"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1067
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1078
 msgid "Fire has dropped too far. Your loco will fail."
 msgstr "Il fuoco si è spento. La tua locomotiva è fuori servizio"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1143
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1154
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
 msgstr "Il fuoco sta diminuendo. Il fuochista dovrebbe caricare più carbone."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1156
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1167
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
 msgstr ""
 "Il fuoco è tornato normale. Il fuochista dovrebbe caricare normalmente."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1749
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1760
 msgid ""
 "You are exceeding the maximum recommended speed. Continued operation at this "
 "speed may cause damage."
@@ -456,17 +456,29 @@ msgstr ""
 "Stai superando la massima velocità raccomandata. Continuando così puoi "
 "danneggiare la locomotiva."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1937
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1948
 msgid "Water level dropped too far. Plug has fused and loco has failed."
 msgstr "La caldaia è vuota. Hai fuso la locomotiva."
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1944
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1955
 msgid "Boiler overfull and priming."
 msgstr "Caldaia sovraccarica"
 
-#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1950
+#: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1961
 msgid "Boiler no longer priming."
 msgstr "Sovraccarico caldaia terminato"
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:327
+msgid ""
+"You are travelling too fast for this curve. Slow down, your passengers are "
+"feeling uncomfortable, or your train may derail."
+msgstr ""
+"Stai andando troppo veloce per questa curva. Rallenta, sta diminuendo il "
+"comfort dei passegeri e il treno può deragliare."
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:354
+msgid "Your train has overturned."
+msgstr "Il treno ha sovrasterzato"
 
 #: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
 "POT-Creation-Date: 2014-02-23 23:03:46+0100\n"
-"PO-Revision-Date: 2014-03-09 21:10+0100\n"
+"PO-Revision-Date: 2014-03-24 17:54+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -579,17 +579,18 @@ msgstr "Irányítás Üzemanyag-újratöltés"
 #: ../ORTS.Settings/InputSettings.cs:631
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
-msgstr ""
+msgstr "A {0} parancs eleve használja a Shift-et, nem lehet módosítani is vele"
 
 #: ../ORTS.Settings/InputSettings.cs:633
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr ""
+"A {0} parancs eleve használja a Control-t, nem lehet módosítani is vele"
 
 #: ../ORTS.Settings/InputSettings.cs:635
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
-msgstr ""
+msgstr "A {0} parancs eleve használja az Alt-ot, nem lehet módosítani is vele"
 
 #: ../ORTS.Settings/InputSettings.cs:666
 #, csharp-format
