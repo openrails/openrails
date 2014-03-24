@@ -150,8 +150,11 @@ namespace ORTS
         public bool EmergencyEngagesHorn;
         public bool EmergencyButtonPressed;
         public bool WheelslipCausesThrottleDown;
-
-
+        
+        public string EngineType;
+        public bool IsSteam;
+        public bool IsDiesel;
+        public bool IsElectric;
 
 		public float CabRotationZ
 		{
@@ -348,6 +351,14 @@ namespace ORTS
                 case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
 
+                case "engine(type":
+                    stf.MustMatch("(");
+                    string typeString = stf.ReadString();
+                    IsSteam = String.Compare(typeString, "Steam") == 0 ? true : false;
+                    IsDiesel = String.Compare(typeString, "Diesel") == 0 ? true : false;
+                    IsElectric = String.Compare(typeString, "Electric") == 0 ? true : false;
+                    break;
+
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(brake_train":
@@ -429,6 +440,7 @@ namespace ORTS
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
+            IsSteam = locoCopy.IsSteam;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
@@ -2269,6 +2281,40 @@ namespace ORTS
             return null;
         }
 
+        // Make the vehicle num wheels available to other classes
+        public override float GetLocoNumWheels()
+        {
+
+            float LocoNumDrvWheels = NumWheelsAdhesionFactor;
+
+        //    Trace.TraceInformation("Trace Locom {0}", LocoNumDrvWheels);
+
+            return LocoNumDrvWheels;
+        }
+        
+        // Pass the string wagon type to other classes
+        public override string GetEngineType()
+        {
+          EngineType ="";  // set default
+          
+          if (IsSteam)
+          {
+          EngineType ="Steam";  // set as steam locomotive
+          }
+          
+          if (IsElectric)
+          {
+          EngineType ="Electric";  // set as Electric locomotive
+          }
+          
+          if (IsDiesel)
+          {
+          EngineType ="Diesel";  // set as diesel locomotive
+          }
+
+          return EngineType;
+        }
+        
         /// <summary>
         /// To be overridden by MSTSSteamLocomotive and MSTSDieselLocomotive.
         /// </summary>

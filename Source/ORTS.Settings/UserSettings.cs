@@ -143,10 +143,6 @@ namespace ORTS.Settings
 		public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(false)]
         public bool CurveResistanceSpeedDependent { get; set; }
-        [Default(3f)]
-        public float CurveResistanceZeroSpeedFactor { get; set; }
-        [Default(0.75f)]
-        public float CurveResistanceOptimalSpeed { get; set; }
         [Default(false)]
         public bool CurveSpeedDependent { get; set; }
 

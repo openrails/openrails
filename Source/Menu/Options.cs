@@ -105,8 +105,6 @@ namespace ORTS
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkCurveResistanceSpeedDependent.Checked = settings.CurveResistanceSpeedDependent;
-            numericCurveResistanceZeroSpeedFactor.Value = (decimal)settings.CurveResistanceZeroSpeedFactor;
-            numericCurveResistanceOptimalSpeed.Value = (decimal)settings.CurveResistanceOptimalSpeed;
             checkCurveSpeedDependent.Checked = settings.CurveSpeedDependent;
 
             // Keyboard tab
@@ -261,8 +259,6 @@ namespace ORTS
             Settings.BreakCouplers = checkBreakCouplers.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.CurveResistanceSpeedDependent = checkCurveResistanceSpeedDependent.Checked;
-            Settings.CurveResistanceZeroSpeedFactor = (float)numericCurveResistanceZeroSpeedFactor.Value;
-            Settings.CurveResistanceOptimalSpeed = (float)numericCurveResistanceOptimalSpeed.Value;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
             
             // Keyboard tab

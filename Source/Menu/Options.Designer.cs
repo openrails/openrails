@@ -68,10 +68,6 @@
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
-            this.label20 = new System.Windows.Forms.Label();
-            this.numericCurveResistanceOptimalSpeed = new System.Windows.Forms.NumericUpDown();
-            this.label16 = new System.Windows.Forms.Label();
-            this.numericCurveResistanceZeroSpeedFactor = new System.Windows.Forms.NumericUpDown();
             this.checkCurveResistanceSpeedDependent = new System.Windows.Forms.CheckBox();
             this.checkOverrideNonElectrifiedRoutes = new System.Windows.Forms.CheckBox();
             this.label12 = new System.Windows.Forms.Label();
@@ -134,8 +130,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericCab2DStretch)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             this.tabPageSimulation.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericCurveResistanceOptimalSpeed)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericCurveResistanceZeroSpeedFactor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
@@ -660,10 +654,6 @@
             // tabPageSimulation
             // 
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
-            this.tabPageSimulation.Controls.Add(this.label20);
-            this.tabPageSimulation.Controls.Add(this.numericCurveResistanceOptimalSpeed);
-            this.tabPageSimulation.Controls.Add(this.label16);
-            this.tabPageSimulation.Controls.Add(this.numericCurveResistanceZeroSpeedFactor);
             this.tabPageSimulation.Controls.Add(this.checkCurveResistanceSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.checkOverrideNonElectrifiedRoutes);
             this.tabPageSimulation.Controls.Add(this.label12);
@@ -681,80 +671,12 @@
             // checkCurveSpeedDependent
             // 
             this.checkCurveSpeedDependent.AutoSize = true;
-            this.checkCurveSpeedDependent.Location = new System.Drawing.Point(6, 176);
+            this.checkCurveSpeedDependent.Location = new System.Drawing.Point(6, 124);
             this.checkCurveSpeedDependent.Name = "checkCurveSpeedDependent";
             this.checkCurveSpeedDependent.Size = new System.Drawing.Size(140, 17);
             this.checkCurveSpeedDependent.TabIndex = 6;
             this.checkCurveSpeedDependent.Text = "Curve speed dependent";
             this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(86, 152);
-            this.label20.Margin = new System.Windows.Forms.Padding(3);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(134, 13);
-            this.label20.TabIndex = 9;
-            this.label20.Text = "Optimal curve speed factor";
-            // 
-            // numericCurveResistanceOptimalSpeed
-            // 
-            this.numericCurveResistanceOptimalSpeed.DecimalPlaces = 2;
-            this.numericCurveResistanceOptimalSpeed.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            131072});
-            this.numericCurveResistanceOptimalSpeed.Location = new System.Drawing.Point(26, 150);
-            this.numericCurveResistanceOptimalSpeed.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericCurveResistanceOptimalSpeed.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.numericCurveResistanceOptimalSpeed.Name = "numericCurveResistanceOptimalSpeed";
-            this.numericCurveResistanceOptimalSpeed.Size = new System.Drawing.Size(54, 20);
-            this.numericCurveResistanceOptimalSpeed.TabIndex = 8;
-            this.numericCurveResistanceOptimalSpeed.Value = new decimal(new int[] {
-            75,
-            0,
-            0,
-            131072});
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(86, 126);
-            this.label16.Margin = new System.Windows.Forms.Padding(3);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(196, 13);
-            this.label16.TabIndex = 7;
-            this.label16.Text = "Curve resistance multiplier at zero speed";
-            // 
-            // numericCurveResistanceZeroSpeedFactor
-            // 
-            this.numericCurveResistanceZeroSpeedFactor.DecimalPlaces = 2;
-            this.numericCurveResistanceZeroSpeedFactor.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            131072});
-            this.numericCurveResistanceZeroSpeedFactor.Location = new System.Drawing.Point(26, 124);
-            this.numericCurveResistanceZeroSpeedFactor.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericCurveResistanceZeroSpeedFactor.Minimum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            131072});
-            this.numericCurveResistanceZeroSpeedFactor.Name = "numericCurveResistanceZeroSpeedFactor";
-            this.numericCurveResistanceZeroSpeedFactor.Size = new System.Drawing.Size(54, 20);
-            this.numericCurveResistanceZeroSpeedFactor.TabIndex = 6;
-            this.numericCurveResistanceZeroSpeedFactor.Value = new decimal(new int[] {
-            5,
-            0,
-            0,
-            131072});
             // 
             // checkCurveResistanceSpeedDependent
             // 
@@ -1426,8 +1348,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).EndInit();
             this.tabPageSimulation.ResumeLayout(false);
             this.tabPageSimulation.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericCurveResistanceOptimalSpeed)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericCurveResistanceZeroSpeedFactor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).EndInit();
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageExperimental.ResumeLayout(false);
@@ -1528,10 +1448,6 @@
         private System.Windows.Forms.CheckBox checkUseMSTSEnv;
         private System.Windows.Forms.CheckBox checkPreferDDSTexture;
         private System.Windows.Forms.CheckBox checkCurveResistanceSpeedDependent;
-        private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.NumericUpDown numericCurveResistanceZeroSpeedFactor;
-        private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.NumericUpDown numericCurveResistanceOptimalSpeed;
         private System.Windows.Forms.Label labelLanguage;
         private System.Windows.Forms.ComboBox comboBoxLanguage;
         private System.Windows.Forms.Label label11;

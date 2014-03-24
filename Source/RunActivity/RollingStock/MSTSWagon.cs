@@ -33,6 +33,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using MSTS.Formats;
 using MSTS.Parsers;
@@ -111,8 +112,13 @@ namespace ORTS
         float YCoGM; // Centre of Gravity - Y value
         float ZCoGM; // Centre of Gravity - Z value
         float UnbalancedSuperElevationM; // Unbalanced Superelevation
+        float RigidWheelBaseM;
+        float WagonNumWheels;
+        float WheelBase1M;
+        float WheelBase2M;
         public bool IsPassenger;
         public bool IsEngine;
+        string WagonType;
 
         /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
@@ -216,6 +222,12 @@ namespace ORTS
                     stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsunbalancedsuperelevation": UnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsrigidwheelbase":  
+                    stf.MustMatch("(");
+                    WheelBase1M = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    WheelBase2M = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
                 case "wagon(mass": MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (MassKG < 0.1f) MassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -337,6 +349,8 @@ namespace ORTS
             YCoGM = copy.YCoGM;
             ZCoGM = copy.ZCoGM;
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
+            WheelBase1M = copy.WheelBase1M;
+            WheelBase2M = copy.WheelBase2M;
             MassKG = copy.MassKG;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
@@ -734,6 +748,63 @@ namespace ORTS
                 CentreOfGravityM = 1.8f; // if no value in wag file or is outside of bounds then set to a default value
             }
             return CentreOfGravityM;
+        }
+
+        // Make the vehicle rigid wheelbase is available to other classes
+        public override float GetRigidWheelBaseM()
+        {
+
+            // Calculate the default Rigid Wheelbase if not in WAG File
+            
+            RigidWheelBaseM = WheelBase1M + WheelBase2M;
+            
+            return RigidWheelBaseM;
+        }
+
+        // Make the Locomotive Drive wheel Radius available to other classes
+        public override float GetDriverWheelRadiusM()
+        {
+
+           return DriverWheelRadiusM;
+        }
+
+
+
+
+        // Make the vehicle num wheels available to other classes
+        public override float GetWagonNumWheels()
+        {
+
+            WagonNumWheels = NumWheelsBrakingFactor;
+
+            return WagonNumWheels;
+        }
+
+        // Pass the string wagon type to other classes
+        public override string GetWagonType()
+        {
+          WagonType ="";  // set default
+          
+          if (IsFreight)
+          {
+          WagonType ="Freight";  // set as freight wagon
+          }
+          
+          if (IsPassenger)
+          {
+          WagonType ="Passenger";  // set as passenger car
+          }
+          
+          if (IsEngine)
+          {
+          WagonType ="Engine";  // set as passenger car
+          }
+
+          if (IsTender)
+          {
+          WagonType ="Tender";  // set as passenger car
+          }
+            return WagonType;
         }
 
         // Make the Unbalanced SuperElevation available to other classes

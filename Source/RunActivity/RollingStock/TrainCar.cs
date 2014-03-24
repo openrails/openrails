@@ -188,8 +188,6 @@ namespace ORTS
         public float CurrentElevationPercent;
 
         public bool CurveResistanceSpeedDependent;
-        public float CurveResistanceZeroSpeedFactor;
-        public float CurveResistanceOptimalSpeed;
         public bool CurveSpeedDependent;
 
         // temporary values used to compute coupler forces
@@ -214,18 +212,27 @@ namespace ORTS
         float TrackGaugeM;  // Track gauge - read in MSTSWagon
         float CentreOfGravityM; // get centre of gravity - read in MSTSWagon
         float SuperelevationM; // Super elevation on the curve
-        float UnbalancedSuperElevationM;  // Unbalanced superelevation
+        float UnbalancedSuperElevationM;  // Unbalanced superelevation, read from MSTS Wagon File
         float SuperElevationTotalM; // Total superelevation
-        bool IsMaxEquaLoadSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
+        bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
         bool IsCriticalSpeed = true; // Has the critical speed around the curve been reached, is is the wagon about to overturn?
+        float MaxCurveEqualLoadSpeedMps; // Max speed that rolling stock can do whist maintaining equal load on track
+        float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
         float RouteSpeedMpS; // Max Route Speed Limit
         const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
+        float WagonNumWheels; // Number of wheels on a wagon
+        float LocoNumDrvWheels;    // Number of drive wheels on locomotive
+        float DriverWheelRadiusM; // Drive wheel radius of locomotive wheels
+        string WagonType;
+        string EngineType;
+        float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
+
+        float CoefficientFriction = 0.5f; // Coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
+        float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         
           public virtual void Initialize()
         {
             CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
-            CurveResistanceOptimalSpeed = Simulator.Settings.CurveResistanceOptimalSpeed;
-            CurveResistanceZeroSpeedFactor = Simulator.Settings.CurveResistanceZeroSpeedFactor;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
         }
 
@@ -235,8 +242,9 @@ namespace ORTS
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * GravitationalAccelerationMpS2 * WorldPosition.XNAMatrix.M32;
             CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
+            UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce();
-            UpdateCurveSpeedLimit();
+            
             // acceleration
             if (elapsedClockSeconds > 0.0f)
             {
@@ -269,7 +277,7 @@ namespace ORTS
 
             RouteSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
              
-            if (CurveSpeedDependent)  // Function enabled by menu selection
+            if (CurveSpeedDependent || CurveResistanceSpeedDependent)  // Function enabled by menu selection for either curve resistance or curve speed limit
             {
 
 
@@ -335,21 +343,26 @@ namespace ORTS
 
                     SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
 
-                    float MaxEquaLoadSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
+                    float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
 
+                    MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
+
+                  if (CurveSpeedDependent)
+                  {
+                  
                     // Test current speed to see if greater then "safe" speed around the curve
-                    if (s > MaxEquaLoadSpeedMps)
+                    if (s > MaxSafeCurveSpeedMps)
                     {
-                        if (!IsMaxEquaLoadSpeed)
+                        if (!IsMaxSafeCurveSpeed)
                         {
-                            IsMaxEquaLoadSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
+                            IsMaxSafeCurveSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
                             Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable, or your train may derail."));
                         }
                         else
                         {
-                            if (s < MaxEquaLoadSpeedMps)
+                            if (s < MaxSafeCurveSpeedMps)
                             {
-                                IsMaxEquaLoadSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
+                                IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
                             }
                         }
                     }
@@ -386,7 +399,9 @@ namespace ORTS
                 {
                     // reset flags if train is on a straight
                     IsCriticalSpeed = false;   // reset flag for IsCriticalSpeed reached
-                    IsMaxEquaLoadSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
+                    IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
+                }
+                
                 }
           
 
@@ -397,6 +412,8 @@ namespace ORTS
 
         #endregion
 
+        #region Calculate friction force in curves
+
         /// <summary>
         /// Reads current curve radius and computes the CurveForceN friction. Can be overriden by calling
         /// base.UpdateCurveForce();
@@ -404,33 +421,119 @@ namespace ORTS
         /// </summary>
         public virtual void UpdateCurveForce()
         {
-          //  float radius = CurrentCurveRadius;
-            float speedLimitMpS = 0f;
-            if (this.Train != null)
-                speedLimitMpS = this.Train.AllowedMaxSpeedMpS;
-            else
-                speedLimitMpS = 0f;
-
-            if (CurrentCurveRadius > 0)
+            if (CurveResistanceSpeedDependent)
             {
-                CurveForceN = 500f / (CurrentCurveRadius - 30f);
-            }
-            else
-                CurveForceN = 0f;
-
-            if (Simulator != null)
-            {
-                if (Simulator.Settings != null)
+               
+                if (CurrentCurveRadius > 0)
                 {
-                    if ((speedLimitMpS > 0f) && (CurveResistanceSpeedDependent))
-                    {
-                        CurveForceN *= CurveResistanceZeroSpeedFactor * Math.Abs(Math.Abs(SpeedMpS) - CurveResistanceOptimalSpeed * speedLimitMpS) / speedLimitMpS + 1f;
-                    }
-                }
-            }
 
-            CurveForceN *= GravitationalAccelerationMpS2 * MassKG *0.001f;
+                    if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
+                    {
+                        WagonNumWheels = 0.0f;
+                        RigidWheelBaseM = GetRigidWheelBaseM();
+                        WagonNumWheels = GetWagonNumWheels();
+                        WagonType = GetWagonType();
+                        EngineType = GetEngineType();
+                        DriverWheelRadiusM = GetDriverWheelRadiusM();
+                        LocoNumDrvWheels = GetLocoNumWheels();
+
+                        float Axles = WheelAxles.Count;
+                        float Bogies = Parts.Count - 1;
+                        float BogieSize = Axles / Bogies;
+
+                        RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+
+                   //     Trace.TraceInformation("WagonWheels {0} DriveWheels {1} WheelRadius {2} Axles {3} Bogies {4}", WagonNumWheels, LocoNumDrvWheels, DriverWheelRadiusM, Axles, Bogies);
+
+                        // Calculate the number of axles in a car
+
+                        if (WagonType != "Engine")   // if car is not a locomotive then determine wheelbase
+                        {
+
+                            if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
+                            {
+                                if (Axles == 2)
+                                {
+                                    RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
+                                }
+                                else if (Axles == 3)
+                                {
+                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 11' 6" (3.5052m)
+                                }
+                            }
+                            else if (Bogies == 2)
+                            {
+                                if (Axles == 2)
+                                {
+                                    if (WagonType == "Passenger")
+                                    {
+
+                                        RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
+                                    }
+                                    else
+                                    {
+                                        RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
+                                    }
+                                }
+                                else if (Axles == 3)
+                                {
+                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 11' 6" (3.5052m)
+                                }
+                            }
+
+                        }
+                        if (WagonType == "Engine")   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                        {
+                            if (EngineType != "Steam")  // Assume that it is a diesel or electric locomotive
+                            {
+                                if (Axles == 2)
+                                {
+                                    RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                                }
+                                else if (Axles == 3)
+                                {
+                                    RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                                }
+                            }
+                            else // assume steam locomotive
+                            {
+
+                                if (LocoNumDrvWheels >= Axles) // Test to see if ENG file value is too big (typically doubled)
+                                {
+                                    LocoNumDrvWheels = LocoNumDrvWheels / 2.0f;  // Appears this might be the number of wheels rather then the axles.
+                                }
+
+                                //    Approximation for calculating rigid wheelbase for steam locomotives
+                                // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
+
+                                RigidWheelBaseM = 1.25f * (LocoNumDrvWheels - 1.0f) * (DriverWheelRadiusM * 2.0f);
+                              //  Trace.TraceInformation("Drv {0} Radius {1}", LocoNumDrvWheels, DriverWheelRadiusM);
+
+                            }
+
+                        }
+
+
+                    }
+                  
+                    // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
+                    // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
+
+                    CurveForceN = MassKG * CoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
+                    float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - Math.Abs(SpeedMpS)) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
+                    CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
+                    CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
+              
+                }
+                else
+                {
+                    CurveForceN = 0f;
+                }
+
+            }
         }
+
+         #endregion
 
         /// <summary>
         /// Signals an event from an external source (player, multi-player controller, etc.) for this car.
@@ -531,6 +634,47 @@ namespace ORTS
         {
 
             return UnbalancedSuperElevationM;
+        }
+        
+        // Method to get rigid wheelbase from MSTSWagon file
+        public virtual float GetRigidWheelBaseM()
+        {
+
+            return RigidWheelBaseM;
+        }
+
+        // Method to get rigid wheelbase from MSTSWagon file
+        public virtual float GetLocoNumWheels()
+        {
+
+            return LocoNumDrvWheels;
+        }
+        // Method to get Driver Wheel radius from MSTSWagon file
+        public virtual float GetDriverWheelRadiusM()
+        {
+
+            return DriverWheelRadiusM;
+        }
+
+        // Method to get Wagon type from MSTSWagon file
+        public virtual string GetWagonType()
+        {
+
+            return WagonType;
+        }
+        
+        // Method to get Engine type from MSTSLocomotive file
+        public virtual string GetEngineType()
+        {
+
+            return EngineType;
+        }
+
+        // Method to get wagon num wheels from MSTSWagon file
+        public virtual float GetWagonNumWheels()
+        {
+
+            return WagonNumWheels;
         }
 
         public virtual float GetCouplerZeroLengthM()
