@@ -38,19 +38,36 @@ namespace ORTS.Common
 			Section = section;
 		}
 
+        protected void AssertGetUserValueType(Type expectedType)
+        {
+            Debug.Assert(new[] {
+                typeof(bool),
+                typeof(int),
+                typeof(DateTime),
+                typeof(TimeSpan),
+                typeof(string),
+                typeof(int[]),
+                typeof(string[]),
+            }.Contains(expectedType), String.Format("GetUserValue called with unexpected type {0}.", expectedType.FullName));
+        }
+
         public abstract string[] GetUserNames();
 
-        public abstract object GetUserValue(string name);
+        public abstract object GetUserValue(string name, Type expectedType);
 
-		public abstract void SetUserValue(string name, string value);
+        public abstract void SetUserValue(string name, bool value);
 
-		public abstract void SetUserValue(string name, int value);
+        public abstract void SetUserValue(string name, int value);
 
-		public abstract void SetUserValue(string name, bool value);
+        public abstract void SetUserValue(string name, DateTime value);
 
-		public abstract void SetUserValue(string name, string[] value);
+        public abstract void SetUserValue(string name, TimeSpan value);
 
-		public abstract void SetUserValue(string name, int[] value);
+        public abstract void SetUserValue(string name, string value);
+
+        public abstract void SetUserValue(string name, int[] value);
+
+        public abstract void SetUserValue(string name, string[] value);
 
 		public abstract void DeleteUserValue(string name);
 
@@ -84,37 +101,75 @@ namespace ORTS.Common
             return Key.GetValueNames();
         }
 
-		public override object GetUserValue(string name)
-		{
-			return Key.GetValue(name);
-		}
+        public override object GetUserValue(string name, Type expectedType)
+        {
+            AssertGetUserValueType(expectedType);
 
-		public override void SetUserValue(string name, string value)
-		{
-			Key.SetValue(name, value, RegistryValueKind.String);
-		}
+            var userValue = Key.GetValue(name);
+            try
+            {
+                // Expected bool-stored-as-int conversion.
+                if (expectedType == typeof(bool) && (userValue is int))
+                    return (int)userValue == 1;
 
-		public override void SetUserValue(string name, int value)
-		{
-			Key.SetValue(name, value, RegistryValueKind.DWord);
-		}
+                // Expected DateTime-stored-as-long conversion.
+                if (expectedType == typeof(DateTime) && (userValue is long))
+                    return DateTime.FromBinary((long)userValue);
 
-		public override void SetUserValue(string name, bool value)
-		{
-			Key.SetValue(name, value ? 1 : 0, RegistryValueKind.DWord);
-		}
+                // Expected TimeSpan-stored-as-long conversion.
+                if (expectedType == typeof(TimeSpan) && (userValue is long))
+                    return TimeSpan.FromTicks((long)userValue);
 
-		public override void SetUserValue(string name, string[] value)
-		{
-			Key.SetValue(name, value, RegistryValueKind.MultiString);
-		}
+                // Expected int[]-stored-as-string conversion.
+                if (expectedType == typeof(int[]) && (userValue is string))
+                    return ((string)userValue).Split(',').Select(s => int.Parse(s)).ToArray();
 
-		public override void SetUserValue(string name, int[] value)
+                // Convert whatever we're left with into the expected type.
+                return Convert.ChangeType(userValue, expectedType);
+            }
+            catch
+            {
+                Trace.TraceWarning("Setting {0} contains invalid value {1}.", name, userValue);
+                return null;
+            }
+        }
+
+        public override void SetUserValue(string name, bool value)
+        {
+            Key.SetValue(name, value ? 1 : 0, RegistryValueKind.DWord);
+        }
+
+        public override void SetUserValue(string name, int value)
+        {
+            Key.SetValue(name, value, RegistryValueKind.DWord);
+        }
+
+        public override void SetUserValue(string name, DateTime value)
+        {
+            Key.SetValue(name, value.ToBinary(), RegistryValueKind.QWord);
+        }
+
+        public override void SetUserValue(string name, TimeSpan value)
+        {
+            Key.SetValue(name, value.Ticks, RegistryValueKind.QWord);
+        }
+
+        public override void SetUserValue(string name, string value)
+        {
+            Key.SetValue(name, value, RegistryValueKind.String);
+        }
+
+        public override void SetUserValue(string name, int[] value)
 		{
 			Key.SetValue(name, String.Join(",", ((int[])value).Select(v => v.ToString()).ToArray()), RegistryValueKind.String);
 		}
 
-		public override void DeleteUserValue(string name)
+        public override void SetUserValue(string name, string[] value)
+        {
+            Key.SetValue(name, value, RegistryValueKind.MultiString);
+        }
+
+        public override void DeleteUserValue(string name)
 		{
 			Key.DeleteValue(name, false);
 		}
@@ -151,9 +206,11 @@ namespace ORTS.Common
             return buffer.Split('\0').Where(s => s.Contains('=')).Select(s => s.Split('=')[0]).ToArray();
         }
 
-		public override object GetUserValue(string name)
-		{
-			var buffer = new String('\0', 256);
+        public override object GetUserValue(string name, Type expectedType)
+        {
+            AssertGetUserValueType(expectedType);
+
+            var buffer = new String('\0', 256);
             while (true)
             {
                 var length = NativeMethods.GetPrivateProfileString(Section, name, null, buffer, buffer.Length, FilePath);
@@ -166,53 +223,88 @@ namespace ORTS.Common
             }
             if (buffer.Length == 0)
                 return null;
+
             var value = buffer.Split(':');
-			if (value.Length != 2)
-			{
-				Trace.TraceWarning("Setting {0} contains invalid value {1}", name, buffer);
-				return null;
-			}
-			switch (value[0])
-			{
-				case "string":
-                    return Uri.UnescapeDataString(value[1]);
-				case "int":
-                    return int.Parse(Uri.UnescapeDataString(value[1]), CultureInfo.InvariantCulture);
-				case "bool":
-                    return value[1].Equals("true", StringComparison.InvariantCultureIgnoreCase);
-				case "string[]":
-                    return value[1].Split(',').Select(v => Uri.UnescapeDataString(v)).ToArray();
-				case "int[]":
-                    return value[1].Split(',').Select(v => int.Parse(Uri.UnescapeDataString(v), CultureInfo.InvariantCulture)).ToArray();
-				default:
-					Trace.TraceWarning("Setting {0} contains invalid value {1}", name, buffer);
-					return null;
-			}
-		}
+            if (value.Length != 2)
+            {
+                Trace.TraceWarning("Setting {0} contains invalid value {1}.", name, buffer);
+                return null;
+            }
 
-		public override void SetUserValue(string name, string value)
-		{
-			NativeMethods.WritePrivateProfileString(Section, name, "string:" + Uri.EscapeDataString(value), FilePath);
-		}
+            try
+            {
+                object userValue = null;
+                switch (value[0])
+                {
+                    case "bool":
+                        userValue = value[1].Equals("true", StringComparison.InvariantCultureIgnoreCase);
+                        break;
+                    case "int":
+                        userValue = int.Parse(Uri.UnescapeDataString(value[1]), CultureInfo.InvariantCulture);
+                        break;
+                    case "DateTime":
+                        userValue = DateTime.FromBinary(long.Parse(Uri.UnescapeDataString(value[1]), CultureInfo.InvariantCulture));
+                        break;
+                    case "TimeSpan":
+                        userValue = TimeSpan.FromTicks(long.Parse(Uri.UnescapeDataString(value[1]), CultureInfo.InvariantCulture));
+                        break;
+                    case "string":
+                        userValue = Uri.UnescapeDataString(value[1]);
+                        break;
+                    case "int[]":
+                        userValue = value[1].Split(',').Select(v => int.Parse(Uri.UnescapeDataString(v), CultureInfo.InvariantCulture)).ToArray();
+                        break;
+                    case "string[]":
+                        userValue = value[1].Split(',').Select(v => Uri.UnescapeDataString(v)).ToArray();
+                        break;
+                    default:
+                        Trace.TraceWarning("Setting {0} contains invalid type {1}.", name, value[0]);
+                        break;
+                }
 
-		public override void SetUserValue(string name, int value)
-		{
-			NativeMethods.WritePrivateProfileString(Section, name, "int:" + Uri.EscapeDataString(value.ToString(CultureInfo.InvariantCulture)), FilePath);
-		}
+                // Convert whatever we're left with into the expected type.
+                return Convert.ChangeType(userValue, expectedType);
+            }
+            catch
+            {
+                Trace.TraceWarning("Setting {0} contains invalid value {1}.", name, value[1]);
+                return null;
+            }
+        }
 
-		public override void SetUserValue(string name, bool value)
+        public override void SetUserValue(string name, bool value)
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, "bool:" + (value ? "true" : "false"), FilePath);
 		}
 
-		public override void SetUserValue(string name, string[] value)
+        public override void SetUserValue(string name, int value)
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, "int:" + Uri.EscapeDataString(value.ToString(CultureInfo.InvariantCulture)), FilePath);
+        }
+
+        public override void SetUserValue(string name, DateTime value)
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, "DateTime:" + Uri.EscapeDataString(value.ToBinary().ToString(CultureInfo.InvariantCulture)), FilePath);
+        }
+
+        public override void SetUserValue(string name, TimeSpan value)
+        {
+            NativeMethods.WritePrivateProfileString(Section, name, "TimeSpan:" + Uri.EscapeDataString(value.Ticks.ToString(CultureInfo.InvariantCulture)), FilePath);
+        }
+
+        public override void SetUserValue(string name, string value)
 		{
-			NativeMethods.WritePrivateProfileString(Section, name, "string[]:" + String.Join(",", value.Select(v => Uri.EscapeDataString(v)).ToArray()), FilePath);
+			NativeMethods.WritePrivateProfileString(Section, name, "string:" + Uri.EscapeDataString(value), FilePath);
 		}
 
 		public override void SetUserValue(string name, int[] value)
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, "int[]:" + String.Join(",", ((int[])value).Select(v => Uri.EscapeDataString(v.ToString(CultureInfo.InvariantCulture))).ToArray()), FilePath);
+		}
+
+		public override void SetUserValue(string name, string[] value)
+		{
+			NativeMethods.WritePrivateProfileString(Section, name, "string[]:" + String.Join(",", value.Select(v => Uri.EscapeDataString(v)).ToArray()), FilePath);
 		}
 
 		public override void DeleteUserValue(string name)

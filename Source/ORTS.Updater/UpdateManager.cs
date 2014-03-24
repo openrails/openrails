@@ -31,8 +31,12 @@ namespace ORTS.Updater
 {
     public class UpdateManager
     {
+        // The date on this is fairly arbitrary - it's only used in a calculation to round the DateTime up to the next TimeSpan period.
+        readonly DateTime BaseDateTimeMidnightLocal = new DateTime(2010, 1, 1, 0, 0, 0, DateTimeKind.Local);
+
         public readonly string BasePath;
-        readonly SettingsStore Settings;
+        readonly UpdateSettings Settings;
+        readonly UpdateState State;
 
         public Update LatestUpdate { get; private set; }
         public Exception LatestUpdateError { get; private set; }
@@ -43,36 +47,75 @@ namespace ORTS.Updater
         {
             if (!Directory.Exists(basePath)) throw new ArgumentException("The specified path must be valid and exist as a directory.", "basePath");
             BasePath = basePath;
-            // We force this to be a local INI file by passing null for the
-            // registry key. Also, since GetSettingStore throws if the INI
-            // file doesn't exist, we check that first.
-            var updateSettingsFile = Path.Combine(basePath, "Updater.ini");
-            if (File.Exists(updateSettingsFile))
-                Settings = SettingsStore.GetSettingStore(updateSettingsFile, null, "Settings");
+            try
+            {
+                Settings = new UpdateSettings();
+                State = new UpdateState();
+            }
+            catch (ArgumentException)
+            {
+                // Updater.ini doesn't exist. That's cool, we'll just disable updating.
+            }
         }
 
         public void Check()
         {
             if (Settings == null)
                 return;
+
             try
             {
+                if (DateTime.Now < State.NextCheck)
+                {
+                    LatestUpdate = State.Update.Length > 0 ? JsonConvert.DeserializeObject<Update>(State.Update) : null;
+                    LatestUpdateError = State.Update.Length > 0 ? null : new InvalidDataException("Last update check failed.");
+                    return;
+                }
+
+                ResetCachedUpdate();
+
                 var client = new WebClient()
                 {
                     CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache),
                     Encoding = Encoding.UTF8,
                 };
-                var updateUri = new Uri((string)Settings.GetUserValue("URL"));
+                var updateUri = new Uri(Settings.URL);
                 var updateData = client.DownloadString(updateUri);
                 LatestUpdate = JsonConvert.DeserializeObject<Update>(updateData);
                 LatestUpdateError = null;
+
+                CacheUpdate(updateData);
             }
             catch (Exception error)
             {
+                // This could be a problem deserializing the LastUpdate or fetching/deserializing the new update. It doesn't really matter, we record an error.
                 LatestUpdate = null;
                 LatestUpdateError = error;
                 Trace.WriteLine(error);
+
+                ResetCachedUpdate();
             }
+        }
+
+        void ResetCachedUpdate()
+        {
+            State.LastCheck = DateTime.Now;
+            // So what we're doing here is rounding up the DateTime (LastCheck) to the next TimeSpan (TTL) period. For
+            // example, if the TTL was 1 hour, we'd round up the the start of the next hour. Similarly, if the TTL was
+            // 1 day, we'd round up to midnight (the start of the next day). The purpose of this is to avoid 2 * TTL 
+            // checking which might well occur if you always launch Open Rails around the same time of day each day -
+            // if they launch it at 6:00PM on Monday, then 5:30PM on Tuesday, they won't get an update chech on
+            // Tuesday. With the time rounding, they should get one check/day if the TTL is 1 day and they open it
+            // every day. (This is why BaseDateTimeMidnightLocal uses the local midnight!)
+            State.NextCheck = BaseDateTimeMidnightLocal.AddSeconds(Math.Ceiling((State.LastCheck - BaseDateTimeMidnightLocal).TotalSeconds / Settings.TTL.TotalSeconds) * Settings.TTL.TotalSeconds);
+            State.Update = "";
+            State.Save();
+        }
+
+        void CacheUpdate(string updateData)
+        {
+            State.Update = updateData;
+            State.Save();
         }
 
         public void Update()

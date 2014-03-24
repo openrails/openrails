@@ -69,36 +69,30 @@ namespace ORTS.Common
 			// Get the default value.
 			var defValue = GetDefaultValue(name);
 
-			// Read in the registry option, if it exists.
-			var userValue = allowUserSettings ? SettingStore.GetUserValue(name) : null;
+			// Read in the user setting, if it exists.
+			var userValue = allowUserSettings ? SettingStore.GetUserValue(name, type) : null;
 
 			// Read in the command-line option, if it exists into optValue.
 			var propertyNameLower = name.ToLowerInvariant();
 			var optValue = optionsDictionary.ContainsKey(propertyNameLower) ? (object)optionsDictionary[propertyNameLower] : null;
 
-			// Map registry option for boolean types so 1 is true; everything else is false.
-			if ((userValue != null) && (userValue is int) && (type == typeof(bool)))
-				userValue = (int)userValue == 1;
+            // Parse command-line options...
 
-			// Map registry option for int[] types.
-			else if ((userValue != null) && (userValue is string) && (type == typeof(int[])))
-				userValue = ((string)userValue).Split(',').Select(s => int.Parse(s)).ToArray();
-
-			// Parse command-line option for boolean types so true/yes/on/1 are all true; everything else is false.
 			if ((optValue != null) && (type == typeof(bool)))
-				optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
+                // Option for boolean types so true/yes/on/1 are all true; everything else is false.
+                optValue = new[] { "true", "yes", "on", "1" }.Contains(optValue);
 
-			// Parse command-line option for int types.
 			else if ((optValue != null) && (type == typeof(int)))
-				optValue = int.Parse((string)optValue);
+                // Option for int types.
+                optValue = int.Parse((string)optValue);
 
-			// Parse command-line option for string[] types.
 			else if ((optValue != null) && (type == typeof(string[])))
-				optValue = ((string)optValue).Split(',').Select(s => s.Trim()).ToArray();
+                // Option for string[] types.
+                optValue = ((string)optValue).Split(',').Select(s => s.Trim()).ToArray();
 
-			// Parse command-line option for int[] types.
 			else if ((optValue != null) && (type == typeof(int[])))
-				optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
+                // Option for int[] types.
+                optValue = ((string)optValue).Split(',').Select(s => int.Parse(s.Trim())).ToArray();
 
 			// We now have defValue, regValue, optValue containing the default, persisted and override values
 			// for the setting. regValue and optValue are null if they are not found/specified.
@@ -139,11 +133,19 @@ namespace ORTS.Common
 			{
 				SettingStore.SetUserValue(name, (int)value);
 			}
-			else if (type == typeof(bool))
-			{
-				SettingStore.SetUserValue(name, (bool)value);
-			}
-			else if (type == typeof(string[]))
+            else if (type == typeof(bool))
+            {
+                SettingStore.SetUserValue(name, (bool)value);
+            }
+            else if (type == typeof(DateTime))
+            {
+                SettingStore.SetUserValue(name, (DateTime)value);
+            }
+            else if (type == typeof(TimeSpan))
+            {
+                SettingStore.SetUserValue(name, (TimeSpan)value);
+            }
+            else if (type == typeof(string[]))
 			{
 				SettingStore.SetUserValue(name, (string[])value);
 			}
