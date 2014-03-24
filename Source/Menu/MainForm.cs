@@ -67,6 +67,18 @@ namespace ORTS
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
 
+        internal string RunActivityProgram
+        {
+            get
+            {
+                var programNormal = System.IO.Path.Combine(Application.StartupPath, "RunActivity.exe");
+                var programLAA = System.IO.Path.Combine(Application.StartupPath, "RunActivityLAA.exe");
+                if (Settings.UseLargeAddressAware && File.Exists(programLAA))
+                    return programLAA;
+                return programNormal;
+            }
+        }
+
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
         public Activity SelectedActivity { get { return (Activity)comboBoxActivity.SelectedItem; } }
@@ -418,7 +430,7 @@ namespace ORTS
 
         void buttonTesting_Click(object sender, EventArgs e)
         {
-            using (var form = new TestingForm(Settings))
+            using (var form = new TestingForm(this, Settings))
             {
                 form.ShowDialog(this);
             }

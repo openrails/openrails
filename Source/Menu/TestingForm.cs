@@ -62,11 +62,12 @@ namespace ORTS
         Task<int> TestActivitiesRunner;
         bool ClearedLogs;
 
+        readonly MainForm MainForm;
         readonly UserSettings Settings;
 		readonly string SummaryFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
 		readonly string LogFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingLog.txt");
 
-        public TestingForm(UserSettings settings)
+        public TestingForm(MainForm mainForm, UserSettings settings)
         {
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
@@ -78,6 +79,7 @@ namespace ORTS
             // Message Box font to allow for user-customizations, though.
             Font = SystemFonts.MessageBoxFont;
 
+            MainForm = mainForm;
             Settings = settings;
 
             UpdateButtons();
@@ -183,7 +185,7 @@ namespace ORTS
                     parameters += " /Skip-User-Settings";
 
                 var processStartInfo = new ProcessStartInfo();
-                processStartInfo.FileName = Path.Combine(Application.StartupPath, Program.RunActivityProgram);
+                processStartInfo.FileName = MainForm.RunActivityProgram;
                 processStartInfo.WindowStyle = ProcessWindowStyle.Normal;
                 processStartInfo.WorkingDirectory = Application.StartupPath;
 

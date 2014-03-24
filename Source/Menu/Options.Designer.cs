@@ -80,6 +80,7 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkFastFullScreenAltTab = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
             this.checkLODAlwaysMaximum = new System.Windows.Forms.CheckBox();
             this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
@@ -116,7 +117,7 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkFastFullScreenAltTab = new System.Windows.Forms.CheckBox();
+            this.checkUseLargeAddressAware = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -811,6 +812,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkUseLargeAddressAware);
             this.tabPageExperimental.Controls.Add(this.checkFastFullScreenAltTab);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
             this.tabPageExperimental.Controls.Add(this.checkLODAlwaysMaximum);
@@ -838,6 +840,16 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkFastFullScreenAltTab
+            // 
+            this.checkFastFullScreenAltTab.AutoSize = true;
+            this.checkFastFullScreenAltTab.Location = new System.Drawing.Point(6, 358);
+            this.checkFastFullScreenAltTab.Name = "checkFastFullScreenAltTab";
+            this.checkFastFullScreenAltTab.Size = new System.Drawing.Size(129, 17);
+            this.checkFastFullScreenAltTab.TabIndex = 28;
+            this.checkFastFullScreenAltTab.Text = "Fast full-screen alt-tab";
+            this.checkFastFullScreenAltTab.UseVisualStyleBackColor = true;
             // 
             // checkUseMSTSEnv
             // 
@@ -1305,15 +1317,15 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             // 
-            // checkBoxFastFullscreenAltTab
+            // checkUseLargeAddressAware
             // 
-            this.checkFastFullScreenAltTab.AutoSize = true;
-            this.checkFastFullScreenAltTab.Location = new System.Drawing.Point(6, 358);
-            this.checkFastFullScreenAltTab.Name = "checkBoxFastFullscreenAltTab";
-            this.checkFastFullScreenAltTab.Size = new System.Drawing.Size(129, 17);
-            this.checkFastFullScreenAltTab.TabIndex = 28;
-            this.checkFastFullScreenAltTab.Text = "Fast full-screen alt-tab";
-            this.checkFastFullScreenAltTab.UseVisualStyleBackColor = true;
+            this.checkUseLargeAddressAware.AutoSize = true;
+            this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 381);
+            this.checkUseLargeAddressAware.Name = "checkUseLargeAddressAware";
+            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(360, 17);
+            this.checkUseLargeAddressAware.TabIndex = 29;
+            this.checkUseLargeAddressAware.Text = "Use large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
+            this.checkUseLargeAddressAware.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -1456,5 +1468,6 @@
         private System.Windows.Forms.CheckBox checkAlerterDisableExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
         private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
+        private System.Windows.Forms.CheckBox checkUseLargeAddressAware;
     }
 }

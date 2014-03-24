@@ -26,8 +26,6 @@ namespace ORTS
 {
     static class Program
     {
-        public const string RunActivityProgram = "runactivity.exe";
-
         [STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
         static void Main(string[] args)
         {
@@ -128,7 +126,7 @@ namespace ORTS
                     }
 
                     var processStartInfo = new System.Diagnostics.ProcessStartInfo();
-                    processStartInfo.FileName = Path.Combine(Application.StartupPath, RunActivityProgram);
+                    processStartInfo.FileName = MainForm.RunActivityProgram;
                     processStartInfo.Arguments = String.Join(" ", parameters.ToArray());
                     processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
                     processStartInfo.WorkingDirectory = Application.StartupPath;

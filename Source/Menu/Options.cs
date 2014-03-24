@@ -126,6 +126,7 @@ namespace ORTS
             checkUseLocationPassingPaths.Checked = settings.UseLocationPassingPaths;
             checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
             checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
+            checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
 
             // DataLogger tab
             comboDataLoggerSeparator.Text = settings.DataLoggerSeparator;
@@ -280,6 +281,7 @@ namespace ORTS
             Settings.UseLocationPassingPaths = checkUseLocationPassingPaths.Checked;
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
             Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
+            Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.Text;
