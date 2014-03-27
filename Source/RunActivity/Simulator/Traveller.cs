@@ -510,7 +510,11 @@ namespace ORTS
             // Compute distance along curve (ensure we are in the top right quadrant, otherwise our math goes wrong).
             if (l.Z < -InitErrorMargin || l.X > trackSection.SectionCurve.Radius + InitErrorMargin || l.Z > trackSection.SectionCurve.Radius + InitErrorMargin)
                 return null;
-            var radiansAlongCurve = (float)Math.Asin(l.Z / trackSection.SectionCurve.Radius);
+            float radiansAlongCurve;
+            if (l.Z > trackSection.SectionCurve.Radius)
+                radiansAlongCurve = MathHelper.PiOver2;
+            else
+                radiansAlongCurve = (float)Math.Asin(l.Z / trackSection.SectionCurve.Radius); 
             var lon = radiansAlongCurve * trackSection.SectionCurve.Radius;
             var trackSectionLength = GetLength(trackSection);
             if (lon < -InitErrorMargin || lon > trackSectionLength + InitErrorMargin)

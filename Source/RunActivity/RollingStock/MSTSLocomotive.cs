@@ -1238,6 +1238,19 @@ namespace ORTS
                     case Direction.N: SignalEvent(Event.ReverserToNeutral); break;
                     case Direction.Forward: SignalEvent(Event.ReverserToForwardBackward); break;
                 }
+                // passes event also to other locomotives
+                foreach (TrainCar car in Train.Cars)
+                {
+                    var loco = car as MSTSLocomotive;
+                    if (loco != null && car != this && loco.AcceptMUSignals)
+                             switch (direction)
+                             {
+                                case Direction.Reverse: loco.SignalEvent(Event.ReverserToForwardBackward); break;
+                                case Direction.N: loco.SignalEvent(Event.ReverserToNeutral); break;
+                                case Direction.Forward: loco.SignalEvent(Event.ReverserToForwardBackward); break;
+                              }
+
+                }
                 SignalEvent(Event.ReverserChange);
                 if (direction == Direction.Forward)
                     Train.MUReverserPercent = 100;
