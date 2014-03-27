@@ -30,14 +30,19 @@ namespace ORTS.Viewer3D.Popups
 {
     public class NoticeWindow : LayeredWindow
     {
+        const double LocationX = 0.5;
+        const double LocationY = 0.25;
+        const double PaddingX = 0.1;
+        const double PaddingY = 0;
         const double AnimationLength = 0.4;
         const double AnimationFade = 0.1;
-        const double NoticeTextSize = 0.1;
+        const double NoticeTextSize = 0.02;
 
         // Screen-related data
         WindowTextFont Font;
 
         // Updated data
+        string Camera;
         float FieldOfView;
 
         // Notice data
@@ -83,14 +88,26 @@ namespace ORTS.Viewer3D.Popups
         {
             base.PrepareFrame(elapsedTime, updateFull);
 
-            if (Owner.Viewer.Camera != null && FieldOfView != Owner.Viewer.Camera.FieldOfView && Owner.Viewer.RealTime > 0.1)
-            {
-                FieldOfView = Owner.Viewer.Camera.FieldOfView;
-                SetNotice(String.Format("{0:F0}°", FieldOfView));
-            }
-            else if (Animation && Owner.Viewer.RealTime > AnimationStart + AnimationLength)
-            {
+            if (Animation && Owner.Viewer.RealTime > AnimationStart + AnimationLength)
                 Animation = false;
+
+            if (Owner.Viewer.RealTime > 0.1)
+            {
+                if (Owner.Viewer.Camera != null)
+                {
+                    if (Owner.Viewer.Camera.Name != Camera)
+                    {
+                        Camera = Owner.Viewer.Camera.Name;
+                        // Changing camera should not notify FOV change.
+                        FieldOfView = Owner.Viewer.Camera.FieldOfView;
+                        SetNotice(String.Format("Camera: {0}", Camera));
+                    }
+                    else if (FieldOfView != Owner.Viewer.Camera.FieldOfView)
+                    {
+                        FieldOfView = Owner.Viewer.Camera.FieldOfView;
+                        SetNotice(String.Format("FOV: {0:F0}°", FieldOfView));
+                    }
+                }
             }
         }
 
@@ -98,8 +115,15 @@ namespace ORTS.Viewer3D.Popups
         {
             NoticeText = noticeText;
             NoticeSize = new Point(Font.MeasureString(noticeText), Font.Height);
-            Animation = true;
-            AnimationStart = Owner.Viewer.RealTime;
+            if (Animation)
+            {
+                AnimationStart = Owner.Viewer.RealTime - AnimationFade;
+            }
+            else
+            {
+                Animation = true;
+                AnimationStart = Owner.Viewer.RealTime;
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -116,10 +140,12 @@ namespace ORTS.Viewer3D.Popups
                 else if (currentLength > AnimationLength - AnimationFade)
                     fade = (float)((currentLength - AnimationLength) / -AnimationFade);
 
-                var rectangle = new Rectangle(Location.Width / 2, Location.Height / 2, 0, 0);
-                rectangle.Inflate(NoticeSize.X / 2, NoticeSize.Y / 2);
-                spriteBatch.Draw(WindowManager.NoticeTexture, rectangle, Color.White);
-                Font.Draw(spriteBatch, rectangle, Point.Zero, NoticeText, LabelAlignment.Center, Color.White);
+                var color = new Color(Color.White, fade);
+                var rectangle = new Rectangle((int)(Location.Width * LocationX), (int)(Location.Height * LocationY), 0, 0);
+                rectangle.Inflate(NoticeSize.X / 2 + (int)(NoticeSize.Y * PaddingX), NoticeSize.Y / 2 + (int)(NoticeSize.Y * PaddingY));
+                spriteBatch.Draw(WindowManager.NoticeTexture, rectangle, color);
+                rectangle.Inflate(-(int)(NoticeSize.Y * PaddingX), -(int)(NoticeSize.Y * PaddingY));
+                Font.Draw(spriteBatch, rectangle, Point.Zero, NoticeText, LabelAlignment.Center, color);
             }
         }
     }

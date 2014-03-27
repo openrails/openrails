@@ -68,6 +68,7 @@ namespace ORTS.Viewer3D
         public virtual TrainCar AttachedCar { get { return null; } }
         public virtual bool IsAvailable { get { return true; } }
         public virtual bool IsUnderground { get { return false; } }
+        public virtual string Name { get { return ""; } }
 
         // We need to allow different cameras to have different near planes.
         public virtual float NearPlane { get { return 1.0f; } }
@@ -103,7 +104,7 @@ namespace ORTS.Viewer3D
         protected internal virtual void Restore(BinaryReader input)
         {
             cameraLocation.Restore(input);
-            FieldOfView = input.ReadInt32();
+            FieldOfView = input.ReadSingle();
         }
 
         /// <summary>
@@ -591,6 +592,8 @@ namespace ORTS.Viewer3D
         const float maxCameraHeight = 1000f;
         const float ZoomFactor = 2f;
 
+        public override string Name { get { return "Free"; } }
+
         public FreeRoamCamera(Viewer viewer, Camera previousCamera)
             : base(viewer, previousCamera)
         {
@@ -975,6 +978,7 @@ namespace ORTS.Viewer3D
                 return attachedCar.WorldPosition.WorldLocation.Location.Y + TerrainAltitudeMargin < elevationAtTrain || cameraLocation.Location.Y + TerrainAltitudeMargin < elevationAtCamera;
             }
         }
+        public override string Name { get { return Front ? "Outside Front" : "Outside Rear"; } }
 
         public TrackingCamera(Viewer viewer, AttachedTo attachedTo)
             : base(viewer)
@@ -1230,6 +1234,7 @@ namespace ORTS.Viewer3D
         protected bool attachedToRear;
 
         public override float NearPlane { get { return 0.25f; } }
+        public override string Name { get { return "Brakeman"; } }
 
         public BrakemanCamera(Viewer viewer)
             : base(viewer)
@@ -1261,6 +1266,7 @@ namespace ORTS.Viewer3D
         public override Styles Style { get { return Styles.Passenger; } }
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.1f; } }
+        public override string Name { get { return "Passenger"; } }
 
         public PassengerCamera(Viewer viewer)
             : base(viewer)
@@ -1293,6 +1299,7 @@ namespace ORTS.Viewer3D
         // Head-out camera is only possible on the player train.
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.25f; } }
+        public override string Name { get { return "Head out"; } }
 
         public HeadOutCamera(Viewer viewer, HeadDirection headDirection)
             : base(viewer)
@@ -1336,6 +1343,7 @@ namespace ORTS.Viewer3D
         public override Styles Style { get { return Styles.Cab; } }
         // Cab camera is only possible on the player train.
         public override bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.HasFrontCab; } }
+        public override string Name { get { return "Cab"; } }
 
         public override bool IsUnderground
         {
@@ -1515,6 +1523,7 @@ namespace ORTS.Viewer3D
 
         protected TrainCar attachedCar;
         public override TrainCar AttachedCar { get { return attachedCar; } }
+        public override string Name { get { return "Trackside"; } }
 
         protected TrainCar LastCheckCar;
         protected readonly Random Random;
