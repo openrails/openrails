@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using ORTS.Common;
+using ORTS.Updater;
 
 namespace ORTS
 {
@@ -50,7 +51,16 @@ namespace ORTS
 
         static void MainForm()
         {
-            using (var MainForm = new MainForm())
+            var updateManager = new UpdateManager(Path.GetDirectoryName(Application.ExecutablePath));
+
+            // We must do this before localisation gets its grubby mitts on the satellite assemblies.
+            if (updateManager.Apply())
+            {
+                Process.Start(System.IO.Path.Combine(updateManager.BasePath, "OpenRails.exe"));
+                return;
+            }
+
+            using (var MainForm = new MainForm(updateManager))
             {
                 while (MainForm.ShowDialog() == DialogResult.OK)
                 {

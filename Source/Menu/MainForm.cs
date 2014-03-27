@@ -96,7 +96,7 @@ namespace ORTS
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         #region Main Form
-        public MainForm()
+        public MainForm(UpdateManager updateManager)
         {
             InitializeComponent();
 
@@ -113,7 +113,7 @@ namespace ORTS
             panelModeTimetable.Location = panelModeActivity.Location;
             ShowDetails();
             UpdateEnabled();
-            UpdateManager = new UpdateManager(System.IO.Path.GetDirectoryName(Application.ExecutablePath));
+            UpdateManager = updateManager;
         }
 
         void MainForm_Shown(object sender, EventArgs e)
@@ -404,7 +404,7 @@ namespace ORTS
             linkLabelUpdate.Visible = true;
             new Task<UpdateManager>(this, () =>
             {
-                UpdateManager.Update();
+                UpdateManager.Prepare();
                 return null;
             }, _ =>
             {

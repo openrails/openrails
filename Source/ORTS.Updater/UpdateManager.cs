@@ -97,6 +97,53 @@ namespace ORTS.Updater
             }
         }
 
+        public void Prepare()
+        {
+            if (LatestUpdate == null) throw new InvalidOperationException("Cannot get update when no LatestUpdate exists.");
+            try
+            {
+                TestUpdateWrites();
+                CleanDirectories();
+                DownloadUpdate();
+                ExtractUpdate();
+            }
+            catch (Exception error)
+            {
+                UpdateError = error;
+                return;
+            }
+        }
+
+        public bool Apply()
+        {
+            try
+            {
+                if (UpdateIsReady())
+                {
+                    ApplyUpdate();
+                    return true;
+                }
+            }
+            catch (Exception error)
+            {
+                UpdateError = error;
+            }
+            return false;
+        }
+
+        public void Clean()
+        {
+            try
+            {
+                CleanDirectories();
+            }
+            catch (Exception error)
+            {
+                UpdateError = error;
+                return;
+            }
+        }
+
         void ResetCachedUpdate()
         {
             State.LastCheck = DateTime.Now;
@@ -118,41 +165,11 @@ namespace ORTS.Updater
             State.Save();
         }
 
-        public void Update()
-        {
-            if (LatestUpdate == null) throw new InvalidOperationException("Cannot get update when no LatestUpdate exists.");
-            try
-            {
-                TestUpdateWrites();
-                CleanDirectories();
-                DownloadUpdate();
-                ExtractUpdate();
-                ApplyUpdate();
-            }
-            catch (Exception error)
-            {
-                UpdateError = error;
-                return;
-            }
-        }
-
-        public void Clean()
-        {
-            try
-            {
-                CleanDirectories();
-            }
-            catch (Exception error)
-            {
-                UpdateError = error;
-                return;
-            }
-        }
-
         string PathUpdateTest { get { return Path.Combine(BasePath, "UpdateTest"); } }
         string PathUpdateDirty { get { return Path.Combine(BasePath, "UpdateDirty"); } }
         string PathUpdateStage { get { return Path.Combine(BasePath, "UpdateStage"); } }
         string FileUpdateStage { get { return Path.Combine(PathUpdateStage, "Update.zip"); } }
+        string FileUpdateStageIsReady { get { return Path.Combine(PathUpdateStage, "OpenRails.exe"); } }
 
         void TestUpdateWrites()
         {
@@ -186,6 +203,14 @@ namespace ORTS.Updater
                 zip.ExtractAll(PathUpdateStage, ExtractExistingFileAction.OverwriteSilently);
 
             File.Delete(FileUpdateStage);
+        }
+
+        bool UpdateIsReady()
+        {
+            // The staging directory must exist, contain OpenRails.exe (be ready) and NOT contain the update zip.
+            return Directory.Exists(PathUpdateStage)
+                && File.Exists(FileUpdateStageIsReady)
+                && !File.Exists(FileUpdateStage);
         }
 
         void ApplyUpdate()
