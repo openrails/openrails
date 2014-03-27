@@ -174,7 +174,7 @@ namespace ORTS.Updater
             if (!Directory.Exists(PathUpdateStage))
                 Directory.CreateDirectory(PathUpdateStage);
 
-            var updateUri = new Uri("http://james-ross.co.uk/projects/or/update?format=json");
+            var updateUri = new Uri(Settings.URL);
             var uri = new Uri(updateUri, LatestUpdate.Url);
             var client = new WebClient();
             client.DownloadFile(uri, FileUpdateStage);
