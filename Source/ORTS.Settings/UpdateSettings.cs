@@ -36,7 +36,6 @@ namespace ORTS.Settings
 
         [Default("")]
         public string URL { get; set; }
-        [Default(86400)]
         public TimeSpan TTL { get; set; }
 
         #endregion
@@ -50,6 +49,9 @@ namespace ORTS.Settings
         public override object GetDefaultValue(string name)
         {
             var property = GetType().GetProperty(name);
+
+            if (name == "TTL")
+                return TimeSpan.FromDays(1);
 
             if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
                 return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;

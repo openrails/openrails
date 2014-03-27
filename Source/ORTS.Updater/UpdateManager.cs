@@ -107,7 +107,7 @@ namespace ORTS.Updater
             // if they launch it at 6:00PM on Monday, then 5:30PM on Tuesday, they won't get an update chech on
             // Tuesday. With the time rounding, they should get one check/day if the TTL is 1 day and they open it
             // every day. (This is why BaseDateTimeMidnightLocal uses the local midnight!)
-            State.NextCheck = BaseDateTimeMidnightLocal.AddSeconds(Math.Ceiling((State.LastCheck - BaseDateTimeMidnightLocal).TotalSeconds / Settings.TTL.TotalSeconds) * Settings.TTL.TotalSeconds);
+            State.NextCheck = Settings.TTL.TotalMinutes > 1 ? BaseDateTimeMidnightLocal.AddSeconds(Math.Ceiling((State.LastCheck - BaseDateTimeMidnightLocal).TotalSeconds / Settings.TTL.TotalSeconds) * Settings.TTL.TotalSeconds) : State.LastCheck + TimeSpan.FromMinutes(1);
             State.Update = "";
             State.Save();
         }
