@@ -80,6 +80,7 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkUseLargeAddressAware = new System.Windows.Forms.CheckBox();
             this.checkFastFullScreenAltTab = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
             this.checkLODAlwaysMaximum = new System.Windows.Forms.CheckBox();
@@ -117,7 +118,6 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkUseLargeAddressAware = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -299,7 +299,8 @@
             // checkAlerterDisableExternal
             // 
             this.checkAlerterDisableExternal.AutoSize = true;
-            this.checkAlerterDisableExternal.Location = new System.Drawing.Point(22, 29);
+            this.checkAlerterDisableExternal.Location = new System.Drawing.Point(26, 29);
+            this.checkAlerterDisableExternal.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.checkAlerterDisableExternal.Name = "checkAlerterDisableExternal";
             this.checkAlerterDisableExternal.Size = new System.Drawing.Size(174, 17);
             this.checkAlerterDisableExternal.TabIndex = 0;
@@ -674,9 +675,9 @@
             this.checkCurveSpeedDependent.AutoSize = true;
             this.checkCurveSpeedDependent.Location = new System.Drawing.Point(6, 124);
             this.checkCurveSpeedDependent.Name = "checkCurveSpeedDependent";
-            this.checkCurveSpeedDependent.Size = new System.Drawing.Size(140, 17);
+            this.checkCurveSpeedDependent.Size = new System.Drawing.Size(160, 17);
             this.checkCurveSpeedDependent.TabIndex = 6;
-            this.checkCurveSpeedDependent.Text = "Curve speed dependent";
+            this.checkCurveSpeedDependent.Text = "Curve dependent speed limit";
             this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
             // 
             // checkCurveResistanceSpeedDependent
@@ -684,9 +685,9 @@
             this.checkCurveResistanceSpeedDependent.AutoSize = true;
             this.checkCurveResistanceSpeedDependent.Location = new System.Drawing.Point(6, 101);
             this.checkCurveResistanceSpeedDependent.Name = "checkCurveResistanceSpeedDependent";
-            this.checkCurveResistanceSpeedDependent.Size = new System.Drawing.Size(191, 17);
+            this.checkCurveResistanceSpeedDependent.Size = new System.Drawing.Size(159, 17);
             this.checkCurveResistanceSpeedDependent.TabIndex = 5;
-            this.checkCurveResistanceSpeedDependent.Text = "Curve resistance speed dependent";
+            this.checkCurveResistanceSpeedDependent.Text = "Curve dependent resistance";
             this.checkCurveResistanceSpeedDependent.UseVisualStyleBackColor = true;
             // 
             // checkOverrideNonElectrifiedRoutes
@@ -705,9 +706,9 @@
             this.label12.Location = new System.Drawing.Point(86, 31);
             this.label12.Margin = new System.Windows.Forms.Padding(3);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(180, 13);
+            this.label12.Size = new System.Drawing.Size(173, 13);
             this.label12.TabIndex = 3;
-            this.label12.Text = "Adhesion Moving Average Filter Size";
+            this.label12.Text = "Adhesion moving average filter size";
             // 
             // numericAdhesionMovingAverageFilterSize
             // 
@@ -840,6 +841,16 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkUseLargeAddressAware
+            // 
+            this.checkUseLargeAddressAware.AutoSize = true;
+            this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 381);
+            this.checkUseLargeAddressAware.Name = "checkUseLargeAddressAware";
+            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(360, 17);
+            this.checkUseLargeAddressAware.TabIndex = 29;
+            this.checkUseLargeAddressAware.Text = "Use large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
+            this.checkUseLargeAddressAware.UseVisualStyleBackColor = true;
             // 
             // checkFastFullScreenAltTab
             // 
@@ -1316,16 +1327,6 @@
             this.checkDataLogTrainSpeed.TabIndex = 13;
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
-            // 
-            // checkUseLargeAddressAware
-            // 
-            this.checkUseLargeAddressAware.AutoSize = true;
-            this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 381);
-            this.checkUseLargeAddressAware.Name = "checkUseLargeAddressAware";
-            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(360, 17);
-            this.checkUseLargeAddressAware.TabIndex = 29;
-            this.checkUseLargeAddressAware.Text = "Use large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
-            this.checkUseLargeAddressAware.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
