@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Open Rails Track Viewer (Contributed)")]
+[assembly: AssemblyTitle("Open Rails Content Manager (Contributed)")]
 [assembly: AssemblyDescription("Open Rails Transport Simulator")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Open Rails")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("081ffad5-993d-4475-b4f6-9fdc8240b8f1")]
+[assembly: Guid("65fcf2a2-5130-4e4e-a8bf-d7c377cd3e58")]
 
 // Version information for an assembly consists of the following four values:
 //

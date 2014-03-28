@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Updater", "ORTS.Update
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackViewer", "Contrib\TrackViewer\TrackViewer.csproj", "{79C3A70B-7535-40CB-8448-91AB87CBAE44}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentManager", "Contrib\ContentManager\ContentManager.csproj", "{E3E04859-2734-46EA-99B6-8A9721E85D3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -97,6 +99,10 @@ Global
 		{79C3A70B-7535-40CB-8448-91AB87CBAE44}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{79C3A70B-7535-40CB-8448-91AB87CBAE44}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{79C3A70B-7535-40CB-8448-91AB87CBAE44}.Release|Mixed Platforms.Build.0 = Release|x86
+		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{E3E04859-2734-46EA-99B6-8A9721E85D3F}.Release|Mixed Platforms.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
