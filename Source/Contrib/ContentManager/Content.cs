@@ -26,6 +26,8 @@ namespace ORTS.ContentManager
     //   Package
     //     Route
     //       Activity
+    //       Service
+    //       Traffic
     //       Path
     //       Scenery
     //       Model
@@ -42,6 +44,8 @@ namespace ORTS.ContentManager
         Package,
         Route,
         Activity,
+        Service,
+        Traffic,
         Path,
         Consist,
         Trainset,

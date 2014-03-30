@@ -39,6 +39,7 @@ namespace ORTS.ContentManager
                 {
                     var file = new TRKFile(Path.Combine(content.PathName, content.Name + ".trk"));
                     details.AppendFormat("Route ID:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.RouteID);
+                    details.AppendFormat("Route Key:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.FileName);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Tr_RouteFile.Name);
                     details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Tr_RouteFile.Description);
                 }
@@ -48,8 +49,44 @@ namespace ORTS.ContentManager
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.Name);
                     details.AppendFormat("Route ID:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.RouteID);
                     details.AppendFormat("Path ID:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.PathID);
+                    details.AppendLine();
+                    details.AppendLine("Player:\t");
+                    details.AppendFormat("  Service ID:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name);
+                    details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time);
+                    details.AppendFormat("  Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);
+                    foreach (var item in file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Player_Traffic_List)
+                        details.AppendFormat("  {1}\t{2}\t{3}\t{4}{0}", Environment.NewLine, item.PlatformStartID, item.DistanceDownPath, item.ArrivalTime, item.DepartTime);
+                    details.AppendLine();
+                    details.AppendLine("Open Rails does not support loading the player's service data (effeciency per-station stop).");
+                    details.AppendLine();
+                    details.AppendFormat("Traffic ID:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name);
+                    foreach (var traffic in file.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
+                    {
+                        details.AppendLine();
+                        details.AppendLine("Traffic:\t");
+                        details.AppendFormat("  Service ID:\t{1}{0}", Environment.NewLine, traffic.Name);
+                        details.AppendFormat("  UID:\t{1}{0}", Environment.NewLine, traffic.UiD);
+                        details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, traffic.Time);
+                        details.AppendFormat("  Platform ID:\tDistance down path:\tSkip count:\tEfficiency:\t{0}", Environment.NewLine);
+                        foreach (var item in traffic.ServiceList)
+                            details.AppendFormat("  {1}\t{2}\t{3}\t{4}{0}", Environment.NewLine, item.PlatformStartID, item.DistanceDownPath, item.SkipCount, item.Efficiency);
+                    }
+                    details.AppendLine();
                     details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.Description);
                     details.AppendFormat("Briefing:\t{0}{0}{1}{0}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.Briefing);
+                }
+                else if (content is ContentMSTSService)
+                {
+                    var file = new SRVFile(content.PathName);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
+                    details.AppendFormat("Consist ID:\t{1}{0}", Environment.NewLine, file.Train_Config);
+                    details.AppendFormat("Path ID:\t{1}{0}{0}", Environment.NewLine, file.PathID);
+                    details.AppendFormat("This format is not supported by Open Rails.{0}{0}", Environment.NewLine);
+                }
+                else if (content is ContentMSTSTraffic)
+                {
+                    details.AppendFormat("This format is not supported by Open Rails.{0}{0}", Environment.NewLine);
+                    // TODO: Traffic_File
                 }
                 else if (content is ContentMSTSPath)
                 {
@@ -97,6 +134,7 @@ namespace ORTS.ContentManager
                 else if (content is ContentMSTSConsist)
                 {
                     var file = new CONFile(content.PathName);
+                    details.AppendFormat("Consist ID:\t{1}{0}", Environment.NewLine, content.Name);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
                     // Always the same as file.Name?  details.AppendFormat("Train:\t{1}{0}", Environment.NewLine, file.Train.TrainCfg.Name);
                     details.AppendFormat("UID:\tType/Flipped:\tTrainset:\tCar:\t{0}", Environment.NewLine);

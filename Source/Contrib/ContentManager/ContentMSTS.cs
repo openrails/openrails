@@ -84,6 +84,20 @@ namespace ORTS.ContentManager
                     foreach (var item in Directory.GetFiles(path, "*.act"))
                         content.Add(new ContentMSTSActivity(Path.Combine(path, item)));
             }
+            else if (type == ContentType.Service)
+            {
+                var path = Path.Combine(PathName, "Services");
+                if (Directory.Exists(path))
+                    foreach (var item in Directory.GetFiles(path, "*.srv"))
+                        content.Add(new ContentMSTSService(Path.Combine(path, item)));
+            }
+            else if (type == ContentType.Traffic)
+            {
+                var path = Path.Combine(PathName, "Traffic");
+                if (Directory.Exists(path))
+                    foreach (var item in Directory.GetFiles(path, "*.trf"))
+                        content.Add(new ContentMSTSTraffic(Path.Combine(path, item)));
+            }
             else if (type == ContentType.Path)
             {
                 var path = Path.Combine(PathName, "Paths");
@@ -118,6 +132,28 @@ namespace ORTS.ContentManager
         public override ContentType Type { get { return ContentType.Activity; } }
 
         public ContentMSTSActivity(string path)
+        {
+            Name = Path.GetFileNameWithoutExtension(path);
+            PathName = path;
+        }
+    }
+
+    public class ContentMSTSService : Content
+    {
+        public override ContentType Type { get { return ContentType.Service; } }
+
+        public ContentMSTSService(string path)
+        {
+            Name = Path.GetFileNameWithoutExtension(path);
+            PathName = path;
+        }
+    }
+
+    public class ContentMSTSTraffic : Content
+    {
+        public override ContentType Type { get { return ContentType.Traffic; } }
+
+        public ContentMSTSTraffic(string path)
         {
             Name = Path.GetFileNameWithoutExtension(path);
             PathName = path;
