@@ -92,7 +92,7 @@ namespace ORTS.Viewer3D
             MSTSSkyViewer = viewer;
             MSTSSkyMaterial = viewer.MaterialManager.Load("MSTSSky");
             // Instantiate classes
-            MSTSSkyMesh = new MSTSSkyMesh( MSTSSkyViewer.RenderProcess);
+            MSTSSkyMesh = new MSTSSkyMesh( MSTSSkyViewer.RenderProcess, MSTSSkyViewer);
             MSTSSkyVectors = new SunMoonPos();
 
             //viewer.World.MSTSSky.MSTSSkyMaterial.Viewer.MaterialManager.sunDirection.Y < 0
@@ -288,11 +288,10 @@ namespace ORTS.Viewer3D
 
         VertexPositionNormalTexture[] vertexList;
         private static short[] triangleListIndices; // Trilist buffer.
-
         // Sky dome geometry is based on two global variables: the radius and the number of sides
         public int mstsskyRadius = MSTSSkyConstants.skyRadius;
+        public int mstsskyradius;
         private static int mstsskySides = MSTSSkyConstants.skySides;
-        public int mstscloudDomeRadiusDiff = 600; // Amount by which cloud dome radius is smaller than sky dome
         // skyLevels: Used for iterating vertically through the "levels" of the hemisphere polygon
         private static int mstsskyLevels = ((MSTSSkyConstants.skySides / 4) - 1);
         // Number of vertices in the sky hemisphere. (each dome = 145 for 24-sided sky dome: 24 x 6 + 1)
@@ -306,10 +305,21 @@ namespace ORTS.Viewer3D
         /// <summary>
         /// Constructor.
         /// </summary>
+        /// 
 
-        public MSTSSkyMesh(RenderProcess renderProcess)
+        public MSTSSkyMesh(RenderProcess renderProcess, Viewer viewer)
         {
             var tileFactor = 1;
+
+            if (viewer.ENVFile.SkyLayers != null)
+            {
+                mstsskyradius = viewer.ENVFile.SkyLayers[0]._top_radius;
+            }
+            else
+            {
+                mstsskyradius = mstsskyRadius;
+            } 
+
             if ( MSTSSkyConstants.IsNight == true) 
                     tileFactor = 8;
                 else
@@ -319,7 +329,7 @@ namespace ORTS.Viewer3D
             triangleListIndices = new short[indexCount];
 
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, tileFactor);
+            MSTSSkyDomeVertexList(0, mstsskyradius, tileFactor);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
             //MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, 1);
@@ -342,7 +352,7 @@ namespace ORTS.Viewer3D
             triangleListIndices = new short[indexCount];
 
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, tileFactor);
+            MSTSSkyDomeVertexList(0, mstsskyradius, tileFactor);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
             //MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, 1);
@@ -399,7 +409,7 @@ namespace ORTS.Viewer3D
         /// <param name="index">The starting vertex number</param>
         /// <param name="radius">The radius of the dome</param>
         /// <param name="oblate">The amount the dome is flattened</param>
-        private void MSTSSkyDomeVertexList(int index, int radius, float oblate, float texturetiling)
+        private void MSTSSkyDomeVertexList(int index, int radius, float texturetiling)
         {
             int vertexIndex = index;
             // for each vertex
@@ -408,7 +418,7 @@ namespace ORTS.Viewer3D
                 {
                     // The "oblate" factor is used to flatten the dome to an ellipsoid. Used for the inner (cloud)
                     // dome only. Gives the clouds a flatter appearance.
-                    float y = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * i)) * radius * oblate;
+                    float y = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * i)) * radius;
                     float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * i));
                     float x = (float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * yRadius;
                     float z = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * yRadius;
@@ -669,8 +679,7 @@ namespace ORTS.Viewer3D
 
             // Send the transform matrices to the shader
             int mstsskyRadius = Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius;
-            int mstscloudRadiusDiff = Viewer.World.MSTSSky.MSTSSkyMesh.mstscloudDomeRadiusDiff;
-            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius - (mstscloudRadiusDiff / 2)));
+            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius - 2));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
             MSTSSkyShader.Begin();

@@ -31,6 +31,7 @@ namespace MSTS.Formats
     {
         public float WaterWaveHeight;
         public float WaterWaveSpeed;
+        public float WorldSkynLayers;
         public List<ENVFileWaterLayer> WaterLayers;
         public List<ENVFileSkyLayer> SkyLayers;
         public List<ENVFileSkySatellite> SkySatellite;
@@ -52,6 +53,7 @@ namespace MSTS.Formats
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("world", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("world_sky", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                               new STFReader.TokenProcessor("worldskynlayers_behind_satellites", ()=>{ WorldSkynLayers = stf.ReadFloatBlock( STFReader.UNITS.Any, null ); }),
                                new STFReader.TokenProcessor("world_sky_layers", ()=>{ ParseSkyLayers(stf); }),
                                new STFReader.TokenProcessor("world_sky_satellites", ()=>{ ParseWorldSkySatellites(stf); }),
                                });}),
@@ -116,32 +118,47 @@ namespace MSTS.Formats
     {
 
         public string TextureName;
+        public string TextureMode;
+        public int _top_nfaces;
+        public int _top_radius;
+        public int _top_height;
 
         public ENVFileSkyLayer(STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("world_anim_shader", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); stf.ReadString()/*TextureMode*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("terrain_texslots", ()=>{ stf.MustMatch("("); stf.ReadInt(null)/*Count*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("terrain_texslot", ()=>{ stf.MustMatch("("); TextureName = stf.ReadString(); stf.SkipRestOfBlock(); }),
-                        });}),
+                    new STFReader.TokenProcessor("world_sky_layer_top", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("world_sky_layer_top_nfaces", ()=>{ stf.MustMatch("("); _top_nfaces = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            });}),
+                        new STFReader.TokenProcessor("world_sky_layer_top_radius", ()=>{ stf.MustMatch("("); _top_radius = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            });}),
+                        new STFReader.TokenProcessor("world_sky_layer_top_height", ()=>{ stf.MustMatch("("); _top_height = stf.ReadInt(null);  stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            });}),
                     });}),
-                });}),
-            });
+                        new STFReader.TokenProcessor("world_anim_shader", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); TextureMode = stf.ReadString(); stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("terrain_texslots", ()=>{ stf.MustMatch("("); stf.ReadInt(null)/*Count*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                new STFReader.TokenProcessor("terrain_texslot", ()=>{ stf.MustMatch("("); TextureName = stf.ReadString(); stf.SkipRestOfBlock(); }),
+
+});}),
+                            });}),
+                    });}),
+                });
+                                
         }
     }
     public class ENVFileSkySatellite
     {
 
         public string TextureName;
+        public string TextureMode;
 
         public ENVFileSkySatellite(STFReader stf)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("world_anim_shader", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); stf.ReadString()/*TextureMode*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("world_shader", ()=>{ stf.MustMatch("("); TextureMode = stf.ReadString(); stf.ParseBlock(new STFReader.TokenProcessor[] {
                         new STFReader.TokenProcessor("terrain_texslots", ()=>{ stf.MustMatch("("); stf.ReadInt(null)/*Count*/; stf.ParseBlock(new STFReader.TokenProcessor[] {
                             new STFReader.TokenProcessor("terrain_texslot", ()=>{ stf.MustMatch("("); TextureName = stf.ReadString(); stf.SkipRestOfBlock(); }),
                             });}),
