@@ -71,7 +71,7 @@ namespace ORTS.Viewer3D.RollingStock
                 }
             }
             if (car.InteriorShapeFileName != null)
-                InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition);
+                InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.Interior);
 
             RunningGear = new AnimatedPart(TrainCarShape);
             Pantograph1 = new AnimatedPart(TrainCarShape);

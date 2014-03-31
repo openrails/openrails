@@ -116,6 +116,8 @@ namespace ORTS.Viewer3D
         ShadowCaster = 1,
         // Shape needs automatic z-bias to keep it out of trouble.
         AutoZBias = 2,
+        // Shape is an interior and must be rendered in a separate group.
+        Interior = 4,
         // NOTE: Use powers of 2 for values!
     }
 
@@ -1379,7 +1381,8 @@ namespace ORTS.Viewer3D
 
                         // TODO make shadows depend on shape overrides
 
-                        frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance, shapePrimitive.Material, shapePrimitive, RenderPrimitiveGroup.World, ref xnaMatrix, flags);
+                        var interior = (flags & ShapeFlags.Interior) != 0;
+                        frame.AddAutoPrimitive(mstsLocation, chosenDistanceLevel.ViewSphereRadius, chosenDistanceLevel.ViewingDistance, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags);
                     }
                 }
             }

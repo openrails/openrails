@@ -34,7 +34,7 @@ namespace ORTS.Viewer3D
 
         // 2.1 sets the limit at just under a right angle as get unwanted swivel at the full right angle.
         protected static CameraAngleClamper VerticalClamper = new CameraAngleClamper(-MathHelper.Pi / 2.1f, MathHelper.Pi / 2.1f);
-        protected const int TerrainAltitudeMargin = 2;
+        public const int TerrainAltitudeMargin = 2;
 
         protected readonly Viewer Viewer;
 

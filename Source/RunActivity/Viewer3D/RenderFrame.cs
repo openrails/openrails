@@ -45,6 +45,7 @@ namespace ORTS.Viewer3D
         Lights, // TODO: May not be needed once alpha sorting works.
         Precipitation, // TODO: May not be needed once alpha sorting works.
         Particles,
+        Interior,
         CabBlended,
         TextOverlayOpaque,
         TextOverlayBlended,
@@ -60,11 +61,17 @@ namespace ORTS.Viewer3D
         Lights, // TODO: May not be needed once alpha sorting works.
         Precipitation, // TODO: May not be needed once alpha sorting works.
         Particles,
+        Interior,
         Overlay
     }
 
     public abstract class RenderPrimitive
     {
+        /// <summary>
+        /// Mapping from <see cref="RenderPrimitiveGroup"/> to <see cref="RenderPrimitiveSequence"/> for blended
+        /// materials. The number of items in the array must equal the number of values in
+        /// <see cref="RenderPrimitiveGroup"/>.
+        /// </summary>
         public static readonly RenderPrimitiveSequence[] SequenceForBlended = new[] {
 			RenderPrimitiveSequence.CabBlended,
             RenderPrimitiveSequence.Sky,
@@ -72,8 +79,15 @@ namespace ORTS.Viewer3D
 			RenderPrimitiveSequence.Lights,
 			RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
+            RenderPrimitiveSequence.Interior,
 			RenderPrimitiveSequence.TextOverlayBlended,
 		};
+
+        /// <summary>
+        /// Mapping from <see cref="RenderPrimitiveGroup"/> to <see cref="RenderPrimitiveSequence"/> for opaque
+        /// materials. The number of items in the array must equal the number of values in
+        /// <see cref="RenderPrimitiveGroup"/>.
+        /// </summary>
         public static readonly RenderPrimitiveSequence[] SequenceForOpaque = new[] {
 			RenderPrimitiveSequence.CabOpaque,
             RenderPrimitiveSequence.Sky,
@@ -81,6 +95,7 @@ namespace ORTS.Viewer3D
 			RenderPrimitiveSequence.Lights,
 			RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
+            RenderPrimitiveSequence.Interior,
 			RenderPrimitiveSequence.TextOverlayOpaque,
 		};
 

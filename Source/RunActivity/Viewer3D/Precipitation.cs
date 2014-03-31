@@ -148,9 +148,13 @@ namespace ORTS.Viewer3D
 
             ////////////////////////////////////////////////////////////////////
 
-            Primitive.Update(Viewer.Simulator);
-
-            frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.Precipitation, ref XNAPrecipWorldLocation);
+            // We hide the pricipitation when the camera is underground as a primitive hack to avoid rain/snow in
+            // tunnels. It's quite jarring, though, so improvements welcome.
+            if (Viewer.Camera.CameraWorldLocation.Location.Y + Camera.TerrainAltitudeMargin >= Viewer.Tiles.GetElevation(Viewer.Camera.CameraWorldLocation))
+            {
+                Primitive.Update(Viewer.Simulator);
+                frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.Precipitation, ref XNAPrecipWorldLocation);
+            }
         }
 
         /// <summary>
