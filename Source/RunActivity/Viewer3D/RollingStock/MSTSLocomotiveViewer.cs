@@ -596,7 +596,7 @@ namespace ORTS.Viewer3D.RollingStock
             if (distanceToPickupM > match.IntakePoint.WidthM / 2)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Distance to {0} supply is {1}.",
-                    PickupTypeDictionary[(uint)match.Pickup.PickupType], Viewer.Catalog.GetPluralString("{0} meter", "{0} meters", (long)distanceToPickupM)));
+                    PickupTypeDictionary[(uint)match.Pickup.PickupType], Viewer.Catalog.GetPluralStringFmt("{0} meter", "{0} meters", (long)distanceToPickupM)));
                 return;
             }
             if (loco.SpeedMpS != 0 && match.Pickup.SpeedRange.MinMpS == 0f)

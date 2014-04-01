@@ -400,7 +400,7 @@ namespace ORTS.MultiPlayer
 				if (count >= 2)
 				{
 					if (Program.Simulator.Confirmer != null)
-						Program.Simulator.Confirmer.Information(Viewer.Catalog.GetPluralString("Cannot decouple: train has {0} player, need to completely stop.", "Cannot decouple: train has {0} players, need to completely stop.", count));
+						Program.Simulator.Confirmer.Information(Viewer.Catalog.GetPluralStringFmt("Cannot decouple: train has {0} player, need to completely stop.", "Cannot decouple: train has {0} players, need to completely stop.", count));
 					return false;
 				}
 			}

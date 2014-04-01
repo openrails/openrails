@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
 "POT-Creation-Date: 2014-03-24 17:54:54+0100\n"
-"PO-Revision-Date: 2014-03-24 17:59+0100\n"
+"PO-Revision-Date: 2014-03-29 10:36+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -195,7 +195,7 @@ msgstr "Kis átnézeti kép"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:31
 msgid "Show world tiles"
-msgstr "Használt tile-ok"
+msgstr "Használt mezők"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:32
 msgid "Show scale ruler"
@@ -223,7 +223,7 @@ msgstr "Kicsinyítés"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:40
 msgid "Zoom to tile (z)"
-msgstr "Tile-ra nagyítás"
+msgstr "Mezőre nagyítás"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:41
 msgid "Zoom reset (r)"
@@ -420,7 +420,7 @@ msgstr "Mégse"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
 msgid "Shows tileX and tileZ of the world location at the mouse pointer"
-msgstr "TileX és TileZ megjelenítése az egérmutató alatt"
+msgstr "TileX és TileZ mezőazonosító megjelenítése az egérmutató alatt"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
 msgid "Shows X-coordinate (without tileX) at the mouse pointer"

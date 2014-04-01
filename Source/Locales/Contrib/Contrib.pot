@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-03-24 18:00:29+0100\n"
-"PO-Revision-Date: 2014-03-24 18:00:29+0100\n"
+"POT-Creation-Date: 2014-03-29 10:36:50+0100\n"
+"PO-Revision-Date: 2014-03-29 10:36:51+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -10,6 +10,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: MonoDevelop Gettext addin\n"
 
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:59
+msgid "Loading..."
+msgstr ""
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:69
+msgid "Open Rails Content Manager"
+msgstr ""
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:513
 msgid "Do you really want to Quit?"
