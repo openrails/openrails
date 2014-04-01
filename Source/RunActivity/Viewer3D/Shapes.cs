@@ -387,7 +387,7 @@ namespace ORTS.Viewer3D
             // Create and populate a new ShapePrimitive
             NumVertices = NumIndices = 0;
             var i = 0; var id = -1; var size = SpeedPostObj.Text_Size.Size; var idlocation = 0;
-            id = SpeedPostObj.getTrItemID(idlocation);
+            id = SpeedPostObj.GetTrItemID(idlocation);
             while (id >= 0)
             {
                 SpeedPostItem item;
@@ -489,7 +489,7 @@ namespace ORTS.Viewer3D
 
                 }
                 idlocation++;
-                id = SpeedPostObj.getTrItemID(idlocation);
+                id = SpeedPostObj.GetTrItemID(idlocation);
             }
             //create the shape primitive
             short[] newTList = new short[NumIndices];

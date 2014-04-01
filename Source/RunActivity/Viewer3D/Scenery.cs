@@ -180,9 +180,7 @@ namespace ORTS.Viewer3D
             if (!File.Exists(WFilePath))
             {
                 if (visible)
-                {
                     Trace.TraceWarning("World file missing - {0}", WFilePath);
-                }
                 return;
             }
 

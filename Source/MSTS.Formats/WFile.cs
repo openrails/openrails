@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,12 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// Principal Author:
-//    Wayne Campbell
-// Contributors:
-//    Rick Grout
-//     
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,55 +25,39 @@ using MSTS.Parsers;
 using MSTSMath;
 using ORTS.Common;
 
-
 namespace MSTS.Formats
 {
     public class WFile
     {
-        public int TileX, TileZ;
-        public Tr_Worldfile Tr_Worldfile;
+        public readonly int TileX, TileZ;
+        public readonly Tr_Worldfile Tr_Worldfile;
 
         public WFile(string filename)
+            : this(filename, null)
         {
-            // Parse the tile location out of the filename
-            int p = filename.ToUpper().LastIndexOf("\\WORLD\\W");
+        }
+
+        public WFile(string filename, List<TokenID> allowedTokens)
+        {
+            // Parse the tile location out of the filename.
+            var p = filename.ToUpper().LastIndexOf("\\WORLD\\W");
             TileX = int.Parse(filename.Substring(p + 8, 7));
             TileZ = int.Parse(filename.Substring(p + 15, 7));
 
-            using (SBR sbr = SBR.Open(filename))
+            using (var sbr = SBR.Open(filename))
             {
-                using (SBR block = sbr.ReadSubBlock())
+                using (var block = sbr.ReadSubBlock())
                 {
-                    Tr_Worldfile = new Tr_Worldfile(block, filename);
+                    Tr_Worldfile = new Tr_Worldfile(block, filename, allowedTokens);
                 }
-                sbr.Skip(); // some w files have additional comments at the end  
-                            //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
+                // some w files have additional comments at the end 
+                //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
+                sbr.Skip();
             }
         }
-
-        // [Rob Roeterdink] overload method added to allow selection of processed items
-
-        public WFile(string filename, List<TokenID> reqTokens)
-        {
-            // Parse the tile location out of the filename
-            int p = filename.ToUpper().LastIndexOf("\\WORLD\\W");
-            TileX = int.Parse(filename.Substring(p + 8, 7));
-            TileZ = int.Parse(filename.Substring(p + 15, 7));
-
-            using (SBR sbr = SBR.Open(filename))
-            {
-                using (SBR block = sbr.ReadSubBlock())
-                {
-                    Tr_Worldfile = new Tr_Worldfile(block, filename, reqTokens);
-                }
-                sbr.Skip(); // some w files have additional comments at the end 
-                            //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
-            }
-        }
-
     }
 
-    public class Tr_Worldfile : ArrayList
+    public class Tr_Worldfile : List<WorldObject>
     {
         static HashSet<TokenID> UnknownBlockIDs = new HashSet<TokenID>()
         {
@@ -87,26 +65,20 @@ namespace MSTS.Formats
             TokenID.ViewDbSphere,
         };
 
-        public new WorldObject this[int i]
-        {
-            get { return (WorldObject)base[i]; }
-            set { base[i] = value; }
-        }
-
-        public Tr_Worldfile(SBR block, string filename)
+        public Tr_Worldfile(SBR block, string filename, List<TokenID> allowedTokens)
         {
             block.VerifyID(TokenID.Tr_Worldfile);
             var currentWatermark = 0;
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     try
                     {
-
-                        // [Rob Roeterdink] processing moved to subroutine to avoid duplication
-
-                        process_worldobject(subBlock, ref currentWatermark, filename);
+                        if (allowedTokens == null || allowedTokens.Contains(subBlock.ID))
+                            LoadObject(subBlock, ref currentWatermark, filename);
+                        else
+                            subBlock.Skip();
                     }
                     catch (Exception error)
                     {
@@ -116,46 +88,10 @@ namespace MSTS.Formats
             }
         }
 
-        // Overload constructor method added by Rob Roeterdink
-        // Allows selection of type of items which are to be extracted, other types are ignored
-
-        public Tr_Worldfile(SBR block, string filename, List<TokenID> reqToken)
-        {
-            block.VerifyID(TokenID.Tr_Worldfile);
-
-            int currentWatermark = 0;
-
-            while (!block.EndOfBlock())
-            {
-                using (SBR subBlock = block.ReadSubBlock())
-                {
-
-                    try
-                    {
-                        if (reqToken.Contains(subBlock.ID))
-                        {
-                            process_worldobject(subBlock, ref currentWatermark, filename);
-                        }
-                        else
-                        {
-                            subBlock.Skip();
-                        }
-                    }
-                    catch (System.Exception error)
-                    {
-                        Trace.WriteLine(new FileLoadException(filename, error));
-                    }
-                }
-            }
-        }
-
-        // [Rob Roeterdink] set actual processing in subroutine to avoid duplication
-
-        private void process_worldobject(SBR subBlock, ref int currentWatermark, string filename)
+        void LoadObject(SBR subBlock, ref int currentWatermark, string filename)
         {
             switch (subBlock.ID)
             {
-                //some of the TokenID for binary W file:  309-->TelePole, 361-->Siding
                 case TokenID.CollideObject:
                 case TokenID.Static:
                     Add(new StaticObj(subBlock, currentWatermark));
@@ -165,8 +101,8 @@ namespace MSTS.Formats
                     break;
                 case TokenID.CarSpawner:
                 case (TokenID)357:
-                    Add(new CarSpawnerObj(subBlock, currentWatermark)); //car spawner
-                    break; //car spawner. The tokenid number is wrong
+                    Add(new CarSpawnerObj(subBlock, currentWatermark));
+                    break;
                 case TokenID.Siding:
                 case (TokenID)361:
                     Add(new SidingObj(subBlock, currentWatermark));
@@ -181,10 +117,8 @@ namespace MSTS.Formats
                     Add(new LevelCrossingObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Dyntrack:
-                    Add(new DyntrackObj(subBlock, currentWatermark, true));
-                    break;
                 case (TokenID)306:
-                    Add(new DyntrackObj(subBlock, currentWatermark, false));
+                    Add(new DyntrackObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Transfer:
                 case (TokenID)363:
@@ -199,15 +133,14 @@ namespace MSTS.Formats
                 case (TokenID)359:
                     Add(new PickupObj(subBlock, currentWatermark));
                     break;
-				case TokenID.Hazard:
-				//case (TokenID)359:
-					Add(new HazardObj(subBlock, currentWatermark));
-					break;
-				case TokenID.Signal:
+                case TokenID.Hazard:
+                    //case (TokenID)359:
+                    Add(new HazardObj(subBlock, currentWatermark));
+                    break;
+                case TokenID.Signal:
                     Add(new SignalObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Speedpost:
-                    // TODO: Add real handling.
                     Add(new SpeedPostObj(subBlock, currentWatermark));
                     break;
                 case TokenID.Tr_Watermark:
@@ -225,21 +158,19 @@ namespace MSTS.Formats
         }
     }
 
-
     public class BaseObj : WorldObject
     {
         public BaseObj()
-        {}
-           
+        {
+        }
+
         public BaseObj(SBR block, int detailLevel)
         {
-            //f.VerifyID(TokenID.Static); it could be CollideObject or Static object
-
             StaticDetailLevel = detailLevel;
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -272,12 +203,13 @@ namespace MSTS.Formats
     /// </summary>
     public class PickupObj : BaseObj
     {
-        public uint PickupType;
-        public SpeedRangeItem SpeedRange;
-        public PickupCapacityItem PickupCapacity;
-        public List<TrItemId> TrItemIDList = new List<TrItemId>();
-        public uint CollideFlags;
-        public WorldLocation Location = null;
+        public readonly uint PickupType;
+        public readonly SpeedRangeItem SpeedRange;
+        public readonly PickupCapacityItem PickupCapacity;
+        public readonly List<TrItemId> TrItemIDList = new List<TrItemId>();
+        public readonly uint CollideFlags;
+
+        public WorldLocation Location;
 
         /// <summary>
         /// Creates the object, but currently skips the animation field.
@@ -290,7 +222,7 @@ namespace MSTS.Formats
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -350,11 +282,11 @@ namespace MSTS.Formats
             }
         }
     }
-    
+
     public class TransferObj : WorldObject
     {
-        public float Width;
-        public float Height;
+        public readonly float Width;
+        public readonly float Height;
 
         public TransferObj(SBR block, int detailLevel)
         {
@@ -362,7 +294,7 @@ namespace MSTS.Formats
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -384,20 +316,18 @@ namespace MSTS.Formats
 
     public class TrackObj : WorldObject
     {
-        public uint SectionIdx;
-        public float Elevation;
-        public uint CollideFlags;
-        public JNodePosn JNodePosn;
+        public readonly uint SectionIdx;
+        public readonly float Elevation;
+        public readonly uint CollideFlags;
+        public readonly JNodePosn JNodePosn;
 
         public TrackObj(SBR block, int detailLevel)
         {
-            block.VerifyID(TokenID.TrackObj);
-
             StaticDetailLevel = detailLevel;
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -423,21 +353,18 @@ namespace MSTS.Formats
 
     public class DyntrackObj : WorldObject
     {
-        public uint SectionIdx;
-        public float Elevation;
-        public uint CollideFlags;
-        public TrackSections trackSections;
+        public readonly uint SectionIdx;
+        public readonly float Elevation;
+        public readonly uint CollideFlags;
+        public readonly TrackSections trackSections;
 
-        public DyntrackObj(SBR block, int detailLevel, bool isUnicode)
+        public DyntrackObj(SBR block, int detailLevel)
         {
-            SBR localBlock = block;
-            if (isUnicode)
-                localBlock.VerifyID(TokenID.Dyntrack);
             StaticDetailLevel = detailLevel;
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -449,7 +376,7 @@ namespace MSTS.Formats
                         case TokenID.Position: Position = new STFPositionItem(subBlock); break;
                         case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
                         case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-                        case TokenID.TrackSections: trackSections = new TrackSections(subBlock, isUnicode); break;
+                        case TokenID.TrackSections: trackSections = new TrackSections(subBlock); break;
                         default: subBlock.Skip(); break;
                     }
                 }
@@ -475,33 +402,26 @@ namespace MSTS.Formats
             this.trackSections = new TrackSections(copy.trackSections[iTkSection]);
         }
 
-        public class TrackSections : ArrayList
+        public class TrackSections : List<TrackSection>
         {
-            public new TrackSection this[int i]
-            {
-                get { return (TrackSection)base[i]; }
-                set { base[i] = value; }
-            }
-
-            // Build a TrackSections array list with one TrackSection
-            public TrackSections(TrackSection TS)
-            {
-                this.Add(new TrackSection(TS));
-            }
-
             public TrackSections()
             {
             }
 
-            public TrackSections(SBR block, bool isUnicode)
+            public TrackSections(TrackSection trackSection)
             {
-                block.VerifyID(TokenID.TrackSections);
-                int count = 5;
-                while (count-- > 0) this.Add(new TrackSection(block.ReadSubBlock(), isUnicode, count));
-                block.VerifyEndOfBlock();
+                Add(new TrackSection(trackSection));
             }
 
-        }//TrackSections
+            public TrackSections(SBR block)
+            {
+                block.VerifyID(TokenID.TrackSections);
+                var count = 5;
+                while (count-- > 0)
+                    Add(new TrackSection(block.ReadSubBlock(), count));
+                block.VerifyEndOfBlock();
+            }
+        }
 
         public class TrackSection
         {
@@ -514,29 +434,20 @@ namespace MSTS.Formats
             // param1 = length (m) for straight, arc (radians) for curved
             // param2 = 0 for straight, radius (m) for curved
 
-            public uint isCurved;
-            public uint UiD;
-            public float param1;
-            public float param2;
-            public float deltaY; // Elevation change for this subsection
+            public readonly uint isCurved;
+            public readonly uint UiD;
+            public readonly float param1;
+            public readonly float param2;
+            public readonly float deltaY; // Elevation change for this subsection
 
-            public TrackSection(SBR block, bool isUnicode, int count)
+            public TrackSection(SBR block, int count)
             {
                 block.VerifyID(TokenID.TrackSection);
-                // SectionCurve
+                using (var subBlock = block.ReadSubBlock())
                 {
-                    SBR subBlock = block.ReadSubBlock();
-                    if (isUnicode)
-                    {
-                        subBlock.VerifyID(TokenID.SectionCurve);
-                        isCurved = block.ReadUInt();
-                        subBlock.VerifyEndOfBlock();
-                    }
-                    else
-                    {
-                        subBlock.Skip();
-                        isCurved = (uint)count % 2;
-                    }
+                    subBlock.VerifyID(TokenID.SectionCurve);
+                    isCurved = subBlock.ReadUInt();
+                    subBlock.VerifyEndOfBlock();
                 }
                 UiD = block.ReadUInt();
                 param1 = block.ReadFloat();
@@ -545,7 +456,6 @@ namespace MSTS.Formats
                 deltaY = 0;
             }
 
-            // Copy constructor
             public TrackSection(TrackSection copy)
             {
                 this.UiD = copy.UiD;
@@ -554,9 +464,8 @@ namespace MSTS.Formats
                 this.param2 = copy.param2;
                 this.deltaY = copy.deltaY;
             }
-        }//TrackSection
-
-    }//DyntrackObj
+        }
+    }
 
     public class ForestObj : WorldObject
     {
@@ -569,8 +478,8 @@ namespace MSTS.Formats
 
         public ForestObj(SBR block, int detailLevel)
         {
-            var localBlock = block;
             StaticDetailLevel = detailLevel;
+
             while (!block.EndOfBlock())
             {
                 using (var subBlock = block.ReadSubBlock())
@@ -648,7 +557,7 @@ namespace MSTS.Formats
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -670,21 +579,18 @@ namespace MSTS.Formats
 
     public class SpeedPostObj : WorldObject
     {
-        public string Speed_Digit_Tex; //ace
-        public Speed_Text_Size Text_Size;// ( 0.08 0.06 0 )
-        public Speed_Sign_Shape Sign_Shape;
-        public List<TrItemId> trItemIDList;
+        public readonly string Speed_Digit_Tex; //ace
+        public readonly Speed_Text_Size Text_Size;// ( 0.08 0.06 0 )
+        public readonly Speed_Sign_Shape Sign_Shape;
+        public readonly List<TrItemId> trItemIDList = new List<TrItemId>();
 
         public SpeedPostObj(SBR block, int detailLevel)
         {
-            block.VerifyID(TokenID.Speedpost);
-
-            trItemIDList = new List<TrItemId>();
             StaticDetailLevel = detailLevel;
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -706,28 +612,10 @@ namespace MSTS.Formats
             // TODO, do this for all objects that iterate using a while loop
         }
 
-        public int getTrItemID(int current, int db)
-        {
-            int i = 0;
-            foreach (TrItemId tID in trItemIDList)
-            {
-                if (tID.db == db)
-                {
-                    if (current == i) return tID.dbID;
-                    i++;
-                }
-            }
-            return -1;
-        }
-
         public class Speed_Sign_Shape
         {
-            public int NumShapes;
-            public float[] ShapesInfo; // ( 2 -0.021 0.481 -0.083 0 0 0.475 0.083 3.14159 )
-
-            public Speed_Sign_Shape()
-            {
-            }
+            public readonly int NumShapes;
+            public readonly float[] ShapesInfo; // ( 2 -0.021 0.481 -0.083 0 0 0.475 0.083 3.14159 )
 
             public Speed_Sign_Shape(SBR block)
             {
@@ -736,7 +624,7 @@ namespace MSTS.Formats
                 ShapesInfo = new float[NumShapes * 4];
                 for (var i = 0; i < NumShapes; i++)
                 {
-                    ShapesInfo[i * 4] = block.ReadFloat();
+                    ShapesInfo[i * 4 + 0] = block.ReadFloat();
                     ShapesInfo[i * 4 + 1] = block.ReadFloat();
                     ShapesInfo[i * 4 + 2] = -block.ReadFloat();
                     ShapesInfo[i * 4 + 3] = block.ReadFloat();
@@ -744,32 +632,30 @@ namespace MSTS.Formats
                 block.VerifyEndOfBlock();
             }
         }
+
         public class Speed_Text_Size
         {
-            public float Size, DX, DY;
-
-            public Speed_Text_Size()
-            {
-            }
+            public readonly float Size, DX, DY;
 
             public Speed_Text_Size(SBR block)
             {
                 block.VerifyID(TokenID.Speed_Text_Size);
-
-                Size = block.ReadFloat(); DX = block.ReadFloat(); DY = block.ReadFloat();
-
+                Size = block.ReadFloat();
+                DX = block.ReadFloat();
+                DY = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
         }
 
-        public int getTrItemID(int current)
+        public int GetTrItemID(int index)
         {
-            int i = 0;
-            foreach (TrItemId tID in trItemIDList)
+            var i = 0;
+            foreach (var tID in trItemIDList)
             {
                 if (tID.db == 0)
                 {
-                    if (current == i) return tID.dbID;
+                    if (index == i)
+                        return tID.dbID;
                     i++;
                 }
             }
@@ -779,7 +665,8 @@ namespace MSTS.Formats
 
     public class TrItemId
     {
-        public int db, dbID;
+        public readonly int db, dbID;
+
         public TrItemId(SBR block)
         {
             block.VerifyID(TokenID.TrItemId);
@@ -788,26 +675,24 @@ namespace MSTS.Formats
             block.VerifyEndOfBlock();
         }
     }
-    
-    //level crossing data
+
     public class LevelCrossingObj : WorldObject
     {
-        public LevelCrParameters levelCrParameters;
-        public LevelCrData levelCrData;
-        public LevelCrTiming levelCrTiming;
-        public List<TrItemId> trItemIDList;
-        int crashProbability;
-        public bool visible = true;
-        public bool silent = false;
+        public readonly LevelCrParameters levelCrParameters;
+        public readonly LevelCrData levelCrData;
+        public readonly LevelCrTiming levelCrTiming;
+        public readonly List<TrItemId> trItemIDList = new List<TrItemId>();
+        public readonly int crashProbability;
+        public readonly bool visible = true;
+        public readonly bool silent = false;
+
         public LevelCrossingObj(SBR block, int detailLevel)
         {
-
             StaticDetailLevel = detailLevel;
-            trItemIDList = new List<TrItemId>();
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -831,23 +716,9 @@ namespace MSTS.Formats
             }
         }
 
-        public int getTrItemID(int current, int db)
-        {
-            int i = 0;
-            foreach (TrItemId tID in trItemIDList)
-            {
-                if (tID.db == db)
-                {
-                    if (current == i) return tID.dbID;
-                    i++;
-                }
-            }
-            return -1;
-        }
-
         public class LevelCrParameters
         {
-            public float warningTime, minimumDistance;
+            public readonly float warningTime, minimumDistance;
 
             public LevelCrParameters(SBR block)
             {
@@ -860,7 +731,8 @@ namespace MSTS.Formats
 
         public class LevelCrData
         {
-            public int crData1, crData2; //not known the exact name yet
+            public readonly int crData1, crData2; //not known the exact name yet
+
             public LevelCrData(SBR block)
             {
                 block.VerifyID(TokenID.LevelCrData);
@@ -872,7 +744,8 @@ namespace MSTS.Formats
 
         public class LevelCrTiming
         {
-            public float initialTiming, seriousTiming, animTiming;
+            public readonly float initialTiming, seriousTiming, animTiming;
+
             public LevelCrTiming(SBR block)
             {
                 block.VerifyID(TokenID.LevelCrTiming);
@@ -882,9 +755,11 @@ namespace MSTS.Formats
                 block.VerifyEndOfBlock();
             }
         }
+
         public class TrItemId
         {
-            public int db, dbID;
+            public readonly int db, dbID;
+
             public TrItemId(SBR block)
             {
                 block.VerifyID(TokenID.TrItemId);
@@ -893,66 +768,59 @@ namespace MSTS.Formats
                 block.VerifyEndOfBlock();
             }
         }
-
     }
 
-
-	//hazard data
-	public class HazardObj : WorldObject
-	{
-		public int itemId;
-		public HazardObj(SBR block, int detailLevel)
-		{
-
-			StaticDetailLevel = detailLevel;
-
-			while (!block.EndOfBlock())
-			{
-				using (SBR subBlock = block.ReadSubBlock())
-				{
-					switch (subBlock.ID)
-					{
-						case TokenID.UiD: UID = subBlock.ReadUInt(); break;
-						case TokenID.TrItemId: itemId = DecodeTrItemId(subBlock); break;
-						case TokenID.FileName: FileName = subBlock.ReadString(); break;
-						case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-						case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-						case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-						default: subBlock.Skip(); break;
-					}
-				}
-			}
-		}
-
-		public int DecodeTrItemId(SBR block)
-		{
-			block.VerifyID(TokenID.TrItemId);
-			int db = block.ReadInt();
-			int dbID = block.ReadInt();
-			block.VerifyEndOfBlock();
-			return dbID;
-		}
-
-	}
-
-
-    //Car Spawner data
-    public class CarSpawnerObj : WorldObject
+    public class HazardObj : WorldObject
     {
-        public List<TrItemId> trItemIDList;
-        public float CarFrequency;
-        public float CarAvSpeed;
-        public CarSpawnerObj(SBR block, int detailLevel)
-        {
-            CarFrequency = 5.0f;
-            CarAvSpeed = 20.0f;
-            StaticDetailLevel = detailLevel;
+        public readonly int itemId;
 
-            trItemIDList = new List<TrItemId>();
+        public HazardObj(SBR block, int detailLevel)
+        {
+            StaticDetailLevel = detailLevel;
 
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
+                {
+                    switch (subBlock.ID)
+                    {
+                        case TokenID.UiD: UID = subBlock.ReadUInt(); break;
+                        case TokenID.TrItemId: itemId = DecodeTrItemId(subBlock); break;
+                        case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                        case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                        case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                        case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                        default: subBlock.Skip(); break;
+                    }
+                }
+            }
+        }
+
+        int DecodeTrItemId(SBR block)
+        {
+            block.VerifyID(TokenID.TrItemId);
+            int db = block.ReadInt();
+            int dbID = block.ReadInt();
+            block.VerifyEndOfBlock();
+            return dbID;
+        }
+    }
+
+    public class CarSpawnerObj : WorldObject
+    {
+        public readonly List<TrItemId> trItemIDList = new List<TrItemId>();
+        public readonly float CarFrequency;
+        public readonly float CarAvSpeed;
+
+        public CarSpawnerObj(SBR block, int detailLevel)
+        {
+            StaticDetailLevel = detailLevel;
+            CarFrequency = 5.0f;
+            CarAvSpeed = 20.0f;
+
+            while (!block.EndOfBlock())
+            {
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -970,14 +838,15 @@ namespace MSTS.Formats
             }
         }
 
-        public int getTrItemID(int current)
+        public int getTrItemID(int index)
         {
-            int i = 0;
-            foreach (TrItemId tID in trItemIDList)
+            var i = 0;
+            foreach (var tID in trItemIDList)
             {
                 if (tID.db == 1)
                 {
-                    if (current == i) return tID.dbID;
+                    if (index == i)
+                        return tID.dbID;
                     i++;
                 }
             }
@@ -986,7 +855,8 @@ namespace MSTS.Formats
 
         public class TrItemId
         {
-            public int db, dbID;
+            public readonly int db, dbID;
+
             public TrItemId(SBR block)
             {
                 block.VerifyID(TokenID.TrItemId);
@@ -995,23 +865,22 @@ namespace MSTS.Formats
                 block.VerifyEndOfBlock();
             }
         }
-    }//CarSpawner
+    }
 
     /// <summary>
     /// Super-class for similar track items SidingObj and PlatformObj.
     /// </summary>
     public class TrObject : WorldObject
     {
-        public List<TrItemId> trItemIDList;
+        public readonly List<TrItemId> trItemIDList = new List<TrItemId>();
+
         public TrObject(SBR block, int detailLevel)
         {
             StaticDetailLevel = detailLevel;
 
-            trItemIDList = new List<TrItemId>();
-
             while (!block.EndOfBlock())
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     switch (subBlock.ID)
                     {
@@ -1027,14 +896,15 @@ namespace MSTS.Formats
             }
         }
 
-        public int getTrItemID(int current)
+        public int getTrItemID(int index)
         {
-            int i = 0;
-            foreach (TrItemId tID in trItemIDList)
+            var i = 0;
+            foreach (var tID in trItemIDList)
             {
                 if (tID.db == 0)
                 {
-                    if (current == i) return tID.dbID;
+                    if (index == i)
+                        return tID.dbID;
                     i++;
                 }
             }
@@ -1043,7 +913,8 @@ namespace MSTS.Formats
 
         public class TrItemId
         {
-            public int db, dbID;
+            public readonly int db, dbID;
+
             public TrItemId(SBR block)
             {
                 block.VerifyID(TokenID.TrItemId);
@@ -1052,7 +923,7 @@ namespace MSTS.Formats
                 block.VerifyEndOfBlock();
             }
         }
-    }//TrObject
+    }
 
     /// <summary>
     /// Empty sub-class distinguishes siding objects from platform objects.
@@ -1063,7 +934,7 @@ namespace MSTS.Formats
             base(block, detailLevel)
         {
         }
-    }//SidingObj
+    }
 
     /// <summary>
     /// Empty sub-class distinguishes platform objects from siding objects.
@@ -1074,7 +945,7 @@ namespace MSTS.Formats
             base(block, detailLevel)
         {
         }
-    }//PlatformObj
+    }
 
     // These relate to the general properties settable for scenery objects in RE
     public enum StaticFlag
@@ -1100,7 +971,6 @@ namespace MSTS.Formats
         public uint StaticFlags;
         public uint VDbId;
     }
-
 
     public class STFPositionItem : TWorldPosition
     {
@@ -1139,6 +1009,8 @@ namespace MSTS.Formats
 
     public class Matrix3x3
     {
+        public readonly float AX, AY, AZ, BX, BY, BZ, CX, CY, CZ;
+
         public Matrix3x3(SBR block)
         {
             block.VerifyID(TokenID.Matrix3x3);
@@ -1153,13 +1025,12 @@ namespace MSTS.Formats
             CZ = block.ReadFloat();
             block.VerifyEndOfBlock();
         }
-        public float AX, AY, AZ, BX, BY, BZ, CX, CY, CZ;
     }
 
     public class JNodePosn
     {
-        public int TileX, TileZ;
-        public float X, Y, Z;
+        public readonly int TileX, TileZ;
+        public readonly float X, Y, Z;
 
         public JNodePosn(SBR block)
         {
@@ -1179,20 +1050,21 @@ namespace MSTS.Formats
         public float B;
         public float C;
         public float D;
+
         public TWorldDirection(float a, float b, float c, float d) { A = a; B = b; C = c; D = d; }
         public TWorldDirection() { A = 0; B = 0; C = 0; D = 1; }
         public TWorldDirection(TWorldDirection d) { A = d.A; B = d.B; C = d.C; D = d.D; }
 
         public void SetBearing(float compassRad)
         {
-            float slope = GetSlope();
+            var slope = GetSlope();
             SetAngles(compassRad, slope);
         }
 
         public void SetBearing(float dx, float dz)
         {
-            float slope = GetSlope();
-            float compassRad = M.AngleDxDz(dx, dz);
+            var slope = GetSlope();
+            var compassRad = M.AngleDxDz(dx, dz);
             SetAngles(compassRad, slope);
         }
 
@@ -1205,7 +1077,7 @@ namespace MSTS.Formats
         public void Pivot(float radians)	// This rotates about object Y axis
         {
             radians += GetBearing();
-            float slope = GetSlope();
+            var slope = GetSlope();
             SetAngles(radians, -slope);
         }
 
@@ -1230,21 +1102,19 @@ namespace MSTS.Formats
         Applied in order of heading, attitude then bank 
         */
         {
-            float a1 = compassRad;
-            float a2 = 0;
-            float a3 = tiltRad;
+            var a1 = compassRad;
+            var a2 = 0F;
+            var a3 = tiltRad;
 
-            float C1 = (float)Math.Cos(a1);
-            float S1 = (float)Math.Sin(a1);
-            float C2 = (float)Math.Cos(a2);
-            float S2 = (float)Math.Sin(a2);
-            float C3 = (float)Math.Cos(a3);
-            float S3 = (float)Math.Sin(a3);
+            var C1 = (float)Math.Cos(a1);
+            var S1 = (float)Math.Sin(a1);
+            var C2 = (float)Math.Cos(a2);
+            var S2 = (float)Math.Sin(a2);
+            var C3 = (float)Math.Cos(a3);
+            var S3 = (float)Math.Sin(a3);
 
-            float w = (float)Math.Sqrt(1.0 + C1 * C2 + C1 * C3 - S1 * S2 * S3 + C2 * C3) / 2.0f;
-            float x;
-            float y;
-            float z;
+            var w = (float)Math.Sqrt(1.0 + C1 * C2 + C1 * C3 - S1 * S2 * S3 + C2 * C3) / 2.0f;
+            float x, y, z;
 
             if (Math.Abs(w) < .000005)
             {
@@ -1268,7 +1138,7 @@ namespace MSTS.Formats
 
         public void SetSlope(float tiltRad) // +v is tilted up
         {
-            float compassAngleRad = M.AngleDxDz(DX(), DZ());
+            var compassAngleRad = M.AngleDxDz(DX(), DZ());
             SetAngles(compassAngleRad, tiltRad);
         }
 
@@ -1281,21 +1151,20 @@ namespace MSTS.Formats
         {
             SetSlope(0);
         }
+
         public float DY()
         {
-
-            float x = -A; // imaginary i part of quaternion
-            float y = -B; // imaginary j part of quaternion
-            float z = -C; // imaginary k part of quaternion
-            float w = D; // real part of quaternionfloat 
-
+            var x = -A; // imaginary i part of quaternion
+            var y = -B; // imaginary j part of quaternion
+            var z = -C; // imaginary k part of quaternion
+            var w = D; // real part of quaternionfloat 
 
             //From http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
             //p2.x = ( w*w*p1.x + 2*y*w*p1.z - 2*z*w*p1.y + x*x*p1.x + 2*y*x*p1.y + 2*z*x*p1.z - z*z*p1.x - y*y*p1.x );	
             //p2.y = ( 2*x*y*p1.x + y*y*p1.y + 2*z*y*p1.z + 2*w*z*p1.x - z*z*p1.y + w*w*p1.y - 2*x*w*p1.z - x*x*p1.y );	
             //p2.z = ( 2*x*z*p1.x + 2*y*z*p1.y + z*z*p1.z - 2*w*y*p1.x - y*y*p1.z + 2*w*x*p1.y - x*x*p1.z + w*w*p1.z );
 
-            float dy = (2 * z * y - 2 * x * w);
+            var dy = (2 * z * y - 2 * x * w);
             return dy;
         }
 
@@ -1313,33 +1182,33 @@ namespace MSTS.Formats
             return -2.0 * ( x * y + z * w );
             */
 
-            float x = -A;
-            float y = -B;
-            float z = -C;
-            float w = D;
+            var x = -A;
+            var y = -B;
+            var z = -C;
+            var w = D;
 
-            float dX = (2 * y * w + 2 * z * x);
+            var dX = (2 * y * w + 2 * z * x);
             return dX;
-
         }
+
         public float DZ()
         {
-            float x = -A;
-            float y = -B;
-            float z = -C;
-            float w = D;
+            var x = -A;
+            var y = -B;
+            var z = -C;
+            var w = D;
 
             return z * z - y * y - x * x + w * w;
-
         }
+
         public float GetSlope()   // Return the slope, +radians is tilted up
         {
             // see http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
 
-            float qx = -A;
-            float qy = -B;
-            float qz = -C;
-            float qw = D;
+            var qx = -A;
+            var qy = -B;
+            var qz = -C;
+            var qw = D;
 
             //float heading;
             //float attitude;
@@ -1363,21 +1232,14 @@ namespace MSTS.Formats
             return bank;
         }
 
-        /* OLD METHOD
-        public float GetBearing( )  // Return the compass bearing +radians is east of north
-        {
-            return M.AngleDxDz( DX(), DZ() );
-        }
-        */
-
         public float GetBearing()   // Return the bearing
         {
             // see http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
 
-            float qx = -A;
-            float qy = -B;
-            float qz = -C;
-            float qw = D;
+            var qx = -A;
+            var qy = -B;
+            var qz = -C;
+            var qw = D;
 
             float heading;
             //float attitude;
@@ -1406,10 +1268,10 @@ namespace MSTS.Formats
         public static float AngularDistance(TWorldDirection d1, TWorldDirection d2)
         // number of radians separating angle one and angle two - always positive
         {
-            float a1 = d1.GetBearing();
-            float a2 = d2.GetBearing();
+            var a1 = d1.GetBearing();
+            var a2 = d2.GetBearing();
 
-            float a = a1 - a2;
+            var a = a1 - a2;
 
             a = Math.Abs(a);
 
@@ -1428,12 +1290,12 @@ namespace MSTS.Formats
         private TWorldPosition RotatePoint(TWorldPosition p1)
         {
 
-            float x = -A; // imaginary i part of quaternion
-            float y = -B; // imaginary j part of quaternion
-            float z = -C; // imaginary k part of quaternion
-            float w = D; // real part of quaternionfloat 
+            var x = -A; // imaginary i part of quaternion
+            var y = -B; // imaginary j part of quaternion
+            var z = -C; // imaginary k part of quaternion
+            var w = D; // real part of quaternionfloat 
 
-            TWorldPosition p2 = new TWorldPosition();
+            var p2 = new TWorldPosition();
 
             p2.X = (w * w * p1.X + 2 * y * w * p1.Z - 2 * z * w * p1.Y + x * x * p1.X + 2 * y * x * p1.Y + 2 * z * x * p1.Z - z * z * p1.X - y * y * p1.X);
             p2.Y = (2 * x * y * p1.X + y * y * p1.Y + 2 * z * y * p1.Z + 2 * w * z * p1.X - z * z * p1.Y + w * w * p1.Y - 2 * x * w * p1.Z - x * x * p1.Y);
@@ -1441,7 +1303,6 @@ namespace MSTS.Formats
 
             return p2;
         }
-
     }
 
     public class TWorldPosition
@@ -1449,6 +1310,7 @@ namespace MSTS.Formats
         public float X;
         public float Y;
         public float Z;
+
         public TWorldPosition(float x, float y, float z) { X = x; Y = y; Z = z; }
         public TWorldPosition() { X = 0.0f; Y = 0.0f; Z = 0.0f; }
         public TWorldPosition(TWorldPosition p)
@@ -1460,7 +1322,6 @@ namespace MSTS.Formats
 
         public void Move(TWorldDirection q, float distance)
         {
-
             X += (q.DX() * distance);
             Y += (q.DY() * distance);
             Z += (q.DZ() * distance);
@@ -1468,7 +1329,7 @@ namespace MSTS.Formats
 
         public void Offset(TWorldDirection d, float distanceRight)
         {
-            TWorldDirection DRight = new TWorldDirection(d);
+            var DRight = new TWorldDirection(d);
             DRight.Rotate(MathHelper.ToRadians(90));
             Move(DRight, distanceRight);
         }
@@ -1476,8 +1337,8 @@ namespace MSTS.Formats
         public static float PointDistance(TWorldPosition p1, TWorldPosition p2)
         // distance between p1 and p2 along the surface
         {
-            float dX = p1.X - p2.X;
-            float dZ = p1.Z - p2.Z;
+            var dX = p1.X - p2.X;
+            var dZ = p1.Z - p2.Z;
             return (float)Math.Sqrt(dX * dX + dZ * dZ);
         }
     }
@@ -1493,7 +1354,7 @@ namespace MSTS.Formats
             var count = block.ReadUInt();
             for (var i = 0; i < count; i++)
             {
-                using (SBR subBlock = block.ReadSubBlock())
+                using (var subBlock = block.ReadSubBlock())
                 {
                     units.Add(new SignalUnit(subBlock));
                 }
@@ -1512,7 +1373,7 @@ namespace MSTS.Formats
         {
             block.VerifyID(TokenID.SignalUnit);
             SubObj = block.ReadInt();
-            using (SBR subBlock = block.ReadSubBlock())
+            using (var subBlock = block.ReadSubBlock())
             {
                 subBlock.VerifyID(TokenID.TrItemId);
                 subBlock.ReadUInt(); // Unk?
