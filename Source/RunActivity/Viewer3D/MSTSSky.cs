@@ -305,10 +305,8 @@ namespace ORTS.Viewer3D
             {
                 mstsskyradius = viewer.ENVFile.SkyLayers[0]._top_radius;
             }
-            else
-            {
-                mstsskyradius = mstsskyRadius;
-            } 
+
+            mstsskyRadius = MSTSSkyConstants.skyRadius; 
 
             if ( MSTSSkyConstants.IsNight == true) 
                     tileFactor = 8;
@@ -319,7 +317,7 @@ namespace ORTS.Viewer3D
             triangleListIndices = new short[indexCount];
 
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyradius, tileFactor);
+            MSTSSkyDomeVertexList(0, mstsskyRadius, tileFactor);
             MSTSSkyDomeTriangleList(0, 0);
             // Moon quad
             MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
