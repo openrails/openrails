@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Open Rails\n"
-"POT-Creation-Date: 2014-03-21 18:43:41+0000\n"
-"PO-Revision-Date: 2014-03-22 12:57+0100\n"
+"POT-Creation-Date: 2014-03-31 15:38:15+0200\n"
+"PO-Revision-Date: 2014-03-31 15:40+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -111,6 +111,7 @@ msgid "DispatchViewer"
 msgstr "Disponentenansicht"
 
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:89
+#: ../../RunActivity/Popups/ActivityWindow.cs:200
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:202
 msgid "Resume"
 msgstr "Fortsetzen"
@@ -364,6 +365,45 @@ msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Zug wegen Problemen mit anderem Zug angehalten: Zug {0} , Grund: {1}"
 
+#: ../../RunActivity/Popups/ActivityWindow.cs:201
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
+msgid "Resume and close box"
+msgstr "Fortsetzen & Fenster schließen"
+
+#: ../../RunActivity/Popups/ActivityWindow.cs:202
+#: ../../RunActivity/Popups/ActivityWindow.cs:214
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
+msgid "Quit activity"
+msgstr "Aufgabe abbrechen"
+
+#: ../../RunActivity/Popups/ActivityWindow.cs:203
+#: ../../RunActivity/Popups/ActivityWindow.cs:224
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
+msgid "Status: Activity paused"
+msgstr "Status: Aufgabe pausiert"
+
+#: ../../RunActivity/Popups/ActivityWindow.cs:213
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
+msgid "Close box"
+msgstr "Fenster schließen"
+
+#: ../../RunActivity/Popups/ActivityWindow.cs:215
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
+msgid "Status: Activity resumed"
+msgstr "Status: Aufgabe fortgesetzt"
+
+#: ../../RunActivity/Popups/ActivityWindow.cs:223
+#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
+msgid "End Activity"
+msgstr "Aufgabe beenden"
+
+#: ../../RunActivity/Popups/NextStationWindow.cs:211
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
+msgid "Activity completed."
+msgstr "Aufgabe abgeschlossen."
+
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:258
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:269
 msgid "No power line!"
@@ -472,7 +512,7 @@ msgstr "Kessel übervoll, aber Wasserzufuhr nicht unterbrochen."
 msgid "Boiler no longer priming."
 msgstr "Wasserzufuhr zum Kessel unterbrochen."
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:345
+#: ../../RunActivity/RollingStock/TrainCar.cs:358
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable, or your train may derail."
@@ -480,7 +520,7 @@ msgstr ""
 "Sie fahren zu schnell für diese Kurve. Verlangsamen Sie die Fahrt, um den "
 "Passagierkomfort zu erhöhen und eine Entgleisung zu verhindern."
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:372
+#: ../../RunActivity/RollingStock/TrainCar.cs:385
 msgid "Your train has overturned."
 msgstr "Ihr Zug hat sich überschlagen."
 
@@ -1106,34 +1146,34 @@ msgctxt "Labels"
 msgid "none"
 msgstr "keine"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:537
-#: ../../RunActivity/Viewer3D/Viewer.cs:650
+#: ../../RunActivity/Viewer3D/Viewer.cs:539
+#: ../../RunActivity/Viewer3D/Viewer.cs:652
 msgid "Cab view not available"
 msgstr "Führerstandsansicht nicht verfügbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:599
+#: ../../RunActivity/Viewer3D/Viewer.cs:601
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "Benutzen Sie Alt-F4, um den Mehrspielermodus direkt zu beenden."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:675
+#: ../../RunActivity/Viewer3D/Viewer.cs:677
 msgid "Will not ratate cab and land"
 msgstr "Führerstand und Umgebung werden nicht mehr mitgedreht."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1079
+#: ../../RunActivity/Viewer3D/Viewer.cs:1081
 msgid "Game saved"
 msgstr "Spiel gespeichert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:666
+#: ../../RunActivity/Viewer3D/Viewer.cs:668
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Vibrationslevel {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:674
+#: ../../RunActivity/Viewer3D/Viewer.cs:676
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr "Führerstands-Drehung {0}/4, Umgebungs-Drehung {1}/4"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:698
+#: ../../RunActivity/Viewer3D/Viewer.cs:700
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -1151,32 +1191,6 @@ msgstr "erfolgreich"
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "without success"
 msgstr "erfolglos"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
-msgid "Resume and close box"
-msgstr "Fortsetzen & Fenster schließen"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
-msgid "Quit activity"
-msgstr "Aufgabe abbrechen"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
-msgid "Status: Activity paused"
-msgstr "Status: Aufgabe pausiert"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
-msgid "Close box"
-msgstr "Fenster schließen"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
-msgid "Status: Activity resumed"
-msgstr "Status: Aufgabe fortgesetzt"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
-msgid "End Activity"
-msgstr "Aufgabe beenden"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:147
 #, csharp-format
@@ -1352,10 +1366,6 @@ msgstr "Bedienung"
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
 msgid "Next Station"
 msgstr "Nächste Station"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
-msgid "Activity completed."
-msgstr "Aufgabe abgeschlossen."
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
 msgid "Pause Menu"
