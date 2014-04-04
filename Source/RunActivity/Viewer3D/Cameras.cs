@@ -1267,6 +1267,7 @@ namespace ORTS.Viewer3D
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.1f; } }
         public override string Name { get { return "Passenger"; } }
+        private bool StartDirectionSet;
 
         public PassengerCamera(Viewer viewer)
             : base(viewer)
@@ -1283,9 +1284,12 @@ namespace ORTS.Viewer3D
             base.SetCameraCar(car);
             var viewPoint = attachedCar.PassengerViewpoints[0];
             attachedLocation = viewPoint.Location;
-            // <CJComment> More useful without resetting. </CJComment>
-            //RotationXRadians = MSTSMath.M.Radians( viewPoint.StartDirection.X );
-            //RotationYRadians = MSTSMath.M.Radians( viewPoint.StartDirection.Y );
+            if (!StartDirectionSet) // Only set the initial direction on first use so, when switching to another car, direction is not reset.
+            {
+                StartDirectionSet = true;
+                RotationXRadians = MathHelper.ToRadians(viewPoint.StartDirection.X);
+                RotationYRadians = MathHelper.ToRadians(viewPoint.StartDirection.Y);
+            }
         }
     }
 
