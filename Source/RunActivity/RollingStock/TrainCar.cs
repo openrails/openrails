@@ -206,7 +206,8 @@ namespace ORTS
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
         public List<ViewPoint> PassengerViewpoints = new List<ViewPoint>();
-        public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
+		public List<ViewPoint> CabViewpoints; //three dimensional cab view point
+		public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method
         float TrackGaugeM;  // Track gauge - read in MSTSWagon

@@ -366,6 +366,12 @@ namespace ORTS
                 PassengerViewpoints.Add(passengerViewPoint);
             foreach (ViewPoint headOutViewPoint in copy.HeadOutViewpoints)
                 HeadOutViewpoints.Add(headOutViewPoint);
+			if (copy.CabViewpoints != null)
+			{
+				CabViewpoints = new List<ViewPoint>();
+				foreach (ViewPoint cabViewPoint in copy.CabViewpoints)
+					CabViewpoints.Add(cabViewPoint);
+			}
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
 
@@ -384,7 +390,12 @@ namespace ORTS
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
-            PassengerViewpoints.Add(passengerViewPoint);
+			if (InteriorShapeFileName.ToUpper().EndsWith(".CABS"))
+			{
+				if (this.CabViewpoints == null) CabViewpoints = new List<ViewPoint>();
+				CabViewpoints.Add(passengerViewPoint);
+			}
+			else PassengerViewpoints.Add(passengerViewPoint);
         }
         public void ParseFriction(STFReader stf)
         {
@@ -1017,13 +1028,13 @@ namespace ORTS
         readonly PoseableShape PoseableShape;
 
         // Number of animation key-frames that are used by this part. This is calculated from the matrices provided.
-        int FrameCount;
+        public int FrameCount;
 
         // Current frame of the animation.
         float AnimationKey;
 
         // List of the matrices we're animating for this part.
-        List<int> MatrixIndexes = new List<int>();
+        public List<int> MatrixIndexes = new List<int>();
 
         /// <summary>
         /// Construct with a link to the shape that contains the animated parts 

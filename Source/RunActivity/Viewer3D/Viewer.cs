@@ -101,6 +101,8 @@ namespace ORTS.Viewer3D
         public BrakemanCamera BrakemanCamera { get; private set; } // Camera 6
         public List<FreeRoamCamera> FreeRoamCameraList = new List<FreeRoamCamera>();
         public FreeRoamCamera FreeRoamCamera { get { return FreeRoamCameraList[0]; } } // Camera 8
+		public ThreeDimCabCamera ThreeDimCabCamera; //Camera 0
+
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
 
         public TrainCarViewer PlayerLocomotiveViewer { get; private set; }  // we are controlling this loco, or null if we aren't controlling any
@@ -220,6 +222,7 @@ namespace ORTS.Viewer3D
             WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
             WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
             WellKnownCameras.Add(new FreeRoamCamera( this, FrontCamera ) ); // Any existing camera will suffice to satisfy .Save() and .Restore()
+			WellKnownCameras.Add(ThreeDimCabCamera = new ThreeDimCabCamera(this));
 
             ContentPath = Game.ContentPath;
             Trace.Write(" ENV");
@@ -652,6 +655,17 @@ namespace ORTS.Viewer3D
                     Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Cab view not available"));
                 }
             }
+			if (UserInput.IsPressed(UserCommands.CameraThreeDimensionalCab))
+			{
+				if (this.ThreeDimCabCamera.IsAvailable)
+				{
+					new Use3DCabCameraCommand(Log);
+				}
+				else
+				{
+					Simulator.Confirmer.Warning(Viewer.Catalog.GetString("3D Cab view not available"));
+				}
+			}
             if( UserInput.IsPressed( UserCommands.CameraOutsideFront ) ) {
                 CheckReplaying();
                 new UseFrontCameraCommand( Log );
@@ -880,6 +894,7 @@ namespace ORTS.Viewer3D
             PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
             Camera.Activate(); // If you need anything else here the cameras should check for it.
             SetCommandReceivers();
+			ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
             if (MPManager.IsMultiPlayer()) 

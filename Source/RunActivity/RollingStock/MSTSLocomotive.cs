@@ -2413,4 +2413,5 @@ namespace ORTS
         public Color Light2Color;
 
     } // End Class ExtendedCVF
+
 }

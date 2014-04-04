@@ -63,7 +63,7 @@ namespace ORTS.Viewer3D
         // behavior by camera; e.g. Style is used for activating sounds,
         // AttachedCar for rendering the train or not, and IsUnderground for
         // automatically switching to/from cab view in tunnels.
-        public enum Styles { External, Cab, Passenger }
+        public enum Styles { External, Cab, Passenger, ThreeDimCab }
         public virtual Styles Style { get { return Styles.External; } }
         public virtual TrainCar AttachedCar { get { return null; } }
         public virtual bool IsAvailable { get { return true; } }
@@ -1671,4 +1671,62 @@ namespace ORTS.Viewer3D
             UpdateListener();
         }
     }
+
+	public class ThreeDimCabCamera : NonTrackingCamera
+	{
+		public override Styles Style { get { return Styles.ThreeDimCab; } }
+		public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.LeadLocomotive != null && Viewer.SelectedTrain.LeadLocomotive.CabViewpoints != null; } }
+		public override float NearPlane { get { return 0.1f; } }
+		public override string Name { get { return "3D Camera"; } }
+		bool StartDirectionSet = false;
+		protected int CurrentViewpointIndex;
+		protected bool PrevCabWasRear;
+
+		public ThreeDimCabCamera(Viewer viewer)
+			: base(viewer)
+		{
+		}
+
+		protected override List<TrainCar> GetCameraCars()
+		{
+			if (Viewer.SelectedTrain != null && Viewer.SelectedTrain.LeadLocomotive != null && Viewer.SelectedTrain.LeadLocomotive.CabViewpoints != null)
+			{
+				List<TrainCar> l = new List<TrainCar>();
+				l.Add(Viewer.SelectedTrain.LeadLocomotive);
+				return l;
+			}
+			else return base.GetCameraCars();
+		}
+
+		protected override void SetCameraCar(TrainCar car)
+		{
+			base.SetCameraCar(car);
+			if (attachedCar.CabViewpoints != null)
+			{
+				ViewPoint viewPoint;
+				if (CurrentViewpointIndex >= attachedCar.CabViewpoints.Count) viewPoint = attachedCar.CabViewpoints[0];
+				viewPoint = attachedCar.CabViewpoints[CurrentViewpointIndex];
+				attachedLocation = viewPoint.Location;
+				if (!StartDirectionSet) // Only set the initial direction on first use so, when switching to another car, direction is not reset.
+				{
+					StartDirectionSet = true;
+					RotationXRadians = MathHelper.ToRadians(viewPoint.StartDirection.X);
+					RotationYRadians = MathHelper.ToRadians(viewPoint.StartDirection.Y);
+				}
+			}
+			// <CJ Comment> More useful without resetting. </CJ Comment>
+			//RotationXRadians = MSTSMath.M.Radians( viewPoint.StartDirection.X );
+			//RotationYRadians = MSTSMath.M.Radians( viewPoint.StartDirection.Y );
+		}
+
+		public void ChangeCab(TrainCar newCar)
+		{
+			var mstsLocomotive = newCar as MSTSLocomotive;
+			if (PrevCabWasRear != mstsLocomotive.UsingRearCab)
+				RotationYRadians += MathHelper.Pi;
+			CurrentViewpointIndex = mstsLocomotive.UsingRearCab ? 1 : 0;
+			PrevCabWasRear = mstsLocomotive.UsingRearCab;
+			SetCameraCar(newCar);
+		}
+	}
 }

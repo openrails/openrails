@@ -1039,7 +1039,24 @@ namespace ORTS.Viewer3D
         }
     }
 
-    [Serializable()]
+	[Serializable()]
+	public class Use3DCabCameraCommand : UseCameraCommand
+	{
+
+		public Use3DCabCameraCommand(CommandLog log)
+			: base(log)
+		{
+			Redo();
+		}
+
+		public override void Redo()
+		{
+			Receiver.ThreeDimCabCamera.Activate();
+			// Report();
+		}
+	}
+	
+	[Serializable()]
     public class UseFrontCameraCommand : UseCameraCommand {
 
         public UseFrontCameraCommand( CommandLog log )
