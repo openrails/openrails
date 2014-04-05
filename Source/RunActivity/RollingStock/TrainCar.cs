@@ -59,6 +59,20 @@ namespace ORTS
         }
     }
 
+    public class PassengerViewPoint : ViewPoint
+    {
+        // Remember direction of passenger camera and apply when user returns to it.
+        public float RotationXRadians;
+        public float RotationYRadians;
+
+        public PassengerViewPoint() : base()
+        {
+            // Set initial direction
+            RotationXRadians = MathHelper.ToRadians(StartDirection.X);
+            RotationYRadians = MathHelper.ToRadians(StartDirection.Y);
+        }
+    }
+
     public abstract class TrainCar
     {
         public readonly Simulator Simulator;
@@ -205,7 +219,7 @@ namespace ORTS
         public List<TrainCarPart> Parts = new List<TrainCarPart>();
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
-        public List<ViewPoint> PassengerViewpoints = new List<ViewPoint>();
+        public List<PassengerViewPoint> PassengerViewpoints = new List<PassengerViewPoint>();
 		public List<ViewPoint> CabViewpoints; //three dimensional cab view point
 		public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 

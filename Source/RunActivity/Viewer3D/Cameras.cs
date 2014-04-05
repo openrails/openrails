@@ -1267,8 +1267,7 @@ namespace ORTS.Viewer3D
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.1f; } }
         public override string Name { get { return Viewer.Catalog.GetString("Passenger"); } }
-        private bool StartDirectionSet;
-
+        
         public PassengerCamera(Viewer viewer)
             : base(viewer)
         {
@@ -1284,12 +1283,30 @@ namespace ORTS.Viewer3D
             base.SetCameraCar(car);
             var viewPoint = attachedCar.PassengerViewpoints[0];
             attachedLocation = viewPoint.Location;
-            if (!StartDirectionSet) // Only set the initial direction on first use so, when switching to another car, direction is not reset.
-            {
-                StartDirectionSet = true;
-                RotationXRadians = MathHelper.ToRadians(viewPoint.StartDirection.X);
-                RotationYRadians = MathHelper.ToRadians(viewPoint.StartDirection.Y);
-            }
+            // Apply previous angle of camera for this type of car.
+            RotationXRadians = viewPoint.RotationXRadians;
+            RotationYRadians = viewPoint.RotationYRadians;
+        }
+        /// <summary>
+        /// Remembers angle of camera to apply when user returns to this type of car.
+        /// </summary>
+        /// <param name="speed"></param>
+        protected override void RotateRight(float speed)
+        {
+            base.RotateRight(speed);
+            var viewPoint = attachedCar.PassengerViewpoints[0];
+            viewPoint.RotationYRadians = RotationYRadians;
+        }
+
+        /// <summary>
+        /// Remembers angle of camera to apply when user returns to this type of car.
+        /// </summary>
+        /// <param name="speed"></param>
+        protected override void RotateDown(float speed)
+        {
+            base.RotateDown(speed);
+            var viewPoint = attachedCar.PassengerViewpoints[0];
+            viewPoint.RotationXRadians = RotationXRadians;
         }
     }
 
@@ -1714,9 +1731,6 @@ namespace ORTS.Viewer3D
 					RotationYRadians = MathHelper.ToRadians(viewPoint.StartDirection.Y);
 				}
 			}
-			// <CJ Comment> More useful without resetting. </CJ Comment>
-			//RotationXRadians = MSTSMath.M.Radians( viewPoint.StartDirection.X );
-			//RotationYRadians = MSTSMath.M.Radians( viewPoint.StartDirection.Y );
 		}
 
 		public void ChangeCab(TrainCar newCar)

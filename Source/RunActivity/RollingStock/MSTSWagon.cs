@@ -362,7 +362,7 @@ namespace ORTS
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
-            foreach (ViewPoint passengerViewPoint in copy.PassengerViewpoints)
+            foreach (PassengerViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
             foreach (ViewPoint headOutViewPoint in copy.HeadOutViewpoints)
                 HeadOutViewpoints.Add(headOutViewPoint);
@@ -381,7 +381,7 @@ namespace ORTS
         }
         private void ParseWagonInside(STFReader stf)
         {
-            ViewPoint passengerViewPoint = new ViewPoint();
+            PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
