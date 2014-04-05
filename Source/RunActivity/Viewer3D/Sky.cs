@@ -122,7 +122,8 @@ namespace ORTS.Viewer3D
                 oldClockTime = Viewer.Simulator.ClockTime % 86400;
                 while (oldClockTime < 0) oldClockTime += 86400;
                 step1 = step2 = (int)(oldClockTime / 1200);
-                step2++;
+                step2 = step2 < maxSteps - 1 ? step2 + 1 : 0; // limit to max. steps in case activity starts near midnight
+
                 // Get the current latitude and longitude coordinates
                 worldLoc.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
                 // Fill in the sun- and moon-position lookup tables
@@ -211,11 +212,11 @@ namespace ORTS.Viewer3D
                 step2++;
                 oldClockTime = Viewer.Simulator.ClockTime;
                 diff = 0;
-                if (step1 == maxSteps - 1) // Midnight. Value is 71 for maxSteps = 72
+                if (step2 >= maxSteps) // Midnight.
                 {
                     step2 = 0;
                 }
-                if (step1 == maxSteps) // Midnight.
+                if (step1 >= maxSteps) // Midnight.
                 {
                     step1 = 0;
                 }
@@ -228,11 +229,11 @@ namespace ORTS.Viewer3D
                 diff = 0;
                 if (step1 < 0) // Midnight.
                 {
-                    step1 = 71;
+                    step1 = maxSteps - 1;
                 }
                 if (step2 < 0) // Midnight.
                 {
-                    step2 = 71;
+                    step2 = maxSteps - 1;
                 }
             }
             solarDirection.X = MathHelper.Lerp(solarPosArray[step1].X, solarPosArray[step2].X, diff);

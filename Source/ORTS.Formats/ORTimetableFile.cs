@@ -46,7 +46,7 @@ namespace ORTS.Formats
     
     public class TTPreInfo
     {
-        public List<String> Trains = new List<string>();
+        public List<TTTrainPreInfo> Trains = new List<TTTrainPreInfo>();
         public String Description;
 
         private String Separator;
@@ -105,33 +105,109 @@ namespace ORTS.Formats
                 }
                 else if (!String.IsNullOrEmpty(headerString))
                 {
-                    Trains.Add(String.Copy(headerString));
+                    Trains.Add(new TTTrainPreInfo(columnIndex, headerString));
                 }
                 columnIndex++;
             }
 
-            // try and find first comment row - cell at first comment row and column is description
+            // process comment row - cell at first comment row and column is description
+            // process path and consist row
 
             Description = String.Copy(filePath);
 
-            if (firstCommentColumn > 0)
-            {
-                bool descFound = false;
-                readLine = scrStream.ReadLine();
+            bool descFound = false;
+            bool pathFound = false;
+            bool consistFound = false;
+            bool startFound = false;
 
-                while (readLine != null && !descFound)
+            readLine = scrStream.ReadLine();
+
+            while (readLine != null && (!descFound || !pathFound || !consistFound || !startFound))
+            {
+                Parts = readLine.Split(SeparatorArray, System.StringSplitOptions.None);
+
+                if (!descFound && firstCommentColumn > 0)
                 {
-                    Parts = readLine.Split(SeparatorArray, System.StringSplitOptions.None);
                     if (String.Compare(Parts[0], "#comment", true) == 0)
                     {
                         Description = String.Copy(Parts[firstCommentColumn]);
                         descFound = true;
                     }
-                    else
+                }
+
+                if (!pathFound)
+                {
+                    if (String.Compare(Parts[0], "#path", true) == 0)
                     {
-                        readLine = scrStream.ReadLine();
+                        pathFound = true;
+                        foreach (TTTrainPreInfo train in Trains)
+                        {
+                            train.Path = String.Copy(Parts[train.Column]);
+                        }
                     }
                 }
+
+                if (!consistFound)
+                {
+                    if (String.Compare(Parts[0], "#consist", true) == 0)
+                    {
+                        consistFound = true;
+                        foreach (TTTrainPreInfo train in Trains)
+                        {
+                            train.Consist = String.Copy(Parts[train.Column]);
+                        }
+                    }
+                }
+
+                if (!startFound)
+                {
+                    if (String.Compare(Parts[0], "#start", true) == 0)
+                    {
+                        startFound = true;
+                        foreach (TTTrainPreInfo train in Trains)
+                        {
+                            train.StartTime = String.Copy(Parts[train.Column]);
+                        }
+                    }
+                }
+
+                readLine = scrStream.ReadLine();
+            }
+        }
+
+        public class TTTrainPreInfo : IComparable<TTTrainPreInfo>
+        {
+            public int Column;                // column index
+            public string Train;              // train definition
+            public string Consist;            // consist definition (consist or pool)
+            public string Path;               // path definition
+            public string StartTime;          // starttime definition
+
+            public TTTrainPreInfo(int column, string train)
+            {
+                Column = column;
+                Train = string.Copy(train);
+                Consist = string.Empty;
+                Path = string.Empty;
+            }
+
+            public int CompareTo(TTTrainPreInfo otherInfo)
+            {
+                return(String.Compare(this.Train, otherInfo.Train));
+            }
+
+            override public string ToString()
+            {
+                return (Train);
+            }
+
+            public string[] ToInfo()
+            {
+                string[] infoString = new string[2];
+                infoString[0] = String.Concat("Selected train : ", Train);
+                infoString[1] = String.Concat("Start time     : ", StartTime);
+
+                return (infoString);
             }
         }
     }

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.IO;
 using GNU.Gettext;
 using MSTS.Formats;
+using System;
 
 namespace ORTS.Menu
 {
@@ -81,6 +82,29 @@ namespace ORTS.Menu
                 }
             }
             return paths;
+        }
+
+        public static Path GetPath(Route route, string name)
+        {
+            Path path = null; ;
+            var directory = System.IO.Path.Combine(route.Path, "PATHS");
+            var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "pat"));
+            try
+            {
+                path = new Path(file);
+            }
+            catch { }
+            return path;
+        }
+
+        public string[] ToInfo()
+        {
+            string[] infoString = new string[3];
+            infoString[0] = String.Concat("Path Name  : ", Name);
+            infoString[1] = String.Concat("Start at   : ", Start);
+            infoString[2] = String.Concat("Heading to : ", End);
+
+            return (infoString);
         }
     }
 }

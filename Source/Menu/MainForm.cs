@@ -91,7 +91,9 @@ namespace ORTS
         public UserAction SelectedAction { get; set; }
         public TimetableInfo SelectedTimetable { get { return (TimetableInfo) comboBoxTimetable.SelectedItem; } }
         public String SelectedPlayerTimetable { get { return (String) comboBoxPlayerTimetable.SelectedItem; } }
-        public String SelectedTimetableTrain { get { return (String) comboBoxPlayerTrain.SelectedItem; } }
+        public TTPreInfo.TTTrainPreInfo SelectedTimetableTrain { get { return (TTPreInfo.TTTrainPreInfo)comboBoxPlayerTrain.SelectedItem; } }
+        public Consist SelectedTimetableConsist;
+        public Path SelectedTimetablePath;
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
@@ -310,6 +312,7 @@ namespace ORTS
         {
             panelModeActivity.Visible = radioButtonModeActivity.Checked;
             panelModeTimetable.Visible = radioButtonModeTimetable.Checked;
+            ShowDetails();
         }
         #endregion
 
@@ -814,13 +817,45 @@ namespace ORTS
             ClearDetails();
             if (SelectedRoute != null && SelectedRoute.Description != null)
                 ShowDetail(catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
-            if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
-                ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
-            if (SelectedActivity != null && SelectedActivity.Description != null)
+
+            if (radioButtonModeActivity.Checked)
             {
-                ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
-                ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
+                if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
+                    ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
+                if (SelectedActivity != null && SelectedActivity.Description != null)
+                {
+                    ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
+                    ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
+                }
             }
+            if (radioButtonModeTimetable.Checked)
+            {
+                if (SelectedTimetable != null)
+                {
+                    ShowDetail(catalog.GetString("Timetable"), new string[1] { SelectedTimetable.ToString() });
+                }
+                if (!String.IsNullOrEmpty(SelectedPlayerTimetable))
+                {
+                    ShowDetail(catalog.GetString("Player Timetable"), new string[1] { SelectedPlayerTimetable });
+                }
+                if (SelectedTimetableTrain != null)
+                {
+                    ShowDetail(catalog.GetString("Player Train"), SelectedTimetableTrain.ToInfo());
+                    if (SelectedTimetableConsist != null)
+                    {
+                        ShowDetail(catalog.GetString("Consist : "), new string[1] { SelectedTimetableConsist.ToString() });
+                        if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
+                        {
+                            ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
+                        }
+                    }
+                    if (SelectedTimetablePath != null)
+                    {
+                        ShowDetail(catalog.GetString("Path : "), SelectedTimetablePath.ToInfo());
+                    }
+                }
+            }
+
             FlowDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
         }
@@ -1002,9 +1037,10 @@ namespace ORTS
         private void ComboBoxTimetable_SelectedIndexChanged(object sender, EventArgs e)
         {
             SelectedAction = UserAction.SinglePlayerTimetableGame;
-            ShowORSubTimetableList();
             ClearTrainList();
+            ShowORSubTimetableList();
             PresetTimetableAdditionalInfo();
+            ShowDetails();
         }
 
         private DialogResult CheckAndBuildTimetableInfo()
@@ -1037,7 +1073,10 @@ namespace ORTS
                 {
                     comboBoxPlayerTimetable.Items.Add(ttInfo.Description);
                 }
-                if (comboBoxPlayerTimetable.Items.Count == 1) comboBoxPlayerTimetable.SelectedIndex = 0;
+                if (comboBoxPlayerTimetable.Items.Count == 1)
+                {
+                    comboBoxPlayerTimetable.SelectedIndex = 0;
+                }
             }
             else
             {
@@ -1051,6 +1090,7 @@ namespace ORTS
         private void comboboxPlayerTimetable_selectedIndexChanged(object sender, EventArgs e)
         {
             ShowORTimetableTrainList();
+            ShowDetails();
         }
         #endregion
 
@@ -1060,10 +1100,10 @@ namespace ORTS
             comboBoxPlayerTrain.Items.Clear();
             if (comboBoxTimetable.SelectedIndex >= 0)
             {
-                List<String> usedTrains = SelectedTimetable.ORTTList[comboBoxPlayerTimetable.SelectedIndex].Trains;
+                List<TTPreInfo.TTTrainPreInfo> usedTrains = SelectedTimetable.ORTTList[comboBoxPlayerTimetable.SelectedIndex].Trains;
                 usedTrains.Sort();
 
-                foreach (String train in usedTrains)
+                foreach (TTPreInfo.TTTrainPreInfo train in usedTrains)
                 {
                     comboBoxPlayerTrain.Items.Add(train);
                 }
@@ -1073,6 +1113,14 @@ namespace ORTS
         void ClearTrainList()
         {
             comboBoxPlayerTrain.Items.Clear();
+        }
+
+        private void comboBoxPlayerTrain_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TTPreInfo.TTTrainPreInfo selectedTrain = comboBoxPlayerTrain.SelectedItem as TTPreInfo.TTTrainPreInfo;
+            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.Consist);
+            SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path);
+            ShowDetails();
         }
         #endregion
 

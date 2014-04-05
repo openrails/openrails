@@ -1951,7 +1951,7 @@ namespace ORTS.Viewer3D.RollingStock
 				}
 				return displayedText;
 			}
-			catch (Exception error)
+			catch (Exception)
 			{
 				DrawColor = Color.Blue;
 			}
@@ -2108,7 +2108,7 @@ namespace ORTS.Viewer3D.RollingStock
 		Matrix xnaMatrix;
 		Point coor = new Point(0, 0);
 		CabViewDigitalRenderer CVFR;
-		Color color;
+//		Color color;
 		public DigitalDisplay(Viewer viewer, PoseableShape t, int d, int h, CabViewControlRenderer c)
 		{
 			TrainCarShape = t;

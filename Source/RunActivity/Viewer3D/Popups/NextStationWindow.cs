@@ -28,6 +28,7 @@ namespace ORTS.Viewer3D.Popups
 	{
 		Label CurrentTime;
 		Label StationPlatform;
+        Label CurrentDelay;
 
 		Label StationPreviousName;
         Label StationPreviousDistance;
@@ -60,7 +61,8 @@ namespace ORTS.Viewer3D.Popups
 			var boxWidth = vbox.RemainingWidth / 8;
 			{
 				var hbox = vbox.AddLayoutHorizontal(16);
-				hbox.Add(StationPlatform = new Label(boxWidth * 7, hbox.RemainingHeight, ""));
+				hbox.Add(StationPlatform = new Label(boxWidth * 3, hbox.RemainingHeight, "", LabelAlignment.Left));
+                hbox.Add(CurrentDelay = new Label(boxWidth * 4, hbox.RemainingHeight, ""));
 				hbox.Add(CurrentTime = new Label(boxWidth, hbox.RemainingHeight, "", LabelAlignment.Center));
 			}
 			vbox.AddHorizontalSeparator();
@@ -117,15 +119,122 @@ namespace ORTS.Viewer3D.Popups
                 CurrentTime.Text = InfoDisplay.FormattedTime(Owner.Viewer.Simulator.ClockTime);
                 Activity act = Owner.Viewer.Simulator.ActivityRun;
                 Train playerTrain = Owner.Viewer.Simulator.PlayerLocomotive.Train;
-                bool metric = Owner.Viewer.MilepostUnitsMetric;
+                if (playerTrain.Delay.HasValue)
+                {
+                    CurrentDelay.Text = String.Concat("Current Delay : ", playerTrain.Delay.Value.TotalMinutes.ToString("00"), " mins");
+                }
+                else
+                {
+                    CurrentDelay.Text = "";
+                }
 
+                bool metric = Owner.Viewer.MilepostUnitsMetric;
+                bool InfoAvail = false;
+
+                ActivityTaskPassengerStopAt at = null;
+                ActivityTaskPassengerStopAt Current = null;
+
+                // timetable information
+                if (playerTrain.CheckStations)
+                {
+                    // previous stop
+                    if (playerTrain.PreviousStop == null)
+                    {
+                        StationPreviousName.Text = "";
+                        StationPreviousArriveScheduled.Text = "";
+                        StationPreviousArriveActual.Text = "";
+                        StationPreviousDepartScheduled.Text = "";
+                        StationPreviousDepartActual.Text = "";
+                        StationPreviousDistance.Text = "";
+                    }
+                    else
+                    {
+                        StationPreviousName.Text = playerTrain.PreviousStop.PlatformItem.Name;
+                        StationPreviousArriveScheduled.Text = playerTrain.PreviousStop.arrivalDT.ToString("HH:mm:ss");
+                        if (playerTrain.PreviousStop.ActualArrival >= 0)
+                        {
+                            DateTime actArrDT = new DateTime((long)(Math.Pow(10, 7) * playerTrain.PreviousStop.ActualArrival));
+                            StationPreviousArriveActual.Text = actArrDT.ToString("HH:mm:ss");
+                            StationPreviousArriveActual.Color = actArrDT < playerTrain.PreviousStop.arrivalDT ? Color.LightGreen : Color.LightSalmon;
+                            DateTime actDepDT = new DateTime((long)(Math.Pow(10, 7) * playerTrain.PreviousStop.ActualDepart));
+                            StationPreviousDepartActual.Text = actDepDT.ToString("HH:mm:ss");
+                            StationPreviousDepartActual.Color = actDepDT > playerTrain.PreviousStop.arrivalDT ? Color.LightGreen : Color.LightSalmon;
+                        }
+                        else
+                        {
+                            StationPreviousArriveActual.Text = Viewer.Catalog.GetString("(missed)");
+                            StationPreviousArriveActual.Color = Color.LightSalmon;
+                            StationPreviousDepartActual.Text = "";
+                        }
+                        StationPreviousDepartScheduled.Text = playerTrain.PreviousStop.departureDT.ToString("HH:mm:ss");
+                        StationPreviousDistance.Text = "";
+                    }
+
+                    if (playerTrain.StationStops == null || playerTrain.StationStops.Count == 0)
+                    {
+                        StationPlatform.Text = "";
+                        StationCurrentName.Text = "";
+                        StationCurrentArriveScheduled.Text = "";
+                        StationCurrentArriveActual.Text = "";
+                        StationCurrentDepartScheduled.Text = "";
+                        StationCurrentDistance.Text = "";
+
+                        StationNextName.Text = "";
+                        StationNextArriveScheduled.Text = "";
+                        StationNextDepartScheduled.Text = "";
+                        StationNextDistance.Text = "";
+
+                        Message.Text = "No more stations.";
+                    }
+                    else
+                    {
+                        StationPlatform.Text = "";
+                        StationCurrentName.Text = playerTrain.StationStops[0].PlatformItem.Name;
+                        StationCurrentArriveScheduled.Text = playerTrain.StationStops[0].arrivalDT.ToString("HH:mm:ss");
+                        if (playerTrain.StationStops[0].ActualArrival >= 0)
+                        {
+                            DateTime actArrDT = new DateTime((long)(Math.Pow(10, 7) * playerTrain.StationStops[0].ActualArrival));
+                            StationCurrentArriveActual.Text = actArrDT.ToString("HH:mm:ss");
+                            StationCurrentArriveActual.Color = actArrDT < playerTrain.StationStops[0].arrivalDT ? Color.LightGreen : Color.LightSalmon;
+
+                        }
+                        else
+                        {
+                            StationCurrentArriveActual.Text = "";
+                        }
+                        StationCurrentDepartScheduled.Text = playerTrain.StationStops[0].departureDT.ToString("HH:mm:ss");
+                        StationCurrentDistance.Text = FormatStrings.FormatDistanceDisplay(playerTrain.StationStops[0].DistanceToTrainM, metric);
+                        Message.Text = playerTrain.DisplayMessage;
+                        Message.Color = playerTrain.DisplayColor;
+
+                        if (playerTrain.StationStops.Count >= 2)
+                        {
+                            StationNextName.Text = playerTrain.StationStops[1].PlatformItem.Name;
+                            StationNextArriveScheduled.Text = playerTrain.StationStops[1].arrivalDT.ToString("HH:mm:ss");
+                            StationNextDepartScheduled.Text = playerTrain.StationStops[1].departureDT.ToString("HH:mm:ss");
+                            StationNextDistance.Text = "";
+                        }
+                        else
+                        {
+                            StationNextName.Text = "";
+                            StationNextArriveScheduled.Text = "";
+                            StationNextDepartScheduled.Text = "";
+                            StationNextDistance.Text = "";
+                        }
+                    }
+                }
+
+                // activity information
                 if (act != null)
                 {
-                    ActivityTaskPassengerStopAt at = null;
-
-                    ActivityTaskPassengerStopAt Current = act.Current == null ? act.Last as ActivityTaskPassengerStopAt : act.Current as ActivityTaskPassengerStopAt;
+                    Current = act.Current == null ? act.Last as ActivityTaskPassengerStopAt : act.Current as ActivityTaskPassengerStopAt;
 
                     at = Current != null ? Current.PrevTask as ActivityTaskPassengerStopAt : null;
+                    InfoAvail = true;
+                }
+
+                if (InfoAvail)
+                {
                     if (at != null)
                     {
                         StationPreviousName.Text = at.PlatformEnd1.Station;
@@ -208,7 +317,7 @@ namespace ORTS.Viewer3D.Popups
                         StationNextDistance.Text = "";
                     }
 
-                    if (act.IsFinished)
+                    if (act != null && act.IsFinished)
                     {
                         Message.Text = Viewer.Catalog.GetString("Activity completed.");
                     }

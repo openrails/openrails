@@ -84,6 +84,10 @@ namespace ORTS
         public TRPFile TRP; // Track profile file
         public TSectionDatFile TSectionDat;
         public TrainList Trains;
+        public Dictionary<int, Train> TrainDictionary = new Dictionary<int, Train>();
+        public Dictionary<string, Train> NameDictionary = new Dictionary<string, Train>();
+        public List<int> StartReference = new List<int>();
+
         public Signals Signals;
         public AI AI;
         public RailDriverHandler RailDriver;
@@ -225,7 +229,11 @@ namespace ORTS
             Train playerTrain = InitializeTrains();
             AI = new AI(this, ClockTime);
             if (playerTrain != null)
+            {
                 playerTrain.PostInit();  // place player train after pre-running of AI trains
+                TrainDictionary.Add(playerTrain.Number, playerTrain);
+                NameDictionary.Add(playerTrain.Name, playerTrain);
+            }
             MPManager.Instance().RememberOriginalSwitchState();
 
             // start activity logging if required
@@ -243,7 +251,8 @@ namespace ORTS
         {
             Signals = new Signals(this, SIGCFG);
             LevelCrossings = new LevelCrossings(this);
-            Trains = new TrainList();
+            Trains = new TrainList(this);
+            PathName = String.Copy(arguments[1]);
 
             TimetableInfo TTinfo = new TimetableInfo(this);
 
@@ -251,7 +260,7 @@ namespace ORTS
             List<AITrain> allTrains = TTinfo.ProcessTimetable(arguments, ref playerTrain);
             Trains[0] = playerTrain;
 
-            AI = new AI(this, allTrains, ClockTime);
+            AI = new AI(this, allTrains, ClockTime, playerTrain.FormedOf);
 
             Season = (SeasonType)int.Parse(arguments[6]);
             Weather = (WeatherType)int.Parse(arguments[7]);
@@ -260,8 +269,10 @@ namespace ORTS
             {
                 playerTrain.PostInit();  // place player train after pre-running of AI trains
                 playerTrain.SetupStationStopHandling(); // player train must now perform own station stop handling (no activity function available)
+                TrainDictionary.Add(playerTrain.Number, playerTrain);
+                NameDictionary.Add(playerTrain.Name, playerTrain);
             }
-
+ 
 //          MPManager.Instance().RememberOriginalSwitchState();
 
             // start activity logging if required
@@ -314,7 +325,7 @@ namespace ORTS
 
         Train InitializeTrains()
         {
-            Trains = new TrainList();
+            Trains = new TrainList(this);
             Train playerTrain = InitializePlayerTrain();
             InitializeStaticConsists();
             return (playerTrain);
@@ -449,6 +460,8 @@ namespace ORTS
         {
             train.RemoveFromTrack();
             Trains.Remove(train);
+            TrainDictionary.Remove(train.Number);
+            NameDictionary.Remove(train.Name.ToLower());
 
             if (train.UncoupledFrom != null)
                 train.UncoupledFrom.UncoupledFrom = null;
@@ -634,6 +647,7 @@ namespace ORTS
             Train train = new Train(this);
             if (conFileName.Contains("tilted")) train.tilted = true;
             train.TrainType = Train.TRAINTYPE.PLAYER;
+            train.Name = "PLAYER";
 
             //PATFile patFile = new PATFile(patFileName);
             //PathName = patFile.Name;
@@ -766,6 +780,7 @@ namespace ORTS
                     // construct train data
                     Train train = new Train(this);
                     train.TrainType = Train.TRAINTYPE.STATIC;
+                    train.Name = "STATIC";
                     int consistDirection;
                     switch (activityObject.Direction)  // TODO, we don't really understand this
                     {
@@ -870,13 +885,23 @@ namespace ORTS
         private void RestoreTrains(BinaryReader inf)
         {
 
-            Trains = new TrainList();
+            Trains = new TrainList(this);
 
             int trainType = inf.ReadInt32();
             while (trainType >= 0)
             {
                 Trains.Add(new Train(this, inf));
                 trainType = inf.ReadInt32();
+            }
+
+            // find player train
+            foreach (Train thisTrain in Trains)
+            {
+                if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER)
+                {
+                    TrainDictionary.Add(thisTrain.Number, thisTrain);
+                    NameDictionary.Add(thisTrain.Name, thisTrain);
+                }
             }
         }
 
@@ -1060,13 +1085,15 @@ namespace ORTS
 
         public class TrainList : List<Train>
         {
+            private Simulator simulator;
 
             /// <summary>
             /// basis constructor
             /// </summary>
 
-            public TrainList()
+            public TrainList(Simulator in_simulator) : base ()
             {
+                simulator = in_simulator;
             }
 
             /// <summary>
@@ -1076,12 +1103,50 @@ namespace ORTS
             public Train GetTrainByNumber(int reqNumber)
             {
                 Train returnTrain = null;
-                for (int iTrain = 0; iTrain <= this.Count - 1; iTrain++)
+                if (simulator.TrainDictionary.ContainsKey(reqNumber))
                 {
-                    if (this[iTrain].Number == reqNumber)
-                        returnTrain = this[iTrain];
+                    returnTrain = simulator.TrainDictionary[reqNumber];
                 }
+
+                // dictionary is not always updated in normal activity and explorer mode, so double check
+                // if not correct, search in the 'old' way
+                if (returnTrain == null || returnTrain.Number != reqNumber)
+                {
+                    returnTrain = null;
+                    for (int iTrain = 0; iTrain <= this.Count - 1; iTrain++)
+                    {
+                        if (this[iTrain].Number == reqNumber)
+                            returnTrain = this[iTrain];
+                    }
+                }
+
                 return (returnTrain);
+            }
+
+            /// <summary>
+            /// Search and return Train by name - any type
+            /// </summary>
+
+            public Train GetTrainByName(string reqName)
+            {
+                Train returnTrain = null;
+                if (simulator.NameDictionary.ContainsKey(reqName))
+                {
+                    returnTrain = simulator.NameDictionary[reqName];
+                }
+
+                return (returnTrain);
+            }
+
+            /// <summary>
+            /// Check if numbered train is on startlist
+            /// </summary>
+            /// <param name="reqNumber"></param>
+            /// <returns></returns>
+            
+            public Boolean CheckTrainNotStartedByNumber(int reqNumber)
+            {
+                return simulator.StartReference.Contains(reqNumber);
             }
 
             /// <summary>
@@ -1091,13 +1156,29 @@ namespace ORTS
             public AITrain GetAITrainByNumber(int reqNumber)
             {
                 AITrain returnTrain = null;
-                for (int iTrain = 0; iTrain <= this.Count - 1; iTrain++)
+                if (simulator.TrainDictionary.ContainsKey(reqNumber))
                 {
-                    if (this[iTrain].Number == reqNumber && this[iTrain].TrainType == Train.TRAINTYPE.AI)
-                        returnTrain = this[iTrain] as AITrain;
+                    returnTrain = simulator.TrainDictionary[reqNumber] as AITrain;
                 }
+                
                 return (returnTrain);
             }
+
+            /// <summary>
+            /// Search and return AITrain by name
+            /// </summary>
+
+            public AITrain GetAITrainByName(string reqName)
+            {
+                AITrain returnTrain = null;
+                if (simulator.NameDictionary.ContainsKey(reqName))
+                {
+                    returnTrain = simulator.NameDictionary[reqName] as AITrain;
+                }
+                
+                return (returnTrain);
+            }
+
         } // TrainList
 
     } // Simulator

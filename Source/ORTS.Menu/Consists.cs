@@ -79,6 +79,21 @@ namespace ORTS.Menu
             return consists;
         }
 
+        public static Consist GetConsist(Folder folder, string name)
+        {
+            Consist consist = null;
+            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
+            var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "con"));
+
+            try
+            {
+                consist = new Consist(file, folder);
+            }
+            catch { }
+
+            return consist;
+        }
+
         static Locomotive GetLocomotive(CONFile conFile, Folder folder)
         {
             foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))

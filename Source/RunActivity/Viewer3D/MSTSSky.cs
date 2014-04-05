@@ -92,7 +92,7 @@ namespace ORTS.Viewer3D
             MSTSSkyViewer = viewer;
             MSTSSkyMaterial = viewer.MaterialManager.Load("MSTSSky");
             // Instantiate classes
-            MSTSSkyMesh = new MSTSSkyMesh( MSTSSkyViewer.RenderProcess, MSTSSkyViewer);
+            MSTSSkyMesh = new MSTSSkyMesh( MSTSSkyViewer.RenderProcess);
             MSTSSkyVectors = new SunMoonPos();
 
             //viewer.World.MSTSSky.MSTSSkyMaterial.Viewer.MaterialManager.sunDirection.Y < 0
@@ -134,7 +134,7 @@ namespace ORTS.Viewer3D
                 mstsskyoldClockTime = MSTSSkyViewer.Simulator.ClockTime % 86400;
                 while (mstsskyoldClockTime < 0) mstsskyoldClockTime += 86400;
                 step1 = step2 = (int)(mstsskyoldClockTime / 1200);
-                step2++;
+                step2 = step2 < maxSteps - 1 ? step2 + 1 : 0; // limit to max. steps in case activity starts near midnight
                 // Get the current latitude and longitude coordinates
                 mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
                 // Fill in the sun- and moon-position lookup tables
@@ -223,11 +223,11 @@ namespace ORTS.Viewer3D
                 step2++;
                 mstsskyoldClockTime = MSTSSkyViewer.Simulator.ClockTime;
                 diff = 0;
-                if (step1 == maxSteps - 1) // Midnight. Value is 71 for maxSteps = 72
+                if (step2 >= maxSteps) // Midnight.
                 {
                     step2 = 0;
                 }
-                if (step1 == maxSteps) // Midnight.
+                if (step1 >= maxSteps) // Midnight.
                 {
                     step1 = 0;
                 }
@@ -240,11 +240,11 @@ namespace ORTS.Viewer3D
                 diff = 0;
                 if (step1 < 0) // Midnight.
                 {
-                    step1 = 71;
+                    step1 = maxSteps - 1;
                 }
                 if (step2 < 0) // Midnight.
                 {
-                    step2 = 71;
+                    step2 = maxSteps - 1;
                 }
             }
             
@@ -256,6 +256,16 @@ namespace ORTS.Viewer3D
             mstsskylunarDirection.Y = MathHelper.Lerp(mstsskylunarPosArray[step1].Y, mstsskylunarPosArray[step2].Y, diff);
             mstsskylunarDirection.Z = MathHelper.Lerp(mstsskylunarPosArray[step1].Z, mstsskylunarPosArray[step2].Z, diff);
 
+            if (mstsskysolarDirection.Y < -0.09f )
+            {
+                MSTSSkyConstants.IsNight = true;
+                MSTSSkyMesh.ResetMSTSSkyMesh(MSTSSkyViewer.RenderProcess);              
+            }
+            else
+            {
+                MSTSSkyConstants.IsNight = false;
+                MSTSSkyMesh.ResetMSTSSkyMesh(MSTSSkyViewer.RenderProcess);
+            }
             frame.AddPrimitive(MSTSSkyMaterial, MSTSSkyMesh, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
         }
 
@@ -270,18 +280,19 @@ namespace ORTS.Viewer3D
     #region MSTSSkyMesh
     public class MSTSSkyMesh: RenderPrimitive 
     {
-        private VertexBuffer MSTSSkyVertexBuffer;
-        private static VertexDeclaration MSTSSkyVertexDeclaration;
-        private static IndexBuffer MSTSSkyIndexBuffer;
-        private static int MSTSSkyVertexStride;  // in bytes
+        private VertexBuffer SkyVertexBuffer;
+        private static VertexDeclaration SkyVertexDeclaration;
+        private static IndexBuffer SkyIndexBuffer;
+        private static int SkyVertexStride;  // in bytes
         public int drawIndex;
 
         VertexPositionNormalTexture[] vertexList;
         private static short[] triangleListIndices; // Trilist buffer.
+
         // Sky dome geometry is based on two global variables: the radius and the number of sides
         public int mstsskyRadius = MSTSSkyConstants.skyRadius;
-        public int mstsskyradius;
         private static int mstsskySides = MSTSSkyConstants.skySides;
+        public int mstscloudDomeRadiusDiff = 600; // Amount by which cloud dome radius is smaller than sky dome
         // skyLevels: Used for iterating vertically through the "levels" of the hemisphere polygon
         private static int mstsskyLevels = ((MSTSSkyConstants.skySides / 4) - 1);
         // Number of vertices in the sky hemisphere. (each dome = 145 for 24-sided sky dome: 24 x 6 + 1)
@@ -295,19 +306,10 @@ namespace ORTS.Viewer3D
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// 
 
-        public MSTSSkyMesh(RenderProcess renderProcess, Viewer viewer)
+        public MSTSSkyMesh(RenderProcess renderProcess)
         {
             var tileFactor = 1;
-
-            if (viewer.ENVFile.SkyLayers != null)
-            {
-                mstsskyradius = viewer.ENVFile.SkyLayers[0]._top_radius;
-            }
-
-            mstsskyRadius = MSTSSkyConstants.skyRadius; 
-
             if ( MSTSSkyConstants.IsNight == true) 
                     tileFactor = 8;
                 else
@@ -317,20 +319,46 @@ namespace ORTS.Viewer3D
             triangleListIndices = new short[indexCount];
 
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius, tileFactor);
+            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, tileFactor);
             MSTSSkyDomeTriangleList(0, 0);
+            // Cloud dome
+            //MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, 1);
+            //MSTSSkyDomeTriangleList((short)((indexCount - 6) / 2), 1);
             // Moon quad
             MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
             // Meshes have now been assembled, so put everything into vertex and index buffers
             InitializeVertexBuffers(renderProcess.GraphicsDevice);
             
         }
+        public void ResetMSTSSkyMesh(RenderProcess renderProcess)
+        {
+            var tileFactor = 1;
+            if (MSTSSkyConstants.IsNight == true)
+                tileFactor = 8;
+            else
+                tileFactor = 1;
+
+            vertexList = new VertexPositionNormalTexture[numVertices];
+            triangleListIndices = new short[indexCount];
+
+            // Sky dome
+            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, tileFactor);
+            MSTSSkyDomeTriangleList(0, 0);
+            // Cloud dome
+            //MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, 1);
+            //MSTSSkyDomeTriangleList((short)((indexCount - 6) / 2), 1);
+            // Moon quad
+            MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
+            // Meshes have now been assembled, so put everything into vertex and index buffers
+            InitializeVertexBuffers(renderProcess.GraphicsDevice);
+
+        }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = MSTSSkyVertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(MSTSSkyVertexBuffer, 0, MSTSSkyVertexStride);
-            graphicsDevice.Indices = MSTSSkyIndexBuffer;
+            graphicsDevice.VertexDeclaration = SkyVertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(SkyVertexBuffer, 0, SkyVertexStride);
+            graphicsDevice.Indices = SkyIndexBuffer;
 
             switch (drawIndex)
             {
@@ -352,6 +380,14 @@ namespace ORTS.Viewer3D
                     indexCount - 6,
                     2);
                     break;
+                //case 3: // Clouds Dome
+                    //graphicsDevice.DrawIndexedPrimitives(
+                        //PrimitiveType.TriangleList, 0,
+                        //(numVertices - 4) / 2,
+                        //(numVertices - 4) / 2,
+                        //(indexCount - 6) / 2,
+                        //(indexCount - 6) / 6);
+                    //break;
                 default:
                     break;
             }
@@ -363,14 +399,16 @@ namespace ORTS.Viewer3D
         /// <param name="index">The starting vertex number</param>
         /// <param name="radius">The radius of the dome</param>
         /// <param name="oblate">The amount the dome is flattened</param>
-        private void MSTSSkyDomeVertexList(int index, int radius, float texturetiling)
+        private void MSTSSkyDomeVertexList(int index, int radius, float oblate, float texturetiling)
         {
             int vertexIndex = index;
             // for each vertex
             for (int i = 0; i < (mstsskySides / 4); i++) // (=6 for 24 sides)
                 for (int j = 0; j < mstsskySides; j++) // (=24 for top overlay)
                 {
-                    float y = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * i)) * radius;
+                    // The "oblate" factor is used to flatten the dome to an ellipsoid. Used for the inner (cloud)
+                    // dome only. Gives the clouds a flatter appearance.
+                    float y = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * i)) * radius * oblate;
                     float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * i));
                     float x = (float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * yRadius;
                     float z = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * yRadius;
@@ -490,18 +528,18 @@ namespace ORTS.Viewer3D
         /// </summary>
         private void InitializeVertexBuffers(GraphicsDevice graphicsDevice)
         {
-            if (MSTSSkyVertexDeclaration == null)
+            if (SkyVertexDeclaration == null)
             {
-                MSTSSkyVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                MSTSSkyVertexStride = VertexPositionNormalTexture.SizeInBytes;
+                SkyVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
+                SkyVertexStride = VertexPositionNormalTexture.SizeInBytes;
             }
             // Initialize the vertex and index buffers, allocating memory for each vertex and index
-            MSTSSkyVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
-            MSTSSkyVertexBuffer.SetData(vertexList);
-            if (MSTSSkyIndexBuffer == null)
+            SkyVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
+            SkyVertexBuffer.SetData(vertexList);
+            if (SkyIndexBuffer == null)
             {
-                MSTSSkyIndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
-                MSTSSkyIndexBuffer.SetData(triangleListIndices);
+                SkyIndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
+                SkyIndexBuffer.SetData(triangleListIndices);
             }
         }
 
@@ -631,7 +669,8 @@ namespace ORTS.Viewer3D
 
             // Send the transform matrices to the shader
             int mstsskyRadius = Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius;
-            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius - 2));
+            int mstscloudRadiusDiff = Viewer.World.MSTSSky.MSTSSkyMesh.mstscloudDomeRadiusDiff;
+            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius - (mstscloudRadiusDiff / 2)));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
             MSTSSkyShader.Begin();

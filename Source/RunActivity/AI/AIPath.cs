@@ -59,9 +59,9 @@ namespace ORTS
                 Nodes.Add(new AIPathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], TrackDB));
             FirstNode = Nodes[0];
             //LastVisitedNode = FirstNode;            
-            
+
             // Connect the various nodes to each other
-           bool fatalerror = false;
+            bool fatalerror = false;
             for (int i = 0; i < Nodes.Count; i++)
             {
                 AIPathNode node = Nodes[i];
@@ -105,6 +105,49 @@ namespace ORTS
             FindSidingEnds();
 
             if (fatalerror) Nodes = null; // invalid path - do not return any nodes
+        }
+
+        /// <summary>
+        /// constructor out of other path
+        /// </summary>
+        /// <param name="otherPath"></param>
+
+        public AIPath(AIPath otherPath)
+        {
+            TrackDB = otherPath.TrackDB; ;
+            TSectionDat = otherPath.TSectionDat;
+            FirstNode = new AIPathNode(otherPath.FirstNode);
+            foreach (AIPathNode otherNode in otherPath.Nodes)
+            {
+                Nodes.Add(new AIPathNode(otherNode));
+            }
+
+            // set correct node references
+
+            for (int iNode = 0; iNode <= otherPath.Nodes.Count - 1; iNode++)
+            {
+                AIPathNode otherNode = otherPath.Nodes[iNode];
+                if (otherNode.NextMainNode != null)
+                {
+                    Nodes[iNode].NextMainNode = Nodes[otherNode.NextMainNode.Index];
+                }
+
+                if (otherNode.NextSidingNode != null)
+                {
+                    Nodes[iNode].NextSidingNode = Nodes[otherNode.NextSidingNode.Index];
+                }
+            }
+
+            if (otherPath.FirstNode.NextMainNode != null)
+            {
+                FirstNode.NextMainNode = Nodes[otherPath.FirstNode.NextMainNode.Index];
+            }
+            if (otherPath.FirstNode.NextSidingNode != null)
+            {
+                FirstNode.NextSidingNode = Nodes[otherPath.FirstNode.NextSidingNode.Index];
+            }
+
+            pathName = String.Copy(otherPath.pathName);
         }
 
         /// <summary>
@@ -280,6 +323,29 @@ namespace ORTS
             {
                 JunctionIndex = FindJunctionOrEndIndex(Location, trackDB, true);
             }
+        }
+
+        /// <summary>
+        /// Constructor from other AIPathNode
+        /// </summary>
+        /// <param name="otherNode"></param>
+        
+        public AIPathNode(AIPathNode otherNode)
+        {
+            ID = otherNode.ID;
+            Index = otherNode.Index;
+            Type = otherNode.Type;
+            WaitTimeS = otherNode.WaitTimeS;
+            WaitUntil = otherNode.WaitUntil;
+            NCars = otherNode.NCars;
+            NextMainNode = null; // set after completion of copying to get correct reference
+            NextSidingNode = null; // set after completion of copying to get correct reference
+            NextMainTVNIndex = otherNode.NextMainTVNIndex;
+            NextSidingTVNIndex = otherNode.NextSidingTVNIndex;
+            Location = otherNode.Location;
+            JunctionIndex = otherNode.JunctionIndex;
+            IsFacingPoint = otherNode.IsFacingPoint;
+            IsVisited = otherNode.IsVisited;
         }
 
         // Possible interpretation (as found on internet, by krausyao)
@@ -468,7 +534,7 @@ namespace ORTS
             {
                 TrackNode tn = trackDB.TrackNodes[j];
                 if (tn == null) continue;
-                if ( wantJunctionNode && (tn.TrJunctionNode==null)) continue;
+                if (wantJunctionNode && (tn.TrJunctionNode == null)) continue;
                 if (!wantJunctionNode && !tn.TrEndNode) continue;
                 if (tn.UiD.WorldTileX != location.TileX || tn.UiD.WorldTileZ != location.TileZ) continue;
 

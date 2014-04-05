@@ -4741,7 +4741,7 @@ namespace ORTS
         // Check if set for train
         //
 
-        public bool IsSet(Train.TrainRouted thisTrain)   // using routed train
+        public bool IsSet(Train.TrainRouted thisTrain, bool claim_is_valid)   // using routed train
         {
 
             // if train in this section, return true; if other train in this section, return false
@@ -4758,9 +4758,9 @@ namespace ORTS
                 return (true);
             }
 
-            // check claim
+            // check claim if claim is valid as state
 
-            if (CircuitState.TrainClaimed.Count > 0)
+            if (CircuitState.TrainClaimed.Count > 0 && claim_is_valid)
             {
                 return (CircuitState.TrainClaimed.PeekTrain() == thisTrain.Train);
             }
@@ -4770,15 +4770,15 @@ namespace ORTS
             return (false);
         }
 
-        public bool IsSet(Train thisTrain)    // using unrouted train
+        public bool IsSet(Train thisTrain, bool claim_is_valid)    // using unrouted train
         {
-            if (IsSet(thisTrain.routedForward))
+            if (IsSet(thisTrain.routedForward, claim_is_valid))
             {
                 return (true);
             }
             else
             {
-                return (IsSet(thisTrain.routedBackward));
+                return (IsSet(thisTrain.routedBackward, claim_is_valid));
             }
         }
 
@@ -5690,13 +5690,26 @@ namespace ORTS
             if (!stateSet && thisTrain != null && thisState.TrainClaimed.Count > 0 && thisState.TrainClaimed.PeekTrain() != thisTrain.Train)
             {
                 localBlockstate = SignalObject.InternalBlockstate.Open;
+                stateSet = true;
             }
 
-            // deadlock trap
+            // wait condition
 
-            if (thisTrain != null && DeadlockTraps.ContainsKey(thisTrain.Train.Number))
+            if (thisTrain != null)
+            {
+                bool waitRequired = thisTrain.Train.CheckWaitCondition(Index);
+                if (!stateSet && waitRequired)
+                {
+                    localBlockstate = SignalObject.InternalBlockstate.ForcedWait;
+                }
+            }
+
+            // deadlock trap - may not set deadlock if wait is active 
+
+            if (thisTrain != null && localBlockstate != SignalObject.InternalBlockstate.ForcedWait && DeadlockTraps.ContainsKey(thisTrain.Train.Number))
             {
                 localBlockstate = SignalObject.InternalBlockstate.Blocked;
+                stateSet = true;
                 if (!DeadlockAwaited.Contains(thisTrain.Train.Number))
                     DeadlockAwaited.Add(thisTrain.Train.Number);
             }
@@ -6024,7 +6037,7 @@ namespace ORTS
                         TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
 
                         // if other section allready set do not set deadlock
-                        if (otherTrain != null && endSection.IsSet(otherTrain))
+                        if (otherTrain != null && endSection.IsSet(otherTrain, true))
                             break;
 
                         if (DeadlockTraps.ContainsKey(thisTrain.Number))
@@ -6834,6 +6847,7 @@ namespace ORTS
             Reservable,                 // all secetions clear and reservable for train    //
             OccupiedSameDirection,      // occupied by train moving in same direction      //
             ReservedOther,              // reserved for other train                        //
+            ForcedWait,                 // train is forced to wait for other train         //
             OccupiedOppositeDirection,  // occupied by train moving in opposite direction  //
             Open,                       // sections are claimed and not accesible          //
             Blocked,                    // switch locked against train                     //
@@ -7701,7 +7715,7 @@ namespace ORTS
             else
             {
                 thisSection = signalRef.TrackCircuitList[thisTC];
-                sectionSet = enabledTrain == null ? false : thisSection.IsSet(enabledTrain);
+                sectionSet = enabledTrain == null ? false : thisSection.IsSet(enabledTrain, false);
 
                 if (sectionSet)
                 {
@@ -7739,7 +7753,7 @@ namespace ORTS
                 if (signalFound < 0)
                 {
                     int pinIndex = direction;
-                    sectionSet = thisSection.IsSet(enabledTrain);
+                    sectionSet = thisSection.IsSet(enabledTrain, false);
                     if (sectionSet)
                     {
                         thisTC = thisSection.ActivePins[pinIndex, 0].Link;
@@ -7856,7 +7870,7 @@ namespace ORTS
             int signalFound = -1;
 
             TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisTC];
-            bool sectionSet = enabledTrain == null ? false : thisSection.IsSet(enabledTrain);
+            bool sectionSet = enabledTrain == null ? false : thisSection.IsSet(enabledTrain, false);
 
             // loop through valid sections
 
@@ -7893,7 +7907,7 @@ namespace ORTS
                 if (signalFound < 0)
                 {
                     int pinIndex = direction;
-                    sectionSet = thisSection.IsSet(enabledTrain);
+                    sectionSet = thisSection.IsSet(enabledTrain, false);
                     if (sectionSet)
                     {
                         thisTC = thisSection.ActivePins[pinIndex, 0].Link;
@@ -7918,6 +7932,7 @@ namespace ORTS
         public void Update()
         {
             // perform route update for normal signals if enabled
+
             if (isSignalNormal())
             {
                 // if in hold, set to most restrictive for each head
@@ -8528,7 +8543,6 @@ namespace ORTS
         {
 
             // check if signal must be hold
-
 #if NEWHOLD
             bool signalHold = (holdState != HoldState.None);
 

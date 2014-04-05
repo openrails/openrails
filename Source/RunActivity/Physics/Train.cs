@@ -47,19 +47,24 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
 using ORTS.MultiPlayer;
 using ORTS.Viewer3D;
 using ORTS.Viewer3D.Popups;
+using GNU.Gettext;
 
 namespace ORTS
 {
     public class Train
     {
+        protected GettextResourceManager Catalog = new GettextResourceManager("RunActivity");
+
         public List<TrainCar> Cars = new List<TrainCar>();           // listed front to back
         public int Number;
+        public string Name;
         public static int TotalNumber = 1; // start at 1 (0 is reserved for player train)
         public TrainCar FirstCar
         {
@@ -158,11 +163,17 @@ namespace ORTS
         public float waitingPointWaitTimeS = -1.0f;      // time due at waiting point (PLAYER train only, valid in >= 0)
 
         public List<TrackCircuitSection> OccupiedTrack = new List<TrackCircuitSection>();
+
+        // Station Info
         public List<int> HoldingSignals = new List<int>();// list of signals which must not be cleared (eg station stops)
         public List<StationStop> StationStops = new List<StationStop>();  //list of station stop details
-        public List<ActivityTaskPassengerStopAt> StationTasks = null;     //used when in timetable mode to check on stations
+        public StationStop PreviousStop = null;                           //last stop passed
+        public bool AtStation = false;                                    //set if train is in station (player train only)
+        public bool MayDepart = false;                                    //set if train is ready to depart
+        public string DisplayMessage { get; internal set; }               //string to be displayed in station information window
+        public Color DisplayColor { get; internal set; }                  //color for DisplayMessage
         public bool CheckStations = false;                                //used when in timetable mode to check on stations
-        public int NextStation = -1;                                      //next station indication
+        public TimeSpan? Delay = null;                                    // present delay of the train (if any)
 
         public Traffic_Service_Definition TrafficService;
         public int[,] MisalignedSwitch = new int[2, 2] { { -1, -1 }, { -1, -1 } };  // misaligned switch indication per direction:
@@ -237,7 +248,23 @@ namespace ORTS
         public Dictionary<int, List<Dictionary<int, int>>> DeadlockInfo =
             new Dictionary<int, List<Dictionary<int, int>>>();
 
+        // Timetable Commands info
+        public List<WaitInfo> WaitList = null;                            //used when in timetable mode for wait instructions
 
+        public enum FormCommand                                           //enum to indicate type of form sequence
+        {
+            TerminationFormed,
+            TerminationTriggered,
+            Detached,
+            None,
+        }
+
+        public int Forms = -1;                                            //indicates which train is to be formed out of this train on termination
+        public bool FormsStatic = false;                                  //indicate if train is to remain as static
+        public int FormedOf = -1;                                         //indicates out of which train this train is formed
+        public FormCommand FormedOfType = FormCommand.None;               //indicates type of formed-of command
+
+        // Logging and debugging info
         public bool CheckTrain;                          // debug print required
         private static int lastSpeedLog;                 // last speedlog time
         private bool DatalogTrainSpeed;                  // logging of train speed required
@@ -359,6 +386,7 @@ namespace ORTS
         {
             Simulator = simulator;
             Number = TotalNumber;
+            Name = String.Copy(Name);
             TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
@@ -411,6 +439,11 @@ namespace ORTS
             {
                 StationStops = null;
             }
+
+            foreach (WaitInfo thisInfo in orgTrain.WaitList)
+            {
+                WaitList.Add(new WaitInfo(thisInfo));
+            }
         }
 
         //================================================================================================//
@@ -428,6 +461,7 @@ namespace ORTS
             CheckFreight();
             Number = inf.ReadInt32();
             TotalNumber = Math.Max(Number + 1, TotalNumber);
+            Name = inf.ReadString();
             SpeedMpS = inf.ReadSingle();
             TrainType = (TRAINTYPE)inf.ReadInt32();
             MUDirection = (Direction)inf.ReadInt32();
@@ -525,34 +559,54 @@ namespace ORTS
                 StationStops.Add(thisStation);
             }
 
-            CheckStations = inf.ReadBoolean();
-            NextStation = inf.ReadInt32();
-
-            int totalTasks = inf.ReadInt32();
-            if (totalTasks < 0)
+            int prevStopAvail = inf.ReadInt32();
+            if (prevStopAvail >= 0)
             {
-                StationTasks = null;
+                PreviousStop = new StationStop(inf, signalRef);
             }
             else
             {
-                StationTasks = new List<ActivityTaskPassengerStopAt>();
-                for (int iTask = 0; iTask <= totalTasks - 1; iTask++)
-                {
-                    ActivityTaskPassengerStopAt actTask = new ActivityTaskPassengerStopAt();
-                    int dummyint = inf.ReadInt32(); // read dummy value which identifies task
-                    actTask.Restore(inf);
-           
-                    // restore links (normally done by Activity)
-                    if (iTask > 0)
-                    {
-                        actTask.PrevTask = StationTasks[StationTasks.Count - 1];
-                        actTask.PrevTask.NextTask = actTask;
-                    }
-                    StationTasks.Add(actTask);
-                }
-
-                
+                PreviousStop = null;
             }
+
+            AtStation = inf.ReadBoolean();
+            MayDepart = inf.ReadBoolean();
+            CheckStations = inf.ReadBoolean();
+
+            int dispMessAvail = inf.ReadInt32();
+            if (dispMessAvail < 0)
+            {
+                DisplayMessage = null;
+            }
+            else
+            {
+                DisplayMessage = inf.ReadString();
+            }
+
+            int DelaySeconds = inf.ReadInt32();
+            if (DelaySeconds < 0) // delay value (in seconds, as integer)
+            {
+                Delay = null;
+            }
+            else
+            {
+                Delay = TimeSpan.FromSeconds(DelaySeconds);
+            }
+
+            int totalWait = inf.ReadInt32();
+            if (totalWait > 0)
+            {
+                WaitList = new List<WaitInfo>();
+                for (int iWait = 0; iWait < totalWait; iWait++)
+                {
+                    WaitList.Add(new WaitInfo(inf));
+                }
+            }
+
+            Forms = inf.ReadInt32();
+            FormsStatic = inf.ReadBoolean();
+            FormedOf = inf.ReadInt32();
+            FormedOfType = (FormCommand)inf.ReadInt32();
 
             int totalPassedSignals = inf.ReadInt32();
             for (int iPassedSignal = 0; iPassedSignal < totalPassedSignals; iPassedSignal++)
@@ -739,6 +793,7 @@ namespace ORTS
         {
             SaveCars(outf);
             outf.Write(Number);
+            outf.Write(Name);
             outf.Write(SpeedMpS);
             outf.Write((int)TrainType);
             outf.Write((int)MUDirection);
@@ -838,21 +893,50 @@ namespace ORTS
                 thisStop.Save(outf);
             }
 
-            outf.Write(CheckStations);
-            outf.Write(NextStation);
-
-            if (StationTasks == null)
+            if (PreviousStop == null)
             {
                 outf.Write(-1);
             }
             else
             {
-                outf.Write(StationTasks.Count);
-                foreach (ActivityTaskPassengerStopAt actTask in StationTasks)
+                outf.Write(1);
+                PreviousStop.Save(outf);
+            }
+
+            outf.Write(AtStation);
+            outf.Write(MayDepart);
+            outf.Write(CheckStations);
+
+            if (DisplayMessage == null)
+            {
+                outf.Write(-1);
+            }
+            else
+            {
+                outf.Write(1);
+                outf.Write(DisplayMessage);
+            }
+
+            int DelaySeconds = Delay.HasValue ? (int)Delay.Value.TotalSeconds : -1;
+            outf.Write(DelaySeconds);
+
+            if (WaitList == null)
+            {
+                outf.Write(-1);
+            }
+            else
+            {
+                outf.Write(WaitList.Count);
+                foreach (WaitInfo thisWait in WaitList)
                 {
-                    actTask.Save(outf);
+                    thisWait.Save(outf);
                 }
             }
+
+            outf.Write(Forms);
+            outf.Write(FormsStatic);
+            outf.Write(FormedOf);
+            outf.Write((int)FormedOfType);
 
             outf.Write(PassedSignalSpeeds.Count);
             foreach (KeyValuePair<int, float> thisPair in PassedSignalSpeeds)
@@ -1557,7 +1641,7 @@ namespace ORTS
 
                 if (DatalogTSContents[9] == 1)
                 {
-//                    stringBuild.Append(BrakeLine1PressurePSIorInHg.ToString("000"));
+                    //                    stringBuild.Append(BrakeLine1PressurePSIorInHg.ToString("000"));
                     stringBuild.Append(Cars[LeadLocomotiveIndex].BrakeSystem.GetCylPressurePSI().ToString("000"));
                     stringBuild.Append(Separator);
                 }
@@ -1639,22 +1723,6 @@ namespace ORTS
 
             if (TrainType == TRAINTYPE.PLAYER)
             {
-                if (Simulator.Activity != null)
-                {
-                    for (int i = 0; i < Cars.Count; i++)
-                    {
-                        if (Cars[i] is MSTSSteamLocomotive)
-                        {
-                            (Cars[i] as MSTSSteamLocomotive).FuelController.CurrentValue = (float)Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100f;
-                            (Cars[i] as MSTSSteamLocomotive).WaterController.CurrentValue = (float)Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100f;
-                        }
-                        else if (Cars[i] is MSTSDieselLocomotive)
-                        {
-                            (Cars[i] as MSTSDieselLocomotive).FuelController.CurrentValue = (float)Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100f;
-                        }
-                    }
-                }
-
                 DatalogTrainSpeed = Simulator.Settings.DataLogTrainSpeed;
                 DatalogTSInterval = Simulator.Settings.DataLogTSInterval;
 
@@ -1692,24 +1760,33 @@ namespace ORTS
 
         public void SetupStationStopHandling()
         {
-            // loop through all stops
+            CheckStations = true;  // set station stops to be handled by train
 
-            ActivityTaskPassengerStopAt prevTask = null;
-            ActivityTaskPassengerStopAt actTask = null;
-
-            StationTasks = new List<ActivityTaskPassengerStopAt>();
-            CheckStations = true;
-
-            foreach (StationStop actStop in StationStops)
+            // check if initial at station
+            if (StationStops.Count > 0)
             {
-                PlatformItem end1 = Simulator.TDB.TrackDB.TrItemTable[actStop.PlatformItem.PlatformReference[0]] as PlatformItem;
-                PlatformItem end2 = Simulator.TDB.TrackDB.TrItemTable[actStop.PlatformItem.PlatformReference[1]] as PlatformItem;
-                actTask = new ActivityTaskPassengerStopAt(prevTask, actStop.arrivalDT, actStop.departureDT, end1, end2);
-                StationTasks.Add(actTask);
-                prevTask = actTask;
-            }
+                int frontIndex = PresentPosition[0].RouteListIndex;
+                int rearIndex = PresentPosition[1].RouteListIndex;
+                List<int> occupiedSections = new List<int>();
 
-            if (StationTasks.Count > 0) NextStation = 0;
+                int startIndex = frontIndex < rearIndex ? frontIndex : rearIndex;
+                int stopIndex = frontIndex < rearIndex ? rearIndex : frontIndex;
+
+                for (int iIndex = startIndex; iIndex <= stopIndex; iIndex++)
+                {
+                    occupiedSections.Add(ValidRoute[0][iIndex].TCSectionIndex);
+                }
+
+                foreach (int sectionIndex in StationStops[0].PlatformItem.TCSectionIndex)
+                {
+                    if (occupiedSections.Contains(sectionIndex))
+                    {
+                        AtStation = true;
+                        StationStops[0].ActualArrival = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                        break;
+                    }
+                }
+            }
         }
 
         //================================================================================================//
@@ -3970,29 +4047,158 @@ namespace ORTS
         /// </summary>
         public void CheckStationTask()
         {
-            if (StationTasks.Count <= 0 || NextStation >= StationTasks.Count) // no stations to check
+            // if at station
+            if (AtStation)
             {
-                return;
+                int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                int eightHundredHours = 8 * 3600;
+                int sixteenHundredHours = 16 * 3600;
+
+                // if moving, set departed
+                if (Math.Abs(SpeedMpS) > 1.0)
+                {
+                    StationStops[0].ActualDepart = presentTime;
+                    StationStops[0].Passed = true;
+                    AtStation = false;
+                    MayDepart = false;
+                    DisplayMessage = "";
+
+                    int correctedTime = presentTime;
+
+                    if (StationStops[0].ActualDepart > sixteenHundredHours && presentTime < eightHundredHours) // should have departed before midnight
+                    {
+                        correctedTime = presentTime + (24 * 3600);
+                    }
+
+                    if (StationStops[0].ActualDepart < eightHundredHours && presentTime > sixteenHundredHours) // to depart after midnight
+                    {
+                        correctedTime = presentTime - 24 * 3600;
+                    }
+
+                    if (correctedTime < eightHundredHours && StationStops[0].DepartTime > sixteenHundredHours) // depart after midnight, supposed to dep before midnight
+                    {
+                        correctedTime += (24 * 3600);
+                    }
+                    Delay = TimeSpan.FromSeconds(correctedTime - StationStops[0].DepartTime);
+
+                    PreviousStop = new StationStop(StationStops[0]);
+                    StationStops.RemoveAt(0);
+                }
+                else
+                {
+                    int correctedTime = presentTime;
+                    if (presentTime > sixteenHundredHours && StationStops[0].DepartTime < eightHundredHours)
+                    {
+                        correctedTime = presentTime - 24 * 3600;  // correct to time before midnight (negative value!)
+                    }
+
+                    int remaining = StationStops[0].ActualDepart - correctedTime;
+
+                    // set display text color
+                    if (remaining < 1)
+                    {
+                        DisplayColor = Color.LightGreen;
+                    }
+                    else if (remaining < 11)
+                    {
+                        DisplayColor = new Color(255, 255, 128);
+                    }
+                    else
+                    {
+                        DisplayColor = Color.White;
+                    }
+
+                    // clear holding signal
+                    if (remaining < 120 && StationStops[0].ExitSignal >= 0) // within two minutes of departure and hold signal?
+                    {
+                        HoldingSignals.Remove(StationStops[0].ExitSignal);
+
+                        if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
+                        {
+                            SignalObject nextSignal = signalRef.SignalObjects[StationStops[0].ExitSignal];
+                            nextSignal.requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
+                        }
+                        StationStops[0].ExitSignal = -1;
+                    }
+
+                    // check departure time
+                    if (remaining <= 0)
+                    {
+                        if (!MayDepart)
+                        {
+                            MayDepart = true;
+                            DisplayMessage = Catalog.GetString("Passenger boarding completed. You may depart now.");
+                            Program.Simulator.SoundNotify = Event.PermissionToDepart;
+                        }
+                    }
+                    else
+                    {
+                        DisplayMessage = Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
+                            remaining / 60, remaining % 60);
+                    }
+                }
             }
-
-            ActivityTaskPassengerStopAt actTask = StationTasks[NextStation];
-
-            // train is stopped
-            if (SpeedMpS == 0.0f)
+            else
             {
-                actTask.NotifyEvent(ActivityEventType.TrainStop);
+                // if stations to be checked
+                if (StationStops.Count > 0)
+                {
+                    // check if stopped at station
+                    if (Math.Abs(SpeedMpS) == 0.0f)
+                    {
+                        // build list of occupied section
+                        int frontIndex = PresentPosition[0].RouteListIndex;
+                        int rearIndex = PresentPosition[1].RouteListIndex;
+                        List<int> occupiedSections = new List<int>();
+
+                        int startIndex = frontIndex < rearIndex ? frontIndex : rearIndex;
+                        int stopIndex = frontIndex < rearIndex ? rearIndex : frontIndex;
+
+                        for (int iIndex = startIndex; iIndex <= stopIndex; iIndex++)
+                        {
+                            occupiedSections.Add(ValidRoute[0][iIndex].TCSectionIndex);
+                        }
+
+                        // check if any platform section is in list of occupied sections - if so, we're in the station
+                        foreach (int sectionIndex in StationStops[0].PlatformItem.TCSectionIndex)
+                        {
+                            if (occupiedSections.Contains(sectionIndex))
+                            {
+                                AtStation = true;
+                                break;
+                            }
+                        }
+
+                        if (AtStation)
+                        {
+                            int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                            StationStops[0].ActualArrival = presentTime;
+                            StationStops[0].CalculateDepartTime(presentTime);
+                        }
+                    }
+                    else
+                    {
+                        // check if station missed : station must be at least 500m. behind us
+                        bool missedStation = false;
+
+                        int stationRouteIndex = ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, 0);
+                        if (stationRouteIndex < 0)
+                        {
+                            missedStation = true;
+                        }
+                        else if (stationRouteIndex < PresentPosition[1].RouteListIndex)
+                        {
+                            missedStation = ValidRoute[0].GetDistanceAlongRoute(StationStops[0].TCSectionIndex, StationStops[0].StopOffset, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset, true, signalRef) > 500f;
+                        }
+
+                        if (missedStation)
+                        {
+                            PreviousStop = new StationStop(StationStops[0]);
+                            StationStops.RemoveAt(0);
+                        }
+                    }
+                }
             }
-
-            // train is moving
-            else if (Math.Abs(SpeedMpS) > 1.0)
-            {
-                actTask.NotifyEvent(ActivityEventType.TrainStart);
-                if (actTask.ActDepart.HasValue) NextStation++;
-            }
-
-            // always call timer event
-            actTask.NotifyEvent(ActivityEventType.Timer);
-
         }
 
         //================================================================================================//
@@ -4591,9 +4797,19 @@ namespace ORTS
                      CheckTrainWaitingForSignal(NextSignalObject[0], 0))
             {
                 bool hasClaimed = ClaimState;
-                bool DeadlockWait = CheckDeadlockWait(NextSignalObject[0]);
+                bool claimAllowed = true;
 
-                if (!DeadlockWait) // cannot claim on deadlock to prevent further deadlocks
+                // cannot claim on deadlock to prevent further deadlocks
+                bool DeadlockWait = CheckDeadlockWait(NextSignalObject[0]);
+                if (DeadlockWait) claimAllowed = false;
+
+                // cannot claim while in waitstate as this would lock path for other train
+                if (WaitList != null && WaitList.Count > 0 && WaitList[0].WaitActive) claimAllowed = false;
+
+                // cannot clain on hold signal
+                if (HoldingSignals.Contains(NextSignalObject[0].thisRef)) claimAllowed = false;
+
+                if (claimAllowed)
                 {
                     if (CheckStoppedTrains(NextSignalObject[0].signalRoute)) // do not claim when train ahead is stationary or in Manual mode
                     {
@@ -4615,14 +4831,14 @@ namespace ORTS
                     ClaimState = false;
                 }
 
-//                if (hasClaimed && !ClaimState)
-//                {
-//                    foreach (TCRouteElement thisElement in NextSignalObject[0].signalRoute)
-//                    {
-//                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-//                        thisSection.UnreserveTrain(routedForward, false);
-//                    }
-//                }
+                //                if (hasClaimed && !ClaimState)
+                //                {
+                //                    foreach (TCRouteElement thisElement in NextSignalObject[0].signalRoute)
+                //                    {
+                //                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                //                        thisSection.UnreserveTrain(routedForward, false);
+                //                    }
+                //                }
             }
             else
             {
@@ -7380,8 +7596,8 @@ namespace ORTS
 #endif
             if (TrainType == TRAINTYPE.PLAYER && AllowedMaxSpeedMpS > prevMaxSpeedMpS && !Simulator.Confirmer.Viewer.TrackMonitorWindow.Visible && Simulator.Confirmer != null)
             {
-                Simulator.Confirmer.Message(ConfirmLevel.Information, 
-                    Viewer.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedLimit(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric)));
+                var message = Viewer.Catalog.GetStringFmt("Allowed speed raised to {0}", FormatStrings.FormatSpeedDisplay(AllowedMaxSpeedMpS, Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+                Simulator.Confirmer.Message(ConfirmLevel.Information, message);
             }
         }
 
@@ -8169,7 +8385,7 @@ namespace ORTS
 
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisTrainSection];
 
-                if (thisSection.IsSet(otherTrain))
+                if (thisSection.IsSet(otherTrain, true))
                 {
                     allreadyActive = true;
                 }
@@ -8207,7 +8423,7 @@ namespace ORTS
                     {
                         lastSection = signalRef.TrackCircuitList[otherRoute[iIndex].TCSectionIndex];
                         endSectionFound = lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
-                        if (lastSection.IsSet(otherTrain))
+                        if (lastSection.IsSet(otherTrain, true))
                         {
                             allreadyActive = true;
                         }
@@ -8287,7 +8503,7 @@ namespace ORTS
 
         //================================================================================================//
         //
-        // Obtain deadlock details - old style path based logic
+        // Obtain deadlock details - new style location based logic
         //
 
         private int[] SetDeadlock_locationBased(int thisIndex, TCSubpathRoute thisRoute, TCSubpathRoute otherRoute, Train otherTrain)
@@ -8299,11 +8515,14 @@ namespace ORTS
             int firstSectionIndex = firstElement.TCSectionIndex;
             bool allreadyActive = false;
 
-            int thisTrainSection = firstSectionIndex;
-            int otherTrainSection = firstSectionIndex;
+            int thisTrainSectionIndex = firstSectionIndex;
+            int otherTrainSectionIndex = firstSectionIndex;
 
+            // double index variables required as last valid index must be known when exiting loop
             int thisTrainIndex = thisIndex;
+            int thisTrainNextIndex = thisTrainIndex;
             int otherTrainIndex = otherRoute.GetRouteIndex(firstSectionIndex, 0);
+            int otherTrainNextIndex = otherTrainIndex;
 
             int thisFirstIndex = thisTrainIndex;
             int otherFirstIndex = otherTrainIndex;
@@ -8314,155 +8533,221 @@ namespace ORTS
             bool validPassLocation = false;
             int endSectionRouteIndex = -1;
 
+            bool endOfLoop = false;
+
             // loop while not at end of route for either train and sections are equal
             // loop is also exited when alternative path is found for either train
-            for (int iLoop = 0;
-                ((thisFirstIndex + iLoop) <= (thisRoute.Count - 1)) && ((otherFirstIndex - iLoop)) >= 0 && (thisTrainSection == otherTrainSection);
-                iLoop++)
+            while (!endOfLoop)
             {
-                thisTrainIndex = thisFirstIndex + iLoop;
-                otherTrainIndex = otherFirstIndex - iLoop;
-
+                thisTrainIndex = thisTrainNextIndex;
                 thisTrainElement = thisRoute[thisTrainIndex];
+                otherTrainIndex = otherTrainNextIndex;
+                thisTrainSectionIndex = thisTrainElement.TCSectionIndex;
+
                 otherTrainElement = otherRoute[otherTrainIndex];
-                thisTrainSection = thisTrainElement.TCSectionIndex;
-                otherTrainSection = otherTrainElement.TCSectionIndex;
+                otherTrainSectionIndex = otherTrainElement.TCSectionIndex;
 
-                // if section is a deadlock boundary, check available paths for both trains
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisTrainSectionIndex];
 
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisTrainElement.TCSectionIndex];
-                List<int> thisTrainAllocatedPaths = new List<int>();
-                List<int> otherTrainAllocatedPaths = new List<int>();
-
-                if (thisSection.DeadlockReference >= 0 && thisTrainElement.FacingPoint) // test for facing points only
+                // if sections not equal : test length of next not-common section, if long enough then exit loop
+                if (thisTrainSectionIndex != otherTrainSectionIndex)
                 {
-                    bool thisTrainFits = false;
-                    bool otherTrainFits = false;
-                    int endSectionIndex = -1;
+                    int nextThisRouteIndex = thisTrainIndex;
+                    TrackCircuitSection passLoopSection = signalRef.TrackCircuitList[ValidRoute[0][nextThisRouteIndex].TCSectionIndex];
+                    int nextOtherRouteIndex = otherRoute.GetRouteIndex(passLoopSection.Index, otherTrainIndex);
 
-                    // get allocated paths for this train
-                    DeadlockInfo thisDeadlockInfo = signalRef.DeadlockInfoList[thisSection.DeadlockReference];
+                    float passLength = passLoopSection.Length;
+                    bool endOfPassLoop = false;
 
-                    // get allocated paths for other train - if none yet set, create references
-                    int thisTrainReferenceIndex = thisDeadlockInfo.GetTrainAndSubpathIndex(Number, TCRoute.activeSubpath);
-                    if (!thisDeadlockInfo.TrainReferences.ContainsKey(thisTrainReferenceIndex))
+                    while (!endOfPassLoop)
                     {
-                        thisDeadlockInfo.SetTrainDetails(Number, TCRoute.activeSubpath, Length, ValidRoute[0], thisTrainIndex);
-                    }
-
-                    // if valid path for other train
-                    if (thisDeadlockInfo.TrainReferences.ContainsKey(thisTrainReferenceIndex))
-                    {
-                        thisTrainAllocatedPaths = thisDeadlockInfo.TrainReferences[thisDeadlockInfo.GetTrainAndSubpathIndex(Number, TCRoute.activeSubpath)];
-
-                        // if paths available, get end section and check train against shortest path
-                        if (thisTrainAllocatedPaths.Count > 0)
+                        // loop is longer as at least one of the trains so is valid
+                        if (passLength > Length || passLength > otherTrain.Length)
                         {
-                            endSectionIndex = thisDeadlockInfo.AvailablePathList[thisTrainAllocatedPaths[0]].EndSectionIndex;
-                            endSectionRouteIndex = thisRoute.GetRouteIndex(endSectionIndex, thisTrainIndex);
-                            validPassLocation = true;
+                            endOfPassLoop = true;
+                            endOfLoop = true;
+                        }
 
-                            Dictionary<int, bool> thisTrainFitList = thisDeadlockInfo.TrainLengthFit[thisDeadlockInfo.GetTrainAndSubpathIndex(Number, TCRoute.activeSubpath)];
-                            foreach (int iPath in thisTrainAllocatedPaths)
+                        // get next section
+                        else if (nextThisRouteIndex < ValidRoute[0].Count - 2)
+                        {
+                            nextThisRouteIndex++;
+                            passLoopSection = signalRef.TrackCircuitList[ValidRoute[0][nextThisRouteIndex].TCSectionIndex];
+                            nextOtherRouteIndex = otherRoute.GetRouteIndexBackward(passLoopSection.Index, otherTrainIndex);
+
+                            // new common section after too short loop - not a valid deadlock point
+                            if (nextOtherRouteIndex >= 0)
                             {
-                                if (thisTrainFitList[iPath])
-                                {
-                                    thisTrainFits = true;
-                                    break;
-                                }
+                                endOfPassLoop = true;
+                                thisTrainNextIndex = nextThisRouteIndex;
+                                otherTrainNextIndex = nextOtherRouteIndex;
+                            }
+                            else
+                            {
+                                passLength += passLoopSection.Length;
                             }
                         }
-                    }
-                    else
-                    {
-                        validPassLocation = false;
-                    }
 
-                    // get allocated paths for other train - if none yet set, create references
-                    int otherTrainReferenceIndex = thisDeadlockInfo.GetTrainAndSubpathIndex(otherTrain.Number, otherTrain.TCRoute.activeSubpath);
-                    if (!thisDeadlockInfo.TrainReferences.ContainsKey(otherTrainReferenceIndex))
-                    {
-                        int otherTrainElementIndex = otherTrain.ValidRoute[0].GetRouteIndexBackward(endSectionIndex, otherFirstIndex);
-                        if (otherTrainElementIndex < 0) // train joins deadlock area on different node
-                        {
-                            validPassLocation = false;
-                        }
+                        // end of route
                         else
                         {
-                            thisDeadlockInfo.SetTrainDetails(otherTrain.Number, otherTrain.TCRoute.activeSubpath, otherTrain.Length,
-                                otherTrain.ValidRoute[0], otherTrainElementIndex);
+                            endOfPassLoop = true;
+                            endOfLoop = true;
                         }
-                    }
-
-                    // if valid path for other train
-                    if (validPassLocation && thisDeadlockInfo.TrainReferences.ContainsKey(otherTrainReferenceIndex))
-                    {
-                        otherTrainAllocatedPaths =
-                            thisDeadlockInfo.TrainReferences[thisDeadlockInfo.GetTrainAndSubpathIndex(otherTrain.Number, otherTrain.TCRoute.activeSubpath)];
-
-                        // if paths available, get end section (if not yet set) and check train against shortest path
-                        if (otherTrainAllocatedPaths.Count > 0)
-                        {
-                            if (endSectionRouteIndex < 0)
-                            {
-                                endSectionIndex = thisDeadlockInfo.AvailablePathList[otherTrainAllocatedPaths[0]].EndSectionIndex;
-                                endSectionRouteIndex = thisRoute.GetRouteIndex(endSectionIndex, thisTrainIndex);
-                            }
-
-                            Dictionary<int, bool> otherTrainFitList =
-                                thisDeadlockInfo.TrainLengthFit[thisDeadlockInfo.GetTrainAndSubpathIndex(otherTrain.Number, otherTrain.TCRoute.activeSubpath)];
-                            foreach (int iPath in otherTrainAllocatedPaths)
-                            {
-                                if (otherTrainFitList[iPath])
-                                {
-                                    otherTrainFits = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    // other train has no valid path relating to the passing path, so passing not possible
-                    {
-                        validPassLocation = false;
-                    }
-
-                    // if both trains have only one route, make sure it's not the same (inverse) route
-
-                    if (thisTrainAllocatedPaths.Count == 1 && otherTrainAllocatedPaths.Count == 1)
-                    {
-                        if (thisDeadlockInfo.InverseInfo[thisTrainAllocatedPaths[0]] == otherTrainAllocatedPaths[0])
-                        {
-                            validPassLocation = false;
-                        }
-                    }
-
-                    // if there are passing paths and at least one train fits in shortest path, it is a valid location so break loop
-                    if (validPassLocation && (thisTrainFits || otherTrainFits))
-                    {
-                        if (thisSection.IsSet(otherTrain))
-                        {
-                            allreadyActive = true;
-                        }
-                        break;
-                    }
-
-                    validPassLocation = false; // not a valid pass location
-
-                    // if this section is occupied by other train, break loop - further checks are of no use
-                    if (thisSection.IsSet(otherTrain))
-                    {
-                        allreadyActive = true;
-                        break;
                     }
                 }
 
-                // if section is set for other train, deadlock is allready active and break loop
+               // if section is a deadlock boundary, check available paths for both trains
 
-                if (thisSection.IsSet(otherTrain))
+                else
                 {
-                    allreadyActive = true;
-                    break;
+
+                    List<int> thisTrainAllocatedPaths = new List<int>();
+                    List<int> otherTrainAllocatedPaths = new List<int>();
+
+                    if (thisSection.DeadlockReference >= 0 && thisTrainElement.FacingPoint) // test for facing points only
+                    {
+                        bool thisTrainFits = false;
+                        bool otherTrainFits = false;
+
+                        int endSectionIndex = -1;
+
+                        validPassLocation = true;
+
+                        // get allocated paths for this train
+                        DeadlockInfo thisDeadlockInfo = signalRef.DeadlockInfoList[thisSection.DeadlockReference];
+
+                        // get allocated paths for this train - if none yet set, create references
+                        int thisTrainReferenceIndex = thisDeadlockInfo.GetTrainAndSubpathIndex(Number, TCRoute.activeSubpath);
+                        if (!thisDeadlockInfo.TrainReferences.ContainsKey(thisTrainReferenceIndex))
+                        {
+                            thisDeadlockInfo.SetTrainDetails(Number, TCRoute.activeSubpath, Length, ValidRoute[0], thisTrainIndex);
+                        }
+
+                        // if valid path for this train
+                        if (thisDeadlockInfo.TrainReferences.ContainsKey(thisTrainReferenceIndex))
+                        {
+                            thisTrainAllocatedPaths = thisDeadlockInfo.TrainReferences[thisDeadlockInfo.GetTrainAndSubpathIndex(Number, TCRoute.activeSubpath)];
+
+                            // if paths available, get end section and check train against shortest path
+                            if (thisTrainAllocatedPaths.Count > 0)
+                            {
+                                endSectionIndex = thisDeadlockInfo.AvailablePathList[thisTrainAllocatedPaths[0]].EndSectionIndex;
+                                endSectionRouteIndex = thisRoute.GetRouteIndex(endSectionIndex, thisTrainIndex);
+                                Dictionary<int, bool> thisTrainFitList = thisDeadlockInfo.TrainLengthFit[thisDeadlockInfo.GetTrainAndSubpathIndex(Number, TCRoute.activeSubpath)];
+                                foreach (int iPath in thisTrainAllocatedPaths)
+                                {
+                                    if (thisTrainFitList[iPath])
+                                    {
+                                        thisTrainFits = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            validPassLocation = false;
+                        }
+
+                        // get allocated paths for other train - if none yet set, create references
+                        int otherTrainReferenceIndex = thisDeadlockInfo.GetTrainAndSubpathIndex(otherTrain.Number, otherTrain.TCRoute.activeSubpath);
+                        if (!thisDeadlockInfo.TrainReferences.ContainsKey(otherTrainReferenceIndex))
+                        {
+                            int otherTrainElementIndex = otherTrain.ValidRoute[0].GetRouteIndexBackward(endSectionIndex, otherFirstIndex);
+                            if (otherTrainElementIndex < 0) // train joins deadlock area on different node
+                            {
+                                validPassLocation = false;
+                            }
+                            else
+                            {
+                                thisDeadlockInfo.SetTrainDetails(otherTrain.Number, otherTrain.TCRoute.activeSubpath, otherTrain.Length,
+                                    otherTrain.ValidRoute[0], otherTrainElementIndex);
+                            }
+                        }
+
+                        // if valid path for other train
+                        if (validPassLocation && thisDeadlockInfo.TrainReferences.ContainsKey(otherTrainReferenceIndex))
+                        {
+                            otherTrainAllocatedPaths =
+                                thisDeadlockInfo.TrainReferences[thisDeadlockInfo.GetTrainAndSubpathIndex(otherTrain.Number, otherTrain.TCRoute.activeSubpath)];
+
+                            // if paths available, get end section (if not yet set) and check train against shortest path
+                            if (otherTrainAllocatedPaths.Count > 0)
+                            {
+                                if (endSectionRouteIndex < 0)
+                                {
+                                    endSectionIndex = thisDeadlockInfo.AvailablePathList[otherTrainAllocatedPaths[0]].EndSectionIndex;
+                                    endSectionRouteIndex = thisRoute.GetRouteIndex(endSectionIndex, thisTrainIndex);
+                                }
+
+                                Dictionary<int, bool> otherTrainFitList =
+                                    thisDeadlockInfo.TrainLengthFit[thisDeadlockInfo.GetTrainAndSubpathIndex(otherTrain.Number, otherTrain.TCRoute.activeSubpath)];
+                                foreach (int iPath in otherTrainAllocatedPaths)
+                                {
+                                    if (otherTrainFitList[iPath])
+                                    {
+                                        otherTrainFits = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        // other train has no valid path relating to the passing path, so passing not possible
+                        {
+                            validPassLocation = false;
+                        }
+
+                        // if both trains have only one route, make sure it's not the same (inverse) route
+
+                        if (thisTrainAllocatedPaths.Count == 1 && otherTrainAllocatedPaths.Count == 1)
+                        {
+                            if (thisDeadlockInfo.InverseInfo[thisTrainAllocatedPaths[0]] == otherTrainAllocatedPaths[0])
+                            {
+                                validPassLocation = false;
+                            }
+                        }
+
+                        // if there are passing paths and at least one train fits in shortest path, it is a valid location so break loop
+                        if (validPassLocation && (thisTrainFits || otherTrainFits))
+                        {
+                            if (thisSection.IsSet(otherTrain, true))
+                            {
+                                allreadyActive = true;
+                            }
+                            endOfLoop = true;
+                        }
+                        else
+                        {
+                            thisTrainNextIndex = endSectionRouteIndex;
+                            otherTrainNextIndex = otherRoute.GetRouteIndexBackward(endSectionIndex, otherTrainIndex);
+                            if (otherTrainNextIndex < 0) endOfLoop = true;
+                        }
+                    }
+
+                    // if loop not yet ended - not a valid pass location, move to next section (if available)
+
+                    else
+                    {
+
+                        // if this section is occupied by other train, break loop - further checks are of no use
+                        if (thisSection.IsSet(otherTrain, true))
+                        {
+                            allreadyActive = true;
+                            endOfLoop = true;
+                        }
+                        else
+                        {
+                            thisTrainNextIndex++;
+                            otherTrainNextIndex--;
+
+                            if (thisTrainNextIndex > thisRoute.Count - 1 || otherTrainNextIndex < 0)
+                            {
+                                endOfLoop = true; // end of path reached for either train
+                            }
+                        }
+                    }
                 }
             }
 
@@ -8475,14 +8760,14 @@ namespace ORTS
 
             // get sections on which loop ended
             thisTrainElement = thisRoute[thisTrainIndex];
-            thisTrainSection = thisTrainElement.TCSectionIndex;
+            thisTrainSectionIndex = thisTrainElement.TCSectionIndex;
 
             otherTrainElement = otherRoute[otherTrainIndex];
-            otherTrainSection = otherTrainElement.TCSectionIndex;
+            otherTrainSectionIndex = otherTrainElement.TCSectionIndex;
 
             // if last sections are still equal - end of route reached for one of the trains
             // otherwise, last common sections was previous sections for this train
-            int lastSectionIndex = (thisTrainSection == otherTrainSection) ? thisTrainSection :
+            int lastSectionIndex = (thisTrainSectionIndex == otherTrainSectionIndex) ? thisTrainSectionIndex :
                 thisRoute[thisTrainIndex - 1].TCSectionIndex;
             TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastSectionIndex];
 
@@ -8506,7 +8791,7 @@ namespace ORTS
                     {
                         lastSection = signalRef.TrackCircuitList[otherRoute[iIndex].TCSectionIndex];
                         endSectionFound = lastSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
-                        if (lastSection.IsSet(otherTrain))
+                        if (lastSection.IsSet(otherTrain, true))
                         {
                             allreadyActive = true;
                         }
@@ -8529,7 +8814,7 @@ namespace ORTS
             // if this section occupied by own train, reverse deadlock is active
 
             TrackCircuitSection firstSection = signalRef.TrackCircuitList[firstSectionIndex];
-            if (firstSection.IsSet(this))
+            if (firstSection.IsSet(this, true))
             {
                 firstSection.SetDeadlockTrap(this, DeadlockInfo[firstSectionIndex]);
             }
@@ -8540,21 +8825,195 @@ namespace ORTS
             return (returnValue);
         }
 
+        /// <summary>
+        /// Find start of common section of two trains
+        /// May check through all subpaths for other train but only through start subpath for this train
+        /// 
+        /// Return value indices :
+        ///   [0, 0] = own train subpath index
+        ///   [0, 1] = own train route index
+        ///   [1, 0] = other train subpath index
+        ///   [1, 1] = other train route index
+        /// </summary>
+        /// <param name="thisTrainStartSubpathIndex"></param>
+        /// <param name="thisTrainStartRouteIndex"></param>
+        /// <param name="otherTrainRoute"></param>
+        /// <param name="startSubpath"></param>
+        /// <param name="startIndex"></param>
+        /// <param name="endSubpath"></param>
+        /// <param name="endIndex"></param>
+        /// <param name="increment"></param>
+        /// <param name="sameDirection"></param>
+        /// <param name="oppositeDirection"></param>
+        /// <param name="foundSameDirection"></param>
+        /// <returns></returns>
+
+        public int[,] FindCommonSectionStart(int thisTrainStartSubpathIndex, int thisTrainStartRouteIndex, TCRoutePath otherTrainRoute,
+                int startSubpath, int startIndex, int endSubpath, int endIndex, int increment)
+        {
+            // preset all loop data
+            int thisSubpathIndex = thisTrainStartSubpathIndex;
+            int thisRouteIndex = thisTrainStartRouteIndex;
+            TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[thisSubpathIndex];
+            int thisRouteEndIndex = thisRoute.Count - 1;
+
+            int otherSubpathIndex = startSubpath;
+            int otherRouteIndex = startIndex;
+            TCSubpathRoute otherRoute = otherTrainRoute.TCRouteSubpaths[otherSubpathIndex];
+            int otherSubpathEndIndex = endSubpath;
+            int otherRouteEndIndex = endIndex;
+
+            bool thisEndOfRoute = false;
+            bool otherEndOfRoute = false;
+            bool commonSectionFound = false;
+
+            // preset result
+            int[,] sectionFound = new int[2, 2] { { -1, -1 }, { -1, -1 } };
+
+            // derive sections
+            int thisSectionIndex = thisRoute[thisRouteIndex].TCSectionIndex;
+            int otherSectionIndex = otherRoute[otherRouteIndex].TCSectionIndex;
+
+            // convert other subpath to dictionary for quick reference
+            TCSubpathRoute partRoute;
+            if (otherRouteIndex < otherRouteEndIndex)
+            {
+                partRoute = new TCSubpathRoute(otherRoute, otherRouteIndex, otherRouteEndIndex);
+            }
+            else
+            {
+                partRoute = new TCSubpathRoute(otherRoute, otherRouteEndIndex, otherRouteIndex);
+            }
+            Dictionary<int, int> dictRoute = partRoute.ConvertRoute();
+
+            // loop until common section is found or route is ended
+            while (!commonSectionFound && !otherEndOfRoute)
+            {
+                while (!thisEndOfRoute)
+                {
+                    // get section indices
+                    thisSectionIndex = TCRoute.TCRouteSubpaths[thisSubpathIndex][thisRouteIndex].TCSectionIndex;
+                    if (dictRoute.ContainsKey(thisSectionIndex))
+                    {
+                        int thisDirection = TCRoute.TCRouteSubpaths[thisSubpathIndex][thisRouteIndex].Direction;
+                        int otherDirection = dictRoute[thisSectionIndex];
+
+                        commonSectionFound = true;
+                        sectionFound[0, 0] = thisSubpathIndex;
+                        sectionFound[0, 1] = thisRouteIndex;
+                        sectionFound[1, 0] = otherSubpathIndex;
+                        sectionFound[1, 1] = otherRoute.GetRouteIndex(thisSectionIndex, 0);
+                        break;
+                    }
+
+                    // move to next section for this train
+                    thisRouteIndex++;
+                    if (thisRouteIndex > thisRouteEndIndex)
+                    {
+                        thisEndOfRoute = true;
+                    }
+                }
+
+                // move to next subpath for other train
+                // move to next subpath if end of subpath reached
+                if (increment > 0)
+                {
+                    otherSubpathIndex++;
+                    if (otherSubpathIndex > otherSubpathEndIndex)
+                    {
+                        otherEndOfRoute = true;
+                    }
+                    else
+                    {
+                        dictRoute = otherTrainRoute.TCRouteSubpaths[otherSubpathIndex].ConvertRoute();
+                    }
+                }
+                else
+                {
+                    otherSubpathIndex--;
+                    if (otherSubpathIndex < otherSubpathEndIndex)
+                    {
+                        otherEndOfRoute = true;
+                    }
+                    else
+                    {
+                        dictRoute = otherTrainRoute.TCRouteSubpaths[otherSubpathIndex].ConvertRoute();
+                    }
+                }
+
+                // reset to start for this train
+                thisRouteIndex = thisTrainStartRouteIndex;
+            }
+
+            return (sectionFound);
+        }
+
+        /// <summary>
+        /// Find end of common section searching through both routes in forward direction
+        /// </summary>
+        /// <param name="thisRoute"></param>
+        /// <param name="thisRouteIndex"></param>
+        /// <param name="otherRoute"></param>
+        /// <param name="otherRouteIndex"></param>
+        /// <returns></returns>
         public int FindCommonSectionEnd(TCSubpathRoute thisRoute, int thisRouteIndex, TCSubpathRoute otherRoute, int otherRouteIndex)
         {
             int lastIndex = otherRouteIndex;
             int thisIndex = thisRouteIndex;
             int otherIndex = otherRouteIndex;
             int thisSectionIndex = thisRoute[thisIndex].TCSectionIndex;
-            int otherSectionIndex = thisRoute[otherIndex].TCSectionIndex;
+            int otherSectionIndex = otherRoute[otherIndex].TCSectionIndex;
 
             while (thisSectionIndex == otherSectionIndex)
             {
                 lastIndex = otherIndex;
                 thisIndex++;
                 otherIndex++;
-                thisSectionIndex = thisRoute[thisIndex].TCSectionIndex;
-                otherSectionIndex = thisRoute[otherIndex].TCSectionIndex;
+
+                if (thisIndex >= thisRoute.Count || otherIndex >= otherRoute.Count)
+                {
+                    break;
+                }
+                else
+                {
+                    thisSectionIndex = thisRoute[thisIndex].TCSectionIndex;
+                    otherSectionIndex = otherRoute[otherIndex].TCSectionIndex;
+                }
+            }
+
+            return (lastIndex);
+        }
+
+        /// <summary>
+        /// Find end of common section searching through own train forward but through other train backward
+        /// </summary>
+        /// <param name="thisRoute"></param>
+        /// <param name="thisRouteIndex"></param>
+        /// <param name="otherRoute"></param>
+        /// <param name="otherRouteIndex"></param>
+        /// <returns></returns>
+        public int FindCommonSectionEndReverse(TCSubpathRoute thisRoute, int thisRouteIndex, TCSubpathRoute otherRoute, int otherRouteIndex)
+        {
+            int lastIndex = otherRouteIndex;
+            int thisIndex = thisRouteIndex;
+            int otherIndex = otherRouteIndex;
+            int thisSectionIndex = thisRoute[thisIndex].TCSectionIndex;
+            int otherSectionIndex = otherRoute[otherIndex].TCSectionIndex;
+
+            while (thisSectionIndex == otherSectionIndex)
+            {
+                lastIndex = otherIndex;
+                thisIndex++;
+                otherIndex--;
+                if (thisIndex >= thisRoute.Count || otherIndex < 0)
+                {
+                    break;
+                }
+                else
+                {
+                    thisSectionIndex = thisRoute[thisIndex].TCSectionIndex;
+                    otherSectionIndex = otherRoute[otherIndex].TCSectionIndex;
+                }
             }
 
             return (lastIndex);
@@ -8755,7 +9214,7 @@ namespace ORTS
 
                     List<int> deadlockTrains = thisSection.DeadlockTraps[Number];
 
-                    if (DeadlockInfo.ContainsKey(thisSection.Index))        // reverse deadlocks
+                    if (DeadlockInfo.ContainsKey(thisSection.Index) && !CheckWaitCondition(thisSection.Index)) // reverse deadlocks and not waiting
                     {
                         foreach (Dictionary<int, int> thisDeadlockList in DeadlockInfo[thisSection.Index])
                         {
@@ -9407,10 +9866,24 @@ namespace ORTS
             switch (ControlMode)
             {
                 case TRAIN_CONTROL.AUTO_SIGNAL:
-                    statusString[iColumn] = "SIGN";
+                    if (Delay.HasValue)
+                    {
+                        statusString[iColumn] = String.Concat("S +", Delay.Value.Minutes.ToString("00"));
+                    }
+                    else
+                    {
+                        statusString[iColumn] = "SIGN";
+                    }
                     break;
                 case TRAIN_CONTROL.AUTO_NODE:
-                    statusString[iColumn] = "NODE";
+                    if (Delay.HasValue)
+                    {
+                        statusString[iColumn] = String.Concat("N +", Delay.Value.Minutes.ToString("00"));
+                    }
+                    else
+                    {
+                        statusString[iColumn] = "NODE";
+                    }
                     break;
                 case TRAIN_CONTROL.MANUAL:
                     statusString[iColumn] = "MAN";
@@ -9462,6 +9935,13 @@ namespace ORTS
 
                 iColumn++;
                 statusString[iColumn] = " ";
+            }
+
+            else if (WaitList != null && WaitList.Count > 0 && WaitList[0].WaitActive)
+            {
+                statusString[iColumn] = "WAIT";
+                iColumn++;
+                statusString[iColumn] = WaitList[0].waitTrainNumber.ToString();
             }
 
             else if (ControlMode == TRAIN_CONTROL.AUTO_NODE)
@@ -10220,6 +10700,55 @@ namespace ORTS
         }
 
         //================================================================================================//
+
+        /// <summary>
+        /// Get total length of reserved section ahead of train
+        /// </summary>
+        /// <returns></returns>
+        public float GetReservedLength()
+        {
+            float totalLength = 0f;
+            TCSubpathRoute usedRoute = null;
+            int routeListIndex = -1;
+            float presentOffset = 0f;
+            TrainRouted routedTrain = null;
+
+            if (MUDirection == Direction.Forward || MUDirection == Direction.N)
+            {
+                usedRoute = ValidRoute[0];
+                routeListIndex = PresentPosition[0].RouteListIndex;
+                presentOffset = PresentPosition[0].TCOffset;
+                routedTrain = routedForward;
+            }
+            else
+            {
+                usedRoute = ValidRoute[1];
+                routeListIndex = PresentPosition[1].RouteListIndex;
+                presentOffset = PresentPosition[1].TCOffset;
+                routedTrain = routedBackward;
+            }
+
+            TrackCircuitSection thisSection = signalRef.TrackCircuitList[usedRoute[routeListIndex].TCSectionIndex];
+            totalLength = thisSection.Length - presentOffset;
+
+            while (routeListIndex < usedRoute.Count - 1)
+            {
+                routeListIndex++;
+                thisSection = signalRef.TrackCircuitList[usedRoute[routeListIndex].TCSectionIndex];
+                if (thisSection.IsSet(routedTrain, false))
+                {
+                    totalLength += thisSection.Length;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return (totalLength);
+        }
+
+        //================================================================================================//
         //
         // Extract alternative route
         //
@@ -10530,6 +11059,489 @@ namespace ORTS
 
         //================================================================================================//
         /// <summary>
+        /// Set unprocessed info for train timetable commands
+        /// Info will be fully processed after all trains have been created - this is necessary as only then is all required info available
+        /// StationStop info may be null if command is not linked to a station
+        /// </summary>
+
+        public void ProcessTimetableStopCommands(TTTrainCommands thisCommand, int subrouteIndex, int sectionIndex)
+        {
+
+            switch (thisCommand.CommandToken)
+            {
+                // WAIT command
+                case "wait":
+                    foreach (string reqReferenceTrain in thisCommand.CommandValues)
+                    {
+                        WaitInfo newWaitItem = new WaitInfo();
+                        newWaitItem.WaitType = WaitInfo.WaitInfoType.Wait;
+
+                        if (sectionIndex < 0)
+                        {
+                            newWaitItem.startSectionIndex = TCRoute.TCRouteSubpaths[subrouteIndex][0].TCSectionIndex;
+                        }
+                        else
+                        {
+                            newWaitItem.startSectionIndex = sectionIndex;
+                        }
+                        newWaitItem.startSubrouteIndex = subrouteIndex;
+
+                        newWaitItem.referencedTrainName = String.Copy(reqReferenceTrain);
+
+                        // check if name is full name, otherwise add timetable file info from this train
+                        if (!newWaitItem.referencedTrainName.Contains(':'))
+                        {
+                            int seppos = Name.IndexOf(':');
+                            newWaitItem.referencedTrainName = String.Concat(newWaitItem.referencedTrainName, ":", Name.Substring(seppos + 1).ToLower());
+                        }
+
+                        // qualifiers : 
+                        //  maxdelay (single value only)
+                        //  nostarted (no value)
+
+                        if (thisCommand.CommandQualifiers != null)
+                        {
+                            foreach (TTTrainCommands.TTTrainComQualifiers addQualifier in thisCommand.CommandQualifiers)
+                            {
+                                switch (addQualifier.QualifierName)
+                                {
+                                    case "maxdelay":
+                                        newWaitItem.maxDelayS = Convert.ToSingle(addQualifier.QualifierValues[0]) * 60; // defined in MINUTES!!
+                                        break;
+                                    case "notstarted":
+                                        newWaitItem.notStarted = true;
+                                        break;
+
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (WaitList == null)
+                        {
+                            WaitList = new List<WaitInfo>();
+                        }
+                        WaitList.Add(newWaitItem);
+                    }
+                    break;
+
+                // FOLLOW command
+                case "follow":
+                    foreach (string reqReferenceTrain in thisCommand.CommandValues)
+                    {
+                        WaitInfo newWaitItem = new WaitInfo();
+                        newWaitItem.WaitType = WaitInfo.WaitInfoType.Follow;
+
+                        if (sectionIndex < 0)
+                        {
+                            newWaitItem.startSectionIndex = TCRoute.TCRouteSubpaths[subrouteIndex][0].TCSectionIndex;
+                        }
+                        else
+                        {
+                            newWaitItem.startSectionIndex = sectionIndex;
+                        }
+                        newWaitItem.startSubrouteIndex = subrouteIndex;
+
+                        newWaitItem.referencedTrainName = String.Copy(reqReferenceTrain);
+
+                        // check if name is full name, otherwise add timetable file info from this train
+                        if (!newWaitItem.referencedTrainName.Contains(':'))
+                        {
+                            int seppos = Name.IndexOf(':');
+                            newWaitItem.referencedTrainName = String.Concat(newWaitItem.referencedTrainName, ":", Name.Substring(seppos + 1).ToLower());
+                        }
+
+                        // qualifiers : 
+                        //  maxdelay (single value only)
+                        //  notstarted (no values)
+
+                        if (thisCommand.CommandQualifiers != null)
+                        {
+                            foreach (TTTrainCommands.TTTrainComQualifiers addQualifier in thisCommand.CommandQualifiers)
+                            {
+                                switch (addQualifier.QualifierName)
+                                {
+                                    case "maxdelay":
+                                        newWaitItem.maxDelayS = Convert.ToSingle(addQualifier.QualifierValues[0]) * 60;
+                                        break;
+                                    case "notstarted":
+                                        newWaitItem.notStarted = true;
+                                        break;
+
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (WaitList == null)
+                        {
+                            WaitList = new List<WaitInfo>();
+                        }
+                        WaitList.Add(newWaitItem);
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Finalize the command information - process referenced train details
+        /// </summary>
+
+        public void FinalizeTimetableCommands()
+        {
+            // process all wait information
+            if (WaitList != null)
+            {
+                Train otherTrain = null;
+                List<WaitInfo> newWaitItems = new List<WaitInfo>();
+
+                foreach (WaitInfo reqWait in WaitList)
+                {
+                    switch (reqWait.WaitType)
+                    {
+                        // WAIT command
+                        case WaitInfo.WaitInfoType.Wait:
+                            otherTrain = GetOtherTrainByName(reqWait.referencedTrainName);
+#if DEBUG_TRACEINFO
+                            Trace.TraceInformation("WAIT : Search for : {0} - found {1}", reqWait.referencedTrainName, otherTrain == null ? -1 : otherTrain.Number);
+#endif
+                            if (otherTrain != null)
+                            {
+                                ProcessWaitRequest(reqWait, otherTrain, true, true, true, ref newWaitItems);
+                            }
+                            reqWait.WaitType = WaitInfo.WaitInfoType.Invalid; // set to invalid as item is processed
+                            break;
+
+                        // FOLLOW command
+                        case WaitInfo.WaitInfoType.Follow:
+                            otherTrain = GetOtherTrainByName(reqWait.referencedTrainName);
+#if DEBUG_TRACEINFO
+                            Trace.TraceInformation("FOLLOW : Search for : {0} - found {1}", reqWait.referencedTrainName, otherTrain == null ? -1 : otherTrain.Number);
+#endif
+                            if (otherTrain != null)
+                            {
+                                ProcessWaitRequest(reqWait, otherTrain, true, false, false, ref newWaitItems);
+                            }
+                            reqWait.WaitType = WaitInfo.WaitInfoType.Invalid; // set to invalid as item is processed
+                            break;
+                    }
+                }
+
+                // remove processed and invalid items
+                for (int iWaitItem = WaitList.Count - 1; iWaitItem >= 0; iWaitItem--)
+                {
+                    if (WaitList[iWaitItem].WaitType == WaitInfo.WaitInfoType.Invalid)
+                    {
+                        WaitList.RemoveAt(iWaitItem);
+                    }
+                }
+
+                // add new created items
+                foreach (WaitInfo newWait in newWaitItems)
+                {
+                    WaitList.Add(newWait);
+                }
+
+                // sort list - list is sorted on subpath and route index
+                WaitList.Sort();
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Process wait request for Timetable waits
+        /// </summary>
+
+        public void ProcessWaitRequest(WaitInfo reqWait, Train otherTrain, bool allowSameDirection, bool allowOppositeDirection, bool singleWait, ref List<WaitInfo> newWaitItems)
+        {
+            // find first common section to determine train directions
+            int otherRouteIndex = -1;
+            int thisSubpath = reqWait.startSubrouteIndex;
+            int thisIndex = TCRoute.TCRouteSubpaths[thisSubpath].GetRouteIndex(reqWait.startSectionIndex, 0);
+            int otherSubpath = 0;
+
+            int startSectionIndex = TCRoute.TCRouteSubpaths[thisSubpath][thisIndex].TCSectionIndex;
+
+            bool sameDirection = false;
+            bool validWait = true;  // presume valid wait
+
+            while (otherRouteIndex < 0)
+            {
+                int sectionIndex = TCRoute.TCRouteSubpaths[thisSubpath][thisIndex].TCSectionIndex;
+                otherRouteIndex = otherTrain.TCRoute.TCRouteSubpaths[otherSubpath].GetRouteIndex(sectionIndex, 0);
+
+                if (otherRouteIndex < 0 && otherSubpath < otherTrain.TCRoute.TCRouteSubpaths.Count - 1)
+                {
+                    otherSubpath++;
+                }
+                else if (otherRouteIndex < 0 && thisIndex < TCRoute.TCRouteSubpaths[thisSubpath].Count - 1)
+                {
+                    thisIndex++;
+                    otherSubpath = 0; // reset other train subpath
+                }
+                else if (otherRouteIndex < 0 && thisSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                {
+                    thisSubpath++;
+                    otherSubpath = 0; // reset other train subpath
+                }
+                else if (otherRouteIndex < 0)
+                {
+                    validWait = false;
+                    break; // no common section found
+                }
+            }
+
+            // if common section, check directions
+
+            TCRouteElement thisTrainElement = null;
+            TCRouteElement otherTrainElement = null;
+
+            int thisTrainStartSubpathIndex = reqWait.startSubrouteIndex;
+            int thisTrainStartRouteIndex = TCRoute.TCRouteSubpaths[thisTrainStartSubpathIndex].GetRouteIndex(reqWait.startSectionIndex, 0);
+
+            if (validWait)
+            {
+                thisTrainElement = TCRoute.TCRouteSubpaths[thisSubpath][thisIndex];
+                otherTrainElement = otherTrain.TCRoute.TCRouteSubpaths[otherSubpath][otherRouteIndex];
+
+                sameDirection = thisTrainElement.Direction == otherTrainElement.Direction;
+                validWait = sameDirection ? allowSameDirection : allowOppositeDirection;
+            }
+
+            // if original start section index is also first common index, search for first not common section
+            if (validWait && startSectionIndex == otherTrainElement.TCSectionIndex)
+            {
+                int notCommonSectionRouteIndex = -1;
+
+                if (sameDirection)
+                {
+                    notCommonSectionRouteIndex =
+                            FindCommonSectionEnd(TCRoute.TCRouteSubpaths[thisSubpath], thisIndex,
+                            otherTrain.TCRoute.TCRouteSubpaths[otherSubpath], otherRouteIndex);
+                }
+                else
+                {
+                    notCommonSectionRouteIndex =
+                            FindCommonSectionEndReverse(TCRoute.TCRouteSubpaths[thisSubpath], thisIndex,
+                            otherTrain.TCRoute.TCRouteSubpaths[otherSubpath], otherRouteIndex);
+                }
+
+                int notCommonSectionIndex = otherTrain.TCRoute.TCRouteSubpaths[otherSubpath][notCommonSectionRouteIndex].TCSectionIndex;
+                thisTrainStartRouteIndex = TCRoute.TCRouteSubpaths[thisTrainStartSubpathIndex].GetRouteIndex(notCommonSectionIndex, 0);
+
+                if (thisTrainStartRouteIndex < TCRoute.TCRouteSubpaths[thisTrainStartSubpathIndex].Count - 1) // not last entry
+                {
+                    thisTrainStartRouteIndex++;
+                }
+                else
+                {
+                    validWait = false; // full common route - no waiting point possible
+                }
+            }
+
+            if (!validWait) return;
+
+            // if in same direction, start at beginning and move downward
+            // if in opposite direction, start at end (of found subpath!) and move upward
+
+            int startSubpath = sameDirection ? 0 : otherSubpath;
+            int endSubpath = sameDirection ? otherSubpath : 0;
+            int startIndex = sameDirection ? 0 : otherTrain.TCRoute.TCRouteSubpaths[startSubpath].Count - 1;
+            int endIndex = sameDirection ? otherTrain.TCRoute.TCRouteSubpaths[startSubpath].Count - 1 : 0;
+            int increment = sameDirection ? 1 : -1;
+
+            // if first section is common, first search for first non common section
+
+            bool allCommonFound = false;
+
+            // loop through all possible waiting points
+            while (!allCommonFound)
+            {
+                int[,] sectionfound = FindCommonSectionStart(thisTrainStartSubpathIndex, thisTrainStartRouteIndex, otherTrain.TCRoute,
+                    startSubpath, startIndex, endSubpath, endIndex, increment);
+
+                // no common section found
+                if (sectionfound[0, 0] < 0)
+                {
+                    allCommonFound = true;
+                }
+                else
+                {
+                    WaitInfo newItem = new WaitInfo();
+                    newItem.WaitActive = false;
+                    newItem.WaitType = reqWait.WaitType;
+                    newItem.activeSubrouteIndex = sectionfound[0, 0];
+                    newItem.activeRouteIndex = sectionfound[0, 1];
+                    newItem.activeSectionIndex = TCRoute.TCRouteSubpaths[newItem.activeSubrouteIndex][newItem.activeRouteIndex].TCSectionIndex;
+
+                    newItem.waitTrainNumber = otherTrain.Number;
+                    newItem.waitTrainSubpathIndex = sectionfound[1, 0];
+                    newItem.waitTrainRouteIndex = sectionfound[1, 1];
+                    newItem.maxDelayS = reqWait.maxDelayS;
+                    newItem.notStarted = reqWait.notStarted;
+
+#if DEBUG_TRACEINFO
+                    Trace.TraceInformation("Added wait : other train : {0} at section {1}", newItem.waitTrainNumber, newItem.activeSectionIndex);
+#endif
+                    newWaitItems.Add(newItem);
+
+                    int endSection = -1;
+
+                    if (singleWait)
+                    {
+                        allCommonFound = true;
+                        break;
+                    }
+                    else if (sameDirection)
+                    {
+                        endSection = FindCommonSectionEnd(TCRoute.TCRouteSubpaths[newItem.activeSubrouteIndex], newItem.activeRouteIndex,
+                            otherTrain.TCRoute.TCRouteSubpaths[newItem.waitTrainSubpathIndex], newItem.waitTrainRouteIndex);
+                    }
+                    else
+                    {
+                        endSection = FindCommonSectionEndReverse(TCRoute.TCRouteSubpaths[newItem.activeSubrouteIndex], newItem.activeRouteIndex,
+                            otherTrain.TCRoute.TCRouteSubpaths[newItem.waitTrainSubpathIndex], newItem.waitTrainRouteIndex);
+                    }
+
+                    // last common section
+                    int lastSectionIndex = otherTrain.TCRoute.TCRouteSubpaths[newItem.waitTrainSubpathIndex][endSection].TCSectionIndex;
+                    thisTrainStartRouteIndex = TCRoute.TCRouteSubpaths[thisTrainStartSubpathIndex].GetRouteIndex(lastSectionIndex, thisTrainStartRouteIndex);
+                    if (thisTrainStartRouteIndex < TCRoute.TCRouteSubpaths[thisTrainStartSubpathIndex].Count - 1)
+                    {
+                        thisTrainStartRouteIndex++;  // first not-common section
+                    }
+                    // end of subpath - shift to next subpath if available
+                    else
+                    {
+                        if (thisTrainStartSubpathIndex < endSubpath)
+                        {
+                            thisTrainStartSubpathIndex++;
+                            thisTrainStartRouteIndex = 0;
+                        }
+                        else
+                        {
+                            allCommonFound = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check for active wait condition for this section
+        /// </summary>
+        /// <param name="trackSectionIndex"></param>
+        /// <returns></returns>
+        public bool CheckWaitCondition(int trackSectionIndex)
+        {
+            // no waits defined
+            if (WaitList == null || WaitList.Count <= 0)
+            {
+                return (false);
+            }
+
+            bool waitState = false;
+
+            // check if first wait is this section
+            WaitInfo firstWait = WaitList[0];
+            while (firstWait.activeSubrouteIndex == TCRoute.activeSubpath && firstWait.activeSectionIndex == trackSectionIndex)
+            {
+                switch (firstWait.WaitType)
+                {
+                    case WaitInfo.WaitInfoType.Wait:
+                    case WaitInfo.WaitInfoType.Follow:
+                        waitState = CheckForSingleTrainWait(firstWait);
+                        break;
+
+                    default:
+                        break;
+                }
+
+                // if not awaited, check for further waits
+                // wait list may have changed if first item is no longer valid
+                if (!waitState && WaitList.Count > 0)
+                {
+                    firstWait = WaitList[0];
+                }
+                else
+                {
+                    break; // no more waits to check
+                }
+            }
+
+            return (waitState);
+        }
+
+        //================================================================================================//
+
+        public bool CheckForSingleTrainWait(WaitInfo reqWait)
+        {
+            bool waitState = false;
+
+            // get other train
+            Train otherTrain = GetOtherTrainByNumber(reqWait.waitTrainNumber);
+
+            // other train does exist
+            if (otherTrain != null)
+            {
+                // other train in correct subpath
+                if (otherTrain.TCRoute.activeSubpath == reqWait.waitTrainSubpathIndex)
+                {
+                    // check if section on train route and if so, if end of train is beyond this section
+                    // check only for forward path - train must have passed section in 'normal' mode
+                    if (otherTrain.ValidRoute[0] != null)
+                    {
+                        int waitTrainRouteIndex = otherTrain.ValidRoute[0].GetRouteIndex(reqWait.activeSectionIndex, 0);
+                        if (waitTrainRouteIndex >= 0)
+                        {
+                            if (otherTrain.PresentPosition[1].RouteListIndex < waitTrainRouteIndex) // train is not yet passed this section
+                            {
+                                // determine total allowed delay
+                                float? totalDelayS = null;
+                                if (reqWait.maxDelayS.HasValue && otherTrain.Delay.HasValue)
+                                {
+                                    totalDelayS = reqWait.maxDelayS.Value;
+                                    totalDelayS += Delay.HasValue ? (float)Delay.Value.TotalSeconds : 0f;     // add own delay if set
+                                }
+
+                                if (!totalDelayS.HasValue || (float)otherTrain.Delay.Value.TotalSeconds < totalDelayS)           // train is not too much delayed
+                                {
+                                    waitState = true;
+                                    reqWait.WaitActive = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // check if waiting is also required if train not yet started
+            else if (reqWait.notStarted.HasValue)
+            {
+                if (CheckTrainNotStartedByNumber(reqWait.waitTrainNumber))
+                {
+                    waitState = true;
+                    reqWait.WaitActive = true;
+                }
+            }
+
+            if (!waitState) // wait is no longer valid
+            {
+                WaitList.RemoveAt(0); // remove this wait
+            }
+
+            return (waitState);
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Get other train from number
         /// Use Simulator.Trains to get other train
         /// </summary>
@@ -10537,6 +11549,28 @@ namespace ORTS
         public Train GetOtherTrainByNumber(int reqNumber)
         {
             return Simulator.Trains.GetTrainByNumber(reqNumber);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Get other train from number
+        /// Use Simulator.Trains to get other train
+        /// </summary>
+
+        public Train GetOtherTrainByName(string reqName)
+        {
+            return Simulator.Trains.GetTrainByName(reqName);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check if other train is yet to be started
+        /// Use Simulator.Trains to get other train
+        /// </summary>
+
+        public bool CheckTrainNotStartedByNumber(int reqNumber)
+        {
+            return Simulator.Trains.CheckTrainNotStartedByNumber(reqNumber);
         }
 
         //================================================================================================//
@@ -10578,7 +11612,7 @@ namespace ORTS
             // [4] = hold signal
             public List<TCReversalInfo> ReversalInfo = new List<TCReversalInfo>();
             public List<int> LoopEnd = new List<int>();
-            public Dictionary<string, int[]> StationXRef = new Dictionary<string, int[]>(); 
+            public Dictionary<string, int[]> StationXRef = new Dictionary<string, int[]>();
             // int[0] = subpath index, int[1] = element index, int[3] = platform ID
 
             //================================================================================================//
@@ -10588,7 +11622,6 @@ namespace ORTS
 
             public TCRoutePath(AIPath aiPath, int orgDir, float thisTrainLength, ORTS.Signals orgSignals, int trainNumber)
             {
-
                 activeSubpath = 0;
                 activeAltpath = -1;
 
@@ -13746,7 +14779,7 @@ namespace ORTS
             public bool Passed;
             public DateTime arrivalDT;
             public DateTime departureDT;
-            
+
             //================================================================================================//
             //
             // Constructor
@@ -13777,8 +14810,8 @@ namespace ORTS
                     ArrivalTime = arrivalTime;
                     DepartTime = departTime;
                 }
-                ActualArrival = arrivalTime;
-                ActualDepart = departTime;
+                ActualArrival = -1;
+                ActualDepart = -1;
                 DistanceToTrainM = 9999999f;
                 Passed = false;
             }
@@ -13806,6 +14839,8 @@ namespace ORTS
                 ActualDepart = orgStop.ActualDepart;
                 DistanceToTrainM = orgStop.DistanceToTrainM;
                 Passed = orgStop.Passed;
+                arrivalDT = orgStop.arrivalDT;
+                departureDT = orgStop.departureDT;
             }
 
             //================================================================================================//
@@ -13848,6 +14883,8 @@ namespace ORTS
                 ActualDepart = inf.ReadInt32();
                 DistanceToTrainM = 9999999f;
                 Passed = inf.ReadBoolean();
+                arrivalDT = new DateTime(inf.ReadInt64());
+                departureDT = new DateTime(inf.ReadInt64());
             }
 
             //================================================================================================//
@@ -13908,9 +14945,292 @@ namespace ORTS
                 outf.Write(ActualArrival);
                 outf.Write(ActualDepart);
                 outf.Write(Passed);
+                outf.Write((Int64)arrivalDT.Ticks);
+                outf.Write((Int64)departureDT.Ticks);
+            }
+
+            /// <summary>
+            /// Calculate actual depart time
+            /// Make special checks for stops arount midnight
+            /// </summary>
+            /// <param name="presentTime"></param>
+
+            public void CalculateDepartTime(int presentTime)
+            {
+                int eightHundredHours = 8 * 3600;
+                int sixteenHundredHours = 16 * 3600;
+
+                // preset depart to booked time
+                ActualDepart = DepartTime;
+
+                // correct arrival for stop around midnight
+                if (ActualArrival < eightHundredHours && ArrivalTime > sixteenHundredHours) // arrived after midnight, expected to arrive before
+                {
+                    ActualArrival += (24 * 3600);
+                }
+                else if (ActualArrival > sixteenHundredHours && ArrivalTime < eightHundredHours) // arrived before midnight, expected to arrive before
+                {
+                    ActualArrival -= (24 * 3600);
+                }
+
+                // correct stop time for stop around midnight
+                int stopTime = DepartTime - ArrivalTime;
+                if (DepartTime < eightHundredHours && ArrivalTime > sixteenHundredHours) // stop over midnight
+                {
+                    stopTime += (24 * 3600);
+                }
+
+                // use minimun station dwell time
+                if (stopTime <= 0 || stopTime > PlatformItem.MinWaitingTime)
+                {
+                    stopTime = (int)PlatformItem.MinWaitingTime;
+                }
+
+                // correct departure time for stop around midnight
+                int correctedTime = ActualArrival + stopTime;
+
+                if (correctedTime < eightHundredHours && DepartTime > sixteenHundredHours) // stop now over midnight
+                {
+                    ActualDepart = correctedTime;
+                }
+                else if (correctedTime > sixteenHundredHours && DepartTime < eightHundredHours) // stop beyond midnight
+                {
+                    ActualDepart = DepartTime;
+                }
+                else
+                {
+                    ActualDepart = Math.Max(correctedTime, DepartTime);
+                }
             }
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Class for waiting instructions
+        /// <\summary>
+
+        public class WaitInfo : IComparable<WaitInfo>
+        {
+            public enum WaitInfoType
+            {
+                Wait,
+                Follow,
+                WaitAny,
+                Connect,
+                Invalid,
+            }
+
+            public enum CheckPathDirection
+            {
+                Both,
+                Same,
+                Opposite,
+            }
+
+            // General info
+            public WaitInfoType WaitType;                         // type of wait instruction
+            public bool WaitActive;                               // wait state is active
+
+            // preprocessed info - info is removed after processing
+            public int startSectionIndex;                         // section from which command is valid (-1 if valid from start)
+            public int startSubrouteIndex;                        // subpath index from which command is valid
+            public string referencedTrainName;                    // referenced train name (for Wait, Follow or Connect)
+
+            // processed info
+            public int activeSectionIndex;                        // index of TrackCircuitSection where wait must be activated
+            public int activeSubrouteIndex;                       // subpath in which this wait is valid
+            public int activeRouteIndex;                          // index of section in active subpath
+
+            // common for Wait, Follow and Connect
+            public int waitTrainNumber;                           // number of train for which to wait
+            public float? maxDelayS = null;                       // max. delay for waiting (in seconds)
+            public bool? notStarted = null;                       // also wait if not yet started
+
+            // wait types Wait and Follow :
+            public int waitTrainSubpathIndex;                     // subpath index for train - set to -1 if wait is always active
+            public int waitTrainRouteIndex;                       // index of section in active subpath
+
+            // wait types Connect :
+            public int stationIndex;                              // index in this train station stop list
+            public int waitTrainStationIndex;                     // index for other train station stop list
+            public float holdTimeS;                               // required hold time (in seconds)
+
+            // wait types WaitInfo (no post-processing required) :
+            public List<TCSubpathRoute> CheckPaths = null;        // required paths to check in case of WaitAny
+            public List<CheckPathDirection> PathDirection = null; // parallel list to CheckPaths indicating required direction
+
+            /// <summary>
+            /// Empty constructor
+            /// </summary>
+            public WaitInfo()
+            {
+            }
+
+            /// <summary>
+            /// Constructor for restore
+            /// </summary>
+            /// <param name="inf"></param>
+            public WaitInfo(BinaryReader inf)
+            {
+                WaitType = (WaitInfoType)inf.ReadInt32();
+                WaitActive = inf.ReadBoolean();
+
+                activeSubrouteIndex = inf.ReadInt32();
+                activeSectionIndex = inf.ReadInt32();
+                activeRouteIndex = inf.ReadInt32();
+
+                waitTrainNumber = inf.ReadInt32();
+                float delayValue = inf.ReadSingle();
+                if (delayValue < 0)
+                {
+                    maxDelayS = null;
+                }
+                else
+                {
+                    maxDelayS = delayValue;
+                }
+
+                bool notStartedValue = inf.ReadBoolean();
+                if (notStartedValue)
+                {
+                    notStarted = true;
+                }
+                else
+                {
+                    notStarted = null;
+                }
+
+                waitTrainSubpathIndex = inf.ReadInt32();
+                waitTrainRouteIndex = inf.ReadInt32();
+
+                stationIndex = inf.ReadInt32();
+                waitTrainStationIndex = inf.ReadInt32();
+                holdTimeS = inf.ReadSingle();
+
+                int totalCheckPaths = inf.ReadInt32();
+
+                if (totalCheckPaths < 0)
+                {
+                    CheckPaths = null;
+                    PathDirection = null;
+                }
+                else
+                {
+                    for (int iPath = 0; iPath <= totalCheckPaths - 1; iPath++)
+                    {
+                        CheckPaths.Add(new TCSubpathRoute(inf));
+                        PathDirection.Add((CheckPathDirection)inf.ReadInt32());
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Constructor for Copy
+            /// </summary>
+            /// <param name="otherInfo"></param>
+            public WaitInfo(WaitInfo otherInfo)
+            {
+                WaitType = otherInfo.WaitType;
+                WaitActive = otherInfo.WaitActive;
+
+                activeSubrouteIndex = otherInfo.activeSubrouteIndex;
+                activeSectionIndex = otherInfo.activeSectionIndex;
+                activeRouteIndex = otherInfo.activeRouteIndex;
+
+                waitTrainNumber = otherInfo.waitTrainNumber;
+                maxDelayS = otherInfo.maxDelayS;
+                notStarted = otherInfo.notStarted;
+
+                waitTrainSubpathIndex = otherInfo.waitTrainSubpathIndex;
+                waitTrainRouteIndex = otherInfo.waitTrainRouteIndex;
+
+                stationIndex = otherInfo.stationIndex;
+                waitTrainStationIndex = otherInfo.waitTrainStationIndex;
+                holdTimeS = otherInfo.holdTimeS;
+
+                if (otherInfo.CheckPaths == null)
+                {
+                    CheckPaths = null;
+                    PathDirection = null;
+                }
+                else
+                {
+                    for (int iPath = 0; iPath <= otherInfo.CheckPaths.Count - 1; iPath++)
+                    {
+                        CheckPaths.Add(new TCSubpathRoute(otherInfo.CheckPaths[iPath]));
+                        PathDirection.Add(otherInfo.PathDirection[iPath]);
+                    }
+                }
+            }
+
+            public void Save(BinaryWriter outf)
+            {
+                outf.Write((int)WaitType);
+                outf.Write(WaitActive);
+
+                outf.Write(activeSubrouteIndex);
+                outf.Write(activeSectionIndex);
+                outf.Write(activeRouteIndex);
+
+                outf.Write(waitTrainNumber);
+
+                if (maxDelayS.HasValue)
+                {
+                    outf.Write(maxDelayS.Value);
+                }
+                else
+                {
+                    outf.Write(-1f);
+                }
+
+                if (notStarted.HasValue)
+                {
+                    outf.Write(notStarted.Value);
+                }
+                else
+                {
+                    outf.Write(false);
+                }
+
+                outf.Write(waitTrainSubpathIndex);
+                outf.Write(waitTrainRouteIndex);
+
+                outf.Write(stationIndex);
+                outf.Write(waitTrainStationIndex);
+                outf.Write(holdTimeS);
+
+                if (CheckPaths == null)
+                {
+                    outf.Write(-1);
+                }
+                else
+                {
+                    outf.Write(CheckPaths.Count);
+
+                    for (int iPath = 0; iPath < CheckPaths.Count; iPath++)
+                    {
+                        CheckPaths[iPath].Save(outf);
+                        outf.Write((int)PathDirection[iPath]);
+                    }
+                }
+            }
+            //================================================================================================//
+
+            //
+            // Compare To (to allow sort)
+            //
+
+            public int CompareTo(WaitInfo otherItem)
+            {
+                if (this.activeSubrouteIndex < otherItem.activeSubrouteIndex)
+                    return (-1);
+                if (this.activeSubrouteIndex == otherItem.activeSubrouteIndex && this.activeRouteIndex < otherItem.activeRouteIndex)
+                    return (-1);
+                if (this.activeSubrouteIndex == otherItem.activeSubrouteIndex && this.activeRouteIndex == otherItem.activeRouteIndex)
+                    return (0);
+                return (1);
+            }
+        }
 
         //================================================================================================//
         /// <summary>

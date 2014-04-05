@@ -41,6 +41,7 @@ namespace ORTS.Processes
     public class GameStateRunActivity : GameState
     {
         static string[] Arguments;
+        static string Acttype;
         static Random Random { get { return Program.Random; } set { Program.Random = value; } }  // primary random number generator used throughout the program
         static Simulator Simulator { get { return Program.Simulator; } set { Program.Simulator = value; } }
 
@@ -59,6 +60,7 @@ namespace ORTS.Processes
             public float initialTileX;
             public float initialTileZ;
             public string[] args;
+            public string acttype;
         }
 
         static Debugging.DispatchViewer DebugViewer { get { return Program.DebugViewer; } set { Program.DebugViewer = value; } }
@@ -120,6 +122,8 @@ namespace ORTS.Processes
             foreach (var possibleActType in acttypes)
                 if (args.Contains("-" + possibleActType) || args.Contains("/" + possibleActType, StringComparer.OrdinalIgnoreCase))
                     acttype = possibleActType;
+
+            Acttype = acttype;
 
             // Collect all non-action options.
             var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1)) && !acttype.Contains(a.Substring(1))).Select(a => a.Substring(1));
@@ -313,6 +317,7 @@ namespace ORTS.Processes
                 outf.Write(Arguments.Length);
                 foreach (var argument in Arguments)
                     outf.Write(argument);
+                outf.Write(Acttype);
 
                 // The Save command is the only command that doesn't take any action. It just serves as a marker.
                 new SaveCommand(Viewer.Log, fileStem);
@@ -344,7 +349,8 @@ namespace ORTS.Processes
             {
                 ValidateSave(saveFile, inf);
                 var values = GetSavedValues(inf);
-                InitSimulator(settings, values.args, "Resume");
+                Acttype = values.acttype;
+                InitSimulator(settings, values.args, "Resume", values.acttype);
                 Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
                 Viewer = new Viewer(Simulator, Game);
                 Viewer.Restore(inf);
@@ -374,7 +380,8 @@ namespace ORTS.Processes
                 inf.ReadString();    // Revision
                 inf.ReadString();    // Build
                 savedValues values = GetSavedValues(inf);
-                InitSimulator(settings, values.args, "Replay");
+                Acttype = values.acttype;
+                InitSimulator(settings, values.args, "Replay", values.acttype);
                 Simulator.Start();
                 Viewer = new Viewer(Simulator, Game);
             }
@@ -456,7 +463,7 @@ namespace ORTS.Processes
                 {
                     ValidateSave(previousSaveFile, inf);
                     savedValues values = GetSavedValues(inf);
-                    InitSimulator(settings, values.args, "Resume");
+                    InitSimulator(settings, values.args, "Resume", values.acttype);
                     Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
                     Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
@@ -855,7 +862,13 @@ namespace ORTS.Processes
                     Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
                     break;
 
-                case "timetable": // no specific setup, processed in Start_Timetable
+                case "timetable":
+                    if (String.Compare(mode, "start", true) != 0) // no specific action for start, handled in start_timetable
+                    {
+                        // for resume and replay : set timetable file and selected train info
+                        Simulator.TimetableFileName = System.IO.Path.GetFileNameWithoutExtension(args[0]);
+                        Simulator.PathName = String.Copy(args[1]);
+                    }
                     break;
 
                 default: // old style processing without explicit type definition, to be removed later
@@ -983,6 +996,7 @@ namespace ORTS.Processes
             var savedArgs = new string[inf.ReadInt32()];
             for (var i = 0; i < savedArgs.Length; i++)
                 savedArgs[i] = inf.ReadString();
+            values.acttype = inf.ReadString();
             values.args = savedArgs;
             return values;
         }

@@ -86,23 +86,46 @@ namespace ORTS
         {
             var speedMpS = train.SpeedMpS;
             var absSpeedMpS = Math.Abs(speedMpS);
+            var maxSpeedMpS = train.AllowedMaxSpeedMpS;
+
+            bool validTrain = false;
+
             // We only care about crossing items which are:
             //   a) Grouped properly.
             //   b) Within the maximum activation distance of front/rear of the train.
+            // Separate tests are performed for present speed and for possible maximum speed to avoid anomolies if train accelerates.
+            // Special test is also done to check on section availability to avoid closure beyond signal at danger.
             foreach (var crossing in TrackCrossingItems.Values.Where(ci => ci.CrossingGroup != null))
             {
                 var predictedDist = crossing.CrossingGroup.WarningTime * absSpeedMpS;
+                var maxPredictedDist = crossing.CrossingGroup.WarningTime * (maxSpeedMpS - absSpeedMpS) / 2; // added distance if train accelerates to maxspeed
                 var minimumDist = crossing.CrossingGroup.MinimumDistance;
                 var totalDist = predictedDist + minimumDist + 1;
+                var totalMaxDist = predictedDist + maxPredictedDist + minimumDist + 1;
 
-                if (!WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) && !WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
+                var reqDist = 0f; // actual used distance
+
+                if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
+                {
+                    validTrain = true;
+                    reqDist = totalDist;
+                }
+                else if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalMaxDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalMaxDist))
+                {
+                    validTrain = true;
+                    reqDist = totalMaxDist;
+                }
+
+                if (!validTrain && !crossing.Trains.Contains(train))
+                {
                     continue;
+                }
 
                 // Distances forward from the front and rearwards from the rear.
-                var frontDist = crossing.DistanceTo(train.FrontTDBTraveller, totalDist);
+                var frontDist = crossing.DistanceTo(train.FrontTDBTraveller, reqDist);
                 if (frontDist < 0)
                 {
-                    frontDist = -crossing.DistanceTo(new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward), totalDist + train.Length);
+                    frontDist = -crossing.DistanceTo(new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward), reqDist + train.Length);
                     if (frontDist > 0)
                     {
                         // Train cannot find crossing.
@@ -110,9 +133,14 @@ namespace ORTS
                         continue;
                     }
                 }
-                var rearDist = -frontDist - train.Length;
 
-                if (speedMpS < 0)
+                var rearDist = - frontDist - train.Length;
+
+                if (speedMpS < 0 && frontDist > 0) // train is reversing but still in front so moving away from crossing
+                {
+                    crossing.RemoveTrain(train);
+                }
+                else if (speedMpS < 0)
                 {
                     // Train is reversing; swap distances so frontDist is always the front.
                     var temp = rearDist;
@@ -120,10 +148,14 @@ namespace ORTS
                     frontDist = temp;
                 }
 
-                if (frontDist <= predictedDist + minimumDist && rearDist <= minimumDist)
+                if (frontDist <= reqDist && frontDist < train.GetReservedLength() && rearDist <= minimumDist)
+                {
                     crossing.AddTrain(train);
+                }
                 else
+                {
                     crossing.RemoveTrain(train);
+                }
             }
         }
     }

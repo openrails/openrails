@@ -93,6 +93,7 @@ namespace ORTS
             this.comboBoxTimetableSeason = new System.Windows.Forms.ComboBox();
             this.label21 = new System.Windows.Forms.Label();
             this.groupBoxAITrains = new System.Windows.Forms.GroupBox();
+            this.comboBoxTimetableAITrainStart = new System.Windows.Forms.ComboBox();
             this.radioButtonAITimeRelative = new System.Windows.Forms.RadioButton();
             this.radioButtonAITimeAbsolute = new System.Windows.Forms.RadioButton();
             this.checkBoxAISameDirection = new System.Windows.Forms.CheckBox();
@@ -100,7 +101,6 @@ namespace ORTS
             this.comboBoxPlayerTimetable = new System.Windows.Forms.ComboBox();
             this.comboBoxTimetable = new System.Windows.Forms.ComboBox();
             this.label15 = new System.Windows.Forms.Label();
-            this.comboBoxTimetableAITrainStart = new System.Windows.Forms.ComboBox();
             this.linkLabelUpdate = new System.Windows.Forms.LinkLabel();
             this.linkLabelRestart = new System.Windows.Forms.LinkLabel();
             this.groupBox1.SuspendLayout();
@@ -724,9 +724,9 @@ namespace ORTS
             this.label24.Location = new System.Drawing.Point(3, 79);
             this.label24.Margin = new System.Windows.Forms.Padding(3);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(44, 13);
+            this.label24.Size = new System.Drawing.Size(34, 13);
             this.label24.TabIndex = 4;
-            this.label24.Text = "Consist:";
+            this.label24.Text = "Train:";
             this.label24.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBoxPlayerTrain
@@ -737,6 +737,7 @@ namespace ORTS
             this.comboBoxPlayerTrain.Name = "comboBoxPlayerTrain";
             this.comboBoxPlayerTrain.Size = new System.Drawing.Size(193, 21);
             this.comboBoxPlayerTrain.TabIndex = 5;
+            this.comboBoxPlayerTrain.SelectedIndexChanged += new System.EventHandler(this.comboBoxPlayerTrain_SelectedIndexChanged);
             // 
             // label23
             // 
@@ -827,6 +828,14 @@ namespace ORTS
             this.groupBoxAITrains.TabStop = false;
             this.groupBoxAITrains.Text = "Computer trains";
             // 
+            // comboBoxTimetableAITrainStart
+            // 
+            this.comboBoxTimetableAITrainStart.FormattingEnabled = true;
+            this.comboBoxTimetableAITrainStart.Location = new System.Drawing.Point(88, 19);
+            this.comboBoxTimetableAITrainStart.Name = "comboBoxTimetableAITrainStart";
+            this.comboBoxTimetableAITrainStart.Size = new System.Drawing.Size(73, 21);
+            this.comboBoxTimetableAITrainStart.TabIndex = 1;
+            // 
             // radioButtonAITimeRelative
             // 
             this.radioButtonAITimeRelative.AutoSize = true;
@@ -880,6 +889,7 @@ namespace ORTS
             this.comboBoxPlayerTimetable.Name = "comboBoxPlayerTimetable";
             this.comboBoxPlayerTimetable.Size = new System.Drawing.Size(193, 21);
             this.comboBoxPlayerTimetable.TabIndex = 3;
+            this.comboBoxPlayerTimetable.SelectedIndexChanged += new System.EventHandler(this.comboboxPlayerTimetable_selectedIndexChanged);
             // 
             // comboBoxTimetable
             // 
@@ -889,6 +899,7 @@ namespace ORTS
             this.comboBoxTimetable.Name = "comboBoxTimetable";
             this.comboBoxTimetable.Size = new System.Drawing.Size(281, 21);
             this.comboBoxTimetable.TabIndex = 1;
+            this.comboBoxTimetable.SelectedIndexChanged += new System.EventHandler(this.ComboBoxTimetable_SelectedIndexChanged);
             // 
             // label15
             // 
@@ -900,14 +911,6 @@ namespace ORTS
             this.label15.TabIndex = 0;
             this.label15.Text = "Timetable set:";
             this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // comboBoxTimetableAITrainStart
-            // 
-            this.comboBoxTimetableAITrainStart.FormattingEnabled = true;
-            this.comboBoxTimetableAITrainStart.Location = new System.Drawing.Point(88, 19);
-            this.comboBoxTimetableAITrainStart.Name = "comboBoxTimetableAITrainStart";
-            this.comboBoxTimetableAITrainStart.Size = new System.Drawing.Size(73, 21);
-            this.comboBoxTimetableAITrainStart.TabIndex = 1;
             // 
             // linkLabelUpdate
             // 
