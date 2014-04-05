@@ -80,13 +80,25 @@ namespace ORTS.ContentManager
                     var file = new SRVFile(content.PathName);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
                     details.AppendFormat("Consist ID:\t{1}{0}", Environment.NewLine, file.Train_Config);
-                    details.AppendFormat("Path ID:\t{1}{0}{0}", Environment.NewLine, file.PathID);
+                    details.AppendFormat("Path ID:\t{1}{0}", Environment.NewLine, file.PathID);
+                    details.AppendFormat("Efficiency:\t{1}{0}{0}", Environment.NewLine, file.Efficiency);
                     details.AppendFormat("This format is not supported by Open Rails.{0}{0}", Environment.NewLine);
                 }
                 else if (content is ContentMSTSTraffic)
                 {
-                    details.AppendFormat("This format is not supported by Open Rails.{0}{0}", Environment.NewLine);
-                    // TODO: Traffic_File
+                    var file = new TRFFile(content.PathName);
+                    details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.TrafficDefinition.Name);
+                    foreach (var service in file.TrafficDefinition.TrafficItems)
+                    {
+                        details.AppendLine();
+                        details.AppendLine("Service:\t");
+                        details.AppendFormat("  Service ID:\t{1}{0}", Environment.NewLine, service.Service_Definition);
+                        details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, service.Time);
+                        details.AppendFormat("  Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);
+                        foreach (var item in service.TrafficDetails)
+                            details.AppendFormat("  {1}\t{2}\t{3}\t{4}{0}", Environment.NewLine, item.PlatformStartID, item.DistanceDownPath, item.ArrivalTime, item.DepartTime);
+                    }
+                    details.AppendLine();
                 }
                 else if (content is ContentMSTSPath)
                 {

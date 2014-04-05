@@ -69,6 +69,7 @@
     <Compile Include="SMSFile.cs" />
     <Compile Include="SRVFile.cs" />
     <Compile Include="TFile.cs" />
+    <Compile Include="TRFFile.cs" />
     <Compile Include="TRKFile.cs" />
     <Compile Include="TSectionDat.cs" />
     <Compile Include="TTypeDatFile.cs" />

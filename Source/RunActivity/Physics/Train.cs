@@ -395,7 +395,6 @@ namespace ORTS
             {
                 TrafficService = new Traffic_Service_Definition();
                 TrafficService.Time = orgTrain.TrafficService.Time;
-                TrafficService.TrafficDetails = new List<Traffic_Traffic_Item>();
 
                 foreach (Traffic_Traffic_Item thisTrafficItem in orgTrain.TrafficService.TrafficDetails)
                 {
@@ -730,7 +729,6 @@ namespace ORTS
         {
             Traffic_Service_Definition thisDefinition = new Traffic_Service_Definition();
             thisDefinition.Time = inf.ReadInt32();
-            thisDefinition.TrafficDetails = new List<Traffic_Traffic_Item>();
 
             int totalTrafficItems = inf.ReadInt32();
 
@@ -9770,7 +9768,6 @@ namespace ORTS
             }
 
             TrafficService = new Traffic_Service_Definition();
-            TrafficService.TrafficDetails = new List<Traffic_Traffic_Item>();
 
             foreach (Player_Traffic_Item thisItem in playerList)
             {
