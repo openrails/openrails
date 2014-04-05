@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-03-16 11:37:11+0100\n"
-"PO-Revision-Date: 2014-03-16 11:37:13+0100\n"
+"POT-Creation-Date: 2014-04-05 20:09:17+0200\n"
+"PO-Revision-Date: 2014-04-05 20:09:19+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -176,7 +176,7 @@ msgid "Variable 1"
 msgstr ""
 
 #: ../../RunActivity/Debugging/SoundDebugForm.Designer.cs:309
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:70
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
 msgid "Distance"
 msgstr ""
 
@@ -287,68 +287,79 @@ msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Physics/Train.cs:1288
+#: ../../RunActivity/Physics/Train.cs:1370
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1291
+#: ../../RunActivity/Physics/Train.cs:1373
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:3862
-#: ../../RunActivity/Physics/Train.cs:3867
+#: ../../RunActivity/Physics/Train.cs:3937
+#: ../../RunActivity/Physics/Train.cs:3942
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4731
+#: ../../RunActivity/Physics/Train.cs:4112
+#: ../../RunActivity/Simulator/Activity.cs:774
+msgid "Passenger boarding completed. You may depart now."
+msgstr ""
+
+#: ../../RunActivity/Physics/Train.cs:4945
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5396
-#: ../../RunActivity/Physics/Train.cs:6469
+#: ../../RunActivity/Physics/Train.cs:5610
+#: ../../RunActivity/Physics/Train.cs:6683
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5404
+#: ../../RunActivity/Physics/Train.cs:5618
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5465
+#: ../../RunActivity/Physics/Train.cs:5679
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5571
-#: ../../RunActivity/Physics/Train.cs:6589
+#: ../../RunActivity/Physics/Train.cs:5785
+#: ../../RunActivity/Physics/Train.cs:6803
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6823
+#: ../../RunActivity/Physics/Train.cs:7037
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6832
+#: ../../RunActivity/Physics/Train.cs:7046
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6845
+#: ../../RunActivity/Physics/Train.cs:7059
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6938
+#: ../../RunActivity/Physics/Train.cs:7152
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7125
+#: ../../RunActivity/Physics/Train.cs:7339
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7368
+#: ../../RunActivity/Physics/Train.cs:4118
+#: ../../RunActivity/Simulator/Activity.cs:767
+#, csharp-format
+msgid "Passenger boarding completes in {0:D2}:{1:D2}"
+msgstr ""
+
+#: ../../RunActivity/Physics/Train.cs:7581
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7409
+#: ../../RunActivity/Physics/Train.cs:7623
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -453,23 +464,14 @@ msgstr ""
 msgid "Boiler no longer priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:327
+#: ../../RunActivity/RollingStock/TrainCar.cs:359
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable, or your train may derail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:354
+#: ../../RunActivity/RollingStock/TrainCar.cs:386
 msgid "Your train has overturned."
-msgstr ""
-
-#: ../../RunActivity/Simulator/Activity.cs:774
-msgid "Passenger boarding completed. You may depart now."
-msgstr ""
-
-#: ../../RunActivity/Simulator/Activity.cs:767
-#, csharp-format
-msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:25
@@ -872,6 +874,7 @@ msgid "Wipers"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
+#: ../../RunActivity/Viewer3D/Cameras.cs:1350
 msgid "Cab"
 msgstr ""
 
@@ -1079,34 +1082,70 @@ msgctxt "Labels"
 msgid "none"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:537
-#: ../../RunActivity/Viewer3D/Viewer.cs:650
+#: ../../RunActivity/Viewer3D/Cameras.cs:595
+msgid "Free"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:981
+msgid "Outside Front"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:981
+msgid "Outside Rear"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1237
+msgid "Brakeman"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1269
+msgid "Passenger"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1306
+msgid "Head out"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1530
+msgid "Trackside"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1680
+msgid "3D Cab"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:542
+#: ../../RunActivity/Viewer3D/Viewer.cs:655
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:599
+#: ../../RunActivity/Viewer3D/Viewer.cs:604
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:675
+#: ../../RunActivity/Viewer3D/Viewer.cs:666
+msgid "3D Cab view not available"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:691
 msgid "Will not ratate cab and land"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1079
+#: ../../RunActivity/Viewer3D/Viewer.cs:1096
 msgid "Game saved"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:666
+#: ../../RunActivity/Viewer3D/Viewer.cs:682
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:674
+#: ../../RunActivity/Viewer3D/Viewer.cs:690
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:698
+#: ../../RunActivity/Viewer3D/Viewer.cs:714
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -1248,31 +1287,32 @@ msgid "Timetable"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:69
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Station"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Arrive"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:72
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:76
 msgid "Actual"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:75
 msgid "Depart"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:133
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:136
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:165
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:242
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:245
 msgid "(missed)"
 msgstr ""
 
@@ -1320,12 +1360,26 @@ msgstr ""
 msgid "Procedures"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:53
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:54
 msgid "Next Station"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:213
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:322
 msgid "Activity completed."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:187
+msgid "No more stations."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:103
+#, csharp-format
+msgid "Camera: {0}"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:108
+#, csharp-format
+msgid "FOV: {0:F0}°"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
@@ -1399,52 +1453,52 @@ msgstr ""
 msgid "Train Operations"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:477
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:491
 msgid "water"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:478
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:492
 msgid "coal"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:479
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:493
 msgid "diesel oil"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:480
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:494
 msgid "wood"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:590
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:604
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:598
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:612
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:604
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:618
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:610
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:631
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:638
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:599
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:613
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"

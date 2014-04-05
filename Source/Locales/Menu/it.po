@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRails\n"
-"POT-Creation-Date: 2014-03-29 10:36:54+0100\n"
-"PO-Revision-Date: 2014-04-02 21:01+0100\n"
+"POT-Creation-Date: 2014-04-05 17:32:33+0200\n"
+"PO-Revision-Date: 2014-04-05 17:36+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
 "<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: \n"
@@ -107,87 +107,87 @@ msgstr "Premi un tasto"
 msgid "Reset to default"
 msgstr "Ripristina default"
 
-#: ../../Menu/MainForm.cs:130
+#: ../../Menu/MainForm.cs:132
 msgid "Spring"
 msgstr "Primavera"
 
-#: ../../Menu/MainForm.cs:131
+#: ../../Menu/MainForm.cs:133
 msgid "Summer"
 msgstr "Estate"
 
-#: ../../Menu/MainForm.cs:132
+#: ../../Menu/MainForm.cs:134
 msgid "Autumn"
 msgstr "Autunno"
 
-#: ../../Menu/MainForm.cs:133
+#: ../../Menu/MainForm.cs:135
 msgid "Winter"
 msgstr "Inverno"
 
-#: ../../Menu/MainForm.cs:137
+#: ../../Menu/MainForm.cs:139
 msgid "Clear"
 msgstr "Sereno"
 
-#: ../../Menu/MainForm.cs:138
+#: ../../Menu/MainForm.cs:140
 msgid "Snow"
 msgstr "Neve"
 
-#: ../../Menu/MainForm.cs:139
+#: ../../Menu/MainForm.cs:141
 msgid "Rain"
 msgstr "Pioggia"
 
-#: ../../Menu/MainForm.cs:143
+#: ../../Menu/MainForm.cs:145
 msgid "Easy"
 msgstr "Facile"
 
-#: ../../Menu/MainForm.cs:144
+#: ../../Menu/MainForm.cs:146
 msgid "Medium"
 msgstr "Medio"
 
-#: ../../Menu/MainForm.cs:145
+#: ../../Menu/MainForm.cs:147
 msgid "Hard"
 msgstr "Difficile"
 
-#: ../../Menu/MainForm.cs:151
+#: ../../Menu/MainForm.cs:153
 msgid "Monday"
 msgstr "Lunedì"
 
-#: ../../Menu/MainForm.cs:152
+#: ../../Menu/MainForm.cs:154
 msgid "Tuesday"
 msgstr "Martedì"
 
-#: ../../Menu/MainForm.cs:153
+#: ../../Menu/MainForm.cs:155
 msgid "Wednesday"
 msgstr "Mercoledì"
 
-#: ../../Menu/MainForm.cs:154
+#: ../../Menu/MainForm.cs:156
 msgid "Thursday"
 msgstr "Giovedì"
 
-#: ../../Menu/MainForm.cs:155
+#: ../../Menu/MainForm.cs:157
 msgid "Friday"
 msgstr "Venerdì"
 
-#: ../../Menu/MainForm.cs:156
+#: ../../Menu/MainForm.cs:158
 msgid "Saturday"
 msgstr "Sabato"
 
-#: ../../Menu/MainForm.cs:157
+#: ../../Menu/MainForm.cs:159
 msgid "Sunday"
 msgstr "Domenica"
 
-#: ../../Menu/MainForm.cs:213
+#: ../../Menu/MainForm.cs:215
 msgid "Update check failed"
 msgstr "Controllo aggiornamenti fallito"
 
-#: ../../Menu/MainForm.cs:251
+#: ../../Menu/MainForm.cs:253
 msgid "Select a the installation profile (MSTS folder) to add:"
 msgstr "Scegli un profilo (cartella MSTS) da aggiungere:"
 
-#: ../../Menu/MainForm.cs:289
+#: ../../Menu/MainForm.cs:291
 msgid "Path: "
 msgstr ""
 
-#: ../../Menu/MainForm.cs:289
+#: ../../Menu/MainForm.cs:291
 msgid ""
 "\n"
 "Name: "
@@ -195,7 +195,7 @@ msgstr ""
 "\n"
 "Nome:"
 
-#: ../../Menu/MainForm.cs:289
+#: ../../Menu/MainForm.cs:291
 msgid ""
 "\n"
 "\n"
@@ -205,7 +205,7 @@ msgstr ""
 "\n"
 "Rimuovere questo profilo da Open Rails?"
 
-#: ../../Menu/MainForm.cs:385
+#: ../../Menu/MainForm.cs:388
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -213,7 +213,7 @@ msgstr ""
 "Il nome utente deve essere formato da 4 massimo 10 caratteri e non deve "
 "contenere spazi, ',\" oppure - e non deve iniziare con un numero"
 
-#: ../../Menu/MainForm.cs:559
+#: ../../Menu/MainForm.cs:562
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed.\n"
 "Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
@@ -223,16 +223,36 @@ msgstr ""
 "Clicca su 'Aggiungi...' per indicare a  Open Rails la cartella di Microsoft "
 "Train Simulator."
 
-#: ../../Menu/MainForm.cs:822
+#: ../../Menu/MainForm.cs:828
 msgid "Activity Briefing"
 msgstr "Presentazione Activity"
 
-#: ../../Menu/MainForm.cs:215
+#: ../../Menu/MainForm.cs:835 ../../Menu/MainForm.Designer.cs:430
+msgid "Timetable"
+msgstr "Orario"
+
+#: ../../Menu/MainForm.cs:839
+msgid "Player Timetable"
+msgstr "Orario del Player"
+
+#: ../../Menu/MainForm.cs:843
+msgid "Player Train"
+msgstr "Treno del Player"
+
+#: ../../Menu/MainForm.cs:846
+msgid "Consist : "
+msgstr "Convoglio:"
+
+#: ../../Menu/MainForm.cs:854
+msgid "Path : "
+msgstr ""
+
+#: ../../Menu/MainForm.cs:217
 #, csharp-format
 msgid "Update to {0}"
 msgstr "Aggiorna a {0}"
 
-#: ../../Menu/MainForm.cs:398
+#: ../../Menu/MainForm.cs:401
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -243,12 +263,12 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:402
+#: ../../Menu/MainForm.cs:405
 #, csharp-format
 msgid "Updating to {0}..."
 msgstr "Sto aggiornando a {0}..."
 
-#: ../../Menu/MainForm.cs:413
+#: ../../Menu/MainForm.cs:416
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -259,17 +279,17 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:816
+#: ../../Menu/MainForm.cs:819
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Scenario: {0}"
 
-#: ../../Menu/MainForm.cs:818
+#: ../../Menu/MainForm.cs:824 ../../Menu/MainForm.cs:849
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Locomotiva: {0}"
 
-#: ../../Menu/MainForm.cs:821
+#: ../../Menu/MainForm.cs:827
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
@@ -358,10 +378,6 @@ msgstr "Modalità:"
 msgid "Activity"
 msgstr ""
 
-#: ../../Menu/MainForm.Designer.cs:430
-msgid "Timetable"
-msgstr "Orario"
-
 #: ../../Menu/MainForm.Designer.cs:470
 msgid "Activity:"
 msgstr ""
@@ -370,7 +386,7 @@ msgstr ""
 msgid "Locomotive:"
 msgstr "Locomotiva:"
 
-#: ../../Menu/MainForm.Designer.cs:530 ../../Menu/MainForm.Designer.cs:729
+#: ../../Menu/MainForm.Designer.cs:530
 msgid "Consist:"
 msgstr "Convoglio:"
 
@@ -390,7 +406,7 @@ msgstr "Durata:"
 msgid "Time:"
 msgstr "Ora:"
 
-#: ../../Menu/MainForm.Designer.cs:649 ../../Menu/MainForm.Designer.cs:791
+#: ../../Menu/MainForm.Designer.cs:649 ../../Menu/MainForm.Designer.cs:792
 msgid "Weather:"
 msgstr "Meteo:"
 
@@ -398,47 +414,51 @@ msgstr "Meteo:"
 msgid "Difficulty:"
 msgstr "Difficoltà:"
 
-#: ../../Menu/MainForm.Designer.cs:696 ../../Menu/MainForm.Designer.cs:813
+#: ../../Menu/MainForm.Designer.cs:696 ../../Menu/MainForm.Designer.cs:814
 msgid "Season:"
 msgstr "Stagione:"
 
-#: ../../Menu/MainForm.Designer.cs:749
+#: ../../Menu/MainForm.Designer.cs:729
+msgid "Train:"
+msgstr "Treno:"
+
+#: ../../Menu/MainForm.Designer.cs:750
 msgid "Timetable:"
 msgstr "Orario:"
 
-#: ../../Menu/MainForm.Designer.cs:769
+#: ../../Menu/MainForm.Designer.cs:770
 msgid "Day:"
 msgstr "Giorno:"
 
-#: ../../Menu/MainForm.Designer.cs:828
+#: ../../Menu/MainForm.Designer.cs:829
 msgid "Computer trains"
 msgstr "Treni del computer"
 
-#: ../../Menu/MainForm.Designer.cs:839
+#: ../../Menu/MainForm.Designer.cs:848
 msgid "Relative time before player start time"
 msgstr "Anticipo orario rispetto alla partenza del player"
 
-#: ../../Menu/MainForm.Designer.cs:851
+#: ../../Menu/MainForm.Designer.cs:860
 msgid "Absolute time"
 msgstr "Orario assoluto"
 
-#: ../../Menu/MainForm.Designer.cs:861
+#: ../../Menu/MainForm.Designer.cs:870
 msgid "Include in direction of player train"
 msgstr "Inserito nella direzione del treno del player"
 
-#: ../../Menu/MainForm.Designer.cs:872
+#: ../../Menu/MainForm.Designer.cs:881
 msgid "Start at:"
 msgstr "Partenza alle:"
 
-#: ../../Menu/MainForm.Designer.cs:901
+#: ../../Menu/MainForm.Designer.cs:912
 msgid "Timetable set:"
 msgstr "Tabella orari:"
 
-#: ../../Menu/MainForm.Designer.cs:932
+#: ../../Menu/MainForm.Designer.cs:935
 msgid "Restart to apply update"
 msgstr "Riavvia per installare l'aggiornamento"
 
-#: ../../Menu/MainForm.Designer.cs:970
+#: ../../Menu/MainForm.Designer.cs:973
 msgid "Open Rails"
 msgstr ""
 

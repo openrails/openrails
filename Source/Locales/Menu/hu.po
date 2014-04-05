@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2014-03-29 10:36:54+0100\n"
-"PO-Revision-Date: 2014-03-29 10:40+0100\n"
+"POT-Creation-Date: 2014-04-05 20:09:06+0200\n"
+"PO-Revision-Date: 2014-04-05 20:15+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
@@ -106,87 +106,87 @@ msgstr "Nyomj meg egy gombot"
 msgid "Reset to default"
 msgstr "Alapbeállítás visszaállítása"
 
-#: ../../Menu/MainForm.cs:130
+#: ../../Menu/MainForm.cs:132
 msgid "Spring"
 msgstr "Tavasz"
 
-#: ../../Menu/MainForm.cs:131
+#: ../../Menu/MainForm.cs:133
 msgid "Summer"
 msgstr "Nyár"
 
-#: ../../Menu/MainForm.cs:132
+#: ../../Menu/MainForm.cs:134
 msgid "Autumn"
 msgstr "Ősz"
 
-#: ../../Menu/MainForm.cs:133
+#: ../../Menu/MainForm.cs:135
 msgid "Winter"
 msgstr "Tél"
 
-#: ../../Menu/MainForm.cs:137
+#: ../../Menu/MainForm.cs:139
 msgid "Clear"
 msgstr "Tiszta"
 
-#: ../../Menu/MainForm.cs:138
+#: ../../Menu/MainForm.cs:140
 msgid "Snow"
 msgstr "Havas"
 
-#: ../../Menu/MainForm.cs:139
+#: ../../Menu/MainForm.cs:141
 msgid "Rain"
 msgstr "Esős"
 
-#: ../../Menu/MainForm.cs:143
+#: ../../Menu/MainForm.cs:145
 msgid "Easy"
 msgstr "Könnyű"
 
-#: ../../Menu/MainForm.cs:144
+#: ../../Menu/MainForm.cs:146
 msgid "Medium"
 msgstr "Közepes"
 
-#: ../../Menu/MainForm.cs:145
+#: ../../Menu/MainForm.cs:147
 msgid "Hard"
 msgstr "Nehéz"
 
-#: ../../Menu/MainForm.cs:151
+#: ../../Menu/MainForm.cs:153
 msgid "Monday"
 msgstr "Hétfő"
 
-#: ../../Menu/MainForm.cs:152
+#: ../../Menu/MainForm.cs:154
 msgid "Tuesday"
 msgstr "Kedd"
 
-#: ../../Menu/MainForm.cs:153
+#: ../../Menu/MainForm.cs:155
 msgid "Wednesday"
 msgstr "Szerda"
 
-#: ../../Menu/MainForm.cs:154
+#: ../../Menu/MainForm.cs:156
 msgid "Thursday"
 msgstr "Csütörtök"
 
-#: ../../Menu/MainForm.cs:155
+#: ../../Menu/MainForm.cs:157
 msgid "Friday"
 msgstr "Péntek"
 
-#: ../../Menu/MainForm.cs:156
+#: ../../Menu/MainForm.cs:158
 msgid "Saturday"
 msgstr "Szombat"
 
-#: ../../Menu/MainForm.cs:157
+#: ../../Menu/MainForm.cs:159
 msgid "Sunday"
 msgstr "Vasárnap"
 
-#: ../../Menu/MainForm.cs:213
+#: ../../Menu/MainForm.cs:215
 msgid "Update check failed"
 msgstr "A frissítések ellenőrzése nem sikerült"
 
-#: ../../Menu/MainForm.cs:251
+#: ../../Menu/MainForm.cs:253
 msgid "Select a the installation profile (MSTS folder) to add:"
 msgstr "Telepítési profil (MSTS könyvtár) kiválasztása:"
 
-#: ../../Menu/MainForm.cs:289
+#: ../../Menu/MainForm.cs:291
 msgid "Path: "
 msgstr "Útvonal:"
 
-#: ../../Menu/MainForm.cs:289
+#: ../../Menu/MainForm.cs:291
 msgid ""
 "\n"
 "Name: "
@@ -194,7 +194,7 @@ msgstr ""
 "\n"
 "Név: "
 
-#: ../../Menu/MainForm.cs:289
+#: ../../Menu/MainForm.cs:291
 msgid ""
 "\n"
 "\n"
@@ -204,7 +204,7 @@ msgstr ""
 "\n"
 "Töröljük ezt a telepítési profilt az Open Railsből?"
 
-#: ../../Menu/MainForm.cs:385
+#: ../../Menu/MainForm.cs:388
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -212,7 +212,7 @@ msgstr ""
 "A felhasználónévnek 4-10 karakter hosszúnak kell lennie, nem tartalmazhat "
 "szóközt, ', \" vagy - jeleket, és nem szabad számmal kezdődnie."
 
-#: ../../Menu/MainForm.cs:559
+#: ../../Menu/MainForm.cs:562
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed.\n"
 "Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
@@ -221,16 +221,36 @@ msgstr ""
 "Úgy tűnik, a Microsoft Train Simulator nincs telepítve.\n"
 "Kattints a „Hozzáadás\" gombra az MSTS telepítési könyvtárának megadásához."
 
-#: ../../Menu/MainForm.cs:822
+#: ../../Menu/MainForm.cs:828
 msgid "Activity Briefing"
 msgstr "Menetokmányok:"
 
-#: ../../Menu/MainForm.cs:215
+#: ../../Menu/MainForm.cs:835 ../../Menu/MainForm.Designer.cs:430
+msgid "Timetable"
+msgstr "Menetrend"
+
+#: ../../Menu/MainForm.cs:839
+msgid "Player Timetable"
+msgstr "Játékos menetrendje"
+
+#: ../../Menu/MainForm.cs:843
+msgid "Player Train"
+msgstr "Játékos vonata"
+
+#: ../../Menu/MainForm.cs:846
+msgid "Consist : "
+msgstr "Szerelvény:"
+
+#: ../../Menu/MainForm.cs:854
+msgid "Path : "
+msgstr "Útvonal:"
+
+#: ../../Menu/MainForm.cs:217
 #, csharp-format
 msgid "Update to {0}"
 msgstr "Frissítés: {0}"
 
-#: ../../Menu/MainForm.cs:398
+#: ../../Menu/MainForm.cs:401
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -241,12 +261,12 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:402
+#: ../../Menu/MainForm.cs:405
 #, csharp-format
 msgid "Updating to {0}..."
 msgstr "Frissítés a {0}. verzióra..."
 
-#: ../../Menu/MainForm.cs:413
+#: ../../Menu/MainForm.cs:416
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -257,17 +277,17 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:816
+#: ../../Menu/MainForm.cs:819
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Pálya: {0}"
 
-#: ../../Menu/MainForm.cs:818
+#: ../../Menu/MainForm.cs:824 ../../Menu/MainForm.cs:849
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Jármű: {0}"
 
-#: ../../Menu/MainForm.cs:821
+#: ../../Menu/MainForm.cs:827
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "Szolgálat: {0}"
@@ -356,10 +376,6 @@ msgstr "Mód:"
 msgid "Activity"
 msgstr "Egyedi szolgálat"
 
-#: ../../Menu/MainForm.Designer.cs:430
-msgid "Timetable"
-msgstr "Menetrend"
-
 #: ../../Menu/MainForm.Designer.cs:470
 msgid "Activity:"
 msgstr "Szolgálat:"
@@ -368,7 +384,7 @@ msgstr "Szolgálat:"
 msgid "Locomotive:"
 msgstr "Jármű:"
 
-#: ../../Menu/MainForm.Designer.cs:530 ../../Menu/MainForm.Designer.cs:729
+#: ../../Menu/MainForm.Designer.cs:530
 msgid "Consist:"
 msgstr "Szerelvény:"
 
@@ -388,7 +404,7 @@ msgstr "Időtartam:"
 msgid "Time:"
 msgstr "Kezdési idő:"
 
-#: ../../Menu/MainForm.Designer.cs:649 ../../Menu/MainForm.Designer.cs:791
+#: ../../Menu/MainForm.Designer.cs:649 ../../Menu/MainForm.Designer.cs:792
 msgid "Weather:"
 msgstr "Időjárás:"
 
@@ -396,47 +412,51 @@ msgstr "Időjárás:"
 msgid "Difficulty:"
 msgstr "Nehézség:"
 
-#: ../../Menu/MainForm.Designer.cs:696 ../../Menu/MainForm.Designer.cs:813
+#: ../../Menu/MainForm.Designer.cs:696 ../../Menu/MainForm.Designer.cs:814
 msgid "Season:"
 msgstr "Évszak:"
 
-#: ../../Menu/MainForm.Designer.cs:749
+#: ../../Menu/MainForm.Designer.cs:729
+msgid "Train:"
+msgstr "Vonat:"
+
+#: ../../Menu/MainForm.Designer.cs:750
 msgid "Timetable:"
 msgstr "Menetrend:"
 
-#: ../../Menu/MainForm.Designer.cs:769
+#: ../../Menu/MainForm.Designer.cs:770
 msgid "Day:"
 msgstr "Nap:"
 
-#: ../../Menu/MainForm.Designer.cs:828
+#: ../../Menu/MainForm.Designer.cs:829
 msgid "Computer trains"
 msgstr "Számítógép irányította vonatok"
 
-#: ../../Menu/MainForm.Designer.cs:839
+#: ../../Menu/MainForm.Designer.cs:848
 msgid "Relative time before player start time"
 msgstr "A játékos vonatának indulásához képesti idő"
 
-#: ../../Menu/MainForm.Designer.cs:851
+#: ../../Menu/MainForm.Designer.cs:860
 msgid "Absolute time"
 msgstr "Abszolút idő"
 
-#: ../../Menu/MainForm.Designer.cs:861
+#: ../../Menu/MainForm.Designer.cs:870
 msgid "Include in direction of player train"
 msgstr "Beillesztés a játékos vonatának útirányába"
 
-#: ../../Menu/MainForm.Designer.cs:872
+#: ../../Menu/MainForm.Designer.cs:881
 msgid "Start at:"
 msgstr "Szolgálatfelvételi hely:"
 
-#: ../../Menu/MainForm.Designer.cs:901
+#: ../../Menu/MainForm.Designer.cs:912
 msgid "Timetable set:"
 msgstr "Menetrend beállítása:"
 
-#: ../../Menu/MainForm.Designer.cs:932
+#: ../../Menu/MainForm.Designer.cs:935
 msgid "Restart to apply update"
 msgstr "A frissítés  befejezéséhez újraindítás szükséges"
 
-#: ../../Menu/MainForm.Designer.cs:970
+#: ../../Menu/MainForm.Designer.cs:973
 msgid "Open Rails"
 msgstr "Open Rails"
 
@@ -585,11 +605,11 @@ msgstr "Szimuláció"
 
 #: ../../Menu/Options.Designer.cs:680
 msgid "Curve dependent speed limit"
-msgstr "Ívfüggő sebességkorlátozás"
+msgstr "Ívfüggő megengedett sebesség"
 
 #: ../../Menu/Options.Designer.cs:690
 msgid "Curve dependent resistance"
-msgstr "Ívfüggés ellenállás"
+msgstr "Ívfüggő ellenállás"
 
 #: ../../Menu/Options.Designer.cs:700
 msgid "Override non-electrified route line-voltage"

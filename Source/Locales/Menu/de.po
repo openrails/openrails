@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Open Rails\n"
-"POT-Creation-Date: 2014-03-31 15:38:06+0200\n"
-"PO-Revision-Date: 2014-03-31 15:46+0100\n"
+"POT-Creation-Date: 2014-03-29 10:36:54+0100\n"
+"PO-Revision-Date: 2014-04-05 12:46+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -12,41 +12,14 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../Menu/EditKey.Designer.cs:53 ../../Menu/FolderForm.Designer.cs:56
-#: ../../Menu/Options.Designer.cs:154
+#: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:154
 msgid "OK"
 msgstr "OK"
 
-#: ../../Menu/EditKey.Designer.cs:67
-msgid "X"
-msgstr "X"
-
-#: ../../Menu/EditKey.Designer.cs:92
-msgid "D"
-msgstr "D"
-
-#: ../../Menu/EditKey.Designer.cs:115
-#: ../../Menu/KeyInputEditControl.Designer.cs:108
-msgid "EditKey"
-msgstr "Taste bearbeiten"
-
-#: ../../Menu/EditKey.Designer.cs:54
-msgid "Accept changes."
-msgstr "Änderungen speichern."
-
-#: ../../Menu/EditKey.Designer.cs:68 ../../Menu/FolderForm.Designer.cs:67
-#: ../../Menu/MultiplayerForm.Designer.cs:60
-#: ../../Menu/Options.Designer.cs:208 ../../Menu/TestingForm.Designer.cs:84
+#: ../../Menu/FolderForm.Designer.cs:67 ../../Menu/Options.Designer.cs:208
+#: ../../Menu/TestingForm.Designer.cs:84
 msgid "Cancel"
 msgstr "Abbrechen"
-
-#: ../../Menu/EditKey.Designer.cs:81
-msgid "Press any key."
-msgstr "Drücken Sie eine Taste."
-
-#: ../../Menu/EditKey.Designer.cs:93
-msgid "Restore default value."
-msgstr "Standard wiederherstellen."
 
 #: ../../Menu/FolderForm.Designer.cs:77
 msgid "Path:"
@@ -112,6 +85,10 @@ msgstr "✘"
 #: ../../Menu/KeyInputEditControl.Designer.cs:86
 msgid "↺"
 msgstr "↺"
+
+#: ../../Menu/KeyInputEditControl.Designer.cs:108
+msgid "EditKey"
+msgstr "Taste bearbeiten"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:54
 msgid "Accept changes"
@@ -345,22 +322,18 @@ msgid "Host/port:"
 msgstr "Host/Port:"
 
 #: ../../Menu/MainForm.Designer.cs:286
-#: ../../Menu/MultiplayerForm.Designer.cs:70
 msgid "User name:"
 msgstr "Nickname:"
 
 #: ../../Menu/MainForm.Designer.cs:296
-#: ../../Menu/MultiplayerForm.Designer.cs:127
 msgid "Client"
 msgstr "Client"
 
 #: ../../Menu/MainForm.Designer.cs:306
-#: ../../Menu/MultiplayerForm.Designer.cs:139
 msgid "Server"
 msgstr "Server"
 
 #: ../../Menu/MainForm.Designer.cs:331
-#: ../../Menu/MultiplayerForm.Designer.cs:240
 msgid "Multiplayer"
 msgstr "Mehrspieler"
 
@@ -380,8 +353,7 @@ msgstr "Bearbeiten"
 msgid "Mode:"
 msgstr "Modus:"
 
-#: ../../Menu/MainForm.Designer.cs:419 ../../Menu/RouteDetails.designer.cs:213
-#: ../../Menu/TestingForm.Designer.cs:182
+#: ../../Menu/MainForm.Designer.cs:419 ../../Menu/TestingForm.Designer.cs:182
 msgid "Activity"
 msgstr "Aufgabe"
 
@@ -471,50 +443,6 @@ msgstr "Programm neu starten, um Uüdate durchzuführen."
 #: ../../Menu/MainForm.Designer.cs:970
 msgid "Open Rails"
 msgstr "Open Rails"
-
-#: ../../Menu/MultiplayerForm.cs:72
-msgid ""
-"User name must be 4-10 characters long, cannot contain space, ' or \" and "
-"must not start with a digit."
-msgstr ""
-"Nickname muss 4-10 Zeichen lang sein, darf keine Leerzeichen, ', \"  oder - "
-"enthalten und nicht mit einer Zahl beginnen."
-
-#: ../../Menu/MultiplayerForm.cs:108
-msgid "Port number must be an integer between 0 and 65535."
-msgstr "Port Nummer muss eine ganze Zahl zwischen 0 und 65535 sein."
-
-#: ../../Menu/MultiplayerForm.Designer.cs:79
-msgid "IP:"
-msgstr "IP:"
-
-#: ../../Menu/MultiplayerForm.Designer.cs:88
-msgid "Port:"
-msgstr "Port:"
-
-#: ../../Menu/MultiplayerForm.Designer.cs:104
-msgid "127.0.0.1"
-msgstr "127.0.0.1"
-
-#: ../../Menu/MultiplayerForm.Designer.cs:167
-msgid "10"
-msgstr "10"
-
-#: ../../Menu/MultiplayerForm.Designer.cs:176
-msgid "Update Every "
-msgstr "Update auf {0}"
-
-#: ../../Menu/MultiplayerForm.Designer.cs:185
-msgid "Seconds"
-msgstr "Sekunden"
-
-#: ../../Menu/MultiplayerForm.Designer.cs:194
-msgid "Show Avatar"
-msgstr "Avatar anzeigen"
-
-#: ../../Menu/MultiplayerForm.Designer.cs:211
-msgid "Avatar URL"
-msgstr "Avatar URL"
 
 #: ../../Menu/Options.cs:214
 msgid "Click to change this key"
@@ -660,21 +588,18 @@ msgid "Simulation"
 msgstr "Simulation"
 
 #: ../../Menu/Options.Designer.cs:680
-#, fuzzy
 msgid "Curve dependent speed limit"
-msgstr "Kurvengeschwindigkeitsabhängig"
+msgstr "Kurvenabhängige Geschwindigkeitsbegrenzung"
 
 #: ../../Menu/Options.Designer.cs:690
-#, fuzzy
 msgid "Curve dependent resistance"
-msgstr "Kurvengeschwindigkeitsabhängig"
+msgstr "Kurvenabhängiger Widerstand"
 
 #: ../../Menu/Options.Designer.cs:700
 msgid "Override non-electrified route line-voltage"
 msgstr "Bei nicht elektrifizierten Routen Oberleitungsspannung ignorieren"
 
 #: ../../Menu/Options.Designer.cs:711
-#, fuzzy
 msgid "Adhesion moving average filter size"
 msgstr "Länge des gleitenden Durchschnitts-Adhäsionsfilters"
 
@@ -979,47 +904,6 @@ msgstr "Löscht alle ausgewählten Speilstände."
 msgid "Restores all saves deleted in this session."
 msgstr "Stellt in dieser Sitzung gelöschte Spielstände wider her."
 
-#: ../../Menu/RouteDetails.cs:55
-msgid "Route Details"
-msgstr "Routen-Details"
-
-#: ../../Menu/RouteDetails.cs:67
-msgid "Activity Details"
-msgstr "Aufgabeneinführung:"
-
-#: ../../Menu/RouteDetails.designer.cs:100
-msgid "Environment"
-msgstr "Umgebung:"
-
-#: ../../Menu/RouteDetails.designer.cs:119
-msgid "Start Time"
-msgstr "Startzeit:"
-
-#: ../../Menu/RouteDetails.designer.cs:138
-msgid "Season"
-msgstr "Jahreszeit:"
-
-#: ../../Menu/RouteDetails.designer.cs:157
-msgid "Weather"
-msgstr "Wetter:"
-
-#: ../../Menu/RouteDetails.designer.cs:167
-msgid "Close"
-msgstr "Schließen"
-
-#: ../../Menu/RouteDetails.designer.cs:200
-#, fuzzy
-msgid "groupBox1"
-msgstr "groupBox1"
-
-#: ../../Menu/RouteDetails.designer.cs:232
-msgid "Duration"
-msgstr "Dauer:"
-
-#: ../../Menu/RouteDetails.designer.cs:251
-msgid "Difficulty"
-msgstr "Schwierigkeit:"
-
 #: ../../Menu/TestingForm.Designer.cs:62
 msgid "Test all"
 msgstr "Alle testen"
@@ -1079,6 +963,86 @@ msgstr "Ladezeit"
 #: ../../Menu/TestingForm.Designer.cs:228
 msgid "FPS"
 msgstr "Framerate"
+
+#~ msgid "X"
+#~ msgstr "X"
+
+#~ msgid "D"
+#~ msgstr "D"
+
+#~ msgid "Accept changes."
+#~ msgstr "Änderungen speichern."
+
+#~ msgid "Press any key."
+#~ msgstr "Drücken Sie eine Taste."
+
+#~ msgid "Restore default value."
+#~ msgstr "Standard wiederherstellen."
+
+#~ msgid ""
+#~ "User name must be 4-10 characters long, cannot contain space, ' or \" and "
+#~ "must not start with a digit."
+#~ msgstr ""
+#~ "Nickname muss 4-10 Zeichen lang sein, darf keine Leerzeichen, ', \"  oder "
+#~ "- enthalten und nicht mit einer Zahl beginnen."
+
+#~ msgid "Port number must be an integer between 0 and 65535."
+#~ msgstr "Port Nummer muss eine ganze Zahl zwischen 0 und 65535 sein."
+
+#~ msgid "IP:"
+#~ msgstr "IP:"
+
+#~ msgid "Port:"
+#~ msgstr "Port:"
+
+#~ msgid "127.0.0.1"
+#~ msgstr "127.0.0.1"
+
+#~ msgid "10"
+#~ msgstr "10"
+
+#~ msgid "Update Every "
+#~ msgstr "Update auf {0}"
+
+#~ msgid "Seconds"
+#~ msgstr "Sekunden"
+
+#~ msgid "Show Avatar"
+#~ msgstr "Avatar anzeigen"
+
+#~ msgid "Avatar URL"
+#~ msgstr "Avatar URL"
+
+#~ msgid "Route Details"
+#~ msgstr "Routen-Details"
+
+#~ msgid "Activity Details"
+#~ msgstr "Aufgabeneinführung:"
+
+#~ msgid "Environment"
+#~ msgstr "Umgebung:"
+
+#~ msgid "Start Time"
+#~ msgstr "Startzeit:"
+
+#~ msgid "Season"
+#~ msgstr "Jahreszeit:"
+
+#~ msgid "Weather"
+#~ msgstr "Wetter:"
+
+#~ msgid "Close"
+#~ msgstr "Schließen"
+
+#, fuzzy
+#~ msgid "groupBox1"
+#~ msgstr "groupBox1"
+
+#~ msgid "Duration"
+#~ msgstr "Dauer:"
+
+#~ msgid "Difficulty"
+#~ msgstr "Schwierigkeit:"
 
 #~ msgid "Optimal curve speed factor"
 #~ msgstr "Optimaler Kurvengeschwindigkeitsfaktor"

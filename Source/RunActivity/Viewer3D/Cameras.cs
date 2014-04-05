@@ -592,7 +592,7 @@ namespace ORTS.Viewer3D
         const float maxCameraHeight = 1000f;
         const float ZoomFactor = 2f;
 
-        public override string Name { get { return "Free"; } }
+        public override string Name { get { return Viewer.Catalog.GetString("Free"); } }
 
         public FreeRoamCamera(Viewer viewer, Camera previousCamera)
             : base(viewer, previousCamera)
@@ -978,7 +978,7 @@ namespace ORTS.Viewer3D
                 return attachedCar.WorldPosition.WorldLocation.Location.Y + TerrainAltitudeMargin < elevationAtTrain || cameraLocation.Location.Y + TerrainAltitudeMargin < elevationAtCamera;
             }
         }
-        public override string Name { get { return Front ? "Outside Front" : "Outside Rear"; } }
+        public override string Name { get { return Front ? Viewer.Catalog.GetString("Outside Front") : Viewer.Catalog.GetString("Outside Rear"); } }
 
         public TrackingCamera(Viewer viewer, AttachedTo attachedTo)
             : base(viewer)
@@ -1234,7 +1234,7 @@ namespace ORTS.Viewer3D
         protected bool attachedToRear;
 
         public override float NearPlane { get { return 0.25f; } }
-        public override string Name { get { return "Brakeman"; } }
+        public override string Name { get { return Viewer.Catalog.GetString("Brakeman"); } }
 
         public BrakemanCamera(Viewer viewer)
             : base(viewer)
@@ -1266,7 +1266,7 @@ namespace ORTS.Viewer3D
         public override Styles Style { get { return Styles.Passenger; } }
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.1f; } }
-        public override string Name { get { return "Passenger"; } }
+        public override string Name { get { return Viewer.Catalog.GetString("Passenger"); } }
         private bool StartDirectionSet;
 
         public PassengerCamera(Viewer viewer)
@@ -1303,7 +1303,7 @@ namespace ORTS.Viewer3D
         // Head-out camera is only possible on the player train.
         public override bool IsAvailable { get { return Viewer.PlayerTrain != null && Viewer.PlayerTrain.Cars.Any(c => c.HeadOutViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.25f; } }
-        public override string Name { get { return "Head out"; } }
+        public override string Name { get { return Viewer.Catalog.GetString("Head out"); } }
 
         public HeadOutCamera(Viewer viewer, HeadDirection headDirection)
             : base(viewer)
@@ -1347,7 +1347,7 @@ namespace ORTS.Viewer3D
         public override Styles Style { get { return Styles.Cab; } }
         // Cab camera is only possible on the player train.
         public override bool IsAvailable { get { return Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.HasFrontCab; } }
-        public override string Name { get { return "Cab"; } }
+        public override string Name { get { return Viewer.Catalog.GetString("Cab"); } }
 
         public override bool IsUnderground
         {
@@ -1527,7 +1527,7 @@ namespace ORTS.Viewer3D
 
         protected TrainCar attachedCar;
         public override TrainCar AttachedCar { get { return attachedCar; } }
-        public override string Name { get { return "Trackside"; } }
+        public override string Name { get { return Viewer.Catalog.GetString("Trackside"); } }
 
         protected TrainCar LastCheckCar;
         protected readonly Random Random;
@@ -1677,7 +1677,7 @@ namespace ORTS.Viewer3D
 		public override Styles Style { get { return Styles.ThreeDimCab; } }
 		public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.LeadLocomotive != null && Viewer.SelectedTrain.LeadLocomotive.CabViewpoints != null; } }
 		public override float NearPlane { get { return 0.1f; } }
-		public override string Name { get { return "3D Camera"; } }
+		public override string Name { get { return Viewer.Catalog.GetString("3D Cab"); } }
 		bool StartDirectionSet = false;
 		protected int CurrentViewpointIndex;
 		protected bool PrevCabWasRear;
