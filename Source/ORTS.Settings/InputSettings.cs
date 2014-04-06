@@ -465,7 +465,7 @@ namespace ORTS.Settings
             // Everything else goes here, sorted alphabetically please (and grouped by first word of name).
             Commands[(int)UserCommands.CameraBrakeman] = new UserCommandKeyInput(0x07);
 			Commands[(int)UserCommands.CameraCab] = new UserCommandKeyInput(0x02);
-			Commands[(int)UserCommands.CameraThreeDimensionalCab] = new UserCommandKeyInput(0x08);
+			Commands[(int)UserCommands.CameraThreeDimensionalCab] = new UserCommandKeyInput(0x02, KeyModifiers.Alt);
 			Commands[(int)UserCommands.CameraCabRotate] = new UserCommandKeyInput(0x13, KeyModifiers.Alt);
             Commands[(int)UserCommands.CameraCarFirst] = new UserCommandKeyInput(0x47, KeyModifiers.Alt);
             Commands[(int)UserCommands.CameraCarLast] = new UserCommandKeyInput(0x4F, KeyModifiers.Alt);
