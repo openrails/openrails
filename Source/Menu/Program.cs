@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using ORTS.Common;
 using ORTS.Updater;
@@ -51,12 +52,29 @@ namespace ORTS
 
         static void MainForm()
         {
+            // We wait for any processes identified by /WAITPID=<pid> to exit before starting up so that the updater
+            // will not try and apply an update whilst the previous instance is still lingering.
+            var waitPids = Environment.GetCommandLineArgs().Where(a => a.StartsWith("/WAITPID="));
+            foreach (var waitPid in waitPids)
+            {
+                try
+                {
+                    Process.GetProcessById(int.Parse(waitPid.Substring(9))).WaitForExit();
+                }
+                catch (ArgumentException)
+                {
+                    // ArgumentException occurs if we try and GetProcessById with an ID that has already exited.
+                }
+            }
+
+            // Update manager is needed early to apply any updates before we show UI.
             var updateManager = new UpdateManager(Path.GetDirectoryName(Application.ExecutablePath));
 
             // We must do this before localisation gets its grubby mitts on the satellite assemblies.
             if (updateManager.Apply())
             {
-                Process.Start(System.IO.Path.Combine(updateManager.BasePath, "OpenRails.exe"));
+                Process.Start(Application.ExecutablePath);
+                Application.Exit();
                 return;
             }
 

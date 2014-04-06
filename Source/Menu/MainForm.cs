@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -28,12 +29,11 @@ using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using ORTS.Common;
+using ORTS.Formats;
 using ORTS.Menu;
 using ORTS.Settings;
-using ORTS.Formats;
-using Path = ORTS.Menu.Path;
 using ORTS.Updater;
-using System.Diagnostics;
+using Path = ORTS.Menu.Path;
 
 namespace ORTS
 {
@@ -427,7 +427,8 @@ namespace ORTS
 
         void linkLabelRestart_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Process.Start(System.IO.Path.Combine(UpdateManager.BasePath, "OpenRails.exe"));
+            // We tell the new process (which will be applying the update) to wait for us to exit first.
+            Process.Start(Application.ExecutablePath, String.Format("/WAITPID={0}", Process.GetCurrentProcess().Id));
             Application.Exit();
         }
 
@@ -887,7 +888,7 @@ namespace ORTS
 
         void ShowDetail(string title, string[] lines)
         {
-            var titleControl = new Label { Margin = new Padding(2), Text = title, Font = new Font(panelDetails.Font, FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft };
+            var titleControl = new Label { Margin = new Padding(2), Text = title, UseMnemonic = false, Font = new Font(panelDetails.Font, FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft };
             panelDetails.Controls.Add(titleControl);
             titleControl.Left = titleControl.Margin.Left;
             titleControl.Width = panelDetails.ClientSize.Width - titleControl.Margin.Horizontal - titleControl.PreferredHeight;

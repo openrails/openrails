@@ -24,7 +24,6 @@ using System.Net;
 using System.Text;
 using Ionic.Zip;
 using Newtonsoft.Json;
-using ORTS.Common;
 using ORTS.Settings;
 
 namespace ORTS.Updater
