@@ -1697,6 +1697,11 @@ namespace MSTS.Parsers
                 {
                     c = PeekChar();
                     if ((c == '(') || (c == ')')) break;
+                    if (c == '"') // Also delimit by a trailing " in case the leading " is missing. 
+                    {
+                        c = ReadChar();
+                        break;
+                    }
                     c = ReadChar();
                     if (IsEof(c)) break;
                     if (IsWhiteSpace(c)) break;
