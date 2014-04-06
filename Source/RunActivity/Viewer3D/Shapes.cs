@@ -152,6 +152,78 @@ namespace ORTS.Viewer3D
         }
     }
 
+    public class SharedStaticShapeInstance : StaticShape
+    {
+        readonly float ObjectRadius;
+        readonly float ObjectViewingDistance;
+        readonly ShapePrimitiveInstances[] Primitives;
+
+        public SharedStaticShapeInstance(Viewer viewer, string path, List<StaticShape> shapes)
+            : base(viewer, path, GetCenterLocation(shapes), shapes[0].Flags)
+        {
+            // We need both ends of the distance levels. We render the first but view as far as the last.
+            var dlHighest = shapes[0].SharedShape.LodControls[0].DistanceLevels.First();
+            var dlLowest = shapes[0].SharedShape.LodControls[0].DistanceLevels.Last();
+
+            // Object radius should extend from central location to the furthest instance location PLUS the actual object radius.
+            ObjectRadius = shapes.Max(s => (Location.Location - s.Location.Location).Length()) + dlHighest.ViewSphereRadius;
+            
+            // Object viewing distance is easy because it's based on the outside of the object radius.
+            if (viewer.Settings.LODViewingExtention)
+                ObjectViewingDistance = float.MaxValue;
+            else
+                ObjectViewingDistance = dlLowest.ViewingDistance;
+            
+            // Create all the primitives for the shared shape.
+            Primitives = (from lod in shapes[0].SharedShape.LodControls
+                          from subobj in lod.DistanceLevels[0].SubObjects
+                          from prim in subobj.ShapePrimitives
+                          select new ShapePrimitiveInstances(viewer.GraphicsDevice, prim, GetMatricies(shapes, prim))).ToArray();
+        }
+
+        static WorldPosition GetCenterLocation(List<StaticShape> shapes)
+        {
+            var tileX = shapes.Min(s => s.Location.TileX);
+            var tileZ = shapes.Min(s => s.Location.TileZ);
+            Debug.Assert(tileX == shapes.Max(s => s.Location.TileX));
+            Debug.Assert(tileZ == shapes.Max(s => s.Location.TileZ));
+            var minX = shapes.Min(s => s.Location.Location.X);
+            var maxX = shapes.Max(s => s.Location.Location.X);
+            var minY = shapes.Min(s => s.Location.Location.Y);
+            var maxY = shapes.Max(s => s.Location.Location.Y);
+            var minZ = shapes.Min(s => s.Location.Location.Z);
+            var maxZ = shapes.Max(s => s.Location.Location.Z);
+            return new WorldPosition() { TileX = tileX, TileZ = tileZ, Location = new Vector3((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2) };
+        }
+
+        Matrix[] GetMatricies(List<StaticShape> shapes, ShapePrimitive shapePrimitive)
+        {
+            var matrix = Matrix.Identity;
+            var hi = shapePrimitive.HierarchyIndex;
+            while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length && shapePrimitive.Hierarchy[hi] != -1)
+            {
+                matrix *= SharedShape.Matrices[hi];
+                hi = shapePrimitive.Hierarchy[hi];
+            }
+
+            var matricies = new Matrix[shapes.Count];
+            for (var i = 0; i < shapes.Count; i++)
+                matricies[i] = matrix * shapes[i].Location.XNAMatrix * Matrix.CreateTranslation(-Location.Location.X, -Location.Location.Y, Location.Location.Z);
+
+            return matricies;
+        }
+
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            var dTileX = Location.TileX - Viewer.Camera.TileX;
+            var dTileZ = Location.TileZ - Viewer.Camera.TileZ;
+            var mstsLocation = Location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
+            var xnaMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
+            foreach (var primitive in Primitives)
+                frame.AddAutoPrimitive(mstsLocation, ObjectRadius, ObjectViewingDistance, primitive.Material, primitive, RenderPrimitiveGroup.World, ref xnaMatrix, Flags);
+        }
+    }
+
     public class StaticTrackShape : StaticShape
     {
         public StaticTrackShape(Viewer viewer, string path, WorldPosition position)
@@ -731,13 +803,13 @@ namespace ORTS.Viewer3D
         public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
 
-        protected VertexBuffer VertexBuffer;
-        protected VertexDeclaration VertexDeclaration;
-        protected int VertexBufferStride;
-        protected IndexBuffer IndexBuffer;
-        protected int MinVertexIndex;
-        protected int NumVerticies;
-        protected int PrimitiveCount;
+        protected internal VertexBuffer VertexBuffer;
+        protected internal VertexDeclaration VertexDeclaration;
+        protected internal int VertexBufferStride;
+        protected internal IndexBuffer IndexBuffer;
+        protected internal int MinVertexIndex;
+        protected internal int NumVerticies;
+        protected internal int PrimitiveCount;
 
         public ShapePrimitive()
         {
@@ -780,6 +852,76 @@ namespace ORTS.Viewer3D
         public virtual void Mark()
         {
             Material.Mark();
+        }
+    }
+
+    struct ShapeInstanceData
+    {
+#pragma warning disable 0649
+        public Matrix World;
+#pragma warning restore 0649
+
+        public static readonly VertexElement[] VertexElements = {
+            VertexPositionNormalTexture.VertexElements[0],
+            VertexPositionNormalTexture.VertexElements[1],
+            VertexPositionNormalTexture.VertexElements[2],
+            new VertexElement(1, sizeof(float) * 0, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 1),
+            new VertexElement(1, sizeof(float) * 4, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 2),
+            new VertexElement(1, sizeof(float) * 8, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 3),
+            new VertexElement(1, sizeof(float) * 12, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 4),
+        };
+
+        public static int SizeInBytes = VertexPositionNormalTexture.SizeInBytes + sizeof(float) * 16;
+    }
+
+    public class ShapePrimitiveInstances : RenderPrimitive
+    {
+        public Material Material { get; protected set; }
+        public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
+        public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
+
+        protected VertexBuffer VertexBuffer;
+        protected VertexDeclaration VertexDeclaration;
+        protected int VertexBufferStride;
+        protected IndexBuffer IndexBuffer;
+        protected int MinVertexIndex;
+        protected int NumVerticies;
+        protected int PrimitiveCount;
+
+        protected VertexBuffer InstanceBuffer;
+        protected VertexDeclaration InstanceDeclaration;
+        protected int InstanceBufferStride;
+        protected int InstanceCount;
+
+        internal ShapePrimitiveInstances(GraphicsDevice graphicsDevice, ShapePrimitive shapePrimitive, Matrix[] positions)
+        {
+            Material = shapePrimitive.Material;
+            Hierarchy = shapePrimitive.Hierarchy;
+            HierarchyIndex = shapePrimitive.HierarchyIndex;
+            VertexBuffer = shapePrimitive.VertexBuffer;
+            VertexDeclaration = shapePrimitive.VertexDeclaration;
+            VertexBufferStride = shapePrimitive.VertexBufferStride;
+            IndexBuffer = shapePrimitive.IndexBuffer;
+            MinVertexIndex = shapePrimitive.MinVertexIndex;
+            NumVerticies = shapePrimitive.NumVerticies;
+            PrimitiveCount = shapePrimitive.PrimitiveCount;
+
+            InstanceBuffer = new VertexBuffer(graphicsDevice, typeof(ShapeInstanceData), positions.Length, BufferUsage.WriteOnly);
+            InstanceBuffer.SetData(positions);
+            InstanceDeclaration = new VertexDeclaration(graphicsDevice, ShapeInstanceData.VertexElements);
+            InstanceBufferStride = InstanceDeclaration.GetVertexStrideSize(1);
+            InstanceCount = positions.Length;
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            graphicsDevice.VertexDeclaration = InstanceDeclaration;
+            graphicsDevice.Indices = IndexBuffer;
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexBufferStride);
+            graphicsDevice.Vertices[0].SetFrequencyOfIndexData(InstanceCount);
+            graphicsDevice.Vertices[1].SetSource(InstanceBuffer, 0, InstanceBufferStride);
+            graphicsDevice.Vertices[1].SetFrequencyOfInstanceData(1);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount);
         }
     }
 

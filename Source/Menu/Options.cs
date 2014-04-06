@@ -92,6 +92,7 @@ namespace ORTS
             // Video tab
             numericWorldObjectDensity.Value = Settings.WorldObjectDensity;
             comboWindowSize.Text = Settings.WindowSize;
+            checkBoxVerticalSync.Checked = Settings.VerticalSync;
             checkWire.Checked = Settings.Wire;
             checkDynamicShadows.Checked = Settings.DynamicShadows;
             checkWindowGlass.Checked = Settings.WindowGlass;
@@ -118,6 +119,7 @@ namespace ORTS
             numericDistantMountainsViewingDistance.Value = settings.DistantMountainsViewingDistance / 1000;
             checkLODAlwaysMaximum.Checked = settings.LODAlwaysMaximum;
             checkLODViewingExtention.Checked = settings.LODViewingExtention;
+            checkBoxModelInstancing.Checked = settings.ModelInstancing;
             checkPerformanceTuner.Checked = settings.PerformanceTuner;
             numericPerformanceTunerTarget.Value = settings.PerformanceTunerTarget;
             checkDoubleWire.Checked = settings.DoubleWire;
@@ -247,6 +249,7 @@ namespace ORTS
             // Video tab
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
             Settings.WindowSize = comboWindowSize.Text;
+            Settings.VerticalSync = checkBoxVerticalSync.Checked;
             Settings.Wire = checkWire.Checked;
             Settings.DynamicShadows = checkDynamicShadows.Checked;
             Settings.WindowGlass = checkWindowGlass.Checked;
@@ -273,6 +276,7 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.LODAlwaysMaximum = checkLODAlwaysMaximum.Checked;
             Settings.LODViewingExtention = checkLODViewingExtention.Checked;
+            Settings.ModelInstancing = checkBoxModelInstancing.Checked;
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;

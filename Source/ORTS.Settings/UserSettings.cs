@@ -194,6 +194,9 @@ namespace ORTS.Settings
         [Default(false)]
         public bool UseLargeAddressAware { get; set; }
 
+        [Default(false)]
+        public bool ModelInstancing { get; set; }
+
 		// Data Logger settings:
 		[Default("comma")]
 		public string DataLoggerSeparator { set; get; }

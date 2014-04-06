@@ -80,6 +80,7 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.checkBoxModelInstancing = new System.Windows.Forms.CheckBox();
             this.checkUseLargeAddressAware = new System.Windows.Forms.CheckBox();
             this.checkFastFullScreenAltTab = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
@@ -118,6 +119,7 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkBoxVerticalSync = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -389,6 +391,7 @@
             // 
             // tabPageVideo
             // 
+            this.tabPageVideo.Controls.Add(this.checkBoxVerticalSync);
             this.tabPageVideo.Controls.Add(this.label11);
             this.tabPageVideo.Controls.Add(this.numericDistantMountainsViewingDistance);
             this.tabPageVideo.Controls.Add(this.checkDistantMountains);
@@ -417,7 +420,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(86, 231);
+            this.label11.Location = new System.Drawing.Point(86, 254);
             this.label11.Margin = new System.Windows.Forms.Padding(3);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(110, 13);
@@ -431,7 +434,7 @@
             0,
             0,
             0});
-            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 229);
+            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 252);
             this.numericDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericDistantMountainsViewingDistance.Maximum = new decimal(new int[] {
             1000,
@@ -456,7 +459,7 @@
             // checkDistantMountains
             // 
             this.checkDistantMountains.AutoSize = true;
-            this.checkDistantMountains.Location = new System.Drawing.Point(6, 206);
+            this.checkDistantMountains.Location = new System.Drawing.Point(6, 229);
             this.checkDistantMountains.Name = "checkDistantMountains";
             this.checkDistantMountains.Size = new System.Drawing.Size(110, 17);
             this.checkDistantMountains.TabIndex = 16;
@@ -466,7 +469,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(66, 182);
+            this.label14.Location = new System.Drawing.Point(66, 205);
             this.label14.Margin = new System.Windows.Forms.Padding(3);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(104, 13);
@@ -480,7 +483,7 @@
             0,
             0,
             0});
-            this.numericViewingDistance.Location = new System.Drawing.Point(6, 180);
+            this.numericViewingDistance.Location = new System.Drawing.Point(6, 203);
             this.numericViewingDistance.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -503,7 +506,7 @@
             // labelFOVHelp
             // 
             this.labelFOVHelp.AutoSize = true;
-            this.labelFOVHelp.Location = new System.Drawing.Point(222, 130);
+            this.labelFOVHelp.Location = new System.Drawing.Point(222, 153);
             this.labelFOVHelp.Margin = new System.Windows.Forms.Padding(3);
             this.labelFOVHelp.Name = "labelFOVHelp";
             this.labelFOVHelp.Size = new System.Drawing.Size(28, 13);
@@ -512,7 +515,7 @@
             // 
             // numericViewingFOV
             // 
-            this.numericViewingFOV.Location = new System.Drawing.Point(6, 128);
+            this.numericViewingFOV.Location = new System.Drawing.Point(6, 151);
             this.numericViewingFOV.Maximum = new decimal(new int[] {
             120,
             0,
@@ -536,7 +539,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(66, 130);
+            this.label10.Location = new System.Drawing.Point(66, 153);
             this.label10.Margin = new System.Windows.Forms.Padding(3);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(105, 13);
@@ -550,7 +553,7 @@
             0,
             0,
             0});
-            this.numericCab2DStretch.Location = new System.Drawing.Point(6, 154);
+            this.numericCab2DStretch.Location = new System.Drawing.Point(6, 177);
             this.numericCab2DStretch.Name = "numericCab2DStretch";
             this.numericCab2DStretch.Size = new System.Drawing.Size(54, 20);
             this.numericCab2DStretch.TabIndex = 12;
@@ -560,7 +563,7 @@
             // labelCab2DStretch
             // 
             this.labelCab2DStretch.AutoSize = true;
-            this.labelCab2DStretch.Location = new System.Drawing.Point(66, 156);
+            this.labelCab2DStretch.Location = new System.Drawing.Point(66, 179);
             this.labelCab2DStretch.Margin = new System.Windows.Forms.Padding(3);
             this.labelCab2DStretch.Name = "labelCab2DStretch";
             this.labelCab2DStretch.Size = new System.Drawing.Size(89, 13);
@@ -616,7 +619,7 @@
             // checkWindowGlass
             // 
             this.checkWindowGlass.AutoSize = true;
-            this.checkWindowGlass.Location = new System.Drawing.Point(6, 105);
+            this.checkWindowGlass.Location = new System.Drawing.Point(6, 128);
             this.checkWindowGlass.Name = "checkWindowGlass";
             this.checkWindowGlass.Size = new System.Drawing.Size(151, 17);
             this.checkWindowGlass.TabIndex = 8;
@@ -636,7 +639,7 @@
             // checkDynamicShadows
             // 
             this.checkDynamicShadows.AutoSize = true;
-            this.checkDynamicShadows.Location = new System.Drawing.Point(6, 82);
+            this.checkDynamicShadows.Location = new System.Drawing.Point(6, 105);
             this.checkDynamicShadows.Name = "checkDynamicShadows";
             this.checkDynamicShadows.Size = new System.Drawing.Size(112, 17);
             this.checkDynamicShadows.TabIndex = 7;
@@ -646,7 +649,7 @@
             // checkWire
             // 
             this.checkWire.AutoSize = true;
-            this.checkWire.Location = new System.Drawing.Point(6, 59);
+            this.checkWire.Location = new System.Drawing.Point(6, 82);
             this.checkWire.Name = "checkWire";
             this.checkWire.Size = new System.Drawing.Size(95, 17);
             this.checkWire.TabIndex = 6;
@@ -813,6 +816,7 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.checkBoxModelInstancing);
             this.tabPageExperimental.Controls.Add(this.checkUseLargeAddressAware);
             this.tabPageExperimental.Controls.Add(this.checkFastFullScreenAltTab);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
@@ -841,6 +845,16 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxModelInstancing
+            // 
+            this.checkBoxModelInstancing.AutoSize = true;
+            this.checkBoxModelInstancing.Location = new System.Drawing.Point(225, 122);
+            this.checkBoxModelInstancing.Name = "checkBoxModelInstancing";
+            this.checkBoxModelInstancing.Size = new System.Drawing.Size(127, 17);
+            this.checkBoxModelInstancing.TabIndex = 30;
+            this.checkBoxModelInstancing.Text = "Use model instancing";
+            this.checkBoxModelInstancing.UseVisualStyleBackColor = true;
             // 
             // checkUseLargeAddressAware
             // 
@@ -1328,6 +1342,16 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             // 
+            // checkBoxVerticalSync
+            // 
+            this.checkBoxVerticalSync.AutoSize = true;
+            this.checkBoxVerticalSync.Location = new System.Drawing.Point(6, 59);
+            this.checkBoxVerticalSync.Name = "checkBoxVerticalSync";
+            this.checkBoxVerticalSync.Size = new System.Drawing.Size(86, 17);
+            this.checkBoxVerticalSync.TabIndex = 19;
+            this.checkBoxVerticalSync.Text = "Vertical sync";
+            this.checkBoxVerticalSync.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1470,5 +1494,7 @@
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
         private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
         private System.Windows.Forms.CheckBox checkUseLargeAddressAware;
+        private System.Windows.Forms.CheckBox checkBoxModelInstancing;
+        private System.Windows.Forms.CheckBox checkBoxVerticalSync;
     }
 }

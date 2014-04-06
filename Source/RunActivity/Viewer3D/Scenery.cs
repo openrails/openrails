@@ -141,6 +141,8 @@ namespace ORTS.Viewer3D
     [CallOnThread("Loader")]
     public class WorldFile : IDisposable
     {
+        const int MinimumInstanceCount = 5;
+
         // Dynamic track objects in the world file
         public struct DyntrackParams
         {
@@ -188,7 +190,7 @@ namespace ORTS.Viewer3D
             var WFile = new WFile(WFilePath);
 
             // create all the individual scenery objects specified in the WFile
-            foreach (WorldObject worldObject in WFile.Tr_Worldfile)
+            foreach (var worldObject in WFile.Tr_Worldfile)
             {
                 if (worldObject.StaticDetailLevel > viewer.Settings.WorldObjectDensity)
                     continue;
@@ -331,6 +333,41 @@ namespace ORTS.Viewer3D
                 catch (Exception error)
                 {
                     Trace.WriteLine(new FileLoadException(String.Format("{0} scenery object {1} failed to load", worldMatrix, worldObject.UID), error));
+                }
+            }
+
+            // The instancing requires the user also set "always use maximum LOD" because that's what instancing does too.
+            if (Viewer.Settings.ModelInstancing && Viewer.Settings.LODAlwaysMaximum)
+            {
+                // Instancing.
+                var instances = new Dictionary<string, List<StaticShape>>();
+                foreach (var shape in sceneryObjects)
+                {
+                    // Only allow genuine StaticShape instances for now.
+                    if (shape.GetType() != typeof(StaticShape))
+                        continue;
+
+                    // Must have a file path so we can collapse instances on something.
+                    var path = shape.SharedShape.FilePath;
+                    if (path == null)
+                        continue;
+
+                    if (path != null && !instances.ContainsKey(path))
+                        instances.Add(path, new List<StaticShape>());
+
+                    if (path != null)
+                        instances[path].Add(shape);
+                }
+                foreach (var path in instances.Keys)
+                {
+                    if (instances[path].Count >= MinimumInstanceCount)
+                    {
+                        Trace.TraceInformation("Instancing {1} models of {0}", path, instances[path].Count);
+                        var sharedInstance = new SharedStaticShapeInstance(Viewer, path, instances[path]);
+                        foreach (var model in instances[path])
+                            sceneryObjects.Remove(model);
+                        sceneryObjects.Add(sharedInstance);
+                    }
                 }
             }
 

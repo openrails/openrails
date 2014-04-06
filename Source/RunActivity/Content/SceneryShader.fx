@@ -113,6 +113,7 @@ struct VERTEX_INPUT
 	float4 Position  : POSITION;
 	float2 TexCoords : TEXCOORD0;
 	float3 Normal    : NORMAL;
+	float4x4 Instance : TEXCOORD1;
 };
 
 struct VERTEX_INPUT_SIGNAL
@@ -187,6 +188,13 @@ void _VSLightsAndShadows(uniform bool ShaderModel3, in VERTEX_INPUT In, inout VE
 VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	
+	if (ShaderModel3) {
+		if (determinant(In.Instance) != 0) {
+			In.Position = mul(In.Position, transpose(In.Instance));
+		}
+	}
+
 	_VSNormalProjection(In, Out);
 	_VSLightsAndShadows(ShaderModel3, In, Out);
 
@@ -561,10 +569,17 @@ technique Forest {
 	}
 }
 
-technique Vegetation {
+technique VegetationPS2 {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSVegetation();
+	}
+}
+
+technique VegetationPS3 {
+	pass Pass_0 {
+		VertexShader = compile vs_3_0 VSGeneral(true);
+		PixelShader = compile ps_3_0 PSVegetation();
 	}
 }
 

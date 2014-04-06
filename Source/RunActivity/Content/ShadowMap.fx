@@ -52,6 +52,7 @@ struct VERTEX_INPUT
 	float4 Position : POSITION;
 	float2 TexCoord : TEXCOORD0;
 	float3 Normal   : NORMAL;
+	float4x4 Instance : TEXCOORD1;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -75,6 +76,10 @@ struct VERTEX_OUTPUT_BLUR
 VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+
+	if (determinant(In.Instance) != 0) {
+		In.Position = mul(In.Position, transpose(In.Instance));
+	}
 
 	Out.Position = mul(In.Position, WorldViewProjection);
 	Out.TexCoord_Depth.xy = In.TexCoord;
