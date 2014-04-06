@@ -454,7 +454,7 @@ namespace ORTS.Viewer3D
             return delta * mouseMovementPixels;
         }
 
-        protected void RotateByMouse()
+        protected virtual void RotateByMouse()
         {
             if (UserInput.IsMouseRightButtonDown())
             {
@@ -1267,7 +1267,7 @@ namespace ORTS.Viewer3D
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
         public override float NearPlane { get { return 0.1f; } }
         public override string Name { get { return Viewer.Catalog.GetString("Passenger"); } }
-        
+
         public PassengerCamera(Viewer viewer)
             : base(viewer)
         {
@@ -1307,6 +1307,21 @@ namespace ORTS.Viewer3D
             base.RotateDown(speed);
             var viewPoint = attachedCar.PassengerViewpoints[0];
             viewPoint.RotationXRadians = RotationXRadians;
+        }
+
+        /// <summary>
+        /// Remembers angle of camera to apply when user returns to this type of car.
+        /// </summary>
+        /// <param name="speed"></param>
+        protected override void RotateByMouse()
+        {
+            base.RotateByMouse();
+            if (UserInput.IsMouseRightButtonReleased())
+            {
+                var viewPoint = attachedCar.PassengerViewpoints[0];
+                viewPoint.RotationXRadians = RotationXRadians;
+                viewPoint.RotationYRadians = RotationYRadians;
+            }
         }
     }
 
@@ -1724,7 +1739,7 @@ namespace ORTS.Viewer3D
 				if (CurrentViewpointIndex >= attachedCar.CabViewpoints.Count) viewPoint = attachedCar.CabViewpoints[0];
 				viewPoint = attachedCar.CabViewpoints[CurrentViewpointIndex];
 				attachedLocation = viewPoint.Location;
-				if (!StartDirectionSet) // Only set the initial direction on first use so, when switching to another car, direction is not reset.
+				if (!StartDirectionSet) // Only set the initial direction on first use so, when switching back from another camera, direction is not reset.
 				{
 					StartDirectionSet = true;
 					RotationXRadians = MathHelper.ToRadians(viewPoint.StartDirection.X);

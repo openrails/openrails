@@ -390,12 +390,16 @@ namespace ORTS
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
-			if (InteriorShapeFileName.ToUpper().EndsWith(".CABS"))
-			{
-				if (this.CabViewpoints == null) CabViewpoints = new List<ViewPoint>();
-				CabViewpoints.Add(passengerViewPoint);
-			}
-			else PassengerViewpoints.Add(passengerViewPoint);
+            // Set initial direction
+            passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
+            passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
+            if (InteriorShapeFileName.ToUpper().EndsWith(".CABS"))
+            {
+                if (this.CabViewpoints == null) CabViewpoints = new List<ViewPoint>();
+                CabViewpoints.Add(passengerViewPoint);
+            }
+            else
+                PassengerViewpoints.Add(passengerViewPoint);
         }
         public void ParseFriction(STFReader stf)
         {

@@ -64,13 +64,6 @@ namespace ORTS
         // Remember direction of passenger camera and apply when user returns to it.
         public float RotationXRadians;
         public float RotationYRadians;
-
-        public PassengerViewPoint() : base()
-        {
-            // Set initial direction
-            RotationXRadians = MathHelper.ToRadians(StartDirection.X);
-            RotationYRadians = MathHelper.ToRadians(StartDirection.Y);
-        }
     }
 
     public abstract class TrainCar
