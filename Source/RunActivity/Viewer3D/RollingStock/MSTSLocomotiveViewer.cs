@@ -1022,8 +1022,10 @@ namespace ORTS.Viewer3D.RollingStock
 						CABTextureManager.LoadTextures(viewer, cabfile);
 					}
 
-					CabViewControlRenderersList.Add(new List<CabViewControlRenderer>());
-					var controlSortIndex = 1;  // Controls are drawn atop the cabview and in order they appear in the CVF file.
+                    if (cabView.CVFFile.CabViewControls == null)
+                        continue;
+                    
+                    var controlSortIndex = 1;  // Controls are drawn atop the cabview and in order they appear in the CVF file.
 					// This allows the segments of moving-scale meters to be hidden by covers (e.g. TGV-A)
 					CabViewControlRenderersList.Add(new List<CabViewControlRenderer>());
 					foreach (CabViewControl cvc in cabView.CVFFile.CabViewControls)
@@ -1040,7 +1042,15 @@ namespace ORTS.Viewer3D.RollingStock
 							count[(int)cvc.ControlType]++;
 							continue;
 						}
-						CVCGauge gauge = cvc as CVCGauge;
+                        CVCFirebox firebox = cvc as CVCFirebox;
+                        if (firebox != null)
+                        {
+                            CabViewGaugeRenderer cvgrFire = new CabViewGaugeRenderer(viewer, car, firebox, _Shader);
+                            cvgrFire.SortIndex = controlSortIndex++;
+                            CabViewControlRenderersList[i].Add(cvgrFire);
+                            // don't "continue", because this cvc has to be also recognized as CVCGauge
+                        }
+                        CVCGauge gauge = cvc as CVCGauge;
 						if (gauge != null)
 						{
 							CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(viewer, car, gauge, _Shader);
