@@ -280,10 +280,10 @@ namespace ORTS.Viewer3D
     #region MSTSSkyMesh
     public class MSTSSkyMesh: RenderPrimitive 
     {
-        private VertexBuffer SkyVertexBuffer;
-        private static VertexDeclaration SkyVertexDeclaration;
-        private static IndexBuffer SkyIndexBuffer;
-        private static int SkyVertexStride;  // in bytes
+        private VertexBuffer MSTSSkyVertexBuffer;
+        private static VertexDeclaration MSTSSkyVertexDeclaration;
+        private static IndexBuffer MSTSSkyIndexBuffer;
+        private static int MSTSSkyVertexStride;  // in bytes
         public int drawIndex;
 
         VertexPositionNormalTexture[] vertexList;
@@ -319,7 +319,7 @@ namespace ORTS.Viewer3D
             triangleListIndices = new short[indexCount];
 
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, tileFactor);
+            MSTSSkyDomeVertexList(0, mstsskyRadius, tileFactor);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
             //MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, 1);
@@ -342,7 +342,7 @@ namespace ORTS.Viewer3D
             triangleListIndices = new short[indexCount];
 
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, tileFactor);
+            MSTSSkyDomeVertexList(0, mstsskyRadius, tileFactor);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
             //MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, 1);
@@ -356,9 +356,9 @@ namespace ORTS.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = SkyVertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(SkyVertexBuffer, 0, SkyVertexStride);
-            graphicsDevice.Indices = SkyIndexBuffer;
+            graphicsDevice.VertexDeclaration = MSTSSkyVertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(MSTSSkyVertexBuffer, 0, MSTSSkyVertexStride);
+            graphicsDevice.Indices = MSTSSkyIndexBuffer;
 
             switch (drawIndex)
             {
@@ -399,7 +399,7 @@ namespace ORTS.Viewer3D
         /// <param name="index">The starting vertex number</param>
         /// <param name="radius">The radius of the dome</param>
         /// <param name="oblate">The amount the dome is flattened</param>
-        private void MSTSSkyDomeVertexList(int index, int radius, float oblate, float texturetiling)
+        private void MSTSSkyDomeVertexList(int index, int radius, float texturetiling)
         {
             int vertexIndex = index;
             // for each vertex
@@ -408,7 +408,7 @@ namespace ORTS.Viewer3D
                 {
                     // The "oblate" factor is used to flatten the dome to an ellipsoid. Used for the inner (cloud)
                     // dome only. Gives the clouds a flatter appearance.
-                    float y = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * i)) * radius * oblate;
+                    float y = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * i)) * radius;
                     float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * i));
                     float x = (float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * yRadius;
                     float z = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * yRadius;
@@ -528,18 +528,18 @@ namespace ORTS.Viewer3D
         /// </summary>
         private void InitializeVertexBuffers(GraphicsDevice graphicsDevice)
         {
-            if (SkyVertexDeclaration == null)
+            if (MSTSSkyVertexDeclaration == null)
             {
-                SkyVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                SkyVertexStride = VertexPositionNormalTexture.SizeInBytes;
+                MSTSSkyVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
+                MSTSSkyVertexStride = VertexPositionNormalTexture.SizeInBytes;
             }
             // Initialize the vertex and index buffers, allocating memory for each vertex and index
-            SkyVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
-            SkyVertexBuffer.SetData(vertexList);
-            if (SkyIndexBuffer == null)
+            MSTSSkyVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
+            MSTSSkyVertexBuffer.SetData(vertexList);
+            if (MSTSSkyIndexBuffer == null)
             {
-                SkyIndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
-                SkyIndexBuffer.SetData(triangleListIndices);
+                MSTSSkyIndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexCount, BufferUsage.WriteOnly);
+                MSTSSkyIndexBuffer.SetData(triangleListIndices);
             }
         }
 
@@ -550,7 +550,7 @@ namespace ORTS.Viewer3D
     public class MSTSSkyMaterial : Material
     {
         SkyShader MSTSSkyShader;
-        Texture2D MSTSSkyTexture;
+        List<Texture2D> MSTSSkyTexture = new List<Texture2D>();
         Texture2D MSTSSkylowTexture;
         Texture2D MSTSSkyStarTextureN;
         Texture2D MSTSSkyStarTextureS;
@@ -561,7 +561,9 @@ namespace ORTS.Viewer3D
         private Matrix XNAMoonMatrix;
         IEnumerator<EffectPass> ShaderPassesSky;
         IEnumerator<EffectPass> ShaderPassesMoon;
-        IEnumerator<EffectPass> ShaderPassesClouds;
+        //IEnumerator<EffectPass> ShaderPassesClouds;
+
+        
 
         public MSTSSkyMaterial(Viewer viewer)
             : base(viewer, null)
@@ -571,8 +573,17 @@ namespace ORTS.Viewer3D
             if (viewer.ENVFile.SkyLayers != null)
             {
                 var mstsskytexture = Viewer.ENVFile.SkyLayers.ToArray();
-                string mstsSkyTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[0].TextureName.ToString();
-                MSTSSkyTexture = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture);
+                int count = Viewer.ENVFile.SkyLayers.Count;
+
+
+                string[] mstsSkyTexture = new string[Viewer.ENVFile.SkyLayers.Count];
+
+                for (int i = 0; i < count; i++)
+                {
+                    mstsSkyTexture[i] = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[i].TextureName.ToString();
+                    MSTSSkyTexture.Add(MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
+                }
+
                 string mstsSkyStarTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskytexture[1].TextureName.ToString();
                 MSTSSkyStarTextureN = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyStarTexture);
                 MSTSSkyStarTextureS = MSTS.Formats.ACEFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyStarTexture);  //ToDo:  MSTS doesn't use multiple star textures, revisit this for OR env files possibly in the future.
@@ -581,7 +592,7 @@ namespace ORTS.Viewer3D
             }
             else
             {
-                MSTSSkyTexture = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png"));
+                MSTSSkyTexture.Add(Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png")));
                 MSTSSkyStarTextureN = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
                 MSTSSkyStarTextureS = Texture2D.FromFile(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_S.png"));
             }
@@ -601,9 +612,12 @@ namespace ORTS.Viewer3D
 
             ShaderPassesSky = MSTSSkyShader.Techniques["Sky"].Passes.GetEnumerator();
             ShaderPassesMoon = MSTSSkyShader.Techniques["Moon"].Passes.GetEnumerator();
-            ShaderPassesClouds = MSTSSkyShader.Techniques["Clouds"].Passes.GetEnumerator();
+            //ShaderPassesClouds = MSTSSkyShader.Techniques["Clouds"].Passes.GetEnumerator();
 
-            MSTSSkyShader.SkyMapTexture = MSTSSkyTexture;
+            for (int i = 0; i < Viewer.ENVFile.SkyLayers.Count; i++)
+            {
+                MSTSSkyShader.SkyMapTexture = MSTSSkyTexture[i];
+            }
             MSTSSkyShader.StarMapTexture = MSTSSkyStarTextureN;
             MSTSSkyShader.MoonMapTexture = MSTSSkyMoonTexture;
             MSTSSkyShader.MoonMaskTexture = MSTSSkyMoonMask;
@@ -669,8 +683,8 @@ namespace ORTS.Viewer3D
 
             // Send the transform matrices to the shader
             int mstsskyRadius = Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius;
-            int mstscloudRadiusDiff = Viewer.World.MSTSSky.MSTSSkyMesh.mstscloudDomeRadiusDiff;
-            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius - (mstscloudRadiusDiff / 2)));
+            //int mstscloudRadiusDiff = Viewer.World.MSTSSky.MSTSSkyMesh.mstscloudDomeRadiusDiff;
+            XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
             MSTSSkyShader.Begin();
@@ -689,27 +703,7 @@ namespace ORTS.Viewer3D
             }
             MSTSSkyShader.End();
 
-            // Clouds
-            MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Clouds"];
-            Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 3;
-
             rs.CullMode = CullMode.CullCounterClockwiseFace;
-
-            MSTSSkyShader.Begin();
-            ShaderPassesClouds.Reset();
-            while (ShaderPassesClouds.MoveNext())
-            {
-                ShaderPassesClouds.Current.Begin();
-                foreach (var item in renderItems)
-                {
-                    Matrix wvp = item.XNAMatrix * viewXNASkyProj;
-                    MSTSSkyShader.SetMatrix(ref wvp);
-                    MSTSSkyShader.CommitChanges();
-                    item.RenderPrimitive.Draw(graphicsDevice);
-                }
-                ShaderPassesClouds.Current.End();
-            }
-            MSTSSkyShader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
