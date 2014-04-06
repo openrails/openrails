@@ -555,6 +555,7 @@ namespace ORTS
         public virtual string GetEngineBrakeStatus() { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
         public virtual bool GetSanderOn() { return false; }
+		bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels
 
         public TrainCar()
         {
@@ -723,7 +724,7 @@ namespace ORTS
 
         public void AddWheelSet(float offset, int bogie, int parentMatrix)
         {
-            if (WheelAxlesLoaded)
+            if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
             //some old stocks have only two wheels, but defined to have four, two share the same offset, thus all computing of rotations will have problem
             //will check, if so, make the offset different a bit. 
@@ -733,7 +734,7 @@ namespace ORTS
 
         public void AddBogie(float offset, int matrix, int id)
         {
-            if (WheelAxlesLoaded)
+            if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
             //make sure two bogies are not defined too close
             foreach (var p in Parts) if (p.bogie && offset.AlmostEqual(p.OffsetM, 0.05f)) { offset = p.OffsetM + 0.1f; break; }
@@ -756,6 +757,7 @@ namespace ORTS
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
 
+			WheelHasBeenSet = true;
            // No axles but we have bogies.
            if (WheelAxles.Count == 0 && Parts.Count > 1)
             {
