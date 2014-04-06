@@ -343,8 +343,8 @@ namespace ORTS.Viewer3D
                 var instances = new Dictionary<string, List<StaticShape>>();
                 foreach (var shape in sceneryObjects)
                 {
-                    // Only allow genuine StaticShape instances for now.
-                    if (shape.GetType() != typeof(StaticShape))
+                    // Only allow StaticShape and StaticTrackShape instances for now.
+                    if (shape.GetType() != typeof(StaticShape) && shape.GetType() != typeof(StaticTrackShape))
                         continue;
 
                     // Must have a file path so we can collapse instances on something.
