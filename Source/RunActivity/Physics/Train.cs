@@ -170,8 +170,8 @@ namespace ORTS
         public StationStop PreviousStop = null;                           //last stop passed
         public bool AtStation = false;                                    //set if train is in station (player train only)
         public bool MayDepart = false;                                    //set if train is ready to depart
-        public string DisplayMessage { get; internal set; }               //string to be displayed in station information window
-        public Color DisplayColor { get; internal set; }                  //color for DisplayMessage
+        public string DisplayMessage = "";                                //string to be displayed in station information window
+        public Color DisplayColor = Color.LightGreen;                     //color for DisplayMessage
         public bool CheckStations = false;                                //used when in timetable mode to check on stations
         public TimeSpan? Delay = null;                                    // present delay of the train (if any)
 
@@ -360,6 +360,7 @@ namespace ORTS
             TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
+            Name = "";
 
             routedForward = new TrainRouted(this, 0);
             routedBackward = new TrainRouted(this, 1);
@@ -386,7 +387,7 @@ namespace ORTS
         {
             Simulator = simulator;
             Number = TotalNumber;
-            Name = String.Copy(Name);
+            Name = String.Concat(String.Copy(orgTrain.Name),TotalNumber.ToString());
             TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
@@ -439,9 +440,17 @@ namespace ORTS
                 StationStops = null;
             }
 
-            foreach (WaitInfo thisInfo in orgTrain.WaitList)
+            if (orgTrain.WaitList != null)
             {
-                WaitList.Add(new WaitInfo(thisInfo));
+                WaitList = new List<WaitInfo>();
+                foreach (WaitInfo thisInfo in orgTrain.WaitList)
+                {
+                    WaitList.Add(new WaitInfo(thisInfo));
+                }
+            }
+            else
+            {
+                WaitList = null;
             }
         }
 
@@ -572,15 +581,7 @@ namespace ORTS
             MayDepart = inf.ReadBoolean();
             CheckStations = inf.ReadBoolean();
 
-            int dispMessAvail = inf.ReadInt32();
-            if (dispMessAvail < 0)
-            {
-                DisplayMessage = null;
-            }
-            else
-            {
-                DisplayMessage = inf.ReadString();
-            }
+            DisplayMessage = inf.ReadString();
 
             int DelaySeconds = inf.ReadInt32();
             if (DelaySeconds < 0) // delay value (in seconds, as integer)
@@ -905,15 +906,7 @@ namespace ORTS
             outf.Write(MayDepart);
             outf.Write(CheckStations);
 
-            if (DisplayMessage == null)
-            {
-                outf.Write(-1);
-            }
-            else
-            {
-                outf.Write(1);
-                outf.Write(DisplayMessage);
-            }
+            outf.Write(DisplayMessage);
 
             int DelaySeconds = Delay.HasValue ? (int)Delay.Value.TotalSeconds : -1;
             outf.Write(DelaySeconds);
@@ -1780,7 +1773,9 @@ namespace ORTS
                     if (occupiedSections.Contains(sectionIndex))
                     {
                         AtStation = true;
-                        StationStops[0].ActualArrival = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                        int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                        StationStops[0].ActualArrival = presentTime;
+                        StationStops[0].CalculateDepartTime(presentTime);
                         break;
                     }
                 }
