@@ -336,10 +336,10 @@ namespace ORTS.Viewer3D
                 }
             }
 
-            // The instancing requires the user also set "always use maximum LOD" because that's what instancing does too.
-            if (Viewer.Settings.ModelInstancing && Viewer.Settings.LODAlwaysMaximum)
+            if (Viewer.Settings.ModelInstancing)
             {
-                // Instancing.
+                // Instancing collapsed multiple copies of the same model in to a single set of data (the normal model
+                // data, plus a list of position information for each copy) and then draws them in a single batch.
                 var instances = new Dictionary<string, List<StaticShape>>();
                 foreach (var shape in sceneryObjects)
                 {
@@ -362,7 +362,6 @@ namespace ORTS.Viewer3D
                 {
                     if (instances[path].Count >= MinimumInstanceCount)
                     {
-                        Trace.TraceInformation("Instancing {1} models of {0}", path, instances[path].Count);
                         var sharedInstance = new SharedStaticShapeInstance(Viewer, path, instances[path]);
                         foreach (var model in instances[path])
                             sceneryObjects.Remove(model);
