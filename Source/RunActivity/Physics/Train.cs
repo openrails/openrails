@@ -10720,20 +10720,23 @@ namespace ORTS
                 routedTrain = routedBackward;
             }
 
-            TrackCircuitSection thisSection = signalRef.TrackCircuitList[usedRoute[routeListIndex].TCSectionIndex];
-            totalLength = thisSection.Length - presentOffset;
-
-            while (routeListIndex < usedRoute.Count - 1)
+            if (routeListIndex >= 0)
             {
-                routeListIndex++;
-                thisSection = signalRef.TrackCircuitList[usedRoute[routeListIndex].TCSectionIndex];
-                if (thisSection.IsSet(routedTrain, false))
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[usedRoute[routeListIndex].TCSectionIndex];
+                totalLength = thisSection.Length - presentOffset;
+
+                while (routeListIndex < usedRoute.Count - 1)
                 {
-                    totalLength += thisSection.Length;
-                }
-                else
-                {
-                    break;
+                    routeListIndex++;
+                    thisSection = signalRef.TrackCircuitList[usedRoute[routeListIndex].TCSectionIndex];
+                    if (thisSection.IsSet(routedTrain, false))
+                    {
+                        totalLength += thisSection.Length;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
 
