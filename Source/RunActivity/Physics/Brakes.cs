@@ -824,7 +824,7 @@ namespace ORTS
             return KPa.ToPSI(OneAtmosphereKPa - KPa.FromInHg(v));
         }
         // convert pressure in psia to vacuum in inhg
-        static float P2V(float p)
+        public static float P2V(float p)
         {
             //return OneAtmosphereInHg * (1 - p / OneAtmospherePSIA);
             return KPa.ToInHg(OneAtmosphereKPa - KPa.FromPSI(p));

@@ -2269,13 +2269,13 @@ namespace ORTS
         protected static float ConvertFromPSI(CabViewControl cvc, float data)
         {
             if (cvc.Units == CABViewControlUnits.BAR)
-                data *= 68.948e-3f;
+                data = KPa.ToBar(KPa.FromPSI(data));
             else if (cvc.Units == CABViewControlUnits.KILOPASCALS)
-                data *= 6.89476f;
+                data = KPa.FromPSI(data);
             else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
                 data *= 70.307e-3f;
             else if (cvc.Units == CABViewControlUnits.INCHES_OF_MERCURY)
-                data *= 2.04177f;
+                data = VacuumSinglePipe.P2V(data);
             return data;
         }
         

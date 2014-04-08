@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2014-03-24 17:54:54+0100\n"
-"PO-Revision-Date: 2014-03-29 10:36+0100\n"
+"POT-Creation-Date: 2014-03-29 10:36:50+0100\n"
+"PO-Revision-Date: 2014-04-08 21:29+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -11,6 +11,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:59
+msgid "Loading..."
+msgstr "Betöltés..."
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:69
+msgid "Open Rails Content Manager"
+msgstr "Open Rails Tartalomkezelő"
 
 #: ../../Contrib/TrackViewer/TrackViewer.cs:513
 msgid "Do you really want to Quit?"
