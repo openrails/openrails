@@ -831,7 +831,8 @@ namespace ORTS.Debugging
 					if (xScale < 0.3 || t.FrontTDBTraveller == null || t.RearTDBTraveller == null)
 					{
 						worldPos = firstCar.WorldPosition;
-						scaledItem.X = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
+						scaledItem.X = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
+						scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
 						if (scaledItem.X < -margin2 || scaledItem.X > IM_Width + margin2 || scaledItem.Y > IM_Height + margin2 || scaledItem.Y < -margin2) continue;
 						if (drawRed > ValidTrain) g.FillRectangle(Brushes.Gray, GetRect(scaledItem, 15f));
 						else
@@ -881,7 +882,8 @@ namespace ORTS.Debugging
 						}
 					}
 					worldPos = firstCar.WorldPosition;
-					scaledItem.X = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; scaledItem.Y = -25 + pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
+					scaledItem.X = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
+					scaledItem.Y = -25 + pictureBox1.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
 
 					g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
 
@@ -1650,7 +1652,8 @@ namespace ORTS.Debugging
 			  else continue;
 
 			  worldPos = firstCar.WorldPosition;
-			  tX = (worldPos.TileX * 2048 + worldPos.Location.X - subX) * xScale; tY = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - subY) * yScale;
+			  tX = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
+			  tY = pictureBox1.Height - (worldPos.TileZ * 2048 -subY + worldPos.Location.Z) * yScale;
 
 			  if (tX < x - range || tX > x + range || tY < y - range || tY > y + range) continue;
 			  if (PickedTrain == null) PickedTrain = t;
