@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-04-05 17:32:35+0200\n"
-"PO-Revision-Date: 2014-04-05 17:39+0100\n"
+"POT-Creation-Date: 2014-04-08 20:45:14+0200\n"
+"PO-Revision-Date: 2014-04-08 20:49+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
 "<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: \n"
@@ -295,83 +295,83 @@ msgstr[1] ""
 "Impossibile sganciare: il treno ha {0} giocatori, deve fermarsi "
 "completamente."
 
-#: ../../RunActivity/Physics/Train.cs:1370
+#: ../../RunActivity/Physics/Train.cs:1363
 msgid "Coupler broken!"
 msgstr "Gancio rotto!"
 
-#: ../../RunActivity/Physics/Train.cs:1373
+#: ../../RunActivity/Physics/Train.cs:1366
 msgid "Coupler overloaded!"
 msgstr "Gancio sovraccarico!"
 
+#: ../../RunActivity/Physics/Train.cs:3932
 #: ../../RunActivity/Physics/Train.cs:3937
-#: ../../RunActivity/Physics/Train.cs:3942
 msgid "Other train is blocking path"
 msgstr "Un altro treno sta occupando il percorso"
 
-#: ../../RunActivity/Physics/Train.cs:4112
+#: ../../RunActivity/Physics/Train.cs:4107
 #: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
 msgstr "Salita passeggeri completata. Puoi partire."
 
-#: ../../RunActivity/Physics/Train.cs:4945
+#: ../../RunActivity/Physics/Train.cs:4940
 msgid "Stopped due to errors in route setting"
 msgstr "Fermato a causa di errori nel settaggio del tracciato"
 
-#: ../../RunActivity/Physics/Train.cs:5610
-#: ../../RunActivity/Physics/Train.cs:6683
+#: ../../RunActivity/Physics/Train.cs:5605
+#: ../../RunActivity/Physics/Train.cs:6678
 msgid "No signal in train's path"
 msgstr "Nessun segnale nel percorso del treno"
 
-#: ../../RunActivity/Physics/Train.cs:5618
+#: ../../RunActivity/Physics/Train.cs:5613
 msgid "Next signal already allocated to other train"
 msgstr "Segnale successivo già impegnato da altro treno"
 
-#: ../../RunActivity/Physics/Train.cs:5679
+#: ../../RunActivity/Physics/Train.cs:5674
 msgid "Request to clear signal cannot be processed"
 msgstr "La richiesta di aprire il segnale non può essere eseguita"
 
-#: ../../RunActivity/Physics/Train.cs:5785
-#: ../../RunActivity/Physics/Train.cs:6803
+#: ../../RunActivity/Physics/Train.cs:5780
+#: ../../RunActivity/Physics/Train.cs:6798
 msgid "No switch found"
 msgstr "Scambio non trovato"
 
-#: ../../RunActivity/Physics/Train.cs:7037
+#: ../../RunActivity/Physics/Train.cs:7032
 msgid "Train is not back on original route"
 msgstr "Il treno non è tornato nel tracciato originale"
 
-#: ../../RunActivity/Physics/Train.cs:7046
+#: ../../RunActivity/Physics/Train.cs:7041
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Il percorso originale è nella direzione inversa a quella attuale, ferma il "
 "treno prima di azionare lo scambio"
 
-#: ../../RunActivity/Physics/Train.cs:7059
+#: ../../RunActivity/Physics/Train.cs:7054
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Non puoi passare in Modo Manuale se sei in Esplorazione Route"
 
-#: ../../RunActivity/Physics/Train.cs:7152
+#: ../../RunActivity/Physics/Train.cs:7147
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 "Dovresti invertire la marcia, ma la coda del treno non è sul tracciato "
 "corretto"
 
-#: ../../RunActivity/Physics/Train.cs:7339
+#: ../../RunActivity/Physics/Train.cs:7334
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Non si può aprire il segnale dietro al treno in modalità AUTO"
 
-#: ../../RunActivity/Physics/Train.cs:4118
+#: ../../RunActivity/Physics/Train.cs:4113
 #: ../../RunActivity/Simulator/Activity.cs:767
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr "Salita passeggeri completata in {0:D2}:{1:D2}"
 
-#: ../../RunActivity/Physics/Train.cs:7581
+#: ../../RunActivity/Physics/Train.cs:7576
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Velocità permessa raggiunta a {0}"
 
-#: ../../RunActivity/Physics/Train.cs:7623
+#: ../../RunActivity/Physics/Train.cs:7618
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Il treno è stato fermato per problemi con: treno {0}, motivo: {1}"
@@ -479,7 +479,7 @@ msgstr "Caldaia sovraccarica"
 msgid "Boiler no longer priming."
 msgstr "Sovraccarico caldaia terminato"
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:359
+#: ../../RunActivity/RollingStock/TrainCar.cs:366
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable, or your train may derail."
@@ -487,7 +487,7 @@ msgstr ""
 "Stai andando troppo veloce per questa curva. Rallenta, sta diminuendo il "
 "comfort dei passegeri e il treno può deragliare."
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:386
+#: ../../RunActivity/RollingStock/TrainCar.cs:393
 msgid "Your train has overturned."
 msgstr "Il treno ha sovrasterzato"
 
@@ -891,6 +891,7 @@ msgid "Wipers"
 msgstr "Tergicristalli"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
+#: ../../RunActivity/Viewer3D/Cameras.cs:1382
 msgid "Cab"
 msgstr "Cabina"
 
@@ -1099,6 +1100,38 @@ msgstr "sposta"
 msgctxt "Labels"
 msgid "none"
 msgstr "nessuno"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:595
+msgid "Free"
+msgstr "Libera"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:981
+msgid "Outside Front"
+msgstr "Esterna anteriore"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:981
+msgid "Outside Rear"
+msgstr "Esterna posteriore"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1237
+msgid "Brakeman"
+msgstr "Frenatore"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1269
+msgid "Passenger"
+msgstr "Passeggero"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1338
+msgid "Head out"
+msgstr "Testa fuori"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1562
+msgid "Trackside"
+msgstr "Lungolinea"
+
+#: ../../RunActivity/Viewer3D/Cameras.cs:1712
+msgid "3D Cab"
+msgstr "Cabina 3D"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:542
 #: ../../RunActivity/Viewer3D/Viewer.cs:655
@@ -1362,6 +1395,16 @@ msgstr "Activity completata."
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:187
 msgid "No more stations."
 msgstr "Non ci sono altre stazioni."
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:103
+#, csharp-format
+msgid "Camera: {0}"
+msgstr "Telecamera: {0}"
+
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:108
+#, csharp-format
+msgid "FOV: {0:F0}°"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
 msgid "Pause Menu"

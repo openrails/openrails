@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-04-05 20:09:17+0200\n"
-"PO-Revision-Date: 2014-04-05 20:09:19+0200\n"
+"POT-Creation-Date: 2014-04-08 20:45:14+0200\n"
+"PO-Revision-Date: 2014-04-08 20:45:21+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -287,79 +287,79 @@ msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Physics/Train.cs:1370
+#: ../../RunActivity/Physics/Train.cs:1363
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1373
+#: ../../RunActivity/Physics/Train.cs:1366
 msgid "Coupler overloaded!"
 msgstr ""
 
+#: ../../RunActivity/Physics/Train.cs:3932
 #: ../../RunActivity/Physics/Train.cs:3937
-#: ../../RunActivity/Physics/Train.cs:3942
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4112
+#: ../../RunActivity/Physics/Train.cs:4107
 #: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4945
+#: ../../RunActivity/Physics/Train.cs:4940
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5610
-#: ../../RunActivity/Physics/Train.cs:6683
+#: ../../RunActivity/Physics/Train.cs:5605
+#: ../../RunActivity/Physics/Train.cs:6678
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5618
+#: ../../RunActivity/Physics/Train.cs:5613
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5679
+#: ../../RunActivity/Physics/Train.cs:5674
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5785
-#: ../../RunActivity/Physics/Train.cs:6803
+#: ../../RunActivity/Physics/Train.cs:5780
+#: ../../RunActivity/Physics/Train.cs:6798
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7037
+#: ../../RunActivity/Physics/Train.cs:7032
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7046
+#: ../../RunActivity/Physics/Train.cs:7041
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7059
+#: ../../RunActivity/Physics/Train.cs:7054
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7152
+#: ../../RunActivity/Physics/Train.cs:7147
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7339
+#: ../../RunActivity/Physics/Train.cs:7334
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4118
+#: ../../RunActivity/Physics/Train.cs:4113
 #: ../../RunActivity/Simulator/Activity.cs:767
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7581
+#: ../../RunActivity/Physics/Train.cs:7576
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7623
+#: ../../RunActivity/Physics/Train.cs:7618
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -464,13 +464,13 @@ msgstr ""
 msgid "Boiler no longer priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:359
+#: ../../RunActivity/RollingStock/TrainCar.cs:366
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable, or your train may derail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:386
+#: ../../RunActivity/RollingStock/TrainCar.cs:393
 msgid "Your train has overturned."
 msgstr ""
 
@@ -874,7 +874,7 @@ msgid "Wipers"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
-#: ../../RunActivity/Viewer3D/Cameras.cs:1350
+#: ../../RunActivity/Viewer3D/Cameras.cs:1382
 msgid "Cab"
 msgstr ""
 
@@ -1102,15 +1102,15 @@ msgstr ""
 msgid "Passenger"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1306
+#: ../../RunActivity/Viewer3D/Cameras.cs:1338
 msgid "Head out"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1530
+#: ../../RunActivity/Viewer3D/Cameras.cs:1562
 msgid "Trackside"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1680
+#: ../../RunActivity/Viewer3D/Cameras.cs:1712
 msgid "3D Cab"
 msgstr ""
 
