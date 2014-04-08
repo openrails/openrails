@@ -120,7 +120,8 @@ namespace ORTS
                 AITrains.Add(aiTrain);
                 Simulator.Trains.Add(aiTrain);
                 simulator.TrainDictionary.Add(aiTrain.Number, aiTrain);
-                simulator.NameDictionary.Add(aiTrain.Name.ToLower(), aiTrain);
+                if (!Simulator.NameDictionary.ContainsKey(aiTrain.Name.ToLower()))
+                    Simulator.NameDictionary.Add(aiTrain.Name.ToLower(), aiTrain);
             }
 
             int totalStarting = inf.ReadInt32();
