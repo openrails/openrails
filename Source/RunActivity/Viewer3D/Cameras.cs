@@ -1287,6 +1287,30 @@ namespace ORTS.Viewer3D
             RotationXRadians = viewPoint.RotationXRadians;
             RotationYRadians = viewPoint.RotationYRadians;
         }
+
+		/// <summary>
+		/// A camera can use this method to handle any preparation when being activated.
+		/// </summary>
+		protected override void OnActivate(bool sameCamera)
+		{
+			var trainCars = GetCameraCars();
+			if (trainCars.Count == 0) return;//should not happen
+			if (sameCamera)
+			{
+				if (!trainCars.Contains(attachedCar)) { attachedCar = trainCars.First();}
+				else if (trainCars.IndexOf(attachedCar) < trainCars.Count - 1)
+				{
+					attachedCar = trainCars[trainCars.IndexOf(attachedCar) + 1];
+				}
+				else attachedCar = trainCars.First();
+			}
+			else
+			{
+				if (!trainCars.Contains(attachedCar)) attachedCar = trainCars.First();
+			}
+			SetCameraCar(attachedCar);
+		}
+
         /// <summary>
         /// Remembers angle of camera to apply when user returns to this type of car.
         /// </summary>
@@ -1736,8 +1760,8 @@ namespace ORTS.Viewer3D
 			if (attachedCar.CabViewpoints != null)
 			{
 				ViewPoint viewPoint;
-				if (CurrentViewpointIndex >= attachedCar.CabViewpoints.Count) viewPoint = attachedCar.CabViewpoints[0];
-				viewPoint = attachedCar.CabViewpoints[CurrentViewpointIndex];
+				if (CurrentViewpointIndex >= attachedCar.CabViewpoints.Count) { viewPoint = attachedCar.CabViewpoints[0]; CurrentViewpointIndex = 0; }
+				else viewPoint = attachedCar.CabViewpoints[CurrentViewpointIndex];
 				attachedLocation = viewPoint.Location;
 				if (!StartDirectionSet) // Only set the initial direction on first use so, when switching back from another camera, direction is not reset.
 				{
