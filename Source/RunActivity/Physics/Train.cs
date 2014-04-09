@@ -215,6 +215,7 @@ namespace ORTS
         public TCPosition[] PreviousPosition = new TCPosition[2] { new TCPosition(), new TCPosition() };        // previous train position
 
         public float DistanceTravelledM;                                 // actual distance travelled
+        public float ReservedTrackLengthM = 0.0f;                        // lenght of reserved section
 
         public float travelled;                                          // distance travelled, but not exactly
         public DistanceTravelledActions requiredActions = new DistanceTravelledActions(); // distance travelled action list
@@ -3582,6 +3583,9 @@ namespace ORTS
             tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[1]);
             routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
             PresentPosition[1].RouteListIndex = routeIndex;
+
+            // get reserved length
+            ReservedTrackLengthM = GetReservedLength();
         }
 
         //================================================================================================//
@@ -10697,7 +10701,7 @@ namespace ORTS
         /// Get total length of reserved section ahead of train
         /// </summary>
         /// <returns></returns>
-        public float GetReservedLength()
+        private float GetReservedLength()
         {
             float totalLength = 0f;
             TCSubpathRoute usedRoute = null;

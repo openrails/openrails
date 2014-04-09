@@ -148,7 +148,7 @@ namespace ORTS
                     frontDist = temp;
                 }
 
-                if (frontDist <= reqDist && frontDist < train.GetReservedLength() && rearDist <= minimumDist)
+                if (frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     crossing.AddTrain(train);
                 }
