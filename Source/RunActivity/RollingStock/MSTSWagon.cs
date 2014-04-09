@@ -308,8 +308,9 @@ namespace ORTS
                 case "wagon(lights":
                     Lights = new LightCollection(stf);
                     break;
-                case "wagon(inside": ParseWagonInside(stf); break;
-                case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
+				case "wagon(inside": ParseWagonInside(stf); break;
+				case "wagon(orts3dcab": Parse3DCab(stf); break;
+				case "wagon(numwheels": NumWheelsBrakingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
                 case "wagon(intakepoint": IntakePointList.Add(new IntakePoint(stf)); break;
                 default:
                     if (MSTSBrakeSystem != null)
@@ -379,29 +380,40 @@ namespace ORTS
             BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
         }
-        private void ParseWagonInside(STFReader stf)
-        {
-            PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
-            stf.MustMatch("(");
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
+		private void ParseWagonInside(STFReader stf)
+		{
+			PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
+			stf.MustMatch("(");
+			stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("passengercabinfile", ()=>{ InteriorShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("passengercabinheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
-            // Set initial direction
-            passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
-            passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
-            if (InteriorShapeFileName.ToUpper().EndsWith(".CABS"))
-            {
-                if (this.CabViewpoints == null) CabViewpoints = new List<ViewPoint>();
-                CabViewpoints.Add(passengerViewPoint);
-            }
-            else
-                PassengerViewpoints.Add(passengerViewPoint);
-        }
-        public void ParseFriction(STFReader stf)
+			// Set initial direction
+			passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
+			passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
+			PassengerViewpoints.Add(passengerViewPoint);
+		}
+		private void Parse3DCab(STFReader stf)
+		{
+			PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
+			stf.MustMatch("(");
+			stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("orts3dcabfile", ()=>{ InteriorShapeFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+            });
+			// Set initial direction
+			passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
+			passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
+			if (this.CabViewpoints == null) CabViewpoints = new List<ViewPoint>();
+			CabViewpoints.Add(passengerViewPoint);
+		}
+		public void ParseFriction(STFReader stf)
         {
             if (DavisAN == 0 || DavisBNSpM == 0 || DavisCNSSpMM == 0) // If Davis parameters are not defined in WAG file, then use default methods
                 IsDavisFriction = false; // set to false - indicating that "new" Davis friction is not used

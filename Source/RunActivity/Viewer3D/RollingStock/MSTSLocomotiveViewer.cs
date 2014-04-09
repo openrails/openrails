@@ -1992,8 +1992,8 @@ namespace ORTS.Viewer3D.RollingStock
 			_Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
 			_Font = viewer.WindowManager.TextManager.Get("Arial", 14, System.Drawing.FontStyle.Regular);
 			LocoViewer = locoViewer;
-			string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
-			string shapePath = wagonFolderSlash + car.InteriorShapeFileName;
+			string wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\CABVIEW3D\";
+			string shapePath = wagonFolderSlash  + car.InteriorShapeFileName;
 
 			TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster);
 
