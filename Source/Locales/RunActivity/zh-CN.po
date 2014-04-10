@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-04-09 23:43:21+0800\n"
-"PO-Revision-Date: 2014-04-09 23:43:21+0800\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2014-04-08 01:28:35+0800\n"
+"PO-Revision-Date: 2014-04-08 01:28:36+0800\n"
+"Last-Translator: Jijun Tang\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -13,111 +13,111 @@ msgstr ""
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:2038
 msgid "Switching Request Sent to the Server"
-msgstr ""
+msgstr "向联控请求道岔"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:177
 msgid "View Self"
-msgstr ""
+msgstr "看自己"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:549
 msgid "MSG to Server"
-msgstr ""
+msgstr "给联控发短信"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:553
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:227
 msgid "MSG to All"
-msgstr ""
+msgstr "给大家发短信"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:93
 msgid "View Train"
-msgstr ""
+msgstr "查看该列车"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:138
 msgid "m"
-msgstr ""
+msgstr "米"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:159
 msgid "Remove"
-msgstr ""
+msgstr "踢出"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:174
 msgid "Auto Switch"
-msgstr ""
+msgstr "自动道岔"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
-msgstr ""
+msgstr "显示头像"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:215
 msgid "MSG to Selected"
-msgstr ""
+msgstr "给所选发短信"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:238
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:88
 msgid "Compose MSG"
-msgstr ""
+msgstr "写短信"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:251
 msgid "Res"
-msgstr ""
+msgstr "精度"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
-msgstr ""
+msgstr "回复所选"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:276
 msgid "Draw Path"
-msgstr ""
+msgstr "画路线"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:326
 msgid "Pick Signals"
-msgstr ""
+msgstr "信号可选"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:340
 msgid "Pick Switches"
-msgstr ""
+msgstr "道岔可选"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:354
 msgid "Can Join"
-msgstr ""
+msgstr "可以加入"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:378
 msgid "Assist"
-msgstr ""
+msgstr "助手"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:390
 msgid "Normal"
-msgstr ""
+msgstr "玩家"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:403
 msgid "Follow"
-msgstr ""
+msgstr "追踪"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:418
 msgid "Penalty"
-msgstr ""
+msgstr "惩罚"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:433
 msgid "Prefer Green"
-msgstr ""
+msgstr "偏好绿灯"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:447
 msgid "See in Game"
-msgstr ""
+msgstr "游戏中查看"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.Designer.cs:486
 msgid "DispatchViewer"
-msgstr ""
+msgstr "联控窗口"
 
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:89
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:202
 msgid "Resume"
-msgstr ""
+msgstr "继续"
 
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.cs:94
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:67
 msgid "Pause"
-msgstr ""
+msgstr "暂停"
 
 #: ../../RunActivity/Debugging/GenericObjectViewerForm.Designer.cs:80
 msgid "GenericObjectViewerForm"
@@ -125,7 +125,7 @@ msgstr ""
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:46
 msgid "Clear All"
-msgstr ""
+msgstr "清除全部"
 
 #: ../../RunActivity/Debugging/MessageViewer.Designer.cs:57
 msgid "Reply Selected"
@@ -197,330 +197,330 @@ msgstr ""
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:116
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:128
 msgid "Connection to the server is lost, will play as single mode"
-msgstr ""
+msgstr "无法与联控联系，将运行单机游戏"
 
 #: ../../RunActivity/MultiPlayer/ClientComm.cs:145
 msgid "Alt-E to gain control of your train"
-msgstr ""
+msgstr "按Alt-E键获取本列车控制权"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:643
 msgid "Dispatcher does not allow hand throw at this time"
-msgstr ""
+msgstr "联控不允许扳动道岔"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:687
 msgid "main route"
-msgstr ""
+msgstr "主路"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:687
 msgid "side route"
-msgstr ""
+msgstr "旁路"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1461
 msgid "You are the new dispatcher. Enjoy!"
-msgstr ""
+msgstr "你现在是新联控"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1591
 msgid "Name conflicted with people in the game, will play in single mode"
-msgstr ""
+msgstr "用户名重复，无法联机"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1666
 #: ../../RunActivity/MultiPlayer/MPManager.cs:130
 msgid "You gained back the control of your train"
-msgstr ""
+msgstr "你获取了列车的控制权"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1876
 msgid "Server quits, will play as single mode"
-msgstr ""
+msgstr "联控退出，单机运行"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2157
 #: ../../RunActivity/MultiPlayer/Message.cs:2403
 msgid "Trains uncoupled, gain back control by Alt-E"
-msgstr ""
+msgstr "列车解挂，按Alt-E键获取列车控制权"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2541
 #: ../../RunActivity/MultiPlayer/Message.cs:2649
 msgid "Trains coupled, hit \\ then Shift-? to release brakes"
-msgstr ""
+msgstr "列车挂车，按\\然后Shift-?键缓解制动"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:3094
 msgid "You are an assistant now, will be able to handle switches and signals."
-msgstr ""
+msgstr "你现在是助手，可以控制信号和道岔"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:3100
 msgid "You are no longer an assistant."
-msgstr ""
+msgstr "你的助手权被取消"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:686
 #, csharp-format
 msgid "Switched, current route is {0}"
-msgstr ""
+msgstr "道岔扳动，现在的路线是：{0}"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1468
 #, csharp-format
 msgid "New dispatcher is {0}"
-msgstr ""
+msgstr "新联控是 {0}"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1887
 #: ../../RunActivity/MultiPlayer/OnlinePlayer.cs:148
 #, csharp-format
 msgid "{0} quit."
-msgstr ""
+msgstr "{0} 退出"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:1959
 #, csharp-format
 msgid "{0} lost."
-msgstr ""
+msgstr "{0} 掉线"
 
 #: ../../RunActivity/MultiPlayer/Message.cs:2979
 #, csharp-format
 msgid " From {0}: {1}"
-msgstr ""
+msgstr "信息-{0}: {1}"
 
 #: ../../RunActivity/MultiPlayer/MPManager.cs:740
 msgid "Missing car, have substituted with other one."
-msgstr ""
+msgstr "找不到车，用差不多的代替"
 
 #: ../../RunActivity/MultiPlayer/MPManager.cs:388
 #, csharp-format
 msgid "Cannot decouple: train has {0} player, need to completely stop."
 msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "无法解挂，必须停车"
+msgstr[1] "无法解挂，必须停车"
 
-#: ../../RunActivity/Physics/Train.cs:1364
+#: ../../RunActivity/Physics/Train.cs:1363
 msgid "Coupler broken!"
-msgstr ""
+msgstr "断钩了！"
 
-#: ../../RunActivity/Physics/Train.cs:1367
+#: ../../RunActivity/Physics/Train.cs:1366
 msgid "Coupler overloaded!"
-msgstr ""
+msgstr "车钩受力过大！"
 
-#: ../../RunActivity/Physics/Train.cs:3936
-#: ../../RunActivity/Physics/Train.cs:3941
+#: ../../RunActivity/Physics/Train.cs:3932
+#: ../../RunActivity/Physics/Train.cs:3937
 msgid "Other train is blocking path"
-msgstr ""
+msgstr "前方有其他车"
 
-#: ../../RunActivity/Physics/Train.cs:4111
+#: ../../RunActivity/Physics/Train.cs:4107
 #: ../../RunActivity/Simulator/Activity.cs:774
 msgid "Passenger boarding completed. You may depart now."
-msgstr ""
+msgstr "乘客上车完毕，可以开车"
 
-#: ../../RunActivity/Physics/Train.cs:4944
+#: ../../RunActivity/Physics/Train.cs:4940
 msgid "Stopped due to errors in route setting"
-msgstr ""
+msgstr "路错，无法前进"
 
-#: ../../RunActivity/Physics/Train.cs:5609
-#: ../../RunActivity/Physics/Train.cs:6682
+#: ../../RunActivity/Physics/Train.cs:5605
+#: ../../RunActivity/Physics/Train.cs:6678
 msgid "No signal in train's path"
-msgstr ""
+msgstr "列车前方无信号"
 
-#: ../../RunActivity/Physics/Train.cs:5617
+#: ../../RunActivity/Physics/Train.cs:5613
 msgid "Next signal already allocated to other train"
-msgstr ""
+msgstr "信号给了其他列车"
 
-#: ../../RunActivity/Physics/Train.cs:5678
+#: ../../RunActivity/Physics/Train.cs:5674
 msgid "Request to clear signal cannot be processed"
-msgstr ""
+msgstr "无法设置信号"
 
-#: ../../RunActivity/Physics/Train.cs:5784
-#: ../../RunActivity/Physics/Train.cs:6802
+#: ../../RunActivity/Physics/Train.cs:5780
+#: ../../RunActivity/Physics/Train.cs:6798
 msgid "No switch found"
-msgstr ""
+msgstr "找不到道岔"
 
-#: ../../RunActivity/Physics/Train.cs:7036
+#: ../../RunActivity/Physics/Train.cs:7032
 msgid "Train is not back on original route"
-msgstr ""
+msgstr "列车没回到原定路线"
 
-#: ../../RunActivity/Physics/Train.cs:7045
+#: ../../RunActivity/Physics/Train.cs:7041
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7058
+#: ../../RunActivity/Physics/Train.cs:7054
 msgid "Cannot change to Manual Mode while in Explorer Mode"
-msgstr ""
+msgstr "探索模式下无法切换模式"
 
-#: ../../RunActivity/Physics/Train.cs:7151
+#: ../../RunActivity/Physics/Train.cs:7147
 msgid "Reversal required and rear of train not on required route"
-msgstr ""
+msgstr "倒车，但车尾不在设定路线上"
 
-#: ../../RunActivity/Physics/Train.cs:7338
+#: ../../RunActivity/Physics/Train.cs:7334
 msgid "Cannot clear signal behind train while in AUTO mode"
-msgstr ""
+msgstr "自动模式下无法设置车尾信号"
 
-#: ../../RunActivity/Physics/Train.cs:4117
+#: ../../RunActivity/Physics/Train.cs:4113
 #: ../../RunActivity/Simulator/Activity.cs:767
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
-msgstr ""
+msgstr "乘客登车还需 {0:D2}:{1:D2}"
 
-#: ../../RunActivity/Physics/Train.cs:7580
+#: ../../RunActivity/Physics/Train.cs:7576
 #, csharp-format
 msgid "Allowed speed raised to {0}"
-msgstr ""
+msgstr "限速变成 {0}"
 
-#: ../../RunActivity/Physics/Train.cs:7622
+#: ../../RunActivity/Physics/Train.cs:7618
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
-msgstr ""
+msgstr "其它列车挡路: 列车 {0} , 原因: {1}"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:258
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:269
 msgid "No power line!"
-msgstr ""
+msgstr "没有接触网"
 
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:260
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
 msgid "Power line condition overridden."
-msgstr ""
+msgstr "没有接触网也可以开"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:118
 msgid "Release"
-msgstr ""
+msgstr "缓解"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:119
 msgid "Quick Release"
-msgstr ""
+msgstr "快速缓解"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:120
 msgid "Running"
-msgstr ""
+msgstr "运行"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:121
 msgid "Neutral"
-msgstr ""
+msgstr "中位"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:122
 msgid "Apply"
-msgstr ""
+msgstr "制动"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:123
 msgid "EPApply"
-msgstr ""
+msgstr "强力制动"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:124
 msgid "Emergency"
-msgstr ""
+msgstr "紧急制动"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:125
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:128
 msgid "Lap"
-msgstr ""
+msgstr "保压"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:126
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:127
 msgid "Service"
-msgstr ""
+msgstr "行车制动"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:129
 msgid "Suppression"
-msgstr ""
+msgstr "抑制"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:130
 msgid "Cont. Service"
-msgstr ""
+msgstr "继续制动"
 
 #: ../../RunActivity/RollingStock/MSTSNotchController.cs:131
 msgid "Full Service"
-msgstr ""
+msgstr "全制动"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1010
 msgid "Tender coal supply is empty. Your loco will fail."
-msgstr ""
+msgstr "煤水车没有煤了"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1024
 msgid "Tender water supply is empty. Your loco will fail."
-msgstr ""
+msgstr "煤水车没水了"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1078
 msgid "Fire has dropped too far. Your loco will fail."
-msgstr ""
+msgstr "火快灭了"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1154
 msgid ""
 "FireMass is getting low. Your fireman will shovel faster, but don't wear him "
 "out."
-msgstr ""
+msgstr "火量太小，司炉需要加快速度"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1167
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
-msgstr ""
+msgstr "火量正常，司炉速度正常"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1760
 msgid ""
 "You are exceeding the maximum recommended speed. Continued operation at this "
 "speed may cause damage."
-msgstr ""
+msgstr "你超速了。继续这样会出问题"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1948
 msgid "Water level dropped too far. Plug has fused and loco has failed."
-msgstr ""
+msgstr "水量太低，机车爆炸"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1955
 msgid "Boiler overfull and priming."
-msgstr ""
+msgstr "锅炉汽水共腾"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1961
 msgid "Boiler no longer priming."
-msgstr ""
+msgstr "锅炉正常"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:366
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable, or your train may derail."
-msgstr ""
+msgstr "弯道超速了"
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:393
 msgid "Your train has overturned."
-msgstr ""
+msgstr "翻车了"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:25
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:26
 msgid "Information"
-msgstr ""
+msgstr "信息"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:27
 msgid "Warning"
-msgstr ""
+msgstr "警告"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:28
 msgid "Error"
-msgstr ""
+msgstr "错误"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:29
 msgid "MSG"
-msgstr ""
+msgstr "短信"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:137
 msgid "<none>"
-msgstr ""
+msgstr "<无>"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "reverse"
-msgstr ""
+msgstr "倒车"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "neutral"
-msgstr ""
+msgstr "中位"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "forward"
-msgstr ""
+msgstr "前进"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgid "locked. Close throttle, stop train then re-try."
-msgstr ""
+msgstr "锁死，关闭节流阀，停车后再试"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "Throttle"
-msgstr ""
+msgstr "节流阀"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 #: ../../RunActivity/Simulator/Confirmation.cs:152
@@ -532,7 +532,7 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:185
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "close"
-msgstr ""
+msgstr "关"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 #: ../../RunActivity/Simulator/Confirmation.cs:152
@@ -544,31 +544,31 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:185
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "open"
-msgstr ""
+msgstr "开"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:140
 msgid "locked. Release dynamic brake then re-try."
-msgstr ""
+msgstr "锁死，解除机车制动后再试"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "Wheel-slip"
-msgstr ""
+msgstr "轮滑"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "over"
-msgstr ""
+msgstr "结束"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "occurring. Tractive power greatly reduced."
-msgstr ""
+msgstr "中，牵引力下降"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:141
 msgid "warning"
-msgstr ""
+msgstr "警告"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 msgid "Power"
-msgstr ""
+msgstr "动力"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:147
@@ -586,7 +586,7 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "off"
-msgstr ""
+msgstr "关"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:143
 #: ../../RunActivity/Simulator/Confirmation.cs:147
@@ -599,49 +599,49 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "on"
-msgstr ""
+msgstr "开"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 msgid "Pantograph 1"
-msgstr ""
+msgstr "后弓"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 #: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "lower"
-msgstr ""
+msgstr "降"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:144
 #: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "raise"
-msgstr ""
+msgstr "升"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:145
 msgid "Pantograph 2"
-msgstr ""
+msgstr "前弓"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "Player Diesel Power"
-msgstr ""
+msgstr "本务机柴油机功率"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:147
 msgid "locked. Close throttle then re-try."
-msgstr ""
+msgstr "锁死，关闭节流阀后再试"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:148
 msgid "Helper Diesel Power"
-msgstr ""
+msgstr "补机柴油机功率"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "Diesel Tank"
-msgstr ""
+msgstr "油箱"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "re-fueled"
-msgstr ""
+msgstr "加油"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:149
 msgid "level"
-msgstr ""
+msgstr "水平"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:152
 msgid "Regulator"
@@ -723,71 +723,71 @@ msgid "Water level"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
-msgid "Train Brake"
+msgid "列车制动"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 #: ../../RunActivity/Simulator/Confirmation.cs:166
-msgid "release"
+msgid "缓解"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 #: ../../RunActivity/Simulator/Confirmation.cs:166
 #: ../../RunActivity/Simulator/Confirmation.cs:168
-msgid "apply"
+msgid "制动"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:166
-msgid "Engine Brake"
+msgid "机车制动"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:167
-msgid "Dynamic Brake"
+msgid "动力制动"
 msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:167
 msgid "setup"
-msgstr ""
+msgstr "设置"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "Emergency Brake"
-msgstr ""
+msgstr "紧急制动"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "Bail Off"
-msgstr ""
+msgstr "退出"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "disengage"
-msgstr ""
+msgstr "切断"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:169
 msgid "engage"
-msgstr ""
+msgstr "连接"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "Brakes"
-msgstr ""
+msgstr "制动"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "initialize"
-msgstr ""
+msgstr "初置"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:170
 msgid "cannot initialize. Stop train then re-try."
-msgstr ""
+msgstr "无法初置，停车后再试"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "Handbrake"
-msgstr ""
+msgstr "手制动"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "none"
-msgstr ""
+msgstr "无"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:171
 msgid "full"
-msgstr ""
+msgstr "全力"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:172
 msgid "Retainers"
@@ -811,143 +811,143 @@ msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "Brake Hose"
-msgstr ""
+msgstr "制动管"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "disconnect"
-msgstr ""
+msgstr "切断"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:173
 msgid "connect"
-msgstr ""
+msgstr "连接"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:175
 msgid "Sander"
-msgstr ""
+msgstr "加沙"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "Alerter"
-msgstr ""
+msgstr "告警"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgid "acknowledge"
-msgstr ""
+msgstr "确认"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgid "Horn"
-msgstr ""
+msgstr "汽笛"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:178
 msgid "Whistle"
-msgstr ""
+msgstr "汽笛"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:178
 msgid "blow"
-msgstr ""
+msgstr "拉响"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "Bell"
-msgstr ""
+msgstr "车钟"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:179
 msgid "ring"
-msgstr ""
+msgstr "敲响"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "Headlight"
-msgstr ""
+msgstr "车灯"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "dim"
-msgstr ""
+msgstr "低亮度"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:180
 msgid "bright"
-msgstr ""
+msgstr "亮"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:181
 msgid "Cab Light"
-msgstr ""
+msgstr "驾驶室灯"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:182
 msgid "Wipers"
-msgstr ""
+msgstr "雨刷"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
-#: ../../RunActivity/Viewer3D/Cameras.cs:1406
+#: ../../RunActivity/Viewer3D/Cameras.cs:1382
 msgid "Cab"
-msgstr ""
+msgstr "驾驶室"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid "changing is not available"
-msgstr ""
+msgstr "无法改变"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
-msgstr ""
+msgstr "无法改变，停车后打到中位"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:185
 msgid "Doors Left"
-msgstr ""
+msgstr "左边车门"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:186
 msgid "Doors Right"
-msgstr ""
+msgstr "右边车门"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "Mirror"
-msgstr ""
+msgstr "倒车镜"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "retract"
-msgstr ""
+msgstr "收"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:187
 msgid "extend"
-msgstr ""
+msgstr "放"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:189
 msgid "Switch Ahead"
-msgstr ""
+msgstr "扳前道岔"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:189
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "locked. Use Control+M to change signals to manual mode then re-try."
-msgstr ""
+msgstr "锁死，按Ctl-M后再试"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 msgid "Switch Behind"
-msgstr ""
+msgstr "扳后道岔"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "Simulation Speed"
-msgstr ""
+msgstr "游戏速度"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "reset"
-msgstr ""
+msgstr "重置"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:193
 msgid "Uncouple After"
-msgstr ""
+msgstr "车后解挂"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "Activity"
-msgstr ""
+msgstr "任务"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "quit"
-msgstr ""
+msgstr "退出"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:194
 msgid "resume"
-msgstr ""
+msgstr "继续"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Replay"
-msgstr ""
+msgstr "重玩"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:195
 msgid "Overriding camera replay. Press Escape to resume camera replay."
@@ -955,51 +955,51 @@ msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "Location labels"
-msgstr ""
+msgstr "站线信息"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "sidings"
-msgstr ""
+msgstr "侧线"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "stations"
-msgstr ""
+msgstr "车站"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgid "stations and sidings"
-msgstr ""
+msgstr "车站和侧线"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "Gearbox"
-msgstr ""
+msgstr "离合器"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "down"
-msgstr ""
+msgstr "下"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "up"
-msgstr ""
+msgstr "上"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:197
 msgid "locked. Use shaft before changing gear."
-msgstr ""
+msgstr "锁死"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "Signal mode"
-msgstr ""
+msgstr "信号模式"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "manual"
-msgstr ""
+msgstr "手动"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "auto"
-msgstr ""
+msgstr "自动"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:198
 msgid "locked. Stop train, then re-try."
-msgstr ""
+msgstr "锁死，停车后再试"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:206
 #: ../../RunActivity/Simulator/Confirmation.cs:215
@@ -1043,89 +1043,89 @@ msgstr ""
 #: ../../RunActivity/Simulator/Confirmation.cs:139
 msgctxt "NonSteam"
 msgid "Reverser"
-msgstr ""
+msgstr "换向器"
 
 #. Context: Steam
 #: ../../RunActivity/Simulator/Confirmation.cs:151
 msgctxt "Steam"
 msgid "Reverser"
-msgstr ""
+msgstr "换向器"
 
 #. Context: Alerter
 #: ../../RunActivity/Simulator/Confirmation.cs:176
 msgctxt "Alerter"
 msgid "sound"
-msgstr ""
+msgstr "响"
 
 #. Context: Horn
 #: ../../RunActivity/Simulator/Confirmation.cs:177
 msgctxt "Horn"
 msgid "sound"
-msgstr ""
+msgstr "响"
 
 #. Context: Cab
 #: ../../RunActivity/Simulator/Confirmation.cs:183
 msgctxt "Cab"
 msgid "change"
-msgstr ""
+msgstr "换"
 
 #. Context: Switch
 #: ../../RunActivity/Simulator/Confirmation.cs:189
 #: ../../RunActivity/Simulator/Confirmation.cs:190
 msgctxt "Switch"
 msgid "change"
-msgstr ""
+msgstr "扳动"
 
 #. Context: Labels
 #: ../../RunActivity/Simulator/Confirmation.cs:196
 msgctxt "Labels"
 msgid "none"
-msgstr ""
+msgstr "无"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:595
 msgid "Free"
-msgstr ""
+msgstr "自由"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:981
 msgid "Outside Front"
-msgstr ""
+msgstr "外前视角"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:981
 msgid "Outside Rear"
-msgstr ""
+msgstr "外后视角"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:1237
 msgid "Brakeman"
-msgstr ""
+msgstr "挂车员视角"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:1269
 msgid "Passenger"
-msgstr ""
+msgstr "乘客视角"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1362
+#: ../../RunActivity/Viewer3D/Cameras.cs:1338
 msgid "Head out"
-msgstr ""
+msgstr "伸头"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1586
+#: ../../RunActivity/Viewer3D/Cameras.cs:1562
 msgid "Trackside"
-msgstr ""
+msgstr "路边视角"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1736
+#: ../../RunActivity/Viewer3D/Cameras.cs:1712
 msgid "3D Cab"
-msgstr ""
+msgstr "三维驾驶室"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:542
 #: ../../RunActivity/Viewer3D/Viewer.cs:655
 msgid "Cab view not available"
-msgstr ""
+msgstr "无驾驶室"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:604
 msgid "In MP, use Alt-F4 to quit directly"
-msgstr ""
+msgstr "按Alt-F4退出"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:666
 msgid "3D Cab view not available"
-msgstr ""
+msgstr "无三维驾驶室"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:691
 msgid "Will not ratate cab and land"
@@ -1133,12 +1133,12 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1096
 msgid "Game saved"
-msgstr ""
+msgstr "保存"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:682
 #, csharp-format
 msgid "Vibrating at level {0}"
-msgstr ""
+msgstr "机车震动程度 {0}"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:690
 #, csharp-format
@@ -1154,41 +1154,41 @@ msgstr[1] ""
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:44
 msgid "Activity Events"
-msgstr ""
+msgstr "任务事件"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "successfully"
-msgstr ""
+msgstr "成功"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:148
 msgid "without success"
-msgstr ""
+msgstr "失败"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:203
 msgid "Resume and close box"
-msgstr ""
+msgstr "继续并关闭对话框"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:204
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:216
 msgid "Quit activity"
-msgstr ""
+msgstr "退出任务"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:205
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:226
 msgid "Status: Activity paused"
-msgstr ""
+msgstr "状态：任务暂停"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:215
 msgid "Close box"
-msgstr ""
+msgstr "关闭对话框"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:217
 msgid "Status: Activity resumed"
-msgstr ""
+msgstr "状态：任务继续"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:225
 msgid "End Activity"
-msgstr ""
+msgstr "结束任务"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:147
 #, csharp-format
@@ -1204,66 +1204,66 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:39
 msgid "Car Operation Menu"
-msgstr ""
+msgstr "列车控制菜单"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
 msgid "Toggle Handbrake"
-msgstr ""
+msgstr "切换手刹车"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:63
 msgid "Toggle Power"
-msgstr ""
+msgstr "切换动力"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:76
 msgid "Toggle MU Connection"
-msgstr ""
+msgstr "切换重联"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:87
 msgid "Close window"
-msgstr ""
+msgstr "关闭"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:119
 msgid "Handbrake set"
-msgstr ""
+msgstr "手刹车制动"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
 msgid "Handbrake off"
-msgstr ""
+msgstr "手刹车缓解"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:135
 msgid "Power OFF command sent"
-msgstr ""
+msgstr "关机命令送出"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
 msgid "Power ON command sent"
-msgstr ""
+msgstr "开机命令送出"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:140
 msgid "No power command for this type of car!"
-msgstr ""
+msgstr "无功率控制命令"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:156
 msgid "MU signal connected"
-msgstr ""
+msgstr "重联信号连上"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:158
 msgid "MU signal disconnected"
-msgstr ""
+msgstr "重联信号断开"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:161
 msgid "No MU command for this type of car!"
-msgstr ""
+msgstr "无重联命令"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:33
 msgid "Compass"
-msgstr ""
+msgstr "指南针"
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:44
-msgid "Lat:"
+msgid "纬度"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:47
-msgid "Lon:"
+msgid "经度"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:34
@@ -1272,41 +1272,41 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:41
 msgid "Help"
-msgstr ""
+msgstr "帮助"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:43
 msgid "Key Commands"
-msgstr ""
+msgstr "键盘分布"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:69
 msgid "Briefing"
-msgstr ""
+msgstr "简要说明"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
 msgid "Timetable"
-msgstr ""
+msgstr "时刻表"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:71
 msgid "Station"
-msgstr ""
+msgstr "   车站"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
 msgid "Arrive"
-msgstr ""
+msgstr "  到达"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:76
 msgid "Actual"
-msgstr ""
+msgstr "  实际"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:75
 msgid "Depart"
-msgstr ""
+msgstr "  开车"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
@@ -1314,68 +1314,68 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:242
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:245
 msgid "(missed)"
-msgstr ""
+msgstr "（过站）"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:113
 msgid "Work Orders"
-msgstr ""
+msgstr "任务书"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:118
 msgid "Task"
-msgstr ""
+msgstr "任务"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:119
 msgid "Car(s)"
-msgstr ""
+msgstr "车底"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:120
 msgid "Location"
-msgstr ""
+msgstr "位置"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:121
 msgid "Status"
-msgstr ""
+msgstr "状态"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
 msgid "Assemble Train"
-msgstr ""
+msgstr "调车"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:145
 msgid "At Location"
-msgstr ""
+msgstr "位置"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:149
 msgid "Drop Off"
-msgstr ""
+msgstr "甩挂"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:153
 msgid "Pick Up"
-msgstr ""
+msgstr "挂车"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:227
 msgid "Done"
-msgstr ""
+msgstr "完成"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:240
 msgid "Procedures"
-msgstr ""
+msgstr "次序"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:54
 msgid "Next Station"
-msgstr ""
+msgstr "下站信息"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:322
 msgid "Activity completed."
-msgstr ""
+msgstr "任务完成"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:187
 msgid "No more stations."
-msgstr ""
+msgstr "没有更多停站"
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:103
 #, csharp-format
 msgid "Camera: {0}"
-msgstr ""
+msgstr "视角：{0}"
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:108
 #, csharp-format
@@ -1384,124 +1384,124 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
 msgid "Pause Menu"
-msgstr ""
+msgstr "暂停"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
 #, csharp-format
 msgid "Quit {1} ({0})"
-msgstr ""
+msgstr "退出 {1} ({0})"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
 #, csharp-format
 msgid "Save your game ({0})"
-msgstr ""
+msgstr "保存游戏 ({0})"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
 #, csharp-format
 msgid "Continue playing ({0})"
-msgstr ""
+msgstr "继续 ({0})"
 
 #: ../../RunActivity/Viewer3D/Popups/SwitchWindow.cs:48
 msgid "Switch"
-msgstr ""
+msgstr "道岔"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
 msgid "Track Monitor"
-msgstr ""
+msgstr "监控"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:88
 msgid "Auto Signal"
-msgstr ""
+msgstr "自动信号"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:89
 msgid "Node"
-msgstr ""
+msgstr "节点"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:90
 msgid "Manual"
-msgstr ""
+msgstr "手动"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:91
 msgid "Explorer"
-msgstr ""
+msgstr "探索"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
 msgid "OutOfControl : "
-msgstr ""
+msgstr "脱控："
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
 msgid "Unknown"
-msgstr ""
+msgstr "未知"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:112
 msgid "Speed:"
-msgstr ""
+msgstr "速度："
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:119
 msgid "Projected:"
-msgstr ""
+msgstr "预测："
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:126
 msgid "Limit:"
-msgstr ""
+msgstr "限速："
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:144
 msgid " Dist      Speed   Aspect"
-msgstr ""
+msgstr "距离       速度    信号  "
 
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:38
 msgid "Train Operations"
-msgstr ""
+msgstr "列控"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:491
 msgid "water"
-msgstr ""
+msgstr "水"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:492
 msgid "coal"
-msgstr ""
+msgstr "煤"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:493
 msgid "diesel oil"
-msgstr ""
+msgstr "油"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:494
 msgid "wood"
-msgstr ""
+msgstr "木"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:604
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
-msgstr ""
+msgstr "加油：立即加油"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:612
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
-msgstr ""
+msgstr "加油：到{0}距离{1}"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:618
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
-msgstr ""
+msgstr "加油：必须停车 {0}."
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
-msgstr ""
+msgstr "加油：速度要超过{0}"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:631
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
-msgstr ""
+msgstr "加油：速度要低于{0}"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:638
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
-msgstr ""
+msgstr "加油：{0}加满了"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:613
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "{0}米"
+msgstr[1] "{0}米"
 

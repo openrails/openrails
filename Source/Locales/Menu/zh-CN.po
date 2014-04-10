@@ -1,79 +1,79 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-04-09 23:43:15+0800\n"
-"PO-Revision-Date: 2014-04-09 23:43:15+0800\n"
-"Last-Translator: \n"
+"Project-Id-Version: OpenRails\n"
+"POT-Creation-Date: 2014-04-05 17:32:33+0200\n"
+"PO-Revision-Date: 2014-04-05 17:36+0100\n"
+"Last-Translator: Jijun Tang"
+"<huochemi@gmail.com>\n"
 "Language-Team: \n"
+"Language: zh-CN\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: MonoDevelop Gettext addin\n"
+"X-Generator: Poedit 1.6.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-
-#: ../../Menu/FolderForm.Designer.cs:56
-#: ../../Menu/Options.Designer.cs:156
-msgid "OK"
+#: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:154
+msgid "确定"
 msgstr ""
 
-#: ../../Menu/FolderForm.Designer.cs:67
-#: ../../Menu/Options.Designer.cs:210
+#: ../../Menu/FolderForm.Designer.cs:67 ../../Menu/Options.Designer.cs:208
 #: ../../Menu/TestingForm.Designer.cs:84
 msgid "Cancel"
-msgstr ""
+msgstr "取消"
 
 #: ../../Menu/FolderForm.Designer.cs:77
 msgid "Path:"
-msgstr ""
+msgstr "路径"
 
 #: ../../Menu/FolderForm.Designer.cs:86
 msgid "Name:"
-msgstr ""
+msgstr "名称:"
 
 #: ../../Menu/FolderForm.Designer.cs:116
 msgid "Installation Profile"
-msgstr ""
+msgstr "安装模拟火车"
 
 #: ../../Menu/ImportExportSaveForm.cs:52
 msgid "Save Packs"
-msgstr ""
+msgstr "保存"
 
 #: ../../Menu/ImportExportSaveForm.cs:52
 msgid "All files"
-msgstr ""
+msgstr "所有文件"
 
 #: ../../Menu/ImportExportSaveForm.cs:63
 #, csharp-format
 msgid "Save Pack '{0}' imported successfully."
-msgstr ""
+msgstr "保存文件 '{0}' 成功载入."
 
 #: ../../Menu/ImportExportSaveForm.cs:87
 #, csharp-format
 msgid "Save Pack '{0}' exported successfully."
-msgstr ""
+msgstr "保存文件 '{0}' 成功输出."
 
 #: ../../Menu/ImportExportSaveForm.cs:113
 #, csharp-format
 msgid "Save Pack folder contains {0} save pack:"
 msgid_plural "Save Pack folder contains {0} save packs:"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "保存文件夹有 {0} 个文件:"
+msgstr[1] "保存文件夹有 {0} 个文件:"
 
 #: ../../Menu/ImportExportSaveForm.Designer.cs:39
 msgid "Open Save Packs folder"
-msgstr ""
+msgstr "打开保存文件夹"
 
 #: ../../Menu/ImportExportSaveForm.Designer.cs:49
 msgid "Export to Save Pack"
-msgstr ""
+msgstr "输出保存文件"
 
 #: ../../Menu/ImportExportSaveForm.Designer.cs:59
 msgid "Import Save Pack"
-msgstr ""
+msgstr "输入文件"
 
 #: ../../Menu/ImportExportSaveForm.Designer.cs:91
 msgid "Import and export saved games"
-msgstr ""
+msgstr "输入输出保存的游戏"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:53
 msgid "✔"
@@ -88,110 +88,112 @@ msgid "↺"
 msgstr ""
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:108
-msgid "EditKey"
+msgid "修改按键"
 msgstr ""
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:54
 msgid "Accept changes"
-msgstr ""
+msgstr "保存修改"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:65
 msgid "Cancel changes"
-msgstr ""
+msgstr "取消修改"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:75
 msgid "Press any key"
-msgstr ""
+msgstr "按任意键"
 
 #: ../../Menu/KeyInputEditControl.Designer.cs:87
 msgid "Reset to default"
-msgstr ""
+msgstr "重置到缺省值"
 
 #: ../../Menu/MainForm.cs:132
 msgid "Spring"
-msgstr ""
+msgstr "春"
 
 #: ../../Menu/MainForm.cs:133
 msgid "Summer"
-msgstr ""
+msgstr "夏"
 
 #: ../../Menu/MainForm.cs:134
 msgid "Autumn"
-msgstr ""
+msgstr "秋"
 
 #: ../../Menu/MainForm.cs:135
 msgid "Winter"
-msgstr ""
+msgstr "冬"
 
 #: ../../Menu/MainForm.cs:139
 msgid "Clear"
-msgstr ""
+msgstr "晴"
 
 #: ../../Menu/MainForm.cs:140
 msgid "Snow"
-msgstr ""
+msgstr "雪"
 
 #: ../../Menu/MainForm.cs:141
 msgid "Rain"
-msgstr ""
+msgstr "雨"
 
 #: ../../Menu/MainForm.cs:145
 msgid "Easy"
-msgstr ""
+msgstr "容易"
 
 #: ../../Menu/MainForm.cs:146
 msgid "Medium"
-msgstr ""
+msgstr "较难"
 
 #: ../../Menu/MainForm.cs:147
 msgid "Hard"
-msgstr ""
+msgstr "极难"
 
 #: ../../Menu/MainForm.cs:153
 msgid "Monday"
-msgstr ""
+msgstr "星期一"
 
 #: ../../Menu/MainForm.cs:154
 msgid "Tuesday"
-msgstr ""
+msgstr "星期二"
 
 #: ../../Menu/MainForm.cs:155
 msgid "Wednesday"
-msgstr ""
+msgstr "星期三"
 
 #: ../../Menu/MainForm.cs:156
 msgid "Thursday"
-msgstr ""
+msgstr "星期四"
 
 #: ../../Menu/MainForm.cs:157
-msgid "Friday"
-msgstr ""
+msgid "星期五"
+msgstr "Venerdì"
 
 #: ../../Menu/MainForm.cs:158
 msgid "Saturday"
-msgstr ""
+msgstr "星期六"
 
 #: ../../Menu/MainForm.cs:159
 msgid "Sunday"
-msgstr ""
+msgstr "星期日"
 
 #: ../../Menu/MainForm.cs:215
 msgid "Update check failed"
-msgstr ""
+msgstr "无法更新"
 
 #: ../../Menu/MainForm.cs:253
 msgid "Select a the installation profile (MSTS folder) to add:"
-msgstr ""
+msgstr "选择一个MSTS目录安装:"
 
 #: ../../Menu/MainForm.cs:291
 msgid "Path: "
-msgstr ""
+msgstr "路径"
 
 #: ../../Menu/MainForm.cs:291
 msgid ""
 "\n"
 "Name: "
 msgstr ""
+"\n"
+"名称:"
 
 #: ../../Menu/MainForm.cs:291
 msgid ""
@@ -199,49 +201,56 @@ msgid ""
 "\n"
 "Remove this installation profile from Open Rails?"
 msgstr ""
+"\n"
+"\n"
+"从OR中移除该目录?"
 
 #: ../../Menu/MainForm.cs:388
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
 msgstr ""
+"用户名必须是2-5字节，不能有空格，-等特殊字符 "
+""
 
-#: ../../Menu/MainForm.cs:563
+#: ../../Menu/MainForm.cs:562
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed.\n"
 "Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
 "folder."
 msgstr ""
+"未安装MSTS文件.\n"
+"点击'增加...' 告知OR模拟火车安装的目录 "
+""
 
-#: ../../Menu/MainForm.cs:829
+#: ../../Menu/MainForm.cs:828
 msgid "Activity Briefing"
-msgstr ""
+msgstr "任务简介"
 
-#: ../../Menu/MainForm.cs:836
-#: ../../Menu/MainForm.Designer.cs:430
+#: ../../Menu/MainForm.cs:835 ../../Menu/MainForm.Designer.cs:430
 msgid "Timetable"
-msgstr ""
+msgstr "时刻表"
 
-#: ../../Menu/MainForm.cs:840
+#: ../../Menu/MainForm.cs:839
 msgid "Player Timetable"
-msgstr ""
+msgstr "玩家时刻表"
 
-#: ../../Menu/MainForm.cs:844
+#: ../../Menu/MainForm.cs:843
 msgid "Player Train"
-msgstr ""
+msgstr "玩家列车"
 
-#: ../../Menu/MainForm.cs:847
+#: ../../Menu/MainForm.cs:846
 msgid "Consist : "
-msgstr ""
+msgstr "编组:"
 
-#: ../../Menu/MainForm.cs:855
+#: ../../Menu/MainForm.cs:854
 msgid "Path : "
-msgstr ""
+msgstr "路径"
 
 #: ../../Menu/MainForm.cs:217
 #, csharp-format
 msgid "Update to {0}"
-msgstr ""
+msgstr "更新到 {0}"
 
 #: ../../Menu/MainForm.cs:401
 #, csharp-format
@@ -250,11 +259,14 @@ msgid ""
 "\n"
 "{0}"
 msgstr ""
+"更新失败，原因:\n"
+"\n"
+"{0}"
 
 #: ../../Menu/MainForm.cs:405
 #, csharp-format
 msgid "Updating to {0}..."
-msgstr ""
+msgstr "更新到 {0}..."
 
 #: ../../Menu/MainForm.cs:416
 #, csharp-format
@@ -263,545 +275,549 @@ msgid ""
 "\n"
 "{0}"
 msgstr ""
+"更新失败，原因:\n"
+"\n"
+"{0}"
 
-#: ../../Menu/MainForm.cs:820
+#: ../../Menu/MainForm.cs:819
 #, csharp-format
 msgid "Route: {0}"
-msgstr ""
+msgstr "线路: {0}"
 
-#: ../../Menu/MainForm.cs:825
-#: ../../Menu/MainForm.cs:850
+#: ../../Menu/MainForm.cs:824 ../../Menu/MainForm.cs:849
 #, csharp-format
 msgid "Locomotive: {0}"
-msgstr ""
+msgstr "机车: {0}"
 
-#: ../../Menu/MainForm.cs:828
+#: ../../Menu/MainForm.cs:827
 #, csharp-format
 msgid "Activity: {0}"
-msgstr ""
+msgstr "任务"
 
 #: ../../Menu/MainForm.Designer.cs:124
 msgid "Windowed"
-msgstr ""
+msgstr "窗口模式"
 
 #: ../../Menu/MainForm.Designer.cs:134
 msgid "Start"
-msgstr ""
+msgstr "开始"
 
 #: ../../Menu/MainForm.Designer.cs:147
 msgid "open"
-msgstr ""
+msgstr "开源"
 
 #: ../../Menu/MainForm.Designer.cs:159
 msgid "rails"
-msgstr ""
+msgstr "铁路"
 
 #: ../../Menu/MainForm.Designer.cs:167
 msgid "Add..."
-msgstr ""
+msgstr "增加..."
 
 #: ../../Menu/MainForm.Designer.cs:181
 msgid "Remove"
-msgstr ""
+msgstr "移除"
 
 #: ../../Menu/MainForm.Designer.cs:193
 msgid "Logging"
-msgstr ""
+msgstr "日志"
 
-#: ../../Menu/MainForm.Designer.cs:202
-#: ../../Menu/Options.Designer.cs:1370
+#: ../../Menu/MainForm.Designer.cs:202 ../../Menu/Options.Designer.cs:1346
 msgid "Options"
-msgstr ""
+msgstr "选项"
 
 #: ../../Menu/MainForm.Designer.cs:212
 msgid "Resume/ Replay..."
-msgstr ""
+msgstr "继续/重玩..."
 
-#: ../../Menu/MainForm.Designer.cs:221
-#: ../../Menu/TestingForm.Designer.cs:295
+#: ../../Menu/MainForm.Designer.cs:221 ../../Menu/TestingForm.Designer.cs:295
 msgid "Testing"
-msgstr ""
+msgstr "测试"
 
 #: ../../Menu/MainForm.Designer.cs:256
 msgid "Route:"
-msgstr ""
+msgstr "线路:"
 
 #: ../../Menu/MainForm.Designer.cs:275
 msgid "Host/port:"
-msgstr ""
+msgstr "IP:端口"
 
 #: ../../Menu/MainForm.Designer.cs:286
 msgid "User name:"
-msgstr ""
+msgstr "用户名:"
 
 #: ../../Menu/MainForm.Designer.cs:296
 msgid "Client"
-msgstr ""
+msgstr "客户端"
 
 #: ../../Menu/MainForm.Designer.cs:306
 msgid "Server"
-msgstr ""
+msgstr "服务端"
 
 #: ../../Menu/MainForm.Designer.cs:331
 msgid "Multiplayer"
-msgstr ""
+msgstr "联控"
 
 #: ../../Menu/MainForm.Designer.cs:343
 msgid "Singleplayer"
-msgstr ""
+msgstr "单机"
 
 #: ../../Menu/MainForm.Designer.cs:353
 msgid "Installation profile:"
-msgstr ""
+msgstr "安装的模拟火车目录:"
 
 #: ../../Menu/MainForm.Designer.cs:385
 msgid "Edit"
-msgstr ""
+msgstr "修改"
 
 #: ../../Menu/MainForm.Designer.cs:407
 msgid "Mode:"
-msgstr ""
+msgstr "模式:"
 
-#: ../../Menu/MainForm.Designer.cs:419
-#: ../../Menu/TestingForm.Designer.cs:182
+#: ../../Menu/MainForm.Designer.cs:419 ../../Menu/TestingForm.Designer.cs:182
 msgid "Activity"
-msgstr ""
+msgstr "任务"
 
 #: ../../Menu/MainForm.Designer.cs:470
 msgid "Activity:"
-msgstr ""
+msgstr "任务:"
 
 #: ../../Menu/MainForm.Designer.cs:493
 msgid "Locomotive:"
-msgstr ""
+msgstr "机车:"
 
 #: ../../Menu/MainForm.Designer.cs:530
 msgid "Consist:"
-msgstr ""
+msgstr "编组:"
 
 #: ../../Menu/MainForm.Designer.cs:541
 msgid "Starting at:"
-msgstr ""
+msgstr "起始站:"
 
 #: ../../Menu/MainForm.Designer.cs:565
 msgid "Heading to:"
-msgstr ""
+msgstr "终点站:"
 
 #: ../../Menu/MainForm.Designer.cs:589
 msgid "Duration:"
-msgstr ""
+msgstr "耗时:"
 
 #: ../../Menu/MainForm.Designer.cs:600
 msgid "Time:"
-msgstr ""
+msgstr "时间:"
 
-#: ../../Menu/MainForm.Designer.cs:649
-#: ../../Menu/MainForm.Designer.cs:792
+#: ../../Menu/MainForm.Designer.cs:649 ../../Menu/MainForm.Designer.cs:792
 msgid "Weather:"
-msgstr ""
+msgstr "天气:"
 
 #: ../../Menu/MainForm.Designer.cs:673
 msgid "Difficulty:"
-msgstr ""
+msgstr "难度:"
 
-#: ../../Menu/MainForm.Designer.cs:696
-#: ../../Menu/MainForm.Designer.cs:814
+#: ../../Menu/MainForm.Designer.cs:696 ../../Menu/MainForm.Designer.cs:814
 msgid "Season:"
-msgstr ""
+msgstr "季节:"
 
 #: ../../Menu/MainForm.Designer.cs:729
 msgid "Train:"
-msgstr ""
+msgstr "列车:"
 
 #: ../../Menu/MainForm.Designer.cs:750
 msgid "Timetable:"
-msgstr ""
+msgstr "时刻表:"
 
 #: ../../Menu/MainForm.Designer.cs:770
 msgid "Day:"
-msgstr ""
+msgstr "日期:"
 
 #: ../../Menu/MainForm.Designer.cs:829
 msgid "Computer trains"
-msgstr ""
+msgstr "计算机控制的列车"
 
 #: ../../Menu/MainForm.Designer.cs:848
 msgid "Relative time before player start time"
-msgstr ""
+msgstr "玩家开始前的时间"
 
 #: ../../Menu/MainForm.Designer.cs:860
 msgid "Absolute time"
-msgstr ""
+msgstr "绝对时间"
 
 #: ../../Menu/MainForm.Designer.cs:870
 msgid "Include in direction of player train"
-msgstr ""
+msgstr "包括在玩家列车方向"
 
 #: ../../Menu/MainForm.Designer.cs:881
 msgid "Start at:"
-msgstr ""
+msgstr "起点:"
 
 #: ../../Menu/MainForm.Designer.cs:912
 msgid "Timetable set:"
-msgstr ""
+msgstr "时刻表设置:"
 
 #: ../../Menu/MainForm.Designer.cs:935
 msgid "Restart to apply update"
-msgstr ""
+msgstr "重新开始以便更新"
 
 #: ../../Menu/MainForm.Designer.cs:973
 msgid "Open Rails"
-msgstr ""
+msgstr "开源铁路"
 
-#: ../../Menu/Options.cs:216
+#: ../../Menu/Options.cs:214
 msgid "Click to change this key"
-msgstr ""
+msgstr "点击改变按键"
 
-#: ../../Menu/Options.cs:232
+#: ../../Menu/Options.cs:230
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
 msgstr ""
+"继续保存有冲突的按键设置?\n"
+"\n"
 
-#: ../../Menu/Options.cs:312
+#: ../../Menu/Options.cs:308
 msgid "Remove all custom key assignments?"
-msgstr ""
+msgstr "删除定制按键?"
 
-#: ../../Menu/Options.cs:323
+#: ../../Menu/Options.cs:319
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
 msgstr ""
+"以下是现在的按键分布:\n"
+"\n"
 
-#: ../../Menu/Options.cs:332
+#: ../../Menu/Options.cs:328
 msgid "No errors found."
-msgstr ""
+msgstr "没有错误."
 
-#: ../../Menu/Options.cs:357
+#: ../../Menu/Options.cs:353
 msgid "Please restart Open Rails in order to load the new language."
-msgstr ""
+msgstr "重启以使用新语言."
 
-#: ../../Menu/Options.cs:346
+#: ../../Menu/Options.cs:342
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
 "{1:F0}° horizontal FOV on 4:3\n"
 "{2:F0}° horizontal FOV on 16:9"
 msgstr ""
+"{0:F0}° 垂向FOV等于:\n"
+"{1:F0}° 横向FOV为 4:3\n"
+"{2:F0}° 横向FOV为 16:9"
 
-#: ../../Menu/Options.Designer.cs:190
+#: ../../Menu/Options.Designer.cs:188
 msgid "Brake pipe charging rate (PSI/s)"
-msgstr ""
+msgstr "制动管加压速率 (PSI/s)"
 
-#: ../../Menu/Options.Designer.cs:199
+#: ../../Menu/Options.Designer.cs:197
 msgid "Graduated release air brakes"
-msgstr ""
+msgstr "缓解制动管"
 
-#: ../../Menu/Options.Designer.cs:220
+#: ../../Menu/Options.Designer.cs:218
 msgid "Alerter"
-msgstr ""
+msgstr "警告"
 
-#: ../../Menu/Options.Designer.cs:230
+#: ../../Menu/Options.Designer.cs:228
 msgid "Suppress control confirmations"
-msgstr ""
+msgstr "不回显命令"
 
-#: ../../Menu/Options.Designer.cs:240
+#: ../../Menu/Options.Designer.cs:238
 msgid "Dispatcher window"
-msgstr ""
+msgstr "可使用联控窗口"
 
-#: ../../Menu/Options.Designer.cs:278
+#: ../../Menu/Options.Designer.cs:276
 msgid "General"
-msgstr ""
+msgstr "普通"
 
-#: ../../Menu/Options.Designer.cs:289
+#: ../../Menu/Options.Designer.cs:287
 msgid "Language"
-msgstr ""
+msgstr "语言"
 
-#: ../../Menu/Options.Designer.cs:309
+#: ../../Menu/Options.Designer.cs:307
 msgid "Disable alerter in external views"
-msgstr ""
+msgstr "外视角不显示报警"
 
-#: ../../Menu/Options.Designer.cs:324
+#: ../../Menu/Options.Designer.cs:322
 msgid "Audio"
-msgstr ""
+msgstr "声音"
 
-#: ../../Menu/Options.Designer.cs:358
+#: ../../Menu/Options.Designer.cs:356
 msgid "% Sound Volume"
-msgstr ""
+msgstr "% 音量"
 
-#: ../../Menu/Options.Designer.cs:368
+#: ../../Menu/Options.Designer.cs:366
 msgid "Sound detail level"
-msgstr ""
+msgstr "声音精细度"
 
-#: ../../Menu/Options.Designer.cs:389
+#: ../../Menu/Options.Designer.cs:387
 msgid "MSTS Bin compatible sound"
-msgstr ""
+msgstr "MSTS Bin声音"
 
-#: ../../Menu/Options.Designer.cs:417
+#: ../../Menu/Options.Designer.cs:414
 msgid "Video"
-msgstr ""
+msgstr "显示"
 
-#: ../../Menu/Options.Designer.cs:428
+#: ../../Menu/Options.Designer.cs:425
 msgid "Viewing distance (km)"
-msgstr ""
+msgstr "可见距离 (km)"
 
-#: ../../Menu/Options.Designer.cs:466
+#: ../../Menu/Options.Designer.cs:463
 msgid "Distant mountains"
-msgstr ""
+msgstr "显示远山"
 
-#: ../../Menu/Options.Designer.cs:477
+#: ../../Menu/Options.Designer.cs:474
 msgid "Viewing distance (m)"
-msgstr ""
+msgstr "可见距离 (m)"
 
-#: ../../Menu/Options.Designer.cs:514
+#: ../../Menu/Options.Designer.cs:511
 msgid "XXX"
 msgstr ""
 
-#: ../../Menu/Options.Designer.cs:547
+#: ../../Menu/Options.Designer.cs:544
 msgid "Viewing vertical FOV"
-msgstr ""
+msgstr "垂向FOV"
 
-#: ../../Menu/Options.Designer.cs:571
+#: ../../Menu/Options.Designer.cs:568
 msgid "% Cab 2D stretch"
-msgstr ""
+msgstr "% 宽屏幕下延展驾驶室贴图"
 
-#: ../../Menu/Options.Designer.cs:581
+#: ../../Menu/Options.Designer.cs:578
 msgid "World object density"
-msgstr ""
+msgstr "建筑物密度"
 
-#: ../../Menu/Options.Designer.cs:626
+#: ../../Menu/Options.Designer.cs:623
 msgid "Glass on in-game windows"
-msgstr ""
+msgstr "提示窗口透明"
 
-#: ../../Menu/Options.Designer.cs:637
+#: ../../Menu/Options.Designer.cs:634
 msgid "Window size"
-msgstr ""
+msgstr "窗口大小"
 
-#: ../../Menu/Options.Designer.cs:646
+#: ../../Menu/Options.Designer.cs:643
 msgid "Dynamic shadows"
-msgstr ""
+msgstr "动态阴影"
 
-#: ../../Menu/Options.Designer.cs:656
+#: ../../Menu/Options.Designer.cs:653
 msgid "Overhead wire"
-msgstr ""
+msgstr "显示接触网"
 
-#: ../../Menu/Options.Designer.cs:673
+#: ../../Menu/Options.Designer.cs:670
 msgid "Simulation"
-msgstr ""
+msgstr "模拟设置"
 
-#: ../../Menu/Options.Designer.cs:683
+#: ../../Menu/Options.Designer.cs:680
 msgid "Curve dependent speed limit"
-msgstr ""
+msgstr "弯道限速"
 
-#: ../../Menu/Options.Designer.cs:693
+#: ../../Menu/Options.Designer.cs:690
 msgid "Curve dependent resistance"
-msgstr ""
+msgstr "弯道阻力"
 
-#: ../../Menu/Options.Designer.cs:703
+#: ../../Menu/Options.Designer.cs:700
 msgid "Override non-electrified route line-voltage"
-msgstr ""
+msgstr "非电力线路可以运行电力机车"
 
-#: ../../Menu/Options.Designer.cs:714
+#: ../../Menu/Options.Designer.cs:711
 msgid "Adhesion moving average filter size"
-msgstr ""
+msgstr "粘着力"
 
-#: ../../Menu/Options.Designer.cs:741
+#: ../../Menu/Options.Designer.cs:738
 msgid "Break couplers"
-msgstr ""
+msgstr "可断钩"
 
-#: ../../Menu/Options.Designer.cs:751
+#: ../../Menu/Options.Designer.cs:748
 msgid "Use advanced adhesion model"
-msgstr ""
+msgstr "使用高级粘着力模型"
 
-#: ../../Menu/Options.Designer.cs:766
+#: ../../Menu/Options.Designer.cs:763
 msgid "Keyboard"
-msgstr ""
+msgstr "键盘"
 
-#: ../../Menu/Options.Designer.cs:776
+#: ../../Menu/Options.Designer.cs:773
 msgid "Export"
-msgstr ""
+msgstr "输出"
 
-#: ../../Menu/Options.Designer.cs:789
+#: ../../Menu/Options.Designer.cs:786
 msgid "Defaults"
-msgstr ""
+msgstr "缺省"
 
-#: ../../Menu/Options.Designer.cs:801
+#: ../../Menu/Options.Designer.cs:798
 msgid "Check"
-msgstr ""
+msgstr "检查"
 
-#: ../../Menu/Options.Designer.cs:846
+#: ../../Menu/Options.Designer.cs:842
 msgid "Experimental"
-msgstr ""
+msgstr "实验"
 
-#: ../../Menu/Options.Designer.cs:856
-msgid "Use model instancing"
-msgstr ""
-
-#: ../../Menu/Options.Designer.cs:866
+#: ../../Menu/Options.Designer.cs:852
 msgid ""
 "Use large address aware binaries (for all 64bit and 3GB tuning on 32bit)"
 msgstr ""
+"使用64位程序 "
+""
 
-#: ../../Menu/Options.Designer.cs:876
+#: ../../Menu/Options.Designer.cs:862
 msgid "Fast full-screen alt-tab"
-msgstr ""
+msgstr "Alt-Tab 键切换到全屏"
 
-#: ../../Menu/Options.Designer.cs:886
+#: ../../Menu/Options.Designer.cs:872
 msgid "Use MSTS Environments"
-msgstr ""
+msgstr "使用MSTS环境"
 
-#: ../../Menu/Options.Designer.cs:896
+#: ../../Menu/Options.Designer.cs:882
 msgid "Always use highest detail objects"
-msgstr ""
+msgstr "总是使用精细模型"
 
-#: ../../Menu/Options.Designer.cs:908
+#: ../../Menu/Options.Designer.cs:894
 msgid "Use location-linked passing path processing"
-msgstr ""
+msgstr "使用与地点相关的超车处理"
 
-#: ../../Menu/Options.Designer.cs:935
+#: ../../Menu/Options.Designer.cs:921
 msgid "Ambient daylight brightness"
-msgstr ""
+msgstr "白天自然光照"
 
-#: ../../Menu/Options.Designer.cs:944
+#: ../../Menu/Options.Designer.cs:930
 msgid "Target frame rate"
-msgstr ""
+msgstr "目标帧数"
 
-#: ../../Menu/Options.Designer.cs:982
+#: ../../Menu/Options.Designer.cs:968
 msgid "Automatically tune settings to keep performance level"
-msgstr ""
+msgstr "自动调整程序以达到最佳效果"
 
-#: ../../Menu/Options.Designer.cs:992
+#: ../../Menu/Options.Designer.cs:978
 msgid "Double overhead wires"
-msgstr ""
+msgstr "双线接触网"
 
-#: ../../Menu/Options.Designer.cs:1002
+#: ../../Menu/Options.Designer.cs:988
 msgid "Extend object maximum viewing distance to horizon"
-msgstr ""
+msgstr "最远可以看到地平线"
 
-#: ../../Menu/Options.Designer.cs:1012
+#: ../../Menu/Options.Designer.cs:998
 msgid "Gauge (mm)"
-msgstr ""
+msgstr "轨距 (mm)"
 
-#: ../../Menu/Options.Designer.cs:1049
+#: ../../Menu/Options.Designer.cs:1035
 msgid "Minimum length (m)"
-msgstr ""
+msgstr "超高最小弯道长度 (m)"
 
-#: ../../Menu/Options.Designer.cs:1087
+#: ../../Menu/Options.Designer.cs:1073
 msgid "Level"
-msgstr ""
+msgstr "超高量"
 
-#: ../../Menu/Options.Designer.cs:1098
+#: ../../Menu/Options.Designer.cs:1084
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
+"实验性质，谨慎使用."
 
-#: ../../Menu/Options.Designer.cs:1122
+#: ../../Menu/Options.Designer.cs:1108
 msgid "Super-elevation"
-msgstr ""
+msgstr "超高"
 
-#: ../../Menu/Options.Designer.cs:1131
+#: ../../Menu/Options.Designer.cs:1117
 msgid "Load DDS textures in preference to ACE"
-msgstr ""
+msgstr "使用DDS贴图"
 
-#: ../../Menu/Options.Designer.cs:1150
+#: ../../Menu/Options.Designer.cs:1136
 msgid "DataLogger"
-msgstr ""
+msgstr "日志数据"
 
-#: ../../Menu/Options.Designer.cs:1191
+#: ../../Menu/Options.Designer.cs:1177
 msgid "Speed units"
-msgstr ""
+msgstr "速度单位"
 
-#: ../../Menu/Options.Designer.cs:1212
+#: ../../Menu/Options.Designer.cs:1198
 msgid "Log miscellaneous data"
-msgstr ""
+msgstr "记录各种数据"
 
-#: ../../Menu/Options.Designer.cs:1222
+#: ../../Menu/Options.Designer.cs:1208
 msgid "Log performance data"
-msgstr ""
+msgstr "记录计算机性能数据"
 
-#: ../../Menu/Options.Designer.cs:1232
+#: ../../Menu/Options.Designer.cs:1218
 msgid "Start logging with the simulation start"
-msgstr ""
+msgstr "游戏开始就记录"
 
-#: ../../Menu/Options.Designer.cs:1243
+#: ../../Menu/Options.Designer.cs:1229
 msgid "Separator"
-msgstr ""
+msgstr "分隔符"
 
-#: ../../Menu/Options.Designer.cs:1252
+#: ../../Menu/Options.Designer.cs:1238
 msgid "Log physics data"
-msgstr ""
+msgstr "记录物理数据"
 
-#: ../../Menu/Options.Designer.cs:1267
+#: ../../Menu/Options.Designer.cs:1253
 msgid "Evaluation"
-msgstr ""
+msgstr "评定"
 
-#: ../../Menu/Options.Designer.cs:1300
+#: ../../Menu/Options.Designer.cs:1286
 msgid "Interval (sec)"
-msgstr ""
+msgstr "间隔 (sec)"
 
-#: ../../Menu/Options.Designer.cs:1309
+#: ../../Menu/Options.Designer.cs:1295
 msgid "Log station stops"
-msgstr ""
+msgstr "记录停站"
 
-#: ../../Menu/Options.Designer.cs:1342
+#: ../../Menu/Options.Designer.cs:1328
 msgid "Log train speed"
-msgstr ""
+msgstr "记录列车速度"
 
-#: ../../Menu/Options.Designer.cs:1352
-msgid "Vertical sync"
-msgstr ""
-
-#: ../../Menu/Options.Designer.cs:1202
+#: ../../Menu/Options.Designer.cs:1188
 msgid ""
 "Use DataLogger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
 "time!"
 msgstr ""
+"按F12记录游戏数据.\r\n"
+"文件会比较大!"
 
-#: ../../Menu/Options.Designer.cs:343
+#: ../../Menu/Options.Designer.cs:341
 msgid "Sound Volume 0-100"
-msgstr ""
+msgstr "音量 0-100"
 
-#: ../../Menu/Options.Designer.cs:452
-#: ../../Menu/Options.Designer.cs:968
+#: ../../Menu/Options.Designer.cs:449 ../../Menu/Options.Designer.cs:954
 msgid "Distance to see mountains"
-msgstr ""
+msgstr "可见远山的距离"
 
-#: ../../Menu/Options.Designer.cs:790
+#: ../../Menu/Options.Designer.cs:787
 msgid "Load the factory default key assignments."
-msgstr ""
+msgstr "加载缺省按键分布."
 
-#: ../../Menu/Options.Designer.cs:802
+#: ../../Menu/Options.Designer.cs:799
 msgid "Check for incorrect key assignments."
-msgstr ""
+msgstr "检查错误按键."
 
-#: ../../Menu/Options.Designer.cs:923
+#: ../../Menu/Options.Designer.cs:909
 msgid "Default is 100"
-msgstr ""
+msgstr "缺省为 100"
 
-#: ../../Menu/Options.Designer.cs:1073
+#: ../../Menu/Options.Designer.cs:1059
 msgid "Shortest curve to have elevation"
-msgstr ""
+msgstr "有超高的最小曲线长度"
 
-#: ../../Menu/Options.Designer.cs:1112
+#: ../../Menu/Options.Designer.cs:1098
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
-msgstr ""
+msgstr "0: 无超高, 1: 9cm 超高; 10: 18cm 超高"
 
-#: ../../Menu/Options.Designer.cs:560
+#: ../../Menu/Options.Designer.cs:557
 msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
 msgstr ""
+"0 剪裁, 100 延展. "
+""
 
-#: ../../Menu/Options.Designer.cs:777
+#: ../../Menu/Options.Designer.cs:774
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."
 msgstr ""
+"生成按键分布. \r\n"
+"文件在桌面."
 
 #: ../../Menu/ResumeForm.cs:137
 msgid "Explore Route"
-msgstr ""
+msgstr "探索模式"
 
 #: ../../Menu/ResumeForm.cs:194
 #, csharp-format
@@ -810,6 +826,9 @@ msgid ""
 "{1}.\n"
 "\n"
 msgstr ""
+"警告: 保存文件 {0} 名称不对:\n"
+"{1}.\n"
+"\n"
 
 #: ../../Menu/ResumeForm.cs:206
 #, csharp-format
@@ -817,111 +836,112 @@ msgid ""
 "To prevent crashes and unexpected behavior, new versions of Open Rails "
 "invalidate old saved games. {0} of {1} saves are no longer valid."
 msgstr ""
+"{0}/{1}保存文件无效"
+""
 
 #: ../../Menu/ResumeForm.Designer.cs:175
 msgid "Resume"
-msgstr ""
+msgstr "继续"
 
 #: ../../Menu/ResumeForm.Designer.cs:186
 msgid "Delete"
-msgstr ""
+msgstr "删除"
 
 #: ../../Menu/ResumeForm.Designer.cs:198
 msgid "Undelete"
-msgstr ""
+msgstr "恢复"
 
 #: ../../Menu/ResumeForm.Designer.cs:220
 msgid "Delete all invalid saves"
-msgstr ""
+msgstr "删除无效文件"
 
 #: ../../Menu/ResumeForm.Designer.cs:231
 msgid "Import/ export"
-msgstr ""
+msgstr "输入/输出"
 
 #: ../../Menu/ResumeForm.Designer.cs:247
 msgid "Invalid saves"
-msgstr ""
+msgstr "无效文件"
 
 #: ../../Menu/ResumeForm.Designer.cs:291
 msgid "Replay from start"
-msgstr ""
+msgstr "从头开始"
 
 #: ../../Menu/ResumeForm.Designer.cs:314
 msgid "Replay from previous save"
-msgstr ""
+msgstr "从保存点开始"
 
 #: ../../Menu/ResumeForm.Designer.cs:327
 msgid "Pause replay at end"
-msgstr ""
+msgstr "结束时暂停"
 
 #: ../../Menu/ResumeForm.Designer.cs:359
 msgid "Pause seconds before end:"
-msgstr ""
+msgstr "多少秒结束前暂停:"
 
 #: ../../Menu/ResumeForm.Designer.cs:377
 msgid "Saved Games"
-msgstr ""
+msgstr "保存的游戏"
 
 #: ../../Menu/ResumeForm.Designer.cs:100
 msgid "File"
-msgstr ""
+msgstr "文件"
 
 #: ../../Menu/ResumeForm.Designer.cs:109
 msgid "Saved At"
-msgstr ""
+msgstr "保存于"
 
 #: ../../Menu/ResumeForm.Designer.cs:117
 msgid "Path"
-msgstr ""
+msgstr "路径"
 
 #: ../../Menu/ResumeForm.Designer.cs:125
 msgid "Time"
-msgstr ""
+msgstr "时间"
 
 #: ../../Menu/ResumeForm.Designer.cs:135
 msgid "Distance"
-msgstr ""
+msgstr "距离"
 
 #: ../../Menu/ResumeForm.Designer.cs:143
 msgid "Tile"
-msgstr ""
+msgstr "标题"
 
 #: ../../Menu/ResumeForm.Designer.cs:151
 msgid "Valid"
-msgstr ""
+msgstr "有效"
 
 #: ../../Menu/ResumeForm.Designer.cs:187
 msgid "Deletes the currently selected save or saves."
-msgstr ""
+msgstr "删除已选的保存"
 
-#: ../../Menu/ResumeForm.Designer.cs:199
-#: ../../Menu/ResumeForm.Designer.cs:232
+#: ../../Menu/ResumeForm.Designer.cs:199 ../../Menu/ResumeForm.Designer.cs:232
 msgid "Restores all saves deleted in this session."
-msgstr ""
+msgstr "恢复删除的文件"
 
 #: ../../Menu/TestingForm.Designer.cs:62
 msgid "Test all"
-msgstr ""
+msgstr "检查全部"
 
 #: ../../Menu/TestingForm.Designer.cs:73
 msgid "Test"
-msgstr ""
+msgstr "检查"
 
 #: ../../Menu/TestingForm.Designer.cs:95
 msgid "Summary"
-msgstr ""
+msgstr "总结"
 
 #: ../../Menu/TestingForm.Designer.cs:252
 msgid "Details"
-msgstr ""
+msgstr "详情"
 
 #: ../../Menu/TestingForm.Designer.cs:264
 msgid "Override user settings when running tests"
-msgstr ""
+msgstr "按缺省设置运行检查"
 
 #: ../../Menu/TestingForm.Designer.cs:274
 msgid "Clear sort"
-msgstr ""
+msgstr "取消排序"
 
 #: ../../Menu/TestingForm.Designer.cs:146
 msgid "ToTest"
@@ -937,25 +957,100 @@ msgstr ""
 
 #: ../../Menu/TestingForm.Designer.cs:174
 msgid "Route"
-msgstr ""
+msgstr "线路"
 
 #: ../../Menu/TestingForm.Designer.cs:190
 msgid "Tested"
-msgstr ""
+msgstr "已测试"
 
 #: ../../Menu/TestingForm.Designer.cs:199
 msgid "Passed"
-msgstr ""
+msgstr "通过"
 
 #: ../../Menu/TestingForm.Designer.cs:208
 msgid "Errors"
-msgstr ""
+msgstr "错误"
 
 #: ../../Menu/TestingForm.Designer.cs:218
 msgid "Load"
-msgstr ""
+msgstr "加载"
 
 #: ../../Menu/TestingForm.Designer.cs:228
 msgid "FPS"
-msgstr ""
+msgstr "帧数"
 
+#~ msgid "Optimal curve speed factor"
+#~ msgstr "Fattore di velocità ottimale in curva"
+
+#~ msgid "Curve resistance multiplier at zero speed"
+#~ msgstr "Moltiplicatore della curva di resistenza a velocità 0"
+
+#~ msgid "Curve resistance speed dependent"
+#~ msgstr "Attrito in curva dipendente dalla velocità"
+
+#~ msgid "Loading delay (ms)"
+#~ msgstr "Ritardo di caricamento (ms)"
+
+#~ msgid "- Explore Route -"
+#~ msgstr "- Esplorazione scenario -"
+
+#~ msgid "load error:"
+#~ msgstr "errore caricamento:"
+
+#~ msgid "unnamed:"
+#~ msgstr "senza nome:"
+
+#~ msgid "missing:"
+#~ msgstr "mancante:"
+
+#~ msgid "Activity '{0}' is excluded."
+#~ msgstr "Activity '{0}' è esclusa."
+
+#~ msgid "- Any Locomotive -"
+#~ msgstr "- Tutte le locomotive -"
+
+#~ msgid "Locomotive '{0}' is excluded."
+#~ msgstr "Locomotiva '{0}' è esclusa."
+
+#~ msgid ""
+#~ "User name must be 4-10 characters long, cannot contain space, ' or \" and "
+#~ "must not start with a digit."
+#~ msgstr ""
+#~ "Il nome utente deve essere formato da 4 massimo 10 caratteri e non deve "
+#~ "contenere spazi, ',\" oppure - e non deve iniziare con un numero"
+
+#~ msgid "Port number must be an integer between 0 and 65535."
+#~ msgstr "Il numero di porta deve essere un numero intero tra 0 e 65535"
+
+#~ msgid "Seconds"
+#~ msgstr "Secondi"
+
+#~ msgid "Show Avatar"
+#~ msgstr "Mostra Avatar"
+
+#~ msgid "Avatar URL"
+#~ msgstr "URL dell'Avatar"
+
+#~ msgid "Route Details"
+#~ msgstr "Dettagli scenario"
+
+#~ msgid "Activity Details"
+#~ msgstr "Dettagli activity"
+
+#~ msgid "Start Time"
+#~ msgstr "Ora di partenza"
+
+#~ msgid "Season"
+#~ msgstr "Stagione"
+
+#~ msgid "Weather"
+#~ msgstr "Meteo"
+
+#~ msgid "Close"
+#~ msgstr "Chiudi"
+
+#~ msgid "Duration"
+#~ msgstr "Durata"
+
+#~ msgid "Difficulty"
+#~ msgstr "Difficoltà"
