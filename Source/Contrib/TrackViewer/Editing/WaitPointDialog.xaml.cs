@@ -19,39 +19,50 @@ namespace ORTS.TrackViewer.Editing
     /// Interaction logic for WaitPointDialog.xaml
     /// This is a small dialog to edit the details for waitpoint
     /// </summary>
-    public partial class WaitPointDialog : Window
+    public sealed partial class WaitPointDialog : Window
     {
+        ///<summary>Return the selected wait time in seconds</summary>
+        public int GetWaitTime
+        {
+            get
+            {
+                return 60 * Convert.ToInt32(waitTimeMinutes.Text, System.Globalization.CultureInfo.CurrentCulture) 
+                          + Convert.ToInt32(waitTimeSeconds.Text, System.Globalization.CultureInfo.CurrentCulture);
+            }
+        }
+
+
         /// <summary>
         /// Create the dialog to edit the metadata of the waitpoint dialog.
         /// </summary>
         /// <param name="mouseX">Current X-location of the mouse to determine popup location</param>
         /// <param name="mouseY">Current Y-location of the mouse to determine popu location</param>
         /// <param name="currentWaitTimeS">Current value of the wait time (only valid if wait until is zero)</param>
-        /// <param name="currentWaitUntil">Current value of the wait-until time</param>
-        public WaitPointDialog(int mouseX, int mouseY, int currentWaitTimeS, int currentWaitUntil)
+        // /// <param name="currentWaitUntil">Current value of the wait-until time</param>
+        public WaitPointDialog(int mouseX, int mouseY, int currentWaitTimeS//, int currentWaitUntil
+            )
         {
             InitializeComponent();
             this.Left = mouseX;
             this.Top = mouseY;
-            waitTimeHours.Focus();
-            if (currentWaitUntil > 0)
-            {
-                int totalMinutes = currentWaitUntil / 60;
-                int hours = totalMinutes / 60;
-                int minutes = totalMinutes - 60 * hours;
-                waitTimeHours.Text = hours.ToString();
-                waitTimeMinutes.Text = minutes.ToString();
-                selectUntil.IsChecked = true;
-            }
-            else
-            {
-                int totalMinutes = currentWaitTimeS / 60;
-                int hours = totalMinutes / 60;
-                int minutes = totalMinutes - 60 * hours;
-                waitTimeHours.Text = hours.ToString();
-                waitTimeMinutes.Text = minutes.ToString();
-                selectWait.IsChecked = true;
-            }
+            waitTimeMinutes.Focus();
+            //if (currentWaitUntil > 0)
+            //{
+            //    int totalMinutes = currentWaitUntil / 60;
+            //    int hours = totalMinutes / 60;
+            //    int minutes = totalMinutes - 60 * hours;
+            //    waitTimeHours.Text = hours.ToString(System.Globalization.CultureInfo.CurrentCulture);
+            //    waitTimeMinutes.Text = minutes.ToString(System.Globalization.CultureInfo.CurrentCulture);
+            //    selectUntil.IsChecked = true;
+            //}
+            //else
+            //{
+                int minutes = currentWaitTimeS / 60;
+                int seconds = currentWaitTimeS - 60 * minutes;
+                waitTimeMinutes.Text = minutes.ToString(System.Globalization.CultureInfo.CurrentCulture);
+                waitTimeSeconds.Text = seconds.ToString(System.Globalization.CultureInfo.CurrentCulture);
+                //selectWait.IsChecked = true;
+            //}
         }
 
         private void buttonOK_Click(object sender, RoutedEventArgs e)
@@ -64,18 +75,11 @@ namespace ORTS.TrackViewer.Editing
             DialogResult = false;
         }
 
-        ///<summary>Return whether the 'until' check-box has been selected or not</summary>
-        public bool UntilSelected()
-        {
-            return (bool)selectUntil.IsChecked;
-        }
-
-        ///<summary>Return the selected wait time in seconds</summary>
-        public int GetWaitTime()
-        {
-            return 60 * (Convert.ToInt32(waitTimeHours.Text, System.Globalization.CultureInfo.InvariantCulture) * 60
-                       + Convert.ToInt32(waitTimeMinutes.Text, System.Globalization.CultureInfo.InvariantCulture));
-        }
+        /////<summary>Return whether the 'until' check-box has been selected or not</summary>
+        //public bool UntilSelected()
+        //{
+        //    return (bool)selectUntil.IsChecked;
+        //}
 
         /// <summary>
         /// Make sure we only allow digits to be typed

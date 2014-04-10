@@ -81,7 +81,9 @@ namespace ORTS.TrackViewer.Drawing
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathStart", "pathStart",31,31);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathEnd", "pathEnd",31,31);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathWait", "pathWait",31,31);
+#if COUPLE
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathUncouple", "pathUncouple", 31, 31);
+#endif
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathReverse", "pathReverse", 31, 31);
             LoadAndHighlightTexture(graphicsDevice, contentPath, "pathSiding", "pathSiding", 31, 31);
 
@@ -319,6 +321,26 @@ namespace ORTS.TrackViewer.Drawing
             float angle = (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
             float length = Vector2.Distance(point1, point2);
             DrawLine(width, color, point1, length, angle);
+        }
+
+        public static void DrawDashedLine(float width, Color color, Vector2 point1, Vector2 point2)
+        {
+            float angle = (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
+            float cosAngle = (float)Math.Cos(angle);
+            float sinAngle = (float)Math.Sin(angle);
+            
+            float length = Vector2.Distance(point1, point2);
+            
+            int pixelsPerSegment = 10; // this is a target value. We will always start and end with a segment.
+            int nsegments = 1 + (int) Math.Floor(length / (2 * pixelsPerSegment));
+            float lengthPerSegment = length / (2 * nsegments - 1);
+            Vector2 segmentOffset = 2*lengthPerSegment * new Vector2(cosAngle, sinAngle);
+
+            for (int i = 0; i < nsegments; i++)
+            {
+                Vector2 segmentStartPoint = point1 + i * segmentOffset;
+                DrawLine(width, color, segmentStartPoint, lengthPerSegment, angle);
+            }
         }
 
         /// <summary>

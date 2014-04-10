@@ -71,9 +71,9 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>Y location of the top-left corner of this drawArea</summary>
         protected int AreaOffsetY { get; set; }
         /// <summary> width of the drawArea in pixels</summary>
-        protected int AreaW = 1230;
+        protected int AreaW { get; private set; }
         /// <summary> height of the drawArea in pixels</summary>
-        protected int AreaH = 700;
+        protected int AreaH { get; private set; }
         /// <summary>Ratio used for shifting (percentage shift per update)</summary>
         private static float shiftRatioDefault = 0.10f; 
 
@@ -101,11 +101,13 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="drawScaleRuler">The Scale ruler that needs to be updated on screen and zoom sizes</param>
         public DrawArea(DrawScaleRuler drawScaleRuler)
         {
+            AreaW = 1230;
+            AreaH = 700;
             metersPerPixel = new DiscreteScale();
             MouseLocation = new WorldLocation(0, 0, 0, 0, 0);  // default mouse location far far away
             SetDrawArea(-1, 1, -1, 1); // just have a default
             this.drawScaleRuler = drawScaleRuler;
-       }
+        }
 
         /// <summary>
         /// Sets the screen size on which we can draw (in pixels)
@@ -188,7 +190,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="maxX">maximal real world X location</param>
         /// <param name="minZ">minimal real world Z location</param>
         /// <param name="maxZ">maximal real world Z location</param>
-        public virtual void SetDrawArea(float minX, float maxX, float minZ, float maxZ)
+        public void SetDrawArea(float minX, float maxX, float minZ, float maxZ)
         { 
             float scaleX = AreaW / (maxX - minX);
             float scaleY = AreaH / (maxZ - minZ);
@@ -386,6 +388,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="location">New worldLocation at center of area</param>
         public void ShiftToLocation(WorldLocation location)
         {
+            if (location == null) return;
             // Basic equation areaX = scale * (worldX - offsetX)
             // We want middle of screen to shift to new worldX, so areaW/2 = scale * (worldX - offsetX)
             // Similarly
@@ -491,6 +494,19 @@ namespace ORTS.TrackViewer.Drawing
         {
             if (OutOfArea(point1) && OutOfArea(point2)) return;
             BasicShapes.DrawLine(GetWindowSize(width), color, GetWindowVector(point1), GetWindowVector(point2));
+        }
+
+        /// <summary>
+        /// Basic method to draw a dashed line between two points. Coordinates are in area coordinates.
+        /// </summary>
+        /// <param name="width"> Width of the line to draw in meters </param>
+        /// <param name="color"> Color of the line</param>
+        /// <param name="point1"> WorldLocation of the first point of the line</param>
+        /// <param name="point2"> WorldLocation of to the last point of the line</param>
+        public void DrawDashedLine(float width, Color color, WorldLocation point1, WorldLocation point2)
+        {
+            if (OutOfArea(point1) && OutOfArea(point2)) return;
+            BasicShapes.DrawDashedLine(GetWindowSize(width), color, GetWindowVector(point1), GetWindowVector(point2));
         }
 
         /// <summary>

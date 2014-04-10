@@ -32,7 +32,7 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class DrawTrains
     {
-        WorldLocation trainLocation = null;
+        WorldLocation trainLocation;
 
         /// <summary>
         /// Default Constructor
@@ -49,7 +49,7 @@ namespace ORTS.TrackViewer.Drawing
         public bool Update(DrawArea drawArea)
         {
             // Get location from RunActivity
-            trainLocation = ORTS.Processes.TrackviewerIPC.GetTraveller();
+            trainLocation = ORTS.Processes.TrackviewerIpc.PlayerTrainTraveller();
             if (trainLocation != null)
             {
                 drawArea.ShiftToLocation(trainLocation);

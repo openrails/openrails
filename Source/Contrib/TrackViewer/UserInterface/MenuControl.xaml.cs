@@ -52,10 +52,11 @@ namespace ORTS.TrackViewer.UserInterface
     /// By being so central in the userinterface, it is sometimes difficult to make nice and clean interactions
     /// with the rest of the program. There are many calls to trackviewer and items within trackviewer.
     /// </summary>
-    public partial class MenuControl : System.Windows.Controls.UserControl
+    public sealed partial class MenuControl : System.Windows.Controls.UserControl, IDisposable
     {
         /// <summary>Height of the menu in pixels</summary>
-        public int menuHeight;
+        public int MenuHeight { get; set; }
+
         private TrackViewer trackViewer;
         private ElementHost elementHost;
 
@@ -67,14 +68,14 @@ namespace ORTS.TrackViewer.UserInterface
         {
             this.trackViewer = trackViewer;
             InitializeComponent();
-            menuHeight = (int)menu1.Height;
+            MenuHeight = (int)menu1.Height;
 
             //ElementHost object helps us to connect a WPF User Control.
             elementHost = new ElementHost();
             elementHost.Location = new System.Drawing.Point(0, 0);
-            elementHost.Name = "elementHost";
+            //elementHost.Name = "elementHost";
             elementHost.TabIndex = 1;
-            elementHost.Text = "elementHost";
+            //elementHost.Text = "elementHost";
             elementHost.Child = this;
             System.Windows.Forms.Control.FromHandle(trackViewer.Window.Handle).Controls.Add(elementHost);
 
@@ -129,11 +130,12 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowRoadCrossings.IsChecked = Properties.Settings.Default.showRoadCrossings;
 
             menuShowScaleRuler.IsChecked = Properties.Settings.Default.showScaleRuler;
+            menuShowLonLat.IsChecked = Properties.Settings.Default.showLonLat;
             menuUseMilesNotMeters.IsChecked = Properties.Settings.Default.useMilesNotMeters;
 
             UpdateMenuSettings();  // to be sure some other settings are done correctly
 
-            //menuDoAntiAliasing.IsChecked = Properties.Settings.Default.doAntiAliasing; todo
+            menuDoAntiAliasing.IsChecked = Properties.Settings.Default.doAntiAliasing;
         }
 
         /// <summary>
@@ -175,6 +177,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.showRoadCrossings = menuShowRoadCrossings.IsChecked;
 
             Properties.Settings.Default.showScaleRuler = menuShowScaleRuler.IsChecked;
+            Properties.Settings.Default.showLonLat = menuShowLonLat.IsChecked;
             Properties.Settings.Default.useMilesNotMeters = menuUseMilesNotMeters.IsChecked;
 
             Properties.Settings.Default.Save();
@@ -259,6 +262,7 @@ namespace ORTS.TrackViewer.UserInterface
                 if (route.Name == (string)selectedMenuItem.Header)
                 {
                     trackViewer.SetRoute(route);
+                    UpdateMenuSettings();
                     return;
                 }
             }
@@ -327,7 +331,10 @@ namespace ORTS.TrackViewer.UserInterface
                 {
                     trackViewer.SetPath(path);
                     trackViewer.PathEditor.EditingIsActive = menuEnableEditing.IsChecked;
-                    menuShowTrainpath.IsChecked = true;
+                    if (!menuShowPATfile.IsChecked)
+                    {   // make sure path is visible either raw or (preferably) processed.
+                        menuShowTrainpath.IsChecked = true;
+                    }
                     UpdateMenuSettings();
                     return;
                 }
@@ -384,7 +391,7 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuDoAntiAliasing_Click(object sender, RoutedEventArgs e)
         {
-            //Properties.Settings.Default.doAntiAliasing = menuDoAntiAliasing.IsChecked;todo
+            Properties.Settings.Default.doAntiAliasing = menuDoAntiAliasing.IsChecked;
             Properties.Settings.Default.Save();
             trackViewer.SetAliasing();
         }
@@ -572,21 +579,47 @@ namespace ORTS.TrackViewer.UserInterface
         private void menuKnownLimitations_Click(object sender, RoutedEventArgs e)
         {
             string limitations = String.Empty;
-            limitations += "The following items are planned additional functionalities not yet implemented:\n";
-            limitations += "* Complex modifications of paths (while retaining rest of path).\n";
-            limitations += "* Correction of broken points.\n";
-            limitations += "* Moving wait/uncouple/reverse/end/start points with mouse.\n";
-            limitations += "* Using mouse clicks for 'take other exit', 'remove siding', 'edit point'...\n";
+            limitations += "Currently all intended and planned editor features have been implemented.\n";
+            limitations += "Documentation is available (under source directory)\n";
             limitations += "\n";
-            limitations += "Further comments:\n";
-            limitations += "* Documentation is available (under source directory), but not finished.\n";
-            limitations += "* Testing the save-paths with MSTS has not been done.\n";
-            limitations += "* Possible still open issues are (feedback would be nice).\n";
-            limitations += "* Details of wait and (un)couple points might not make complete sense.\n"; 
+            limitations += "Known limitations:\n";
+            limitations += "* The saved-paths have not been tested with MSTS or ORTS.\n";
+            limitations += "* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might not work.\n";
+            limitations += "* PathFlags for the whole path is not supported (simply because it is unclear what it should do)\n";
+            limitations += "\n";
+            limitations += "Feedback is appreciated.\n";
             limitations += "\n";
             MessageBox.Show(limitations);
         }
 
+        #region IDisposable
+        private bool disposed;
+        /// <summary>
+        /// Implementing IDisposable
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    disposed = true; // to prevent infinite loop. Probably elementHost should not be part of this class
+                    elementHost.Dispose();
+                    // Dispose managed resources.
+                }
+
+                // There are no unmanaged resources to release, but
+                // if we add them, they need to be released here.
+            }
+            disposed = true;
+        }
+        #endregion
     }
 
 }

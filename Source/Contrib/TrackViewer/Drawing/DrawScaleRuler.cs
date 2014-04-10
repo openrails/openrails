@@ -21,6 +21,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.TrackViewer.Properties;
+using ORTS;
+using ORTS.Common;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -99,11 +101,11 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Simply give the lower-left point we can use for drawing the ruler
         /// </summary>
-        /// <param name="x">x-value of the point</param>
-        /// <param name="y">y-value of the point</param>
-        public void SetLowerLeftPoint(int x, int y)
+        /// <param name="xLowerLeft">x-value of the point</param>
+        /// <param name="yLowerLeft">y-value of the point</param>
+        public void SetLowerLeftPoint(int xLowerLeft, int yLowerLeft)
         {
-            lowerLeftPoint = new Vector2(x, y);
+            lowerLeftPoint = new Vector2(xLowerLeft, yLowerLeft);
         }
 
         /// <summary>
@@ -144,7 +146,7 @@ namespace ORTS.TrackViewer.Drawing
                 SetCurrentRuler(pixelsPerMeter); // Only do this when needed
             }
 
-            string scaleText = " (" + (1.0f / pixelsPerMeter).ToString() + "m/pixel)";
+            string scaleText = " (" + (1.0f / pixelsPerMeter).ToString(System.Globalization.CultureInfo.CurrentCulture) + "m/pixel)";
 
             Vector2 lowerRightPoint = new Vector2(lowerLeftPoint.X + fullPixelWidth, lowerLeftPoint.Y);
             Vector2 bigMarker = new Vector2(0, -10);
@@ -161,6 +163,45 @@ namespace ORTS.TrackViewer.Drawing
                 BasicShapes.DrawLine(1, color, smallMarkerPoint, smallMarkerPoint + smallMarker);
             }
 
+        }
+    }
+
+    /// <summary>
+    /// Class to enable the drawing of longitude and latitude in real world coordinates
+    /// </summary>
+    public class DrawLongitudeLatitude
+    {
+        ORTS.WorldLatLon worldLoc;
+        Vector2 lowerLeft;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="xLowerLeft">Lower left x-value where to print the location in pixels</param>
+        /// <param name="yLowerLeft">Lower left y-value where to print the location in pixels</param>
+        public DrawLongitudeLatitude(int xLowerLeft, int yLowerLeft)
+        {
+            worldLoc = new WorldLatLon();
+            lowerLeft = new Vector2(xLowerLeft, yLowerLeft);
+
+        }
+
+        /// <summary>
+        /// Draw (print) the values of longitude and latitude
+        /// </summary>
+        /// <param name="mstsLocation">MSTS Location which to translate to real world coordinates</param>
+        public void Draw(WorldLocation mstsLocation)
+        {
+            if (!Properties.Settings.Default.showLonLat) return;
+            
+            double latitude = 1f;
+            double longitude = 1f;
+            worldLoc.ConvertWTC(mstsLocation.TileX, mstsLocation.TileZ, mstsLocation.Location, ref latitude, ref longitude);
+            string latitudeDegrees = MathHelper.ToDegrees((float)latitude).ToString("F5", System.Globalization.CultureInfo.CurrentCulture);
+            string longitudeDegrees = MathHelper.ToDegrees((float)longitude).ToString("F5", System.Globalization.CultureInfo.CurrentCulture);
+            string locationText = String.Format(System.Globalization.CultureInfo.CurrentCulture, 
+                "Lon = {0}; Lat = {1}", longitudeDegrees, latitudeDegrees);
+            BasicShapes.DrawString(lowerLeft, Color.Black, locationText );           
         }
     }
 }

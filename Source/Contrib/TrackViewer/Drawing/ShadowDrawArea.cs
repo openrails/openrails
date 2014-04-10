@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.TrackViewer.Drawing
 {
+    /// <summary>
+    /// Delegate so the calling class can give a routine that is used for actual drawing
+    /// </summary>
+    /// <param name="drawArea">The draw area to draw upon</param>
+    public delegate void DrawingDelegate(DrawArea drawArea);
+
     ///<summary>
     /// This class extends DrawArea. DrawArea itself is a class that handles all translation of real world coordinates 
     /// to pixels. This class creates the possibility to create a cache of (part of) what is drawn on the drawArea
@@ -61,7 +68,7 @@ namespace ORTS.TrackViewer.Drawing
     ///         Also in the Game.Draw, but before spriteBatch.begin:    yourShadowDrawArea.DrawShadowTextures(DrawSomething, background color);
     ///
     ///</summary>
-    public class ShadowDrawArea: DrawArea
+    public class ShadowDrawArea: DrawArea, IDisposable
     {
         #region private Fields
         int blockW; // Width  of single block in pixels
@@ -99,7 +106,7 @@ namespace ORTS.TrackViewer.Drawing
         int Nsampling; // Oversampling rate.
         int[] xOrder; // array containing the x-indexes of the subblocks in the order they need to be drawn
         int[] zOrder; // array containing the z-indexes of the subblocks in the order they need to be drawn
-        int[,] orderFromLocation; // array that contains the order-index, given the x, and z-indexes of the subblock.
+        int[][] orderFromLocation; // array that contains the order-index, given the x, and z-indexes of the subblock.
 
         #endregion
 
@@ -143,7 +150,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="borderBlocksWidth">Amount of subblocks (in 1 direction) in the border (same on top, left, right and bottom)</param>
         /// <param name="overSampling">Oversampling used such that zooming is looks better (2 is a good value)</param>
         public void LoadContent(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch,
-            int visibleBlocksWidth, int borderBlocksWidth, int overSampling)
+            short visibleBlocksWidth, short borderBlocksWidth, short overSampling)
         {
             this.graphicsDevice = graphicsDevice;
             this.spriteBatch = spriteBatch;  // We need to use the same spriteBatch, because BasicShapes depends on it.
@@ -179,7 +186,8 @@ namespace ORTS.TrackViewer.Drawing
             {
                 shadowMapCombined.Dispose();
             }
-            shadowRenderTargetCombined = new RenderTarget2D(graphicsDevice, Nouter * blockW, Nouter * blockH, 1, SurfaceFormat.Color);
+            shadowRenderTargetCombined = new RenderTarget2D(graphicsDevice, Nouter * blockW, Nouter * blockH, 1, SurfaceFormat.Color,
+                graphicsDevice.DepthStencilBuffer.MultiSampleType, graphicsDevice.DepthStencilBuffer.MultiSampleQuality);
             shadowDrawArea.SetScreenSize(0, 0, blockW, blockH);
 
             // create initial empty subtextures
@@ -193,7 +201,8 @@ namespace ORTS.TrackViewer.Drawing
                 {
                     shadowMapsSingle[i].Dispose();
                 }
-                shadowRenderTargetSingle[i] = new RenderTarget2D(graphicsDevice, 1 * blockW, 1 * blockH, 1, SurfaceFormat.Color);
+                shadowRenderTargetSingle[i] = new RenderTarget2D(graphicsDevice, 1 * blockW, 1 * blockH, 1, SurfaceFormat.Color, 
+                        graphicsDevice.DepthStencilBuffer.MultiSampleType, graphicsDevice.DepthStencilBuffer.MultiSampleQuality);
                 shadowMapsSingle[i] = new Texture2D(graphicsDevice, 1, 1);
             }
         }
@@ -251,18 +260,16 @@ namespace ORTS.TrackViewer.Drawing
                 }
             }
 
-            orderFromLocation = new int[Nouter, Nouter];
+            orderFromLocation = new int[Nouter][];
+            for (int col = 0; col < Nouter; col++)
+            {
+                orderFromLocation[col] = new int[Nouter];
+            }
             for (orderIndex = 0; orderIndex < Nsubblocks; orderIndex++)
             {
-                orderFromLocation[xOrder[orderIndex], zOrder[orderIndex]] = orderIndex;
+                orderFromLocation[xOrder[orderIndex]][zOrder[orderIndex]] = orderIndex;
             }
         }
-
-        /// <summary>
-        /// Delegate so the calling class can give a routine that is used for actual drawing
-        /// </summary>
-        /// <param name="drawArea">The draw area to draw upon</param>
-        public delegate void DrawingDelegate(DrawArea drawArea);
 
         /// <summary>
         /// Call the supplied routine to draw on one of the subblocks.
@@ -383,6 +390,7 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="direction">The direction to shift</param>
         private void ShiftBlocks(ShiftDirection direction) {
+                 
             switch (direction)
             {
                 case ShiftDirection.Right:
@@ -406,7 +414,12 @@ namespace ORTS.TrackViewer.Drawing
             // make sure the textures link to the correct render targets
             for (int orderIndex = 0; orderIndex < Nsubblocks; orderIndex++)
             {
-                shadowMapsSingle[orderIndex] = shadowRenderTargetSingle[orderIndex].GetTexture();
+                try
+                {   // I got errors: The render target must not be set on the device when calling GetTexture()
+                    // even if I just before this set graphicsDevice.SetRenderTarget(0, null); I have no idea why
+                    shadowMapsSingle[orderIndex] = shadowRenderTargetSingle[orderIndex].GetTexture();
+                }
+                catch { }
             }
 
             SetNextRectangleToDraw(true);
@@ -419,14 +432,14 @@ namespace ORTS.TrackViewer.Drawing
         {    
             for (int row = 0; row < Nouter; row++)
             {
-                RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[Nouter - 1, row]];
+                RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[Nouter - 1][row]];
                 for (int col = Nouter - 2; col >= 0; col--)
                 {
-                    shadowRenderTargetSingle[orderFromLocation[col + 1, row]]
-                        = shadowRenderTargetSingle[orderFromLocation[col, row]];
+                    shadowRenderTargetSingle[orderFromLocation[col + 1][row]]
+                        = shadowRenderTargetSingle[orderFromLocation[col][row]];
                 }
-                shadowRenderTargetSingle[orderFromLocation[0, row]] = tempTarget;
-                needToDrawRectangle[orderFromLocation[0, row]] = true;
+                shadowRenderTargetSingle[orderFromLocation[0][row]] = tempTarget;
+                needToDrawRectangle[orderFromLocation[0][row]] = true;
             }
        }
 
@@ -437,14 +450,14 @@ namespace ORTS.TrackViewer.Drawing
         {
             for (int row = 0; row < Nouter; row++)
             {
-                RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[0, row]];
+                RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[0][row]];
                 for (int col = 1; col < Nouter; col++)
                 {
-                    shadowRenderTargetSingle[orderFromLocation[col - 1, row]]
-                        = shadowRenderTargetSingle[orderFromLocation[col, row]];
+                    shadowRenderTargetSingle[orderFromLocation[col - 1][row]]
+                        = shadowRenderTargetSingle[orderFromLocation[col][row]];
                 }
-                shadowRenderTargetSingle[orderFromLocation[Nouter - 1, row]] = tempTarget;
-                needToDrawRectangle[orderFromLocation[Nouter - 1, row]] = true;
+                shadowRenderTargetSingle[orderFromLocation[Nouter - 1][row]] = tempTarget;
+                needToDrawRectangle[orderFromLocation[Nouter - 1][row]] = true;
             }
         }
 
@@ -455,14 +468,14 @@ namespace ORTS.TrackViewer.Drawing
         {
             for (int col = 0; col < Nouter; col++)
             {
-                RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[col, Nouter - 1]];
+                RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[col][Nouter - 1]];
                 for (int row = Nouter - 2; row >= 0; row--)
                 {
-                    shadowRenderTargetSingle[orderFromLocation[col, row + 1]]
-                        = shadowRenderTargetSingle[orderFromLocation[col, row]];
+                    shadowRenderTargetSingle[orderFromLocation[col][row + 1]]
+                        = shadowRenderTargetSingle[orderFromLocation[col][row]];
                 }
-                shadowRenderTargetSingle[orderFromLocation[col, 0]] = tempTarget;
-                needToDrawRectangle[orderFromLocation[col, 0]] = true;
+                shadowRenderTargetSingle[orderFromLocation[col][0]] = tempTarget;
+                needToDrawRectangle[orderFromLocation[col][0]] = true;
             }
         }
 
@@ -473,14 +486,14 @@ namespace ORTS.TrackViewer.Drawing
         {
             for (int col = 0; col < Nouter; col++)
             {
-                RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[col, 0]];
+                RenderTarget2D tempTarget = shadowRenderTargetSingle[orderFromLocation[col][0]];
                 for (int row = 1; row < Nouter; row++)
                 {
-                    shadowRenderTargetSingle[orderFromLocation[col, row - 1]]
-                        = shadowRenderTargetSingle[orderFromLocation[col, row]];
+                    shadowRenderTargetSingle[orderFromLocation[col][row - 1]]
+                        = shadowRenderTargetSingle[orderFromLocation[col][row]];
                 }
-                shadowRenderTargetSingle[orderFromLocation[col, Nouter - 1]] = tempTarget;
-                needToDrawRectangle[orderFromLocation[col, Nouter - 1]] = true;
+                shadowRenderTargetSingle[orderFromLocation[col][Nouter - 1]] = tempTarget;
+                needToDrawRectangle[orderFromLocation[col][Nouter - 1]] = true;
             }
         }
 
@@ -533,7 +546,10 @@ namespace ORTS.TrackViewer.Drawing
 
                 needToDrawRectangle[nextRectangleToDraw] = false;
             }
-            catch { }
+            catch {
+                graphicsDevice.SetRenderTarget(0, null); // return control to main render target
+            }
+            graphicsDevice.SetRenderTarget(0, null); 
         }
 
         /// <summary>
@@ -559,7 +575,10 @@ namespace ORTS.TrackViewer.Drawing
                 graphicsDevice.SetRenderTarget(0, null);
                 shadowMapCombined = shadowRenderTargetCombined.GetTexture();
             }
-            catch { }
+            catch {
+                graphicsDevice.SetRenderTarget(0, null); // return control to main render target
+            }
+            graphicsDevice.SetRenderTarget(0, null); 
         }
 
         /// <summary>
@@ -583,12 +602,13 @@ namespace ORTS.TrackViewer.Drawing
             //  in the main area, we have    areaW = scale * worldW
             //  in the shadow map we have    pixelW = shadowScale * worldW.
             //  This leads to pixelW = areaW * shadowScale / scale
-           
+
+            if (shadowMapCombined == null) return; // something unforseen happened
+
             float scaleRatio = (float)(Scale / shadowScale);
             Vector2 scaleAsVector = new Vector2(scaleRatio);
             Microsoft.Xna.Framework.Rectangle? sourceRectangle = new Microsoft.Xna.Framework.Rectangle(
-                Convert.ToInt32(shadowScale * (OffsetX - shadowOffsetX)),
-                //Convert.ToInt32(shadowScale * (offsetZ - shadowOffsetZ)),
+                Convert.ToInt32(                  shadowScale * (                OffsetX - shadowOffsetX)),
                 Convert.ToInt32(blockH * Nouter - shadowScale * (AreaH / Scale + OffsetZ - shadowOffsetZ)),
                 Convert.ToInt32(AreaW * shadowScale / Scale),
                 Convert.ToInt32(AreaH * shadowScale / Scale));
@@ -600,10 +620,47 @@ namespace ORTS.TrackViewer.Drawing
             spriteBatch.Draw(shadowMapCombined, position, sourceRectangle, Color.White, 0, origin, scaleAsVector, SpriteEffects.None, 0);
 
             //debug
+            //Console.WriteLine("debug");
             //position = new Vector2(30, 30);
             //sourceRectangle = null;
             //spriteBatch.Draw(shadowMapCombined, position, sourceRectangle, Color.White, 0, origin, scaleAsVector, SpriteEffects.None, 0);
             //spriteBatch.Draw(shadowMapsSingle[2], position, null, Color.White, 0, origin, Vector2.One, SpriteEffects.None, 0);
         }
+
+        #region IDisposable
+        private bool disposed;
+        /// <summary>
+        /// Implementing IDisposable
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    shadowRenderTargetCombined.Dispose();
+                    foreach (RenderTarget2D target in shadowRenderTargetSingle)
+                    {
+                        target.Dispose();
+                    }
+                    if (shadowDrawArea != null)
+                    {
+                        shadowDrawArea.Dispose();
+                    }
+                    // Dispose managed resources.
+                }
+
+                // There are no unmanaged resources to release, but
+                // if we add them, they need to be released here.
+            }
+            disposed = true;
+        }
+        #endregion
     }
 }

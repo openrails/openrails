@@ -18,6 +18,7 @@ using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
+
 namespace ORTS.TrackViewer
 {
     static class Program
@@ -26,7 +27,7 @@ namespace ORTS.TrackViewer
         /// The main entry point for the application.
         /// </summary>
         [STAThread]  // Needed for Windows Presentation Foundation (used for the menu)
-        static void Main(string[] args)
+        static void Main()
         {
             using (TrackViewer trackViewer = new TrackViewer())
             {
@@ -45,6 +46,7 @@ namespace ORTS.TrackViewer
                     {
                         string errorSummary = error.GetType().FullName + ": " + error.Message;
                         MessageBox.Show(String.Format(
+                                    System.Globalization.CultureInfo.CurrentCulture,
                                     "A fatal error has occured and {0} cannot continue.\n\n" +
                                     "    {1}\n\n" +
                                     "This error may be due to bad data or a bug. ",

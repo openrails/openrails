@@ -442,5 +442,17 @@ namespace ORTS.TrackViewer.Properties {
                 this["statusShowFPS"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showLonLat {
+            get {
+                return ((bool)(this["showLonLat"]));
+            }
+            set {
+                this["showLonLat"] = value;
+            }
+        }
     }
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>9.0.21022</ProductVersion>
+    <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{79C3A70B-7535-40CB-8448-91AB87CBAE44}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -23,6 +23,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -51,11 +53,13 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.ServiceModel">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -75,18 +79,15 @@
     <Compile Include="Drawing\ShadowDrawArea.cs" />
     <Compile Include="Editing\DrawPATfile.cs" />
     <Compile Include="Editing\DrawPath.cs" />
-    <Compile Include="Editing\EditorContextMenu.cs" />
+    <Compile Include="Editing\EditorActions.cs" />
     <Compile Include="Editing\PathEditor.cs" />
     <Compile Include="Editing\PathMetadataDialog.xaml.cs">
       <DependentUpon>PathMetadataDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Editing\SavePatFile.cs" />
+    <Compile Include="Editing\TrackExtensions.cs" />
     <Compile Include="Editing\Trainpath.cs" />
     <Compile Include="Editing\TrainpathNode.cs" />
-    <Compile Include="Editing\UncouplePointDialog.xaml.cs">
-      <SubType>Code</SubType>
-      <DependentUpon>UncouplePointDialog.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Editing\WaitPointDialog.xaml.cs">
       <DependentUpon>WaitPointDialog.xaml</DependentUpon>
     </Compile>
@@ -118,10 +119,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Editing\PathMetadataDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Editing\UncouplePointDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -157,6 +154,18 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\activeBroken.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\activeNode.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\activeNormal.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\activeTrack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\CarSpawner.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -17,7 +17,7 @@ namespace ORTS.TrackViewer.Editing
     /// <summary>
     /// Interaction logic for PathMetadataDialog.xaml
     /// </summary>
-    public partial class PathMetadataDialog : Window
+    public sealed partial class PathMetadataDialog : Window
     {
         /// <summary>
         /// Create the dialog to edit the path metadata, and fill it with current values

@@ -96,11 +96,6 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>Normally highlights are based on mouse location. When searching this is overridden</summary>
         static Boolean IsHighlightOverriddenTrItem;
 
-        /// <summary>If the itemNames have not been created, this is false</summary>
-        static bool IsItemNameCreated;
-        /// <summary>Name of the item type indexed by the type itself</summary>
-        public static Dictionary<TrItem.trItemType, string> itemName;
-
         // various fields to optimize drawing efficiency
         int tileXIndexStart;
         int tileXIndexStop;
@@ -112,10 +107,8 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="routePath">Path to the route directory</param>
         /// <param name="messageDelegate">The delegate that will deal with the message we want to send to the user</param>
-        public DrawTrackDB(string routePath, TrackViewer.MessageDelegate messageDelegate)
+        public DrawTrackDB(string routePath, MessageDelegate messageDelegate)
         {
-            if (!IsItemNameCreated) CreateItemNames();
-
             messageDelegate(TrackViewer.catalog.GetString("Loading trackfile .trk ..."));
             TRKFile TRK = new TRKFile(MSTS.MSTSPath.GetTRKFileName(routePath));
             RouteName = TRK.Tr_RouteFile.Name;
@@ -210,12 +203,12 @@ namespace ORTS.TrackViewer.Drawing
                 foreach (int trackItemIndex in tvn.TrItemRefs)
                 {
                     TrItem trackItem = TrackDB.TrItemTable[trackItemIndex];
-                    if (trackItem is SignalItem)
+                    SignalItem signalItem = trackItem as SignalItem;
+                    if (signalItem != null)
                     {
                         float angle = 0;
                         try
                         {
-                            SignalItem signalItem = trackItem as SignalItem;
                             Traveller.TravellerDirection direction = signalItem.Direction == 0 ? Traveller.TravellerDirection.Forward : Traveller.TravellerDirection.Backward;
                             Traveller signalTraveller = new Traveller(TsectionDat, TrackDB.TrackNodes, tn, 
                                 trackItem.TileX, trackItem.TileZ, trackItem.X, trackItem.Z, direction);
@@ -298,21 +291,24 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Simply link TrItem.trItemType to a string that describes the type
         /// </summary>
-        static void CreateItemNames()
-        {
-            itemName = new Dictionary<TrItem.trItemType,string>();
-            itemName[TrItem.trItemType.trCarSpawner] = "carspawner";
-            itemName[TrItem.trItemType.trCROSSOVER] = "crossover";
-            itemName[TrItem.trItemType.trEMPTY] = "empty";
-            itemName[TrItem.trItemType.trHAZZARD] = "hazard";
-            itemName[TrItem.trItemType.trPICKUP] = "pickup";
-            itemName[TrItem.trItemType.trPLATFORM] = "platform";
-            itemName[TrItem.trItemType.trSIDING] = "siding";
-            itemName[TrItem.trItemType.trSIGNAL] = "signal";
-            itemName[TrItem.trItemType.trSOUNDREGION] = "soundregion";
-            itemName[TrItem.trItemType.trSPEEDPOST] = "speedpost";
-            itemName[TrItem.trItemType.trXING] = "crossing";
-            IsItemNameCreated = true;
+        /// <param name="type">The type you want converted to a string</param>
+        public static string TrItemName(TrItem.trItemType type)
+        {   // Apparently this will be compiled into very efficient code.
+            switch (type) 
+            {
+                case TrItem.trItemType.trCarSpawner: return "carspawner";
+                case TrItem.trItemType.trCROSSOVER: return  "crossover";
+                case TrItem.trItemType.trEMPTY: return "empty";
+                case TrItem.trItemType.trHAZZARD : return "hazard";
+                case TrItem.trItemType.trPICKUP : return "pickup";
+                case TrItem.trItemType.trPLATFORM: return "platform";
+                case TrItem.trItemType.trSIDING: return "siding";
+                case TrItem.trItemType.trSIGNAL: return "signal";
+                case TrItem.trItemType.trSOUNDREGION: return "soundregion";
+                case TrItem.trItemType.trSPEEDPOST: return "speedpost";
+                case TrItem.trItemType.trXING: return "crossing";
+                default: return "unknown";
+            }
         }
 
         #region Cache available tracknodes, items, etc per tile
@@ -348,11 +344,11 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// For each of the various types of tracknodes we list the ones per tile.
         /// </summary>
-        List<TrackNode>[,] availableRailVectorNodeIndexes;
-        List<TrackNode>[,] availableRoadVectorNodeIndexes;
-        List<TrackNode>[,] availablePointNodeIndexes;
-        List<TrItem>[,] availableRailItemIndexes;
-        List<TrItem>[,] availableRoadItemIndexes;
+        List<TrackNode>[][] availableRailVectorNodeIndexes;
+        List<TrackNode>[][] availableRoadVectorNodeIndexes;
+        List<TrackNode>[][] availablePointNodeIndexes;
+        List<TrItem>[][] availableRailItemIndexes;
+        List<TrItem>[][] availableRoadItemIndexes;
 
         /// <summary>
         /// Run over the track databases, find the locations of nodes and items, and add the nodes and items to the correct
@@ -361,11 +357,11 @@ namespace ORTS.TrackViewer.Drawing
         void FillAvailableIndexes()
         {
             SetTileIndexes(MinTileX, MaxTileX, MinTileZ, MaxTileZ);
-            availableRailVectorNodeIndexes = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
-            availableRoadVectorNodeIndexes = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
-            availablePointNodeIndexes      = new List<TrackNode>[tileXIndexStop + 1, tileZIndexStop + 1];
-            availableRailItemIndexes       = new List<TrItem>   [tileXIndexStop + 1, tileZIndexStop + 1];
-            availableRoadItemIndexes       = new List<TrItem>   [tileXIndexStop + 1, tileZIndexStop + 1];
+            availableRailVectorNodeIndexes = new List<TrackNode>[tileXIndexStop + 1][];
+            availableRoadVectorNodeIndexes = new List<TrackNode>[tileXIndexStop + 1][];
+            availablePointNodeIndexes      = new List<TrackNode>[tileXIndexStop + 1][];
+            availableRailItemIndexes       = new List<TrItem>   [tileXIndexStop + 1][];
+            availableRoadItemIndexes       = new List<TrItem>   [tileXIndexStop + 1][];
             InitIndexedLists(availableRailVectorNodeIndexes);
             InitIndexedLists(availableRoadVectorNodeIndexes);
             InitIndexedLists(availablePointNodeIndexes);
@@ -452,13 +448,13 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="location">Worldlocation of the item, that gives us the tile indexes</param>
         /// <param name="ArrayOfListsToAddTo">To which list we have to add the item</param>
         /// <param name="item">The item we want to add to the list, at the correct index</param>
-        void AddLocationToAvailableList<T>(WorldLocation location, List<T>[,] ArrayOfListsToAddTo, T item)
+        void AddLocationToAvailableList<T>(WorldLocation location, List<T>[][] ArrayOfListsToAddTo, T item)
         {
             //possibly the location is out of the allowed region (e.g. because possibly undefined).
             if (location.TileX < MinTileX || location.TileX > MaxTileX || location.TileZ < MinTileZ || location.TileZ > MaxTileZ) return;
             int TileXIndex = location.TileX - MinTileX;
             int TileZIndex = location.TileZ - MinTileZ;
-            ArrayOfListsToAddTo[TileXIndex, TileZIndex].Add(item);
+            ArrayOfListsToAddTo[TileXIndex][TileZIndex].Add(item);
         }
 
         /// <summary>
@@ -466,13 +462,14 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="itemlist"></param>
-        void InitIndexedLists<T>(List<T>[,] itemlist)
+        void InitIndexedLists<T>(List<T>[][] itemlist)
         {
             for (int xindex = tileXIndexStart; xindex <= tileXIndexStop; xindex++)
             {
+                itemlist[xindex] = new List<T>[tileZIndexStop + 1];
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    itemlist[xindex, zindex] = new List<T>();
+                    itemlist[xindex][zindex] = new List<T>();
                 }
             }
         }
@@ -482,13 +479,13 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <typeparam name="T">Type of object that is in the list (not actually used)</typeparam>
         /// <param name="arrayOfLists">2D array containing non-null lists</param>
-        void MakeUniqueLists<T>(ref List<T>[,] arrayOfLists)
+        void MakeUniqueLists<T>(ref List<T>[][] arrayOfLists)
         {
             for (int xindex = tileXIndexStart; xindex <= tileXIndexStop; xindex++)
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    arrayOfLists[xindex, zindex] = arrayOfLists[xindex, zindex].Distinct().ToList();
+                    arrayOfLists[xindex][zindex] = arrayOfLists[xindex][zindex].Distinct().ToList();
                 }
             }    
         }
@@ -497,8 +494,8 @@ namespace ORTS.TrackViewer.Drawing
         /// For a vector section, generate a list of world-locations that are used to determine whether or not the
         /// vector section will be drawn when a tile is visible
         /// </summary>
-        /// <param name="tracknodeindex">Index of the tracknode</param>
-        /// <param name="TrackVectorSectionIndex">Index of the vector section in the tracknode</param>
+        /// <param name="trackNodeIndex">Index of the tracknode</param>
+        /// <param name="trackVectorSectionIndex">Index of the vector section in the tracknode</param>
         /// <param name="useRailTracks">Must we use rail or road tracks</param>
         /// <returns>A list of world locations on the vector section</returns>
         List<WorldLocation> FindLocationList(uint trackNodeIndex, int trackVectorSectionIndex, bool useRailTracks)
@@ -589,7 +586,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrackNode tn in availableRailVectorNodeIndexes[xindex, zindex])
+                    foreach (TrackNode tn in availableRailVectorNodeIndexes[xindex][zindex])
                     {
                         if (hasBeenDrawn[tn.Index]) continue;
                         DrawVectorNode(drawArea, tn, DrawColors.colorsNormal, closestRailTrack);
@@ -614,7 +611,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrackNode tn in availableRailVectorNodeIndexes[xindex, zindex])
+                    foreach (TrackNode tn in availableRoadVectorNodeIndexes[xindex][zindex])
                     {
                         DrawVectorNode(drawArea, tn, DrawColors.colorsRoads, ClosestRoadTrack);
                     }
@@ -650,7 +647,7 @@ namespace ORTS.TrackViewer.Drawing
                 }
                 else if (ClosestJunctionOrEnd.JunctionOrEndNode != null)
                 {   // Highlight the closest junction
-                    if (ClosestJunctionOrEnd.Type == "junction")
+                    if (ClosestJunctionOrEnd.Description == "junction")
                     {
                         DrawJunctionNode(drawArea, ClosestJunctionOrEnd.JunctionOrEndNode, DrawColors.colorsHighlight);
                     }
@@ -745,7 +742,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrackNode tn in availablePointNodeIndexes[xindex, zindex])
+                    foreach (TrackNode tn in availablePointNodeIndexes[xindex][zindex])
                     {
                         if (tn.TrJunctionNode != null && Properties.Settings.Default.showJunctionNodes)
                         {
@@ -771,7 +768,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             WorldLocation thisLocation = UidLocation(tn.UiD);
             ClosestJunctionOrEnd.CheckMouseDistance(thisLocation, drawArea.MouseLocation, tn, "junction");
-            drawArea.DrawSimpleTexture(thisLocation, "disc", 2f, 0, colors["junction"]);
+            drawArea.DrawSimpleTexture(thisLocation, "disc", 3f, 2, colors["junction"]);
         }
 
         /// <summary>
@@ -799,7 +796,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrItem trackItem in availableRailItemIndexes[xindex, zindex])
+                    foreach (TrItem trackItem in availableRailItemIndexes[xindex][zindex])
                     {
                         drawTrackItem(drawArea, trackItem, DrawColors.colorsNormal);
                     }
@@ -820,7 +817,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 for (int zindex = tileZIndexStart; zindex <= tileZIndexStop; zindex++)
                 {
-                    foreach (TrItem trackItem in availableRoadItemIndexes[xindex, zindex])
+                    foreach (TrItem trackItem in availableRoadItemIndexes[xindex][zindex])
                     {
                         drawTrackItem(drawArea, trackItem, DrawColors.colorsNormal);
                     }
@@ -855,8 +852,8 @@ namespace ORTS.TrackViewer.Drawing
                     drawSoundRegion(drawArea, trackItem as SoundRegionItem, colors);
                     break;
                 case TrItem.trItemType.trXING:
-                    if (trackItem is LevelCrItem)     drawCrossing    (drawArea, trackItem as LevelCrItem, colors);
-                    if (trackItem is RoadLevelCrItem) drawRoadCrossing(drawArea, trackItem as RoadLevelCrItem, colors);
+                    drawCrossing    (drawArea, trackItem as LevelCrItem, colors);       // will do nothing if not a LevelCrItem
+                    drawRoadCrossing(drawArea, trackItem as RoadLevelCrItem, colors);   // will do nothing if not a RoadLevelCrItem
                     break;
                 case TrItem.trItemType.trSIDING:
                     drawSiding(drawArea, trackItem as SidingItem, colors);
@@ -911,6 +908,7 @@ namespace ORTS.TrackViewer.Drawing
 
         private void drawCrossing(DrawArea drawArea, LevelCrItem item, ColorScheme colors)
         {
+            if (item == null) return;
             WorldLocation thisLocation = itemLocation(item);
             if (Properties.Settings.Default.showCrossings || IsHighlightOverriddenTrItem)
             {
@@ -921,6 +919,7 @@ namespace ORTS.TrackViewer.Drawing
 
         private void drawRoadCrossing(DrawArea drawArea, RoadLevelCrItem item, ColorScheme colors)
         {
+            if (item == null) return;
             WorldLocation thisLocation = itemLocation(item);
             if (Properties.Settings.Default.showRoadCrossings || IsHighlightOverriddenTrItem)
             {
@@ -935,14 +934,14 @@ namespace ORTS.TrackViewer.Drawing
             if (item.IsLimit && (Properties.Settings.Default.showSpeedLimits || IsHighlightOverriddenTrItem))
             {
                 drawArea.DrawSimpleTexture(thisLocation, "disc", 6f, 0, colors["speedpost"]);
-                string speed = item.SpeedInd.ToString();
+                string speed = item.SpeedInd.ToString(System.Globalization.CultureInfo.CurrentCulture);
                 drawArea.DrawString(thisLocation, speed);
                 ClosestTrackItem.CheckMouseDistance(thisLocation, drawArea.MouseLocation, item);
             }
             if (item.IsMilePost && (Properties.Settings.Default.showMileposts || IsHighlightOverriddenTrItem))
             {
                 drawArea.DrawSimpleTexture(thisLocation, "disc", 6f, 0, colors["speedpost"]);
-                string distance = item.SpeedInd.ToString();
+                string distance = item.SpeedInd.ToString(System.Globalization.CultureInfo.CurrentCulture);
                 drawArea.DrawString(thisLocation, distance);
                 ClosestTrackItem.CheckMouseDistance(thisLocation, drawArea.MouseLocation, item);
             }
@@ -1083,7 +1082,7 @@ namespace ORTS.TrackViewer.Drawing
 
             TrackNode nodeBehind = TrackDB.TrackNodes[tn.TrPins[0].Link];
             TrackNode nodeAhead = TrackDB.TrackNodes[tn.TrPins[1].Link];
-            return trackLocation(tn, nodeBehind, nodeAhead);
+            return TrackLocation(tn, nodeBehind, nodeAhead);
         }
 
         /// <summary>
@@ -1110,7 +1109,7 @@ namespace ORTS.TrackViewer.Drawing
             searchTrack = new CloseToMouseTrack(TsectionDat, tn);
             TrackNode nodeBehind = roadTrackDB.TrackNodes[tn.TrPins[0].Link];
             TrackNode nodeAhead = roadTrackDB.TrackNodes[tn.TrPins[1].Link];
-            return trackLocation(tn, nodeBehind, nodeAhead);
+            return TrackLocation(tn, nodeBehind, nodeAhead);
         }
 
         /// <summary>
@@ -1121,7 +1120,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="nodeAhead">The junction or end node at the end of the vector node</param>
         /// <returns>The worldlocation describing the track</returns>
         /// <remarks>Obviously, a single location is always an estimate. Currently tries to find middle of end points</remarks>
-        private WorldLocation trackLocation(TrackNode tn, TrackNode nodeBehind, TrackNode nodeAhead)
+        static private WorldLocation TrackLocation(TrackNode tn, TrackNode nodeBehind, TrackNode nodeAhead)
         {
             if (tn.TrVectorNode == null) return null;
             if (nodeBehind == null)

@@ -19,6 +19,7 @@
 // Hence a different class
 
 using System;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,31 +36,123 @@ namespace ORTS.TrackViewer.Editing
     ///     A boolean describing whether the path has a well-defined end (meaning a node that has been designated as an end-node
     ///             instead of simply being the last node).
     ///     Routines to create the linked-list path from the definitions in a .pat file.
+    ///     
+    /// The class contains history functions like Undo and redo.
     /// </summary>
     public class Trainpath
     {
-        MSTS.Formats.TrackDB trackDB;
-        TSectionDatFile tsectionDat;
-        
+        #region public members
         /// <summary>Link to the first node of the path (starting point)</summary>
-        public virtual TrainpathNode FirstNode { get; set; }
+        public TrainpathNode FirstNode
+        {
+            get { return trainPaths[currentIndex].firstNode; }
+            set { trainPaths[currentIndex].firstNode = value; }
+        }
+
+        /// <summary>Link to the first node of a stored tail</summary>
+        public TrainpathNode FirstNodeOfTail
+        {
+            get { return trainPaths[currentIndex].firstNodeOfTail; }
+            set { trainPaths[currentIndex].firstNodeOfTail = value; }
+        }
+        
+        /// <summary>Does the path have a real end node?</summary>
+        public bool HasEnd
+        {
+            get { return trainPaths[currentIndex].hasEnd; }
+            set { trainPaths[currentIndex].hasEnd = value; }
+        }
 
         /// <summary>Does the path have a real end node?</summary>
-        public virtual bool HasEnd { get; set; }
+        public bool TailHasEnd
+        {
+            get { return trainPaths[currentIndex].tailHasEnd; }
+            set { trainPaths[currentIndex].tailHasEnd = value; }
+        }
+
+        /// <summary>A path is broken when it has at least one broken node or a broken link</summary>
+        public bool IsBroken
+        {
+            get { return trainPaths[currentIndex].isBroken; }
+            set { trainPaths[currentIndex].isBroken = value; }
+        }
+
+        /// <summary>Is the path modified from the one as loaded from disc.</summary>
+        public bool IsModified
+        {
+            get { return (currentIndex != currentIndexUnmodified); }
+            set
+            {
+                if (value)
+                {   // this path is modified. If it is the unmodified path, then no paths are unmodified
+                    if (currentIndex == currentIndexUnmodified)
+                    {
+                        currentIndexUnmodified = -1;
+                    }
+                }
+                else
+                {   // this path is no longer modified, e.g. due to a save
+                    currentIndexUnmodified = currentIndex;
+                }
+            }
+        }
+
 
         // adminstration of various path properties
         /// <summary>Full file path of the .pat file that contained the train path</summary>
-        public string FilePath { get; set; }
+        public string FilePath
+        {
+            get { return trainPaths[currentIndex].filePath; }
+            set { trainPaths[currentIndex].filePath = value; }
+        }
         /// <summary>Name of the path as stored in the .pat file</summary>
-        public string PathName { get; set; }
+        public string PathName
+        {
+            get { return trainPaths[currentIndex].pathName; }
+            set { trainPaths[currentIndex].pathName = value; }
+        }
+
         /// <summary>Name of the start point as stored in the .pat file</summary>
-        public string PathStart { get; set; }
+        public string PathStart
+        {
+            get { return trainPaths[currentIndex].pathStart; }
+            set { trainPaths[currentIndex].pathStart = value; }
+        }
+
         /// <summary>Name of the end point as stored in the .pat file</summary>
-        public string PathEnd { get; set; }
+        public string PathEnd
+        {
+            get { return trainPaths[currentIndex].pathEnd; }
+            set { trainPaths[currentIndex].pathEnd = value; }
+        }
+
         /// <summary>identification name as stored in the .pat file</summary>
-        public string PathId { get; set; }
+        public string PathId
+        {
+            get { return trainPaths[currentIndex].pathId; }
+            set { trainPaths[currentIndex].pathId = value; }
+        }
+
         /// <summary>Flags associated with the path (not the nodes)</summary>
-        public PathFlags PathFlags { get; set; }
+        public PathFlags PathFlags
+        {
+            get { return trainPaths[currentIndex].pathFlags; }
+            set { trainPaths[currentIndex].pathFlags = value; }
+        }
+
+        #endregion
+
+        #region private members
+
+        MSTS.Formats.TrackDB trackDB;
+        TSectionDatFile tsectionDat;
+
+
+        List<TrainPathData> trainPaths;
+        int currentIndex; // trainPaths are indexed
+        int currentIndexUnmodified; // The index of the last saved path.
+
+        #endregion
 
         /// <summary>
         /// Basic constructor creating an empty path, but storing track database and track section data
@@ -70,14 +163,10 @@ namespace ORTS.TrackViewer.Editing
         {
             this.trackDB = trackDB;
             this.tsectionDat = tsectionDat;
-
-            PathName = "<unknown>";
-            PathEnd = "<unknown>";
-            PathStart = "<unknown>";
-            PathId = "new";
-            HasEnd = false;
+            trainPaths = new List<TrainPathData>();
+            trainPaths.Add(new TrainPathData());
         }
- 
+
         /// <summary>
         /// Creates an trainpath from PAT file information.
         /// First creates all the nodes and then links them together into a main list
@@ -87,11 +176,10 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="tsectionDat"></param>
         /// <param name="filePath">file name including path of the .pat file</param>
         public Trainpath(TrackDB trackDB, TSectionDatFile tsectionDat, string filePath)
+            :this(trackDB, tsectionDat)
         {
-            this.trackDB = trackDB;
-            this.tsectionDat = tsectionDat;
             this.FilePath = filePath;
-            
+
             PATFile patFile = new PATFile(filePath);
             PathId = patFile.PathID;
             PathName = patFile.Name;
@@ -100,16 +188,17 @@ namespace ORTS.TrackViewer.Editing
             PathFlags = patFile.Flags;
 
             List<TrainpathNode> Nodes = new List<TrainpathNode>();
-            createNodes(patFile, Nodes); 
+            createNodes(patFile, Nodes);
 
-            bool fatalerror = LinkNodes(patFile, Nodes);
+            LinkNodes(patFile, Nodes);
+            SetFacingPoints(Nodes);
 
             FindSidingEnds();
             FindNodeOrientations();
-
-            if (fatalerror) Nodes = null; // invalid path - do not return any nodes
+            DetermineIfBroken();
         }
 
+        #region Methods to parse MSTS paths
         /// <summary>
         /// Create the initial list of nodes from the patFile. No linking or preoccessing
         /// </summary>
@@ -120,19 +209,18 @@ namespace ORTS.TrackViewer.Editing
             foreach (TrPathNode tpn in patFile.TrPathNodes)
                 Nodes.Add(TrainpathNode.CreatePathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], trackDB, tsectionDat));
             FirstNode = Nodes[0];
-            FirstNode.Type = TrainpathNodeType.Start;
+            FirstNode.NodeType = TrainpathNodeType.Start;
         }
-
+ 
         /// <summary>
         /// Link the various nodes to each other. Do some initial processing on the path, like finding linking TVNs
         /// and determining whether junctions are facing or not.
         /// </summary>
         /// <param name="patFile">Patfile object containing the various unprocessed Track Path Nodes</param>
         /// <param name="Nodes">The list of as-of-yet unlinked processed path nodes</param>
-        private bool LinkNodes(PATFile patFile, List<TrainpathNode> Nodes)
+        static private void LinkNodes(PATFile patFile, List<TrainpathNode> Nodes)
         {
             // Connect the various nodes to each other
-            bool fatalerror = false;
             for (int i = 0; i < Nodes.Count; i++)
             {
                 TrainpathNode node = Nodes[i];
@@ -144,16 +232,6 @@ namespace ORTS.TrackViewer.Editing
                     node.NextMainNode = Nodes[(int)tpn.nextMainNode];
                     node.NextMainNode.PrevNode = node;
                     node.NextMainTvnIndex = node.FindTvnIndex(node.NextMainNode);
-                    if (node is TrainpathJunctionNode)
-                    {
-                        (node as TrainpathJunctionNode).SetFacingPoint(node.NextMainTvnIndex);
-                    }
-                    if (node.NextMainTvnIndex <= 0)
-                    {
-                        //node.NextMainNode = null;
-                        //Trace.TraceWarning("Cannot find main track for node {1} in path {0}", FilePath, numberDrawn);
-                        fatalerror = true;
-                    }
                 }
 
                 // find TvnIndex to next siding node
@@ -165,24 +243,29 @@ namespace ORTS.TrackViewer.Editing
                         node.NextSidingNode.PrevNode = node;
                     }
                     node.NextSidingTvnIndex = node.FindTvnIndex(node.NextSidingNode);
-                    if (node is TrainpathJunctionNode) { 
-                        (node as TrainpathJunctionNode).SetFacingPoint(node.NextSidingTvnIndex); 
-                    }
-                    if (node.NextSidingTvnIndex < 0)
-                    {
-                        node.NextSidingNode = null;
-                        //Trace.TraceWarning("Cannot find siding track for node {1} in path {0}", FilePath, numberDrawn);
-                        fatalerror = true;
-                    }
                 }
 
-
                 if (node.NextMainNode != null && node.NextSidingNode != null)
-                    node.Type = TrainpathNodeType.SidingStart;
+                    node.NodeType = TrainpathNodeType.SidingStart;
             }
-            return fatalerror;
         }
-    
+
+        /// <summary>
+        /// For all the junction nodes, set whether it is a facing point or not
+        /// </summary>
+        /// <param name="Nodes">The list of path nodes that now need to be linked</param>
+        static private void SetFacingPoints(List<TrainpathNode> Nodes)
+        {
+            // It is just a convenience to use the list of Nodes. 
+            // In principle this can be done without the list by following the path
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                TrainpathJunctionNode node = Nodes[i] as TrainpathJunctionNode;
+                if (node == null) continue;
+                node.SetFacingPoint();
+            }
+        }
+  
         /// <summary>
         /// Find all nodes that are the end of a siding (so where main path and siding path come together again)
         /// </summary>
@@ -198,7 +281,7 @@ namespace ORTS.TrackViewer.Editing
                         curSidingEnd = null;
                     }
                     else
-                    { 
+                    {
                         curMainNode.HasSidingPath = true;
                     }
                 }
@@ -210,13 +293,13 @@ namespace ORTS.TrackViewer.Editing
                 }
                 if (curSidingNode != null)
                 {
-                    curSidingNode.Type = TrainpathNodeType.SidingEnd;
                     curSidingEnd = curSidingNode;
+                    curSidingEnd.NodeType = TrainpathNodeType.SidingEnd;
                     curMainNode.HasSidingPath = true;
                 }
             }
         }
- 
+
         /// <summary>
         /// Run through the track and for each node find the direction on the node
         /// </summary>
@@ -225,7 +308,7 @@ namespace ORTS.TrackViewer.Editing
             // Node orientations are determined based on the track leading to the node
             // This makes it easier to extend the path (in case the last node is not known)
             // Only for the start node this is not possible. But hey, that is anyway up to the user.
-            
+
             // start of path
             TrainpathNode currentMainNode = FirstNode;
             while (currentMainNode.NextMainNode != null)
@@ -250,7 +333,7 @@ namespace ORTS.TrackViewer.Editing
             if (currentMainNode is TrainpathVectorNode)
             {   // Only vector nodes can be a real end!
                 HasEnd = true;
-                currentMainNode.Type = TrainpathNodeType.End;
+                currentMainNode.NodeType = TrainpathNodeType.End;
             }
             else
             {
@@ -263,97 +346,15 @@ namespace ORTS.TrackViewer.Editing
             FirstNodeAsVector.ForwardOriented = !FirstNodeAsVector.ForwardOriented;
         }
 
-    }
+        #endregion
 
-    /// <summary>
-    /// Class that extends TrainPath with History functions like Undo and redo.
-    /// </summary>
-    public class TrainpathWithHistory : Trainpath
-    {
-        List<TrainpathNode> firstNodes;  // list of firstnodes of complete paths
-        List<bool> hasEnds; // list of booleans describing whether path does or does not have end
-        int currentIndex; // current FirstNode and HasEnd are indexed by currentIndex
-
-        /// <summary>Link to the first node of the train path</summary>
-        public override TrainpathNode FirstNode
-        {   // This needs to be extensive, because it is being used in base constructor, so before body of tonstructor of this class
-            get
-            {
-                if (firstNodes == null) return null;
-                return firstNodes[currentIndex];
-            }
-            set
-            {
-                if (firstNodes == null)
-                {
-                    firstNodes = new List<TrainpathNode>();
-                    currentIndex = 0;
-                    firstNodes.Add(value);
-                }
-                else
-                {
-                    firstNodes[currentIndex] = value;
-                }
-            }
-        }
-
-        /// <summary>Does the path have a well-defined end point or not</summary>
-        public override bool HasEnd
-        {   // This needs to be extensive, because it is being used in base constructor, so before body of tonstructor of this class
-            get
-            {
-                if (hasEnds == null) return false;
-                return hasEnds[currentIndex];
-            }
-            set
-            {
-                if (hasEnds == null)
-                {
-                    hasEnds = new List<bool>();
-                    currentIndex = 0;
-                    hasEnds.Add(value);
-                }
-                else
-                {
-                    hasEnds[currentIndex] = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Basic constructor creating an empty path, but storing track database and track section data
-        /// </summary>
-        /// <param name="trackDB"></param>
-        /// <param name="tsectionDat"></param>
-        public TrainpathWithHistory(TrackDB trackDB, TSectionDatFile tsectionDat)
-            : base(trackDB, tsectionDat)
-        {
-        }
-
-        /// <summary>
-        /// Creates an trainpath from PAT file information.
-        /// First creates all the nodes and then links them together into a main list
-        /// with optional parallel siding list.
-        /// </summary>
-        /// <param name="trackDB"></param>
-        /// <param name="tsectionDat"></param>
-        /// <param name="filePath">file name including path of the .pat file</param>
-        public TrainpathWithHistory(TrackDB trackDB, TSectionDatFile tsectionDat, string filePath)
-            : base(trackDB, tsectionDat, filePath)
-        {   // firstNodes, hasEnds and currentIndex are created in calls from base constructor to FirstNode and HasEnd
-        }
-
+        #region Methods to deal with history
         /// <summary>
         /// Undo operation. Pretty simple. Just use the previous path in the list if available.
         /// Note that all paths are retained.
         /// </summary>
         public void Undo()
         {
-            if (firstNodes == null)
-            {   // there is no path yet
-                return;
-            }
-
             currentIndex--;
             if (currentIndex < 0) { currentIndex = 0; }
         }
@@ -364,13 +365,25 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void Redo()
         {
-            if (firstNodes == null)
-            {   // there is no path yet
-                return;
-            }
-
             currentIndex++;
-            if (currentIndex >= firstNodes.Count) { currentIndex = firstNodes.Count - 1; }
+            if (currentIndex >= trainPaths.Count) { currentIndex = trainPaths.Count - 1; }
+        }
+
+        /// <summary>
+        /// Use the last of the available stored paths in the history list
+        /// </summary>
+        public void UseLast()
+        {
+            currentIndex = trainPaths.Count-1;
+        }
+
+        /// <summary>
+        /// Use the last but one of the available stored paths in the history list
+        /// </summary>
+        public void UseLastButOne()
+        {
+            currentIndex = trainPaths.Count-2;
+            if (currentIndex <= 0) currentIndex = 0; // should not happen
         }
 
         /// <summary>
@@ -380,81 +393,209 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void StoreCurrentPath()
         {
-            // first clear all possible stored-redo parts
-            if (firstNodes == null)
-            {   // there is no path yet
-                return;
+            int newIndex = currentIndex + 1;
+            if (trainPaths.Count > newIndex) {
+                trainPaths.RemoveRange(newIndex, trainPaths.Count - newIndex);
             }
 
-            int newCount = currentIndex + 1;
-            if (hasEnds.Count > newCount) {
-                hasEnds.RemoveRange(newCount, hasEnds.Count - newCount);
-            }
-            if (firstNodes.Count > newCount)
-            {
-                firstNodes.RemoveRange(newCount, firstNodes.Count - newCount);
-            }
+            // insert copy just before current active one
+            TrainPathData newTrainData = trainPaths[currentIndex].DeepCopy();
+            trainPaths.Insert(currentIndex, newTrainData);
+            currentIndex = newIndex;
 
-            // insert copies just before current active one
-            bool newHasEnd = HasEnd;
-            TrainpathNode newFirstNode = DeepCopy(FirstNode);
-            hasEnds.Insert(currentIndex, newHasEnd);
-            firstNodes.Insert(currentIndex, newFirstNode);
-            currentIndex++;
+            //Since we store the path, we must assume something has been modified (or will in a jiffy)
+            IsModified = true;
         }
 
+   
+        #endregion
+
+        #region Methods giving info on path
         /// <summary>
-        /// Perform a deep copy of a path consisting of linked nodes
+        /// Determine if the path is broken or not
         /// </summary>
-        /// <param name="curFirstNode">First node of the current path</param>
-        /// <returns>First node of the copied path</returns>
-        static TrainpathNode DeepCopy(TrainpathNode curFirstNode)
+        /// <returns>A collection containing integers that tell how far to draw the path to go to the broken node</returns>
+        public Collection<int> DetermineIfBroken()
         {
-            if (curFirstNode == null) return null;
+            if (FirstNode == null) {
+                IsBroken = false;
+                return new Collection<int>();
+            }
 
-            TrainpathNode newFirstNode = curFirstNode.ShallowCopyNoLinks();
-
-            TrainpathNode curMainNode = curFirstNode;
-            TrainpathNode newMainNode = newFirstNode;
-            TrainpathNode curSidingNode = null;
-            TrainpathNode newSidingNode = null;
-            TrainpathNode newNextMainNode;
-            while (curMainNode.NextMainNode != null)
+            List<TrainpathNode> brokenNodes = new List<TrainpathNode>();
+                        
+            TrainpathNode currentMainNode = FirstNode;
+            while (currentMainNode.NextMainNode != null)
             {
-                // in case there is a passing path, follow that first.
-                // At the end of the path, curSidingNode will be the main Node to link again to
-                if (curMainNode.NextSidingNode != null)
+                if (currentMainNode.IsBroken)
                 {
-                    curSidingNode = curMainNode;
-                    newSidingNode = newMainNode;
-                    while (curSidingNode.NextSidingNode != null)
-                    {
-                        newSidingNode.NextSidingNode = curSidingNode.NextSidingNode.ShallowCopyNoLinks();
-
-                        curSidingNode = curSidingNode.NextSidingNode;
-                        newSidingNode = newSidingNode.NextSidingNode;
-                    }
+                    brokenNodes.Add(currentMainNode);
                 }
-
-                if (curSidingNode == curMainNode.NextMainNode)
+                else if (currentMainNode.NextMainTvnIndex == -1)
                 {
-                    // We need to relink to the end of a siding path. The corresponding node has already been created
-                    newNextMainNode = newSidingNode;
-                    curSidingNode = null; // no linking needed anymore
+                    brokenNodes.Add(currentMainNode.NextMainNode);
                 }
                 else
                 {
-                    newNextMainNode = curMainNode.NextMainNode.ShallowCopyNoLinks();
-                }
-                newNextMainNode.PrevNode = newMainNode;
-                newMainNode.NextMainNode = newNextMainNode;
+                    // For siding paths, it is difficult to get the right main node to draw until
+                    // Most important however is that at least IsBroken is set correctly
+                    TrainpathNode currentSidingNode = currentMainNode;
+                    while (currentSidingNode.NextSidingNode != null)
+                    {
+                        if (currentSidingNode.NextSidingNode.IsBroken)
+                        {
+                            brokenNodes.Add(currentMainNode.NextMainNode); // we cannot draw until a sidingNode
+                        }
+                        if (currentSidingNode.NextSidingTvnIndex == -1)
+                        {
+                            brokenNodes.Add(currentMainNode.NextMainNode);
+                        }
+                        currentSidingNode = currentSidingNode.NextSidingNode;
 
-                curMainNode = curMainNode.NextMainNode;
-                newMainNode = newMainNode.NextMainNode;
+                        if (   currentSidingNode.NextSidingNode == null 
+                            && currentSidingNode.NodeType != TrainpathNodeType.SidingEnd)
+                        {   // The end of a siding track while still not on siding end
+                            brokenNodes.Add(currentMainNode.NextMainNode);
+                        }
+                    }
+                }
+
+                currentMainNode = currentMainNode.NextMainNode;
             }
 
-            return newFirstNode;
+            if (currentMainNode.IsBroken)
+            {   //for last node
+                brokenNodes.Add(currentMainNode);
+            }
+
+            IsBroken = (brokenNodes.Count > 0);
+
+            Collection<int> brokenNodeIndexes = new Collection<int>();
+            foreach (TrainpathNode node in brokenNodes)
+            {
+                brokenNodeIndexes.Add(GetNodeNumber(node));
+            }
+            return brokenNodeIndexes;
         }
 
+        /// <summary>
+        /// Calculate the number of this node in the total path. FirstNode is 1. The node needs to be on mainpath,
+        /// otherwise -1 will be returned.
+        /// </summary>
+        /// <param name="node">Node for which to calculate the number</param>
+        /// <returns>The sequential number of the node in the main path. -1 in case node is not on main path.</returns>
+        public int GetNodeNumber(TrainpathNode node)
+        {
+            int numberFound = 1;
+            TrainpathNode mainNode = FirstNode;
+            while (mainNode != null && mainNode != node)
+            {
+                numberFound++;
+                mainNode = mainNode.NextMainNode;
+            }
+            if (mainNode == null)
+            {
+                return -1;
+            }
+            return numberFound;
+        }
+        #endregion
+        class TrainPathData
+        {
+            public TrainpathNode firstNode;
+            public TrainpathNode firstNodeOfTail;
+
+            public string filePath;
+            public string pathName;
+            public string pathStart;
+            public string pathEnd;
+            public string pathId;
+
+            public PathFlags pathFlags;
+
+            public bool hasEnd;
+            public bool tailHasEnd;
+            public bool isBroken;
+            
+            public TrainPathData()
+            {
+                //firstNode = null; //this is already the default
+                pathName = "<unknown>";
+                pathEnd = "<unknown>";
+                pathStart = "<unknown>";
+                pathId = "new";
+                //hasEnd = false; //this is already the default
+            }
+
+            /// <summary>
+            /// Perform a deep copy on the current instance
+            /// </summary>
+            /// <returns>The copied instance.</returns>
+            public TrainPathData DeepCopy()
+            {
+                TrainPathData newData = (TrainPathData)this.MemberwiseClone();
+                newData.firstNode = DeepCopyOfLinkedNodes(firstNode);
+                newData.firstNodeOfTail = DeepCopyOfLinkedNodes(firstNodeOfTail);
+            
+                return newData;
+            }
+
+            /// <summary>
+            /// Perform a deep copy of a path consisting of linked nodes
+            /// </summary>
+            /// <param name="curFirstNode">First node of the current path</param>
+            /// <returns>First node of the copied path</returns>
+            static TrainpathNode DeepCopyOfLinkedNodes(TrainpathNode curFirstNode)
+            {
+                if (curFirstNode == null) return null;
+
+                TrainpathNode newFirstNode = curFirstNode.ShallowCopyNoLinks();
+
+                TrainpathNode curMainNode = curFirstNode;
+                TrainpathNode newMainNode = newFirstNode;
+                TrainpathNode curSidingNode = null;
+                TrainpathNode newSidingNode = null;
+                TrainpathNode newNextMainNode;
+                while (curMainNode.NextMainNode != null)
+                {
+                    // in case there is a passing path, follow that first.
+                    // At the end of the path, curSidingNode will be the main Node to link again to
+                    if (curMainNode.NextSidingNode != null)
+                    {
+                        curSidingNode = curMainNode;
+                        newSidingNode = newMainNode;
+                        while (curSidingNode.NextSidingNode != null)
+                        {
+                            newSidingNode.NextSidingNode = curSidingNode.NextSidingNode.ShallowCopyNoLinks();
+                            newSidingNode.NextSidingNode.PrevNode = newSidingNode;
+
+                            curSidingNode = curSidingNode.NextSidingNode;
+                            newSidingNode = newSidingNode.NextSidingNode;
+                        }
+                    }
+
+                    if (curSidingNode == curMainNode.NextMainNode)
+                    {
+                        // We need to relink to the end of a siding path. The corresponding node has already been created
+                        newNextMainNode = newSidingNode;
+                        curSidingNode = null; // no linking needed anymore
+                    }
+                    else
+                    {
+                        newNextMainNode = curMainNode.NextMainNode.ShallowCopyNoLinks();
+                    }
+                    newNextMainNode.PrevNode = newMainNode;
+                    newMainNode.NextMainNode = newNextMainNode;
+
+                    curMainNode = curMainNode.NextMainNode;
+                    newMainNode = newMainNode.NextMainNode;
+                }
+
+                return newFirstNode;
+            }
+
+        }
     }
+
+
 }

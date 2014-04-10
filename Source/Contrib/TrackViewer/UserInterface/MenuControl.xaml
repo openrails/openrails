@@ -30,6 +30,7 @@
                 <MenuItem Header="Show inset" Name="menuShowInset" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Show world tiles" Name="menuShowWorldTiles" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Show scale ruler" Name="menuShowScaleRuler" IsCheckable="True" Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show longitude/latitude" Name="menuShowLonLat" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Use miles i.s.o. meters" Name="menuUseMilesNotMeters" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <Separator/>
                 <MenuItem Header="Save current zoom" Name="menuZoomSave" Click="menuZoomSave_Click"/>
@@ -40,9 +41,7 @@
                 <MenuItem Header="Zoom to tile (z)" Name="menuZoomToTile" Click="menuZoomToTile_Click"/>
                 <MenuItem Header="Zoom reset (r)" Name="menuZoomReset" Click="menuZoomReset_Click"/>
                 <Separator/>
-                <!-- TODO anti-aliasing crashes
                 <MenuItem Header="Anti aliasing (needs restart)" Name="menuDoAntiAliasing" IsCheckable="True" Click="menuDoAntiAliasing_Click"/>
-                -->
             </MenuItem>
             <MenuItem Header="Tracks">
                 <MenuItem Header="Color tracks" Name="menuColorTracks" IsCheckable="True" Click="UpdateMenuSettings"/>

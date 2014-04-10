@@ -52,7 +52,7 @@ namespace ORTS.TrackViewer.UserInterface
     /// Interaction logic for SearchWindow.xaml
     /// This contains the callbacks needed for the (small) searchwindow/searchcontrol
     /// </summary>
-    public partial class SearchControl : Window
+    public sealed partial class SearchControl : Window
     {
         TrackViewer trackViewer;
         SearchableItem searchItem;
@@ -93,7 +93,7 @@ namespace ORTS.TrackViewer.UserInterface
         {
             try
             {
-                int Index = Convert.ToInt32(textboxIndex.Text, System.Globalization.CultureInfo.InvariantCulture);
+                int Index = Convert.ToInt32(textboxIndex.Text, System.Globalization.CultureInfo.CurrentCulture);
                 switch (searchItem)
                 {
                     case SearchableItem.TrackNode:

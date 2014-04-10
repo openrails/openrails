@@ -18,8 +18,33 @@ namespace ORTS.TrackViewer.Editing
     /// <summary>
     /// Interaction logic for UncouplePointDialog.xaml
     /// </summary>
-    public partial class UncouplePointDialog : Window
+    public sealed partial class UncouplePointDialog : Window
     {
+        /// <summary>Return the selected wait-times (in seconds)</summary>
+        public int GetWaitTime
+        {
+            get
+            {
+                return Convert.ToInt32(waitTimeS.Text, System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+
+        /// <summary> Return the Number of Cars to couple/uncouple that has been selected (negative for uncouple)</summary>
+        public int GetNCars
+        {
+            get
+            {
+                if ((bool)selectUncouple.IsChecked)
+                {
+                    return -Convert.ToInt32(Ncars.Text, System.Globalization.CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    return Convert.ToInt32(Ncars.Text, System.Globalization.CultureInfo.InvariantCulture);
+                }
+            }
+        }
+
         /// <summary>
         /// Create the Dialog to edit the details of an (un)couple point
         /// </summary>
@@ -54,25 +79,6 @@ namespace ORTS.TrackViewer.Editing
         private void buttonCancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
-        }
-
-        /// <summary> Return the Number of Cars to couple/uncouple that has been selected (negative for uncouple)</summary>
-        public int GetNCars()
-        {
-            if ((bool)selectUncouple.IsChecked)
-            {
-                return -Convert.ToInt32(Ncars.Text, System.Globalization.CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                return Convert.ToInt32(Ncars.Text, System.Globalization.CultureInfo.InvariantCulture);
-            }   
-        }
-
-        /// <summary>Return the selected wait-times (in seconds)</summary>
-        public int GetWaitTime()
-        {
-            return Convert.ToInt32(waitTimeS.Text, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>

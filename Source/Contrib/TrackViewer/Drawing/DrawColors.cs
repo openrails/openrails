@@ -56,7 +56,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Do the initialization of the settings (set the defaults)
         /// </summary>
-        public static void Initialize(ORTS.TrackViewer.UserInterface.MenuControl menuControl)
+        public static void Initialize()
         {
 
             colorsNormal["clearwindowinset"] = Color.LightBlue;
@@ -134,8 +134,8 @@ namespace ORTS.TrackViewer.Drawing
 
 
         // Default string for menu
-        static readonly string defaultColorName = "PaleGreen";
-        static readonly string defaultColorString = defaultColorName + " (default)";
+        const string defaultColorName = "PaleGreen";
+        const string defaultColorString = defaultColorName + " (default)";
         /// <summary>
         /// Set the SetBackGroundColor using string as input. Return whether this succeeded or not
         /// </summary>

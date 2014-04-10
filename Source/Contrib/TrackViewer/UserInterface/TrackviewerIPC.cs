@@ -48,7 +48,7 @@ namespace ORTS.Processes
         /// Return a string giving the location of the train
         /// </summary>
         [OperationContract]
-        string GetTrainLocation();
+        string TrainLocation();
     }
 
     /// <summary>
@@ -58,17 +58,18 @@ namespace ORTS.Processes
     {
         public static Traveller traveller;      
 
-        public string GetTrainLocation()
+        public string TrainLocation()
         {
             //this is the actual message sent from ORTS to trackviewer
-            return string.Format("FrontTDB:{0}:{1}:{2}:{3}", traveller.TileX, traveller.TileZ, traveller.Location.X, traveller.Location.Z);
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "FrontTDB:{0}:{1}:{2}:{3}", traveller.TileX, traveller.TileZ, traveller.Location.X, traveller.Location.Z);
         }
     }
 
     /// <summary>
     /// Class to take care of all comunication between ORTS and trackviewer, at least for now.
     /// </summary>
-    public class TrackviewerIPC {
+    public static class TrackviewerIpc {
         //
         // SERVER part
         //
@@ -143,7 +144,7 @@ namespace ORTS.Processes
         /// Routine to be called from Trackviewer to determine location of player train
         /// </summary>
         /// <returns>Location of the player train</returns>
-        public static WorldLocation GetTraveller()
+        public static WorldLocation PlayerTrainTraveller()
         {
             if (pipeProxy == null) StartClient();
             
@@ -153,14 +154,14 @@ namespace ORTS.Processes
             try
             {
                 // the regular expression should not be an issue, since we create the string itself above.
-                string locationString = pipeProxy.GetTrainLocation();
+                string locationString = pipeProxy.TrainLocation();
                 Match match = findTravellerRegex.Match(locationString);
                 if (match.Success)
                 {
                     trainLocation = new WorldLocation(Convert.ToInt32(match.Groups["tileX"].Value, System.Globalization.CultureInfo.InvariantCulture),
                                                       Convert.ToInt32(match.Groups["tileZ"].Value, System.Globalization.CultureInfo.InvariantCulture),
-                                                      Convert.ToSingle(match.Groups["x"].Value), 0,
-                                                      Convert.ToSingle(match.Groups["z"].Value));
+                                                      Convert.ToSingle(match.Groups["x"].Value, System.Globalization.CultureInfo.InvariantCulture), 0,
+                                                      Convert.ToSingle(match.Groups["z"].Value, System.Globalization.CultureInfo.InvariantCulture));
                 }
                 else
                 {

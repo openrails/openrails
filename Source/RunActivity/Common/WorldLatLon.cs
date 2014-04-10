@@ -37,7 +37,7 @@ using Microsoft.Xna.Framework;
 
 namespace ORTS
 {
-    class WorldLatLon
+    public class WorldLatLon
     {      
         int earthRadius = 6370997; // Average radius of the earth, meters
         double Epsilon = 0.0000000001; // Error factor (arbitrary)

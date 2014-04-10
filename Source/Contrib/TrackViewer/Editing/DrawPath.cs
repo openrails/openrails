@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -65,15 +66,15 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="drawArea">Area to draw upon</param>
         /// <param name="firstNode">The first node of the path to draw</param>
+        /// <param name="firstNodeOfTail">The node that is the start of the tail (if available)</param>
         /// <param name="numberToDraw">The requested number of nodes to draw</param>
-        /// <param name="drawnMainNodes">List (to be filled) of main-track nodes that were actually drawn and can therefore be selected for editing</param>
-        /// <param name="drawnTrackNodeIndexes">List (to be filled) of tracknode indexes with drawn node pairs on the track</param>
+        /// <param name="drawnPathData">Data structure that we will fill with information about the path we have drawn</param>
         /// <returns>the number of nodes actually drawn (not taking into account nodes on a siding)</returns>
         public int Draw(DrawArea drawArea, 
                          TrainpathNode firstNode,
+                         TrainpathNode firstNodeOfTail,
                          int numberToDraw, 
-                         List<TrainpathNode> drawnMainNodes, 
-                         Dictionary<int, List<TrainpathNode>> drawnTrackNodeIndexes)
+                         DrawnPathData drawnPathData)
         {
             //List of all nodes that need to be drawn.
             List<TrainpathNode> drawnNodes = new List<TrainpathNode>();
@@ -83,11 +84,13 @@ namespace ORTS.TrackViewer.Editing
             CurrentMainNode = firstNode;
             if (CurrentMainNode == null)
             {
+                // no path, but there might still be a tail
+                DrawTail(drawArea, DrawColors.colorsNormal, null, firstNodeOfTail);
                 return 0;
             }
          
             drawnNodes.Add(CurrentMainNode);
-            drawnMainNodes.Add(CurrentMainNode);    
+            drawnPathData.AddNode(CurrentMainNode); 
             
             // We want to draw only a certain number of nodes. And if there is a siding, for the siding
             // we also want to draw the same number of nodes from where it splits from the main track
@@ -99,7 +102,7 @@ namespace ORTS.TrackViewer.Editing
                 if (currentSidingNode != null)
                 {
                     //finish the complete siding path if the main path is at end of siding already
-                    int sidingNodesToDraw = (CurrentMainNode.Type == TrainpathNodeType.SidingEnd) ? Int32.MaxValue : 1;
+                    int sidingNodesToDraw = (CurrentMainNode.NodeType == TrainpathNodeType.SidingEnd) ? Int32.MaxValue : 1;
                     while (sidingNodesToDraw >= 1)
                     {
                         //while tracking a siding, it has its own next node
@@ -108,6 +111,8 @@ namespace ORTS.TrackViewer.Editing
                         {
                             DrawPathOnVectorNode(drawArea, DrawColors.colorsPathSiding, currentSidingNode, nextNodeOnSiding, currentSidingNode.NextSidingTvnIndex);
                             drawnNodes.Add(nextNodeOnSiding);
+                            drawnPathData.AddNode(nextNodeOnSiding);
+                            //siding nodes will not be added to drawnPathData
                             sidingNodesToDraw--;
                         }
                         else
@@ -118,9 +123,7 @@ namespace ORTS.TrackViewer.Editing
                         
                     }
                 }
-
-                WorldLocation curMainLoc = CurrentMainNode.Location;
-                
+ 
                 // Draw the start of a siding path, so from this main line point to the next siding node.
                 // If there is a next siding node, we also reset the currentSidingNode
                 // but probably it is not allowed to have siding on a siding
@@ -129,6 +132,7 @@ namespace ORTS.TrackViewer.Editing
                 {
                     DrawPathOnVectorNode(drawArea, DrawColors.colorsPathSiding, CurrentMainNode, nextSidingNode, CurrentMainNode.NextSidingTvnIndex);
                     drawnNodes.Add(nextSidingNode);
+                    drawnPathData.AddNode(nextSidingNode);
                     currentSidingNode = nextSidingNode;
                 }
 
@@ -138,8 +142,8 @@ namespace ORTS.TrackViewer.Editing
                 {
                     DrawPathOnVectorNode(drawArea, DrawColors.colorsPathMain, CurrentMainNode, nextMainNode, CurrentMainNode.NextMainTvnIndex);
                     drawnNodes.Add(nextMainNode);
-                    drawnMainNodes.Add(nextMainNode);
-                    NoteAsDrawn(drawnTrackNodeIndexes, CurrentMainNode, nextMainNode);
+                    drawnPathData.AddNode(nextMainNode);
+                    drawnPathData.NoteAsDrawn(CurrentMainNode, nextMainNode);
 
                     CurrentMainNode = nextMainNode;
                     numberDrawn++;
@@ -156,34 +160,25 @@ namespace ORTS.TrackViewer.Editing
                 DrawNodeItself(drawArea, node);
             }
 
+            DrawTail(drawArea, DrawColors.colorsNormal, drawnNodes.Last(), firstNodeOfTail);
+
             return numberDrawn;
         }
 
-        /// <summary>
-        /// Add the from and to Node to the list of drawn nodes for the trackindex
-        /// </summary>
-        private static void NoteAsDrawn(Dictionary<int, List<TrainpathNode>> drawnTrackNodeIndexes, TrainpathNode fromNode, TrainpathNode toNode)
-        {
-            if (!drawnTrackNodeIndexes.ContainsKey(fromNode.NextMainTvnIndex))
-            {
-                drawnTrackNodeIndexes[fromNode.NextMainTvnIndex] = new List<TrainpathNode>();
-            }
-            drawnTrackNodeIndexes[fromNode.NextMainTvnIndex].Add(fromNode);
-            drawnTrackNodeIndexes[fromNode.NextMainTvnIndex].Add(toNode);
-        }
+        
 
         /// <summary>
         /// Draw the current path node texture, showing what kind of node it is
         /// </summary>
         /// <param name="drawArea">area to Draw upon</param>
         /// <param name="trainpathNode">current node for which we need to draw our texture</param>
-        void DrawNodeItself(DrawArea drawArea, TrainpathNode trainpathNode)
+        static void DrawNodeItself(DrawArea drawArea, TrainpathNode trainpathNode)
         {
             float pathPointSize = 7f; // in meters
             int minPixelSize = 7;
             float angle = trainpathNode.TrackAngle;
 
-            switch (trainpathNode.Type)
+            switch (trainpathNode.NodeType)
             {
                 case TrainpathNodeType.Start:
                     // first node; texture is not rotated
@@ -199,13 +194,24 @@ namespace ORTS.TrackViewer.Editing
                 case TrainpathNodeType.Stop:
                     drawArea.DrawTexture(trainpathNode.Location, "pathWait", 0, pathPointSize, minPixelSize);
                     break;
+#if COUPLE
                 case TrainpathNodeType.Uncouple:
                     drawArea.DrawTexture(trainpathNode.Location, "pathUncouple", 0, pathPointSize, minPixelSize);
                     break;
+#endif
                 default:
                     if ((trainpathNode.NextMainNode == null) && (trainpathNode.NextSidingNode != null))
                     {   // siding node;
                         drawArea.DrawTexture(trainpathNode.Location, "pathSiding", angle, pathPointSize, minPixelSize);
+                    }
+                    else if ((trainpathNode.NextMainNode == null)
+                          && (trainpathNode.NextSidingNode == null)
+                          && (trainpathNode.NodeType != TrainpathNodeType.SidingEnd)
+                          && (trainpathNode.PrevNode.NextSidingNode == trainpathNode))
+                    {
+                        // end of a siding path without it being a siding end
+                        drawArea.DrawTexture(trainpathNode.Location, "pathSiding", angle, pathPointSize, minPixelSize);
+                        drawArea.DrawSimpleTexture(trainpathNode.Location, "crossedRing", pathPointSize, minPixelSize, DrawColors.colorsNormal["brokenNode"]);
                     }
                     else
                     {   // normal node
@@ -233,12 +239,15 @@ namespace ORTS.TrackViewer.Editing
         /// direction of the vector node</remarks>
         void DrawPathOnVectorNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode, int TvnIndex)
         {
-            if (currentNode.IsBroken || nextNode.IsBroken)
+            if (currentNode.IsBroken || nextNode.IsBroken || (TvnIndex == -1))
             {
                 DrawPathBrokenNode(drawArea, colors, currentNode, nextNode);
                 return;
             }
             TrackNode tn = trackDB.TrackNodes[TvnIndex];
+
+            TrainpathJunctionNode nextJunctionNode = nextNode as TrainpathJunctionNode;
+            TrainpathVectorNode nextVectorNode = nextNode as TrainpathVectorNode;
 
             //Default situation (and most occuring) is to draw the complete vector node 
             int tvsiStart = 0;
@@ -247,14 +256,10 @@ namespace ORTS.TrackViewer.Editing
             float sectionOffsetStop = -1;
             if (currentNode is TrainpathJunctionNode)
             {
-                if (nextNode is TrainpathJunctionNode)
-                {
-                    // If both ends are junctions, just draw the full track.
-                }
-                else
+                // If both ends are junctions, just draw the full track. Otherwise:
+                if (nextVectorNode != null)
                 {
                     // Draw from the current junction node to the next mid-point node
-                    TrainpathVectorNode nextVectorNode = nextNode as TrainpathVectorNode;
                     if (nextVectorNode.IsEarlierOnTrackThan(currentNode))
                     {   // trackvectornode is oriented the other way as path
                         tvsiStart = nextVectorNode.TrackVectorSectionIndex;
@@ -271,7 +276,7 @@ namespace ORTS.TrackViewer.Editing
             else
             {
                 TrainpathVectorNode currentVectorNode = currentNode as TrainpathVectorNode;
-                if (nextNode is TrainpathJunctionNode)
+                if (nextJunctionNode != null)
                 {
                     // Draw from current mid-point node to next junction node
                     if (currentVectorNode.IsEarlierOnTrackThan(nextNode))
@@ -285,10 +290,9 @@ namespace ORTS.TrackViewer.Editing
                         sectionOffsetStop = currentVectorNode.TrackSectionOffset;
                     }
                 }
-                else
+                if (nextVectorNode != null)
                 {
                     // Draw from a current mid-point node to next mid-point node. Not sure if this ever happens
-                    TrainpathVectorNode nextVectorNode = nextNode as TrainpathVectorNode;
                     if (currentVectorNode.IsEarlierOnTrackThan(nextVectorNode))
                     {   // from current to next is in the direction of the vector node
                         tvsiStart = currentVectorNode.TrackVectorSectionIndex;
@@ -326,24 +330,24 @@ namespace ORTS.TrackViewer.Editing
             if (tvsiStart == tvsiStop)
             {
                 tvs = tn.TrVectorNode.TrVectorSections[tvsiStart];
-                DrawTrackSection(drawArea, tn, tvs, colors, sectionOffsetStart, sectionOffsetStop);
+                DrawTrackSection(drawArea, tvs, colors, sectionOffsetStart, sectionOffsetStop);
             }
             else
             {
                 // first section
                 tvs = tn.TrVectorNode.TrVectorSections[tvsiStart];
-                DrawTrackSection(drawArea, tn, tvs, colors, sectionOffsetStart, -1);
+                DrawTrackSection(drawArea, tvs, colors, sectionOffsetStart, -1);
 
                 // all intermediate sections
                 for (int tvsi = tvsiStart + 1; tvsi <= tvsiStop - 1; tvsi++)
                 {
                     tvs = tn.TrVectorNode.TrVectorSections[tvsi];
-                    DrawTrackSection(drawArea, tn, tvs, colors, 0, -1);
+                    DrawTrackSection(drawArea, tvs, colors, 0, -1);
                 }
 
                 // last section
                 tvs = tn.TrVectorNode.TrVectorSections[tvsiStop];
-                DrawTrackSection(drawArea, tn, tvs, colors, 0, sectionOffsetStop);
+                DrawTrackSection(drawArea, tvs, colors, 0, sectionOffsetStop);
             }
         }
 
@@ -351,13 +355,12 @@ namespace ORTS.TrackViewer.Editing
         /// Draw (part of) a tracksection (either curved or straight)
         /// </summary>
         /// <param name="drawArea">Area to draw upon</param>
-        /// <param name="tn">The tracknode from track database (assumed to be a vector node)</param>
         /// <param name="tvs">The vectorSection itself that needs to be drawn</param>
         /// <param name="colors">Colorscheme to use</param>
         /// <param name="startOffset">Do not draw the first startOffset meters in the section</param>
         /// <param name="stopOffset">Do not draw past stopOffset meters (draw all if stopOffset less than 0)</param>
         /// <remarks>Note that his is very similar to DrawTrackSection in class DrawTrackDB, but this one allows to draw partial sections</remarks>
-        private void DrawTrackSection(DrawArea drawArea, TrackNode tn, TrVectorSection tvs, ColorScheme colors,
+        private void DrawTrackSection(DrawArea drawArea, TrVectorSection tvs, ColorScheme colors,
             float startOffset, float stopOffset)
         {
             TrackSection trackSection = tsectionDat.TrackSections.Get(tvs.SectionIndex);
@@ -385,9 +388,106 @@ namespace ORTS.TrackViewer.Editing
             }
         }
 
-        void DrawPathBrokenNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode)
+        /// <summary>
+        /// Draw the connection between two nodes in case something is broken
+        /// </summary>
+        /// <param name="drawArea">Area to draw upon</param>
+        /// <param name="colors">Colorscheme to use</param>
+        /// <param name="currentNode">node to draw from</param>
+        /// <param name="nextNode">node to draw to</param>
+        static void DrawPathBrokenNode(DrawArea drawArea, ColorScheme colors, TrainpathNode currentNode, TrainpathNode nextNode)
         {
             drawArea.DrawLine(1f, colors["pathBroken"] , currentNode.Location, nextNode.Location);
+        }
+
+        /// <summary>
+        /// Draw the tail, and the connection to the tail from the last drawn node
+        /// </summary>
+        /// <param name="drawArea">Area to draw upon</param>
+        /// <param name="colors">Colors to use for drawing</param>
+        /// <param name="lastDrawnNode">Last drawn node, used as a starting point of connecting dashed line. Can be null</param>
+        /// <param name="firstTailNode">Node where the tail starts</param>
+        static void DrawTail(DrawArea drawArea, ColorScheme colors, TrainpathNode lastDrawnNode, TrainpathNode firstTailNode)
+        {
+            if (firstTailNode == null) return;
+
+            if (lastDrawnNode != null)
+            {
+                drawArea.DrawDashedLine(1f, DrawColors.colorsNormal["pathBroken"], lastDrawnNode.Location, firstTailNode.Location);
+            }
+            DrawNodeItself(drawArea, firstTailNode);
+            drawArea.DrawSimpleTexture(firstTailNode.Location, "ring", 8f, 7, colors["pathBroken"]);
+
+        }
+    }
+
+    /// <summary>
+    /// This is a datastructure where we can store information about the path that has actually been drawn.
+    /// </summary>
+    public class DrawnPathData
+    {
+        /// <summary>
+        /// List of main-track nodes that were actually drawn and can therefore be selected for editing
+        /// </summary>     
+        public Collection<TrainpathNode> DrawnNodes { get; private set; }
+        
+        /// <summary>
+        /// Keys are tracknode indexes, value is a list of (main) track node (in pairs) that are both
+        /// on the tracknode and the path between them has been drawn 
+        /// </summary>
+        Dictionary<int, List<TrainpathNode>> DrawnTrackIndexes = new Dictionary<int, List<TrainpathNode>>();
+
+        /// <summary>
+        /// Constructor, just creates new empty collections
+        /// </summary>
+        public DrawnPathData()
+        {
+            DrawnNodes = new Collection<TrainpathNode>();
+            DrawnTrackIndexes = new Dictionary<int, List<TrainpathNode>>();
+
+        }
+
+        /// <summary>
+        /// Add a node to the 'list' of stored drawn nodes
+        /// </summary>
+        /// <param name="node">The node to add</param>
+        public void AddNode(TrainpathNode node)
+        {
+            DrawnNodes.Add(node);
+        }
+
+        /// <summary>
+        /// Add the fromNode and toNode to the list of drawn nodes indexed for the trackindex
+        /// </summary>
+        /// <param name="fromNode">The starting node of a drawn path-section</param>
+        /// <param name="toNode">The end node of a drawn path-section</param>
+        public void NoteAsDrawn(TrainpathNode fromNode, TrainpathNode toNode)
+        {
+            if (!DrawnTrackIndexes.ContainsKey(fromNode.NextMainTvnIndex))
+            {
+                DrawnTrackIndexes[fromNode.NextMainTvnIndex] = new List<TrainpathNode>();
+            }
+            DrawnTrackIndexes[fromNode.NextMainTvnIndex].Add(fromNode);
+            DrawnTrackIndexes[fromNode.NextMainTvnIndex].Add(toNode);
+        }
+
+        /// <summary>
+        /// Return whether a part of the path has been drawn on the track with given tracknodeindex
+        /// </summary>
+        /// <param name="trackNodeIndex">The index of the trackNode of interest</param>
+        /// <returns>true if indeed the path has been drawn over the tracknode</returns>
+        public bool TrackHasBeenDrawn(int trackNodeIndex)
+        {
+            return DrawnTrackIndexes.ContainsKey(trackNodeIndex);
+        }
+
+        /// <summary>
+        /// Return a collection of trainpathnodes that have been drawn on a tracknode
+        /// </summary>
+        /// <param name="trackNodeIndex">The index of the tracknode for which to get the nodes</param>
+        public Collection<TrainpathNode> NodesOnTrack(int trackNodeIndex)
+        {
+            return new Collection<TrainpathNode>(DrawnTrackIndexes[trackNodeIndex]);
         }
     }
 }

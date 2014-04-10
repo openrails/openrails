@@ -34,7 +34,7 @@ namespace ORTS.TrackViewer.Editing
     {
         static List<string> trackPDPs;
         static List<string> trpathnodes;
-        static readonly uint nonext = 4294967295;
+        const uint nonext = 4294967295;
         static Dictionary<int, int> pdpOfJunction;
         static string fullFilePath;
 
@@ -45,23 +45,45 @@ namespace ORTS.TrackViewer.Editing
         public static void WritePatFile(Trainpath trainpath)
         {
             if (trainpath == null) return;
-            if (!trainpath.HasEnd)
+
+            if (trainpath.IsBroken)
             {
-                DialogResult dialogResult = MessageBox.Show(
-                        "The current path does not have a well-defined end-point.\n" +
-                        "Do you want to continue?",
-                        "Trackviewer Path Editor", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-                if (dialogResult == DialogResult.Cancel)
-                {
-                    return;
-                }
+                InformUserPathIsBroken();
+                return;
             }
+
+            if (UserCancelledBecauseOfUnfinishedPath(trainpath)) return;
 
             if (GetFileName(trainpath))
             {
                 CreatePDPsAndTrpathNodes(trainpath);
                 WriteToFile(trainpath);
+                trainpath.IsModified = false;
             }
+        }
+
+        static bool UserCancelledBecauseOfUnfinishedPath(Trainpath trainpath)
+        {
+            List<string> cancelReasons = new List<string>();
+            if (!trainpath.HasEnd) cancelReasons.Add("* The path does not have a well-defined end-point");
+            //if (trainpath.IsBroken) cancelReasons.Add("* The path has broken nodes or links");
+            if (trainpath.FirstNodeOfTail!=null) cancelReasons.Add("* The path has a stored and not-yet reconnected tail");
+            
+            if (cancelReasons.Count == 0) return false;
+
+            string message = "The current path is not finished:\n";
+            message += String.Join("\n", cancelReasons.ToArray());
+            message += "\nDo you want to continue?";
+
+            DialogResult dialogResult = MessageBox.Show(message, 
+                        "Trackviewer Path Editor", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+            return (dialogResult == DialogResult.Cancel);
+
+        }
+
+        static void InformUserPathIsBroken()
+        {
+            MessageBox.Show(TrackViewer.catalog.GetString("Saving broken paths is not supported"));
         }
 
         /// <summary>
@@ -178,16 +200,18 @@ namespace ORTS.TrackViewer.Editing
         private static void AddNode(TrainpathNode node, uint nextMainIndex, uint nextSidingIndex)
         {
             int pdpIndex;
-            string trackPDPstart = String.Format("\tTrackPDP ( {0,6:D} {1,6:D} {2,9} {3,9:F3} {4,9:F3}",
+            string trackPDPstart = String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "\tTrackPDP ( {0,6:D} {1,6:D} {2,9} {3,9:F3} {4,9:F3}",
                 node.Location.TileX, node.Location.TileZ, 
                 node.Location.Location.X.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")),
                 node.Location.Location.Y.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")),
                 node.Location.Location.Z.ToString("F3", System.Globalization.CultureInfo.CreateSpecificCulture("en-US")));
 
             pdpIndex = trackPDPs.Count(); // default PDP index
-            if (node is TrainpathJunctionNode)
+            TrainpathJunctionNode nodeAsJunction = node as TrainpathJunctionNode;
+            if (nodeAsJunction != null)
             {
-                int junctionIndex = (node as TrainpathJunctionNode).JunctionIndex;
+                int junctionIndex = nodeAsJunction.JunctionIndex;
                 if (!node.IsBroken && pdpOfJunction.ContainsKey(junctionIndex))
                 {
                     //this junction is already in the list of PDPs, so use another PDP index;
@@ -195,24 +219,28 @@ namespace ORTS.TrackViewer.Editing
                 }
                 else
                 {
-                    trackPDPs.Add(String.Format("{0} {1} {2} )", trackPDPstart, 2, 0));
+                    trackPDPs.Add(String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                    "{0} {1} {2} )", trackPDPstart, 2, 0));
                     pdpOfJunction[junctionIndex] = pdpIndex;
                 }
             }
             else
             {   // TrainpathVectorNode
-                if (node.Type == TrainpathNodeType.Start || node.Type == TrainpathNodeType.End)
+                if (node.NodeType == TrainpathNodeType.Start || node.NodeType == TrainpathNodeType.End)
                 {
-                    trackPDPs.Add(String.Format("{0} {1} {2} )", trackPDPstart, 1, 0));
+                    trackPDPs.Add(String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "{0} {1} {2} )", trackPDPstart, 1, 0));
                 }
                 else
                 {
-                    trackPDPs.Add(String.Format("{0} {1} {2} )", trackPDPstart, 1, 1));
+                    trackPDPs.Add(String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "{0} {1} {2} )", trackPDPstart, 1, 1));
                 }
             }
             
-            trpathnodes.Add(String.Format("\t\tTrPathNode ( {0} {1} {2} {3} )",
-                    node.GetFlags(), nextMainIndex, nextSidingIndex, pdpIndex));
+            trpathnodes.Add(String.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "\t\tTrPathNode ( {0} {1} {2} {3} )",
+                    node.FlagsToString(), nextMainIndex, nextSidingIndex, pdpIndex));
         }
 
 
@@ -236,9 +264,10 @@ namespace ORTS.TrackViewer.Editing
             file.WriteLine("TrackPath (");
             file.WriteLine("\tTrPathName ( \"" + trainpath.PathId + "\" )");
 
-            //if (trainpath.PathFlags != null) // currently the flags are perhaps not consistently read from PATfile. TODO
+            //TODO, but I have no idea what the flags should be exactly
+            //if (trainpath.PathFlags != null) // currently the flags are perhaps not consistently read from PATfile.
             //{
-                //string flagsString = string.Format("{0:X8}", trainpath.PathFlags);//todo. How to format hex? "X8" is not working for me.
+            //string flagsString = string.Format(System.Globalization.CultureInfo.InvariantCulture,"{0:X8}", trainpath.PathFlags);// How to format hex? "X8" is not working for me.
                 string flagsString = "00000000";
                 file.WriteLine("\tTrPathFlags ( " + flagsString + " )"); 
             //}

@@ -17,7 +17,7 @@
 //
 //
 //
-//TO-DO list for Trackviewer      
+// ENHANCEMENT list for Trackviewer      
 // Ideas from others
 //      Be able to list the issues directly without going through the ORTS logfile
 //      Make it XNA independent.
@@ -26,13 +26,13 @@
 //          if we are going to write own routines, then use stringbuilder
 //
 // Release issues 
-//      Crash on anti-alias?
 //      Always: 1. Update SVN. 
 //              2. look at all to-dos and remove temporary changes. 
 //              3. update version. 
 //              4. remove debug. 
 //              5. Set xml compiler version on, check all xml warnings, and turn it off again.
-//              6. test
+//              6. run fxcop
+//              7. test
 //
 // Little things
 //      Add y to statusbar, but perhaps only for items?
@@ -72,6 +72,7 @@
 //          But might take up memory? 
 //
 using System;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
@@ -97,6 +98,12 @@ using ORTS.TrackViewer.Editing;
 
 namespace ORTS.TrackViewer
 {
+
+    /// <summary>
+    /// Delegate that can be called by routines such that we can draw it to the screen
+    /// </summary>
+    /// <param name="message">Message to draw</param>
+    public delegate void MessageDelegate(string message);
     
     /// <summary>
     /// This is the main type for your game
@@ -105,15 +112,15 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the version of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/03/20";
+        public readonly static string TrackViewerVersion = "2014/04/09";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
         public Folder InstallFolder { get; private set; }
         /// <summary>List of available routes (in the install directory)</summary>
-        public List<Route> Routes { get; private set; }
+        public Collection<Route> Routes { get; private set; } // Collection because of FxCop
         /// <summary>List of available paths in the current route</summary>
-        public List<Path> Paths { get; private set; }
+        public Collection<Path> Paths { get; private set; } // Collection because of FxCop
         /// <summary>Route, ie with a path c:\program files\microsoft games\train simulator\routes\usa1  - may be different on different pc's</summary>
         public Route CurrentRoute { get; private set; }
         /// <summary>Route that was used last time</summary>
@@ -143,6 +150,8 @@ namespace ORTS.TrackViewer
         ShadowDrawArea drawAreaInset;
         /// <summary>The scale ruler to draw on screen</summary>
         DrawScaleRuler drawScaleRuler;
+        /// <summary>For drawing real world longitude and latitude</summary>
+        DrawLongitudeLatitude drawLongitudeLatitude;
         /// <summary>The routines to draw trains from runactivy</summary>
         DrawTrains drawTrains;
         /// <summary>The routines to draw the world tiles</summary>
@@ -161,6 +170,9 @@ namespace ORTS.TrackViewer
         private const int maxSkipDrawAmount = 10;
         #endregion
 
+        /// <summary>
+        /// This is the 'catalog' needed for localization of TrackViewer (meaning translating it to different languages)
+        /// </summary>
         public static GettextResourceManager catalog = new GettextResourceManager("Contrib");
 
         /// <summary>
@@ -172,8 +184,6 @@ namespace ORTS.TrackViewer
             ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
            
             Content.RootDirectory = "Content";
-            //graphics.PreferredBackBufferHeight = screenH;
-            //graphics.PreferredBackBufferWidth  = screenW;
             ScreenH = graphics.PreferredBackBufferHeight;
             ScreenW = graphics.PreferredBackBufferWidth;
             SetAliasing();
@@ -186,6 +196,7 @@ namespace ORTS.TrackViewer
             IsFixedTimeStep = true;
             TargetElapsedTime = TimeSpan.FromSeconds(0.05);
             FrameRate = new SmoothedData(0.5f);
+            InitLogging();
         }
 
         /// <summary>
@@ -194,13 +205,17 @@ namespace ORTS.TrackViewer
         public void SetAliasing()
         {
             // Personally, I do not think anti-aliasing looks crisp at all
-            graphics.PreferMultiSampling = false; //todo crashes Properties.Settings.Default.doAntiAliasing;
+            graphics.PreferMultiSampling = Properties.Settings.Default.doAntiAliasing;
         }
 
         void Window_ClientSizeChanged(object sender, EventArgs e)
         {
             ScreenW = Window.ClientBounds.Width;
             ScreenH = Window.ClientBounds.Height;
+            if (ScreenW == 0 || ScreenH == 0)
+            {   // if something went wrong during fast window switching, let's not continue
+                return;
+            }
             setSubwindowSizes();
         }
 
@@ -215,7 +230,7 @@ namespace ORTS.TrackViewer
             TVInputSettings.SetDefaults();
 
             statusBarControl = new StatusBarControl(this);
-            DrawColors.Initialize(menuControl);
+            DrawColors.Initialize();
             menuControl = new MenuControl(this);
 
             Localize(statusBarControl);
@@ -233,7 +248,7 @@ namespace ORTS.TrackViewer
             this.IsMouseVisible = true;
 
             // install folder
-            if (Properties.Settings.Default.installDirectory == "")
+            if (String.IsNullOrEmpty(Properties.Settings.Default.installDirectory))
             {
                 try
                 {
@@ -242,13 +257,9 @@ namespace ORTS.TrackViewer
                 catch {}
             }
             InstallFolder = new Folder("default", Properties.Settings.Default.installDirectory);
-            try
-            {
-                findRoutes(InstallFolder);
-            }
-            catch
-            {
-            }
+
+            findRoutes(InstallFolder);
+            
             
             base.Initialize();
         }
@@ -259,7 +270,7 @@ namespace ORTS.TrackViewer
         void setSubwindowSizes()
         {
             int insetRatio = 10;
-            int menuHeight = menuControl.menuHeight;
+            int menuHeight = menuControl.MenuHeight;
             int statusbarHeight = statusBarControl.StatusbarHeight;
             menuControl.SetScreenSize(ScreenW, menuHeight);
             statusBarControl.SetScreenSize(ScreenW, statusbarHeight, ScreenH);
@@ -267,6 +278,7 @@ namespace ORTS.TrackViewer
             DrawArea.SetScreenSize(0, menuHeight, ScreenW, ScreenH - statusbarHeight - menuHeight);
             drawAreaInset.SetScreenSize(ScreenW - ScreenW / insetRatio, menuHeight + 1, ScreenW / insetRatio, ScreenH / insetRatio);
             drawScaleRuler.SetLowerLeftPoint(10, ScreenH - statusbarHeight - 10);
+            drawLongitudeLatitude = new DrawLongitudeLatitude(10, menuHeight + 10);
 
         }
  
@@ -335,13 +347,15 @@ namespace ORTS.TrackViewer
 
             if (TVUserInput.IsPressed(TVUserCommands.Quit)) this.Quit();
 
+            if (TVUserInput.IsPressed(TVUserCommands.ZoomInSlow)) DrawArea.ZoomAroundMouse(-1);
+            if (TVUserInput.IsPressed(TVUserCommands.ZoomOutSlow)) DrawArea.ZoomAroundMouse(1);
+            if (TVUserInput.IsPressed(TVUserCommands.ZoomToTile)) DrawArea.ZoomToTile();
             if (TVUserInput.IsPressed(TVUserCommands.ZoomReset))
             {
                 DrawArea.ZoomReset(DrawTrackDB);
                 drawAreaInset.ZoomReset(DrawTrackDB);  // needed in case window was resized
             }
-            if (TVUserInput.IsPressed(TVUserCommands.ZoomToTile)) DrawArea.ZoomToTile();
-
+            
             if (DrawPATfile != null && Properties.Settings.Default.showPATfile)
             {
                 if (TVUserInput.IsPressed(TVUserCommands.ExtendPath))     DrawPATfile.ExtendPath();
@@ -365,11 +379,44 @@ namespace ORTS.TrackViewer
                 if (TVUserInput.IsMouseXButton2Pressed()) PathEditor.Redo();
             }
 
-
-            if (TVUserInput.IsMouseMoved() && TVUserInput.IsMouseLeftButtonDown())
+            if (PathEditor != null && PathEditor.EditingIsActive)
             {
-                DrawArea.ShiftArea(TVUserInput.MouseMoveX(), TVUserInput.MouseMoveY());
+                if (TVUserInput.IsMouseRightButtonPressed())
+                {
+                    PathEditor.OnLeftMouseRelease(); // any action done with left mouse is cancelled now
+                    PathEditor.PopupContextMenu(TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
+                }
+
+                if (TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick))
+                {
+                    if (TVUserInput.IsMouseLeftButtonPressed())
+                    {
+                        PathEditor.OnLeftMouseClick(TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
+                    }
+                    if (TVUserInput.IsMouseLeftButtonDown())
+                    {
+                        PathEditor.OnLeftMouseMoved(); // to make sure it is reactive enough, don't even care if mouse is really moved
+                    }
+                    if (TVUserInput.IsMouseLeftButtonReleased())
+                    {
+                        PathEditor.OnLeftMouseRelease();
+                    }
+                }
+
+                if (TVUserInput.IsReleased(TVUserCommands.EditorTakesMouseClick))
+                {
+                    PathEditor.OnLeftMouseCancel();
+                }
             }
+
+            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick))
+            {
+                if (TVUserInput.IsMouseMoved() && TVUserInput.IsMouseLeftButtonDown())
+                {
+                    DrawArea.ShiftArea(TVUserInput.MouseMoveX(), TVUserInput.MouseMoveY());
+                }
+            }
+
             if (TVUserInput.IsMouseWheelChanged())
             {
                 int mouseWheelChange = TVUserInput.MouseWheelChange();
@@ -383,10 +430,7 @@ namespace ORTS.TrackViewer
                 }
             }
 
-            if (TVUserInput.IsMouseRightButtonPressed() && PathEditor!= null && PathEditor.EditingIsActive)
-            {
-                PathEditor.PopupContextMenu(TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
-            }
+           
 
             DrawArea.Update();
             drawAreaInset.Update();
@@ -408,12 +452,6 @@ namespace ORTS.TrackViewer
             base.Update(gameTime);
             
         }
-
-        /// <summary>
-        /// Delegate that can be called by routines such that we can draw it to the screen
-        /// </summary>
-        /// <param name="message">Message to draw</param>
-        public delegate void MessageDelegate(string message);
         
         /// <summary>
         /// Simplified Draw routine that only shows background and a message. 
@@ -445,7 +483,7 @@ namespace ORTS.TrackViewer
         {
 
             // Even if there is nothing new to draw for main window, we might still need to draw for the shadow textures.
-            if (DrawTrackDB != null)
+            if (DrawTrackDB != null && Properties.Settings.Default.showInset)
             {
                 drawAreaInset.DrawShadowTextures(DrawTrackDB.DrawTracks, DrawColors.colorsNormal["clearwindowinset"]);
             }
@@ -488,6 +526,7 @@ namespace ORTS.TrackViewer
             statusBarControl.Update(this, DrawArea.MouseLocation);
 
             drawScaleRuler.Draw();
+            drawLongitudeLatitude.Draw(DrawArea.MouseLocation);
 
             drawTrains.Draw(DrawArea);
 
@@ -509,8 +548,13 @@ namespace ORTS.TrackViewer
         /// </summary>
         public void Quit()
         {
+            string message = String.Empty;
+            if (PathEditor!=null && PathEditor.HasModifiedPath)  {
+                message = catalog.GetString("The path you are working on has un-saved changes.\n");
+            }
+            message += catalog.GetString("Do you really want to Quit?");
 
-            if (MessageBox.Show(catalog.GetString("Do you really want to Quit?"), "Question", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == DialogResult.Yes)
+            if (MessageBox.Show(message, "Question", MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Warning) == DialogResult.Yes)
             {
                 this.Exit();
             }
@@ -522,6 +566,7 @@ namespace ORTS.TrackViewer
         /// </summary>
         public void SelectInstallFolder ()
         {
+            if (!CanDiscardModifiedPath()) return;
             string folderPath = "";
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
@@ -537,36 +582,37 @@ namespace ORTS.TrackViewer
                 folderPath = folderBrowserDialog.SelectedPath;
             }
 
-            if (folderPath != "")
+            if (!String.IsNullOrEmpty(folderPath))
             {
-                try
-                {
-                    Folder newInstallFolder = new Folder("installFolder", folderPath);
-                    findRoutes(newInstallFolder);
-                    InstallFolder = newInstallFolder;
-             
-                    // make sure the current route is disabled,
-                    CurrentRoute = null;
-                    DrawTrackDB = null;
 
-                    Properties.Settings.Default.installDirectory = folderPath;
-                    Properties.Settings.Default.Save();
-                }
-                catch
+                Folder newInstallFolder = new Folder("installFolder", folderPath);
+                bool foundroutes = findRoutes(newInstallFolder);
+                if (!foundroutes)
                 {
                     MessageBox.Show(catalog.GetString("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ..."));
+                    return;
                 }
+
+                InstallFolder = newInstallFolder;
+
+                // make sure the current route is disabled,
+                CurrentRoute = null;
+                DrawTrackDB = null;
+                PathEditor = null;
+
+                Properties.Settings.Default.installDirectory = folderPath;
+                Properties.Settings.Default.Save();         
             }
         }
 
         /// <summary>
         /// Find the available routes, and if possible load the first one.
         /// </summary>
-        private void findRoutes(Folder newInstallFolder)
+        /// <returns>True if the route loading was successfull</returns>
+        private bool findRoutes(Folder newInstallFolder)
         {
-            if (newInstallFolder == null) return;
+            if (newInstallFolder == null) return false;
             List<Route> newRoutes = Route.GetRoutes(newInstallFolder).OrderBy(r => r.ToString()).ToList();
-
 
             if (newRoutes.Count > 0)
             {
@@ -582,14 +628,14 @@ namespace ORTS.TrackViewer
                 }
                 //setRoute(defaultRoute);
 
-                Routes = newRoutes;
+                Routes = new Collection<Route>(newRoutes);
                 menuControl.PopulateRoutes();
+                return true;
             }
             else
             {
-                throw new Exception("No routes found");
-            }
-            
+                return false;
+            }            
         }
 
         /// <summary>
@@ -607,6 +653,7 @@ namespace ORTS.TrackViewer
         public void SetRoute(Route newRoute)
         {
             if (newRoute == null) return;
+            if (!CanDiscardModifiedPath()) return;
 
             DrawLoadingMessage(catalog.GetString("Loading route..."));
 
@@ -624,7 +671,7 @@ namespace ORTS.TrackViewer
                 Properties.Settings.Default.Save();
                 DrawArea.ZoomReset(DrawTrackDB);
                 drawAreaInset.ZoomReset(DrawTrackDB);
-                Window.Title = "TrackViewer: " + DrawTrackDB.RouteName;
+                SetTitle();
             }
             catch
             {
@@ -633,6 +680,7 @@ namespace ORTS.TrackViewer
 
             if (CurrentRoute == null) return;
 
+            PathEditor = null;
             try
             {
                 findPaths();
@@ -650,12 +698,22 @@ namespace ORTS.TrackViewer
         }
 
         /// <summary>
+        /// Set the title of the window itself
+        /// </summary>
+        void SetTitle()
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            AssemblyTitleAttribute assemblyTitle = assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false)[0] as AssemblyTitleAttribute;
+            Window.Title = assemblyTitle.Title + ": " + DrawTrackDB.RouteName;
+        }
+
+        /// <summary>
         /// Find the paths (.pat files) belonging to the current route, and update the menu
         /// </summary>
         private void findPaths()
         {
             List<Path> newPaths = Path.GetPaths(CurrentRoute).OrderBy(r => r.Name).ToList();
-            Paths = newPaths;
+            Paths = new Collection<Path>(newPaths);
             menuControl.PopulatePaths();
             SetPath(null);   
         }
@@ -666,6 +724,8 @@ namespace ORTS.TrackViewer
         /// <param name="path">Path (with FilePath) that has to be loaded</param>
         internal void SetPath(Path path)
         {
+            if (!CanDiscardModifiedPath()) return;
+
             if (path == null)
             {
                 DrawPATfile = null;
@@ -684,10 +744,26 @@ namespace ORTS.TrackViewer
 
         internal void NewPath()
         {
-
+            if (!CanDiscardModifiedPath()) return;
             string pathsDirectory = System.IO.Path.Combine(CurrentRoute.Path, "PATHS");
             PathEditor = new PathEditor(DrawTrackDB, pathsDirectory);
             DrawPATfile = null;
+        }
+
+        /// <summary>
+        /// If the path has been modified, ask the user if he really wants to discard it
+        /// </summary>
+        /// <returns>false if there is a modified path that the user does not want to discard.</returns>
+        bool CanDiscardModifiedPath()
+        {
+            if (PathEditor == null) return true;
+            if (!PathEditor.HasModifiedPath) return true;
+            DialogResult dialogResult = MessageBox.Show(
+                        "Path has been modified. Loading a new path will discard changes.\n" +
+                        "Do you want to continue?", 
+                        "Trackviewer Path Editor", MessageBoxButtons.OKCancel, 
+                        System.Windows.Forms.MessageBoxIcon.Question);
+            return (dialogResult == DialogResult.OK);
         }
 
         /// <summary>
@@ -756,20 +832,30 @@ namespace ORTS.TrackViewer
             //SetPath(Paths[0]);
             //DrawArea.ZoomToTile();
             //DrawArea.ZoomCentered(-15);
-            ////CenterAroundTrackNode(200);
+            //CenterAroundTrackNode(31);
+            //NewPath();
             //drawArea.ShiftToLocation(pathEditor.CurrentLocation);
             ////drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);
 
-            //pathEditor.EditingIsActive = true;
+            PathEditor.EditingIsActive = true;
             //pathEditor.ExtendPathFull();
             ////Exit();
         }
 
+        /// <summary>
+        /// Routine to localize (make languague-dependent) a WPF/framework element, like a menu.
+        /// </summary>
+        /// <param name="element">The element that is checked for localizable parameters</param>
         public static void Localize(System.Windows.FrameworkElement element)
         {
             foreach (var child in System.Windows.LogicalTreeHelper.GetChildren(element))
-                if (child is System.Windows.FrameworkElement)
-                    Localize(child as System.Windows.FrameworkElement);
+            {
+                System.Windows.FrameworkElement childAsElement = child as System.Windows.FrameworkElement;
+                if (childAsElement != null)
+                {
+                    Localize(childAsElement);
+                }
+            }
 
             var objType = element.GetType();
             PropertyInfo property;
@@ -781,6 +867,16 @@ namespace ORTS.TrackViewer
                 if (property != null && property.CanRead && property.CanWrite && property.GetValue(element, null) is String)
                     property.SetValue(element, catalog.GetString(property.GetValue(element, null) as string), null);
             }
+        }
+
+        static void InitLogging()
+        {   // debug only
+            //string logFileName = "C:\\tvlog.txt";
+            //System.IO.File.Delete(logFileName);
+            //Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
+            //// Make Console.Error go to the new Console.Out.
+            //Console.SetError(Console.Out);
+            //Console.WriteLine("started logging");
         }
     }
 }

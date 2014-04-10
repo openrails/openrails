@@ -44,7 +44,7 @@ namespace ORTS.TrackViewer.UserInterface
     /// Most of the items have a dedicated place in the statusbar. For flexibility the last item is simply a string
     /// that can contain various items (depending on the users setting/choice as well as for debug during development
     /// </summary>
-    public partial class StatusBarControl : UserControl
+    public sealed partial class StatusBarControl : UserControl, IDisposable
     {
         /// <summary>Height of the statusbar in pixels</summary>
         public int StatusbarHeight { get; private set; }
@@ -63,9 +63,9 @@ namespace ORTS.TrackViewer.UserInterface
             //ElementHost object helps us to connect a WPF User Control.
             elementHost = new ElementHost();
             elementHost.Location = new System.Drawing.Point(0, 0);
-            elementHost.Name = "elementHost";
+            //elementHost.Name = "elementHost";
             elementHost.TabIndex = 1;
-            elementHost.Text = "elementHost";
+            //elementHost.Text = "elementHost";
             elementHost.Child = this;
             System.Windows.Forms.Control.FromHandle(trackViewer.Window.Handle).Controls.Add(elementHost);
 
@@ -112,7 +112,8 @@ namespace ORTS.TrackViewer.UserInterface
         {
             TrackNode tn = trackViewer.DrawTrackDB.ClosestTrack.TrackNode;
             if (tn == null) return;
-            statusTrIndex.Text = string.Format("{0} ", tn.Index);
+            statusTrIndex.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "{0} ", tn.Index);
             //debug: statusAdditional.Text += Math.Sqrt((double)trackViewer.drawTrackDB.closestTrack.ClosestMouseDistanceSquared);
         }
 
@@ -138,18 +139,24 @@ namespace ORTS.TrackViewer.UserInterface
             ORTS.TrackViewer.Drawing.CloseToMouseJunctionOrEnd closestJunction = trackViewer.DrawTrackDB.ClosestJunctionOrEnd;
             if (closestItem != null && closestItem.IsCloserThan(closestJunction))
             {
-                statusTrItemType.Text = closestItem.Type;
-                statusTrItemIndex.Text = string.Format("{0} ", closestItem.TRItem.TrItemId);
-                statusTrItemLocationX.Text = string.Format("{0,3:F3} ", closestItem.TRItem.X);
-                statusTrItemLocationZ.Text = string.Format("{0,3:F3} ", closestItem.TRItem.Z);
+                statusTrItemType.Text = closestItem.Description;
+                statusTrItemIndex.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    "{0} ", closestItem.TRItem.TrItemId);
+                statusTrItemLocationX.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    "{0,3:F3} ", closestItem.TRItem.X);
+                statusTrItemLocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    "{0,3:F3} ", closestItem.TRItem.Z);
             }
             else if (closestJunction.JunctionOrEndNode != null)
             {
-                statusTrItemType.Text = closestJunction.Type;
+                statusTrItemType.Text = closestJunction.Description;
                 TrackNode node = closestJunction.JunctionOrEndNode;
-                statusTrItemIndex.Text = string.Format("{0} ", node.Index);
-                statusTrItemLocationX.Text = string.Format("{0,3:F3} ", node.UiD.X);
-                statusTrItemLocationZ.Text = string.Format("{0,3:F3} ", node.UiD.Z);
+                statusTrItemIndex.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "{0} ", node.Index);
+                statusTrItemLocationX.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "{0,3:F3} ", node.UiD.X);
+                statusTrItemLocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    "{0,3:F3} ", node.UiD.Z);
             }
         }
 
@@ -159,9 +166,12 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="mouseLocation"></param>
         private void SetMouseLocationStatus(WorldLocation mouseLocation)
         {
-            tileXZ.Text = string.Format("{0,-7} {1,-7}", mouseLocation.TileX, mouseLocation.TileZ);
-            LocationX.Text = string.Format("{0,3:F3} ", mouseLocation.Location.X);
-            LocationZ.Text = string.Format("{0,3:F3} ", mouseLocation.Location.Z);
+            tileXZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "{0,-7} {1,-7}", mouseLocation.TileX, mouseLocation.TileZ);
+            LocationX.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "{0,3:F3} ", mouseLocation.Location.X);
+            LocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "{0,3:F3} ", mouseLocation.Location.Z);
         }
 
         /// <summary>
@@ -175,7 +185,7 @@ namespace ORTS.TrackViewer.UserInterface
                 TrVectorSection tvs = trackViewer.DrawTrackDB.ClosestTrack.VectorSection;
                 if (tvs == null) return;
                 uint shapeIndex = tvs.ShapeIndex;
-                string shapeName = "Unknown:" + shapeIndex.ToString();
+                string shapeName = "Unknown:" + shapeIndex.ToString(System.Globalization.CultureInfo.CurrentCulture);
                 try
                 {
                     // Try to find a fixed track
@@ -203,7 +213,8 @@ namespace ORTS.TrackViewer.UserInterface
                     {
                     }
                 }
-                statusAdditional.Text += string.Format(" VectorSection ({3}/{4}) filename={2} Index={0} shapeIndex={1}",
+                statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    " VectorSection ({3}/{4}) filename={2} Index={0} shapeIndex={1}",
                     tvs.SectionIndex, shapeIndex, shapeName,
                         trackViewer.DrawTrackDB.ClosestTrack.TrackVectorSectionIndex + 1,
                         trackViewer.DrawTrackDB.ClosestTrack.TrackNode.TrVectorNode.TrVectorSections.Count());
@@ -220,16 +231,34 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 if (trackViewer.PathEditor.HasValidPath)
                 {
-                    //statusAdditional.Text += string.Format("|{0}->{1}|", trackViewer.pathEditor.numberToDraw, trackViewer.pathEditor.numberDrawn);
+                    //gather some info on path status
+                    List<string> statusItems = new List<string>();
+                    
+                    if (trackViewer.PathEditor.HasEndingPath) statusItems.Add("good end");
+                    if (trackViewer.PathEditor.HasBrokenPath) statusItems.Add("broken");
+                    if (trackViewer.PathEditor.HasModifiedPath) statusItems.Add("modified");
+                    if (trackViewer.PathEditor.HasStoredTail) statusItems.Add("stored tail");
+                    
+                    string pathStatus = String.Join(", ", statusItems.ToArray());
+                    
                     ORTS.TrackViewer.Editing.TrainpathNode curNode = trackViewer.PathEditor.CurrentNode;
-                    statusAdditional.Text += string.Format(" {0}: TVNs=[{1} {2}] ({3}, {4})",
+                    
+                    statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        " {0} ({4}): TVNs=[{1} {2}] (type={3})",
                         trackViewer.PathEditor.FileName, curNode.NextMainTvnIndex, curNode.NextSidingTvnIndex,
-                        curNode.Type, curNode.HasSidingPath);
-                    TrainpathVectorNode curVectorNode = curNode as TrainpathVectorNode;
-                    if (curVectorNode != null)
+                        curNode.NodeType, pathStatus);
+
+                    if (curNode.IsBroken)
                     {
-                        statusAdditional.Text += string.Format(" (waitT={0}, waitUntil={1}, Ncars={2}",
-                            curVectorNode.WaitTimeS, curVectorNode.WaitUntil, curVectorNode.NCars);
+                        statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                            " Broken: {0} ", curNode.ReasonForBroken);
+                    }
+                    TrainpathVectorNode curVectorNode = curNode as TrainpathVectorNode;
+                    if (curVectorNode != null && curNode.NodeType == TrainpathNodeType.Stop)
+                    {
+                        statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                            " (wait-time={0}s)",
+                            curVectorNode.WaitTimeS);
                     }
             
                 }
@@ -250,7 +279,8 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 TrPathNode curNode = trackViewer.DrawPATfile.CurrentNode;
                 TrackPDP curPDP = trackViewer.DrawPATfile.CurrentPdp;
-                statusAdditional.Text += string.Format(" {7}: {3}, {4} [{1} {2}] [{5} {6}] <{0}>",
+                statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    " {7}: {3}, {4} [{1} {2}] [{5} {6}] <{0}>",
                     curNode.pathFlags, (int)curNode.nextMainNode, (int)curNode.nextSidingNode,
                     curPDP.X, curPDP.Z, curPDP.junctionFlag, curPDP.invalidFlag, trackViewer.DrawPATfile.FileName);
             }
@@ -263,9 +293,38 @@ namespace ORTS.TrackViewer.UserInterface
         {
             if (Properties.Settings.Default.statusShowFPS)
             {
-                statusAdditional.Text += string.Format(" FPS={0:F1} ", trackViewer.FrameRate.SmoothedValue);
+                statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    " FPS={0:F1} ", trackViewer.FrameRate.SmoothedValue);
             }
         }
 
+        #region IDisposable
+        private bool disposed;
+        /// <summary>
+        /// Implementing IDisposable
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                disposed = true; // to prevent infinite loop. Probably elementHost should not be part of this class
+                if (disposing)
+                {
+                    // Dispose managed resources.
+                    elementHost.Dispose();
+                }
+
+                // There are no unmanaged resources to release, but
+                // if we add them, they need to be released here.
+            }
+            disposed = true;
+        }
+        #endregion
     }
 }

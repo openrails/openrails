@@ -46,6 +46,10 @@ namespace ORTS.TrackViewer.UserInterface
         ZoomIn,
         /// <summary>command for zooming out</summary>
         ZoomOut,
+        /// <summary>command for zooming in slowly</summary>
+        ZoomInSlow,
+        /// <summary>command for zooming out slowly</summary>
+        ZoomOutSlow,
         /// <summary>command for resetting zoom</summary>
         ZoomReset,
         /// <summary>command for zooming in to tile-size</summary>
@@ -95,6 +99,8 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>command for allowing slow zoom with mouse</summary>
         MouseZoomSlow,
         /// <summary>command for redo in editor</summary>
+        EditorTakesMouseClick,
+        /// <summary>command for redo in editor</summary>
         EditorRedo,
         /// <summary>command for undo in editor</summary>
         EditorUndo,
@@ -138,6 +144,8 @@ namespace ORTS.TrackViewer.UserInterface
         { 
             Commands[(int)TVUserCommands.ZoomIn]     = new ORTS.Settings.UserCommandKeyInput(0x0D);
             Commands[(int)TVUserCommands.ZoomOut]    = new ORTS.Settings.UserCommandKeyInput(0x0C);
+            Commands[(int)TVUserCommands.ZoomInSlow] = new ORTS.Settings.UserCommandKeyInput(0x0D, ORTS.Settings.KeyModifiers.Shift);
+            Commands[(int)TVUserCommands.ZoomOutSlow]= new ORTS.Settings.UserCommandKeyInput(0x0C, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ZoomReset]  = new ORTS.Settings.UserCommandKeyInput(0x13);
             Commands[(int)TVUserCommands.ZoomToTile] = new ORTS.Settings.UserCommandKeyInput(0x2C);
             Commands[(int)TVUserCommands.ShiftLeft]  = new ORTS.Settings.UserCommandKeyInput(0x1E);
@@ -168,6 +176,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             Commands[(int)TVUserCommands.MouseZoomSlow] = new UserCommandModifierInput(Settings.KeyModifiers.Shift);
 
+            Commands[(int)TVUserCommands.EditorTakesMouseClick] = new UserCommandModifierInput(Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.EditorUndo] = new ORTS.Settings.UserCommandKeyInput(0x2C, ORTS.Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.EditorRedo] = new ORTS.Settings.UserCommandKeyInput(0x15, ORTS.Settings.KeyModifiers.Control);
         }

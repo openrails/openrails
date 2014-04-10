@@ -45,7 +45,8 @@ namespace ORTS.TrackViewer.Editing
         public string FileName { get; private set; }
 
         /// <summary>Number of nodes that will be drawn. Start with a few</summary>
-        private int numberToDraw = 4;
+        private int numberToDraw = int.MaxValue / 2; // large, but not close to overflow
+        
         /// <summary>Index of the last main node that has been drawn</summary>
         private int currentMainNodeIndex;
 

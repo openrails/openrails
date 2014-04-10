@@ -56,9 +56,9 @@ namespace ORTS.TrackViewer.Drawing
             foreach (var fileName in Directory.GetFiles(WFilePath, "*.w"))
             {
                 // Parse the tile location out of the filename
-                int p = fileName.ToUpper().LastIndexOf("\\WORLD\\W");
-                int TileX = int.Parse(fileName.Substring(p + 8, 7));
-                int TileZ = int.Parse(fileName.Substring(p + 15, 7));
+                int p = fileName.ToUpper(System.Globalization.CultureInfo.InvariantCulture).LastIndexOf("\\WORLD\\W", StringComparison.OrdinalIgnoreCase);
+                int TileX = int.Parse(fileName.Substring(p + 8, 7), System.Globalization.CultureInfo.InvariantCulture);
+                int TileZ = int.Parse(fileName.Substring(p + 15, 7), System.Globalization.CultureInfo.InvariantCulture);
 
                 if (!worldTiles.ContainsKey(TileX)) worldTiles[TileX] = new List<int>();
 

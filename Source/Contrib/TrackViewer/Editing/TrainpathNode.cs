@@ -29,7 +29,7 @@
 //  junction nodes: those nodes that are on a junction. They contain junction Index as an extra field
 //  vector nodes: Nodes not on a junction but somewhere on a vector node
 //      either they are simple nodes needed for disambiguity
-//      or they are special nodes like start, end, wait, uncouple, reverse nodes.
+//      or they are special nodes like start, end, wait, reverse nodes.
 //      Vector nodes need more details on where exactly they are related to the track, and of course they need extra details
 //          related to whatever special node they are.
 //
@@ -44,6 +44,7 @@ using System.Text;
 
 using MSTS.Formats;
 using ORTS.Common;
+using ORTS.TrackViewer.Drawing;
 
 namespace ORTS.TrackViewer.Editing
 {
@@ -63,8 +64,10 @@ namespace ORTS.TrackViewer.Editing
         SidingStart,
         /// <summary>Node is a junction node at the end of a siding</summary>
         SidingEnd,
+#if COUPLE
         /// <summary>Node is a (un)couple point</summary>
         Uncouple,
+#endif
         /// <summary>Node is a reversal node</summary>
         Reverse,
         /// <summary>Node is not well-defined in .pat file</summary>
@@ -80,12 +83,14 @@ namespace ORTS.TrackViewer.Editing
         /// <summary> World location of the node, coming directly from .pat file </summary>
         public WorldLocation Location { get; set; }
 
-        /// <summary> Stores the type of node (see TrainPathNode)</summary>
-        public TrainpathNodeType Type { get; set; }
+        /// <summary> Stores the type of node (see TrainPathNodeType)</summary>
+        public TrainpathNodeType NodeType { get; set; }
         /// <summary> True if the node is broken, meaning that its location can no longer be found in the track data base
         /// By having it independent of the NodeType, we can keep the kind of node that was intended, even if it is currently not in the right place.</summary>
-        public bool IsBroken { get; protected set; }
-
+        public bool IsBroken { get; private set; }
+        /// <summary> Reason why the node is broken</summary>
+        public string ReasonForBroken { get; private set; }
+        
         // From simple linking:
         /// <summary>Next path node on main path</summary>
         public TrainpathNode NextMainNode { get; set; }
@@ -93,7 +98,10 @@ namespace ORTS.TrackViewer.Editing
         public TrainpathNode NextSidingNode { get; set; }
         /// <summary>Previous path node on main path (unless it is on a siding path</summary>
         public TrainpathNode PrevNode { get; set; }
-        /// <summary>Is there, next to the track to the NextMainNode, also a parallel Siding path?</summary>
+        /// <summary>
+        /// Is there, next to the track to the NextMainNode, also a parallel Siding path?
+        /// This does include siding start, but Siding end is the first node that has no siding path anymore.
+        /// </summary>
         public bool HasSidingPath { get; set; }
         
         //To find these, both the current node and the next node need to be known.
@@ -117,7 +125,8 @@ namespace ORTS.TrackViewer.Editing
         public static TrainpathNode CreatePathNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat)
         {
             if (pdp.IsJunction) {
-                return new TrainpathJunctionNode(tpn, pdp, trackDB, tsectionDat);
+                // we do not use tpn: this means we do not interpret the flags
+                return new TrainpathJunctionNode(pdp, trackDB, tsectionDat);
             }
             else {
                 return new TrainpathVectorNode(tpn, pdp, trackDB, tsectionDat);
@@ -135,7 +144,7 @@ namespace ORTS.TrackViewer.Editing
             HasSidingPath = false;
             NextMainTvnIndex = 0;
             NextSidingTvnIndex = 0;
-            Type = TrainpathNodeType.Other;
+            NodeType = TrainpathNodeType.Other;
         }
 
         /// <summary>
@@ -164,17 +173,48 @@ namespace ORTS.TrackViewer.Editing
         public abstract TrainpathNode ShallowCopyNoLinks();
 
         /// <summary>
-        /// Returns the index of the vector node connection this path node to the (given) nextNode.
+        /// Try to find the index of the vector node connecting this path node to the (given) nextNode.
         /// </summary>
+        /// <returns>The index of the vector node connection, or -1</returns>
         public int FindTvnIndex(TrainpathNode nextNode)
         {
-            // if this node is on  a vector tracknode:
-            if (  this   is TrainpathVectorNode) return (    this as TrainpathVectorNode).TvnIndex;
-            if (nextNode is TrainpathVectorNode) return (nextNode as TrainpathVectorNode).TvnIndex;
+            TrainpathVectorNode thisAsVectorNode     = this     as TrainpathVectorNode;
+            TrainpathVectorNode nextAsVectorNode     = nextNode as TrainpathVectorNode;
+            TrainpathJunctionNode thisAsJunctionNode = this     as TrainpathJunctionNode;
+            TrainpathJunctionNode nextAsJunctionNode = nextNode as TrainpathJunctionNode;
+
+            if (thisAsVectorNode != null)
+            {
+                if (nextAsVectorNode != null)
+                {   // two vector nodes, tvn indices must be the same
+                    if (thisAsVectorNode.TvnIndex == nextAsVectorNode.TvnIndex)
+                    {
+                        return thisAsVectorNode.TvnIndex;
+                    }
+                }
+                if (nextAsJunctionNode != null)
+                {   // vector node to junction node, junction must connect to tvnIndex
+                    if (nextAsJunctionNode.ConnectsToTrack(thisAsVectorNode.TvnIndex)) {
+                        return thisAsVectorNode.TvnIndex;
+                    }
+                }
+                return -1;
+            }
+
+            if (nextAsVectorNode != null)
+            {
+                if (thisAsJunctionNode.ConnectsToTrack(nextAsVectorNode.TvnIndex))
+                {   // from junction to vector node.
+                    return nextAsVectorNode.TvnIndex;
+                }
+                return -1;
+            }
 
             //both this node and the next node are junctions: find the vector node connecting them.
-            int thisJunctionIndex = (  this   as TrainpathJunctionNode).JunctionIndex;
-            int nextJunctionIndex = (nextNode as TrainpathJunctionNode).JunctionIndex;
+            //Probably this can be faster, by just finding the TrPins from this and next junction and find the common one.
+            int thisJunctionIndex = thisAsJunctionNode.JunctionIndex;
+            int nextJunctionIndex = nextAsJunctionNode.JunctionIndex;
+
             for (int i = 0; i < TrackDB.TrackNodes.Count(); i++)
             {
                 TrackNode tn = TrackDB.TrackNodes[i];
@@ -199,14 +239,39 @@ namespace ORTS.TrackViewer.Editing
 
         /// <summary>
         /// Get the 'flags' of the current node, describing to MSTS what kind of node it is, 
-        /// as well as some details for specific nodes like wait and (un)couple point
+        /// as well as some details for specific nodes like wait
         /// </summary>
         /// <returns>string containing 8-digit hexedecimal coded flags</returns>
-        public virtual string GetFlags()
+        public virtual string FlagsToString()
         {
             return "00000000";
         }
 
+        /// <summary>
+        /// From the current pathnode and the linking tracknode, fin the junctionIndex of the next junction (or possibly end-point)
+        /// </summary>
+        /// <param name="linkingTrackNodeIndex">The index of the tracknode leaving the node</param>
+        /// <returns>The index of the junction index at the end of the track (as seen from the node)</returns>
+        public abstract int GetNextJunctionIndex(int linkingTrackNodeIndex);
+
+        /// <summary>
+        /// Set that the node is broken
+        /// </summary>
+        /// <param name="reasonForBroken">description of why it is broken</param>
+        public void SetBroken(string reasonForBroken)
+        {
+            this.IsBroken = true;
+            this.ReasonForBroken = reasonForBroken;
+        }
+
+        /// <summary>
+        /// Set the node to be no longer broken.
+        /// </summary>
+        public void SetNonBroken()
+        {
+            this.IsBroken = false;
+        }
+       
     }
 
     /// <summary>
@@ -218,9 +283,18 @@ namespace ORTS.TrackViewer.Editing
         public int JunctionIndex { get; set; }
         /// <summary>true if this node entered from the facing point end</summary>
         public bool IsFacingPoint { get; set; }
+        /// <summary>Does the current junction node happen to be an end-node (so not a real junction)</summary>
+        public bool IsEndNode { get { return (TrackDB.TrackNodes[JunctionIndex].TrEndNode); } }
+        /// <summary>Return the vector node index of the main path leaving this junction (main being defined as the first one defined)</summary>
+        public int MainTvn { get { return TrackDB.TrackNodes[JunctionIndex].MainTvn(); } }
+        /// <summary>Return the vector node index of the siding path leaving this junction (siding being defined as the second one defined)</summary>
+        public int SidingTvn { get { return TrackDB.TrackNodes[JunctionIndex].SidingTvn(); } }
+        /// <summary>Return the vector node index of the trailing path leaving this junction</summary>
+        public int TrailingTvn { get { return TrackDB.TrackNodes[JunctionIndex].TrailingTvn(); } }
+       
 
         /// <summary>The maximum distance a junction node is allowed from its closest junction before it is said to be broken</summary>
-        static readonly float maxDistanceSquaredM2 = 5f; //about 2.3 meters
+        const float maxDistanceAway = 2.5f;
 
         /// <summary>
         /// Basic constructor using another node for the trackDB and tsectionDB
@@ -234,11 +308,10 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Constructor based on the data given in the .pat file
         /// </summary>
-        /// <param name="tpn">TrPathNode as defined in the .pat file</param>
         /// <param name="pdp">Corresponding PDP in the .patfile</param>
         /// <param name="trackDB"></param>
         /// <param name="tsectionDat"></param>
-        public TrainpathJunctionNode(TrPathNode tpn, TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat) 
+        public TrainpathJunctionNode(TrackPDP pdp, TrackDB trackDB, TSectionDatFile tsectionDat) 
             : base(pdp, trackDB, tsectionDat)
         {
             JunctionIndex = FindJunctionOrEndIndex(true);
@@ -287,34 +360,39 @@ namespace ORTS.TrackViewer.Editing
                 }
 
             }
-            IsBroken = (bestDistance2 > maxDistanceSquaredM2);
+            bool broken = (bestDistance2 > maxDistanceAway*maxDistanceAway);
+            if (broken)
+            {
+                SetBroken(TrackViewer.catalog.GetString("Closest junction is too far away"));
+                bestIndex = 0;
+            }
             return bestIndex;
         }
 
         /// <summary>
-        /// returns true if the specified vector node is the trailing end of
-        /// the specified juction node, else false.
+        /// Set the value of Facing point. This assumes the path is correctly linked already
         /// </summary>
-        public void SetFacingPoint(int vectorIndex)
+        public void SetFacingPoint()
         {
-            if (vectorIndex < 0)
+            TrackNode tn = TrackDB.TrackNodes[JunctionIndex];
+            if (tn == null) return;  // Leave IsFacingPoint to what it is.
+            if (tn.TrJunctionNode == null) return;  // Leave IsFacingPoint to what it is.
+                
+            //First try using the next main index
+            if (NextMainNode != null && NextMainTvnIndex >= 0)
             {
-                IsFacingPoint = false;
+                IsFacingPoint = (tn.TrailingTvn() != NextMainTvnIndex);
+                return;
             }
-            else
-            {
-                TrackNode tn = TrackDB.TrackNodes[JunctionIndex];
-                if (tn.TrJunctionNode == null || tn.TrailingTvn() == vectorIndex)
-                {
-                    IsFacingPoint = false;
-                }
-                else
-                {
-                    IsFacingPoint = true;
-                }
-            }
-            
+
+            //Otherwise, try link from previous node
+            if (PrevNode == null) return;
+            int prevTvnIndex = -1;
+            if (PrevNode.NextMainNode == this) prevTvnIndex = PrevNode.NextMainTvnIndex;
+            if (PrevNode.NextSidingNode == this) prevTvnIndex = PrevNode.NextSidingTvnIndex;
+            IsFacingPoint = (tn.TrailingTvn() == prevTvnIndex);
         }
+
 
         /// <summary>
         /// Determine the orientation of the current node, by using the previousNode as well as the TVN that links the
@@ -377,12 +455,87 @@ namespace ORTS.TrackViewer.Editing
                 return null;
             }
         }
+
+        /// <summary>
+        /// Determine whether the current junction node connects to a track with given trackIndex.
+        /// </summary>
+        /// <param name="trackIndex"></param>
+        /// <returns></returns>
+        public bool ConnectsToTrack(int trackIndex)
+        {
+            if (IsBroken) return false;
+
+            TrackNode tn = TrackDB.TrackNodes[JunctionIndex];
+            if (tn == null) return false;
+
+            foreach (TrPin pin in tn.TrPins)
+            {
+                if (pin.Link == trackIndex)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// From the current pathnode and the linking tracknode, fin the junctionIndex of the next junction (or possibly end-point)
+        /// </summary>
+        /// <param name="linkingTrackNodeIndex">The index of the tracknode leaving the node</param>
+        /// <returns>The index of the junction index at the end of the track (as seen from the node)</returns>
+        public override int GetNextJunctionIndex(int linkingTrackNodeIndex)
+        {
+            return TrackExtensions.GetNextJunctionIndex(this.JunctionIndex, linkingTrackNodeIndex);
+        }
+
+        /// <summary>
+        /// Determine whether this junction node is the start of a simple siding (meaning a siding start, 
+        /// where the two tracks meet at the next junction already
+        /// </summary>
+        public bool IsSimpleSidingStart()
+        {
+            if (IsFacingPoint)
+            {
+                return (GetNextJunctionIndex(MainTvn) ==
+                        GetNextJunctionIndex(SidingTvn));
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// For a junction with two exits, get the index of the vector node not being used at the moment
+        /// </summary>
+        /// <returns>The index of the other leaving vector node.</returns>
+        public int OtherExitTvnIndex()
+        {
+            if (NextMainTvnIndex == MainTvn)
+            {
+                return SidingTvn;
+            }
+            else
+            {
+                return MainTvn;
+            }
+        }
+
+        /// <summary>
+        /// Set the location from the tracknode database.
+        /// </summary>
+        public void SetLocationFromTrackNode()
+        {
+            Location = DrawTrackDB.UidLocation(TrackDB.TrackNodes[JunctionIndex].UiD);
+        }
+
     }
 
     /// <summary>
     /// Node as part of a train path that is not on a junction but on a vector node. It contains all the relevant extra data
     /// like where exactly on the vector node it is. It also contains all relevant extra data related to the type it is 
-    /// (e.g. for wait points and (un)couple points
+    /// (e.g. for wait points)
     /// </summary>
     public class TrainpathVectorNode : TrainpathNode
     {
@@ -400,8 +553,10 @@ namespace ORTS.TrackViewer.Editing
         public int WaitTimeS { get; set; } 
         /// <summary>clock time to wait until if not zero</summary>
         public int WaitUntil { get; set; }
+#if COUPLE
         /// <summary>number of cars to uncouple, negative means keep rear</summary>
         public int NCars { get; set; }
+#endif
 
         private bool _forwardOriented = true;
         /// <summary>is the path oriented forward  or not (with respect of orientation of track itself</summary>
@@ -484,7 +639,7 @@ namespace ORTS.TrackViewer.Editing
             }
             catch
             {
-                IsBroken = true;
+                SetBroken(TrackViewer.catalog.GetString("Not able to place node on track"));
             }
 
             ForwardOriented = true; // only initial setting
@@ -553,7 +708,7 @@ namespace ORTS.TrackViewer.Editing
             // this is a non-junction node. linkingTvnIndex should be the same as TvnIndex.
             ForwardOriented = !this.IsEarlierOnTrackThan(previousNode);
 
-            if (Type == TrainpathNodeType.Reverse)
+            if (NodeType == TrainpathNodeType.Reverse)
             {   // since direction is determined from previous node, after a reversal the direction is changed
                 ForwardOriented = !ForwardOriented;
             }
@@ -567,18 +722,18 @@ namespace ORTS.TrackViewer.Editing
         /// <returns>true if this node is earlier on the track.</returns>
         public bool IsEarlierOnTrackThan(TrainpathNode otherNode)
         {
-            if (otherNode is TrainpathJunctionNode)
+            TrainpathJunctionNode otherJunctionNode = otherNode as TrainpathJunctionNode;
+            if (otherJunctionNode != null)
             {
-                return (otherNode as TrainpathJunctionNode).JunctionIndex == TrackDB.TrackNodes[TvnIndex].JunctionIndexAtEnd(); 
+                return otherJunctionNode.JunctionIndex == TrackDB.TrackNodes[TvnIndex].JunctionIndexAtEnd();
             }
-            else
-            {
-                TrainpathVectorNode otherVectorNode = otherNode as TrainpathVectorNode;
-                return (TrackVectorSectionIndex < otherVectorNode.TrackVectorSectionIndex)
-                      || ((TrackVectorSectionIndex == otherVectorNode.TrackVectorSectionIndex)
-                                && (TrackSectionOffset < otherVectorNode.TrackSectionOffset));
-            }
-        }
+
+            TrainpathVectorNode otherVectorNode = otherNode as TrainpathVectorNode;
+            return (TrackVectorSectionIndex < otherVectorNode.TrackVectorSectionIndex)
+                  || ((TrackVectorSectionIndex == otherVectorNode.TrackVectorSectionIndex)
+                            && (TrackSectionOffset < otherVectorNode.TrackSectionOffset));
+
+        }        
 
         /// <summary>
         /// Is the current node between the two other nodes or not.
@@ -591,6 +746,9 @@ namespace ORTS.TrackViewer.Editing
         {
             return (this.IsEarlierOnTrackThan(node1) != this.IsEarlierOnTrackThan(node2));
         }
+
+        // Flag Intepretation
+        // (No flag interpretation for junction nodes)
 
         // Possible interpretation (as found on internet, by krausyao)
         // TrPathNode ( AAAABBBB mainIdx passingIdx pdpIdx )
@@ -613,15 +771,15 @@ namespace ORTS.TrackViewer.Editing
             if ((tpn.pathFlags & 01) != 0)
             {
                 // if bit 0 is set: reversal
-                Type = TrainpathNodeType.Reverse;
+                NodeType = TrainpathNodeType.Reverse;
             }
             else
             {
                 // bit 0 is not set, but bit 1 is set:waiting point
-                Type = TrainpathNodeType.Stop;
+                NodeType = TrainpathNodeType.Stop;
                 if (pdp.IsInvalid) // not a valid point
                 {
-                    Type = TrainpathNodeType.Invalid;
+                    NodeType = TrainpathNodeType.Invalid;
                 }
             }
 
@@ -635,6 +793,7 @@ namespace ORTS.TrackViewer.Editing
                 WaitUntil = 60 * (minute + 60 * hour);
                 WaitTimeS = 0;
             }
+#if COUPLE
             else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
             {
                 // Uncouple if a wait=stop point
@@ -652,19 +811,19 @@ namespace ORTS.TrackViewer.Editing
                 // waitTimes = 6xSSS  with waitTime SSS seconds.
                 WaitTimeS %= 1000;
             }
-
+#endif
         }
 
         /// <summary>
         /// This is the reverse operation of InterpretPathNodeFlags: going from internal notation back to MSTS flags
         /// </summary>
         /// <returns>8-digit hexadecimal number (as string) describing the flags</returns>
-        public override string GetFlags()
+        public override string FlagsToString()
         {
             int AAAA = 0;
             int BBBB = 0;
             
-            switch (Type)
+            switch (NodeType)
             {
                 case TrainpathNodeType.Start:
                 case TrainpathNodeType.End:
@@ -673,6 +832,7 @@ namespace ORTS.TrackViewer.Editing
                 case TrainpathNodeType.Reverse:
                     BBBB = 1;
                     break;
+#if COUPLE
                 case TrainpathNodeType.Uncouple:
                     BBBB = 2;
                     if (NCars > 0)
@@ -684,6 +844,7 @@ namespace ORTS.TrackViewer.Editing
                         AAAA = 50000 - NCars * 100 + WaitTimeS; 
                     }
                     break;
+#endif
                 case TrainpathNodeType.Stop:
                     BBBB = 2;
                     if (WaitUntil == 0)
@@ -703,7 +864,34 @@ namespace ORTS.TrackViewer.Editing
                     break;
                     
             }
-            return string.Format("{0:x4}{1:x4}", AAAA, BBBB);
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                "{0:x4}{1:x4}", AAAA, BBBB);
+        }
+
+        /// <summary>
+        /// From the current pathnode and the linking tracknode, fin the junctionIndex of the next junction (or possibly end-point)
+        /// </summary>
+        /// <param name="linkingTrackNodeIndex">The index of the tracknode leaving the node</param>
+        /// <returns>The index of the junction index at the end of the track (as seen from the node)</returns>
+        public override int GetNextJunctionIndex(int linkingTrackNodeIndex)
+        {
+            TrackNode linkingTrackNode = TrackDB.TrackNodes[linkingTrackNodeIndex];
+            return ForwardOriented
+                ? linkingTrackNode.JunctionIndexAtEnd()
+                : linkingTrackNode.JunctionIndexAtStart();
+        }
+
+        /// <summary>
+        /// From the current pathnode and the linking tracknode, find the junctionIndex of the previous junction (or possibly end-point)
+        /// </summary>
+        /// <param name="linkingTrackNodeIndex">The index of the tracknode leaving the node</param>
+        /// <returns>The index of the junction index at the beginning of the track (as seen from the node)</returns>
+        public int GetPrevJunctionIndex(int linkingTrackNodeIndex)
+        {
+            TrackNode linkingTrackNode = TrackDB.TrackNodes[linkingTrackNodeIndex];
+            return ForwardOriented
+                ? linkingTrackNode.JunctionIndexAtStart()
+                : linkingTrackNode.JunctionIndexAtEnd();
         }
     }
 }
