@@ -8,3 +8,4 @@
 *.xml
 bin
 obj
+Program/*
