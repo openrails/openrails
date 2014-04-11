@@ -10709,7 +10709,7 @@ namespace ORTS
             float presentOffset = 0f;
             TrainRouted routedTrain = null;
 
-            if (MUDirection == Direction.Forward || MUDirection == Direction.N)
+            if (MUDirection == Direction.Forward || MUDirection == Direction.N || ValidRoute[1] == null)
             {
                 usedRoute = ValidRoute[0];
                 routeListIndex = PresentPosition[0].RouteListIndex;
@@ -10724,7 +10724,7 @@ namespace ORTS
                 routedTrain = routedBackward;
             }
 
-            if (routeListIndex >= 0)
+            if (routeListIndex >= 0 && usedRoute != null)
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[usedRoute[routeListIndex].TCSectionIndex];
                 totalLength = thisSection.Length - presentOffset;
