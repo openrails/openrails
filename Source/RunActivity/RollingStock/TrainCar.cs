@@ -364,7 +364,21 @@ namespace ORTS
                         if (!IsMaxSafeCurveSpeed)
                         {
                             IsMaxSafeCurveSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable, or your train may derail."));
+                           
+                          if (Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER)   
+                                {
+                                    if (Train.IsFreight)
+                                        {
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are traveling too fast for this curve. Slow down, your freight may be damaged and your train may derail."));
+                                        }
+                                    else
+                                        {
+                                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may derail."));
+                                        }
+                                }
+                          else{
+                                Trace.TraceWarning("At speed {0}mph, train {1} is exceeding the safe speed {2}mph on this curve.", MpS.ToMpH(s), Train.Name, MpS.ToMpH(MaxSafeCurveSpeedMps));
+                               }  
                         }
                         else
                         {
@@ -391,7 +405,11 @@ namespace ORTS
                         if (!IsCriticalSpeed)
                         {
                             IsCriticalSpeed = true; // set flag for IsMaxEqualLoadSpeed reached
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Your train has overturned."));
+                            
+                            if (Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER)
+                            {
+                              Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("Your train has overturned."));
+                            }
                         }
                         else
                         {

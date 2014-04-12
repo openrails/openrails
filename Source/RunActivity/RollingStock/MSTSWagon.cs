@@ -379,6 +379,7 @@ namespace ORTS
             brakeSystemType = copy.brakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
+            base.Initialize();
         }
 		private void ParseWagonInside(STFReader stf)
 		{
