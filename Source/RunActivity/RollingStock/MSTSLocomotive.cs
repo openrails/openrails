@@ -2004,26 +2004,33 @@ namespace ORTS
                 case CABViewControlTypes.LOAD_METER:
                 case CABViewControlTypes.TRACTION_BRAKING:
                     {
+                        var direction = 0; // Forwards
+                        if (cvc is CVCGauge)
+                            direction = ((CVCGauge)cvc).Direction;
+
                         if (LocomotiveAxle != null)
                         {
                             data = 0.0f;
                             if (ThrottlePercent > 0)
                             {
+                                float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
                                 if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxForceN * (float)(cvc.MaxValue);
+                                    data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * (float)(cvc.MaxValue);
+                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * rangeFactor;
                                 data = Math.Abs(data);
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
-                                float dynCurrRangeFactor = (float)(cvc.MinValue);
+                                float rangeFactor = direction == 0 ? (float)cvc.MinValue : (float)cvc.MaxValue;
                                 if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * dynCurrRangeFactor;
+                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
                                 else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * dynCurrRangeFactor;
+                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
                                 data = -Math.Abs(data);
                             }
+                            if (direction == 1)
+                                data = -data;
                             break;
                         }
                         data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;

@@ -1414,7 +1414,7 @@ namespace ORTS.Viewer3D.RollingStock
             float percent, xpos, ypos, zeropos;
 
             percent = IsFire ? 1f : GetRangeFraction();
-            LoadMeterPositive = percent >= 0;
+            LoadMeterPositive = percent + Gauge.MinValue / (Gauge.MaxValue - Gauge.MinValue) >= 0;
 
             if (Gauge.Orientation == 0)  // gauge horizontal
             {

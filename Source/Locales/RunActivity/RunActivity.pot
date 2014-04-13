@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-04-09 23:43:21+0800\n"
-"PO-Revision-Date: 2014-04-09 23:43:21+0800\n"
+"POT-Creation-Date: 2014-04-13 18:00:52+0200\n"
+"PO-Revision-Date: 2014-04-13 18:00:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -464,13 +464,19 @@ msgstr ""
 msgid "Boiler no longer priming."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:366
+#: ../../RunActivity/RollingStock/TrainCar.cs:371
 msgid ""
-"You are travelling too fast for this curve. Slow down, your passengers are "
-"feeling uncomfortable, or your train may derail."
+"You are traveling too fast for this curve. Slow down, your freight may be "
+"damaged and your train may derail."
 msgstr ""
 
-#: ../../RunActivity/RollingStock/TrainCar.cs:393
+#: ../../RunActivity/RollingStock/TrainCar.cs:375
+msgid ""
+"You are travelling too fast for this curve. Slow down, your passengers are "
+"feeling uncomfortable and your train may derail."
+msgstr ""
+
+#: ../../RunActivity/RollingStock/TrainCar.cs:410
 msgid "Your train has overturned."
 msgstr ""
 
