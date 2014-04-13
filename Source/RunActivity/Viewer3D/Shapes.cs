@@ -154,6 +154,7 @@ namespace ORTS.Viewer3D
 
     public class SharedStaticShapeInstance : StaticShape
     {
+        readonly bool HasNightSubObj;
         readonly float ObjectRadius;
         readonly float ObjectViewingDistance;
         readonly ShapePrimitiveInstances[] Primitives;
@@ -161,6 +162,8 @@ namespace ORTS.Viewer3D
         public SharedStaticShapeInstance(Viewer viewer, string path, List<StaticShape> shapes)
             : base(viewer, path, GetCenterLocation(shapes), shapes[0].Flags)
         {
+            HasNightSubObj = shapes[0].SharedShape.HasNightSubObj;
+
             // We need both ends of the distance levels. We render the first but view as far as the last.
             var dlHighest = shapes[0].SharedShape.LodControls[0].DistanceLevels.First();
             var dlLowest = shapes[0].SharedShape.LodControls[0].DistanceLevels.Last();
@@ -175,10 +178,12 @@ namespace ORTS.Viewer3D
                 ObjectViewingDistance = dlLowest.ViewingDistance;
             
             // Create all the primitives for the shared shape.
-            Primitives = (from lod in shapes[0].SharedShape.LodControls
-                          from subobj in lod.DistanceLevels[0].SubObjects
-                          from prim in subobj.ShapePrimitives
-                          select new ShapePrimitiveInstances(viewer.GraphicsDevice, prim, GetMatricies(shapes, prim))).ToArray();
+            var prims = new List<ShapePrimitiveInstances>();
+            foreach (var lod in shapes[0].SharedShape.LodControls)
+                for (var subObjectIndex = 0; subObjectIndex < lod.DistanceLevels[0].SubObjects.Length; subObjectIndex++)
+                    foreach (var prim in lod.DistanceLevels[0].SubObjects[subObjectIndex].ShapePrimitives)
+                        prims.Add(new ShapePrimitiveInstances(viewer.GraphicsDevice, prim, GetMatricies(shapes, prim), subObjectIndex));
+            Primitives = prims.ToArray();
         }
 
         static WorldPosition GetCenterLocation(List<StaticShape> shapes)
@@ -220,7 +225,8 @@ namespace ORTS.Viewer3D
             var mstsLocation = Location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
             var xnaMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
             foreach (var primitive in Primitives)
-                frame.AddAutoPrimitive(mstsLocation, ObjectRadius, ObjectViewingDistance, primitive.Material, primitive, RenderPrimitiveGroup.World, ref xnaMatrix, Flags);
+                if (primitive.SubObjectIndex != 1 || !HasNightSubObj || Viewer.MaterialManager.sunDirection.Y < 0)
+                    frame.AddAutoPrimitive(mstsLocation, ObjectRadius, ObjectViewingDistance, primitive.Material, primitive, RenderPrimitiveGroup.World, ref xnaMatrix, Flags);
         }
     }
 
@@ -879,6 +885,7 @@ namespace ORTS.Viewer3D
         public Material Material { get; protected set; }
         public int[] Hierarchy { get; protected set; } // the hierarchy from the sub_object
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
+        public int SubObjectIndex { get; protected set; }
 
         protected VertexBuffer VertexBuffer;
         protected VertexDeclaration VertexDeclaration;
@@ -893,11 +900,12 @@ namespace ORTS.Viewer3D
         protected int InstanceBufferStride;
         protected int InstanceCount;
 
-        internal ShapePrimitiveInstances(GraphicsDevice graphicsDevice, ShapePrimitive shapePrimitive, Matrix[] positions)
+        internal ShapePrimitiveInstances(GraphicsDevice graphicsDevice, ShapePrimitive shapePrimitive, Matrix[] positions, int subObjectIndex)
         {
             Material = shapePrimitive.Material;
             Hierarchy = shapePrimitive.Hierarchy;
             HierarchyIndex = shapePrimitive.HierarchyIndex;
+            SubObjectIndex = subObjectIndex;
             VertexBuffer = shapePrimitive.VertexBuffer;
             VertexDeclaration = shapePrimitive.VertexDeclaration;
             VertexBufferStride = shapePrimitive.VertexBufferStride;

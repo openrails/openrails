@@ -597,21 +597,42 @@ technique TerrainPS3 {
 	}
 }
 
-technique DarkShade {
+technique DarkShadePS3 {
+	pass Pass_0 {
+		VertexShader = compile vs_3_0 VSGeneral(true);
+		PixelShader = compile ps_3_0 PSDarkShade();
+	}
+}
+
+technique DarkShadePS2 {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSDarkShade();
 	}
 }
 
-technique HalfBright {
+technique HalfBrightPS3 {
+	pass Pass_0 {
+		VertexShader = compile vs_3_0 VSGeneral(true);
+		PixelShader = compile ps_3_0 PSHalfBright();
+	}
+}
+
+technique HalfBrightPS2 {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSHalfBright();
 	}
 }
 
-technique FullBright {
+technique FullBrightPS3 {
+	pass Pass_0 {
+		VertexShader = compile vs_3_0 VSGeneral(true);
+		PixelShader = compile ps_3_0 PSFullBright();
+	}
+}
+
+technique FullBrightPS2 {
 	pass Pass_0 {
 		VertexShader = compile vs_2_0 VSGeneral(false);
 		PixelShader = compile ps_2_0 PSFullBright();
