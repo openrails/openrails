@@ -149,9 +149,9 @@ namespace ORTS.Viewer3D
 
             public int Compare(RenderItem x, RenderItem y)
             {
-                var xd = (x.XNAMatrix.Translation - XNAViewerPos).Length() - x.RenderPrimitive.SortIndex;
-                var yd = (y.XNAMatrix.Translation - XNAViewerPos).Length() - y.RenderPrimitive.SortIndex;
-                return Math.Sign(yd - xd);
+                // For unknown reasons, this would crash with an ArgumentException (saying Compare(x, x) != 0)
+                // sometimes when calculated as two values and subtracted. Presumed cause is floating point.
+                return (int)((y.XNAMatrix.Translation - XNAViewerPos).Length() - (x.XNAMatrix.Translation - XNAViewerPos).Length() + y.RenderPrimitive.SortIndex - x.RenderPrimitive.SortIndex);
             }
 
             #endregion
