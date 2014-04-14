@@ -45,7 +45,8 @@ namespace ORTS.Viewer3D
         Lights, // TODO: May not be needed once alpha sorting works.
         Precipitation, // TODO: May not be needed once alpha sorting works.
         Particles,
-        Interior,
+        InteriorOpaque,
+        InteriorBlended,
         CabBlended,
         TextOverlayOpaque,
         TextOverlayBlended,
@@ -79,7 +80,7 @@ namespace ORTS.Viewer3D
 			RenderPrimitiveSequence.Lights,
 			RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
-            RenderPrimitiveSequence.Interior,
+            RenderPrimitiveSequence.InteriorBlended,
 			RenderPrimitiveSequence.TextOverlayBlended,
 		};
 
@@ -95,7 +96,7 @@ namespace ORTS.Viewer3D
 			RenderPrimitiveSequence.Lights,
 			RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
-            RenderPrimitiveSequence.Interior,
+            RenderPrimitiveSequence.InteriorOpaque,
 			RenderPrimitiveSequence.TextOverlayOpaque,
 		};
 
