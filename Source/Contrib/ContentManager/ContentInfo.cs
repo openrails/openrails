@@ -47,11 +47,11 @@ namespace ORTS.ContentManager
                 {
                     var file = new ACTFile(content.PathName);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.Name);
-                    details.AppendFormat("Route ID:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.RouteID);
-                    details.AppendFormat("Path ID:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.PathID);
+                    details.AppendFormat("Route ID:\t\u0001{1}\u0002Route\u0001{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.RouteID);
+                    details.AppendFormat("Path ID:\t\u0001{1}\u0002Path\u0001{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_Header.PathID);
                     details.AppendLine();
                     details.AppendLine("Player:\t");
-                    details.AppendFormat("  Service ID:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name);
+                    details.AppendFormat("  Service ID:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name);
                     details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time);
                     details.AppendFormat("  Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);
                     foreach (var item in file.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Player_Traffic_List)
@@ -59,12 +59,12 @@ namespace ORTS.ContentManager
                     details.AppendLine();
                     details.AppendLine("Open Rails does not support loading the player's service data (effeciency per-station stop).");
                     details.AppendLine();
-                    details.AppendFormat("Traffic ID:\t{1}{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name);
+                    details.AppendFormat("Traffic ID:\t\u0001{1}\u0002Traffic\u0001{0}", Environment.NewLine, file.Tr_Activity.Tr_Activity_File.Traffic_Definition.Name);
                     foreach (var traffic in file.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
                     {
                         details.AppendLine();
                         details.AppendLine("Traffic:\t");
-                        details.AppendFormat("  Service ID:\t{1}{0}", Environment.NewLine, traffic.Name);
+                        details.AppendFormat("  Service ID:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, traffic.Name);
                         details.AppendFormat("  UID:\t{1}{0}", Environment.NewLine, traffic.UiD);
                         details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, traffic.Time);
                         details.AppendFormat("  Platform ID:\tDistance down path:\tSkip count:\tEfficiency:\t{0}", Environment.NewLine);
@@ -79,8 +79,8 @@ namespace ORTS.ContentManager
                 {
                     var file = new SRVFile(content.PathName);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, file.Name);
-                    details.AppendFormat("Consist ID:\t{1}{0}", Environment.NewLine, file.Train_Config);
-                    details.AppendFormat("Path ID:\t{1}{0}", Environment.NewLine, file.PathID);
+                    details.AppendFormat("Consist ID:\t\u0001{1}\u0002Consist\u0001{0}", Environment.NewLine, file.Train_Config);
+                    details.AppendFormat("Path ID:\t\u0001{1}\u0002Path\u0001{0}", Environment.NewLine, file.PathID);
                     details.AppendFormat("Efficiency:\t{1}{0}{0}", Environment.NewLine, file.Efficiency);
                     details.AppendFormat("This format is not supported by Open Rails.{0}{0}", Environment.NewLine);
                 }
@@ -92,7 +92,7 @@ namespace ORTS.ContentManager
                     {
                         details.AppendLine();
                         details.AppendLine("Service:\t");
-                        details.AppendFormat("  Service ID:\t{1}{0}", Environment.NewLine, service.Service_Definition);
+                        details.AppendFormat("  Service ID:\t\u0001{1}\u0002Service\u0001{0}", Environment.NewLine, service.Service_Definition);
                         details.AppendFormat("  Start time:\t{1}{0}", Environment.NewLine, service.Time);
                         details.AppendFormat("  Platform ID:\tDistance down path:\tArrival time:\tDeparture time:\t{0}", Environment.NewLine);
                         foreach (var item in service.TrafficDetails)

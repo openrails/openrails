@@ -136,6 +136,35 @@ namespace ORTS.ContentManager
             Name = Path.GetFileNameWithoutExtension(path);
             PathName = path;
         }
+
+        public override Content Get(string name, ContentType type)
+        {
+            if (type == ContentType.Route)
+            {
+                var path = Path.GetDirectoryName(Path.GetDirectoryName(PathName));
+                if (Directory.Exists(path))
+                    return new ContentMSTSRoute(path);
+            }
+            else if (type == ContentType.Service)
+            {
+                var path = Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(PathName)), "Services"), name + ".srv");
+                if (File.Exists(path))
+                    return new ContentMSTSService(path);
+            }
+            else if (type == ContentType.Traffic)
+            {
+                var path = Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(PathName)), "Traffic"), name + ".trf");
+                if (File.Exists(path))
+                    return new ContentMSTSTraffic(path);
+            }
+            else if (type == ContentType.Path)
+            {
+                var path = Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(PathName)), "Paths"), name + ".pat");
+                if (File.Exists(path))
+                    return new ContentMSTSPath(path);
+            }
+            return base.Get(name, type);
+        }
     }
 
     public class ContentMSTSService : Content
@@ -147,6 +176,23 @@ namespace ORTS.ContentManager
             Name = Path.GetFileNameWithoutExtension(path);
             PathName = path;
         }
+
+        public override Content Get(string name, ContentType type)
+        {
+            if (type == ContentType.Path)
+            {
+                var path = Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(PathName)), "Paths"), name + ".pat");
+                if (File.Exists(path))
+                    return new ContentMSTSPath(path);
+            }
+            else if (type == ContentType.Consist)
+            {
+                var path = Path.Combine(Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(PathName)))), "Trains"), "Consists"), name + ".con");
+                if (File.Exists(path))
+                    return new ContentMSTSConsist(path);
+            }
+            return base.Get(name, type);
+        }
     }
 
     public class ContentMSTSTraffic : Content
@@ -157,6 +203,17 @@ namespace ORTS.ContentManager
         {
             Name = Path.GetFileNameWithoutExtension(path);
             PathName = path;
+        }
+
+        public override Content Get(string name, ContentType type)
+        {
+            if (type == ContentType.Service)
+            {
+                var path = Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(PathName)), "Services"), name + ".srv");
+                if (File.Exists(path))
+                    return new ContentMSTSService(path);
+            }
+            return base.Get(name, type);
         }
     }
 

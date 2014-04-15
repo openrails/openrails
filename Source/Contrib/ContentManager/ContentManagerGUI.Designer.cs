@@ -55,6 +55,7 @@
             this.richTextBoxContent.Size = new System.Drawing.Size(514, 514);
             this.richTextBoxContent.TabIndex = 1;
             this.richTextBoxContent.Text = "";
+            this.richTextBoxContent.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBoxContent_LinkClicked);
             // 
             // ContentManagerGUI
             // 
