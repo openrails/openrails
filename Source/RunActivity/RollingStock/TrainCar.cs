@@ -234,8 +234,7 @@ namespace ORTS
         string WagonType;
         string EngineType;
         float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
-
-        float CoefficientFriction = 0.5f; // Coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
+        float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
         float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         
           public virtual void Initialize()
@@ -306,7 +305,7 @@ namespace ORTS
                         }
                         else
                         {
-                            SuperelevationM = 0.0f;  // Assume no superelevation if conventional mixed route
+                            SuperelevationM = 0.005f;  // Assume minimal superelevation if conventional mixed route
                         }
 
                     }
@@ -463,6 +462,19 @@ namespace ORTS
                         DriverWheelRadiusM = GetDriverWheelRadiusM();
                         LocoNumDrvWheels = GetLocoNumWheels();
 
+                        // Determine whether the track is wet due to rain or snow.
+
+                        int FrictionWeather = (int)Program.Simulator.Weather;
+                        
+                        if (FrictionWeather == 1 | FrictionWeather == 2)
+                        {
+                            CoefficientFriction = 0.25f;  // Weather snowing or raining
+                        }
+                        else
+                        {
+                            CoefficientFriction = 0.5f;  // Clear
+                        }
+
                         float Axles = WheelAxles.Count;
                         float Bogies = Parts.Count - 1;
                         float BogieSize = Axles / Bogies;
@@ -484,7 +496,7 @@ namespace ORTS
                                 }
                                 else if (Axles == 3)
                                 {
-                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 11' 6" (3.5052m)
+                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                                 }
                             }
                             else if (Bogies == 2)
@@ -503,7 +515,7 @@ namespace ORTS
                                 }
                                 else if (Axles == 3)
                                 {
-                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 11' 6" (3.5052m)
+                                    RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                                 }
                             }
 
