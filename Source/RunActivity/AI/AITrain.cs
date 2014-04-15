@@ -2513,7 +2513,11 @@ namespace ORTS
 
                                         if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP)
                                         {
-                                            thisStation.CalculateDepartTime(presentTime);
+                                            if (thisStation.ActualArrival < 0)
+                                            {
+                                                thisStation.ActualArrival = presentTime;
+                                                thisStation.CalculateDepartTime(presentTime);
+                                            }
 
 #if DEBUG_REPORTS
                                             DateTime baseDT = new DateTime();

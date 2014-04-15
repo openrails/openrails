@@ -1904,6 +1904,12 @@ namespace ORTS
                             TrackCircuitSignalList thisSignalList =
                                     thisCircuit.CircuitItems.TrackCircuitSignals[directionList, fntype];
 
+                            // if signal is SPEED type, insert in speedpost list
+                            if (reqfntype[0] == MstsSignalFunction.SPEED)
+                            {
+                                thisSignalList = thisCircuit.CircuitItems.TrackCircuitSpeedPosts[directionList];
+                            }
+
                             bool signalset = false;
                             foreach (TrackCircuitSignalItem inItem in thisSignalList.TrackCircuitItem)
                             {
@@ -5715,6 +5721,37 @@ namespace ORTS
             }
 
             thisBlockstate = localBlockstate > passedBlockstate ? localBlockstate : passedBlockstate;
+
+            // when in timetable mode : 
+            // check if section is part of station
+            // if so, check if train stops and station and check for call-on state
+
+            if (thisTrain != null && Program.Simulator.TimetableMode)
+            {
+                if (thisBlockstate == SignalObject.InternalBlockstate.OccupiedOppositeDirection || thisBlockstate == SignalObject.InternalBlockstate.OccupiedSameDirection)
+                {
+                    if (PlatformIndex.Count > 0)
+                    {
+                        PlatformDetails thisPlatform = signalRef.PlatformDetailsList[PlatformIndex[0]];
+                        if (thisTrain.Train.StationStops == null || thisTrain.Train.StationStops.Count == 0) // train has no stops
+                        {
+                            thisBlockstate = SignalObject.InternalBlockstate.Blocked;  // train does not stop - call on not allowed
+                        }
+                        else
+                        {
+                            if (String.Compare(thisTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) != 0) // stop is not next station stop - call on not allowed
+                            {
+                                thisBlockstate = SignalObject.InternalBlockstate.Blocked;
+                            }
+                            else if (!thisTrain.Train.StationStops[0].CallOnAllowed) // callon not allowed
+                            {
+                                thisBlockstate = SignalObject.InternalBlockstate.Blocked;
+                            }
+                        }
+                    }
+                }
+            }
+
             return (thisBlockstate);
         }
 
@@ -9616,6 +9653,11 @@ namespace ORTS
                 {
                     mainSignal.SignalNumClearAhead_MSTS = Math.Max(mainSignal.SignalNumClearAhead_MSTS, signalType.NumClearAhead_MSTS);
                     mainSignal.SignalNumClearAhead_ORTS = Math.Max(mainSignal.SignalNumClearAhead_ORTS, signalType.NumClearAhead_ORTS);
+                }
+
+                if (sigFunction == MstsSignalFunction.SPEED)
+                {
+                    mainSignal.isSignal = false;
                 }
             }
             else

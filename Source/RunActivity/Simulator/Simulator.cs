@@ -77,6 +77,7 @@ namespace ORTS
         public string RouteName;
         public string ActivityFileName;
         public string TimetableFileName;
+        public bool TimetableMode;
         public ACTFile Activity;
         public Activity ActivityRun;
         public TDBFile TDB;
@@ -132,6 +133,8 @@ namespace ORTS
 
         public Simulator(UserSettings settings, string activityPath)
         {
+            TimetableMode = false;
+
             Settings = settings;
             UseAdvancedAdhesion = Settings.UseAdvancedAdhesion;
             BreakCouplers = Settings.BreakCouplers;
@@ -193,6 +196,7 @@ namespace ORTS
             HazzardManager = new HazzardManager(this);
             ScriptManager = new ScriptManager(this);
         }
+
         public void SetActivity(string activityPath)
         {
             ActivityFileName = Path.GetFileNameWithoutExtension(activityPath);
@@ -249,6 +253,7 @@ namespace ORTS
 
         public void StartTimetable(string[] arguments)
         {
+            TimetableMode = true;
             Signals = new Signals(this, SIGCFG);
             LevelCrossings = new LevelCrossings(this);
             Trains = new TrainList(this);
@@ -298,6 +303,7 @@ namespace ORTS
             ClockTime = inf.ReadDouble();
             Season = (SeasonType)inf.ReadInt32();
             Weather = (WeatherType)inf.ReadInt32();
+            TimetableMode = inf.ReadBoolean();
             InitialTileX = initialTileX;
             InitialTileZ = initialTileZ;
 
@@ -314,6 +320,7 @@ namespace ORTS
             outf.Write(ClockTime);
             outf.Write((int)Season);
             outf.Write((int)Weather);
+            outf.Write(TimetableMode);
             Signals.Save(outf);
             SaveTrains(outf);
             // LevelCrossings
@@ -647,6 +654,7 @@ namespace ORTS
             Train train = new Train(this);
             if (conFileName.Contains("tilted")) train.tilted = true;
             train.TrainType = Train.TRAINTYPE.PLAYER;
+            train.Number = 0;
             train.Name = "PLAYER";
 
             //PATFile patFile = new PATFile(patFileName);

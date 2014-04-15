@@ -11182,6 +11182,11 @@ namespace ORTS
                     }
                     break;
 
+                case "callon":
+                        StationStop thisStationStop = StationStops[StationStops.Count - 1];
+                        thisStationStop.CallOnAllowed = true;
+                    break;
+
                 default:
                     break;
             }
@@ -14769,6 +14774,7 @@ namespace ORTS
             public int Direction;
             public int ExitSignal;
             public bool HoldSignal;
+            public bool CallOnAllowed;
             public float StopOffset;
             public float DistanceToTrainM;
             public int ArrivalTime;
@@ -14813,6 +14819,8 @@ namespace ORTS
                 ActualDepart = -1;
                 DistanceToTrainM = 9999999f;
                 Passed = false;
+
+                CallOnAllowed = false;
             }
 
             //================================================================================================//
@@ -14831,6 +14839,7 @@ namespace ORTS
                 Direction = orgStop.Direction;
                 ExitSignal = orgStop.ExitSignal;
                 HoldSignal = orgStop.HoldSignal;
+                CallOnAllowed = orgStop.CallOnAllowed;
                 StopOffset = orgStop.StopOffset;
                 ArrivalTime = orgStop.ArrivalTime;
                 DepartTime = orgStop.DepartTime;
@@ -14875,6 +14884,7 @@ namespace ORTS
                 Direction = inf.ReadInt32();
                 ExitSignal = inf.ReadInt32();
                 HoldSignal = inf.ReadBoolean();
+                CallOnAllowed = inf.ReadBoolean();
                 StopOffset = inf.ReadSingle();
                 ArrivalTime = inf.ReadInt32();
                 DepartTime = inf.ReadInt32();
@@ -14938,6 +14948,7 @@ namespace ORTS
                 outf.Write(Direction);
                 outf.Write(ExitSignal);
                 outf.Write(HoldSignal);
+                outf.Write(CallOnAllowed);
                 outf.Write(StopOffset);
                 outf.Write(ArrivalTime);
                 outf.Write(DepartTime);
