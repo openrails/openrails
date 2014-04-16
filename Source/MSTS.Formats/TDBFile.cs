@@ -116,6 +116,7 @@ namespace MSTS.Formats
             throw new InvalidOperationException("Program Bug: Can't Find Track Node");
         }
 
+#if !ACTIVITY_EDITOR
         //add speed restriction zone after the activity is loaded
         public void AddRestrictZone(Tr_RouteFile routeFile, TSectionDatFile TSection, ActivityRestrictedSpeedZones zone)
         {
@@ -153,6 +154,7 @@ namespace MSTS.Formats
             }
             catch { }
         }
+#endif
     }
 
 
@@ -206,6 +208,22 @@ namespace MSTS.Formats
         public uint Inpins;
         public uint Outpins;
 		public uint Index;
+
+        protected bool Reduced = false;
+
+        public TrackNode(TrackNode node)
+        {
+            if (node.TrJunctionNode != null)
+                this.TrJunctionNode = new TrJunctionNode(node.TrJunctionNode);
+            if (node.TrVectorNode != null)
+                this.TrVectorNode = new TrVectorNode(node.TrVectorNode);
+            this.TrEndNode = node.TrEndNode;
+            this.Inpins = node.Inpins;
+            this.Outpins = node.Outpins;
+            this.Index = node.Index;
+            this.UiD = node.UiD;
+            this.TrPins = node.TrPins;
+        }
 
 #if NEW_SIGNALLING
         public ORTS.TrackCircuitXRefList TCCrossReference;  // Cross reference with TC sections
@@ -278,6 +296,20 @@ namespace MSTS.Formats
             AZ = stf.ReadFloat(STFReader.UNITS.None, null);
             stf.SkipRestOfBlock();
         }
+        public UiD(TrVectorSection s)
+        {
+            WorldTileX = s.TileX;
+            WorldTileZ = s.TileZ;
+            WorldID = (int)s.SectionIndex;
+            TileX = s.TileX;
+            TileZ = s.TileZ;
+            X = s.X;
+            Y = s.Y;
+            Z = s.Z;
+            AX = s.AX;
+            AY = s.AY;
+            AZ = s.AZ;
+        }
 
     }
 
@@ -297,6 +329,14 @@ namespace MSTS.Formats
             stf.ReadString();
             ShapeIndex = stf.ReadUInt(null);
             stf.SkipRestOfBlock();
+        }
+        public TrJunctionNode(TrJunctionNode node)
+        {
+            this.Idx = node.Idx;
+            this.ShapeIndex = node.ShapeIndex;
+            this.SelectedRoute = node.SelectedRoute;
+            this.AngleComputed = node.AngleComputed;
+            this.angle = node.angle;
         }
         public uint ShapeIndex;
 
@@ -367,6 +407,14 @@ namespace MSTS.Formats
                 }),
             });
         }
+        public TrVectorNode(TrVectorNode node)
+        {
+            this.noItemRefs = node.noItemRefs;
+            if (node.TrItemRefs != null)
+                this.TrItemRefs = (int[])node.TrItemRefs.Clone();
+            if (node.TrVectorSections != null)
+                this.TrVectorSections = (TrVectorSection[])node.TrVectorSections.Clone();
+        }
         public TrVectorSection[] TrVectorSections;
         public int[] TrItemRefs;
         public int noItemRefs =0;
@@ -401,6 +449,7 @@ namespace MSTS.Formats
             AX = stf.ReadFloat(STFReader.UNITS.None, null);
             AY = stf.ReadFloat(STFReader.UNITS.None, null);
             AZ = stf.ReadFloat(STFReader.UNITS.None, null);
+            Reduced = false;
         }
         public int flag1;   // usually 0, - may point to the connecting pin entry in a junction
         public int flag2;  // usually 1, but set to 0 when curve track is flipped around
@@ -414,6 +463,7 @@ namespace MSTS.Formats
         public uint WorldFileUiD;
         public int WFNameX, WFNameZ;
         public float StartElev, EndElev, MaxElev;
+        public bool Reduced;
         public override string ToString()
         {
             return String.Format("{{TileX:{0} TileZ:{1} X:{2} Y:{3} Z:{4} UiD:{5} Section:{6} Shape:{7}}}", WFNameX, WFNameZ, X, Y, Z, WorldFileUiD, SectionIndex, ShapeIndex);
@@ -697,7 +747,6 @@ namespace MSTS.Formats
 
             Angle = 0;
         }
-
     }
 
     public class SoundRegionItem : TrItem
