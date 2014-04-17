@@ -503,10 +503,9 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            TrainpathVectorNode firstNode = Trainpath.FirstNode as TrainpathVectorNode;
-            firstNode.NextMainNode = null;
-            firstNode.NextSidingNode = null;
-            firstNode.ForwardOriented = !firstNode.ForwardOriented;
+            Trainpath.FirstNode.NextMainNode = null;
+            Trainpath.FirstNode.NextSidingNode = null;
+            Trainpath.FirstNode.ReverseOrientation();
             AddAdditionalNode(Trainpath.FirstNode, true);
         }
     }
@@ -605,7 +604,7 @@ namespace ORTS.TrackViewer.Editing
             lastNode.NextMainTvnIndex = newNode.TvnIndex;
             newNode.PrevNode = lastNode;
 
-            newNode.ForwardOriented = !newNode.ForwardOriented; // reverse because, well, this is a reverse point.
+            newNode.ReverseOrientation(); // reverse because, well, this is a reverse point.
         }
     }
     #endregion
@@ -705,7 +704,7 @@ namespace ORTS.TrackViewer.Editing
     public class EditorActionEditWait : EditorActionWait
     {
         /// <summary>Constructor</summary>
-        public EditorActionEditWait() : base(TrackViewer.catalog.GetString("Edit wait point"), "acticeNode") { }
+        public EditorActionEditWait() : base(TrackViewer.catalog.GetString("Edit wait point"), "activeNode") { }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
@@ -1258,11 +1257,14 @@ lastEditableNode.NextMainNode = null;
         List<int> linkingTvns;
         TrainpathNode autoFixStartNode;
         TrainpathNode autoFixReconnectNode;
+        bool startNodeNeedsReverse;
+        bool reconnectNodeNeedsReverse;
         #endregion
 
         /// <summary>Constructor</summary>
         protected EditorActionAutoFix(string header, string pngFileName) : base(header, pngFileName) { 
             DisAllowedJunctionIndexes = new Collection<int>();
+            linkingTvns = new List<int>();
         }
 
         /// <summary>
@@ -1329,6 +1331,8 @@ lastEditableNode.NextMainNode = null;
         private bool TryToFindConnectionVia(int nextTvn,
             int currentJunctionIndex, int reconnectJunctionIndex, bool reconnectJunctionIsFacing, List<int> linkingTvns)
         {
+            if (nextTvn <= 0) return false; // something wrong in train database.
+
             int nextJunctionIndex = TrackExtensions.GetNextJunctionIndex(currentJunctionIndex, nextTvn);
             if (DisAllowedJunctionIndexes.Contains(nextJunctionIndex)) {
                 return false;
@@ -1348,7 +1352,9 @@ lastEditableNode.NextMainNode = null;
         }
 
         /// <summary>
-        /// Try to find a connection. Depth-first search via main track at junctions
+        /// Try to find a connection. Depth-first search via main track at junctions.
+        /// Also reversing the start or reconnectNode is tried, in case one of these nodes has a non-defined orientation 
+        /// because both before and after the node the path is broken.
         /// </summary>
         /// <param name="startNode">Node at which the reconnection should start</param>
         /// <param name="reconnectNode">Node at which the reconnection should end</param>
@@ -1363,7 +1369,53 @@ lastEditableNode.NextMainNode = null;
             // This will store the path, so we can actually create it later on.
             autoFixStartNode = startNode;
             autoFixReconnectNode = reconnectNode;
-            linkingTvns = new List<int>();
+            startNodeNeedsReverse = false;
+            reconnectNodeNeedsReverse = false;
+            
+            if (FindConnectionSameTrack()) {
+                return true;
+            }
+
+            //first try to see if we succeed without re-orienting the startNode or reconnectNode
+            if (FindConnectionThisOrientation())
+            {
+                return true;
+            }
+
+            //perhaps there is a path with a reversed start node.
+            if (CanReverse(startNode))
+            {
+                startNode.ReverseOrientation();
+                startNodeNeedsReverse = FindConnectionThisOrientation();
+                startNode.ReverseOrientation(); // we only do the actual reverse if the user chooses to fix
+                if (startNodeNeedsReverse) {
+                    return true;
+                }
+            }
+
+            //perhaps there is a path with a reversed reconnect node.
+            if (CanReverse(reconnectNode))
+            {
+                reconnectNode.ReverseOrientation();
+                reconnectNodeNeedsReverse = FindConnectionThisOrientation();
+                reconnectNode.ReverseOrientation(); // we only do the actual reverse if the user chooses to fix
+                if (reconnectNodeNeedsReverse) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Try to find a connection. Depth-first search via main track at junctions.
+        /// No reversing of the nodes will be allowed. 
+        /// AutoFixStartNode and AutoFixReconnectNode are assumed to be defined already
+        /// </summary>
+        /// <returns>True if a connection has been found</returns>
+        private bool FindConnectionThisOrientation()
+        {
+            linkingTvns.Clear();
 
             int firstJunctionIndex;
             int lastJunctionIndex;
@@ -1407,11 +1459,76 @@ lastEditableNode.NextMainNode = null;
         }
 
         /// <summary>
+        /// Find whether it is possible to connect directly two points on the same track
+        /// </summary>
+        /// <returns>true if such a direct path has been found</returns>
+        private bool FindConnectionSameTrack()
+        {
+            TrainpathVectorNode startAsVector     = autoFixStartNode as TrainpathVectorNode;
+            TrainpathVectorNode reconnectAsVector = autoFixReconnectNode as TrainpathVectorNode;
+
+            if (startAsVector == null) return false;
+            if (reconnectAsVector == null) return false;
+            if (startAsVector.TvnIndex != reconnectAsVector.TvnIndex) return false;
+
+            //for a reverse point the orientation is defined as being after the reversal.
+            bool reconnectIsForward = (reconnectAsVector.NodeType == TrainpathNodeType.Reverse)
+                ? !reconnectAsVector.ForwardOriented
+                :  reconnectAsVector.ForwardOriented;
+            if (startAsVector.ForwardOriented != reconnectIsForward) return false;
+            if (startAsVector.ForwardOriented != startAsVector.IsEarlierOnTrackThan(reconnectAsVector)) return false;
+
+            linkingTvns.Clear();
+            return true;
+        }
+
+        /// <summary>
+        /// A node can be reversed it both the leading and the trailing path are broken.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        private static bool CanReverse(TrainpathNode node)
+        {
+            bool incomingAllowsReversal = true;
+            bool outgoingAllowsReversal;
+
+            if (node.NextSidingNode != null)
+            {   // if there is a siding node, this is a siding start (probably) and things become too complex
+                outgoingAllowsReversal = false;
+            }
+            else
+            {
+                if (node.NextMainNode == null)
+                {   // no next main node, so we are fine with reversing
+                    outgoingAllowsReversal = true; 
+                }
+                else
+                {
+                    outgoingAllowsReversal = node.NextMainNode.IsBroken || (node.NextMainTvnIndex == -1);
+                }
+            }
+
+            if (node.PrevNode == null)
+            {
+                incomingAllowsReversal = true;
+            }
+            else
+            {
+                incomingAllowsReversal = node.PrevNode.IsBroken || (node.PrevNode.NextMainTvnIndex == -1);
+            }
+
+            return incomingAllowsReversal && outgoingAllowsReversal;
+        }
+
+        /// <summary>
         /// Actually create the path by linking nodes following the stored linking tvns.
         /// </summary>
         /// <param name="isMainPath">Do we add the node to the main path or not</param>
         protected void CreateFoundConnection(bool isMainPath)
         {
+            if (    startNodeNeedsReverse) autoFixStartNode.ReverseOrientation();
+            if (reconnectNodeNeedsReverse) autoFixReconnectNode.ReverseOrientation();
+
             //create the new path using the stored Tvns
             TrainpathNode currentNode = autoFixStartNode;
             foreach (int tvn in linkingTvns)

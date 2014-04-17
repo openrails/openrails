@@ -17,15 +17,9 @@
 //
 // ENHANCEMENT list for path editor
 // === Not finished, so do before next release
-//  test, test, test
-//  is main track the right one?
 //
 // ==== new/improved functionality
-//  Remove invalid. Any invalid point should simply be noted as broken. Period
-//      Perhaps also modify PATfile. and make invalid use bit 8?
-//  
 //  Add possibility to extend path fully while adding nodes? Extend as far as possible?
-//
 //  saving path still has code parts I do not know how to do
 
 using System;

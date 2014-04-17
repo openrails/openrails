@@ -25,7 +25,7 @@
 //          via JSON? Might be a good way to learn JSON.
 //          if we are going to write own routines, then use stringbuilder
 //
-// Release issues 
+// Steps to take for each release.
 //      Always: 1. Update SVN. 
 //              2. look at all to-dos and remove temporary changes. 
 //              3. update version. 
@@ -41,9 +41,8 @@
 //      drawTrains: add y, add direction=angle. Add option to (re-)connect to ORTS. Remove http variant. train replaces mouselocation
 //
 // Code improvements
-//      Still dependency on Runactivity because of TDBfile. Once that is removed, we can remove dependency
+//      remove drawTrains?
 //      remove dependency on ORTS.Settings. Even though it means a bit of code duplication
-//      re-enable trace warnings (e.g. in Trainpath).
 //      colors should not be string based, but enum.
 //
 // MSTS trackviewer features perhaps to take over:
@@ -112,7 +111,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the version of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/04/09";
+        public readonly static string TrackViewerVersion = "2014/04/17";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -337,8 +336,8 @@ namespace ORTS.TrackViewer
             if (TVUserInput.IsDown(TVUserCommands.ShiftUp)) {DrawArea.ShiftUp(); skipDrawAmount=0;}
             if (TVUserInput.IsDown(TVUserCommands.ShiftDown)) { DrawArea.ShiftDown(); skipDrawAmount = 0; }
 
-            if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { DrawArea.ZoomIn(); skipDrawAmount = 0; }
-            if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) {DrawArea.ZoomOut(); skipDrawAmount = 0;}
+            if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { DrawArea.Zoom(-1); skipDrawAmount = 0; }
+            if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) {DrawArea.Zoom(1); skipDrawAmount = 0;}
 
             if (TVUserInput.Changed)
             {
@@ -347,8 +346,8 @@ namespace ORTS.TrackViewer
 
             if (TVUserInput.IsPressed(TVUserCommands.Quit)) this.Quit();
 
-            if (TVUserInput.IsPressed(TVUserCommands.ZoomInSlow)) DrawArea.ZoomAroundMouse(-1);
-            if (TVUserInput.IsPressed(TVUserCommands.ZoomOutSlow)) DrawArea.ZoomAroundMouse(1);
+            if (TVUserInput.IsPressed(TVUserCommands.ZoomInSlow)) DrawArea.Zoom(-1);
+            if (TVUserInput.IsPressed(TVUserCommands.ZoomOutSlow)) DrawArea.Zoom(1);
             if (TVUserInput.IsPressed(TVUserCommands.ZoomToTile)) DrawArea.ZoomToTile();
             if (TVUserInput.IsPressed(TVUserCommands.ZoomReset))
             {
@@ -422,11 +421,11 @@ namespace ORTS.TrackViewer
                 int mouseWheelChange = TVUserInput.MouseWheelChange();
                 if (TVUserInput.IsDown(TVUserCommands.MouseZoomSlow))
                 {
-                    DrawArea.ZoomAroundMouse(mouseWheelChange > 0 ? -1 : 1);  
+                    DrawArea.Zoom(mouseWheelChange > 0 ? -1 : 1);  
                 }
                 else
                 {
-                    DrawArea.ZoomAroundMouse(-mouseWheelChange / 40);
+                    DrawArea.Zoom(-mouseWheelChange / 40);
                 }
             }
 
@@ -831,7 +830,7 @@ namespace ORTS.TrackViewer
             //SetDefaultRoute();
             //SetPath(Paths[0]);
             //DrawArea.ZoomToTile();
-            //DrawArea.ZoomCentered(-15);
+            //DrawArea.Zoom(-15);
             //CenterAroundTrackNode(31);
             //NewPath();
             //drawArea.ShiftToLocation(pathEditor.CurrentLocation);

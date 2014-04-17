@@ -195,6 +195,7 @@ namespace ORTS.TrackViewer.Editing
 
             FindSidingEnds();
             FindNodeOrientations();
+            FindWronglyOrientedLinks();
             DetermineIfBroken();
         }
 
@@ -342,8 +343,48 @@ namespace ORTS.TrackViewer.Editing
 
             //Determine direction of first point. By using second point, the direction will be reversed
             FirstNode.DetermineOrientation(FirstNode.NextMainNode, FirstNode.NextMainTvnIndex);
-            TrainpathVectorNode FirstNodeAsVector = FirstNode as TrainpathVectorNode;
-            FirstNodeAsVector.ForwardOriented = !FirstNodeAsVector.ForwardOriented;
+            FirstNode.ReverseOrientation();
+        }
+
+        /// <summary>
+        /// Find situations where vectors nodes do not point correctly towards the next node
+        /// </summary>
+        void FindWronglyOrientedLinks()
+        {
+            // start of path
+            TrainpathNode currentMainNode = FirstNode;
+            while (currentMainNode.NextMainNode != null)
+            {
+                TrainpathVectorNode currentNodeAsVector = currentMainNode as TrainpathVectorNode;
+                if (currentNodeAsVector != null)
+                {
+                    // if it is forward oriented it should also be earlier on track as next node
+                    // if it is not forward oriented it should also not be earlier on track as next node
+                    if (   currentNodeAsVector.ForwardOriented
+                        != currentNodeAsVector.IsEarlierOnTrackThan(currentMainNode.NextMainNode))
+                    {   // the link is broken (although the nodes themselves might be fine)
+                        currentMainNode.NextMainTvnIndex = -1;
+                    }              
+                }
+
+                TrainpathNode currentSidingNode = currentMainNode;
+                while (currentSidingNode.NextSidingNode != null)
+                {
+                    currentNodeAsVector = currentSidingNode as TrainpathVectorNode;
+                    if (currentNodeAsVector != null)
+                    {
+                        // if it is forward oriented it should also be earlier on track as next node
+                        // if it is not forward oriented it should also not be earlier on track as next node
+                        if (currentNodeAsVector.ForwardOriented
+                            != currentNodeAsVector.IsEarlierOnTrackThan(currentSidingNode.NextSidingNode))
+                        {   // the link is broken (although the nodes themselves might be fine)
+                            currentMainNode.NextSidingTvnIndex = -1;
+                        }
+                    }
+                }
+
+                currentMainNode = currentMainNode.NextMainNode;
+            }
         }
 
         #endregion

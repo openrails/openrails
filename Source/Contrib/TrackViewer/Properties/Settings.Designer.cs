@@ -454,5 +454,17 @@ namespace ORTS.TrackViewer.Properties {
                 this["showLonLat"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool zoomIsCenteredOnMouse {
+            get {
+                return ((bool)(this["zoomIsCenteredOnMouse"]));
+            }
+            set {
+                this["zoomIsCenteredOnMouse"] = value;
+            }
+        }
     }
 }

@@ -205,46 +205,31 @@ namespace ORTS.TrackViewer.Drawing
             OffsetZ = (maxZ + minZ) / 2 - AreaH / 2 / Scale;
             PostZoomTasks();
         }
-        
-        /// <summary>
-        /// Do a single (small) zoom, seeing more details in the viewer
-        /// </summary>
-        public void ZoomIn()
-        {
-            ZoomAroundMouse(-1);
-        }
 
         /// <summary>
-        /// Do a single (small) zoom, seeing less details
+        /// Zoom around the location given by the preference
         /// </summary>
-        public void ZoomOut()
+        /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
+        public void Zoom(int scaleSteps)
         {
-            ZoomAroundMouse(1);
+            if (Properties.Settings.Default.zoomIsCenteredOnMouse)
+            {
+                ZoomAroundMouse(scaleSteps);
+            }
+            else
+            {
+                ZoomCentered(scaleSteps);
+            }
         }
+
 
         /// <summary>
         /// Do a single zoom step around the mouse location
         /// </summary>
-        /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
-        public void ZoomAroundMouse(int scaleSteps)
+        /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale). Positive means zooming out</param>
+        private void ZoomAroundMouse(int scaleSteps)
         {
             ZoomAround(GetAreaVector(MouseLocation), scaleSteps);
-        }
-
-        /// <summary>
-        /// Do a single zoom-in step around the center of the drawing area.
-        /// </summary>
-        public void ZoomInCentered()
-        {
-            ZoomCentered(-1);
-        }
-
-        /// <summary>
-        /// Do a single zoom-out step around the center of the drawing area.
-        /// </summary>
-        public void ZoomOutCentered()
-        {
-            ZoomCentered(1);
         }
 
         /// <summary>
@@ -262,7 +247,7 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="fixedAreaLocation">x- and y-coordinates (in pixels) of the fixed position</param>
         /// <param name="scaleSteps">The amount of zoom-steps to take (using the discrete scale)</param>
-        public void ZoomAround(Vector2 fixedAreaLocation, int scaleSteps)
+        private void ZoomAround(Vector2 fixedAreaLocation, int scaleSteps)
         {
             // prevent too much zooming out
             if ((scaleSteps > 0) && MaxZoomOutReached()) return;

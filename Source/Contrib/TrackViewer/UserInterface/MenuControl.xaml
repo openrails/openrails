@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Height="300" Width="Auto">
     <DockPanel Height="22" Width="Auto" Margin="0" VerticalAlignment="Top">
-        <Menu Height="22" Name="menu1" Width="Auto">
+        <Menu Height="22" Name="menuMain" Width="Auto">
             <MenuItem Header="File">
                 <MenuItem Header="(Re)load route" Name="menuReloadRoute" Click="menuReloadRoute_Click" />
                 <Separator/>
@@ -88,6 +88,8 @@
             </MenuItem>
             <MenuItem Header="Preferences">
                 <MenuItem Header="Select background color" Name="menuSelectColor"/>
+                <MenuItem Header="Zooming is centered on mouse" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
+                          Click="UpdateMenuSettings"/>
             </MenuItem>
             <MenuItem Header="Path-Editor">
                 <MenuItem Header="==Supporting MSTS paths only==" Foreground="Blue" IsEnabled="False"/>

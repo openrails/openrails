@@ -68,7 +68,7 @@ namespace ORTS.TrackViewer.UserInterface
         {
             this.trackViewer = trackViewer;
             InitializeComponent();
-            MenuHeight = (int)menu1.Height;
+            MenuHeight = (int)menuMain.Height;
 
             //ElementHost object helps us to connect a WPF User Control.
             elementHost = new ElementHost();
@@ -133,6 +133,8 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowLonLat.IsChecked = Properties.Settings.Default.showLonLat;
             menuUseMilesNotMeters.IsChecked = Properties.Settings.Default.useMilesNotMeters;
 
+            menuZoomIsCenteredOnMouse.IsChecked = Properties.Settings.Default.zoomIsCenteredOnMouse;
+
             UpdateMenuSettings();  // to be sure some other settings are done correctly
 
             menuDoAntiAliasing.IsChecked = Properties.Settings.Default.doAntiAliasing;
@@ -180,6 +182,8 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.showLonLat = menuShowLonLat.IsChecked;
             Properties.Settings.Default.useMilesNotMeters = menuUseMilesNotMeters.IsChecked;
 
+            Properties.Settings.Default.zoomIsCenteredOnMouse = menuZoomIsCenteredOnMouse.IsChecked;
+
             Properties.Settings.Default.Save();
 
             DrawColors.setTrackColors(menuColorTracks.IsChecked, menuShowWorldTiles.IsChecked);
@@ -187,8 +191,9 @@ namespace ORTS.TrackViewer.UserInterface
             menuStatusShowPATfile.IsEnabled = menuShowPATfile.IsChecked;
             menuStatusShowTrainpath.IsEnabled = menuShowTrainpath.IsChecked;
 
-            menuSavePath.IsEnabled = (trackViewer.PathEditor != null);
+            menuSelectPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuNewPath.IsEnabled = (trackViewer.CurrentRoute != null);
+            menuSavePath.IsEnabled = (trackViewer.PathEditor != null);
             menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
             menuEditMetadata.IsEnabled = menuEnableEditing.IsChecked;
 
@@ -563,6 +568,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuEnableEditing.IsChecked = true;
             menuShowTrainpath.IsChecked = true;
             trackViewer.PathEditor.EditingIsActive = true;
+            trackViewer.PathEditor.EditMetaData();
             UpdateMenuSettings();
         }
 

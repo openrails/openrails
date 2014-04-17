@@ -70,8 +70,6 @@ namespace ORTS.TrackViewer.Editing
 #endif
         /// <summary>Node is a reversal node</summary>
         Reverse,
-        /// <summary>Node is not well-defined in .pat file</summary>
-        Invalid //todo functionality should be replaced by IsBroken.
     };
 
     /// <summary>
@@ -164,6 +162,10 @@ namespace ORTS.TrackViewer.Editing
             :this(trackDB, tsectionDat)
         {
             Location = new WorldLocation(pdp.TileX, pdp.TileZ, pdp.X, pdp.Y, pdp.Z);
+            if (pdp.IsInvalid) // not a valid point
+            {
+                this.SetBroken("Set as invalid in .pat file");
+            }
         }
 
         /// <summary>
@@ -176,58 +178,7 @@ namespace ORTS.TrackViewer.Editing
         /// Try to find the index of the vector node connecting this path node to the (given) nextNode.
         /// </summary>
         /// <returns>The index of the vector node connection, or -1</returns>
-        public int FindTvnIndex(TrainpathNode nextNode)
-        {
-            TrainpathVectorNode thisAsVectorNode     = this     as TrainpathVectorNode;
-            TrainpathVectorNode nextAsVectorNode     = nextNode as TrainpathVectorNode;
-            TrainpathJunctionNode thisAsJunctionNode = this     as TrainpathJunctionNode;
-            TrainpathJunctionNode nextAsJunctionNode = nextNode as TrainpathJunctionNode;
-
-            if (thisAsVectorNode != null)
-            {
-                if (nextAsVectorNode != null)
-                {   // two vector nodes, tvn indices must be the same
-                    if (thisAsVectorNode.TvnIndex == nextAsVectorNode.TvnIndex)
-                    {
-                        return thisAsVectorNode.TvnIndex;
-                    }
-                }
-                if (nextAsJunctionNode != null)
-                {   // vector node to junction node, junction must connect to tvnIndex
-                    if (nextAsJunctionNode.ConnectsToTrack(thisAsVectorNode.TvnIndex)) {
-                        return thisAsVectorNode.TvnIndex;
-                    }
-                }
-                return -1;
-            }
-
-            if (nextAsVectorNode != null)
-            {
-                if (thisAsJunctionNode.ConnectsToTrack(nextAsVectorNode.TvnIndex))
-                {   // from junction to vector node.
-                    return nextAsVectorNode.TvnIndex;
-                }
-                return -1;
-            }
-
-            //both this node and the next node are junctions: find the vector node connecting them.
-            //Probably this can be faster, by just finding the TrPins from this and next junction and find the common one.
-            int thisJunctionIndex = thisAsJunctionNode.JunctionIndex;
-            int nextJunctionIndex = nextAsJunctionNode.JunctionIndex;
-
-            for (int i = 0; i < TrackDB.TrackNodes.Count(); i++)
-            {
-                TrackNode tn = TrackDB.TrackNodes[i];
-                if (tn == null || tn.TrVectorNode == null)
-                    continue;
-                if (  (tn.JunctionIndexAtStart() == thisJunctionIndex && tn.JunctionIndexAtEnd()   == nextJunctionIndex)
-                   || (tn.JunctionIndexAtEnd()   == thisJunctionIndex && tn.JunctionIndexAtStart() == nextJunctionIndex))
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
+        public abstract int FindTvnIndex(TrainpathNode nextNode);
 
         /// <summary>
         /// Determine the orientation of the current node, by using the previousNode as well as the TVN that links the
@@ -236,6 +187,11 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="previousNode">previouse node</param>
         /// <param name="linkingTvnIndex">the index of the Track Vector Node linking the previous node to this node</param>
         public abstract void DetermineOrientation(TrainpathNode previousNode, int linkingTvnIndex);
+
+        /// <summary>
+        /// Reverse the orientation of the node
+        /// </summary>
+        public abstract void ReverseOrientation();
 
         /// <summary>
         /// Get the 'flags' of the current node, describing to MSTS what kind of node it is, 
@@ -393,6 +349,42 @@ namespace ORTS.TrackViewer.Editing
             IsFacingPoint = (tn.TrailingTvn() == prevTvnIndex);
         }
 
+        /// <summary>
+        /// Try to find the index of the vector node connecting this path node to the (given) nextNode.
+        /// </summary>
+        /// <returns>The index of the vector node connection, or -1</returns>
+        public override int FindTvnIndex(TrainpathNode nextNode)
+        {
+            TrainpathVectorNode nextAsVectorNode = nextNode as TrainpathVectorNode;
+            if (nextAsVectorNode != null)
+            {   // from junction to vector node.
+                if (this.ConnectsToTrack(nextAsVectorNode.TvnIndex))
+                {
+                    return nextAsVectorNode.TvnIndex;
+                }
+                else
+                {   //node is perhaps not broken, but connecting track is
+                    return -1;
+                }
+            }
+
+            //both this node and the next node are junctions: find the vector node connecting them.
+            //Probably this can be faster, by just finding the TrPins from this and next junction and find the common one.
+            int nextJunctionIndex = (nextNode as TrainpathJunctionNode).JunctionIndex;
+
+            for (int i = 0; i < TrackDB.TrackNodes.Count(); i++)
+            {
+                TrackNode tn = TrackDB.TrackNodes[i];
+                if (tn == null || tn.TrVectorNode == null)
+                    continue;
+                if ((tn.JunctionIndexAtStart() == this.JunctionIndex && tn.JunctionIndexAtEnd() == nextJunctionIndex)
+                   || (tn.JunctionIndexAtEnd() == this.JunctionIndex && tn.JunctionIndexAtStart() == nextJunctionIndex))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
 
         /// <summary>
         /// Determine the orientation of the current node, by using the previousNode as well as the TVN that links the
@@ -413,22 +405,36 @@ namespace ORTS.TrackViewer.Editing
             if (NextSidingNode != null) { linkingTvnIndex = NextSidingTvnIndex; }
             if (NextMainNode != null) { linkingTvnIndex = NextMainTvnIndex; } // might override result from previous line
 
-            DetermineOrientationSucceeded(linkingTvnIndex, false); // no reverse needed. We don't care if it succeeded.
+            if (DetermineOrientationSucceeded(linkingTvnIndex, false)) // no reverse needed
+            {
+                return;
+            }
+
+            // nothing seems to work. Get default value, unless it is broken
+            if (IsBroken) return;
+            DetermineOrientationSucceeded(TrailingTvn, IsFacingPoint);
         }
 
         private bool DetermineOrientationSucceeded(int linkingTvnIndex, bool needsReversal)
         {
             Traveller traveller = PlaceTravellerAfterJunction(linkingTvnIndex);
-            if (traveller != null)
+            if (traveller == null) return false;
+
+            if (needsReversal)
             {
-                if (needsReversal)
-                {
-                    traveller.ReverseDirection();
-                }
-                TrackAngle = traveller.RotY;
-                return true;
+                traveller.ReverseDirection();
             }
-            return false;
+            TrackAngle = traveller.RotY;
+            return true;
+        }
+
+        /// <summary>
+        /// Reverse the orientation of the node. For a junction node this also includes reversing IsFacing
+        /// </summary>
+        public override void ReverseOrientation()
+        {
+            IsFacingPoint = !IsFacingPoint;
+            TrackAngle += (float)Math.PI;
         }
 
         /// <summary>
@@ -504,7 +510,6 @@ namespace ORTS.TrackViewer.Editing
                 return false;
             }
         }
-
 
         /// <summary>
         /// For a junction with two exits, get the index of the vector node not being used at the moment
@@ -644,7 +649,7 @@ namespace ORTS.TrackViewer.Editing
 
             ForwardOriented = true; // only initial setting
 
-            InterpretPathNodeFlags(tpn, pdp);
+            InterpretPathNodeFlags(tpn);
         }
 
         /// <summary>
@@ -693,6 +698,28 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
+        /// Try to find the index of the vector node connecting this path node to the (given) nextNode.
+        /// </summary>
+        /// <returns>The index of the vector node connection, or -1</returns>
+        public override int FindTvnIndex(TrainpathNode nextNode)
+        {
+            TrainpathVectorNode nextAsVectorNode = nextNode as TrainpathVectorNode;
+            if ((nextAsVectorNode != null) && (this.TvnIndex == nextAsVectorNode.TvnIndex))
+            {   // two vector nodes, tvn indices must be the same
+                return this.TvnIndex;
+            }
+
+            TrainpathJunctionNode nextAsJunctionNode = nextNode as TrainpathJunctionNode;          
+            if ((nextAsJunctionNode != null) && nextAsJunctionNode.ConnectsToTrack(TvnIndex))
+            {   // vector node to junction node, junction must connect to tvnIndex
+                return this.TvnIndex;
+            }
+
+            //The nodes themselves might not be broken, but the link between them is.
+            return -1;
+        }
+
+        /// <summary>
         /// Determine the orientation of the current node, by using the previousNode as well as the TVN that links the
         /// previous node with this node.
         /// </summary>
@@ -710,8 +737,17 @@ namespace ORTS.TrackViewer.Editing
 
             if (NodeType == TrainpathNodeType.Reverse)
             {   // since direction is determined from previous node, after a reversal the direction is changed
-                ForwardOriented = !ForwardOriented;
+                // needs to be done after checking with previous node
+                ReverseOrientation();
             }
+        }
+        
+        /// <summary>
+        /// Reverse the orientation of the node
+        /// </summary>
+        public override void ReverseOrientation()
+        {
+            ForwardOriented = !ForwardOriented;
         }
 
         /// <summary>
@@ -763,7 +799,7 @@ namespace ORTS.TrackViewer.Editing
         // But the interpretation below is a bit more complicated.
         // Since this interpretation belongs to the PATfile itself, 
         // in principle it would be more logical to have it in PATfile.cs. But this leads to too much code duplication
-        private void InterpretPathNodeFlags(TrPathNode tpn, TrackPDP pdp)
+        private void InterpretPathNodeFlags(TrPathNode tpn)
         {
             if ((tpn.pathFlags & 03) == 0) return;
             // bit 0 and/or bit 1 is set.
@@ -777,10 +813,6 @@ namespace ORTS.TrackViewer.Editing
             {
                 // bit 0 is not set, but bit 1 is set:waiting point
                 NodeType = TrainpathNodeType.Stop;
-                if (pdp.IsInvalid) // not a valid point
-                {
-                    NodeType = TrainpathNodeType.Invalid;
-                }
             }
 
             WaitTimeS = (int)((tpn.pathFlags >> 16) & 0xffff); // get the AAAA part.
@@ -889,7 +921,11 @@ namespace ORTS.TrackViewer.Editing
         public int GetPrevJunctionIndex(int linkingTrackNodeIndex)
         {
             TrackNode linkingTrackNode = TrackDB.TrackNodes[linkingTrackNodeIndex];
-            return ForwardOriented
+            bool towardsNodeIsForwardOriented =
+                (this.NodeType == TrainpathNodeType.Reverse)
+                ? !ForwardOriented 
+                : ForwardOriented;
+            return towardsNodeIsForwardOriented
                 ? linkingTrackNode.JunctionIndexAtStart()
                 : linkingTrackNode.JunctionIndexAtEnd();
         }

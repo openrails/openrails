@@ -45,11 +45,13 @@ namespace ORTS.TrackViewer.Editing
                 uint trackShapeIndex = tn.TrJunctionNode.ShapeIndex;
                 try
                 {
-                    //TrackShape trackShape = tsectionDat.TrackShapes[trackShapeIndex];
                     TrackShape trackShape = tsectionDat.TrackShapes.Get(trackShapeIndex);
                     mainRoute = trackShape.MainRoute;
                 }
-                catch { }
+                catch (System.IO.InvalidDataException exception)
+                {
+                    exception.ToString(); 
+                }
 
                 mainRouteIndex[tni] = tn.Inpins + mainRoute;
                 if (mainRoute == 0)
