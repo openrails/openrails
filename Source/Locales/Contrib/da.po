@@ -1,0 +1,569 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Open Rails\n"
+"POT-Creation-Date: 2014-04-13 18:00:34+0200\n"
+"PO-Revision-Date: 2014-04-17 16:18+0100\n"
+"Last-Translator: Zepder\n"
+"Language-Team: \n"
+"Language: da\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:59
+msgid "Loading..."
+msgstr "Indlæser..."
+
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:69
+msgid "Open Rails Content Manager"
+msgstr "Open Rails Content Manager"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:553
+msgid "The path you are working on has un-saved changes.\n"
+msgstr ""
+"I den sti du arbejder på findes der ændringer som endnu ikke er gemt.\n"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:555
+msgid "Do you really want to Quit?"
+msgstr "Vil du virkelig afslutte spillet?"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:592
+msgid ""
+"Directory is not a valid install directory.\n"
+"The install directory needs to contain ROUTES, GLOBAL, ..."
+msgstr ""
+"Mappen er ikke en gyldig installations mappe.\n"
+"Installations mappen skal indeholde ROUTES, GLOBAL..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:658
+msgid "Loading route..."
+msgstr "Indlæser rute..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:678
+msgid "Route cannot be loaded. Sorry"
+msgstr "Rute kan ikke indlæses. Beklager"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:736
+msgid "Loading .pat file ..."
+msgstr "Indlæser .pat fil ..."
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:739
+msgid "Processing .pat file ..."
+msgstr "Behandler .pat fil ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:112
+msgid "Loading trackfile .trk ..."
+msgstr "Indlæser sporfil .trk ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:116
+msgid "Loading track database .tdb ..."
+msgstr "Indlæser spor database .tdb ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:121
+msgid "Loading tsection.dat ..."
+msgstr "Indlæser tsection.dat ..."
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:132
+msgid "Finding the angles to draw signals ..."
+msgstr "Søger vinklerne til at tegne signalerne ..."
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:418
+msgid "Not to be used, template only"
+msgstr "Skal ikke bruges, kun skabelon"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:441
+msgid "Place start point"
+msgstr "Placer startpunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:468
+msgid "Remove start point"
+msgstr "Fjern startpunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:493
+msgid "Change start direction"
+msgstr "Skift start-retning"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:522
+msgid "Place end point"
+msgstr "Placer slutpunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:559
+msgid "Remove end point"
+msgstr "Fjern slutpunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:585
+msgid "Place reversal point"
+msgstr "Placer vendepunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:620
+msgid "Remove reversal point"
+msgstr "Fjern vendepunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:681
+msgid "Place wait point"
+msgstr "Placer ventepunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:708
+msgid "Edit wait point"
+msgstr "Rediger ventepunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:732
+msgid "Remove wait point"
+msgstr "Fjern ventepunkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:972
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1734
+msgid "Take other exit"
+msgstr "Tag et andet spor"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1015
+msgid "Add passing path"
+msgstr "Tilføj passerings-sti"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1051
+msgid "Start passing path"
+msgstr "Start passerings-sti"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1109
+msgid "Remove passing path"
+msgstr "Fjern passerings-sti"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1150
+msgid "Remove broken point"
+msgstr "Fjern brudt punkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1185
+msgid "Remove everything after this point"
+msgstr "Fjern alt efter dette punkt"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1210
+msgid "Cut path here and store its tail"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1475
+msgid "Auto-fix broken nodes"
+msgstr "Auto-fix brudte knuder"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1583
+msgid "Reconnect to tail"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1641
+msgid "Reconnect passing path"
+msgstr "Tilslut passerings-sti"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2084
+msgid "Draw path until here"
+msgstr "Tegn stien indtil her"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2124
+msgid "Draw path until next broken point"
+msgstr "Tegn stien indtil næste brudt punkt"
+
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:86
+msgid "Saving broken paths is not supported"
+msgstr "Du kan ikke gemme brudte stier"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:366
+msgid "Closest junction is too far away"
+msgstr "Nærmeste sporskifter er for langt væk"
+
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:642
+msgid "Not able to place node on track"
+msgstr "Er ikke i stand til at placere knude på sporet"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:4
+msgid "Path metadata"
+msgstr "Metadata af sti"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:7
+msgid "Path ID"
+msgstr "Sti ID"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:11
+msgid "Path name"
+msgstr "Sti navn"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:15
+msgid "Path start"
+msgstr "Sti start"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:19
+msgid "Path end"
+msgstr "Sti slut"
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:23
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:25
+msgid " OK "
+msgstr " OK "
+
+#: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:26
+msgid " Cancel "
+msgstr " Annuller "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:4
+msgid "(Un)couple Point"
+msgstr "(Fra)koblings punkt"
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:7
+msgid "Uncouple  "
+msgstr "Frakobl "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:8
+msgid "Couple  "
+msgstr "Tilkobl"
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:10
+msgid "cars, wait for "
+msgstr "vogne, vent i "
+
+#: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:12
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:22
+msgid "seconds"
+msgstr "sekunder"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:4
+msgid "Wait Point"
+msgstr "Vente punkt"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:18
+msgid "Wait time = "
+msgstr "Ventetid = "
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:20
+msgid "minutes"
+msgstr "minutter"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
+msgid "File"
+msgstr "Fil"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
+msgid "(Re)load route"
+msgstr "(Gen)indlæs rute"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
+msgid "Select install folder"
+msgstr "Vælg installations mappe"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:11
+msgid "Select route"
+msgstr "Vælg rute"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:13
+msgid "Search by index"
+msgstr "Søg med index"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:14
+msgid "Search trackNode"
+msgstr "Søg trackNode"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:15
+msgid "Search trackNode for roads"
+msgstr "Søg trackNode til veje"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:16
+msgid "Search trackItem"
+msgstr "Søg trackItem"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:17
+msgid "Search trackItem for roads"
+msgstr "Søg trackItem til veje"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:20
+msgid "Quit (Q)"
+msgstr "Afslut (Q)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:22
+msgid "View"
+msgstr "Vis"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:23
+msgid "Center around platform"
+msgstr "Centrer omkring platform"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:26
+msgid "Center around siding"
+msgstr "Centrer omkring sidespor"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:30
+msgid "Show inset"
+msgstr "Vis minikort"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:31
+msgid "Show world tiles"
+msgstr "Vis World Tiles"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:32
+msgid "Show scale ruler"
+msgstr "Vis målestoks skala"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:33
+msgid "Show longitude/latitude"
+msgstr "Vis længde/breddegrad"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:34
+msgid "Use miles i.s.o. meters"
+msgstr "Brug mil i stedet for meter"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:36
+msgid "Save current zoom"
+msgstr "Gem den aktuelle zoom"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:37
+msgid "Restore saved zoom"
+msgstr "Gendan gemte zoom"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:39
+msgid "Zoom in (=)"
+msgstr "Zoom ind (=)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:40
+msgid "Zoom out (-)"
+msgstr "Zoom ud (-)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:41
+msgid "Zoom to tile (z)"
+msgstr "Zoom til Tile (z)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:42
+msgid "Zoom reset (r)"
+msgstr "Reset Zoom (r)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:44
+msgid "Anti aliasing (needs restart)"
+msgstr "Anti aliasing (kræver genstart)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:46
+msgid "Tracks"
+msgstr "Spor"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:47
+msgid "Color tracks"
+msgstr "Farvede spor"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:48
+msgid "Junctions/ends"
+msgstr "Knudepunkt/afslutninger"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
+msgid "Show junctions"
+msgstr "Vis knudepunkter"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
+msgid "Show end nodes"
+msgstr "Vis slutpunkter"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:52
+msgid "Sidings"
+msgstr "Sidespor"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
+msgid "Show siding markers (F9)"
+msgstr "Vis sidespor markører (F9)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
+msgid "Show siding names (shift-F9)"
+msgstr "Vis sidespor navne (shift-F9)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:56
+msgid "Platforms"
+msgstr "Platforme"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
+msgid "Show platform markers (F8)"
+msgstr "Vis platform markører (F8)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
+msgid "Show platform names (shift-F8)"
+msgstr "Vis platform navne (shift-F8)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
+msgid "Interactives"
+msgstr "Interaktive objekter"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
+msgid "Show signals (F7)"
+msgstr "Vis signaler (F7)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
+msgid "Show level crossings"
+msgstr "Vis jernbaneoverskæringer"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
+msgid "Show hazards"
+msgstr "Vis farer"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+msgid "Show fuel/pickups"
+msgstr "Vis forsyningskilder"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
+msgid "Show sound regions"
+msgstr "Vis lydområder"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:67
+msgid "Posts"
+msgstr "Poster"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
+msgid "Show speed limits (F5)"
+msgstr "Vis hastighedsbegrænsninger (F5)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
+msgid "Show mileposts (shift F5)"
+msgstr "Vis MilePosts (shift-F5)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
+msgid "Paths"
+msgstr "Sti"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
+msgid "Show path (F11)"
+msgstr "Vis sti (F11)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
+msgid "Show raw path from .pat file (shift F11)"
+msgstr "Vis sti fra .pat fil (shift-F11)"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:75
+msgid "Roads"
+msgstr "Veje"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
+msgid "Draw roads"
+msgstr "Tegn veje"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
+msgid "Show car spawners"
+msgstr "Se vejtraffik"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
+msgid "Show road crossings"
+msgstr "Vis fodgænger overgange"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:81
+msgid "Statusbar"
+msgstr "Statusliste"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
+msgid "Show vector section info"
+msgstr "Vis VectorSection oplysninger"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
+msgid "Show PAT file info"
+msgstr "Vis PAT fil oplysninger"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
+msgid "Show Path info"
+msgstr "Vis Sti oplysninger"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:89
+msgid "Preferences"
+msgstr "Indstillinger"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
+msgid "Select background color"
+msgstr "Vælg baggrundsfarve"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
+msgid "Path-Editor"
+msgstr "Redigering af Sti"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:93
+msgid "==Supporting MSTS paths only=="
+msgstr "==Søtter kun MSTS stier=="
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:94
+msgid "Select path"
+msgstr "Vælg sti"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
+msgid "Path Editor is under construction!"
+msgstr "Sti Redigering er under konstruktion"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
+msgid "Save path"
+msgstr "Gem sti"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:98
+msgid "Enable editing"
+msgstr "Aktiver redigering"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
+msgid "New path"
+msgstr "Ny sti"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
+msgid "Edit path metadata"
+msgstr "Rediger sti metadata"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
+msgid "Known limitations"
+msgstr "Kendte begrænsninger"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
+msgid "Help"
+msgstr "Hjælp"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
+msgid "Shortcuts"
+msgstr "Genveje"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
+msgid "About"
+msgstr "Om"
+
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:4
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:13
+msgid "Search"
+msgstr "Søg"
+
+#: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
+msgid "Cancel"
+msgstr "Annuller"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
+msgid "Shows tileX and tileZ of the world location at the mouse pointer"
+msgstr "Vis placeringen af tileX og tileZ-koordinater ved musemarkøren"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:41
+msgid "Shows X-coordinate (without tileX) at the mouse pointer"
+msgstr "Vis X-koordinater (uden tileX) ved musemarkøren"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:48
+msgid "Shows Z-coordinate (without tileZ) at the mouse pointer"
+msgstr "Vis Z-koordinater (uden tileZ) ved musemarkøren"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:54
+msgid "Trackindex"
+msgstr "Sporindex"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:60
+msgid "Index in the Track DataBase (.tdb) file"
+msgstr "Index i Spor Databasen (.tdb) fil"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:66
+msgid "Item"
+msgstr "Objekt"
+
+#: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:98
+msgid "Any other relevant information. Make your choice via Statusbar menu"
+msgstr "Alle andre relevante oplysninger. Vælg via Statusbar menu"
+
+#~ msgid "elementHost"
+#~ msgstr "elementHost"
+
+#~ msgid "Wait until  "
+#~ msgstr "Vent indtil"
+
+#~ msgid " = "
+#~ msgstr " = "
+
+#~ msgid "hours"
+#~ msgstr "timer"
