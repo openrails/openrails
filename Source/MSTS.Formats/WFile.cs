@@ -505,42 +505,42 @@ namespace MSTS.Formats
 
         public class ScaleRange
         {
-            public readonly float scaleRange1;
-            public readonly float scaleRange2;
+            public readonly float Minimum;
+            public readonly float Maximum;
 
             internal ScaleRange(SBR block)
             {
                 block.VerifyID(TokenID.ScaleRange);
-                scaleRange1 = block.ReadFloat();
-                scaleRange2 = block.ReadFloat();
+                Minimum = block.ReadFloat();
+                Maximum = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
         }
 
         public class ForestArea
         {
-            public readonly float areaDim1;
-            public readonly float areaDim2;
+            public readonly float X;
+            public readonly float Z;
 
             internal ForestArea(SBR block)
             {
                 block.VerifyID(TokenID.Area);
-                areaDim1 = block.ReadFloat();
-                areaDim2 = block.ReadFloat();
+                X = block.ReadFloat();
+                Z = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
         }
 
         public class TreeSize
         {
-            public readonly float treeSize1;
-            public readonly float treeSize2;
+            public readonly float Width;
+            public readonly float Height;
 
             internal TreeSize(SBR block)
             {
                 block.VerifyID(TokenID.TreeSize);
-                treeSize1 = block.ReadFloat();
-                treeSize2 = block.ReadFloat();
+                Width = block.ReadFloat();
+                Height = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
         }

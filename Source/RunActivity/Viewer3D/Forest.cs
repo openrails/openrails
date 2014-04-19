@@ -86,32 +86,21 @@ namespace ORTS.Viewer3D
 
         static List<VertexPositionNormalTexture> CalculateTrees(TileManager tiles, ForestObj forest, WorldPosition position, out float objectRadius)
         {
-            if (forest.scaleRange.scaleRange1 > forest.scaleRange.scaleRange2)
-                Trace.TraceWarning("{0} forest {1}: tree size minimum greater than maximum, using values backwards", position, forest.TreeTexture);
-
             // To get consistent tree placement between sessions, derive the seed from the location.
             var random = new Random((int)(1000.0 * (position.Location.X + position.Location.Z + position.Location.Y)));
-            var area = new Vector3(Math.Abs(forest.forestArea.areaDim1), 0, Math.Abs(forest.forestArea.areaDim2));
-            var population = (int)(0.75f * (float)forest.Population) + 1;
-            var size = new Vector3(forest.treeSize.treeSize1, forest.treeSize.treeSize2, 0);
-            var scaleMin = Math.Min(forest.scaleRange.scaleRange1, forest.scaleRange.scaleRange2);
-            var scaleMax = Math.Max(forest.scaleRange.scaleRange1, forest.scaleRange.scaleRange2);
-            var plantingArea = area - new Vector3(size.X * 2 + 1, 0, size.X * 2 + 1);
-            if (plantingArea.X < 0.5) plantingArea.X = 0.5f;
-            if (plantingArea.Z < 0.5) plantingArea.Z = 0.5f;
 
-            objectRadius = (float)Math.Sqrt(area.X * area.X + area.Z * area.Z) / 2;
+            objectRadius = (float)Math.Sqrt(forest.forestArea.X * forest.forestArea.X + forest.forestArea.Z * forest.forestArea.Z) / 2;
 
-            var trees = new List<VertexPositionNormalTexture>(population * 6);
-            for (var i = 0; i < population; i++)
+            var trees = new List<VertexPositionNormalTexture>(forest.Population * 6);
+            for (var i = 0; i < forest.Population; i++)
             {
-                var xnaTreePosition = new Vector3((0.5f - (float)random.NextDouble()) * plantingArea.X, 0, (0.5f - (float)random.NextDouble()) * plantingArea.Z);
-                xnaTreePosition = Vector3.Transform(xnaTreePosition, position.XNAMatrix);
+                var xnaTreePosition = new Vector3((0.5f - (float)random.NextDouble()) * forest.forestArea.X, 0, (0.5f - (float)random.NextDouble()) * forest.forestArea.Z);
+                Vector3.Transform(ref xnaTreePosition, ref position.XNAMatrix, out xnaTreePosition);
                 xnaTreePosition.Y = tiles.GetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z);
                 xnaTreePosition -= position.XNAMatrix.Translation;
 
-                var scale = MathHelper.Lerp(scaleMin, scaleMax, (float)random.NextDouble());
-                var treeSize = new Vector3(size.X * scale, size.Y * scale, 1);
+                var scale = MathHelper.Lerp(forest.scaleRange.Minimum, forest.scaleRange.Maximum, (float)random.NextDouble());
+                var treeSize = new Vector3(forest.treeSize.Width * scale, forest.treeSize.Height * scale, 1);
 
                 trees.Add(new VertexPositionNormalTexture(xnaTreePosition, treeSize, new Vector2(1, 1)));
                 trees.Add(new VertexPositionNormalTexture(xnaTreePosition, treeSize, new Vector2(0, 0)));
@@ -120,7 +109,6 @@ namespace ORTS.Viewer3D
                 trees.Add(new VertexPositionNormalTexture(xnaTreePosition, treeSize, new Vector2(0, 1)));
                 trees.Add(new VertexPositionNormalTexture(xnaTreePosition, treeSize, new Vector2(0, 0)));
             }
-
             return trees;
         }
 
