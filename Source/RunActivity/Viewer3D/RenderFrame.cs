@@ -152,7 +152,13 @@ namespace ORTS.Viewer3D
             {
                 // For unknown reasons, this would crash with an ArgumentException (saying Compare(x, x) != 0)
                 // sometimes when calculated as two values and subtracted. Presumed cause is floating point.
-                return (int)((y.XNAMatrix.Translation - XNAViewerPos).Length() - (x.XNAMatrix.Translation - XNAViewerPos).Length() - y.RenderPrimitive.SortIndex + x.RenderPrimitive.SortIndex);
+                var xd = (x.XNAMatrix.Translation - XNAViewerPos).Length();
+                var yd = (y.XNAMatrix.Translation - XNAViewerPos).Length();
+                // If the absolute difference is >= 1mm use that; otherwise, they're effectively in the same
+                // place so fall back to the SortIndex.
+                if (Math.Abs(yd - xd) >= 0.001)
+                    return Math.Sign(yd - xd);
+                return Math.Sign(x.RenderPrimitive.SortIndex - y.RenderPrimitive.SortIndex);
             }
 
             #endregion
