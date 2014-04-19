@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-04-13 18:00:34+0200\n"
-"PO-Revision-Date: 2014-04-13 18:00:36+0200\n"
+"POT-Creation-Date: 2014-04-19 15:32:10+0200\n"
+"PO-Revision-Date: 2014-04-19 15:32:12+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,42 +11,42 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.cs:59
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:61
 msgid "Loading..."
 msgstr ""
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:69
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:70
 msgid "Open Rails Content Manager"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:553
+#: ../../Contrib/TrackViewer/TrackViewer.cs:552
 msgid ""
 "The path you are working on has un-saved changes.\n"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:555
+#: ../../Contrib/TrackViewer/TrackViewer.cs:554
 msgid "Do you really want to Quit?"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:592
+#: ../../Contrib/TrackViewer/TrackViewer.cs:591
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:658
+#: ../../Contrib/TrackViewer/TrackViewer.cs:657
 msgid "Loading route..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:678
+#: ../../Contrib/TrackViewer/TrackViewer.cs:677
 msgid "Route cannot be loaded. Sorry"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:736
+#: ../../Contrib/TrackViewer/TrackViewer.cs:735
 msgid "Loading .pat file ..."
 msgstr ""
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:739
+#: ../../Contrib/TrackViewer/TrackViewer.cs:738
 msgid "Processing .pat file ..."
 msgstr ""
 
@@ -82,80 +82,80 @@ msgstr ""
 msgid "Change start direction"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:522
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:521
 msgid "Place end point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:559
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:558
 msgid "Remove end point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:585
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:584
 msgid "Place reversal point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:620
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:619
 msgid "Remove reversal point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:681
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:680
 msgid "Place wait point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:708
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:707
 msgid "Edit wait point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:732
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:731
 msgid "Remove wait point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:972
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1734
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:971
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1851
 msgid "Take other exit"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1015
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1014
 msgid "Add passing path"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1051
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1050
 msgid "Start passing path"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1109
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1108
 msgid "Remove passing path"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1150
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1149
 msgid "Remove broken point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1185
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1184
 msgid "Remove everything after this point"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1210
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1209
 msgid "Cut path here and store its tail"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1475
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1592
 msgid "Auto-fix broken nodes"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1583
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1700
 msgid "Reconnect to tail"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1641
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1758
 msgid "Reconnect passing path"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2084
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2201
 msgid "Draw path until here"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2124
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2241
 msgid "Draw path until next broken point"
 msgstr ""
 
@@ -163,11 +163,11 @@ msgstr ""
 msgid "Saving broken paths is not supported"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:366
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:322
 msgid "Closest junction is too far away"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:642
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:647
 msgid "Not able to place node on track"
 msgstr ""
 
@@ -468,51 +468,55 @@ msgstr ""
 msgid "Select background color"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
-msgid "Path-Editor"
-msgstr ""
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:93
-msgid "==Supporting MSTS paths only=="
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
+msgid "Zooming is centered on mouse"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:94
-msgid "Select path"
+msgid "Path-Editor"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
+msgid "==Supporting MSTS paths only=="
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
-msgid "Path Editor is under construction!"
-msgstr ""
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
-msgid "Save path"
+msgid "Select path"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:98
-msgid "Enable editing"
+msgid "Path Editor is under construction!"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
-msgid "New path"
+msgid "Save path"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
-msgid "Edit path metadata"
+msgid "Enable editing"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
-msgid "Known limitations"
+msgid "New path"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:102
+msgid "Edit path metadata"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
-msgid "Help"
-msgstr ""
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
-msgid "Shortcuts"
+msgid "Known limitations"
 msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
+msgid "Help"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:106
+msgid "Shortcuts"
+msgstr ""
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
 msgid "About"
 msgstr ""
 
