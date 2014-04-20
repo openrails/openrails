@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open Rails\n"
 "POT-Creation-Date: 2014-04-09 23:43:15+0800\n"
-"PO-Revision-Date: 2014-04-12 13:56+0100\n"
+"PO-Revision-Date: 2014-04-20 18:38+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -692,7 +692,7 @@ msgstr "Ziel-Framerate"
 
 #: ../../Menu/Options.Designer.cs:982
 msgid "Automatically tune settings to keep performance level"
-msgstr "Framerate automatisch regulieren um Leistung zu aufrecht zu erhalten"
+msgstr "Framerate automatisch regulieren um Leistung aufrecht zu erhalten"
 
 #: ../../Menu/Options.Designer.cs:992
 msgid "Double overhead wires"
