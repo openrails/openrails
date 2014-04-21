@@ -176,6 +176,8 @@ namespace ORTS.Common
         public static float   ToTUS(float k)    { return k / 907.1847f; }   // Kg => Tons (US)
         public static float FromTUK(float t)    { return t * 1016.047f; }   // Tons (UK) => Kg 
         public static float   ToTUK(float k)    { return k / 1016.047f; }   // kg => Tons (UK)
+        public static float ToTonne(float k) { return k / 1000.0f; }   // kg => Tonnes (Metric)
+        public static float FromTonne(float t) { return t * 1000.0f; }   // Tonnes (Metric) => Kg 
     }
 
     /// <summary>

@@ -61,6 +61,8 @@ namespace ORTS
         public bool DoorRightOpen;
         public bool MirrorOpen;
         public bool IsRollerBearing; // Has roller bearings
+        public bool IsLowTorqueRollerBearing; // Has low torque roller bearings
+        public bool IsFrictionBearing; //Has friction (or solid bearings)
         public bool IsStandStill = true;  // Used for MSTS type friction
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsLowSpeed = true; // set indicator for low speed operation  0 - 5mph
@@ -82,11 +84,8 @@ namespace ORTS
         public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
         public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case i'ts missing from the wag
         float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
-        float RollerBearingCutoutSpeedMpS; // Speed at which the roller bearing will no longer have a reduced influence on friction
         public float Friction0N;        // static friction
         float Friction5N;               // Friction at 5mph
-        float DavisANnew;               // Temporary value of Davis A for roller bearing calculations
-        float RollerBearingFrictionN; // Temp value for calculating roller bearing friction
         public float DavisAN;           // davis equation constant
         public float DavisBNSpM;        // davis equation constant for speed
         public float DavisCNSSpMM;      // davis equation constant for speed squared
@@ -232,13 +231,15 @@ namespace ORTS
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
-                case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.Resistance, null); break;
+                case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, null); break;
                 case "wagon(ortsbearingtype":
 		            stf.MustMatch("(");
 		            string typeString2 = stf.ReadString();
 		            IsRollerBearing = String.Compare(typeString2,"Roller") == 0 ? true : false;
+                    IsLowTorqueRollerBearing = String.Compare(typeString2, "Low") == 0 ? true : false;
+                    IsFrictionBearing = String.Compare(typeString2, "Friction") == 0 ? true : false;
 		            break;
                 case "wagon(friction": ParseFriction(stf); break;
                 case "wagon(brakesystemtype":
@@ -343,6 +344,8 @@ namespace ORTS
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
             IsRollerBearing = copy.IsRollerBearing;
+            IsLowTorqueRollerBearing = copy.IsLowTorqueRollerBearing;
+            IsFrictionBearing = copy.IsFrictionBearing;
             LengthM = copy.LengthM;
             HeightM = copy.HeightM;
             TrackGaugeM = copy.TrackGaugeM;
@@ -553,51 +556,104 @@ namespace ORTS
                     IsLowSpeed = false;
                 if (s == 0.0)
                     IsLowSpeed = true;
-                
-                float SteamLocoMechFrictN = GetSteamLocoMechFrictN();        
-                
+
+                float SteamLocoMechFrictN = GetSteamLocoMechFrictN();
+
                 if (IsLowSpeed)
                 {
-                    const float s5 = 2.2352f; // 5 mph
-                    Friction5N = DavisAN + s5 * (DavisBNSpM + s5 * DavisCNSSpMM); // Calculate friction @ 5 mph
+                    // If weather is freezing, then starting friction will be greater until bearings have warmed up.
+                    // Chwck whether weather is snowing
+
+                    int FrictionWeather = (int)Program.Simulator.Weather;
+                    bool IsSnowing = false;
+
+                    if (FrictionWeather == 1)
+                    {
+                        IsSnowing = true;  // Weather snowing - freezing conditions
+                    }
+
+                    // Dtermine the starting friction factor based upon the type of bearing
+
+                    float StartFrictionLow = 0.0f;
+                    float StartFrictionHigh = 0.0f;
+
                     if (IsRollerBearing)
                     {
-                        StaticFrictionFactorLb = 12.0f; // multiplier factor for roller bearings - 10lbs / short ton, seems low so try 12lbs
-                        DavisANnew = DavisAN;
-                        RollerBearingFrictionN = 0.9f * (DavisAN - SteamLocoMechFrictN); // Roller bearing friction reduced to 90% when train operating between 5 & 35mph
-                        DavisANnew = RollerBearingFrictionN + SteamLocoMechFrictN; // Calculate new Davis A value based on a reduction for roller bearing               
-                        Friction5N = DavisANnew + s5 * (DavisBNSpM + s5 * DavisCNSSpMM); // Calculate friction @ 5 mph - normal for friction bearings
+                        if (!IsSnowing)
+                        {
+                            StartFrictionLow = 4.257f;  // Starting friction for a 10 ton(US) car with standard roller bearings, not snowing
+                            StartFrictionHigh = 15.93f;  // Starting friction for a 100 ton(US) car with standard roller bearings, not snowing
+                        }
+                        else
+                        {
+                            StartFrictionLow = 12.771f;  // Starting friction for a 10 ton(US) car with Low troque bearings, snowing
+                            StartFrictionHigh = 30.0f;  // Starting friction for a 100 ton(US) car with low torque bearings, snowing
+                        }
+                        if (Kg.ToTUS(MassKG) < 10.0)
+                        {
+                            StaticFrictionFactorLb = StartFrictionLow;  // Starting friction for a < 10 ton(US) car with standard roller bearings
+                        }
+                        else if (Kg.ToTUS(MassKG) > 100.0)
+                        {
+                            StaticFrictionFactorLb = StartFrictionHigh;  // Starting friction for a > 100 ton(US) car with standard roller bearings
+                        }
+                        else
+                        {
+                            StaticFrictionFactorLb = ((Kg.ToTUS(MassKG) - 10.0f) / 90.0f) * StartFrictionHigh;
+                        }
                     }
-                    else
+                    else if (IsLowTorqueRollerBearing)
                     {
-                        StaticFrictionFactorLb = 20.0f; // multiplier factor for friction bearings - 20lbs / short ton
-                        Friction5N = DavisAN + s5 * (DavisBNSpM + s5 * DavisCNSSpMM); // Calculate friction @ 5 mph - normal for friction bearings
+                        if (!IsSnowing)
+                        {
+                            StartFrictionLow = 2.66f;  // Starting friction for a 10 ton(US) car with Low troque bearings, not snowing
+                            StartFrictionHigh = 7.714f;  // Starting friction for a 100 ton(US) car with low torque bearings, not snowing
+                        }
+                        else
+                        {
+                            StartFrictionLow = 7.98f;  // Starting friction for a 10 ton(US) car with Low troque bearings, not snowing
+                            StartFrictionHigh = 23.142f;  // Starting friction for a 100 ton(US) car with low torque bearings, not snowing
+                        }
+                        if (Kg.ToTUS(MassKG) < 10.0)
+                        {
+                            StaticFrictionFactorLb = StartFrictionLow;  // Starting friction for a < 10 ton(US) car with Low troque bearings
+                        }
+                        else if (Kg.ToTUS(MassKG) > 100.0)
+                        {
+                            StaticFrictionFactorLb = StartFrictionHigh;  // Starting friction for a > 100 ton(US) car with low torque bearings
+                        }
+                        else
+                        {
+                            StaticFrictionFactorLb = ((Kg.ToTUS(MassKG) - 10.0f) / 90.0f) * StartFrictionHigh;
+                        }
+                        SteamLocoMechFrictN = 0.0f; // Assume no locomotive mechanical friction if fitted with low torque roller bearings
+                       
                     }
+                    else  // default to friction (solid) bearing
+                    {
+
+                        if (!IsSnowing)
+                        {
+                            StaticFrictionFactorLb = 20.0f; // multiplier factor for friction bearings - 20lbs / short ton
+                        }
+                        else
+                        {
+                            StaticFrictionFactorLb = 35.0f; // multiplier factor for friction bearings - 35lbs / short ton
+                        }
+
+                        SteamLocoMechFrictN = 0.0f; // Assume no locomotive mechanical friction if fitted with roller bearings
+                    }
+
+                    const float s5 = 2.2352f; // 5 mph
+                    Friction5N = DavisAN + s5 * (DavisBNSpM + s5 * DavisCNSSpMM); // Calculate friction @ 5 mph
                     Friction0N = N.FromLbf(Kg.ToTUS(MassKG) * StaticFrictionFactorLb) + SteamLocoMechFrictN; // Static friction is journal or roller bearing friction x factor + Mech Factor if steam 
                     float FrictionLowSpeedN = ((1.0f - (s / s5)) * (Friction0N - Friction5N)) + Friction5N; // Calculate friction below 5mph - decreases linearly with speed
                     FrictionForceN = FrictionLowSpeedN; // At low speed use this value
                 }
                 else
                 {
-                    if (IsRollerBearing)
-                    {
-                        RollerBearingCutoutSpeedMpS = MpS.FromMpH(35.0f);  // set the roller bearing cutout speed at 35mph
-                        if (s < RollerBearingCutoutSpeedMpS)
-                        {
-                            DavisANnew = DavisAN;
-                            RollerBearingFrictionN = 0.9f * (DavisANnew - SteamLocoMechFrictN); // Roller bearing friction reduced to 90% when train operating between 5 & 35mph
-                            DavisANnew = RollerBearingFrictionN + SteamLocoMechFrictN; // Calculate new Davis A value based on a reduction for roller bearing                
-                            FrictionForceN = DavisANnew + s * (DavisBNSpM + s * DavisCNSSpMM); // At speeds above 35mph use this value for roller bearings
-                        }
-                        else
-                        {
-                            FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM); // At speeds above 35mph use this value for roller bearings
-                        }
-                    }
-                    else
-                    {
-                        FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM); // for friction bearings use this formula
-                    }
+                    FrictionForceN = DavisAN + s * (DavisBNSpM + s * DavisCNSSpMM) + SteamLocoMechFrictN; // for normal speed operation
+
                 }
             }
             else  // else use old MSTS type friction

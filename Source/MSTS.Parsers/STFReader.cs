@@ -741,7 +741,7 @@ namespace MSTS.Parsers
             /// </summary>
             Stiffness = 1 << 17,
 
-            /// <summary>Valid Units: n/m/s (+ '/m/s' in case the newtons is missed) 
+            /// <summary>Valid Units: n/m/s (+ '/m/s' in case the newtons is missed), lbf/mph 
             /// <para>Scaled to newtons/speed(m/s)</para>
             /// </summary>
             Resistance = 1 << 18,
@@ -786,6 +786,12 @@ namespace MSTS.Parsers
             /// <para>Scaled to kgm^2.</para>
             /// </summary>            
             RotationalInertia = 1 << 25,
+
+              /// <summary>
+            /// Valid Units: N/m/s^2, lbf/mph^2
+            /// <para>Scaled to N/m/s^2.</para>
+            /// </summary>            
+            ResistanceDavisC = 1 << 26,
 
             // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values.
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
@@ -1023,6 +1029,7 @@ namespace MSTS.Parsers
                     case "": return 1.0;
                     case "n/m/s": return 1;
                     case "ns/m": return 1;
+                    case "lbf/mph": return 10.0264321;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps => 4.4822162 / 0.44704 = 10.0264321
                 }
             if ((validUnits & UNITS.PressureDefaultPSI) > 0)
                 switch (suffix)
@@ -1080,7 +1087,14 @@ namespace MSTS.Parsers
                 {
                     case "": return 1.0;
                 }
-            
+            if ((validUnits & UNITS.ResistanceDavisC) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;        
+                    case "N/m/s^2": return 1;
+                    case "lbf/mph^2": return 22.42849;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps +> 4.4822162 / (0.44704 * 0.44704) = 22.42849
+                }            
+
             STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");
             return 1;
         }
