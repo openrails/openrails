@@ -19,6 +19,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -55,7 +57,7 @@ namespace ORTS.Viewer3D
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Pricipitation.Update(gameTime, elapsedTime, Weather.pricipitationIntensity, Viewer.Tiles, Viewer.Camera.CameraWorldLocation);
+            Pricipitation.Update(gameTime, elapsedTime, Weather.pricipitationIntensity, Viewer);
 
             // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
             var XNAWorldLocation = Matrix.Identity;
@@ -73,7 +75,7 @@ namespace ORTS.Viewer3D
             var gameTime = (float)Viewer.Simulator.GameTime;
             Pricipitation.Initialize(Viewer.Simulator.Weather, Wind);
             // Camera is null during first initialisation.
-            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.pricipitationIntensity, Viewer.Tiles, Viewer.Camera.CameraWorldLocation);
+            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.pricipitationIntensity, Viewer);
         }
 
         [CallOnThread("Loader")]
@@ -125,6 +127,7 @@ namespace ORTS.Viewer3D
 
         float ParticleDuration;
         Vector3 ParticleDirection;
+        HeightCache Heights;
 
         // Particle buffer goes like this:
         //   +--active>-----new>--+
@@ -150,6 +153,7 @@ namespace ORTS.Viewer3D
             VertexBuffer = new DynamicVertexBuffer(graphicsDevice, typeof(ParticleVertex), MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
             VertexBuffer.ContentLost += new System.EventHandler(VertexBuffer_ContentLost);
             IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
+            Heights = new HeightCache(8);
         }
 
         void VertexBuffer_ContentLost(object sender, EventArgs e)
@@ -229,8 +233,12 @@ namespace ORTS.Viewer3D
             DrawCounter = 0;
         }
 
-        public void Update(float currentTime, ElapsedTime elapsedTime, float particlesPerSecond, TileManager tiles, WorldLocation worldLocation)
+        public void Update(float currentTime, ElapsedTime elapsedTime, float particlesPerSecond, Viewer viewer)
         {
+            var tiles = viewer.Tiles;
+            var scenery = viewer.World.Scenery;
+            var worldLocation = viewer.Camera.CameraWorldLocation;
+
             if (TimeParticlesLastEmitted == 0)
             {
                 TimeParticlesLastEmitted = currentTime - ParticleDuration;
@@ -252,7 +260,7 @@ namespace ORTS.Viewer3D
             for (var i = 0; i < numToEmit; i++)
             {
                 var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Program.Random.NextDouble() - 0.5) * ParticleBoxSizeM), 0, worldLocation.Location.Z + (float)((Program.Random.NextDouble() - 0.5) * ParticleBoxSizeM));
-                temp.Location.Y = tiles.GetElevation(temp);
+                temp.Location.Y = Heights.GetHeight(temp, tiles, scenery);
                 var position = new WorldPosition(temp);
 
                 var time = MathHelper.Lerp(TimeParticlesLastEmitted, currentTime, (float)Program.Random.NextDouble());
@@ -328,6 +336,68 @@ namespace ORTS.Viewer3D
             }
 
             DrawCounter++;
+        }
+
+        class HeightCache
+        {
+            const int TileCount = 10;
+
+            readonly int BlockSize;
+            readonly int Divisions;
+            readonly List<Tile> Tiles = new List<Tile>();
+
+            public HeightCache(int blockSize)
+            {
+                BlockSize = blockSize;
+                Divisions = (int)Math.Round(2048f / blockSize);
+            }
+
+            public float GetHeight(WorldLocation location, TileManager tiles, SceneryDrawer scenery)
+            {
+                location.Normalize();
+
+                // First, ensure we have the tile in question cached.
+                var tile = Tiles.FirstOrDefault(t => t.TileX == location.TileX && t.TileZ == location.TileZ);
+                if (tile == null)
+                    Tiles.Add(tile = new Tile(location.TileX, location.TileZ, Divisions));
+
+                // Remove excess entries.
+                if (Tiles.Count > TileCount)
+                    Tiles.RemoveAt(0);
+
+                // Now calculate division to query.
+                var x = (int)((location.Location.X + 1024) / BlockSize);
+                var z = (int)((location.Location.Z + 1024) / BlockSize);
+
+                // If we don't have it cached, load it.
+                if (tile.Height[x, z] == float.MinValue)
+                {
+                    var position = new WorldLocation(location.TileX, location.TileZ, (x + 0.5f) * BlockSize - 1024, 0, (z + 0.5f) * BlockSize - 1024);
+                    tile.Height[x, z] = Math.Max(tiles.GetElevation(position), scenery.GetBoundingBoxTop(position, BlockSize));
+                    tile.Used++;
+                }
+
+                return tile.Height[x, z];
+            }
+
+            [DebuggerDisplay("Tile = {TileX},{TileZ} Used = {Used}")]
+            class Tile
+            {
+                public readonly int TileX;
+                public readonly int TileZ;
+                public readonly float[,] Height;
+                public int Used;
+
+                public Tile(int tileX, int tileZ, int divisions)
+                {
+                    TileX = tileX;
+                    TileZ = tileZ;
+                    Height = new float[divisions, divisions];
+                    for (var x = 0; x < divisions; x++)
+                        for (var z = 0; z < divisions; z++)
+                            Height[x, z] = float.MinValue;
+                }
+            }
         }
     }
 

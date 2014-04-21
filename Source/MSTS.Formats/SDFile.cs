@@ -60,7 +60,7 @@ namespace MSTS.Formats
                     new STFReader.TokenProcessor("esd_subobj", ()=>{ ESD_SubObj = true; stf.SkipBlock(); }),
                     new STFReader.TokenProcessor("esd_bounding_box", ()=>{
                         ESD_Bounding_Box = new ESD_Bounding_Box(stf);
-                        if (ESD_Bounding_Box.A == null || ESD_Bounding_Box.B == null)  // ie quietly handle ESD_Bounding_Box()
+                        if (ESD_Bounding_Box.Min == null || ESD_Bounding_Box.Max == null)  // ie quietly handle ESD_Bounding_Box()
                             ESD_Bounding_Box = null;
                     }),
                 });
@@ -79,8 +79,8 @@ namespace MSTS.Formats
         {
             public ESD_Bounding_Box() // default used for files with no SD file
             {
-                A = new TWorldPosition(-10, -10, -10);
-                B = new TWorldPosition(10, 10, 10);
+                Min = new TWorldPosition(0, 0, 0);
+                Max = new TWorldPosition(0, 0, 0);
             }
 
             public ESD_Bounding_Box(STFReader stf)
@@ -92,16 +92,16 @@ namespace MSTS.Formats
                 float X = stf.ReadFloat(STFReader.UNITS.None, null);
                 float Y = stf.ReadFloat(STFReader.UNITS.None, null);
                 float Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                A = new TWorldPosition(X, Y, Z);
+                Min = new TWorldPosition(X, Y, Z);
                 X = stf.ReadFloat(STFReader.UNITS.None, null);
                 Y = stf.ReadFloat(STFReader.UNITS.None, null);
                 Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                B = new TWorldPosition(X, Y, Z);
+                Max = new TWorldPosition(X, Y, Z);
                 // JP2indirt.sd has extra parameters
                 stf.SkipRestOfBlock();
             }
-            public TWorldPosition A;
-            public TWorldPosition B;
+            public TWorldPosition Min;
+            public TWorldPosition Max;
         }
     }
 }

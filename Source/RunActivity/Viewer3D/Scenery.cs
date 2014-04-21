@@ -108,6 +108,30 @@ namespace ORTS.Viewer3D
         }
 
         [CallOnThread("Updater")]
+        public float GetBoundingBoxTop(WorldLocation location, float blockSize)
+        {
+            return GetBoundingBoxTop(location.TileX, location.TileZ, location.Location.X, location.Location.Z, blockSize);
+        }
+
+        [CallOnThread("Updater")]
+        public float GetBoundingBoxTop(int tileX, int tileZ, float x, float z, float blockSize)
+        {
+            // Normalize the coordinates to the right tile.
+            while (x >= 1024) { x -= 2048; tileX++; }
+            while (x < -1024) { x += 2048; tileX--; }
+            while (z >= 1024) { z -= 2048; tileZ++; }
+            while (z < -1024) { z += 2048; tileZ--; }
+
+            // Fetch the tile we're looking up elevation for; if it isn't loaded, no elevation.
+            var worldFiles = WorldFiles;
+            var worldFile = worldFiles.FirstOrDefault(wf => wf.TileX == tileX && wf.TileZ == tileZ);
+            if (worldFile == null)
+                return float.MinValue;
+
+            return worldFile.GetBoundingBoxTop(x, z, blockSize);
+        }
+
+        [CallOnThread("Updater")]
         public void Update(ElapsedTime elapsedTime)
         {
             var worldFiles = WorldFiles;
@@ -159,6 +183,7 @@ namespace ORTS.Viewer3D
         public List<TrItemLabel> sidings = new List<TrItemLabel>();
         public List<TrItemLabel> platforms = new List<TrItemLabel>();
         public List<PickupObj> PickupList = new List<PickupObj>();
+        public List<BoundingBox> BoundingBoxes = new List<BoundingBox>();
 
         readonly Viewer Viewer;
 
@@ -223,6 +248,22 @@ namespace ORTS.Viewer3D
                     {
                         Trace.TraceWarning("{0} scenery object {1} with StaticFlags {3:X8} references non-existent {2}", WFileName, worldObject.UID, shapeFilePath, worldObject.StaticFlags);
                         shapeFilePath = null;
+                    }
+                }
+
+                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                {
+                    var shape = new SDFile(shapeFilePath + "d");
+                    if (shape.shape.ESD_Bounding_Box != null)
+                    {
+                        var min = shape.shape.ESD_Bounding_Box.Min;
+                        var max = shape.shape.ESD_Bounding_Box.Max;
+                        var transform = Matrix.Invert(worldMatrix.XNAMatrix);
+                        // Not sure if this is needed, but it is to correct for center-of-gravity being not the center of the box.
+                        //transform.M41 += (max.X + min.X) / 2;
+                        //transform.M42 += (max.Y + min.Y) / 2;
+                        //transform.M43 += (max.Z + min.Z) / 2;
+                        BoundingBoxes.Add(new BoundingBox(transform, new Vector3((max.X - min.X) / 2, (max.Y - min.Y) / 2, (max.Z - min.Z) / 2), worldMatrix.XNAMatrix.Translation.Y));
                     }
                 }
 
@@ -412,6 +453,22 @@ namespace ORTS.Viewer3D
         }
 
         [CallOnThread("Updater")]
+        public float GetBoundingBoxTop(float x, float z, float blockSize)
+        {
+            var location = new Vector3(x, float.MinValue, -z);
+            foreach (var boundingBox in BoundingBoxes)
+            {
+                if (boundingBox.Size.X < blockSize / 2 || boundingBox.Size.Z < blockSize / 2)
+                    continue;
+
+                var boxLocation = Vector3.Transform(location, boundingBox.Transform);
+                if (-boundingBox.Size.X <= boxLocation.X && boxLocation.X <= boundingBox.Size.X && -boundingBox.Size.Z <= boxLocation.Z && boxLocation.Z <= boundingBox.Size.Z)
+                    location.Y = Math.Max(location.Y, boundingBox.Height + boundingBox.Size.Y);
+            }
+            return location.Y;
+        }
+
+        [CallOnThread("Updater")]
         public void Update(ElapsedTime elapsedTime)
         {
             foreach (var spawner in carSpawners)
@@ -506,6 +563,20 @@ namespace ORTS.Viewer3D
                 tileCoord *= -1;
             }
             return sign + tileCoord.ToString("000000");
+        }
+    }
+
+    public struct BoundingBox
+    {
+        public readonly Matrix Transform;
+        public readonly Vector3 Size;
+        public readonly float Height;
+
+        internal BoundingBox(Matrix transform, Vector3 size, float height)
+        {
+            Transform = transform;
+            Size = size;
+            Height = height;
         }
     }
 }
