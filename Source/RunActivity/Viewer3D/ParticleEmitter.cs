@@ -208,6 +208,7 @@ namespace ORTS.Viewer3D
             VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
             VertexBuffer = new DynamicVertexBuffer(graphicsDevice, typeof(ParticleVertex), MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
+            VertexBuffer.ContentLost += new System.EventHandler(VertexBuffer_ContentLost);
             IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
 
             EmitterData = data;
@@ -219,6 +220,11 @@ namespace ORTS.Viewer3D
 
             WorldPosition = worldPosition;
             LastWorldPosition = new WorldPosition(worldPosition);
+        }
+
+        void VertexBuffer_ContentLost(object sender, EventArgs e)
+        {
+            VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, VertexStride, SetDataOptions.NoOverwrite);
         }
 
         static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndicies)

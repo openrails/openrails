@@ -1167,7 +1167,7 @@ namespace ORTS.Viewer3D.RollingStock
             {
                 if (_Viewer.Settings.UseMSTSEnv == false)
                     _Shader.SetData(_Viewer.MaterialManager.sunDirection,
-                        _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.Sky.overcastFactor);
+                        _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.WeatherControl.overcastFactor);
                 else
                     _Shader.SetData(_Viewer.MaterialManager.sunDirection,
                 _isNightTexture, _Locomotive.CabLightOn, _Viewer.World.MSTSSky.mstsskyovercastFactor);

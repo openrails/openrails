@@ -68,10 +68,6 @@ namespace ORTS.Viewer3D
         // Wind speed and direction
         public float windSpeed;
         public float windDirection;
-        // Overcast level
-        public float overcastFactor;
-        // Fog distance
-        public float fogDistance;
 
         // These arrays and vectors define the position of the sun and moon in the world
         Vector3[] solarPosArray = new Vector3[72];
@@ -137,70 +133,7 @@ namespace ORTS.Viewer3D
                 moonPhase = random.Next(8);
                 if (moonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
                     moonPhase = 3; // Moon dog only occurs in winter
-                // Overcast factor: 0.0=almost no clouds; 0.1=wispy clouds; 1.0=total overcast
-                overcastFactor = Viewer.World.WeatherControl.overcastFactor;
-                fogDistance = Viewer.World.WeatherControl.fogDistance;
             }
-
-            if (MultiPlayer.MPManager.IsClient() && MultiPlayer.MPManager.Instance().weatherChanged)
-            {
-                //received message about weather change
-                if (MultiPlayer.MPManager.Instance().overCast >= 0)
-                {
-                    overcastFactor = MultiPlayer.MPManager.Instance().overCast;
-                }
-                //received message about weather change
-                if (MultiPlayer.MPManager.Instance().newFog > 0)
-                {
-                    fogDistance = MultiPlayer.MPManager.Instance().newFog;
-                }
-                try
-                {
-                    if (MultiPlayer.MPManager.Instance().overCast >= 0 || MultiPlayer.MPManager.Instance().newFog > 0)
-                    {
-                        MultiPlayer.MPManager.Instance().weatherChanged = false;
-                        MultiPlayer.MPManager.Instance().overCast = -1;
-                        MultiPlayer.MPManager.Instance().newFog = -1;
-                    }
-                }
-                catch { }
-
-            }
-
-            ////////////////////// T E M P O R A R Y ///////////////////////////
-
-            // The following keyboard commands are used for viewing sky and weather effects in "demo" mode.
-            // Control- and Control+ for overcast, Shift- and Shift+ for fog and - and + for time.
-
-            // Don't let multiplayer clients adjust the weather.
-            if (!MultiPlayer.MPManager.IsClient())
-            {
-                // Overcast ranges from 0 (completely clear) to 1 (completely overcast).
-                if (UserInput.IsDown(UserCommands.DebugOvercastIncrease)) overcastFactor = MathHelper.Clamp(overcastFactor + elapsedTime.RealSeconds / 10, 0, 1);
-                if (UserInput.IsDown(UserCommands.DebugOvercastDecrease)) overcastFactor = MathHelper.Clamp(overcastFactor - elapsedTime.RealSeconds / 10, 0, 1);
-                // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
-                if (UserInput.IsDown(UserCommands.DebugFogIncrease)) fogDistance = MathHelper.Clamp(fogDistance - elapsedTime.RealSeconds * fogDistance, 10, 100000);
-                if (UserInput.IsDown(UserCommands.DebugFogDecrease)) fogDistance = MathHelper.Clamp(fogDistance + elapsedTime.RealSeconds * fogDistance, 10, 100000);
-            }
-            // Don't let clock shift if multiplayer.
-            if (!MultiPlayer.MPManager.IsMultiPlayer())
-            {
-                // Shift the clock forwards or backwards at 1h-per-second.
-                if (UserInput.IsDown(UserCommands.DebugClockForwards)) Viewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
-                if (UserInput.IsDown(UserCommands.DebugClockBackwards)) Viewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
-                if (UserInput.IsDown(UserCommands.DebugClockForwards) || UserInput.IsDown(UserCommands.DebugClockBackwards)) Viewer.World.Precipitation.Reset();
-            }
-            // Server needs to notify clients of weather changes.
-            if (MultiPlayer.MPManager.IsServer())
-            {
-                if (UserInput.IsReleased(UserCommands.DebugOvercastIncrease) || UserInput.IsReleased(UserCommands.DebugOvercastDecrease) || UserInput.IsReleased(UserCommands.DebugFogIncrease) || UserInput.IsReleased(UserCommands.DebugFogDecrease))
-                {
-                    MultiPlayer.MPManager.Instance().SetEnvInfo(overcastFactor, fogDistance);
-                    MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, overcastFactor, fogDistance, -1)).ToString());
-                }
-            }
-
-            ////////////////////////////////////////////////////////////////////
 
             // Current solar and lunar position are calculated by interpolation in the lookup arrays.
             // Using the Lerp() function, so need to calculate the in-between differential
@@ -530,7 +463,7 @@ namespace ORTS.Viewer3D
             // Adjust Fog color for day-night conditions and overcast
             FogDay2Night(
                 Viewer.World.Sky.solarDirection.Y,
-                Viewer.World.Sky.overcastFactor);
+                Viewer.World.WeatherControl.overcastFactor);
 
             //if (Viewer.Settings.DistantMountains) SharedMaterialManager.FogCoeff *= (3 * (5 - Viewer.Settings.DistantMountainsFogValue) + 0.5f);
 
@@ -542,8 +475,8 @@ namespace ORTS.Viewer3D
             SkyShader.LightVector = Viewer.World.Sky.solarDirection;
             SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyConstants.skyRadius / 20;
-            SkyShader.Overcast = Viewer.World.Sky.overcastFactor;
-            SkyShader.SetFog(Viewer.World.Sky.fogDistance, ref SharedMaterialManager.FogColor);
+            SkyShader.Overcast = Viewer.World.WeatherControl.overcastFactor;
+            SkyShader.SetFog(Viewer.World.WeatherControl.fogDistance, ref SharedMaterialManager.FogColor);
             SkyShader.WindSpeed = Viewer.World.Sky.windSpeed;
             SkyShader.WindDirection = Viewer.World.Sky.windDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 

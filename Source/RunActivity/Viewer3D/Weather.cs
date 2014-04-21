@@ -18,6 +18,9 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
+using ORTS.MultiPlayer;
+using ORTS.Settings;
 
 namespace ORTS.Viewer3D
 {
@@ -26,11 +29,11 @@ namespace ORTS.Viewer3D
         readonly Viewer Viewer;
 
         // Overcast factor: 0.0 = almost no clouds; 0.1 = wispy clouds; 1.0 = total overcast.
-        public float overcastFactor = 0.1f;
+        public float overcastFactor;
         // ???
-        public float pricipitationIntensity = 3500;
+        public float pricipitationIntensity;
         // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
-        public float fogDistance = 5000;
+        public float fogDistance;
 
         public readonly List<SoundSourceBase> ClearSound;
         public readonly List<SoundSourceBase> RainSound;
@@ -63,44 +66,39 @@ namespace ORTS.Viewer3D
             WeatherSounds.AddRange(RainSound);
             WeatherSounds.AddRange(SnowSound);
 
-            SetWeather(Viewer.Simulator.Weather);
+            SetInitialWeatherParameters();
+            UpdateWeatherParameters();
         }
 
-        public void SetWeather(MSTS.Formats.WeatherType weather)
+        void SetInitialWeatherParameters()
         {
-            if (Viewer.SoundProcess != null) Viewer.SoundProcess.RemoveSoundSource(this);
-            switch (weather)
+            // These values are defaults only; subsequent changes to the weather via debugging only change the components (weather, overcastFactor and fogDistance) individually.
+            switch (Viewer.Simulator.Weather)
             {
-                case MSTS.Formats.WeatherType.Clear:
-                    overcastFactor = 0.05f;
-                    fogDistance = 20000;
-                    if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, ClearSound);
-                    break;
-                case MSTS.Formats.WeatherType.Rain:
-                    overcastFactor = 0.7f;
-                    pricipitationIntensity = 4500;
-                    fogDistance = 1000;
-                    if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, RainSound);
-                    break;
-                case MSTS.Formats.WeatherType.Snow:
-                    overcastFactor = 0.6f;
-                    pricipitationIntensity = 6500;
-                    fogDistance = 500;
-                    if (Viewer.SoundProcess != null) Viewer.SoundProcess.AddSoundSource(this, SnowSound);
-                    break;
+                case MSTS.Formats.WeatherType.Clear: overcastFactor = 0.05f; fogDistance = 20000; break;
+                case MSTS.Formats.WeatherType.Rain: overcastFactor = 0.7f; fogDistance = 1000; break;
+                case MSTS.Formats.WeatherType.Snow: overcastFactor = 0.6f; fogDistance = 500; break;
             }
         }
 
-        public void SetPricipitationVolume(float volume)
+        void UpdateWeatherParameters()
         {
-            foreach (var soundSource in RainSound)
+            Viewer.SoundProcess.RemoveSoundSource(this);
+            switch (Viewer.Simulator.Weather)
             {
-                soundSource.Volume = volume;
+                case MSTS.Formats.WeatherType.Clear: pricipitationIntensity = 0; Viewer.SoundProcess.AddSoundSource(this, ClearSound); break;
+                case MSTS.Formats.WeatherType.Rain: pricipitationIntensity = 10000; Viewer.SoundProcess.AddSoundSource(this, RainSound); break;
+                case MSTS.Formats.WeatherType.Snow: pricipitationIntensity = 10000; Viewer.SoundProcess.AddSoundSource(this, SnowSound); break;
             }
-            foreach (var soundSource in SnowSound)
-            {
-                soundSource.Volume = volume;
-            }
+
+            // WeatherControl is created during World consturction so this needs to be skipped.
+            if (Viewer.World != null) Viewer.World.Precipitation.Reset();
+        }
+
+        void UpdateVolume()
+        {
+            foreach (var soundSource in RainSound) soundSource.Volume = pricipitationIntensity / PrecipitationViewer.MaxIntensity;
+            foreach (var soundSource in SnowSound) soundSource.Volume = pricipitationIntensity / PrecipitationViewer.MaxIntensity;
         }
 
         // TODO: Add several other weather conditions, such as PartlyCloudy, LightRain, 
@@ -108,5 +106,89 @@ namespace ORTS.Viewer3D
         // selection to RunActivity and make appropriate adjustments to the weather here.
         // This class will eventually be expanded to interpret dynamic weather scripts and
         // make game-time weather transitions.
+
+        [CallOnThread("Updater")]
+        public void Update(ElapsedTime elapsedTime)
+        {
+            if (MPManager.IsClient() && MPManager.Instance().weatherChanged)
+            {
+                // Multiplayer weather has changed so we need to update our state to match weather, overcastFactor, pricipitationIntensity and fogDistance.
+                if (MPManager.Instance().weather >= 0 && MPManager.Instance().weather != (int)Viewer.Simulator.Weather) { Viewer.Simulator.Weather = (MSTS.Formats.WeatherType)MPManager.Instance().weather; UpdateWeatherParameters(); }
+                if (MPManager.Instance().overcastFactor >= 0) overcastFactor = MPManager.Instance().overcastFactor;
+                if (MPManager.Instance().pricipitationIntensity >= 0) { pricipitationIntensity = MPManager.Instance().pricipitationIntensity; UpdateVolume(); }
+                if (MPManager.Instance().fogDistance >= 0) fogDistance = MPManager.Instance().fogDistance;
+
+                // Reset the message now that we've applied all the changes.
+                try
+                {
+                    if ((MPManager.Instance().weather >= 0 && MPManager.Instance().weather != (int)Viewer.Simulator.Weather) || MPManager.Instance().overcastFactor >= 0 || MPManager.Instance().pricipitationIntensity >= 0 || MPManager.Instance().fogDistance >= 0)
+                    {
+                        MPManager.Instance().weatherChanged = false;
+                        MPManager.Instance().weather = -1;
+                        MPManager.Instance().overcastFactor = -1;
+                        MPManager.Instance().pricipitationIntensity = -1;
+                        MPManager.Instance().fogDistance = -1;
+                    }
+                }
+                catch { }
+            }
+
+            if (!MPManager.IsClient())
+            {
+                // The user is able to change the weather for debugging. This will cycle through clear, rain and snow.
+                if (UserInput.IsPressed(UserCommands.DebugWeatherChange))
+                {
+                    switch (Viewer.Simulator.Weather)
+                    {
+                        case MSTS.Formats.WeatherType.Clear:
+                            Viewer.Simulator.Weather = MSTS.Formats.WeatherType.Rain;
+                            break;
+                        case MSTS.Formats.WeatherType.Rain:
+                            Viewer.Simulator.Weather = MSTS.Formats.WeatherType.Snow;
+                            break;
+                        case MSTS.Formats.WeatherType.Snow:
+                            Viewer.Simulator.Weather = MSTS.Formats.WeatherType.Clear;
+                            break;
+                    }
+                    UpdateWeatherParameters();
+
+                    // If we're a multiplayer server, send out the new weather to all clients.
+                    if (MPManager.IsServer())
+                        MPManager.Notify((new MSGWeather((int)Viewer.Simulator.Weather, -1, -1, -1)).ToString());
+                }
+
+                // Overcast ranges from 0 (completely clear) to 1 (completely overcast).
+                if (UserInput.IsDown(UserCommands.DebugOvercastIncrease)) overcastFactor = MathHelper.Clamp(overcastFactor + elapsedTime.RealSeconds / 10, 0, 1);
+                if (UserInput.IsDown(UserCommands.DebugOvercastDecrease)) overcastFactor = MathHelper.Clamp(overcastFactor - elapsedTime.RealSeconds / 10, 0, 1);
+                
+                // Pricipitation ranges from 0 to 15000.
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease)) pricipitationIntensity = MathHelper.Clamp(pricipitationIntensity * 1.05f, PrecipitationViewer.MinIntensity, PrecipitationViewer.MaxIntensity);
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) pricipitationIntensity = MathHelper.Clamp(pricipitationIntensity / 1.05f, PrecipitationViewer.MinIntensity, PrecipitationViewer.MaxIntensity);
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) UpdateVolume();
+
+                // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
+                if (UserInput.IsDown(UserCommands.DebugFogIncrease)) fogDistance = MathHelper.Clamp(fogDistance - elapsedTime.RealSeconds * fogDistance, 10, 100000);
+                if (UserInput.IsDown(UserCommands.DebugFogDecrease)) fogDistance = MathHelper.Clamp(fogDistance + elapsedTime.RealSeconds * fogDistance, 10, 100000);
+            }
+
+            if (!MultiPlayer.MPManager.IsMultiPlayer())
+            {
+                // Shift the clock forwards or backwards at 1h-per-second.
+                if (UserInput.IsDown(UserCommands.DebugClockForwards)) Viewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
+                if (UserInput.IsDown(UserCommands.DebugClockBackwards)) Viewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
+            }
+
+            // If we're a multiplayer server, send out the new overcastFactor, pricipitationIntensity and fogDistance to all clients.
+            if (MPManager.IsServer())
+            {
+                if (UserInput.IsReleased(UserCommands.DebugOvercastIncrease) || UserInput.IsReleased(UserCommands.DebugOvercastDecrease)
+                    || UserInput.IsReleased(UserCommands.DebugPrecipitationIncrease) || UserInput.IsReleased(UserCommands.DebugPrecipitationDecrease)
+                    || UserInput.IsReleased(UserCommands.DebugFogIncrease) || UserInput.IsReleased(UserCommands.DebugFogDecrease))
+                {
+                    MPManager.Instance().SetEnvInfo(overcastFactor, fogDistance);
+                    MPManager.Notify((new MSGWeather(-1, overcastFactor, pricipitationIntensity, fogDistance)).ToString());
+                }
+            }
+        }
     }
 }

@@ -156,22 +156,22 @@ namespace ORTS.Viewer3D
 			if (MultiPlayer.MPManager.IsClient() && MultiPlayer.MPManager.Instance().weatherChanged)
 			{
 				//received message about weather change
-				if ( MultiPlayer.MPManager.Instance().overCast >= 0)
+				if ( MultiPlayer.MPManager.Instance().overcastFactor >= 0)
 				{
-					mstsskyovercastFactor = MultiPlayer.MPManager.Instance().overCast;
+					mstsskyovercastFactor = MultiPlayer.MPManager.Instance().overcastFactor;
 				}
                 //received message about weather change
-                if (MultiPlayer.MPManager.Instance().newFog > 0)
+                if (MultiPlayer.MPManager.Instance().fogDistance > 0)
                 {
-                    mstsskyfogDistance = MultiPlayer.MPManager.Instance().newFog;
+                    mstsskyfogDistance = MultiPlayer.MPManager.Instance().fogDistance;
                 }
                 try
                 {
-                    if (MultiPlayer.MPManager.Instance().overCast >= 0 || MultiPlayer.MPManager.Instance().newFog > 0) 
+                    if (MultiPlayer.MPManager.Instance().overcastFactor >= 0 || MultiPlayer.MPManager.Instance().fogDistance > 0) 
                     {
                         MultiPlayer.MPManager.Instance().weatherChanged = false;
-                        MultiPlayer.MPManager.Instance().overCast = -1 ;
-                        MultiPlayer.MPManager.Instance().newFog = -1 ;
+                        MultiPlayer.MPManager.Instance().overcastFactor = -1 ;
+                        MultiPlayer.MPManager.Instance().fogDistance = -1 ;
                     }
                 }
                 catch { }
@@ -199,7 +199,6 @@ namespace ORTS.Viewer3D
                 // Shift the clock forwards or backwards at 1h-per-second.
                 if (UserInput.IsDown(UserCommands.DebugClockForwards)) MSTSSkyViewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
                 if (UserInput.IsDown(UserCommands.DebugClockBackwards)) MSTSSkyViewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
-                if (MSTSSkyViewer.World.Precipitation != null && (UserInput.IsDown(UserCommands.DebugClockForwards) || UserInput.IsDown(UserCommands.DebugClockBackwards))) MSTSSkyViewer.World.Precipitation.Reset();
             }
             // Server needs to notify clients of weather changes.
             if (MultiPlayer.MPManager.IsServer())
@@ -207,7 +206,7 @@ namespace ORTS.Viewer3D
                 if (UserInput.IsReleased(UserCommands.DebugOvercastIncrease) || UserInput.IsReleased(UserCommands.DebugOvercastDecrease) || UserInput.IsReleased(UserCommands.DebugFogIncrease) || UserInput.IsReleased(UserCommands.DebugFogDecrease))
                 {
                     MultiPlayer.MPManager.Instance().SetEnvInfo(mstsskyovercastFactor, mstsskyfogDistance);
-                    MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, mstsskyovercastFactor, mstsskyfogDistance, -1)).ToString());
+                    MultiPlayer.MPManager.Notify((new MultiPlayer.MSGWeather(-1, mstsskyovercastFactor, -1, mstsskyfogDistance)).ToString());
                 }
             }
 

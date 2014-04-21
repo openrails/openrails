@@ -17,6 +17,7 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace ORTS.Viewer3D
@@ -52,7 +53,7 @@ namespace ORTS.Viewer3D
                 MSTSSky = new MSTSSkyDrawer(viewer);
             else
                 Sky = new SkyViewer(viewer);
-            Precipitation = new PrecipitationViewer(viewer);
+            Precipitation = new PrecipitationViewer(viewer, WeatherControl);
             Terrain = new TerrainViewer(viewer);
             Scenery = new SceneryDrawer(viewer);
             Trains = new TrainDrawer(viewer);
@@ -64,6 +65,7 @@ namespace ORTS.Viewer3D
                 ALSoundSource.MuteAll();
                 // TODO: This looks kinda evil; do something about it.
                 GameSounds = new SoundSource(viewer, Events.Source.MSTSInGame, viewer.Simulator.RoutePath + "\\Sound\\ingame.sms");
+                Viewer.SoundProcess.AddSoundSource(GameSounds.SMSFolder + "\\" + GameSounds.SMSFileName, new List<SoundSourceBase>() { GameSounds });
                 Sounds = new WorldSounds(viewer);
             }
         }
@@ -148,6 +150,7 @@ namespace ORTS.Viewer3D
                 // Flag as done, so the next load prep (every 250ms) can trigger us again.
                 PerformanceTune = false;
             }
+            WeatherControl.Update(elapsedTime);
             Scenery.Update(elapsedTime);
         }
 
@@ -166,7 +169,7 @@ namespace ORTS.Viewer3D
         [CallOnThread("Updater")]
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if(Viewer.Settings.UseMSTSEnv)
+            if (Viewer.Settings.UseMSTSEnv)
                 MSTSSky.PrepareFrame(frame, elapsedTime);
             else
                 Sky.PrepareFrame(frame, elapsedTime);

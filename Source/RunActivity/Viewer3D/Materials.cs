@@ -140,7 +140,7 @@ namespace ORTS.Viewer3D
         public readonly LightGlowShader LightGlowShader;
         public readonly ParticleEmitterShader ParticleEmitterShader;
         public readonly PopupWindowShader PopupWindowShader;
-        public readonly PrecipShader PrecipShader;
+        public readonly PrecipitationShader PrecipitationShader;
         public readonly SceneryShader SceneryShader;
         public readonly ShadowMapShader ShadowMapShader;
         public readonly SkyShader SkyShader;
@@ -157,7 +157,7 @@ namespace ORTS.Viewer3D
             LightGlowShader = new LightGlowShader(viewer.RenderProcess.GraphicsDevice);
             ParticleEmitterShader = new ParticleEmitterShader(viewer.RenderProcess.GraphicsDevice);
             PopupWindowShader = new PopupWindowShader(viewer, viewer.RenderProcess.GraphicsDevice);
-            PrecipShader = new PrecipShader(viewer.RenderProcess.GraphicsDevice);
+            PrecipitationShader = new PrecipitationShader(viewer.RenderProcess.GraphicsDevice);
             SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice);
             var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace";
             if (File.Exists(microtexPath))
@@ -233,7 +233,7 @@ namespace ORTS.Viewer3D
                     case "ParticleEmitter":
                         Materials[materialKey] = new ParticleEmitterMaterial(Viewer, textureName);
                         break;
-                    case "Precip":
+                    case "Precipitation":
                         Materials[materialKey] = new PrecipitationMaterial(Viewer);
                         break;
                     case "Scenery":
@@ -356,8 +356,8 @@ namespace ORTS.Viewer3D
             // End headlight illumination
             if (Viewer.Settings.UseMSTSEnv == false)
             {
-                SceneryShader.Overcast = Viewer.World.Sky.overcastFactor;
-                SceneryShader.SetFog(Viewer.World.Sky.fogDistance, ref SharedMaterialManager.FogColor);
+                SceneryShader.Overcast = Viewer.World.WeatherControl.overcastFactor;
+                SceneryShader.SetFog(Viewer.World.WeatherControl.fogDistance, ref SharedMaterialManager.FogColor);
                 SceneryShader.ViewerPos = Viewer.Camera.XnaLocation(Viewer.Camera.CameraWorldLocation);
             }
             else

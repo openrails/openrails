@@ -467,64 +467,6 @@ namespace ORTS.Viewer3D
     }
 
     [CallOnThread("Render")]
-    public class PrecipShader : Shader
-    {
-        EffectParameter mProjection;
-        EffectParameter mView;
-        EffectParameter mWorld;
-        EffectParameter sunDirection;
-        EffectParameter viewportHeight;
-        EffectParameter currentTime;
-        EffectParameter precip_Tex;
-        EffectParameter weatherType;
-
-        public Vector3 SunDirection
-        {
-            set { sunDirection.SetValue(value); }
-        }
-
-        public int ViewportHeight
-        {
-            set { viewportHeight.SetValue(value); }
-        }
-
-        public float CurrentTime
-        {
-            set { currentTime.SetValue(value); }
-        }
-
-        public int WeatherType
-        {
-            set { weatherType.SetValue(value); }
-        }
-
-        public Texture2D PrecipTexture
-        {
-            set { precip_Tex.SetValue(value); }
-        }
-
-        public PrecipShader(GraphicsDevice graphicsDevice)
-            : base(graphicsDevice, "PrecipShader")
-        {
-            mProjection = Parameters["mProjection"];
-            mView = Parameters["mView"];
-            mWorld = Parameters["mWorld"];
-            sunDirection = Parameters["LightVector"];
-            viewportHeight = Parameters["viewportHeight"];
-            currentTime = Parameters["currentTime"];
-            weatherType = Parameters["weatherType"];
-            precip_Tex = Parameters["precip_Tex"];
-        }
-
-        public void SetMatrix(Matrix world, ref Matrix view, ref Matrix projection)
-        {
-            mProjection.SetValue(projection);
-            mView.SetValue(view);
-            mWorld.SetValue(world);
-        }
-    }
-
-    [CallOnThread("Render")]
     public class LightGlowShader : Shader
     {
         readonly EffectParameter worldViewProjection;

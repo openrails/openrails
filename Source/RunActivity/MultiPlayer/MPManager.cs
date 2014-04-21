@@ -58,10 +58,10 @@ namespace ORTS.MultiPlayer
 		private List<Train> uncoupledTrains;
 
 		public bool weatherChanged = false;
-		public int newWeather = -1;
-        public float newFog = -1f;
-        public float overCast = -1f;
-        public float precipIntensity = -1f;
+		public int weather = -1;
+        public float fogDistance = -1f;
+        public float pricipitationIntensity = -1f;
+        public float overcastFactor = -1f;
         public double serverTimeDifference = 0;
 
         public double lastPlayerAddedTime;
@@ -438,15 +438,15 @@ namespace ORTS.MultiPlayer
         //create weather message
         public string GetEnvInfo()
         {
-            return (new MSGWeather(-1, overCast, newFog, precipIntensity)).ToString();//update weather
+            return (new MSGWeather(-1, overcastFactor, pricipitationIntensity, fogDistance)).ToString();//update weather
 
         }
 
         //set weather message
         public void SetEnvInfo(float o, float f)
         {
-            newFog = f;
-            overCast = o;
+            fogDistance = f;
+            overcastFactor = o;
 
         }
 

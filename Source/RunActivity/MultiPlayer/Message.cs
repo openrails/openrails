@@ -3028,61 +3028,60 @@ namespace ORTS.MultiPlayer
 	#endregion MSGText
 
 	#region MSGWeather
-	public class MSGWeather : Message
-	{
-		public  int weather;
-		public float overcast;
+    public class MSGWeather : Message
+    {
+        public int weather;
+        public float overcast;
+        public float pricipitation;
         public float fog;
-        public float precipintensity;
-		public MSGWeather(string m)
-		{
-            weather = -1; overcast = fog = -1f; precipintensity = -1f;
-			var tmp = m.Split(' ');
-			weather = int.Parse(tmp[0]);
-			overcast = float.Parse(tmp[1], CultureInfo.InvariantCulture);
-            fog = float.Parse(tmp[2], CultureInfo.InvariantCulture);
-            precipintensity = float.Parse(tmp[3], CultureInfo.InvariantCulture);
-		}
 
-		public MSGWeather(int w, float o, float f, float pri)
-		{
-            weather = -1; overcast = -1f; fog = -1; precipintensity = -1;
-			if (w >= 0) weather = w;
-			if (o > 0) overcast = o;
-            if (f > 0) fog = f;
-            if (pri > 0) precipintensity = pri;
-		}
+        public MSGWeather(string m)
+        {
+            weather = -1; overcast = pricipitation = fog = -1;
+            var tmp = m.Split(' ');
+            weather = int.Parse(tmp[0]);
+            overcast = float.Parse(tmp[1], CultureInfo.InvariantCulture);
+            pricipitation = float.Parse(tmp[2], CultureInfo.InvariantCulture);
+            fog = float.Parse(tmp[3], CultureInfo.InvariantCulture);
+        }
 
-		public override string ToString()
-		{
+        public MSGWeather(int w, float o, float p, float f)
+        {
+            weather = -1; overcast = pricipitation = fog = -1;
+            if (w >= 0) weather = w;
+            if (o >= 0) overcast = o;
+            if (p >= 0) pricipitation = p;
+            if (f >= 0) fog = f;
+        }
 
-            string tmp = "WEATHER " + weather + " " + overcast.ToString(CultureInfo.InvariantCulture) + " " + fog.ToString(CultureInfo.InvariantCulture) + " " + precipintensity.ToString(CultureInfo.InvariantCulture);
-			return " " + tmp.Length + ": " + tmp;
-		}
+        public override string ToString()
+        {
+            var tmp = "WEATHER " + weather + " " + overcast.ToString(CultureInfo.InvariantCulture) + " " + pricipitation.ToString(CultureInfo.InvariantCulture) + " " + fog.ToString(CultureInfo.InvariantCulture);
+            return " " + tmp.Length + ": " + tmp;
+        }
 
-		public override void HandleMsg()
-		{
-			if (MPManager.IsServer()) return;
-			if (weather >= 0)
-			{
-				MPManager.Instance().newWeather = weather;
-            }
-			if (overcast >= 0 && overcast <= 1)
-			{
-				MPManager.Instance().overCast = overcast;
-            }
-            if (fog > 0)
+        public override void HandleMsg()
+        {
+            if (MPManager.IsServer()) return;
+            if (weather >= 0)
             {
-                MPManager.Instance().newFog = fog;
+                MPManager.Instance().weather = weather;
             }
-            if (precipintensity > 0)
+            if (overcast >= 0)
             {
-                MPManager.Instance().precipIntensity = precipintensity;
+                MPManager.Instance().overcastFactor = overcast;
+            }
+            if (pricipitation >= 0)
+            {
+                MPManager.Instance().pricipitationIntensity = pricipitation;
+            }
+            if (fog >= 0)
+            {
+                MPManager.Instance().fogDistance = fog;
             }
             MPManager.Instance().weatherChanged = true;
-		}
-
-	}
+        }
+    }
 
 	#endregion MSGWeather
 

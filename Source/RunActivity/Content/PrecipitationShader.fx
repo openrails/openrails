@@ -1,4 +1,4 @@
-// COPYRIGHT 2010, 2011, 2013 by the Open Rails project.
+// COPYRIGHT 2010, 2011, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -23,21 +23,24 @@
 
 ////////////////////    G L O B A L   V A L U E S    ///////////////////////////
 
-float4x4 mProjection;
-float4x4 mWorld;
-float4x4 mView;
+float4x4 worldViewProjection;  // model -> world -> view -> projection
+float4x4 invView;              // inverse view
+
 float3 LightVector; // Direction vector to sun, used for day-night darkening
-int viewportHeight;
+
+float particleSize;
+
+float2 cameraTileXZ;
 float currentTime;
-int weatherType;
 
-// Textures
-texture precip_Tex;
+static float2 texCoords[4] = { float2(0, 0), float2(1, 0), float2(1, 1), float2(0, 1) };
+static float2 offsets[4] = { float2(-0.5f, 0.5f), float2(0.5f, 0.5f), float2(0.5f, -0.5f), float2(-0.5f, -0.5f) };
 
-// Texture settings
-sampler PrecipSamp = sampler_state
+texture precipitation_Tex;
+
+sampler PrecipitationSamp = sampler_state
 {
-	texture = (precip_Tex);
+	texture = (precipitation_Tex);
 	MagFilter = Linear;
 	MinFilter = Linear;
 	MipFilter = Linear;
@@ -50,10 +53,9 @@ sampler PrecipSamp = sampler_state
 
 struct VERTEX_INPUT
 {
-	float4 Position : POSITION;
-	float  Size     : PSIZE;
-	float  Time     : TEXCOORD0;
-	float2 Wind     : TEXCOORD1;
+	float4 StartPosition_StartTime : POSITION0;
+	float4 EndPosition_EndTime : POSITION1;
+	float4 TileXZ_Vertex : POSITION2;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -61,7 +63,6 @@ struct VERTEX_INPUT
 struct VERTEX_OUTPUT
 {
 	float4 Position	: POSITION;
-	float  Size	    : PSIZE;
 	float2 TexCoord : TEXCOORD0;
 };
 
@@ -71,29 +72,20 @@ struct VERTEX_OUTPUT
 VERTEX_OUTPUT VSPrecipitation(in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-
-	Out.Position = mul(In.Position, mWorld);
-
-	// Particle age determines Y position
-	float age = currentTime - In.Time;
-	// Wind effect
-	Out.Position.xy += age * In.Wind;
-	// Vertical velocity
-	float velocity;
-	if (weatherType == 1) // snow
-		velocity = 8.0f;
-	if (weatherType == 2) // rain
-	{
-		velocity = 20.0f;
-		In.Size *= 1.4;
-	}
-	Out.Position.y -= age * velocity;
-
-	Out.Position = mul(mul(Out.Position, mView), mProjection);
-
-	// Calculate size based on distance from viewer
-	Out.Size = In.Size * mProjection._m11 / Out.Position.w * viewportHeight / 4;
-
+	
+	float age = (currentTime - In.StartPosition_StartTime.w) / (In.EndPosition_EndTime.w - In.StartPosition_StartTime.w);
+	int vertIdx = (int)In.TileXZ_Vertex.z;
+	float3 right = invView[0].xyz;
+	float3 up = normalize(In.StartPosition_StartTime.xyz - In.EndPosition_EndTime.xyz);
+	
+	In.StartPosition_StartTime.xyz = lerp(In.StartPosition_StartTime.xyz, In.EndPosition_EndTime.xyz, age);
+	In.StartPosition_StartTime.xz += (cameraTileXZ - In.TileXZ_Vertex.xy) * float2(-2048, 2048);
+	In.StartPosition_StartTime.xyz += right * offsets[vertIdx].x * particleSize;
+	In.StartPosition_StartTime.xyz += up * offsets[vertIdx].y * particleSize;
+	
+	Out.Position = mul(float4(In.StartPosition_StartTime.xyz, 1), worldViewProjection);
+	Out.TexCoord = texCoords[vertIdx];
+	
 	return Out;
 }
 
@@ -127,14 +119,14 @@ void _PSApplyDay2Night(inout float4 Color)
 
 float4 PSPrecipitation(in VERTEX_OUTPUT In) : COLOR0
 {
-	float4 color = tex2D(PrecipSamp, In.TexCoord);
+	float4 color = tex2D(PrecipitationSamp, In.TexCoord);
 	_PSApplyDay2Night(color);
 	return color;
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
-technique RainTechnique
+technique Pricipitation
 {
 	pass Pass_0
 	{
