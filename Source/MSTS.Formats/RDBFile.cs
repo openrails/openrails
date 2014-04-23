@@ -18,6 +18,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using MSTS.Parsers;
 #if !NEW_SIGNALLING
 using ORTS.Interlocking;
@@ -26,13 +27,23 @@ using ORTS.Interlocking;
 namespace MSTS.Formats
 {
 	/// <summary>
-	/// Summary description for RDBFile.
+	/// RDBFile is a representation of the .rdb file, that contains the road data base.
+    /// The database contains the same kind of objects as TDBFile, apart from a few road-specific items.
 	/// </summary>
-	/// 
-
-
-	public class RDBFile
+    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification = "Keeping identifier consistent to use in MSTS")]
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "Disposable only used in using statement, known FcCop bug")]
+    public class RDBFile
 	{
+        /// <summary>
+        /// Contains the Database with all the road tracks.
+        /// Warning, the first RoadTrackDB entry is always null.
+        /// </summary>
+        public RoadTrackDB RoadTrackDB { get; set; }
+
+        /// <summary>
+        /// Constructor from file
+        /// </summary>
+        /// <param name="filenamewithpath">Full file name of the .rdb file</param>
 		public RDBFile(string filenamewithpath)
 		{
 			using (STFReader stf = new STFReader(filenamewithpath, false))
@@ -40,42 +51,32 @@ namespace MSTS.Formats
                     new STFReader.TokenProcessor("trackdb", ()=>{ RoadTrackDB = new RoadTrackDB(stf); }),
                 });
 		}
-
-		/// <summary>
-		/// Provide a link to the TrJunctionNode for the switch track with 
-		/// the specified UiD on the specified tile.
-		/// 
-		/// Called by switch track shapes to determine the correct position of the points.
-		/// </summary>
-		/// <param name="tileX"></param>
-		/// <param name="tileZ"></param>
-		/// <param name="UiD"></param>
-		/// <returns></returns>
-		public TrJunctionNode GetTrJunctionNode(int tileX, int tileZ, int UiD)
-		{
-			foreach (TrackNode tn in RoadTrackDB.TrackNodes)
-				if (tn != null && tn.TrJunctionNode != null)
-				{
-					if (tileX == tn.UiD.WorldTileX
-						&& tileZ == tn.UiD.WorldTileZ
-						&& UiD == tn.UiD.WorldID)
-						return tn.TrJunctionNode;
-				}
-			throw new InvalidDataException("RDB Error, could not find junction. (tileX = " + tileX.ToString() +
-				", tileZ = " + tileZ.ToString() + ", UiD = " + UiD.ToString() + ")");
-		}
-
-		public RoadTrackDB RoadTrackDB;  // Warning, the first RDB entry is always null
 	}
 
-
-
+    /// <summary>
+    /// This class represents the Road Track Database. This is pretty similar to the (rail) Track Database. So for more details see there
+    /// </summary>
 	public class RoadTrackDB
 	{
-		public RoadTrackDB(STFReader stf)
-		{
-			stf.MustMatch("(");
-			stf.ParseBlock(new STFReader.TokenProcessor[] {
+        /// <summary>
+        /// Array of all TrackNodes in the road database
+        /// Warning, the first TrackNode is always null.
+        /// </summary>
+        public TrackNode[] TrackNodes;
+
+        /// <summary>
+        /// Array of all Track Items (TrItem) in the road database
+        /// </summary>
+        public TrItem[] TrItemTable;
+
+        /// <summary>
+        /// Default constructor used during file parsing.
+        /// </summary>
+        /// <param name="stf">The STFreader containing the file stream</param>
+        public RoadTrackDB(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("tracknodes", ()=>{
                     stf.MustMatch("(");
                     int count = stf.ReadInt(null);
@@ -97,60 +98,59 @@ namespace MSTS.Formats
                     });
                 }),
             });
-		}
-		public TrackNode[] TrackNodes;
-		public TrItem[] TrItemTable;
-
-
-		public int TrackNodesIndexOf(TrackNode targetTN)
-		{
-			for (int i = 0; i < TrackNodes.Length; ++i)
-				if (TrackNodes[i] == targetTN)
-					return i;
-			throw new InvalidOperationException("Program Bug: Can't Find Track Node");
-		}
+        }
 	}
 
-
-
-
-	public class RoadLevelCrItem : TrItem
+    /// <summary>
+    /// Represents a Level crossing Item on the road (i.e. where cars must stop when a train is passing).
+    /// </summary>
+    [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification = "Keeping identifier consistent to use in MSTS")]
+    public class RoadLevelCrItem : TrItem
 	{
-		public uint Direction;                // 0 or 1 depending on which way signal is facing
-		public int sigObj = -1;               // index to Sigal Object Table
-		public int revDir
-		{
-			get { return Direction == 0 ? 1 : 0; }
-		}
+        /// <summary>Direction along track: 0 or 1 depending on which way signal is facing</summary>
+        public uint Direction { get; set; }
+        /// <summary>index to Sigal Object Table</summary>
+        public int SigObj { get; set; }
 
-		public RoadLevelCrItem(STFReader stf, int idx)
+        /// <summary>
+        /// Default constructor used during file parsing.
+        /// </summary>
+        /// <param name="stf">The STFreader containing the file stream</param>
+        /// <param name="idx">The index of this TrItem in the list of TrItems</param>
+        [SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", Justification = "Keeping identifier consistent to use in MSTS")]
+        public RoadLevelCrItem(STFReader stf, int idx)
 		{
+            SigObj = -1;
 			ItemType = trItemType.trXING;
 			stf.MustMatch("(");
 			stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("tritemid", ()=>{ TrItemID(stf, idx); }),
+                new STFReader.TokenProcessor("tritemid", ()=>{ ParseTrItemID(stf, idx); }),
                 new STFReader.TokenProcessor("tritemrdata", ()=>{ TrItemRData(stf); }),
                 new STFReader.TokenProcessor("tritemsdata", ()=>{ TrItemSData(stf); }),
                 new STFReader.TokenProcessor("tritempdata", ()=>{ TrItemPData(stf); })
-
             });
 		}
 	}
 
+    /// <summary>
+    /// Represent a Car Spawner: the place where cars start to appear or disappear again
+    /// </summary>
 	public class CarSpawnerItem : TrItem
 	{
+        /// <summary>
+        /// Default constructor used during file parsing.
+        /// </summary>
+        /// <param name="stf">The STFreader containing the file stream</param>
+        /// <param name="idx">The index of this TrItem in the list of TrItems</param>
 		public CarSpawnerItem(STFReader stf, int idx)
 		{
-			ItemType = trItemType.trCarSpawner;
+			ItemType = trItemType.trCARSPAWNER;
 			stf.MustMatch("(");
 			stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("tritemid", ()=>{ TrItemID(stf, idx); }),
+                new STFReader.TokenProcessor("tritemid", ()=>{ ParseTrItemID(stf, idx); }),
                 new STFReader.TokenProcessor("tritemrdata", ()=>{ TrItemRData(stf); }),
                 new STFReader.TokenProcessor("tritemsdata", ()=>{ TrItemSData(stf); })
             });
 		}
 	}
-
-	//test
-
 }

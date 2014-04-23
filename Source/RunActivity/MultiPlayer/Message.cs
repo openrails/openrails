@@ -700,7 +700,7 @@ namespace ORTS.MultiPlayer
 
         public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
-            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
         }
@@ -810,7 +810,7 @@ namespace ORTS.MultiPlayer
 
         public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
-            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
         }
@@ -931,7 +931,7 @@ namespace ORTS.MultiPlayer
 
         public static void SetSwitch(TrackNode switchNode, int desiredState)
         {
-            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].CrossRefIndex];
+            TrackCircuitSection switchSection = Program.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             Program.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
         }

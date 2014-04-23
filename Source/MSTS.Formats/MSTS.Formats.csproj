@@ -62,12 +62,14 @@
     <Compile Include="HAZFile.cs" />
     <Compile Include="PATFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RDBFile.cs" />
     <Compile Include="SDFile.cs" />
     <Compile Include="SFile.cs" />
     <Compile Include="SIGCFGFile.cs" />
     <Compile Include="Signals.cs" />
     <Compile Include="SMSFile.cs" />
     <Compile Include="SRVFile.cs" />
+    <Compile Include="TDBFile.cs" />
     <Compile Include="TFile.cs" />
     <Compile Include="TRFFile.cs" />
     <Compile Include="TRKFile.cs" />

@@ -296,7 +296,7 @@ namespace ORTS.TrackViewer.Drawing
         {   // Apparently this will be compiled into very efficient code.
             switch (type) 
             {
-                case TrItem.trItemType.trCarSpawner: return "carspawner";
+                case TrItem.trItemType.trCARSPAWNER: return "carspawner";
                 case TrItem.trItemType.trCROSSOVER: return  "crossover";
                 case TrItem.trItemType.trEMPTY: return "empty";
                 case TrItem.trItemType.trHAZZARD : return "hazard";
@@ -864,7 +864,7 @@ namespace ORTS.TrackViewer.Drawing
                 case TrItem.trItemType.trPICKUP:
                     drawPickup(drawArea, trackItem as PickupItem, colors);
                     break;
-                case TrItem.trItemType.trCarSpawner:
+                case TrItem.trItemType.trCARSPAWNER:
                     //happens only when called from road data base
                     drawCarSpawner(drawArea, trackItem as CarSpawnerItem, colors);
                     break;

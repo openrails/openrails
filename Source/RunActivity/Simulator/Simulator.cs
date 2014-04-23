@@ -212,7 +212,7 @@ namespace ORTS
             Weather = Activity.Tr_Activity.Tr_Activity_Header.Weather;
             if (Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
             {
-                TDB.TrackDB.AddRestrictZone(TRK.Tr_RouteFile, TSectionDat, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
+                ORTS.Activity.AddRestrictZones(TRK.Tr_RouteFile, TSectionDat, TDB.TrackDB, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
             }
         }
         public void SetExplore(string path, string consist, string start, string season, string weather)

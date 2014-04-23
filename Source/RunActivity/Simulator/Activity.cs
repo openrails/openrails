@@ -449,6 +449,62 @@ namespace ORTS
                 }
             }
         }
+
+        /// <summary>
+        /// Add speedposts to the track database for each Speed Restriction zone
+        /// </summary>
+        /// <param name="routeFile"></param>
+        /// <param name="tsectionDat">track sections containing the details of the various sections</param>
+        /// <param name="trackDB">The track Database that needs to be updated</param>
+        /// <param name="zones">List of speed restriction zones</param>
+        public static void AddRestrictZones(Tr_RouteFile routeFile, TSectionDatFile tsectionDat, TrackDB trackDB, ActivityRestrictedSpeedZones zones)
+        {
+            if (zones.ActivityRestrictedSpeedZoneList.Count < 1) return;
+
+            TrItem[] newSpeedPostItems = new SpeedPostItem[zones.ActivityRestrictedSpeedZoneList.Count * 2];
+
+            for (int idxZone = 0; idxZone < zones.ActivityRestrictedSpeedZoneList.Count; idxZone++)
+			{
+                newSpeedPostItems[2*idxZone]   = new SpeedPostItem(routeFile,
+                    zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition, true);
+                newSpeedPostItems[2*idxZone+1] = new SpeedPostItem(routeFile,
+                    zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition, false);
+			}
+
+            // Add the speedposts to the track database. This will set the TrItemId's of all speedposts
+            trackDB.AddTrItems(newSpeedPostItems);
+
+            // And now update the various (vector) tracknodes (this needs the TrItemIds.
+            for (int idxZone = 0; idxZone < zones.ActivityRestrictedSpeedZoneList.Count; idxZone++)
+			{
+                ORTS.Activity.AddItemIdToTrackNode(zones.ActivityRestrictedSpeedZoneList[idxZone].StartPosition,
+                    tsectionDat, trackDB, (int)newSpeedPostItems[2 * idxZone    ].TrItemId);
+                ORTS.Activity.AddItemIdToTrackNode(zones.ActivityRestrictedSpeedZoneList[idxZone].EndPosition,
+                    tsectionDat, trackDB, (int)newSpeedPostItems[2 * idxZone + 1].TrItemId);
+            }
+        
+        }
+        
+        /// <summary>
+        /// Add a reference to a new TrItemId to the correct trackNode (which needs to be determined from the position)
+        /// </summary>
+        /// <param name="position">Position of the new </param>
+        /// <param name="tsectionDat">track sections containing the details of the various sections</param>
+        /// <param name="trackDB">track database to be modified</param>
+        /// <param name="newTrItemRef">The Id of the new TrItem to add to the tracknode</param>
+        static void AddItemIdToTrackNode(Position position, TSectionDatFile tsectionDat, TrackDB trackDB, int newTrItemId)
+        {
+            try
+            {
+                Traveller traveller = new Traveller(tsectionDat, trackDB.TrackNodes, position.TileX, position.TileZ, position.X, position.Z);
+                TrackNode trackNode = trackDB.TrackNodes[traveller.TrackNodeIndex];//find the track node
+                if (trackNode.TrVectorNode != null)
+                {
+                    trackNode.TrVectorNode.AddTrItemRef(newTrItemId);
+                }
+            }
+            catch { }
+        }
     }
 
     public class ActivityTask
@@ -1014,7 +1070,7 @@ namespace ORTS
                 try
                 {
                     SidingEnd1 = Simulator.TDB.TrackDB.TrItemTable[i] as SidingItem;
-                    i = SidingEnd1.Flags2;
+                    i = SidingEnd1.LinkedSidingId;
                     SidingEnd2 = Simulator.TDB.TrackDB.TrItemTable[i] as SidingItem;
                 }
                 catch (IndexOutOfRangeException)

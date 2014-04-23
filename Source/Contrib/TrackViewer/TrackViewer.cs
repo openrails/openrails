@@ -836,7 +836,7 @@ namespace ORTS.TrackViewer
             //drawArea.ShiftToLocation(pathEditor.CurrentLocation);
             ////drawArea.ShiftToLocation(pathEditor.trainpath.FirstNode.location);
 
-            PathEditor.EditingIsActive = true;
+            //PathEditor.EditingIsActive = true;
             //pathEditor.ExtendPathFull();
             ////Exit();
         }

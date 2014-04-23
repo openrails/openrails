@@ -3314,7 +3314,7 @@ namespace ORTS
             float offset = RearTDBTraveller.TrackNodeOffset;
             int direction = (int)RearTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[1]);
+            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
             TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
             offset = PresentPosition[1].TCOffset;
 
@@ -3433,7 +3433,7 @@ namespace ORTS
             float offset = FrontTDBTraveller.TrackNodeOffset;
             int direction = (int)FrontTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[0]);
+            PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction); 
             PresentPosition[0].CopyTo(ref PreviousPosition[0]);
 
             DistanceTravelledM = 0.0f;
@@ -3442,8 +3442,8 @@ namespace ORTS
             offset = RearTDBTraveller.TrackNodeOffset;
             direction = (int)RearTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[1]);
-
+            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+            
             // check if train has route, if not create dummy
 
             if (ValidRoute[0] == null)
@@ -3572,7 +3572,7 @@ namespace ORTS
             float offset = FrontTDBTraveller.TrackNodeOffset;
             int direction = (int)FrontTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[0]);
+            PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
             int routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
             PresentPosition[0].RouteListIndex = routeIndex;
 
@@ -3580,7 +3580,7 @@ namespace ORTS
             offset = RearTDBTraveller.TrackNodeOffset;
             direction = (int)RearTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[1]);
+            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
             routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
             PresentPosition[1].RouteListIndex = routeIndex;
 
@@ -7752,15 +7752,15 @@ namespace ORTS
             float offset = FrontTDBTraveller.TrackNodeOffset;
             int direction = (int)FrontTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[0]);
+            PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction); 
             PresentPosition[0].CopyTo(ref PreviousPosition[0]);
 
             tn = RearTDBTraveller.TN;
             offset = RearTDBTraveller.TrackNodeOffset;
             direction = (int)RearTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[1]);
-
+            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction); 
+            
             PresentPosition[0].DistanceTravelledM = DistanceTravelledM;
             PresentPosition[1].DistanceTravelledM = oldRearPosition.DistanceTravelledM;
 
@@ -8079,15 +8079,15 @@ namespace ORTS
             float offset = FrontTDBTraveller.TrackNodeOffset;
             int direction = (int)FrontTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[0]);
+            PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
             PresentPosition[0].CopyTo(ref PreviousPosition[0]);
 
             tn = RearTDBTraveller.TN;
             offset = RearTDBTraveller.TrackNodeOffset;
             direction = (int)RearTDBTraveller.Direction;
 
-            tn.TCCrossReference.GetTCPosition(offset, direction, ref PresentPosition[1]);
-
+            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+            
             PresentPosition[0].DistanceTravelledM = DistanceTravelledM;
             PresentPosition[1].DistanceTravelledM = DistanceTravelledM - Length;
 
@@ -11708,7 +11708,7 @@ namespace ORTS
                     if (thisPathNode.Type == AIPathNodeType.SidingStart)
                     {
                         TrackNode sidingNode = aiPath.TrackDB.TrackNodes[thisPathNode.JunctionIndex];
-                        int startTCSectionIndex = sidingNode.TCCrossReference[0].CrossRefIndex;
+                        int startTCSectionIndex = sidingNode.TCCrossReference[0].Index;
                         int[] altRouteReference = new int[3];
                         altRouteReference[0] = sublist;
                         altRouteReference[1] = thisPathNode.Index;
@@ -11721,7 +11721,7 @@ namespace ORTS
                     else if (thisPathNode.Type == AIPathNodeType.SidingEnd)
                     {
                         TrackNode sidingNode = aiPath.TrackDB.TrackNodes[thisPathNode.JunctionIndex];
-                        int endTCSectionIndex = sidingNode.TCCrossReference[0].CrossRefIndex;
+                        int endTCSectionIndex = sidingNode.TCCrossReference[0].Index;
 
                         int refStartIndex = ActiveAlternativeRoutes.Dequeue();
                         int[] altRouteReference = AlternativeRoutes[refStartIndex];
@@ -11898,7 +11898,7 @@ namespace ORTS
                     {
                         for (int iTC = 0; iTC < thisNode.TCCrossReference.Count; iTC++)
                         {
-                            if ((thisNode.TCCrossReference[iTC].Position[1] + thisNode.TCCrossReference[iTC].Length) > endOffset)
+                            if ((thisNode.TCCrossReference[iTC].OffsetLength[1] + thisNode.TCCrossReference[iTC].Length) > endOffset)
                             //                      if (thisNode.TCCrossReference[iTC].Position[0] < endOffset)
                             {
                                 TCRouteElement thisElement =
@@ -11915,7 +11915,7 @@ namespace ORTS
                     {
                         for (int iTC = thisNode.TCCrossReference.Count - 1; iTC >= 0; iTC--)
                         {
-                            if (thisNode.TCCrossReference[iTC].Position[1] < endOffset)
+                            if (thisNode.TCCrossReference[iTC].OffsetLength[1] < endOffset)
                             {
                                 TCRouteElement thisElement =
                                 new TCRouteElement(thisNode, iTC, currentDir, orgSignals);
@@ -13203,15 +13203,15 @@ namespace ORTS
                 for (int iXRef = waitingNode.TCCrossReference.Count - 1; iXRef >= 0 && TCSectionIndex < 0; iXRef--)
                 {
                     if (offset <
-                     (waitingNode.TCCrossReference[iXRef].Position[1] + waitingNode.TCCrossReference[iXRef].Length))
+                     (waitingNode.TCCrossReference[iXRef].OffsetLength[1] + waitingNode.TCCrossReference[iXRef].Length))
                     {
-                        TCSectionIndex = waitingNode.TCCrossReference[iXRef].CrossRefIndex;
+                        TCSectionIndex = waitingNode.TCCrossReference[iXRef].Index;
                     }
                 }
 
                 if (TCSectionIndex < 0)
                 {
-                    TCSectionIndex = waitingNode.TCCrossReference[0].CrossRefIndex;
+                    TCSectionIndex = waitingNode.TCCrossReference[0].Index;
                 }
 
                 return TCSectionIndex;
@@ -13278,7 +13278,7 @@ namespace ORTS
 
             public TCRouteElement(TrackNode thisNode, int TCIndex, int direction, ORTS.Signals mySignals)
             {
-                TCSectionIndex = thisNode.TCCrossReference[TCIndex].CrossRefIndex;
+                TCSectionIndex = thisNode.TCCrossReference[TCIndex].Index;
                 Direction = direction;
                 OutPin[0] = direction;
                 OutPin[1] = 0;           // always 0 for NORMAL sections, updated for JUNCTION sections
@@ -13287,10 +13287,10 @@ namespace ORTS
                 if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                 {
                     int outPinLink = direction;
-                    int nextIndex = thisNode.TCCrossReference[TCIndex + 1].CrossRefIndex;
+                    int nextIndex = thisNode.TCCrossReference[TCIndex + 1].Index;
                     if (direction == 1)
                     {
-                        nextIndex = thisNode.TCCrossReference[TCIndex - 1].CrossRefIndex;
+                        nextIndex = thisNode.TCCrossReference[TCIndex - 1].Index;
                     }
                     OutPin[1] = (thisSection.Pins[outPinLink, 0].Link == nextIndex) ? 0 : 1;
                 }
@@ -13985,8 +13985,8 @@ namespace ORTS
                 int direction = (int)train.FrontTDBTraveller.Direction;
 
                 TCPosition tempPosition = new TCPosition();
-                tn.TCCrossReference.GetTCPosition(offset, direction, ref tempPosition);
-
+                tempPosition.SetTCPosition(tn.TCCrossReference, offset, direction);
+                
                 TCSectionIndex = inf.ReadInt32();
                 TCDirection = inf.ReadInt32();
                 TCOffset = inf.ReadSingle();
@@ -14012,8 +14012,8 @@ namespace ORTS
                 int direction = (int)train.RearTDBTraveller.Direction;
 
                 TCPosition tempPosition = new TCPosition();
-                tn.TCCrossReference.GetTCPosition(offset, direction, ref tempPosition);
-
+                tempPosition.SetTCPosition(tn.TCCrossReference, offset, direction);
+                
                 TCSectionIndex = inf.ReadInt32();
                 TCDirection = inf.ReadInt32();
                 TCOffset = inf.ReadSingle();
@@ -14132,6 +14132,24 @@ namespace ORTS
                     TCOffset = thisSection.Length - TCOffset; // actual reversal so adjust offset
 
                 DistanceTravelledM = offset;
+            }
+
+            /// <summary>
+            /// Set the position based on the trackcircuit section.
+            /// </summary>
+            /// <param name="trackCircuitXRefList">List of cross-references from tracknode to trackcircuitsection</param>
+            /// <param name="offset">Offset along the tracknode</param>
+            /// <param name="direction">direction along the tracknode (1 is forward)</param>
+            public void SetTCPosition(TrackCircuitXRefList trackCircuitXRefList, float offset, int direction)
+            {
+                int XRefIndex = trackCircuitXRefList.GetXRefIndex(offset, direction);
+
+                if (XRefIndex < 0) return;
+
+                TrackCircuitSectionXref thisReference = trackCircuitXRefList[XRefIndex];
+                this.TCSectionIndex = thisReference.Index;
+                this.TCDirection = direction;
+                this.TCOffset = offset - thisReference.OffsetLength[direction];
             }
         }
 

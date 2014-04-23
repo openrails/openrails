@@ -303,8 +303,8 @@ namespace ORTS.Viewer3D.Popups
                 float offset = trackNode.TrackNodeOffset;
                 int direction = (int)trackNode.Direction;
 
-                tn.TCCrossReference.GetTCPosition(offset, direction, ref thisPosition);
-				Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex, thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, false, false);
+                thisPosition.SetTCPosition(tn.TCCrossReference, offset, direction);
+                Train.TCSubpathRoute tempRoute = Owner.Viewer.Simulator.Signals.BuildTempRoute(null, thisPosition.TCSectionIndex, thisPosition.TCOffset, thisPosition.TCDirection, 5000.0f, true, false, false);
 
                 ObjectItemInfo thisInfo = Owner.Viewer.Simulator.Signals.GetNextObject_InRoute(null, tempRoute, 0,
                     thisPosition.TCOffset, -1, ObjectItemInfo.ObjectItemType.Signal, thisPosition);

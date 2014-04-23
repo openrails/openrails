@@ -45,7 +45,7 @@ namespace ORTS
         static Dictionary<int, LevelCrossingItem> GetLevelCrossingsFromDB(TrackNode[] trackNodes, TrItem[] trItemTable)
         {
             return (from trackNode in trackNodes
-                    where trackNode != null && trackNode.TrVectorNode != null && trackNode.TrVectorNode.noItemRefs > 0
+                    where trackNode != null && trackNode.TrVectorNode != null && trackNode.TrVectorNode.NoItemRefs > 0
                     from itemRef in trackNode.TrVectorNode.TrItemRefs.Distinct()
                     where trItemTable[itemRef] != null && trItemTable[itemRef].ItemType == TrItem.trItemType.trXING
                     select new KeyValuePair<int, LevelCrossingItem>(itemRef, new LevelCrossingItem(trackNode, trItemTable[itemRef])))

@@ -2108,9 +2108,9 @@ namespace ORTS.Viewer3D
             {
                 if (trackNodes[currentNode].TrVectorNode != null)
                 {
-                    if (trackNodes[currentNode].TrVectorNode.noItemRefs > 0)
+                    if (trackNodes[currentNode].TrVectorNode.NoItemRefs > 0)
                     {
-                        for (int i = 0; i < trackNodes[currentNode].TrVectorNode.noItemRefs; i++)
+                        for (int i = 0; i < trackNodes[currentNode].TrVectorNode.NoItemRefs; i++)
                         {
                             //if (trItems[trackNodes[currenNode].TrVectorNode.TrItemRefs[i]].ItemType == TrItem.trItemType.trSIGNAL)
                             //{

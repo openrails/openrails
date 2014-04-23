@@ -67,12 +67,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\MSTS.Formats\RDBFile.cs">
-      <Link>MSTS\RDBFile.cs</Link>
-    </Compile>
-    <Compile Include="..\MSTS.Formats\TDBFile.cs">
-      <Link>MSTS\TDBFile.cs</Link>
-    </Compile>
     <Compile Include="AI\AI.cs" />
     <Compile Include="AI\AIPath.cs" />
     <Compile Include="AI\AITrain.cs" />
@@ -367,6 +361,9 @@
       <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
       <Name>ORTS.Settings</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MSTS\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

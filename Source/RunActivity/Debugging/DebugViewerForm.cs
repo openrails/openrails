@@ -311,9 +311,9 @@ namespace ORTS.Debugging
 
 					  SignalItem si = item as SignalItem;
 					  
-					  if (si.sigObj >=0  && si.sigObj < simulator.Signals.SignalObjects.Length)
+					  if (si.SigObj >=0  && si.SigObj < simulator.Signals.SignalObjects.Length)
 					  {
-						  SignalObject s = simulator.Signals.SignalObjects[si.sigObj];
+						  SignalObject s = simulator.Signals.SignalObjects[si.SigObj];
 						  if (s.isSignal && s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
 					  }
 				  }
@@ -2064,7 +2064,7 @@ namespace ORTS.Debugging
 			  }
 			  //aider selects and throws the switch, but need to confirm by the dispatcher
 			  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGSwitch(MultiPlayer.MPManager.GetUserName(),
-				  nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldID, Selected, true)).ToString());
+				  nextSwitchTrack.TN.UiD.WorldTileX, nextSwitchTrack.TN.UiD.WorldTileZ, nextSwitchTrack.TN.UiD.WorldId, Selected, true)).ToString());
 			  Program.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Switching Request Sent to the Server"));
 
 		  }

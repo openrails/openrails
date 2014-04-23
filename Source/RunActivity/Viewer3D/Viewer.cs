@@ -1041,7 +1041,7 @@ namespace ORTS.Viewer3D
             }
             if (bestTn != null)
             {
-                new ToggleAnySwitchCommand(Log, bestTn.TCCrossReference[0].CrossRefIndex);
+                new ToggleAnySwitchCommand(Log, bestTn.TCCrossReference[0].Index);
             }
         }
 

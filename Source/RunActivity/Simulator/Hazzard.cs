@@ -47,7 +47,7 @@ namespace ORTS
 		static Dictionary<int, Hazzard> GetHazardsFromDB(TrackNode[] trackNodes, TrItem[] trItemTable)
 		{
 			return (from trackNode in trackNodes
-					where trackNode != null && trackNode.TrVectorNode != null && trackNode.TrVectorNode.noItemRefs > 0
+					where trackNode != null && trackNode.TrVectorNode != null && trackNode.TrVectorNode.NoItemRefs > 0
 					from itemRef in trackNode.TrVectorNode.TrItemRefs.Distinct()
 					where trItemTable[itemRef] != null && trItemTable[itemRef].ItemType == TrItem.trItemType.trHAZZARD
 					select new KeyValuePair<int, Hazzard>(itemRef, new Hazzard(trackNode, trItemTable[itemRef])))
