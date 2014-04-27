@@ -21,6 +21,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -39,10 +40,7 @@ namespace ORTS.TrackViewer.Drawing
         private static Dictionary<string, Vector2> textureOffsets = new Dictionary<string, Vector2>();
         private static Dictionary<string,Texture2D> textures = new Dictionary<string,Texture2D>();
 
-        private static ORTS.Viewer3D.Popups.WindowTextManager TextManager;
-        private static ORTS.Viewer3D.Popups.WindowTextFont itemfont;    // for items like platform, siding, ...
-        private static ORTS.Viewer3D.Popups.WindowTextFont loadingfont; // for loading message
-
+        private static FontManager fontManager;
 
         /// <summary>
         /// Some initialization needed for actual drawing
@@ -96,21 +94,10 @@ namespace ORTS.TrackViewer.Drawing
             LoadAndHighlightTexture(graphicsDevice, contentPath, "playerTrain", "steamTrain",31,31);
 
             prepareArcDrawing();
+            fontManager = FontManager.Instance();
 
-            TextManager = new ORTS.Viewer3D.Popups.WindowTextManager();
-            itemfont = TextManager.Get("Segoe UI", 10, System.Drawing.FontStyle.Regular, 0);
-            loadingfont = TextManager.Get("Segoe UI", 10, System.Drawing.FontStyle.Regular, 0);
-            
-            
         }
 
-        /// <summary>
-        /// Update, because Textmanager only loads the needed characters when it knows it needs to print it.
-        /// </summary>
-        public static void Update(GraphicsDevice graphicsDevice)
-        {
-            TextManager.Load(graphicsDevice);
-        }
 
         /// <summary>
         /// Create both a normal and a highlighted texture by loading, adding highlight and doing automipmap
@@ -435,24 +422,43 @@ namespace ORTS.TrackViewer.Drawing
         }
 
         /// <summary>
-        /// Draw a text string. 
+        /// Draw a text string, aligned left, using a font that can be expanded
         /// </summary>
         /// <param name="point">Screen location to use as top-left corner</param>
         /// <param name="color">Color of the text</param>
         /// <param name="message">The string to print</param>
-        public static void DrawString(Vector2 point, Color color, string message )
+        public static void DrawExpandingString(Vector2 point, Color color, string message)
         {
             // text is better readable when on integer locations
             Point intPoint = new Point((int)Math.Round(point.X), (int)Math.Round(point.Y));
-            itemfont.Draw(spriteBatch, new Rectangle(), intPoint, message, ORTS.Viewer3D.Popups.LabelAlignment.Left, color);
-        }
-        public static void DrawStringLoading(Vector2 point, Color color, string message)
-        {
-            // text is better readable when on integer locations
-            Point intPoint = new Point((int)Math.Round(point.X), (int)Math.Round(point.Y));
-            loadingfont.Draw(spriteBatch, new Rectangle(), intPoint, message, ORTS.Viewer3D.Popups.LabelAlignment.Center, color);
+            fontManager.ExpandingFont.Draw(spriteBatch, new Rectangle(), intPoint, message, LabelAlignment.Left, color);
         }
 
+        /// <summary>
+        /// Draw a text string, aligned left
+        /// </summary>
+        /// <param name="point">Screen location to use as top-left corner</param>
+        /// <param name="color">Color of the text</param>
+        /// <param name="message">The string to print</param>
+        public static void DrawString(Vector2 point, Color color, string message)
+        {
+            // text is better readable when on integer locations
+            Point intPoint = new Point((int)Math.Round(point.X), (int)Math.Round(point.Y));
+            fontManager.DefaultFont.Draw(spriteBatch, new Rectangle(), intPoint, message, LabelAlignment.Left, color);
+        }
+
+        /// <summary>
+        /// Draw a text string, aligned center
+        /// </summary>
+        /// <param name="point">Screen location to use as top-left corner</param>
+        /// <param name="color">Color of the text</param>
+        /// <param name="message">The string to print</param>
+        public static void DrawStringCentered(Vector2 point, Color color, string message)
+        {
+            // text is better readable when on integer locations
+            Point intPoint = new Point((int)Math.Round(point.X), (int)Math.Round(point.Y));
+            fontManager.DefaultFont.Draw(spriteBatch, new Rectangle(), intPoint, message, LabelAlignment.Center, color);
+        }
 
         /// <summary>
         /// Draw one of the (predefined) textures at the given location with the given angle
@@ -493,5 +499,108 @@ namespace ORTS.TrackViewer.Drawing
         private static int arcTableSize; // size of the table with precalculated values
         private static float[] cosTable; // table with precalculated Cosine values: cosTable[numberDrawn] = cos(numberDrawn * 0.1degrees)
         private static float[] sinTable; // similar
+    }
+
+    /// <summary>
+    /// Contains all the fonts we need to draw. 
+    /// Since fonts are expensive, we make a singleton class out of it.
+    /// Two different fonts are supported at the same time. There is a constant default font.
+    /// And there is an expandable font: a font that can be changed upon request.
+    /// </summary>
+    public class FontManager
+    {
+        /// <summary>Singleton instance of the class</summary>
+        private static readonly FontManager instance = new FontManager();
+
+        /// <summary>List of supported font sizes</summary>
+        private int[] fontSizes;
+        /// <summary>Default fontsize</summary>
+        private int defaultFontSize;
+        /// <summary>Fontsize to be used for exanding text</summary>
+        private int expandingFontSize;
+        
+        /// <summary>The text manager that supports the font(s)</summary>
+        private WindowTextManager textManager;
+
+        /// <summary>List of fonts</summary>
+        private Dictionary<int, WindowTextFont> fonts;
+        
+        /// <summary>
+        /// Constructor, private so only called during class initialization
+        /// </summary>
+        private FontManager()
+        {
+            fontSizes = new int[] {10,11,12,13,14,16,18,20};
+            defaultFontSize = 10;
+            expandingFontSize = defaultFontSize;
+
+            fonts = new Dictionary<int, WindowTextFont>();
+            textManager = new WindowTextManager();
+            DefaultFont = InitFont(defaultFontSize);
+            RequestFontSize(expandingFontSize);
+        }
+
+        /// <summary>
+        /// Initialize a font and put it in the lists of fonts
+        /// </summary>
+        /// <param name="fontSize">Requested font size. There is no check on the fontsize</param>
+        private WindowTextFont InitFont(int fontSize)
+        {
+            if (!fonts.ContainsKey(fontSize))
+            {
+                fonts[fontSize] = textManager.Get("Segoe UI", fontSize, System.Drawing.FontStyle.Regular, 0);
+            }
+            return fonts[fontSize];
+        }
+
+        /// <summary>
+        /// Return the singleton instance of the font manager
+        /// </summary>
+        public static FontManager Instance() {
+            return instance;
+        }
+
+        /// <summary>his is the default font that can be used for drawing</summary>
+        public WindowTextFont DefaultFont { get; private set; }
+        /// <summary>This is the expanding font that can be used for drawing</summary>
+        public WindowTextFont ExpandingFont { get; private set; }
+
+        /// <summary>
+        /// Request a certain font size. This font size will then be used for drawing when using the expanding font.
+        /// If the fontsize is not available, the best possible fontsize is used
+        /// </summary>
+        /// <param name="requestedFontSize">The font size that is requested</param>
+        public void RequestFontSize(int requestedFontSize)
+        {
+            int selectedFontSize;
+
+            if (fontSizes.Contains(requestedFontSize))
+            {
+                selectedFontSize = requestedFontSize;
+            }
+            else
+            {   // we need to find a good size, we round up
+                selectedFontSize = fontSizes.Max();
+                foreach (int fontSize in fontSizes.OrderByDescending(s => s))
+                {
+                    if (fontSize >= requestedFontSize)
+                    {
+                        selectedFontSize = fontSize;
+                    }
+                }
+            }
+
+            ExpandingFont = InitFont(selectedFontSize);
+        }
+
+        /// <summary>
+        /// Update, because Textmanager only loads the needed characters when it knows it needs to print it.
+        /// Therefore, this needs to be called often.
+        /// </summary>
+        public void Update(GraphicsDevice graphicsDevice)
+        {
+            textManager.Load(graphicsDevice);
+        }
+
     }
 }

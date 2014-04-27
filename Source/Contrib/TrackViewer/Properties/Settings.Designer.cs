@@ -466,5 +466,17 @@ namespace ORTS.TrackViewer.Properties {
                 this["zoomIsCenteredOnMouse"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool showCrossovers {
+            get {
+                return ((bool)(this["showCrossovers"]));
+            }
+            set {
+                this["showCrossovers"] = value;
+            }
+        }
     }
 }

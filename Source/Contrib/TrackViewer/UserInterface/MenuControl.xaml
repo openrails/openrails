@@ -48,6 +48,7 @@
                 <MenuItem Header="Junctions/ends">
                     <MenuItem Header="Show junctions" Name="menuShowJunctionNodes" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show end nodes" Name="menuShowEndNodes" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show crossovers" Name="menuShowCrossovers" IsCheckable="True" Click="UpdateMenuSettings"/>
                 </MenuItem>
                 <MenuItem Header="Sidings">
                     <MenuItem Header="Show siding markers (F9)" Name="menuShowSidingMarkers" IsCheckable="True" Click="UpdateMenuSettings"/>

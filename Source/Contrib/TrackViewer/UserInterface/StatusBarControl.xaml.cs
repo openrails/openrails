@@ -137,26 +137,29 @@ namespace ORTS.TrackViewer.UserInterface
 
             ORTS.TrackViewer.Drawing.CloseToMouseItem closestItem = trackViewer.DrawTrackDB.ClosestTrackItem;
             ORTS.TrackViewer.Drawing.CloseToMouseJunctionOrEnd closestJunction = trackViewer.DrawTrackDB.ClosestJunctionOrEnd;
+            ORTS.TrackViewer.Drawing.CloseToMousePoint closestPoint;
             if (closestItem != null && closestItem.IsCloserThan(closestJunction))
             {
-                statusTrItemType.Text = closestItem.Description;
-                statusTrItemIndex.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                    "{0} ", closestItem.TRItem.TrItemId);
-                statusTrItemLocationX.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                    "{0,3:F3} ", closestItem.TRItem.X);
-                statusTrItemLocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                    "{0,3:F3} ", closestItem.TRItem.Z);
+                closestPoint = closestItem;
             }
             else if (closestJunction.JunctionOrEndNode != null)
             {
-                statusTrItemType.Text = closestJunction.Description;
-                TrackNode node = closestJunction.JunctionOrEndNode;
+                closestPoint = closestJunction;
+            }
+            else
+            {
+                closestPoint = null;
+            }
+
+            if (closestPoint != null)
+            {
+                statusTrItemType.Text = closestPoint.Description;
                 statusTrItemIndex.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                "{0} ", node.Index);
+                "{0} ", closestPoint.Index);
                 statusTrItemLocationX.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                "{0,3:F3} ", node.UiD.X);
+                "{0,3:F3} ", closestPoint.X);
                 statusTrItemLocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                    "{0,3:F3} ", node.UiD.Z);
+                    "{0,3:F3} ", closestPoint.Z);
             }
         }
 

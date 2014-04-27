@@ -53,7 +53,7 @@ namespace ORTS.TrackViewer.Drawing
 
             // First find all world tiles
             string WFilePath = routePath + @"\WORLD\";
-            foreach (var fileName in Directory.GetFiles(WFilePath, "*.w"))
+            foreach (string fileName in Directory.GetFiles(WFilePath, "*.w"))
             {
                 // Parse the tile location out of the filename
                 int p = fileName.ToUpper(System.Globalization.CultureInfo.InvariantCulture).LastIndexOf("\\WORLD\\W", StringComparison.OrdinalIgnoreCase);

@@ -129,7 +129,7 @@ namespace ORTS.TrackViewer.UserInterface
             // When running in fullscreen, Win32's GetKeyboardState (the API behind Keyboard.GetState()) never returns
             // the print screen key as being down. Something is eating it or something. So here we simply query that
             // key directly and forcibly add it to the list of pressed keys.
-            var keys = new List<Keys>(keyboardState.GetPressedKeys());
+            List<Keys> keys = new List<Keys>(keyboardState.GetPressedKeys());
             if ((GetAsyncKeyState(Keys.PrintScreen) & 0x8000) != 0)
                 keys.Add(Keys.PrintScreen);
             return keys.ToArray();
@@ -154,7 +154,7 @@ namespace ORTS.TrackViewer.UserInterface
             //if (ComposingMessage == true) return false;
             //if (RDState != null && RDState.IsPressed(command))
             //    return true;
-            var setting = TVInputSettings.Commands[(int)command];
+            ORTS.Settings.UserCommandInput setting = TVInputSettings.Commands[(int)command];
             return setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState);
         }
 
@@ -167,7 +167,7 @@ namespace ORTS.TrackViewer.UserInterface
             //if (ComposingMessage == true) return false;
             //if (RDState != null && RDState.IsReleased(command))
             //    return true;
-            var setting = TVInputSettings.Commands[(int)command];
+            ORTS.Settings.UserCommandInput setting = TVInputSettings.Commands[(int)command];
             return !setting.IsKeyDown(KeyboardState) && setting.IsKeyDown(LastKeyboardState);
         }
 
@@ -180,7 +180,7 @@ namespace ORTS.TrackViewer.UserInterface
             //if (ComposingMessage == true) return false;
             //if (RDState != null && RDState.IsDown(command))
             //    return true;
-            var setting = TVInputSettings.Commands[(int)command];
+            ORTS.Settings.UserCommandInput setting = TVInputSettings.Commands[(int)command];
             return setting.IsKeyDown(KeyboardState);
         }
 

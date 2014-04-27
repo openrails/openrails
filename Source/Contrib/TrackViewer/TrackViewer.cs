@@ -19,6 +19,7 @@
 //
 // ENHANCEMENT list for Trackviewer      
 // Ideas from others
+//      Draw ground textures from .ace files.
 //      Be able to list the issues directly without going through the ORTS logfile
 //      Make it XNA independent.
 //      Import & export.
@@ -30,9 +31,8 @@
 //              2. look at all to-dos and remove temporary changes. 
 //              3. update version. 
 //              4. remove debug. 
-//              5. Set xml compiler version on, check all xml warnings, and turn it off again.
-//              6. run fxcop
-//              7. test
+//              5. run fxcop
+//              6. test
 //
 // Little things
 //      Add y to statusbar, but perhaps only for items?
@@ -111,7 +111,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the version of the program</summary>
-        public readonly static string TrackViewerVersion = "2014/04/17";
+        public readonly static string TrackViewerVersion = "2014/04/27";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -161,12 +161,15 @@ namespace ORTS.TrackViewer
         /// <summary>The status bar at the bottom</summary>
         StatusBarControl statusBarControl;
 
-        /// <summary></summary>
-        private bool lostFocus;  //when we have lost focus, we do not want to enable shifting with mouse
-        /// <summary></summary>
-        private int skipDrawAmount; // number of times we want to skip draw because nothing happened
-        /// <summary></summary>
+        /// <summary>when we have lost focus, we do not want to enable shifting with mouse</summary>
+        private bool lostFocus;
+        /// <summary>number of times we want to skip draw because nothing happened</summary>
+        private int skipDrawAmount;
+        /// <summary>Maximum number of times we will skipp drawing</summary>
         private const int maxSkipDrawAmount = 10;
+
+        /// <summary>The fontmanager that we use to draw strings</summary>
+        private FontManager fontManager;
         #endregion
 
         /// <summary>
@@ -242,7 +245,8 @@ namespace ORTS.TrackViewer
             drawAreaInset = new ShadowDrawArea(null);
             drawAreaInset.StrictChecking = true;
             setSubwindowSizes();
-            
+
+            fontManager = FontManager.Instance();
 
             this.IsMouseVisible = true;
 
@@ -327,8 +331,11 @@ namespace ORTS.TrackViewer
                 return;
             }
 
-            BasicShapes.Update(GraphicsDevice);
-            DrawTrackDB.ClearHighlightOverrides(); // when update is called, we are not searching via menu
+            fontManager.Update(GraphicsDevice);
+            if (DrawTrackDB != null)
+            {   // when update is called, we are not searching via menu
+                DrawTrackDB.ClearHighlightOverrides();
+            }
 
             // First check all the buttons that can be kept down.
             if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { DrawArea.ShiftLeft(); skipDrawAmount = 0; }
@@ -465,11 +472,12 @@ namespace ORTS.TrackViewer
             spriteBatch.Begin();
             // it is better to have integer locations, otherwise text is difficult to read
             Vector2 messageLocation = new Vector2((float) Math.Round(ScreenW / 2f), (float) Math.Round(ScreenH / 2f));
-            BasicShapes.DrawStringLoading(messageLocation, Color.Black, message);
+            BasicShapes.DrawStringCentered(messageLocation, Color.Black, message);
 
-            // we have to redo the, because we now first have to load the characters into textures.
-            BasicShapes.Update(GraphicsDevice);
-            BasicShapes.DrawStringLoading(messageLocation, Color.Black, message);
+            // we have to redo the string drawing, because we now first have to load the characters into textures.
+            fontManager.Update(GraphicsDevice);
+            BasicShapes.DrawStringCentered(messageLocation, Color.Black, message);
+
             spriteBatch.End();
             EndDraw();
         }
@@ -815,6 +823,7 @@ namespace ORTS.TrackViewer
             if (centerLocation == null) return;
 
             DrawArea.ShiftToLocation(centerLocation);
+            DrawArea.Update();
             DrawArea.MouseLocation = centerLocation;
             drawAreaInset.Follow(DrawArea, 10f);
             BeginDraw();

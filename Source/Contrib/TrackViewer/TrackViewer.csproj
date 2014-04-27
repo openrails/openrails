@@ -23,8 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>..\..\..\Program\Contrib.TrackViewer.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -34,6 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <DocumentationFile>..\..\..\Program\Contrib.TrackViewer.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="Drawing\BasicShapes.cs" />
     <Compile Include="Drawing\CloseToMouse.cs" />
+    <Compile Include="Drawing\DrawableTrackItem.cs" />
     <Compile Include="Drawing\DrawArea.cs" />
     <Compile Include="Drawing\DrawColors.cs" />
     <Compile Include="Drawing\DrawScaleRuler.cs" />

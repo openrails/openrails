@@ -33,7 +33,7 @@ namespace ORTS.TrackViewer.Drawing
     /// is then calculated, and when it is closer than any previously checked item, it is stored together with its distance.
     /// Call Reset to reset the closest distance for a new run.
     /// </summary>
-    public class CloseToMouse
+    public abstract class CloseToMouse
     {
         /// <summary>Distance squared from the mouse to the closest item</summary>
         protected float ClosestDistanceSquared { get; set; }
@@ -70,8 +70,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <remarks>Very similar to WordlLocation.GetDistanceSquared</remarks>
         public static float GetGroundDistanceSquared(WorldLocation location1, WorldLocation location2)
         {
-            var dx = location1.Location.X - location2.Location.X;
-            var dz = location1.Location.Z - location2.Location.Z;
+            float dx = location1.Location.X - location2.Location.X;
+            float dz = location1.Location.Z - location2.Location.Z;
             dx += 2048 * (location1.TileX - location2.TileX);
             dz += 2048 * (location1.TileZ - location2.TileZ);
             return dx * dx + dz * dz;
@@ -80,12 +80,31 @@ namespace ORTS.TrackViewer.Drawing
     }
 
     /// <summary>
+    /// CloseToMouse item specifically for point-like track-database items like junctions, endnodes and track items.
+    /// </summary>
+    public abstract class CloseToMousePoint : CloseToMouse
+    {
+        /// <summary>The index of the original item in whatever table it was defined</summary>
+        public abstract uint Index { get; }
+        /// <summary>The X-coordinate within a tile of the original item in the track database</summary>
+        public abstract float X { get; }
+        /// <summary>The Z-coordinate within a tile of the original item in the track database</summary>
+        public abstract float Z { get; }
+    }
+
+    /// <summary>
     /// CloseToMouse item specifically for junctions and endnode. But will take any track point
     /// </summary>
-    public class CloseToMouseJunctionOrEnd:CloseToMouse
+    public class CloseToMouseJunctionOrEnd:CloseToMousePoint
     {
         /// <summary>Tracknode of the closest junction or end node</summary>
         public TrackNode JunctionOrEndNode { get; private set; }
+        /// <summary>The index of the original item in whatever table it was defined</summary>
+        public override uint Index { get { return JunctionOrEndNode.Index; } }
+        /// <summary>The X-coordinate within a tile of the original item in the track database</summary>
+        public override float X { get { return JunctionOrEndNode.UiD.X; } }
+        /// <summary>The Z-coordinate within a tile of the original item in the track database</summary>
+        public override float Z { get { return JunctionOrEndNode.UiD.X; } }
 
         /// <summary>
         /// Reset the calculation of which item (junction) is closest to the mouse
@@ -138,11 +157,21 @@ namespace ORTS.TrackViewer.Drawing
     /// <summary>
     /// CloseToMouse track item. Stores item as well as its type (name)
     /// </summary>
-    public class CloseToMouseItem:CloseToMouse
+    public class CloseToMouseItem:CloseToMousePoint
     {
         /// <summary>Link to the item that is closest to the mouse</summary>
-        public TrItem TRItem { get; set; }
+        public DrawableTrackItem DrawableTrackItem { get; protected set; }
+        
+        /// <summary>The index of the original item in whatever table it was defined</summary>
+        public override uint Index { get { return DrawableTrackItem.Index;} }
+        /// <summary>The X-coordinate within a tile of the original item in the track database</summary>
+        public override float X { get { return worldLocation.Location.X; } }
+        /// <summary>The Z-coordinate within a tile of the original item in the track database</summary>
+        public override float Z { get { return worldLocation.Location.Z; } }
 
+        /// <summary>The world location of the item that is closest to the mouse</summary>
+        private WorldLocation worldLocation;
+        
         /// <summary>
         /// Constructor, creating an empty object
         /// </summary>
@@ -154,11 +183,12 @@ namespace ORTS.TrackViewer.Drawing
         /// Constructor that immediately sets the closest item (and distance)
         /// </summary>
         /// <param name="item">track item to store as closest item</param>
-        public CloseToMouseItem(TrItem item)
+        public CloseToMouseItem(DrawableTrackItem item)
         {
-            TRItem = item;
             ClosestDistanceSquared = 0;
-            Description = DrawTrackDB.TrItemName(item.ItemType);
+            DrawableTrackItem = item;
+            Description = DrawableTrackItem.Description;
+            worldLocation = DrawableTrackItem.WorldLocation;
         }
 
         /// <summary>
@@ -167,25 +197,26 @@ namespace ORTS.TrackViewer.Drawing
         public override void Reset()
         {
             base.Reset();
-            TRItem = null;
+            DrawableTrackItem = null;
+            worldLocation = null;
        }
 
-        
         /// <summary>
         /// Check wether this track Item is closest to the mouse location
         /// </summary>
         /// <param name="location">Location to check</param>
         /// <param name="mouseLocation">Current mouse location</param>
         /// <param name="trItem">The track Item that will be stored when it is indeed the closest</param>
-         public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, TrItem trItem)
+        public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, DrawableTrackItem trItem)
         {
             float distanceSquared = CloseToMouse.GetGroundDistanceSquared(location, mouseLocation);
 
             if (distanceSquared < ClosestDistanceSquared)
             {
                 ClosestDistanceSquared = distanceSquared;
-                this.TRItem = trItem;
-                this.Description = DrawTrackDB.TrItemName(trItem.ItemType);
+                this.DrawableTrackItem = trItem;
+                this.worldLocation = location;
+                this.Description = trItem.Description;
             }
         }
     }

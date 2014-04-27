@@ -84,6 +84,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>The discrete scale giving the meters per pixel in nice numbers</summary>
         private DiscreteScale metersPerPixel;
 
+        /// <summary>The fontmanager that is used to draw strings</summary>
+        private FontManager fontManager;
 
         /// <summary>WorldLocation of the mouse (so where in the real worlds is the current mouse position</summary>
         public WorldLocation MouseLocation { get; set; }
@@ -105,6 +107,7 @@ namespace ORTS.TrackViewer.Drawing
             AreaH = 700;
             metersPerPixel = new DiscreteScale();
             MouseLocation = new WorldLocation(0, 0, 0, 0, 0);  // default mouse location far far away
+            fontManager = FontManager.Instance();
             SetDrawArea(-1, 1, -1, 1); // just have a default
             this.drawScaleRuler = drawScaleRuler;
         }
@@ -152,7 +155,7 @@ namespace ORTS.TrackViewer.Drawing
                 OffsetZ = Properties.Settings.Default.zoomOffsetZ;
                 metersPerPixel.ApproximateTo(1.0f / Properties.Settings.Default.zoomScale);
                 Scale = metersPerPixel.InverseScaleValue;
-                PostZoomTasks();
+                PostZoomTasks(true);
             }
         }
 
@@ -203,7 +206,7 @@ namespace ORTS.TrackViewer.Drawing
             // or offsetX = worldX - areaX/scale. 
             OffsetX = (maxX + minX) / 2 - AreaW / 2 / Scale;
             OffsetZ = (maxZ + minZ) / 2 - AreaH / 2 / Scale;
-            PostZoomTasks();
+            PostZoomTasks(true);
         }
 
         /// <summary>
@@ -261,7 +264,7 @@ namespace ORTS.TrackViewer.Drawing
             Scale = metersPerPixel.InverseScaleValue;
             OffsetX +=          fixedAreaLocation.X  * (scaleFactor - 1) / Scale;
             OffsetZ += (AreaH - fixedAreaLocation.Y) * (scaleFactor - 1) / Scale;
-            PostZoomTasks();
+            PostZoomTasks(true);
         }
 
         /// <summary>
@@ -298,9 +301,19 @@ namespace ORTS.TrackViewer.Drawing
             return (Scale < fullScale/2);
         }
 
-        private void PostZoomTasks()
+        /// <summary>
+        /// Do the various needed tasks after a zoom: mainly updating related objects
+        /// </summary>
+        /// <param name="updateFontSize">do we want to update the </param>
+        private void PostZoomTasks(bool updateFontSize)
         {
             if (drawScaleRuler != null) drawScaleRuler.SetCurrentRuler(Scale);
+
+            if (updateFontSize)
+            {
+                //Set the size of the font for drawing text. Font size is about 10 times the scale in pixels/meter
+                fontManager.RequestFontSize((int)(Scale * 10));
+            }
         }
 
         /// <summary>
@@ -321,7 +334,7 @@ namespace ORTS.TrackViewer.Drawing
             this.OffsetX = otherArea.OffsetX + otherArea.AreaW / 2 / otherArea.Scale - this.AreaW / 2 / this.Scale;
             this.OffsetZ = otherArea.OffsetZ + otherArea.AreaH / 2 / otherArea.Scale - this.AreaH / 2 / this.Scale;
             MouseLocation = otherArea.MouseLocation;
-            PostZoomTasks();
+            PostZoomTasks(false);
         }
 
         /// <summary>
@@ -673,11 +686,13 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         /// <param name="location">The world location acting as the starting point of the drawing</param>
         /// <param name="message">The message to print</param>
-        public void DrawString(WorldLocation location, string message)
+        public void DrawExpandingString(WorldLocation location, string message)
         {
             if (OutOfArea(location)) return;
-            Vector2 textOffset = new Vector2(3, 3); // We offset the top-left corner to make sure the text is not on the marker.
-            BasicShapes.DrawString(GetWindowVector(location)+textOffset, DrawColors.colorsNormal["text"], message); 
+            // We offset the top-left corner to make sure the text is not on the marker.
+            int offsetXY = 2 + (int)GetWindowSize(2f); 
+            Vector2 textOffset = new Vector2(offsetXY, offsetXY);
+            BasicShapes.DrawExpandingString(GetWindowVector(location)+textOffset, DrawColors.colorsNormal["text"], message); 
         }
 
         /// <summary>

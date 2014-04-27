@@ -106,6 +106,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             menuShowJunctionNodes.IsChecked = Properties.Settings.Default.showJunctionNodes;
             menuShowEndNodes.IsChecked = Properties.Settings.Default.showEndNodes;
+            menuShowCrossovers.IsChecked = Properties.Settings.Default.showCrossovers;
             menuShowSidingMarkers.IsChecked = Properties.Settings.Default.showSidingMarkers;
             menuShowSidingNames.IsChecked = Properties.Settings.Default.showSidingNames;
             menuShowPlatformMarkers.IsChecked = Properties.Settings.Default.showPlatformMarkers;
@@ -155,6 +156,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.colorTracks = menuColorTracks.IsChecked;
             Properties.Settings.Default.showJunctionNodes = menuShowJunctionNodes.IsChecked;
             Properties.Settings.Default.showEndNodes = menuShowEndNodes.IsChecked;
+            Properties.Settings.Default.showCrossovers = menuShowCrossovers.IsChecked;
             Properties.Settings.Default.showSidingMarkers = menuShowSidingMarkers.IsChecked;
             Properties.Settings.Default.showSidingNames = menuShowSidingNames.IsChecked;
             Properties.Settings.Default.showPlatformMarkers = menuShowPlatformMarkers.IsChecked;
@@ -501,28 +503,28 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void menuSearchTrackNode_Click(object sender, RoutedEventArgs e)
         {
-            var searchControl = new SearchControl(trackViewer, SearchableItem.TrackNode);
+            SearchControl searchControl = new SearchControl(trackViewer, SearchableItem.TrackNode);
             TrackViewer.Localize(searchControl);
             searchControl.ShowDialog();
         }
 
         private void menuSearchTrackItem_Click(object sender, RoutedEventArgs e)
         {
-            var searchControl = new SearchControl(trackViewer, SearchableItem.TrackItem);
+            SearchControl searchControl = new SearchControl(trackViewer, SearchableItem.TrackItem);
             TrackViewer.Localize(searchControl);
             searchControl.ShowDialog();
         }
 
         private void menuSearchTrackNodeRoad_Click(object sender, RoutedEventArgs e)
         {
-            var searchControl = new SearchControl(trackViewer, SearchableItem.TrackNodeRoad);
+            SearchControl searchControl = new SearchControl(trackViewer, SearchableItem.TrackNodeRoad);
             TrackViewer.Localize(searchControl);
             searchControl.ShowDialog();
         }
 
         private void menuSearchTrackItemRoad_Click(object sender, RoutedEventArgs e)
         {
-            var searchControl = new SearchControl(trackViewer, SearchableItem.TrackItemRoad);
+            SearchControl searchControl = new SearchControl(trackViewer, SearchableItem.TrackItemRoad);
             TrackViewer.Localize(searchControl);
             searchControl.ShowDialog();
         }
