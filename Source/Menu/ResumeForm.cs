@@ -16,36 +16,31 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 /*
-This form adds the ability to save the state of the simulator (a Save) multiple times and replace the previous 
-single save to the file SAVE.BIN.
- = false
+This form adds the ability to save the state of the simulator (a Save) multiple times.
 Saves are made to the folder Program.UserDataFolder (e.g.
     C:\Users\Chris\AppData\Roaming\Open Rails\ 
 and take the form  <activity file name> <date> <time>.save. E.g.
     yard_two 2012-03-20 22.07.36.save
 
-As Saves for all routes are saved in the same folder and activity file names might be common, the date and time 
-elements ensure that the Save file names are unique.
+As Saves for all routes are saved in the same folder and activity file names might be common to several routes, 
+the date and time elements ensure that the Save file names are unique.
 
 If the player is not running an activity but exploring a route, the filename takes the form  
 <route folder name> <date> <time>.save. E.g.
     USA2 2012-03-20 22.07.36.save
 
 The RunActivity program takes switches; one of these is -resume
-The -resume switch can now take an ActivitySave file name as a parameter. E.g.
+The -resume switch can now take a Save file name as a parameter. E.g.
     RunActivity.exe -resume "yard_two 2012-03-20 22.07.36"
 or
     RunActivity.exe -resume "yard_two 2012-03-20 22.07.36.save"
 
-If no parameter is provided, then RunActivity uses the most recent ActivitySave.
+If no parameter is provided, then RunActivity uses the most recent Save.
 
-When the RunActivity program saves a Save, it adds its own program and build values. When resuming from an 
-Save, it checks that the program and build values from the file match its own and rejects an ActivitySave that 
-it didn't create.
-
-The intention is to increase reliability by preventing crashes. A newer version of RunActivity might make use of 
-additional values in the Save file which will not be present if saved by a previous version. Techniques 
-to maintain compatibility are possible but too onerous for a voluntary team.
+New versions of Open Rails may be incompatible with Saves made by older versions. A mechanism is provided
+here to reject Saves which are definitely incompatible and warn of Saves that may be incompatible. A Save that
+is marked as "may be incompatible" may not be resumed successfully by the RunActivity which will
+stop and issue an error message.
 
 Some problems remain (see <CJ comment> in the source code):
 1. A screen-capture image is saved along with the Save. The intention is that this image should be a thumbnail
@@ -90,9 +85,10 @@ namespace ORTS
             public DateTime RealTime { get; private set; }
             public string CurrentTile { get; private set; }
             public string Distance { get; private set; }
-            public bool Valid { get; private set; }
+            public bool? Valid { get; private set; } // 3 possibilities: invalid, unknown validity, valid
+            public string Version { get; private set; }
 
-            public Save(string fileName, string currentBuild)
+            public Save(string fileName, string currentBuild, int youngestFailedToResume)
             {
                 File = fileName;
                 System.Threading.Thread.Sleep(10);
@@ -101,8 +97,10 @@ namespace ORTS
                     try
                     {
                         // Read in validation data.
-                        inf.ReadString();    // Version
-                        var build = inf.ReadString().Replace("\0", "");
+                        Version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X.1321"
+                        // or, if saved from a locally compiled program, ""
+                        var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
+                        Valid = GetValidity(Version, build, youngestFailedToResume);
 
                         // Read in route/activity/path/player data.
                         var routeName = inf.ReadString(); // Route name
@@ -126,11 +124,62 @@ namespace ORTS
                         RealTime = realTime;
                         CurrentTile = currentTile;
                         Distance = distance;
-                        Valid = currentBuild == null || build.EndsWith(currentBuild) 
-                            || Debugger.IsAttached; // to support testing
                     }
                     catch { }
                 }
+            }
+
+            private int GetRevision(string version)
+            {
+                string[] versionArray = version.Split('.');
+                var revision = 0;
+                try  // as Convert.ToInt32() can fail and version may be ""
+                {
+                    var length = versionArray.Length;
+                    revision = Convert.ToInt32(versionArray[length - 1]);
+                }
+                catch { } // ignore errors
+                return revision;
+            }
+
+            public bool? GetValidity(string version, string build, int youngestFailedToResume)
+            {
+                var revision = GetRevision(version);
+                var programRevision = 0;
+                try  // as Convert.ToInt32() can fail and version may be ""
+                {
+                    programRevision = Convert.ToInt32(VersionInfo.Revision);
+                }
+                catch { } // ignore errors
+                //MessageBox.Show(String.Format("VersionInfo.Build = {0}, build = {1}, version = {2}, youngestFailedToResume = {3}", VersionInfo.Build, build, Version, youngestFailedToResume));
+                if (revision != 0)  // compiled remotely by Open Rails
+                {
+                    if (revision == programRevision)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        if (revision > youngestFailedToResume        // 1. Normal situation
+                        || programRevision < youngestFailedToResume) // 2. If an old version of OR is used, then attempt to load Saves
+                                                                     //    which would be blocked by the current version of OR
+                        {
+                            return null;
+                        }
+                    }
+                }
+                else  // compiled locally
+                {
+                    if (build.EndsWith(VersionInfo.Build))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                return false; // default validity
             }
         }
 
@@ -214,7 +263,7 @@ namespace ORTS
                             // SavePacks are all in the same folder and activities may have the same name 
                             // (e.g. Short Passenger Run shrtpass.act) but belong to a different route,
                             // so pick only the activities for the current route.
-                            var save = new Save(saveFile, build);
+                            var save = new Save(saveFile, build, Settings.YoungestFailedToRestore);
                             if (save.RouteName == Route.Name)
                             {
                                 saves.Add(save);
@@ -239,7 +288,9 @@ namespace ORTS
             {
                 Saves = saves;
                 saveBindingSource.DataSource = Saves;
-                labelInvalidSaves.Text = catalog.GetStringFmt("To prevent crashes and unexpected behavior, new versions of Open Rails invalidate old saved games. {0} of {1} saves are no longer valid.", Saves.Count(s => !s.Valid), Saves.Count);
+                labelInvalidSaves.Text = catalog.GetStringFmt(
+                    "To prevent crashes and unexpected behaviour, Open Rails invalidates games saved from older versions if they fail to restore.\n" +
+                    "{0} of {1} saves for this route are no longer valid.", Saves.Count(s => (s.Valid == false)), Saves.Count);
                 gridSaves_SelectionChanged(null, null);
                 // Show warning after the list has been updated as this is more useful.
                 if (warning != "")
@@ -247,13 +298,29 @@ namespace ORTS
             });
         }
 
+        bool AcceptUseOfNonvalidSave(Save save)
+        {
+            var reply = MessageBox.Show(catalog.GetStringFmt(
+                "This save was made by an older version {0} of Open Rails and\n" +
+                "may be incompatible with the current version {1}.\n" +
+                "Please do not report any problems that may result.\n\n" +
+                "Continue at your own risk?",
+                save.Version, VersionInfo.Version),
+                Application.ProductName, MessageBoxButtons.YesNo);
+            return reply == DialogResult.Yes;
+        }
+
         void ResumeSave()
         {
             var save = saveBindingSource.Current as Save;
-            if (save.Valid)
+            if (save.Valid != false) // I.e. true or null. Check is for safety as buttons should be disabled if Save is invalid.
             {
                 if( Found(save) )
                 {
+                    if (save.Valid == null)
+                        if (!AcceptUseOfNonvalidSave(save))
+                            return;
+
                     SelectedSaveFile = save.File;
                     SelectedAction = SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame ?
                         MainForm.UserAction.SinglePlayerResumeTimetableGame : MainForm.UserAction.SingleplayerResumeSave;
@@ -282,10 +349,10 @@ namespace ORTS
                         pictureBoxScreenshot.Image = new Bitmap(thumbFileName);
 
                     buttonDelete.Enabled = true;
-                    buttonResume.Enabled = save.Valid;
+                    buttonResume.Enabled = (save.Valid != false); // I.e. either true or null
                     var replayFileName = Path.ChangeExtension(save.File, "replay");
-                    buttonReplayFromPreviousSave.Enabled = (save.Valid && File.Exists(replayFileName));
-                    buttonReplayFromStart.Enabled = File.Exists(replayFileName);
+                    buttonReplayFromPreviousSave.Enabled = ((save.Valid != false) && File.Exists(replayFileName));
+                    buttonReplayFromStart.Enabled = File.Exists(replayFileName); // can Replay From Start even if Save is invalid.
                 }
                 else
                 {
@@ -297,8 +364,8 @@ namespace ORTS
                 buttonDelete.Enabled = buttonResume.Enabled = buttonReplayFromStart.Enabled = buttonReplayFromPreviousSave.Enabled = false;
             }
 
-            buttonDeleteInvalid.Enabled = Saves.Any(s => !s.Valid);
-			buttonUndelete.Enabled = Directory.Exists(UserSettings.DeletedSaveFolder) && Directory.GetFiles(UserSettings.DeletedSaveFolder).Length > 0;
+            buttonDeleteInvalid.Enabled = true; // Always enabled because there may be Saves to be deleted for other activities not just this one.
+            buttonUndelete.Enabled = Directory.Exists(UserSettings.DeletedSaveFolder) && Directory.GetFiles(UserSettings.DeletedSaveFolder).Length > 0;
         }
 
         void gridSaves_DoubleClick(object sender, EventArgs e)
@@ -366,41 +433,64 @@ namespace ORTS
         {
             gridSaves.ClearSelection();
 
-            foreach (var save in Saves)
+            var directory = UserSettings.UserDataFolder;
+            if (Directory.Exists(directory))
             {
-                if (!save.Valid)
+                var build = VersionInfo.Build.Contains(" ") ? VersionInfo.Build.Substring(VersionInfo.Build.IndexOf(" ") + 1) : null;
+                var remains = 0;
+                var deletes = 0;
+                foreach (var saveFile in Directory.GetFiles(directory, "*.save"))
                 {
-                    foreach (var fileName in new[] { save.File, Path.ChangeExtension(save.File, "png") })
+                    var save = new Save(saveFile, build, Settings.YoungestFailedToRestore);
+                    if (save.Valid == false)
                     {
-                        try
+                        foreach (var fileName in new[] { 
+                            save.File, 
+                            Path.ChangeExtension(save.File, "png"), 
+                            Path.ChangeExtension(save.File, "txt"),
+                            Path.ChangeExtension(save.File, "replay") 
+                            }
+                        )
                         {
-                            File.Delete(fileName);
+                            try
+                            {
+                                File.Delete(fileName);
+                            }
+                            catch { }
                         }
-                        catch { }
+                        deletes++;
+                    }
+                    else
+                    {
+                        remains++;
                     }
                 }
+                MessageBox.Show(catalog.GetStringFmt("{0} invalid saves deleted\n{1} saves remain", deletes, remains), catalog.GetString("Delete of invalid saves"));
             }
-
             LoadSaves();
         }
 
         private void buttonReplayFromStart_Click(object sender, EventArgs e)
         {
             SelectedAction = MainForm.UserAction.SingleplayerReplaySave;
-            InitiateReplay();
+            InitiateReplay(true);
         }
-
+        
         private void buttonReplayFromPreviousSave_Click(object sender, EventArgs e)
         {
             SelectedAction = MainForm.UserAction.SingleplayerReplaySaveFromSave;
-            InitiateReplay();
+            InitiateReplay(false);
         }
-
-        private void InitiateReplay()
+        
+        private void InitiateReplay(bool fromStart)
         {
             var save = saveBindingSource.Current as Save;
             if (Found(save) )
             {
+                if (fromStart && (save.Valid == null))
+                    if (!AcceptUseOfNonvalidSave(save))
+                        return;
+
                 SelectedSaveFile = save.File;
                 Settings.ReplayPauseBeforeEnd = checkBoxReplayPauseBeforeEnd.Checked;
                 Settings.ReplayPauseBeforeEndS = (int)numericReplayPauseBeforeEnd.Value;

@@ -205,7 +205,16 @@ namespace ORTS.Processes
 
                         if (error is IncompatibleSaveException)
                         {
-                            MessageBox.Show(error.Message, Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(String.Format(
+                                "Save file is incompatible with current revision of {0} so activity cannot continue.\n\n" +
+                                "Save file = {1}\n\n" +
+                                "Save file revision = {2}\n" +
+                                "Open Rails revision = {3}",
+                                Application.ProductName, 
+                                ((IncompatibleSaveException)error).SaveFile, 
+                                ((IncompatibleSaveException)error).Revision, 
+                                VersionInfo.Revision),
+                                Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         else if (error is FileNotFoundException)
                         {
@@ -234,7 +243,7 @@ namespace ORTS.Processes
                                     "A fatal error has occured and {0} cannot continue.\n\n" +
                                     "    {1}\n\n" +
                                     "This error may be due to bad data or a bug. You can help improve {0} by reporting this error in our bug tracker at http://launchpad.net/or and attaching the log file {2}.\n\n" +
-                                    ">>> Please report this error to the {0} bug tracker <<<",
+                                    ">>> Click OK to report this error on the {0} bug tracker <<<",
                                     Application.ProductName, errorSummary, logFile),
                                     Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OKCancel, MessageBoxIcon.Error);
                             if (openTracker == DialogResult.OK)
@@ -329,7 +338,8 @@ namespace ORTS.Processes
                 Simulator.Save(outf);
                 Viewer.Save(outf, fileStem);
 
-                Console.WriteLine();
+                // Write out position within file so we can check when restoring.
+                outf.Write(outf.BaseStream.Position);
             }
         }
 
@@ -345,15 +355,52 @@ namespace ORTS.Processes
 
             // First use the .save file to check the validity and extract the route and activity.
             var saveFile = GetSaveFile(args);
+            var saveRevision = 0;
             using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
             {
-                ValidateSave(saveFile, inf);
-                var values = GetSavedValues(inf);
-                Acttype = values.acttype;
-                InitSimulator(settings, values.args, "Resume", values.acttype);
-                Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
-                Viewer = new Viewer(Simulator, Game);
-                Viewer.Restore(inf);
+                try // Because Restore() methods may try to read beyond the end of an out of date file.
+                {
+                    // Read in validation data.
+                    var version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X.1321"
+                                                                      // or, if saved from a locally compiled program, ""
+                    saveRevision = GetRevision(version);
+                    var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
+                    bool? valid = GetValidity(version, build, settings.YoungestFailedToRestore);
+                    if (valid == false) // This is usually detected in ResumeForm.cs but a REsume can also be launched from the command line.
+                    {
+                        throw new ORTS.Processes.IncompatibleSaveException(saveRevision, saveFile);
+                    }
+                    if (valid == null)
+                    {
+                        //<CJComment> Cannot make this multi-language using Viewer.Catalog as Viewer is still null. </CJCOmment>
+                        Trace.TraceWarning("Restoring from a save made by an older version {0}\n"
+                            + "of Open Rails which may be incompatible with the current version {1}.\n"
+                            + "Please do not report any problems that may result.\n", version, VersionInfo.Version);
+                    }
+                    var values = GetSavedValues(inf);
+                    Acttype = values.acttype;
+                    InitSimulator(settings, values.args, "Resume", values.acttype);
+                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
+                    Viewer = new Viewer(Simulator, Game);
+                    Viewer.Restore(inf);
+                    
+                    long restorePosition = inf.BaseStream.Position;
+                    long savePosition = inf.ReadInt64();
+                    if (restorePosition != savePosition)
+                    {
+                        throw new ORTS.Processes.IncompatibleSaveException(saveRevision, saveFile);
+                    }
+                }
+                catch (Exception error)
+                {
+                    Trace.WriteLine(error);
+                    if (saveRevision > settings.YoungestFailedToRestore)
+                    {
+                        settings.YoungestFailedToRestore = saveRevision;
+                        settings.Save("YoungestFailedToRestore");
+                    }
+                    throw new ORTS.Processes.IncompatibleSaveException(saveRevision, saveFile);
+                }
 
                 // Reload the command log
                 Viewer.Log = new CommandLog(Viewer);
@@ -361,6 +408,59 @@ namespace ORTS.Processes
 
                 Game.ReplaceState(new GameStateViewer3D(Viewer));
             }
+        }
+
+        private int GetRevision(string version)
+        {
+            string[] versionArray = version.Split('.');
+            var revision = 0;
+            try  // as Convert.ToInt32() can fail and version may be ""
+            {
+                var length = versionArray.Length;
+                revision = Convert.ToInt32(versionArray[length - 1]);
+            }
+            catch { } // ignore errors
+            return revision;
+        }
+
+        public bool? GetValidity(string version, string build, int youngestFailedToResume)
+        {
+            var revision = GetRevision(version);
+            var programRevision = 0;
+            try  // as Convert.ToInt32() can fail and version may be ""
+            {
+                programRevision = Convert.ToInt32(VersionInfo.Revision);
+            }
+            catch { } // ignore errors
+            //MessageBox.Show(String.Format("VersionInfo.Build = {0}, build = {1}, version = {2}, youngestFailedToResume = {3}", VersionInfo.Build, build, Version, youngestFailedToResume));
+            if (revision != 0)  // compiled remotely by Open Rails
+            {
+                if (revision == programRevision)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (revision > youngestFailedToResume        // 1. Normal situation
+                    || programRevision < youngestFailedToResume) // 2. If an old version of OR is used, then attempt to load Saves
+                                                                 //    which would be blocked by the current version of OR
+                    {
+                        return null;
+                    }
+                }
+            }
+            else  // compiled locally
+            {
+                if (build.EndsWith(VersionInfo.Build))
+                {
+                    return true;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            return false; // default validity
         }
 
         /// <summary>
@@ -373,7 +473,7 @@ namespace ORTS.Processes
             // else use most recently changed *.save
             // E.g. RunActivity.exe -replay
 
-            // First use the .save file to check the validity and extract the route and activity.
+            // First use the .save file to extract the route and activity.
             string saveFile = GetSaveFile(args);
             using (BinaryReader inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
             {
@@ -409,7 +509,7 @@ namespace ORTS.Processes
             // E.g. RunActivity.exe -replay_from_save "yard_two 2012-03-20 22.07.36"
             var saveFile = GetSaveFile(args);
 
-            // Find previous save file and move commands to be replayed into replay list.
+            // Find previous save file and then move commands to be replayed into replay list.
             var log = new CommandLog();
             var logFile = saveFile.Replace(".save", ".replay");
             log.LoadLog(logFile);
@@ -448,8 +548,9 @@ namespace ORTS.Processes
                 // But we have no args, so have to get these from the Save
                 using (var inf = new BinaryReader(new FileStream(saveFile, FileMode.Open, FileAccess.Read)))
                 {
-                    ValidateSave(saveFile, inf);
-                    var values = GetSavedValues(inf);
+                    inf.ReadString();    // Revision
+                    inf.ReadString();    // Build
+                    savedValues values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Replay");
                 }
                 Simulator.Start();
@@ -457,11 +558,24 @@ namespace ORTS.Processes
             }
             else
             {
-                // Resume from previousSaveFile
-                // and then replay
+                // Resume from previousSaveFile and then replay
                 using (var inf = new BinaryReader(new FileStream(previousSaveFile, FileMode.Open, FileAccess.Read)))
                 {
-                    ValidateSave(previousSaveFile, inf);
+                    var version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X.1321"
+                                                                      // or, if saved from a locally compiled program, ""
+                    var saveRevision = GetRevision(version);
+                    var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
+                    bool? valid = GetValidity(version, build, settings.YoungestFailedToRestore);
+                    if (valid == false) // This is usually detected in ResumeForm.cs but a Resume can also be launched from the command line.
+                    {
+                        throw new ORTS.Processes.IncompatibleSaveException(saveRevision, saveFile);
+                    }
+                    if (valid == null)
+                    {
+                        Trace.TraceWarning(Viewer.Catalog.GetString("Restoring from a save made by an older version {0}\n"
+                            + "of Open Rails which may be incompatible with the current version {1}.\n"
+                            + "Please do not report any problems that may result.\n"), version, VersionInfo.Version);
+                    }
                     savedValues values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Resume", values.acttype);
                     Simulator.Restore(inf, values.initialTileX, values.initialTileZ);
@@ -923,38 +1037,6 @@ namespace ORTS.Processes
             Console.WriteLine(new String('-', 80));
         }
 
-        void ValidateSave(string fileName, BinaryReader inf)
-        {
-            // Read in validation data.
-            var version = "<unknown>";
-            var build = "<unknown>";
-            var versionOkay = false;
-            try
-            {
-                version = inf.ReadString().Replace("\0", "");
-                build = inf.ReadString().Replace("\0", "");
-                versionOkay = (version == VersionInfo.Version) && (build == VersionInfo.Build);
-            }
-            catch { }
-
-            if (!versionOkay)
-            {
-                if (Debugger.IsAttached)
-                {
-                    // Only if debugging, then allow user to continue as
-                    // resuming from saved activities is useful in debugging.
-                    // (To resume from the latest save, set 
-                    // RunActivity > Properties > Debug > Command line arguments = "-resume")
-                    Trace.WriteLine(new IncompatibleSaveException(fileName, version, build, VersionInfo.Version, VersionInfo.Build));
-                    LogSeparator();
-                }
-                else
-                {
-                    throw new IncompatibleSaveException(fileName, version, build, VersionInfo.Version, VersionInfo.Build);
-                }
-            }
-        }
-
         string GetSaveFile(string[] args)
         {
             if (args.Length == 0)
@@ -973,7 +1055,7 @@ namespace ORTS.Processes
              .OrderByDescending(f => f.LastWriteTime)
              .First();
             if (file == null) throw new FileNotFoundException(String.Format(
-               "Activity Save file '*.save' not found in folder {0}", directory));
+               Viewer.Catalog.GetString("Activity Save file '*.save' not found in folder {0}"), directory));
             return file.FullName;
         }
 
@@ -1234,13 +1316,13 @@ namespace ORTS.Processes
         }
     }
 
-    public sealed class IncompatibleSaveException : Exception
-    {
-        public IncompatibleSaveException(string fileName, string version, string build, string gameVersion, string gameBuild)
-            : base(version.Length > 0 && build.Length > 0 ?
-                String.Format("Saved game file is not compatible with this version of {0}.\n\nFile: {1}\nSave: {4} ({5})\nGame: {2} ({3})", Application.ProductName, fileName, gameVersion, gameBuild, version, build) :
-            String.Format("Saved game file is not compatible with this version of {0}.\n\nFile: {1}\nGame: {2} ({3})", Application.ProductName, fileName, gameVersion, gameBuild))
+    public sealed class IncompatibleSaveException : Exception {
+        public readonly int Revision;
+        public readonly string SaveFile;
+        public IncompatibleSaveException(int revision, string saveFile)
         {
+            Revision = revision;
+            SaveFile = saveFile;
         }
     }
 }

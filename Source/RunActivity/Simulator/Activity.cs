@@ -1075,11 +1075,11 @@ namespace ORTS
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    Trace.TraceWarning(String.Format("Siding {0} is not in track database.", i));
+                    Trace.TraceWarning("Siding {0} is not in track database.", i);
                 }
                 catch (NullReferenceException)
                 {
-                    Trace.TraceWarning(String.Format("Item {0} in track database is not a siding.", i));
+                    Trace.TraceWarning("Item {0} in track database is not a siding.", i);
                 }
             }
         }

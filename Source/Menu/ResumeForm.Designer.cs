@@ -45,12 +45,12 @@
             this.buttonImportExportSaves = new System.Windows.Forms.Button();
             this.groupBoxInvalid = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            this.buttonReplayFromStart = new System.Windows.Forms.Button();
             this.pictureBoxScreenshot = new System.Windows.Forms.PictureBox();
             this.buttonReplayFromPreviousSave = new System.Windows.Forms.Button();
+            this.buttonReplayFromStart = new System.Windows.Forms.Button();
             this.checkBoxReplayPauseBeforeEnd = new System.Windows.Forms.CheckBox();
-            this.numericReplayPauseBeforeEnd = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
+            this.numericReplayPauseBeforeEnd = new System.Windows.Forms.NumericUpDown();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.gridSaves)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.saveBindingSource)).BeginInit();
@@ -151,6 +151,7 @@
             this.validDataGridViewCheckBoxColumn.HeaderText = "Valid";
             this.validDataGridViewCheckBoxColumn.Name = "validDataGridViewCheckBoxColumn";
             this.validDataGridViewCheckBoxColumn.ReadOnly = true;
+            this.validDataGridViewCheckBoxColumn.ThreeState = true;
             this.validDataGridViewCheckBoxColumn.Width = 36;
             // 
             // Blank
@@ -215,9 +216,9 @@
             this.buttonDeleteInvalid.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.buttonDeleteInvalid.Location = new System.Drawing.Point(6, 78);
             this.buttonDeleteInvalid.Name = "buttonDeleteInvalid";
-            this.buttonDeleteInvalid.Size = new System.Drawing.Size(150, 23);
+            this.buttonDeleteInvalid.Size = new System.Drawing.Size(194, 23);
             this.buttonDeleteInvalid.TabIndex = 1;
-            this.buttonDeleteInvalid.Text = "Delete all invalid saves";
+            this.buttonDeleteInvalid.Text = "Delete all invalid saves in Open Rails";
             this.buttonDeleteInvalid.UseVisualStyleBackColor = true;
             this.buttonDeleteInvalid.Click += new System.EventHandler(this.buttonDeleteInvalid_Click);
             // 
@@ -282,16 +283,6 @@
             this.tableLayoutPanel.Size = new System.Drawing.Size(806, 458);
             this.tableLayoutPanel.TabIndex = 0;
             // 
-            // buttonReplayFromStart
-            // 
-            this.buttonReplayFromStart.Location = new System.Drawing.Point(572, 432);
-            this.buttonReplayFromStart.Name = "buttonReplayFromStart";
-            this.buttonReplayFromStart.Size = new System.Drawing.Size(150, 23);
-            this.buttonReplayFromStart.TabIndex = 3;
-            this.buttonReplayFromStart.Text = "Replay from start";
-            this.buttonReplayFromStart.UseVisualStyleBackColor = true;
-            this.buttonReplayFromStart.Click += new System.EventHandler(this.buttonReplayFromStart_Click);
-            // 
             // pictureBoxScreenshot
             // 
             this.pictureBoxScreenshot.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -315,6 +306,16 @@
             this.buttonReplayFromPreviousSave.UseVisualStyleBackColor = true;
             this.buttonReplayFromPreviousSave.Click += new System.EventHandler(this.buttonReplayFromPreviousSave_Click);
             // 
+            // buttonReplayFromStart
+            // 
+            this.buttonReplayFromStart.Location = new System.Drawing.Point(572, 432);
+            this.buttonReplayFromStart.Name = "buttonReplayFromStart";
+            this.buttonReplayFromStart.Size = new System.Drawing.Size(150, 23);
+            this.buttonReplayFromStart.TabIndex = 3;
+            this.buttonReplayFromStart.Text = "Replay from start";
+            this.buttonReplayFromStart.UseVisualStyleBackColor = true;
+            this.buttonReplayFromStart.Click += new System.EventHandler(this.buttonReplayFromStart_Click);
+            // 
             // checkBoxReplayPauseBeforeEnd
             // 
             this.checkBoxReplayPauseBeforeEnd.AutoSize = true;
@@ -326,6 +327,18 @@
             this.checkBoxReplayPauseBeforeEnd.TabIndex = 4;
             this.checkBoxReplayPauseBeforeEnd.Text = "Pause replay at end";
             this.checkBoxReplayPauseBeforeEnd.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(429, 403);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(137, 26);
+            this.label1.TabIndex = 6;
+            this.label1.Text = "Pause seconds before end:";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // numericReplayPauseBeforeEnd
             // 
@@ -346,18 +359,6 @@
             this.numericReplayPauseBeforeEnd.Size = new System.Drawing.Size(52, 20);
             this.numericReplayPauseBeforeEnd.TabIndex = 5;
             this.numericReplayPauseBeforeEnd.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            // 
-            // label1
-            // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(429, 403);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(137, 26);
-            this.label1.TabIndex = 6;
-            this.label1.Text = "Pause seconds before end:";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // openFileDialog1
             // 
@@ -398,14 +399,6 @@
         private System.Windows.Forms.ToolTip toolTip;
         private System.Windows.Forms.BindingSource saveBindingSource;
         private System.Windows.Forms.GroupBox groupBoxInvalid;
-        private System.Windows.Forms.DataGridViewTextBoxColumn fileDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn realTimeDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn pathNameDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn gameTimeDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn distanceDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn currentTileDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewCheckBoxColumn validDataGridViewCheckBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Blank;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel;
         private System.Windows.Forms.Button buttonImportExportSaves;
         private System.Windows.Forms.PictureBox pictureBoxScreenshot;
@@ -415,5 +408,13 @@
         private System.Windows.Forms.CheckBox checkBoxReplayPauseBeforeEnd;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn fileDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn realTimeDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn pathNameDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn gameTimeDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn distanceDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn currentTileDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn validDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Blank;
     }
 }

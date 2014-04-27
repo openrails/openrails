@@ -29,10 +29,10 @@ namespace ORTS.Common
     public static class VersionInfo
     {
         static readonly string ApplicationPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-        static readonly string Revision = GetRevision("Revision.txt");
-        public static readonly string Version = GetVersion("Version.txt");
-        public static readonly string Build = GetBuild("ORTS.Common.dll", "OpenRails.exe", "Menu.exe", "RunActivity.exe");
-        public static readonly string VersionOrBuild = GetVersionOrBuild();
+        public static readonly string Version = GetVersion("Version.txt");    // e.g. Release: "0.9.0.1648", experimental: "X.1649", local: ""
+        public static readonly string Revision = GetRevision("Revision.txt"); // e.g. Release: "1648",       experimental: "1649",   local: ""
+        public static readonly string Build = GetBuild("ORTS.Common.dll", "OpenRails.exe", "Menu.exe", "RunActivity.exe"); // e.g. "0.0.5223.24629 (2014-04-20 13:40:58Z)"
+        public static readonly string VersionOrBuild = GetVersionOrBuild();   // Version, but if "", returns Build
 
         static string GetRevision(string fileName)
         {
