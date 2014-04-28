@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS TrackViewer\n"
-"POT-Creation-Date: 2014-04-19 15:32:10+0200\n"
-"PO-Revision-Date: 2014-04-19 15:47+0100\n"
+"POT-Creation-Date: 2014-04-28 20:54:30+0200\n"
+"PO-Revision-Date: 2014-04-28 20:57+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
 "<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: \n"
@@ -21,15 +21,15 @@ msgstr "Caricamento..."
 msgid "Open Rails Content Manager"
 msgstr "Gestore contenuti di Open Rails"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:552
+#: ../../Contrib/TrackViewer/TrackViewer.cs:560
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Ci sono modifiche non salvate nel path che stai creando.\n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:554
+#: ../../Contrib/TrackViewer/TrackViewer.cs:562
 msgid "Do you really want to Quit?"
 msgstr "Confermi la chiusura?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:591
+#: ../../Contrib/TrackViewer/TrackViewer.cs:599
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -37,35 +37,35 @@ msgstr ""
 "La directory del profilo non è valida.\n"
 "La directory deve contenere ROUTES, GLOBAL, ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:657
+#: ../../Contrib/TrackViewer/TrackViewer.cs:665
 msgid "Loading route..."
 msgstr "Caricamento route..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:677
+#: ../../Contrib/TrackViewer/TrackViewer.cs:685
 msgid "Route cannot be loaded. Sorry"
 msgstr "La route non può essere caricata."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:735
+#: ../../Contrib/TrackViewer/TrackViewer.cs:743
 msgid "Loading .pat file ..."
 msgstr "Caricamento file .pat ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:738
+#: ../../Contrib/TrackViewer/TrackViewer.cs:746
 msgid "Processing .pat file ..."
 msgstr "Elaborazione file .pat ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:112
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:120
 msgid "Loading trackfile .trk ..."
 msgstr "Caricamento file .trk ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:116
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:124
 msgid "Loading track database .tdb ..."
 msgstr "Caricamento database .tdb ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:121
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:129
 msgid "Loading tsection.dat ..."
 msgstr "Caricamento tsection.dat ..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:132
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:140
 msgid "Finding the angles to draw signals ..."
 msgstr "Ricerca degli angoli per disegnare i segnali ..."
 
@@ -359,167 +359,171 @@ msgstr "Mostra gli incroci"
 msgid "Show end nodes"
 msgstr "Mostra i punti terminali"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:52
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:51
+msgid "Show crossovers"
+msgstr "Mostra incroci"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
 msgid "Sidings"
 msgstr "Banchina"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
 msgid "Show siding markers (F9)"
 msgstr "Mostra i marcatori delle banchine (f9)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
 msgid "Show siding names (shift-F9)"
 msgstr "Mostra i nomi delle banchine (shift-F9)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:56
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
 msgid "Platforms"
 msgstr "Marciapiede"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
 msgid "Show platform markers (F8)"
 msgstr "Mostra i marcatori dei marciapiedi (F8)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:59
 msgid "Show platform names (shift-F8)"
 msgstr "Mostra i nomi dei marciapiedi (shift-F8)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
 msgid "Interactives"
 msgstr "Oggetti interattivi"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
 msgid "Show signals (F7)"
 msgstr "Mostra i segnali (F7)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
 msgid "Show level crossings"
 msgstr "Mostra i passaggi a livello"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
 msgid "Show hazards"
 msgstr "Mostra ostacoli"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
 msgid "Show fuel/pickups"
 msgstr "Mostra punti di rifornimento"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
 msgid "Show sound regions"
 msgstr "Mostra le aree sonore"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:67
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
 msgid "Posts"
 msgstr "Indicatori"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
 msgid "Show speed limits (F5)"
 msgstr "Mostra limiti di velocità (F5)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
 msgid "Show mileposts (shift F5)"
 msgstr "Mostra gli indicatori kilometrici (shift-F5)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
 msgid "Paths"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
 msgid "Show path (F11)"
 msgstr "Mostra il path (F11)"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:74
 msgid "Show raw path from .pat file (shift F11)"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:75
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
 msgid "Roads"
 msgstr "Strade"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
 msgid "Draw roads"
 msgstr "Mostra strade"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
 msgid "Show car spawners"
 msgstr "Mostra il traffico stradale"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:79
 msgid "Show road crossings"
 msgstr "Mostra attraversamenti stradali"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:81
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
 msgid "Statusbar"
 msgstr "Barra di stato"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
 msgid "Show vector section info"
 msgstr "Mostra informazioni sulle shape"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:85
 msgid "Show PAT file info"
 msgstr "Mostra informazioni sul file PAT"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
 msgid "Show Path info"
 msgstr "Mostra informazioni sul path"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:89
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
 msgid "Preferences"
 msgstr "Preferenze"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
 msgid "Select background color"
 msgstr "Scegli il colore di sfondo"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
 msgid "Zooming is centered on mouse"
 msgstr "Il punto di zoom è centrato sul mouse"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:94
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
 msgid "Path-Editor"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
 msgid "==Supporting MSTS paths only=="
 msgstr ""
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
 msgid "Select path"
 msgstr "Scegli il path"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:98
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
 msgid "Path Editor is under construction!"
 msgstr "L'editor dei path è in costruzione!"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
 msgid "Save path"
 msgstr "Salva il path"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
 msgid "Enable editing"
 msgstr "Abilita modifica"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:102
 msgid "New path"
 msgstr "Nuovo path"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:102
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
 msgid "Edit path metadata"
 msgstr "Modifica i metadata del path"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
 msgid "Known limitations"
 msgstr "Limitazioni note"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:106
 msgid "Help"
 msgstr "Aiuto"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:106
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
 msgid "Shortcuts"
 msgstr "Scorciatoie"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:108
 msgid "About"
 msgstr "Info"
 
