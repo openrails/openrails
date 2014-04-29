@@ -76,7 +76,7 @@ namespace ORTS
         List<Save> Saves = new List<Save>();
         Task<List<Save>> SaveLoader;
 
-        public class Save
+        public class Save 
         {
             public string File { get; private set; }
             public string PathName { get; private set; }
@@ -100,7 +100,7 @@ namespace ORTS
                         Version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X.1321"
                         // or, if saved from a locally compiled program, ""
                         var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
-                        Valid = GetValidity(Version, build, youngestFailedToResume);
+                        Valid = VersionInfo.GetValidity(Version, build, youngestFailedToResume);
 
                         // Read in route/activity/path/player data.
                         var routeName = inf.ReadString(); // Route name
@@ -127,59 +127,6 @@ namespace ORTS
                     }
                     catch { }
                 }
-            }
-
-            private int GetRevision(string version)
-            {
-                string[] versionArray = version.Split('.');
-                var revision = 0;
-                try  // as Convert.ToInt32() can fail and version may be ""
-                {
-                    var length = versionArray.Length;
-                    revision = Convert.ToInt32(versionArray[length - 1]);
-                }
-                catch { } // ignore errors
-                return revision;
-            }
-
-            public bool? GetValidity(string version, string build, int youngestFailedToResume)
-            {
-                var revision = GetRevision(version);
-                var programRevision = 0;
-                try  // as Convert.ToInt32() can fail and version may be ""
-                {
-                    programRevision = Convert.ToInt32(VersionInfo.Revision);
-                }
-                catch { } // ignore errors
-                //MessageBox.Show(String.Format("VersionInfo.Build = {0}, build = {1}, version = {2}, youngestFailedToResume = {3}", VersionInfo.Build, build, Version, youngestFailedToResume));
-                if (revision != 0)  // compiled remotely by Open Rails
-                {
-                    if (revision == programRevision)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        if (revision > youngestFailedToResume        // 1. Normal situation
-                        || programRevision < youngestFailedToResume) // 2. If an old version of OR is used, then attempt to load Saves
-                                                                     //    which would be blocked by the current version of OR
-                        {
-                            return null;
-                        }
-                    }
-                }
-                else  // compiled locally
-                {
-                    if (build.EndsWith(VersionInfo.Build))
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-                return false; // default validity
             }
         }
 

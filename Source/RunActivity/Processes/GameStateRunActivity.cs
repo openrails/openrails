@@ -363,10 +363,10 @@ namespace ORTS.Processes
                     // Read in validation data.
                     var version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X.1321"
                                                                       // or, if saved from a locally compiled program, ""
-                    saveRevision = GetRevision(version);
+                    saveRevision = VersionInfo.GetRevisionFromVersion(version);
                     var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
-                    bool? valid = GetValidity(version, build, settings.YoungestFailedToRestore);
-                    if (valid == false) // This is usually detected in ResumeForm.cs but a REsume can also be launched from the command line.
+                    bool? valid = VersionInfo.GetValidity(version, build, settings.YoungestFailedToRestore);
+                    if (valid == false) // This is usually detected in ResumeForm.cs but a Resume can also be launched from the command line.
                     {
                         throw new ORTS.Processes.IncompatibleSaveException(saveRevision, saveFile);
                     }
@@ -408,59 +408,6 @@ namespace ORTS.Processes
 
                 Game.ReplaceState(new GameStateViewer3D(Viewer));
             }
-        }
-
-        private int GetRevision(string version)
-        {
-            string[] versionArray = version.Split('.');
-            var revision = 0;
-            try  // as Convert.ToInt32() can fail and version may be ""
-            {
-                var length = versionArray.Length;
-                revision = Convert.ToInt32(versionArray[length - 1]);
-            }
-            catch { } // ignore errors
-            return revision;
-        }
-
-        public bool? GetValidity(string version, string build, int youngestFailedToResume)
-        {
-            var revision = GetRevision(version);
-            var programRevision = 0;
-            try  // as Convert.ToInt32() can fail and version may be ""
-            {
-                programRevision = Convert.ToInt32(VersionInfo.Revision);
-            }
-            catch { } // ignore errors
-            //MessageBox.Show(String.Format("VersionInfo.Build = {0}, build = {1}, version = {2}, youngestFailedToResume = {3}", VersionInfo.Build, build, Version, youngestFailedToResume));
-            if (revision != 0)  // compiled remotely by Open Rails
-            {
-                if (revision == programRevision)
-                {
-                    return true;
-                }
-                else
-                {
-                    if (revision > youngestFailedToResume        // 1. Normal situation
-                    || programRevision < youngestFailedToResume) // 2. If an old version of OR is used, then attempt to load Saves
-                                                                 //    which would be blocked by the current version of OR
-                    {
-                        return null;
-                    }
-                }
-            }
-            else  // compiled locally
-            {
-                if (build.EndsWith(VersionInfo.Build))
-                {
-                    return true;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            return false; // default validity
         }
 
         /// <summary>
@@ -558,14 +505,14 @@ namespace ORTS.Processes
             }
             else
             {
-                // Resume from previousSaveFile and then replay
+                // Resume from previous SaveFile and then replay
                 using (var inf = new BinaryReader(new FileStream(previousSaveFile, FileMode.Open, FileAccess.Read)))
                 {
                     var version = inf.ReadString().Replace("\0", ""); // e.g. "0.9.0.1648" or "X.1321"
                                                                       // or, if saved from a locally compiled program, ""
-                    var saveRevision = GetRevision(version);
+                    var saveRevision = VersionInfo.GetRevisionFromVersion(version);
                     var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
-                    bool? valid = GetValidity(version, build, settings.YoungestFailedToRestore);
+                    bool? valid = VersionInfo.GetValidity(version, build, settings.YoungestFailedToRestore);
                     if (valid == false) // This is usually detected in ResumeForm.cs but a Resume can also be launched from the command line.
                     {
                         throw new ORTS.Processes.IncompatibleSaveException(saveRevision, saveFile);

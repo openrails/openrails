@@ -29,7 +29,7 @@ namespace ORTS.Common
     public static class VersionInfo
     {
         static readonly string ApplicationPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-        // GetRevision must come before GetVersion
+        // GetRevision() must come before GetVersion()
         public static readonly string Revision = GetRevision("Revision.txt"); // e.g. Release: "1648",       experimental: "1649",   local: ""
         public static readonly string Version = GetVersion("Version.txt");    // e.g. Release: "0.9.0.1648", experimental: "X.1649", local: ""
         public static readonly string Build = GetBuild("ORTS.Common.dll", "OpenRails.exe", "Menu.exe", "RunActivity.exe"); // e.g. "0.0.5223.24629 (2014-04-20 13:40:58Z)"
@@ -95,6 +95,59 @@ namespace ORTS.Common
         static string GetVersionOrBuild()
         {
             return Version.Length > 0 ? Version : Build;
+        }
+
+        public static bool? GetValidity(string version, string build, int youngestFailedToResume)
+        {
+            var revision = GetRevisionFromVersion(version);
+            var programRevision = 0;
+            try  // as Convert.ToInt32() can fail and version may be ""
+            {
+                programRevision = Convert.ToInt32(VersionInfo.Revision);
+            }
+            catch { } // ignore errors
+            //MessageBox.Show(String.Format("VersionInfo.Build = {0}, build = {1}, version = {2}, youngestFailedToResume = {3}", VersionInfo.Build, build, Version, youngestFailedToResume));
+            if (revision != 0)  // compiled remotely by Open Rails
+            {
+                if (revision == programRevision)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (revision > youngestFailedToResume        // 1. Normal situation
+                    || programRevision < youngestFailedToResume) // 2. If an old version of OR is used, then attempt to load Saves
+                                                                 //    which would be blocked by the current version of OR
+                    {
+                        return null;
+                    }
+                }
+            }
+            else  // compiled locally
+            {
+                if (build.EndsWith(VersionInfo.Build))
+                {
+                    return true;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            return false; // default validity
+        }
+
+        public static int GetRevisionFromVersion(string version)
+        {
+            string[] versionArray = version.Split('.');
+            var revision = 0;
+            try  // as Convert.ToInt32() can fail and version may be ""
+            {
+                var length = versionArray.Length;
+                revision = Convert.ToInt32(versionArray[length - 1]);
+            }
+            catch { } // ignore errors
+            return revision;
         }
     }
 }
