@@ -288,9 +288,9 @@ namespace ORTS
             {
                 Saves = saves;
                 saveBindingSource.DataSource = Saves;
-                labelInvalidSaves.Text = catalog.GetStringFmt(
-                    "To prevent crashes and unexpected behaviour, Open Rails invalidates games saved from older versions if they fail to restore.\n" +
-                    "{0} of {1} saves for this route are no longer valid.", Saves.Count(s => (s.Valid == false)), Saves.Count);
+                labelInvalidSaves.Text = catalog.GetString(
+                    "To prevent crashes and unexpected behaviour, Open Rails invalidates games saved from older versions if they fail to restore.\n") +
+                    catalog.GetStringFmt("{0} of {1} saves for this route are no longer valid.", Saves.Count(s => (s.Valid == false)), Saves.Count);
                 gridSaves_SelectionChanged(null, null);
                 // Show warning after the list has been updated as this is more useful.
                 if (warning != "")
@@ -301,11 +301,9 @@ namespace ORTS
         bool AcceptUseOfNonvalidSave(Save save)
         {
             var reply = MessageBox.Show(catalog.GetStringFmt(
-                "This save was made by an older version {0} of Open Rails and\n" +
-                "may be incompatible with the current version {1}.\n" +
-                "Please do not report any problems that may result.\n\n" +
-                "Continue at your own risk?",
-                save.Version, VersionInfo.Version),
+                "This save was made by an older version {0} of Open Rails and\nmay be incompatible with the current version {1}.\n",
+                save.Version, VersionInfo.Version) +
+                catalog.GetString("Please do not report any problems that may result.\n\nContinue at your own risk?"),
                 Application.ProductName, MessageBoxButtons.YesNo);
             return reply == DialogResult.Yes;
         }

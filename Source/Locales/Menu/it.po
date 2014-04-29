@@ -1,10 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: OpenRails\n"
-"POT-Creation-Date: 2014-04-28 20:54:32+0200\n"
-"PO-Revision-Date: 2014-04-28 21:13+0100\n"
-"Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
-"<strawberryfield@trainsimhobby.com>\n"
+"POT-Creation-Date: 2014-04-29 11:59:47+0200\n"
+"PO-Revision-Date: 2014-04-29 12:06+0100\n"
+"Last-Translator: Roberto <strawberryfield@trainsimhobby.com>\n"
 "Language-Team: \n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -827,7 +826,26 @@ msgstr ""
 msgid "Explore Route"
 msgstr "Esplorazione scenario"
 
-#: ../../Menu/ResumeForm.cs:437
+#: ../../Menu/ResumeForm.cs:260
+msgid ""
+"To prevent crashes and unexpected behaviour, Open Rails invalidates games "
+"saved from older versions if they fail to restore.\n"
+msgstr ""
+"Per prevenire crash e comportamenti inattesi, Open Rails invalida i "
+"salvataggi delle vecchie se questi non possono essere caricati "
+"correttamente.\n"
+
+#: ../../Menu/ResumeForm.cs:275
+msgid ""
+"Please do not report any problems that may result.\n"
+"\n"
+"Continue at your own risk?"
+msgstr ""
+"Si prega di non riferire i problemi incontrati.\n"
+"\n"
+"Continuare a proprio rischio?"
+
+#: ../../Menu/ResumeForm.cs:435
 msgid "Delete of invalid saves"
 msgstr "Cancellazione salvataggi non validi"
 
@@ -842,23 +860,22 @@ msgstr ""
 "{1}.\n"
 "\n"
 
-#: ../../Menu/ResumeForm.cs:260
-msgid ""
-"To prevent crashes and unexpected behaviour, Open Rails invalidates games "
-"saved from older versions if they fail to restore.\n"
-msgstr ""
-"Per prevenire crash e comportamenti inattesi, Open Rails invalida i "
-"salvataggi delle vecchie se questi non possono essere caricati "
-"correttamente.\n"
+#: ../../Menu/ResumeForm.cs:262
+#, csharp-format
+msgid "{0} of {1} saves for this route are no longer valid."
+msgstr "{0} di {1} salvataggi per questo scenario non sono validi."
 
 #: ../../Menu/ResumeForm.cs:272
 #, csharp-format
-msgid "This save was made by an older version {0} of Open Rails and\n"
+msgid ""
+"This save was made by an older version {0} of Open Rails and\n"
+"may be incompatible with the current version {1}.\n"
 msgstr ""
 "Questo salvataggio è stato fatto da una vecchia versione {0} di Open Rails "
 "e\n"
+"può essere incompatibile con la versione corrente {1}.\n"
 
-#: ../../Menu/ResumeForm.cs:437
+#: ../../Menu/ResumeForm.cs:435
 #, csharp-format
 msgid ""
 "{0} invalid saves deleted\n"
