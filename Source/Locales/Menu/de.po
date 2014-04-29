@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Open Rails\n"
-"POT-Creation-Date: 2014-04-09 23:43:15+0800\n"
-"PO-Revision-Date: 2014-04-20 18:38+0100\n"
+"POT-Creation-Date: 2014-04-29 11:59:47+0200\n"
+"PO-Revision-Date: 2014-04-29 20:49+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -11,6 +11,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Bookmarks: 189,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:156
 msgid "OK"
@@ -830,11 +831,35 @@ msgstr ""
 "Liste der tastenbelegungen erstellen. \r\n"
 "Wird am Desktop abgelegt."
 
-#: ../../Menu/ResumeForm.cs:137
+#: ../../Menu/ResumeForm.cs:191
 msgid "Explore Route"
 msgstr "Route erkunden"
 
-#: ../../Menu/ResumeForm.cs:194
+#: ../../Menu/ResumeForm.cs:260
+#, fuzzy
+msgid ""
+"To prevent crashes and unexpected behaviour, Open Rails invalidates games "
+"saved from older versions if they fail to restore.\n"
+msgstr ""
+"Um Abstürze und andere unerwüschte Auswirkungen zu vermeiden sind ältere "
+"Spielstände in neueren Version von Open rails ungültig. {0} von {1} "
+"Spielständen sind nicht mehr gültig."
+
+#: ../../Menu/ResumeForm.cs:275
+msgid ""
+"Please do not report any problems that may result.\n"
+"\n"
+"Continue at your own risk?"
+msgstr ""
+"Bitte melden Sie keine daraus resultierenden Probleme.\n"
+"\n"
+"Auf eigenes Risiko fortsetzen?"
+
+#: ../../Menu/ResumeForm.cs:435
+msgid "Delete of invalid saves"
+msgstr "Ungültige Spielstände löschen"
+
+#: ../../Menu/ResumeForm.cs:248
 #, csharp-format
 msgid ""
 "Warning: Save {0} found from a route with an unexpected name:\n"
@@ -846,57 +871,73 @@ msgstr ""
 "{1}.\n"
 "\n"
 
-#: ../../Menu/ResumeForm.cs:206
+#: ../../Menu/ResumeForm.cs:262
+#, csharp-format
+msgid "{0} of {1} saves for this route are no longer valid."
+msgstr ""
+"{0} von {1} gespeicherten Spielständen auf dieser Route sind nicht mehr "
+"gültig."
+
+#: ../../Menu/ResumeForm.cs:272
 #, csharp-format
 msgid ""
-"To prevent crashes and unexpected behavior, new versions of Open Rails "
-"invalidate old saved games. {0} of {1} saves are no longer valid."
+"This save was made by an older version {0} of Open Rails and\n"
+"may be incompatible with the current version {1}.\n"
 msgstr ""
-"Um Abstürze und andere unerwüschte Auswirkungen zu vermeiden sind ältere "
-"Spielstände in neueren Version von Open rails ungültig. {0} von {1} "
-"Spielständen sind nicht mehr gültig."
+"Dieser Spielstand wurde mit einer älteren Version ({0}) von Open Rails\n"
+"gespeichert und ist mit der aktuellen Version ({1}) möglicherweise "
+"inkompatibel.\n"
 
-#: ../../Menu/ResumeForm.Designer.cs:175
+#: ../../Menu/ResumeForm.cs:435
+#, csharp-format
+msgid ""
+"{0} invalid saves deleted\n"
+"{1} saves remain"
+msgstr ""
+"{0} ungültige Spielstände gelöscht\n"
+"{1} sSpielstände verbleiben."
+
+#: ../../Menu/ResumeForm.Designer.cs:176
 msgid "Resume"
 msgstr "Fortsetzen"
 
-#: ../../Menu/ResumeForm.Designer.cs:186
+#: ../../Menu/ResumeForm.Designer.cs:187
 msgid "Delete"
 msgstr "Löschen"
 
-#: ../../Menu/ResumeForm.Designer.cs:198
+#: ../../Menu/ResumeForm.Designer.cs:199
 msgid "Undelete"
 msgstr "Wiederherstellen"
 
-#: ../../Menu/ResumeForm.Designer.cs:220
-msgid "Delete all invalid saves"
-msgstr "Lösche Ungültige Spielstände"
+#: ../../Menu/ResumeForm.Designer.cs:221
+msgid "Delete all invalid saves in Open Rails"
+msgstr "Ungültige Spielstände löschen"
 
-#: ../../Menu/ResumeForm.Designer.cs:231
+#: ../../Menu/ResumeForm.Designer.cs:232
 msgid "Import/ export"
 msgstr "Importieren/ exportieren"
 
-#: ../../Menu/ResumeForm.Designer.cs:247
+#: ../../Menu/ResumeForm.Designer.cs:248
 msgid "Invalid saves"
 msgstr "Ungültige Spielstände"
 
-#: ../../Menu/ResumeForm.Designer.cs:291
-msgid "Replay from start"
-msgstr "Vom Beginn abspielen"
-
-#: ../../Menu/ResumeForm.Designer.cs:314
+#: ../../Menu/ResumeForm.Designer.cs:305
 msgid "Replay from previous save"
 msgstr "Abspielen v. vorigem Spielstand"
 
-#: ../../Menu/ResumeForm.Designer.cs:327
+#: ../../Menu/ResumeForm.Designer.cs:315
+msgid "Replay from start"
+msgstr "Vom Beginn abspielen"
+
+#: ../../Menu/ResumeForm.Designer.cs:328
 msgid "Pause replay at end"
 msgstr "Nach dem Abspielen pausieren"
 
-#: ../../Menu/ResumeForm.Designer.cs:359
+#: ../../Menu/ResumeForm.Designer.cs:340
 msgid "Pause seconds before end:"
 msgstr "Dauer der Pause (sec) vor dem Ende:"
 
-#: ../../Menu/ResumeForm.Designer.cs:377
+#: ../../Menu/ResumeForm.Designer.cs:378
 msgid "Saved Games"
 msgstr "Gespeicherte Speilstände"
 
@@ -928,11 +969,11 @@ msgstr "Tile"
 msgid "Valid"
 msgstr "Gültig"
 
-#: ../../Menu/ResumeForm.Designer.cs:187
+#: ../../Menu/ResumeForm.Designer.cs:188
 msgid "Deletes the currently selected save or saves."
 msgstr "Löscht alle ausgewählten Speilstände."
 
-#: ../../Menu/ResumeForm.Designer.cs:199 ../../Menu/ResumeForm.Designer.cs:232
+#: ../../Menu/ResumeForm.Designer.cs:200 ../../Menu/ResumeForm.Designer.cs:233
 msgid "Restores all saves deleted in this session."
 msgstr "Stellt in dieser Sitzung gelöschte Spielstände wider her."
 
