@@ -19,7 +19,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, use Tools > Generate GUID.)
-AppId={{94E15E08-869D-4B69-B8D7-8C82075CB51C} ; Generated for OpenRails v1.0
+AppId={{94E15E08-869D-4B69-B8D7-8C82075CB51C} ; Generated for OpenRails pre-v1.0
 AppName         ={#MyAppName}
 AppVersion      ={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -84,9 +84,9 @@ Source: {#NetRedistPath}\{#NetRedist}; DestDir: {tmp}; Flags: deleteafterinstall
 Source: {#XNARedistPath}\{#XNARedist}; DestDir: {tmp}; Flags: deleteafterinstall; AfterInstall: CheckFrameworkXNA31; 
 
 ; The game itself
-Source: {#MyAppProgPath}\*; Excludes: Readme*.txt; DestDir: {app}; Flags: ignoreversion 
+Source: {#MyAppProgPath}\*; Excludes: Readme*.txt; DestDir: {app}; Flags: ignoreversion recursesubdirs
 Source: ..\Readme.txt; DestDir: {app}; Flags: ignoreversion
-Source: {#MyAppDocPath}\*; DestDir: {app}\Documentation; Flags: ignoreversion 
+Source: {#MyAppDocPath}\*; DestDir: {app}\Documentation; Flags: ignoreversion recursesubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

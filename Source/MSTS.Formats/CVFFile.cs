@@ -49,7 +49,7 @@ namespace MSTS.Formats
                             var path = Path.Combine(basePath, Path.GetDirectoryName(fileName));
                             var name = Path.GetFileName(fileName);
 
-                            // Use *Frnt1024.ace if avalible
+                            // Use *Frnt1024.ace if available
                             string s = name;
                             string[] nameParts = s.Split('.');
                             string name1024 = nameParts[0] + "1024." + nameParts[1];

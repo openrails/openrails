@@ -1073,7 +1073,7 @@ namespace ORTS
                 sy = (float)Program.Random.NextDouble()*3.13f;
                 sz = (float)Program.Random.NextDouble()*3.13f;
                 currentStiffness = Stiffness;
-                prevY = prevY2 = WorldPosition.XNAMatrix.Translation.Y;//remember Y values for accelaration compute
+                prevY = prevY2 = WorldPosition.XNAMatrix.Translation.Y;//remember Y values for acceleration compute
             }
             else
             {
@@ -1110,11 +1110,11 @@ namespace ORTS
             if (speed <= MaxVibSpeed) max = speed / MaxVibSpeed;
             else max = 1 - (speed - MaxVibSpeed) / MaxVibSpeed * 2;
             max *= Program.Simulator.CarVibrating/500f;//user may want more vibration (by Ctrl-V)
-            var tz = traveler.FindTiltedZ(speed);//rotation if tilted, an indication of centralfuge
+            var tz = traveler.FindTiltedZ(speed);//rotation if tilted, an indication of centrifugal force
 
             
 
-            max = ComputeMaxXZ(timeInterval, max, tz);//add a damping, also based on accelaration
+            max = ComputeMaxXZ(timeInterval, max, tz);//add a damping, also based on acceleration
             //small vibration (rotation to add on x,y,z axis)
             var sx1 = (float)Math.Sin(sx) * max; var sz1 = (float)Math.Sin(sz) * max;
 
@@ -1129,7 +1129,7 @@ namespace ORTS
 
             totalRotationZ = -(sz1 + z) / 4;
             totalRotationX = sx1 / 2;
-            //this matrix is for the body, boggie will do an inverse to keep on track
+            //this matrix is for the body, bogie will do an inverse to keep on track
             SuperElevationMatrix = Matrix.CreateRotationX(sx1) /* * Matrix.CreateRotationY(sy1)*/ * Matrix.CreateRotationZ(sz1);
             //SuperElevationMatrix.Translation += new Vector3(sx1, sy1, sz1);
             WorldPosition.XNAMatrix = Matrix.CreateRotationZ(z) * SuperElevationMatrix * WorldPosition.XNAMatrix;
@@ -1142,19 +1142,19 @@ namespace ORTS
         }
 
         public float accumedAcceTime = 4f;
-        //compute the max shaking around x and z based on accelation on Y and centralfuge values
+        //compute the max shaking around x and z based on accelation on Y and centrifugal values
         public float ComputeMaxXZ(float interval, float max, float tz)
         {
             if (interval < 0.001f) return max;
 
             float maxV = 0f;
             var newY = WorldPosition.XNAMatrix.Translation.Y;
-            //compute accelaration on Y
+            //compute acceleration on Y
             var acce = (newY - 2 * prevY + prevY2) / (interval * interval);
             prevY2 = prevY; prevY = newY;
             maxV = Math.Abs(acce);
 
-            //if has big accelaration, will resume vibration
+            //if has big acceleration, will resume vibration
             if (maxV > 1 || Math.Abs(tz) > 0.02 || Math.Abs(AccelerationMpSS)>0.5) { accumedAcceTime = 1f; return max; }
             accumedAcceTime += interval/5;
             return max / accumedAcceTime;//otherwise slowly decrease the value
