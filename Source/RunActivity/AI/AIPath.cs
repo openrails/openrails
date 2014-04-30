@@ -107,47 +107,9 @@ namespace ORTS
             if (fatalerror) Nodes = null; // invalid path - do not return any nodes
         }
 
-        /// <summary>
-        /// constructor out of other path
-        /// </summary>
-        /// <param name="otherPath"></param>
-
-        public AIPath(AIPath otherPath)
+        public AIPath CreateCopy()
         {
-            TrackDB = otherPath.TrackDB; ;
-            TSectionDat = otherPath.TSectionDat;
-            FirstNode = new AIPathNode(otherPath.FirstNode);
-            foreach (AIPathNode otherNode in otherPath.Nodes)
-            {
-                Nodes.Add(new AIPathNode(otherNode));
-            }
-
-            // set correct node references
-
-            for (int iNode = 0; iNode <= otherPath.Nodes.Count - 1; iNode++)
-            {
-                AIPathNode otherNode = otherPath.Nodes[iNode];
-                if (otherNode.NextMainNode != null)
-                {
-                    Nodes[iNode].NextMainNode = Nodes[otherNode.NextMainNode.Index];
-                }
-
-                if (otherNode.NextSidingNode != null)
-                {
-                    Nodes[iNode].NextSidingNode = Nodes[otherNode.NextSidingNode.Index];
-                }
-            }
-
-            if (otherPath.FirstNode.NextMainNode != null)
-            {
-                FirstNode.NextMainNode = Nodes[otherPath.FirstNode.NextMainNode.Index];
-            }
-            if (otherPath.FirstNode.NextSidingNode != null)
-            {
-                FirstNode.NextSidingNode = Nodes[otherPath.FirstNode.NextSidingNode.Index];
-            }
-
-            pathName = String.Copy(otherPath.pathName);
+            return ((AIPath)this.MemberwiseClone());
         }
 
         /// <summary>

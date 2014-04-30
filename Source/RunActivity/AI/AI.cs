@@ -43,7 +43,8 @@ namespace ORTS
         public readonly Simulator Simulator;
         public List<AITrain> AITrains = new List<AITrain>();// active AI trains
 
-        public StartTrains StartList = new StartTrains();
+        public StartTrains StartList = new StartTrains(); // trains yet to be started
+        public List<AITrain> AutoGenTrains = new List<AITrain>(); // auto-generated trains
         private double clockTime; // clock time : local time before activity start, common time from simulator after start
         private bool localTime;  // if true : clockTime is local time
         public bool PreUpdate; // if true : running in pre-update phase
@@ -82,16 +83,28 @@ namespace ORTS
 
             foreach (AITrain train in allTrains)
             {
+                if (train.TrainType == Train.TRAINTYPE.AI_AUTOGENERATE)
+                {
+                    train.AI = this;
+                    train.BrakeLine3PressurePSI = 0;
+                    AutoGenTrains.Add(train);
+                    Simulator.AutoGenDictionary.Add(train.Number, train);
+                }
+
                 // set train details
-                train.TrainType = Train.TRAINTYPE.AI_NOTSTARTED;
-                train.AI = this;
+                else
+                {
+                    train.TrainType = Train.TRAINTYPE.AI_NOTSTARTED;
+                    train.AI = this;
 
-                train.Cars[0].Headlight = 2;//AI train always has light on
-                train.BrakeLine3PressurePSI = 0;
+                    if (train.Cars.Count > 0) train.Cars[0].Headlight = 2;//AI train always has light on
+                    train.BrakeLine3PressurePSI = 0;
 
-                // insert in start list
+                    // insert in start list
 
-                StartList.InsertTrain(train);
+                    StartList.InsertTrain(train);
+                    Simulator.StartReference.Add(train.Number);
+                }
             }
 
             // clear dictionary (no trains yet exist)
@@ -133,6 +146,16 @@ namespace ORTS
                 StartList.InsertTrain(aiTrain);
                 Simulator.StartReference.Add(aiTrain.Number);
             }
+
+            int totalAutoGen = inf.ReadInt32();
+
+            for (int iAutoGen = 0; iAutoGen < totalAutoGen; iAutoGen++)
+            {
+                AITrain aiTrain = new AITrain(Simulator, inf);
+                aiTrain.AI = this;
+                AutoGenTrains.Add(aiTrain);
+                Simulator.AutoGenDictionary.Add(aiTrain.Number, aiTrain);
+            }
         }
 
         // save game state
@@ -152,6 +175,12 @@ namespace ORTS
             foreach (AITrain thisStartTrain in StartList)
             {
                 thisStartTrain.Save(outf);
+            }
+
+            outf.Write(AutoGenTrains.Count);
+            foreach (AITrain train in AutoGenTrains)
+            {
+                train.Save(outf);
             }
         }
 
@@ -217,11 +246,11 @@ namespace ORTS
                             {
                                 if (OrgTrainNotStarted)
                                 {
-                                    Trace.TraceError("Activity aborted - incoming train has not run at all");
+                                    throw new InvalidDataException("Session aborted - incoming train has not run at all");
                                 }
                                 else
                                 {
-                                    Trace.TraceError("Activity aborted - incoming train has not arrived on same day");
+                                    throw new InvalidDataException("Session aborted - incoming train has not run at all");
                                 }
                             }
 
@@ -483,12 +512,16 @@ namespace ORTS
         /// </summary>
         private void RemoveTrains()
         {
+            List<Train> removeList = new List<Train>();
+
             foreach (AITrain train in TrainsToRemove)
             {
                 Simulator.TrainDictionary.Remove(train.Number);
                 Simulator.NameDictionary.Remove(train.Name.ToLower());
                 AITrains.Remove(train);
                 Simulator.Trains.Remove(train);
+                removeList.Add(train);
+
                 if (train.Cars.Count > 0 && train.Cars[0].Train == train)
                 {
                     foreach (TrainCar car in train.Cars)
@@ -498,18 +531,12 @@ namespace ORTS
                     }
                 }
             }
+            TrainsToRemove.Clear();
 
-			if (TrainsToRemove.Count > 0)
-			{
-				List<Train> removeList = new List<Train>();
-				foreach (AITrain train in TrainsToRemove)
-					if (train.Cars.Count > 0 && train.Cars[0].Train != train)
-						removeList.Add(train);
-				if (MultiPlayer.MPManager.IsServer())
-				{
-					MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGRemoveTrain(removeList)).ToString());
-				}
-			}
+            if (MultiPlayer.MPManager.IsServer())
+            {
+                MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGRemoveTrain(removeList)).ToString());
+            }
         }
 
         private void AddTrains()

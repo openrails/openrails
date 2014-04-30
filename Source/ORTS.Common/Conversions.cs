@@ -64,26 +64,25 @@ namespace ORTS.Common
         }
 
         public static float ToMpS(float speed, bool isMetric)
-		{
+        {
             return isMetric ? FromKpH(speed) : FromMpH(speed);
-		}
-	}
+        }
+    }
 
-#if NEW_SIGNALLING
-	public class Miles
-	{
+    public class Miles
+    {
         public static float FromM(float distance, bool isMetric)
-		{
+        {
             return isMetric ? distance : Me.FromMi(distance);
         }
         public static float ToM(float distance, bool isMetric)
-		{
+        {
             return isMetric ? distance : Me.ToMi(distance);
-		}
-	}
+        }
+    }
 
-	public class FormatStrings
-	{
+    public class FormatStrings
+    {
         static GettextResourceManager Catalog = new GettextResourceManager("ORTS.Common");
         static string m = Catalog.GetString("m");
         static string km = Catalog.GetString("km");
@@ -163,13 +162,13 @@ namespace ORTS.Common
             }
             return String.Format("{0:F1}Lb", Kg.ToLb(mass));
         }
-	}
-#endif		
+    }
 
     /// <summary>
     /// Mass conversions from and to Kilograms
     /// </summary>
-    public class Kg {
+    public class Kg 
+    {
         public static float FromLb(float l)     { return l / 2.20462f; }    // lb => Kg
         public static float   ToLb(float k)     { return k * 2.20462f; }    // Kg => lb
         public static float FromTUS(float t)    { return t * 907.1847f; }   // Tons (US) => Kg
@@ -183,7 +182,8 @@ namespace ORTS.Common
     /// <summary>
     /// Force conversions from and to Newtons
     /// </summary>
-    public class N {
+    public class N 
+    {
         public static float FromLbf(float l) { return l / 0.224808943871f; }    // lbf => Newtons
         public static float   ToLbf(float n) { return n * 0.224808943871f; }    // Newtons => lbf
     }
@@ -191,7 +191,8 @@ namespace ORTS.Common
     /// <summary>
     /// Power conversions from and to Watts
     /// </summary>
-    public class W {
+    public class W 
+    {
         public static float FromKW(float k) { return k * 1000f; } // kW => Watts
         public static float   ToKW(float w) { return w / 1000f; } // Watts => kW
         public static float FromHp(float h) { return h * 745.699872f; } // Hp => Watts
@@ -203,21 +204,24 @@ namespace ORTS.Common
     /// <summary>
     /// Stiffness conversions from and to Newtons/metre
     /// </summary>
-    public class NpM {
+    public class NpM 
+    {
     }
 
     /// <summary>
     /// Resistance conversions from and to Newtons/metre/sec
     /// </summary>
-    public class NpMpS {
+    public class NpMpS
+    {
     }
 
     /// <summary>
     /// Mass rate conversions from and to Kg/s
     /// </summary>
-    public class KgpS {
-        public static float FromLbpH(float l)   { return l / 7936.64144f; }  // lb/h => Kg/s
-        public static float ToLbpH(float k)     { return k * 7936.64144f; }  // Kg/s => lb/h
+    public class KgpS
+    {
+        public static float FromLbpH(float l) { return l / 7936.64144f; }  // lb/h => Kg/s
+        public static float ToLbpH(float k) { return k * 7936.64144f; }  // Kg/s => lb/h
     }
 
     /// <summary>
@@ -230,11 +234,12 @@ namespace ORTS.Common
         public static float FromIn2(float f) { return f / 1550.0031f; } // In^2 => m^2
         public static float   ToIn2(float m) { return m * 1550.0031f; } // m^2 => In^2
     }
-    
+
     /// <summary>
     /// Volume conversions from and to m^3
     /// </summary>
-    public class Me3 {
+    public class Me3
+    {
         public static float FromFt3(float f) { return f / 35.3146665722f; }    // ft^3 => m^3
         public static float   ToFt3(float m) { return m * 35.3146665722f; }    // m^3 => ft^3
         public static float FromIn3(float i) { return i / 61023.7441f; }       // in^3 => m^3
@@ -244,7 +249,8 @@ namespace ORTS.Common
     /// <summary>
     /// Pressure conversions from and to kilopascals
     /// </summary>
-    public class KPa {
+    public class KPa
+    {
         public static float  FromPSI(float p)   { return p * 6.89475729f; } // PSI => kPa
         public static float    ToPSI(float k)   { return k / 6.89475729f; } // kPa => PSI
         public static float FromInHg(float i)   { return i * 3.386389f; }   // inHg => kPa
@@ -256,7 +262,8 @@ namespace ORTS.Common
     /// <summary>
     /// Energy density conversions from and to kJ/Kg
     /// </summary>
-    public class KJpKg {
+    public class KJpKg
+    {
         public static float FromBTUpLb(float b) { return b * 2.326f; }  // btu/lb => kj/kg
         public static float   ToBTUpLb(float k) { return k / 2.326f; }  // kj/kg => btu/lb
     }
@@ -264,7 +271,8 @@ namespace ORTS.Common
     /// <summary>
     /// Liquid volume conversions from and to Litres
     /// </summary>
-    public class L {
+    public class L 
+    {
         public static float FromGUK(float g)    { return g * 4.54609f; }    // UK gallon => litre
         public static float   ToGUK(float l)    { return l / 4.54609f; }    // litre => UK gallon
         public static float FromGUS(float g)    { return g * 3.78541f; }    // US gallon => litre
@@ -274,19 +282,22 @@ namespace ORTS.Common
     /// <summary>
     /// Pressure rate conversions from and to kilopascals/sec
     /// </summary>
-    public class KPapS {
+    public class KPapS
+    {
     }
 
     /// <summary>
     /// Current conversions from and to Amps
     /// </summary>
-    public class A {
+    public class A
+    {
     }
 
     /// <summary>
     /// Frequency conversions from and to Hz (revolutions/sec)
     /// </summary>
-    public class pS {
+    public class pS 
+    {
         public static float FrompM(float r)    { return r / 60f; }     // rev/min => rev/sec
         public static float   TopM(float h)    { return h * 60f; }     // rev/sec => rev/min
         public static float FrompH(float r)    { return r / 3600f; }   // rev/hr => rev/sec
@@ -296,7 +307,8 @@ namespace ORTS.Common
     /// <summary>
     /// Time conversions from and to Seconds
     /// </summary>
-    public class S {
+    public class S
+    {
         public static float FromM(float m)  { return m * 60f; }     // mins => secs
         public static float   ToM(float s)  { return s / 60f; }     // secs => mins
         public static float FromH(float h)  { return h * 3600f; }   // hours => secs
@@ -306,10 +318,51 @@ namespace ORTS.Common
     /// <summary>
     /// Temperature conversions from and to Celsius
     /// </summary>
-    public class C {
+    public class C
+    {
         public static float FromF(float f) { return (f - 32f) * 100f / 180f; }    // Fahrenheit => Celsius
         public static float   ToF(float c) { return (c * 180f / 100f) + 32f; }    // Celsius => Fahrenheit
         public static float FromK(float k) { return k - 273.15f; }   // Kelvin => Celsius
         public static float   ToK(float c) { return c + 273.15f; }   // Celsius => Kelvin
+    }
+
+    public class CompareTimes
+    {
+        static int eightHundredHours = 8 * 3600;
+        static int sixteenHundredHours = 16 * 3600;
+
+        public static int LatestTime(int time1, int time2)
+        {
+            if (time1 > sixteenHundredHours && time2 < eightHundredHours)
+            {
+                return (time2);
+            }
+            else if (time1 < eightHundredHours && time2 > sixteenHundredHours)
+            {
+                return (time1);
+            }
+            else if (time1 > time2)
+            {
+                return (time1);
+            }
+            return (time2);
+        }
+
+        public static int EarliestTime(int time1, int time2)
+        {
+            if (time1 > sixteenHundredHours && time2 < eightHundredHours)
+            {
+                return (time1);
+            }
+            else if (time1 < eightHundredHours && time2 > sixteenHundredHours)
+            {
+                return (time2);
+            }
+            else if (time1 > time2)
+            {
+                return (time2);
+            }
+            return (time1);
+        }
     }
 }

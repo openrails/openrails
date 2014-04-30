@@ -23,8 +23,6 @@
 // #define DEBUG_DEADLOCK
 // prints details of the derived signal structure
 
-// #define NEWHOLD // temporary flag for new holdsignal process introduction
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -104,7 +102,7 @@ namespace ORTS
             // read SIGSCR files
 
             Trace.Write(" SIGSCR ");
-            scrfile = new SIGSCRfile(simulator.RoutePath, sigcfg.ScriptFiles, sigcfg.SignalTypes);
+            scrfile = new SIGSCRfile(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes);
 
             // build list of signal world file information
 
@@ -2829,7 +2827,6 @@ namespace ORTS
 
             float clearedDistanceM = 0.0f;
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
-
             int routeIndex = -1;
             float maxDistance = Math.Max(thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
 
@@ -3890,16 +3887,21 @@ namespace ORTS
 
                         if (thisSection.EndSignals[0] != null)
                         {
-#if NEWHOLD
-                            thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
-                            thisDetails.DistanceToSignals[0] = distToSignal;
-#else
-                            if (!thisSection.EndSignals[0].hasFixedRoute)
+                            // end signal is always valid in timetable mode
+                            if (Program.Simulator.TimetableMode)
                             {
                                 thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
                                 thisDetails.DistanceToSignals[0] = distToSignal;
                             }
-#endif
+                            // end signal is only valid if it has no fixed route in activity mode
+                            else
+                            {
+                                if (!thisSection.EndSignals[0].hasFixedRoute)
+                                {
+                                    thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
+                                    thisDetails.DistanceToSignals[0] = distToSignal;
+                                }
+                            }
                             break;
                         }
                     }
@@ -3931,16 +3933,19 @@ namespace ORTS
 
                         if (thisSection.EndSignals[1] != null)
                         {
-#if NEWHOLD
-                            thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
-                            thisDetails.DistanceToSignals[1] = distToSignal;
-#else
-                            if (!thisSection.EndSignals[1].hasFixedRoute)
+                            if (Program.Simulator.TimetableMode)
                             {
                                 thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
                                 thisDetails.DistanceToSignals[1] = distToSignal;
                             }
-#endif
+                            else
+                            {
+                                if (!thisSection.EndSignals[1].hasFixedRoute)
+                                {
+                                    thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
+                                    thisDetails.DistanceToSignals[1] = distToSignal;
+                                }
+                            }
                             break;
                         }
 
@@ -5187,6 +5192,14 @@ namespace ORTS
             {
                 distanceToClear += thisTrain.Train.Length;
             }
+
+            // make sure items are cleared in correct sequence
+            float? lastDistance = thisTrain.Train.requiredActions.GetLastClearingDistance();
+            if (lastDistance.HasValue && lastDistance > distanceToClear)
+            {
+                distanceToClear = lastDistance.Value;
+            }
+
             thisTrain.Train.requiredActions.InsertAction(new Train.ClearSectionItem(distanceToClear, Index));
 
             // set deadlock trap if required
@@ -5694,7 +5707,8 @@ namespace ORTS
             if (thisTrain != null)
             {
                 bool waitRequired = thisTrain.Train.CheckWaitCondition(Index);
-                if (!stateSet && waitRequired)
+
+                if ((!stateSet || localBlockstate < SignalObject.InternalBlockstate.ForcedWait) && waitRequired)
                 {
                     localBlockstate = SignalObject.InternalBlockstate.ForcedWait;
                 }
@@ -5720,24 +5734,52 @@ namespace ORTS
             {
                 if (thisBlockstate == SignalObject.InternalBlockstate.OccupiedOppositeDirection || thisBlockstate == SignalObject.InternalBlockstate.OccupiedSameDirection)
                 {
-                    if (PlatformIndex.Count > 0)
+                    // if train is to attach to train in section, allow callon
+                    bool allowCallOn = false;
+
+                    foreach (KeyValuePair<Train.TrainRouted,int> occTrainInfo in CircuitState.TrainOccupy)
                     {
-                        PlatformDetails thisPlatform = signalRef.PlatformDetailsList[PlatformIndex[0]];
-                        if (thisTrain.Train.StationStops == null || thisTrain.Train.StationStops.Count == 0) // train has no stops
+                        Train.TrainRouted occTrain = occTrainInfo.Key;
+                        if (occTrain.Train.Number == thisTrain.Train.AttachTo)
                         {
-                            thisBlockstate = SignalObject.InternalBlockstate.Blocked;  // train does not stop - call on not allowed
+                            allowCallOn = true;
+                            break;
                         }
-                        else
+                    }
+
+                    // check if route leads into platform
+
+                    if (!allowCallOn)
+                    {
+                        bool intoPlatform = false;
+                        int occupiedSectionIndex = thisRoute.GetRouteIndex(Index, 0); // start from occupied section
+
+                        for (int iIndex = occupiedSectionIndex; iIndex <= thisRoute.Count - 1; iIndex++)
                         {
-                            if (String.Compare(thisTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) != 0) // stop is not next station stop - call on not allowed
+                            Train.TCRouteElement routeElement = thisRoute[iIndex];
+                            TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+                            if (routeSection.PlatformIndex.Count > 0)
                             {
-                                thisBlockstate = SignalObject.InternalBlockstate.Blocked;
-                            }
-                            else if (!thisTrain.Train.StationStops[0].CallOnAllowed) // callon not allowed
-                            {
-                                thisBlockstate = SignalObject.InternalBlockstate.Blocked;
+                                intoPlatform = true;
+                                PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
+                                if (thisTrain.Train.StationStops != null && thisTrain.Train.StationStops.Count > 0) // train has stops
+                                {
+                                    if (String.Compare(thisTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0 && thisTrain.Train.StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
+                                    {
+                                        allowCallOn = true;
+                                        break;
+                                    }
+                                }
                             }
                         }
+
+                        if (!intoPlatform) allowCallOn = true; // path does not lead into platform
+                        if (thisTrain.Train.Stable_CallOn) allowCallOn = true;
+                    }
+
+                    if (!allowCallOn)
+                    {
+                        thisBlockstate = SignalObject.InternalBlockstate.Blocked;
                     }
                 }
             }
@@ -6707,8 +6749,6 @@ namespace ORTS
         public uint TrackShape;
     }
 
- 
-    
     //================================================================================================//
     //
     //  class SignalObject
@@ -6799,7 +6839,7 @@ namespace ORTS
         private int thisTrainRouteIndex;        // index of section after signal in train route list
 
         private Train.TCSubpathRoute fixedRoute = new Train.TCSubpathRoute();     // fixed route from signal
-        public bool hasFixedRoute;              // signal has no fixed route
+        public bool hasFixedRoute;              // signal has fixed route
         private bool fullRoute;                 // required route is full route to next signal or end-of-track
         private bool propagated;                // route request propagated to next signal
         private bool isPropagated;              // route request for this signal was propagated from previous signal
@@ -7407,7 +7447,7 @@ namespace ORTS
         public ObjectSpeedInfo this_sig_speed(MstsSignalFunction fn_type)
         {
             var sigAsp = MstsSignalAspect.STOP;
-            var set_speed = new ObjectSpeedInfo(-1, -1, false);
+            var set_speed = new ObjectSpeedInfo(-1, -1, false, false);
 
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -7427,7 +7467,7 @@ namespace ORTS
 
         public ObjectSpeedInfo this_lim_speed(MstsSignalFunction fn_type)
         {
-            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false);
+            var set_speed = new ObjectSpeedInfo(9E9f, 9E9f, false, false);
 
             foreach (SignalHead sigHead in SignalHeads)
             {
@@ -7440,12 +7480,14 @@ namespace ORTS
                         {
                             set_speed.speed_pass = this_speed.speed_pass;
                             set_speed.speed_flag = 0;
+                            set_speed.speed_reset = 0;
                         }
 
                         if (this_speed.speed_freight > 0 && this_speed.speed_freight < set_speed.speed_freight)
                         {
                             set_speed.speed_freight = this_speed.speed_freight;
                             set_speed.speed_flag = 0;
+                            set_speed.speed_reset = 0;
                         }
                     }
 
@@ -7512,6 +7554,9 @@ namespace ORTS
                 int sectionIndex = -1;
                 bool passedTrackJn = false;
 
+                List<int> passedSections = new List<int>();
+                passedSections.Add(thisSection.Index);
+
                 routeset = (req_mainnode == thisSection.OriginalIndex);
                 while (!routeset && thisSection != null)
                 {
@@ -7555,13 +7600,22 @@ namespace ORTS
                         sectionIndex = thisSection.Pins[curDirection, 0].Link;
                     }
 
-                    // next section
-                    if (sectionIndex >= 0)
+                    // check for loop
+                    if (passedSections.Contains(sectionIndex))
                     {
+                        thisSection = null;  // route is looped - exit
+                    }
+
+                    // next section
+                    else if (sectionIndex >= 0)
+                    {
+                        passedSections.Add(sectionIndex);
                         thisSection = signalRef.TrackCircuitList[sectionIndex];
                         curDirection = newDirection;
                         routeset = (req_mainnode == thisSection.OriginalIndex);
                     }
+
+                    // no next section
                     else
                     {
                         thisSection = null;
@@ -7821,16 +7875,6 @@ namespace ORTS
             {
                 // if in hold, set to most restrictive for each head
 
-#if NEWHOLD
-                if (holdState != HoldState.None)
-                {
-                    foreach (SignalHead sigHead in SignalHeads)
-                    {
-                        if (holdState == HoldState.ManualLock) sigHead.SetMostRestrictiveAspect();
-                    }
-                    return;
-                }
-#else
                 if (holdState != HoldState.None)
                 {
                     foreach (SignalHead sigHead in SignalHeads)
@@ -7839,7 +7883,6 @@ namespace ORTS
                     }
                     return;
                 }
-#endif
 
                 // if enabled - perform full update and propagate if not yet done
 
@@ -7873,7 +7916,6 @@ namespace ORTS
 
                 else if (hasFixedRoute)
                 {
-
                     // if internal state is not reserved (route fully claimed), perform route check
 
                     if (internalBlockState != InternalBlockstate.Reserved)
@@ -7905,7 +7947,7 @@ namespace ORTS
 
         //================================================================================================//
         //
-        // reset signal as train has passed
+        // fully reset signal as train has passed
         //
 
         public void resetSignalEnabled()
@@ -7945,7 +7987,6 @@ namespace ORTS
             hasPermission = Permission.Denied;
 
             StateUpdate();
-
         }
 
         //================================================================================================//
@@ -8234,6 +8275,7 @@ namespace ORTS
 				thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex,
 				thisRef));
 #endif
+
             if (thisTrain.Train.CheckTrain)
             {
                 File.AppendAllText(@"C:\temp\checktrain.txt",
@@ -8243,6 +8285,7 @@ namespace ORTS
                     thisRef));
             }
 
+            // set general variables
             int procstate = 0;
             int foundFirstSection = -1;
             int foundLastSection = -1;
@@ -8316,13 +8359,8 @@ namespace ORTS
                 {
                     // no route from this signal - reset enable and exit
                     enabledTrain = null;
-#if NEWHOLD
-                    // if signal on holding list, set hold state (possible for exit signal after reverse)
-                    if (thisTrain.Train.HoldingSignals.Contains(thisRef)) StationHold = true;
-#else
                     // if signal on holding list, set hold state
                     if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HoldState.None) holdState = HoldState.StationStop;
-#endif
                     return;
                 }
             }
@@ -8354,6 +8392,20 @@ namespace ORTS
                             foundLastSection = iNode;
                             nextSignal = thisSection.EndSignals[thisElement.Direction];
                         }
+                    }
+                }
+            }
+
+            // check if signal has route, is enabled, request is by enabled train and train is not occupying sections in signal route
+
+            if (enabledTrain != null && enabledTrain == thisTrain && signalRoute != null && signalRoute.Count > 0)
+            {
+                foreach (Train.TCRouteElement routeElement in signalRoute)
+                {
+                    TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+                    if (routeSection.CircuitState.ThisTrainOccupying(thisTrain))
+                    {
+                        return;  // train has passed signal - clear request is invalid
                     }
                 }
             }
@@ -8405,7 +8457,7 @@ namespace ORTS
                     ReqNumClearAhead = clearNextSignals > 0 ? clearNextSignals - 1 : SignalNumClearAhead_ORTS - 1;
                 }
             }
-
+            
             // perform route check
 
             checkRouteState(isPropagated, signalRoute, thisTrain);
@@ -8425,21 +8477,7 @@ namespace ORTS
 
         public void checkRouteState(bool isPropagated, Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
         {
-
             // check if signal must be hold
-#if NEWHOLD
-            bool signalHold = (holdState != HoldState.None);
-
-            // set station hold state for processing in script
-            if (enabledTrain != null)
-            {
-                StationHold = enabledTrain.Train.HoldingSignals.Contains(thisRef);
-                if ((StationHold && this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP))
-                {
-                    signalHold = true;
-                }
-            }
-#else
             bool signalHold = (holdState != HoldState.None);
             if (enabledTrain != null && enabledTrain.Train.HoldingSignals.Contains(thisRef) && holdState < HoldState.ManualLock)
             {
@@ -8454,7 +8492,20 @@ namespace ORTS
                     signalHold = false;
                 }
             }
-#endif
+
+            // check if signal has route, is enabled, request is by enabled train and train is not occupying sections in signal route
+
+            if (enabledTrain != null && enabledTrain == thisTrain && signalRoute != null && signalRoute.Count > 0)
+            {
+                foreach (Train.TCRouteElement routeElement in signalRoute)
+                {
+                    TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+                    if (routeSection.CircuitState.ThisTrainOccupying(thisTrain))
+                    {
+                        return;  // train has passed signal - clear request is invalid
+                    }
+                }
+            }
 
             // test if propage state still correct - if next signal for enabled train is this signal, it is not propagated
 
@@ -8607,11 +8658,7 @@ namespace ORTS
 
             // if claim allowed - reserve free sections and claim all other if first signal ahead of train
 
-#if NEWHOLD
-                else if (enabledTrain.Train.ClaimState && !StationHold && internalBlockState != InternalBlockstate.Reserved && !isPropagated)
-#else
                 else if (enabledTrain.Train.ClaimState && internalBlockState != InternalBlockstate.Reserved && !isPropagated)
-#endif
                 {
                     foreach (Train.TCRouteElement thisElement in thisRoute)
                     {
@@ -9020,6 +9067,16 @@ namespace ORTS
                 blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute, thisRef);
                 if (blockstate > InternalBlockstate.Reservable)
                     break;     // exit on first none-available section
+                
+                // check if section is trigger section for waitany instruction
+                if (thisTrain != null && Program.Simulator.TimetableMode && thisTrain.Train.WaitAnyList != null && thisTrain.Train.WaitAnyList.ContainsKey(thisSection.Index))
+                {
+                    foreach (Train.WaitInfo reqWait in thisTrain.Train.WaitAnyList[thisSection.Index])
+                    {
+                        bool pathClear = thisTrain.Train.CheckForRouteWait(reqWait);
+                        if (!pathClear) blockstate = SignalObject.InternalBlockstate.Blocked;
+                    }
+                }
 
                 // check if this section is start of passing path area
                 // if so, select which path must be used - but only if cleared by train in AUTO mode
@@ -9469,7 +9526,7 @@ namespace ORTS
 
             float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
             float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
-            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false);
+            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false);
             speed_info[(int)state] = speedinfo;
         }
 
@@ -9491,7 +9548,7 @@ namespace ORTS
                 foreach (SignalAspect thisAspect in signalType.Aspects)
                 {
                     int arrindex = (int)thisAspect.Aspect;
-                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap);
+                    speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset);
                 }
 
                 // update overall SignalNumClearAhead
@@ -9953,6 +10010,7 @@ namespace ORTS
         public float speed_passenger;                // -1 if not set
         public float speed_freight;                  // -1 if not set
         public uint speed_flag;
+        public uint speed_reset;
         public float actual_speed;                   // set active by TRAIN
 
         public bool processed;                       // for AI trains, set active by TRAIN
@@ -9978,6 +10036,7 @@ namespace ORTS
                 speed_passenger = -1;                      // set active by TRAIN
                 speed_freight = -1;                      // set active by TRAIN
                 speed_flag = 0;                       // set active by TRAIN
+                speed_reset = 0;                      // set active by TRAIN
             }
             else
             {
@@ -9987,6 +10046,7 @@ namespace ORTS
                 speed_passenger = speed_info.speed_pass;
                 speed_freight = speed_info.speed_freight;
                 speed_flag = speed_info.speed_flag;
+                speed_reset = speed_info.speed_reset;
             }
         }
 
@@ -10011,19 +10071,24 @@ namespace ORTS
         public float speed_pass;
         public float speed_freight;
         public uint speed_flag;
+        public uint speed_reset;
 
         //================================================================================================//
         //
         // Constructor
         //
 
-        public ObjectSpeedInfo(float pass, float freight, bool asap)
+        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset)
         {
             speed_pass = pass;
             speed_freight = freight;
             if (asap)
             {
                 speed_flag = 1;
+            }
+            if (reset)
+            {
+                speed_reset = 1;
             }
         }
     }
@@ -10943,7 +11008,7 @@ namespace ORTS
             {
                 DeadlockPathInfo thisPathInfo = AvailablePathList[iPath];
                 int trainSubpathIndex = GetTrainAndSubpathIndex(trainNumber, sublistRef);
-                if (thisPathInfo.AllowedTrains.Contains(trainSubpathIndex) || thisPathInfo.AllowedTrains.Contains(-1))
+                if (thisPathInfo.AllowedTrains.Contains(trainSubpathIndex) || (thisPathInfo.AllowedTrains.Contains(-1) && allowPublic))
                 {
                     foundIndices.Add(iPath);
                 }
@@ -11489,5 +11554,6 @@ namespace ORTS
             }
         }
     }
+
 }
 

@@ -908,22 +908,27 @@ namespace ORTS.Processes
             }
 
             Arguments = args;
-            Simulator = new Simulator(settings, args[0]);
-
-            if (LoadingScreen == null)
-                LoadingScreen = new LoadingScreenPrimitive(Game);
 
             switch (acttype)
             {
                 case "activity":
+                    Simulator = new Simulator(settings, args[0], false);
+                    if (LoadingScreen == null)
+                        LoadingScreen = new LoadingScreenPrimitive(Game);
                     Simulator.SetActivity(args[0]);
                     break;
 
                 case "explorer":
+                    Simulator = new Simulator(settings, args[0], false);
+                    if (LoadingScreen == null)
+                        LoadingScreen = new LoadingScreenPrimitive(Game);
                     Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
                     break;
 
                 case "timetable":
+                    Simulator = new Simulator(settings, args[0], true);
+                    if (LoadingScreen == null)
+                        LoadingScreen = new LoadingScreenPrimitive(Game);
                     if (String.Compare(mode, "start", true) != 0) // no specific action for start, handled in start_timetable
                     {
                         // for resume and replay : set timetable file and selected train info
@@ -933,6 +938,9 @@ namespace ORTS.Processes
                     break;
 
                 default: // old style processing without explicit type definition, to be removed later
+                    Simulator = new Simulator(settings, args[0], false);
+                    if (LoadingScreen == null)
+                        LoadingScreen = new LoadingScreenPrimitive(Game);
                     if (args.Length == 1)
                         Simulator.SetActivity(args[0]);
                     else if (args.Length == 5)

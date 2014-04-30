@@ -68,7 +68,7 @@ namespace ORTS
             NONE,
             BLOCK_STATE,
             ROUTE_SET,
-            STATION_HOLD,
+//          STATION_HOLD,
             NEXT_SIG_LR,
             NEXT_SIG_MR,
             THIS_SIG_LR,
@@ -201,7 +201,7 @@ namespace ORTS
 
 
 #if DEBUG_PRINT_PROCESS
-            TDB_debug_ref = new int[1] { 2215 };   /* signal tdb ref.no selected for print-out */
+            TDB_debug_ref = new int[2] { 5692, 4181 };   /* signal tdb ref.no selected for print-out */
 #endif
 
 #if DEBUG_PRINT_IN
@@ -3273,10 +3273,10 @@ namespace ORTS
                     return_value = (int)thisHead.mainSignal.block_state();
                     break;
 
-                // Station Hold
-                case (SCRExternalFunctions.STATION_HOLD):
-                    return_value = Convert.ToInt32(thisHead.mainSignal.isStationHold());
-                    break;
+                //// Station Hold - experiment cancelled
+                //case (SCRExternalFunctions.STATION_HOLD):
+                //    return_value = Convert.ToInt32(thisHead.mainSignal.isStationHold());
+                //    break;
 
                 // Route set
 

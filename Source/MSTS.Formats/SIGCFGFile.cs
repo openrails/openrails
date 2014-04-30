@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.IO;
 using MSTS.Parsers;
 using ORTS.Common;
 
@@ -38,9 +39,12 @@ namespace MSTS.Formats
         public IDictionary<string, SignalType> SignalTypes;
         public IDictionary<string, SignalShape> SignalShapes;
         public IList<string> ScriptFiles;
+        public string ScriptPath;
 
         public SIGCFGFile(string filenamewithpath)
         {
+            ScriptPath = Path.GetDirectoryName(filenamewithpath);
+
             using (STFReader stf = new STFReader(filenamewithpath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("lighttextures", ()=>{ LightTextures = ReadLightTextures(stf); }),
@@ -565,6 +569,7 @@ namespace MSTS.Formats
         public readonly string DrawStateName;
         public float SpeedMpS;  // Speed limit for this aspect. -1 if track speed is to be used
         public bool Asap;  // Set to true if SignalFlags ASAP option specified
+        public bool Reset; // Set to true if SignalFlags RESET option specified (ORTS only)
 
         public SignalAspect(MstsSignalAspect reqAspect, string reqName)
         /// <summary>
@@ -601,6 +606,7 @@ namespace MSTS.Formats
                         switch (stf.ReadString().ToLower())
                         {
                             case "asap": Asap = true; break;
+                            case "or_speedreset": Reset = true; break;
                             default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown DrawLight flag " + stf.ReadString()); break;
                         }
                 }),
