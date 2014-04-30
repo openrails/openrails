@@ -231,17 +231,20 @@ namespace ORTS.Viewer3D
             WellKnownCameras.Add(new FreeRoamCamera(this, FrontCamera)); // Any existing camera will suffice to satisfy .Save() and .Restore()
             WellKnownCameras.Add(ThreeDimCabCamera = new ThreeDimCabCamera(this));
 
+            string ORfilepath = System.IO.Path.Combine(Simulator.RoutePath, "OpenRails");
             ContentPath = Game.ContentPath;
             Trace.Write(" ENV");
             ENVFile = new ENVFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.Weather));
 
             Trace.Write(" SIGCFG");
-            if (File.Exists(Simulator.RoutePath + @"\sigcfg.dat_or"))
+            if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
-                SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat_or");
+                Trace.Write(" SIGCFG_OR");
+                SIGCFG = new SIGCFGFile(ORfilepath + @"\sigcfg.dat");
             }
             else
             {
+                Trace.Write(" SIGCFG");
                 SIGCFG = new SIGCFGFile(Simulator.RoutePath + @"\sigcfg.dat");
             }
 
