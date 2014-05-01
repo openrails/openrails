@@ -1655,6 +1655,7 @@ namespace ORTS
                 FormStatic = true;
                 Stable = false;
                 RunRound = false;
+                FormType = Train.FormCommand.None;
             }
 
             /// <summary>

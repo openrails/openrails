@@ -2635,7 +2635,7 @@ namespace ORTS
                 float offset0 = thisSection.OffsetLength[0];
                 float offset1 = thisSection.OffsetLength[1];
 
-                TrackCircuitSectionXref newReference = thisSection.XRefCopy();
+                TrackCircuitSectionXref newReference = new TrackCircuitSectionXref(thisSection.Index, thisSection.Length, thisSection.OffsetLength);
 
                 bool inserted = false;
 
@@ -2686,7 +2686,7 @@ namespace ORTS
                     int prevIndex = thisSection.Pins[0, iPin].Link;
                     TrackCircuitSection prevSection = TrackCircuitList[prevIndex];
 
-                    TrackCircuitSectionXref newReference = thisSection.XRefCopy();
+                    TrackCircuitSectionXref newReference = new TrackCircuitSectionXref(thisSection.Index, thisSection.Length, thisSection.OffsetLength);
                     TrackNode thisTrack = trackNodes[prevSection.OriginalIndex];
                     TrackCircuitXRefList thisXRef = thisTrack.TCCrossReference;
 
@@ -4328,7 +4328,7 @@ namespace ORTS
     // Class for track circuit and train control
     //
 
-    public class TrackCircuitSection:TrackCircuitSectionXref
+    public class TrackCircuitSection
     {
         public enum TrackCircuitType
         {
@@ -4341,13 +4341,16 @@ namespace ORTS
 
         // Properties Index, Length and OffsetLength come from TrackCircuitSectionXref
 
-        public Signals signalRef;                                 // reference to Signals class //
-        public int OriginalIndex;                                 // original TDB section index //
-        public TrackCircuitType CircuitType;                           // type of section            //
+        public int Index;                                         // Index of TCS                           //
+        public float Length;                                      // Length of Section                      //
+        public float[] OffsetLength = new float[2];               // Offset length in original tracknode    //
+        public Signals signalRef;                                 // reference to Signals class             //
+        public int OriginalIndex;                                 // original TDB section index             //
+        public TrackCircuitType CircuitType;                      // type of section                        //
 
-        public TrPin[,] Pins = new TrPin[2, 2];                   // next sections              //
-        public TrPin[,] ActivePins = new TrPin[2, 2];             // active next sections       //
-        public bool[] EndIsTrailingJunction = new bool[2];        // next section is trailing jn//
+        public TrPin[,] Pins = new TrPin[2, 2];                   // next sections                          //
+        public TrPin[,] ActivePins = new TrPin[2, 2];             // active next sections                   //
+        public bool[] EndIsTrailingJunction = new bool[2];        // next section is trailing jn            //
 
         public int JunctionDefaultRoute = -1;                     // jn default route, value is out-pin      //
         public int JunctionLastRoute = -1;                        // jn last route, value is out-pin         //

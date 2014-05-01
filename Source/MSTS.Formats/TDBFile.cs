@@ -19,11 +19,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Diagnostics.CodeAnalysis;
-#if NEW_SIGNALLING
 using System.Collections.Generic;
 using MSTS.Parsers;
 using Microsoft.Xna.Framework;
-#endif
 
 namespace MSTS.Formats
 {
@@ -298,14 +296,10 @@ namespace MSTS.Formats
             this.TrPins = (TrPin[])otherNode.TrPins.Clone();
         }
 
-#if NEW_SIGNALLING
         /// <summary>
         /// List of references to Track Circuit sections
         /// </summary>
         public TrackCircuitXRefList TCCrossReference;
-#else
-        public InterlockingTrack InterlockingTrack { get; set; }
-#endif
 
     }
 
@@ -334,7 +328,6 @@ namespace MSTS.Formats
             stf.SkipRestOfBlock();
         }
 
-#if NEW_SIGNALLING
         /// <summary>
         /// Default (empty) constructor 
         /// </summary>
@@ -348,7 +341,6 @@ namespace MSTS.Formats
         {
             return (TrPin)this.MemberwiseClone();
         }
-#endif
     }
     #endregion
 
@@ -863,14 +855,10 @@ namespace MSTS.Formats
     /// </summary>
     public class CrossoverItem : TrItem
     {
-#if !NEW_SIGNALLING
-        uint TrackNode, CID1;
-#else
         /// <summary>Index to the tracknode</summary>
         public uint TrackNode { get; set; }
         /// <summary>Index to the shape ID</summary>
         public uint ShapeId { get; set; }
-#endif
         /// <summary>
         /// Default constructor used during file parsing.
         /// </summary>
@@ -1312,7 +1300,6 @@ namespace MSTS.Formats
             });
         }
 
-#if NEW_SIGNALLING
         /// <summary>
         /// Constructor to create Platform Item out of Siding Item
         /// </summary>
@@ -1327,7 +1314,6 @@ namespace MSTS.Formats
             LinkedPlatformItemId = thisSiding.LinkedSidingId;
             Station = String.Copy(ItemName);
         }
-#endif
     }
 
     /// <summary>
@@ -1397,17 +1383,22 @@ namespace MSTS.Formats
         /// </summary>
         public TrackCircuitSectionXref()
         {
-            //OffsetLength is a bit dirty. Indexes 0 and 1 are (int) represetation of enum TravellerDirection.
+            //Offset indicates length from end of original tracknode, Index 0 is forward, index 1 is backward wrt original tracknode direction.
             OffsetLength = new float[2];
         }
 
         /// <summary>
-        /// Make a deep copy, but only of the values defined in this base class (not of inherited members)
+        /// Constructor and setting reference, length and offset length from section
         /// </summary>
-        /// <returns>A copy of the Cross-ref information</returns>
-        public TrackCircuitSectionXref XRefCopy()
+        /// <param name="sectionIndex"></param>
+        /// <param name="sectionLength"></param>
+        public TrackCircuitSectionXref(int sectionIndex, float sectionLength, float[] sectionOffsetLength)
         {
-            return (TrackCircuitSectionXref)this.MemberwiseClone();
+            Index = sectionIndex;
+            Length = sectionLength;
+            OffsetLength = new float[2];
+            OffsetLength[0] = sectionOffsetLength[0];
+            OffsetLength[1] = sectionOffsetLength[1];
         }
     }
 

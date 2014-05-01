@@ -394,6 +394,8 @@ namespace ORTS.Formats
                 trainStrings.Add(parts);
                 readLine = filestream.ReadLine();
             }
+
+            filestream.Close();
         }
     }
 }

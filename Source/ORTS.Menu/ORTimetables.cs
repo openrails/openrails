@@ -94,7 +94,9 @@ namespace ORTS.Menu
             var ORTTInfo = new List<TimetableInfo>();
             if (route != null)
             {
-                var directory = System.IO.Path.Combine(route.Path, "ACTIVITIES");
+                var actdirectory = System.IO.Path.Combine(route.Path, "ACTIVITIES");
+                var directory = System.IO.Path.Combine(actdirectory, "OPENRAILS");
+
                 if (Directory.Exists(directory))
                 {
                     foreach (var ORTimetableFile in Directory.GetFiles(directory, "*.timetable_or"))
