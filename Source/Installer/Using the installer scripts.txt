@@ -1,0 +1,52 @@
+Using the installer scripts.txt
+Last updated: 2014-05-02 by Chris Jakeman
+
+1. Download and install Inno Setup from http://www.jrsoftware.org/isdl.php
+Initial trials (Apr 2014) used v5.5.4
+
+2. Download .NET Framework Redistributable 3.5 SP1 from
+   http://www.microsoft.com/en-gb/download/details.aspx?id=25150 
+   and save in
+  <A>\Microsoft .NET Framework Redistributable 3.5 SP1\dotnetfx35.exe
+where <A> is any folder.
+
+3. Download .NET Framework Redistributable 3.5 SP1 Download Manager from
+   http://www.microsoft.com/en-us/download/details.aspx?id=21
+   and save in
+  <A>\Microsoft .NET Framework Redistributable 3.5 SP1 download manager\dotnetfx35setup.exe
+
+4. Download XNA Framework Redistributable 3.1 from 
+   http://www.microsoft.com/en-gb/download/details.aspx?id=15163 and save in
+  <A>\Microsoft XNA Framework Redistributable 3.1\xnafx31_redist.msi
+
+5. If you wish to update the version name from "OR_pre-v1.0", then edit the line
+     #define MyAppVersion "pre-v1.0" in the file
+   <A>\<B>\Installer\OpenRails shared\OpenRails.iss"
+  
+6. Repeat the following as often as required:
+  A. Download OR zip file from http://openrails.org/files/OR_X.zip
+
+  B. Unzip into folder 
+    <A>\Open Rails\Program\
+
+  C. Remove 
+    <A>\Open Rails\Program\Update.ini 
+  as James Ross advises because the updater cannot update an installed version yet.
+
+  D. Download source from http://openrails.org/files/OR_X_source.zip and extract 
+  folder Documentation.
+
+  E. Copy contents into folder
+    <A>\Open Rails\Documentation\
+
+  F. Use Inno Setup > Build > Compile to compile the installer script
+    <A>\<B>\Installer\OpenRails from download\OpenRails from download.iss
+  where <B> is any folder.
+
+  G. The installer file will be found in <a>\<B>\Installer\OpenRails from download\Output\setup_OR_pre-v1.0_from_download.exe
+  
+  H. Use Inno Setup > Build > Compile to compile the installer script
+    <A>\<B>\Installer\OpenRails from download\OpenRails from DVD.iss
+  where <B> is any folder.
+
+  I. The installer file will be found in <A>\<B>\Installer\OpenRails from DVD\Output\setup_OR_pre-v1.0_from_DVD.exe
