@@ -80,9 +80,6 @@ VERTEX_OUTPUT VSLightGlow(in VERTEX_INPUT In)
 	
 	Out.TexCoords = In.TexCoords_Radius.xy;
 
-	// Apply a small z-bias so that lights are always on top of the shape.
-	Out.Position.z *= 0.9999;
-
 	return Out;
 }
 
