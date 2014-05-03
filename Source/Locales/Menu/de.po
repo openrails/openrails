@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Open Rails\n"
 "POT-Creation-Date: 2014-04-29 11:59:47+0200\n"
-"PO-Revision-Date: 2014-04-29 20:49+0100\n"
+"PO-Revision-Date: 2014-05-03 21:30+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: \n"
 "Language: de\n"
@@ -836,14 +836,13 @@ msgid "Explore Route"
 msgstr "Route erkunden"
 
 #: ../../Menu/ResumeForm.cs:260
-#, fuzzy
 msgid ""
 "To prevent crashes and unexpected behaviour, Open Rails invalidates games "
 "saved from older versions if they fail to restore.\n"
 msgstr ""
 "Um Abstürze und andere unerwüschte Auswirkungen zu vermeiden sind ältere "
-"Spielstände in neueren Version von Open rails ungültig. {0} von {1} "
-"Spielständen sind nicht mehr gültig."
+"Spielstände in neueren Versionen von Open Rails ungültig, wenn ein "
+"Ladeversuch zum Abstürzt führt.\n"
 
 #: ../../Menu/ResumeForm.cs:275
 msgid ""
