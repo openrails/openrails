@@ -1139,11 +1139,10 @@ namespace ORTS.Processes
 
             protected override VertexPositionTexture[] GetVerticies(Game game)
             {
-                var margin = 10;
-                var w = game.RenderProcess.DisplaySize.X - 2 * margin;
-                var h = 2 * margin;
-                var x = -w / 2 + 0.5f;
-                var y = game.RenderProcess.DisplaySize.Y / 2 - h - margin + 0.5f;
+                var w = game.RenderProcess.DisplaySize.X;
+                var h = 10;
+                var x = -w / 2 - 0.5f;
+                var y = game.RenderProcess.DisplaySize.Y / 2 - h - 0.5f;
                 return new[] {
 				    new VertexPositionTexture(new Vector3(x, -y, -1), new Vector2(0, 0)),
 				    new VertexPositionTexture(new Vector3(x + w, -y, -1), new Vector2(1, 0)),

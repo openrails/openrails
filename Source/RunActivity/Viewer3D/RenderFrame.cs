@@ -485,7 +485,7 @@ namespace ORTS.Viewer3D
             // Prepare renderer for drawing the shadow map.
             graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget[shadowMapIndex]);
             graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
-            graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
+            graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.TransparentBlack, 1, 0);
 
             // Prepare for normal (non-blocking) rendering of scenery.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
@@ -549,18 +549,18 @@ namespace ORTS.Viewer3D
             if (Game.Settings.DistantMountains)
             {
                 if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
-                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.TransparentBlack, 1, 0);
                 DrawSequencesDistantMountains(graphicsDevice, logging);
                 if (logging) Console.WriteLine("  }");
                 if (logging) Console.WriteLine("  DrawSimple {");
-                graphicsDevice.Clear(ClearOptions.DepthBuffer, SharedMaterialManager.FogColor, 1, 0);
+                graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.TransparentBlack, 1, 0);
                 DrawSequences(graphicsDevice, logging);
                 if (logging) Console.WriteLine("  }");
             }
             else
             {
                 if (logging) Console.WriteLine("  DrawSimple {");
-                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, SharedMaterialManager.FogColor, 1, 0);
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.TransparentBlack, 1, 0);
                 DrawSequences(graphicsDevice, logging);
                 if (logging) Console.WriteLine("  }");
             }
