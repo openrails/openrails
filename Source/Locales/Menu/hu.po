@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: ORTS.Menu\n"
+"Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2014-04-07 19:32:21+0200\n"
 "PO-Revision-Date: 2014-04-07 20:55+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
