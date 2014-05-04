@@ -816,15 +816,16 @@ namespace ORTS.Debugging
 					if (t.LeadLocomotive != null)
 					{
 						worldPos = t.LeadLocomotive.WorldPosition;
-						name = t.LeadLocomotive.CarID;
+						name = GetTrainName(t.LeadLocomotive.CarID);
 						firstCar = t.LeadLocomotive;
 					}
 					else if (t.Cars != null && t.Cars.Count > 0)
 					{
 						worldPos = t.Cars[0].WorldPosition;
-						name = t.Cars[0].CarID;
+						name = GetTrainName(t.Cars[0].CarID);
+						if (t.TrainType == Train.TRAINTYPE.AI)
+							name = t.Name;
 						firstCar = t.Cars[0];
-
 					}
 					else continue;
 
@@ -842,7 +843,7 @@ namespace ORTS.Debugging
 							scaledItem.Y -= 25;
 							DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
 						}
-						g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
+						g.DrawString(name, trainFont, trainBrush, scaledItem);
 						continue;
 					}
 					var loc = t.FrontTDBTraveller.WorldLocation;
@@ -885,7 +886,7 @@ namespace ORTS.Debugging
 					scaledItem.X = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
 					scaledItem.Y = -25 + pictureBox1.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
 
-					g.DrawString(GetTrainName(name), trainFont, trainBrush, scaledItem);
+					g.DrawString(name, trainFont, trainBrush, scaledItem);
 
 				}
 				if (switchPickedItemHandled) switchPickedItem = null;
