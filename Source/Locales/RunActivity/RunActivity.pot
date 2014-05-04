@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-04-28 20:54:35+0200\n"
-"PO-Revision-Date: 2014-04-28 20:54:43+0200\n"
+"POT-Creation-Date: 2014-05-04 11:37:41+0100\n"
+"PO-Revision-Date: 2014-05-04 11:37:42+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -287,90 +287,94 @@ msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Physics/Train.cs:1364
+#: ../../RunActivity/Physics/Train.cs:1432
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:1367
+#: ../../RunActivity/Physics/Train.cs:1435
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:3936
-#: ../../RunActivity/Physics/Train.cs:3941
+#: ../../RunActivity/Physics/Train.cs:4060
+#: ../../RunActivity/Physics/Train.cs:4065
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4111
+#: ../../RunActivity/Physics/Train.cs:4191
+msgid "Held for connecting train : "
+msgstr ""
+
+#: ../../RunActivity/Physics/Train.cs:4246
 #: ../../RunActivity/Simulator/Activity.cs:830
 msgid "Passenger boarding completed. You may depart now."
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4944
+#: ../../RunActivity/Physics/Train.cs:5193
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5609
-#: ../../RunActivity/Physics/Train.cs:6682
+#: ../../RunActivity/Physics/Train.cs:5855
+#: ../../RunActivity/Physics/Train.cs:6928
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5617
+#: ../../RunActivity/Physics/Train.cs:5863
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5678
+#: ../../RunActivity/Physics/Train.cs:5924
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5784
-#: ../../RunActivity/Physics/Train.cs:6802
+#: ../../RunActivity/Physics/Train.cs:6030
+#: ../../RunActivity/Physics/Train.cs:7048
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7036
+#: ../../RunActivity/Physics/Train.cs:7282
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7045
+#: ../../RunActivity/Physics/Train.cs:7291
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7058
+#: ../../RunActivity/Physics/Train.cs:7304
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7151
+#: ../../RunActivity/Physics/Train.cs:7397
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7338
+#: ../../RunActivity/Physics/Train.cs:7584
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:4117
+#: ../../RunActivity/Physics/Train.cs:4252
 #: ../../RunActivity/Simulator/Activity.cs:823
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7580
+#: ../../RunActivity/Physics/Train.cs:7826
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7622
+#: ../../RunActivity/Physics/Train.cs:7868
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:575
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:522
 #, csharp-format
 msgid ""
 "Restoring from a save made by an older version {0}\n"
 msgstr ""
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:1058
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1013
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
@@ -1131,38 +1135,38 @@ msgstr ""
 msgid "3D Cab"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:562
-#: ../../RunActivity/Viewer3D/Viewer.cs:676
+#: ../../RunActivity/Viewer3D/Viewer.cs:565
+#: ../../RunActivity/Viewer3D/Viewer.cs:679
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:624
+#: ../../RunActivity/Viewer3D/Viewer.cs:627
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:687
+#: ../../RunActivity/Viewer3D/Viewer.cs:690
 msgid "3D Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:714
+#: ../../RunActivity/Viewer3D/Viewer.cs:717
 msgid "Will not ratate cab and land"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1130
+#: ../../RunActivity/Viewer3D/Viewer.cs:1133
 msgid "Game saved"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:705
+#: ../../RunActivity/Viewer3D/Viewer.cs:708
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:713
+#: ../../RunActivity/Viewer3D/Viewer.cs:716
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:742
+#: ../../RunActivity/Viewer3D/Viewer.cs:745
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
