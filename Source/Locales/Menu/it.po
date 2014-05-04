@@ -1,9 +1,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2014-04-29 11:59:47+0200\n"
-"PO-Revision-Date: 2014-04-29 12:06+0100\n"
-"Last-Translator: Roberto <strawberryfield@trainsimhobby.com>\n"
+"POT-Creation-Date: 2014-05-04 11:37:34+0100\n"
+"PO-Revision-Date: 2014-05-04 21:21+0100\n"
+"Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
+"<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -214,35 +215,30 @@ msgstr ""
 
 #: ../../Menu/MainForm.cs:563
 msgid ""
-"Microsoft Train Simulator doesn't appear to be installed.\n"
-"Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
-"folder."
-msgstr ""
-"Microsoft Train Simulator non sembra installato.\n"
-"Clicca su 'Aggiungi...' per indicare a  Open Rails la cartella di Microsoft "
-"Train Simulator."
+"Microsoft Train Simulator doesn't appear to be installed but is optional.\n"
+msgstr "Microsoft Train Simulator non sembra installato, ma è opzionale.\n"
 
-#: ../../Menu/MainForm.cs:829
+#: ../../Menu/MainForm.cs:830
 msgid "Activity Briefing"
 msgstr "Presentazione Activity"
 
-#: ../../Menu/MainForm.cs:836 ../../Menu/MainForm.Designer.cs:430
+#: ../../Menu/MainForm.cs:837 ../../Menu/MainForm.Designer.cs:430
 msgid "Timetable"
 msgstr "Orario"
 
-#: ../../Menu/MainForm.cs:840
+#: ../../Menu/MainForm.cs:841
 msgid "Player Timetable"
 msgstr "Orario del Player"
 
-#: ../../Menu/MainForm.cs:844
+#: ../../Menu/MainForm.cs:845
 msgid "Player Train"
 msgstr "Treno del Player"
 
-#: ../../Menu/MainForm.cs:847
+#: ../../Menu/MainForm.cs:848
 msgid "Consist : "
 msgstr "Convoglio:"
 
-#: ../../Menu/MainForm.cs:855
+#: ../../Menu/MainForm.cs:856
 msgid "Path : "
 msgstr ""
 
@@ -278,17 +274,17 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:820
+#: ../../Menu/MainForm.cs:821
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Scenario: {0}"
 
-#: ../../Menu/MainForm.cs:825 ../../Menu/MainForm.cs:850
+#: ../../Menu/MainForm.cs:826 ../../Menu/MainForm.cs:851
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Locomotiva: {0}"
 
-#: ../../Menu/MainForm.cs:828
+#: ../../Menu/MainForm.cs:829
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
@@ -822,20 +818,20 @@ msgstr ""
 "Genera una lista degli assegnamenti di tastiera. \r\n"
 "Il file sarà salvato sul Desktop."
 
-#: ../../Menu/ResumeForm.cs:191
+#: ../../Menu/ResumeForm.cs:138
 msgid "Explore Route"
 msgstr "Esplorazione scenario"
 
-#: ../../Menu/ResumeForm.cs:260
+#: ../../Menu/ResumeForm.cs:207
 msgid ""
 "To prevent crashes and unexpected behaviour, Open Rails invalidates games "
 "saved from older versions if they fail to restore.\n"
 msgstr ""
 "Per prevenire crash e comportamenti inattesi, Open Rails invalida i "
-"salvataggi delle vecchie se questi non possono essere caricati "
+"salvataggi delle vecchie versioni se questi non possono essere caricati "
 "correttamente.\n"
 
-#: ../../Menu/ResumeForm.cs:275
+#: ../../Menu/ResumeForm.cs:222
 msgid ""
 "Please do not report any problems that may result.\n"
 "\n"
@@ -845,11 +841,11 @@ msgstr ""
 "\n"
 "Continuare a proprio rischio?"
 
-#: ../../Menu/ResumeForm.cs:435
+#: ../../Menu/ResumeForm.cs:382
 msgid "Delete of invalid saves"
 msgstr "Cancellazione salvataggi non validi"
 
-#: ../../Menu/ResumeForm.cs:248
+#: ../../Menu/ResumeForm.cs:195
 #, csharp-format
 msgid ""
 "Warning: Save {0} found from a route with an unexpected name:\n"
@@ -860,12 +856,12 @@ msgstr ""
 "{1}.\n"
 "\n"
 
-#: ../../Menu/ResumeForm.cs:262
+#: ../../Menu/ResumeForm.cs:209
 #, csharp-format
 msgid "{0} of {1} saves for this route are no longer valid."
 msgstr "{0} di {1} salvataggi per questo scenario non sono validi."
 
-#: ../../Menu/ResumeForm.cs:272
+#: ../../Menu/ResumeForm.cs:219
 #, csharp-format
 msgid ""
 "This save was made by an older version {0} of Open Rails and\n"
@@ -875,7 +871,7 @@ msgstr ""
 "e\n"
 "può essere incompatibile con la versione corrente {1}.\n"
 
-#: ../../Menu/ResumeForm.cs:435
+#: ../../Menu/ResumeForm.cs:382
 #, csharp-format
 msgid ""
 "{0} invalid saves deleted\n"
