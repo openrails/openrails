@@ -34,6 +34,8 @@ namespace ORTS.Updater
         readonly DateTime BaseDateTimeMidnightLocal = new DateTime(2010, 1, 1, 0, 0, 0, DateTimeKind.Local);
 
         public readonly string BasePath;
+        public readonly string ProductName;
+        public readonly string ProductVersion;
         readonly UpdateSettings Settings;
         readonly UpdateState State;
 
@@ -42,10 +44,12 @@ namespace ORTS.Updater
 
         public Exception UpdateError { get; private set; }
 
-        public UpdateManager(string basePath)
+        public UpdateManager(string basePath, string productName, string productVersion)
         {
             if (!Directory.Exists(basePath)) throw new ArgumentException("The specified path must be valid and exist as a directory.", "basePath");
             BasePath = basePath;
+            ProductName = productName;
+            ProductVersion = productVersion;
             try
             {
                 Settings = new UpdateSettings();
@@ -78,6 +82,7 @@ namespace ORTS.Updater
                     CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache),
                     Encoding = Encoding.UTF8,
                 };
+                client.Headers[HttpRequestHeader.UserAgent] = GetUserAgent();
                 var updateUri = new Uri(Settings.URL);
                 var updateData = client.DownloadString(updateUri);
                 LatestUpdate = JsonConvert.DeserializeObject<Update>(updateData);
@@ -143,6 +148,11 @@ namespace ORTS.Updater
             }
         }
 
+        string GetUserAgent()
+        {
+            return String.Format("{0}/{1}", ProductName, ProductVersion);
+        }
+
         void ResetCachedUpdate()
         {
             State.LastCheck = DateTime.Now;
@@ -193,6 +203,7 @@ namespace ORTS.Updater
             var updateUri = new Uri(Settings.URL);
             var uri = new Uri(updateUri, LatestUpdate.Url);
             var client = new WebClient();
+            client.Headers[HttpRequestHeader.UserAgent] = GetUserAgent();
             client.DownloadFile(uri, FileUpdateStage);
         }
 

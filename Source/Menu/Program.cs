@@ -68,7 +68,7 @@ namespace ORTS
             }
 
             // Update manager is needed early to apply any updates before we show UI.
-            var updateManager = new UpdateManager(Path.GetDirectoryName(Application.ExecutablePath));
+            var updateManager = new UpdateManager(Path.GetDirectoryName(Application.ExecutablePath), Application.ProductName, VersionInfo.VersionOrBuild);
 
             // We must do this before localisation gets its grubby mitts on the satellite assemblies.
             if (updateManager.Apply())
