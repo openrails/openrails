@@ -11162,7 +11162,7 @@ namespace ORTS
         {
 
 #if DEBUG_REPORTS
-            File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number.ToString() +
+            File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
             " : set alternative route no. : " + usedPath.ToString() +
             " from section " + startSectionIndex.ToString() +
             " (request from signal " + nextSignal.thisRef.ToString() + " )\n");
@@ -11249,7 +11249,39 @@ namespace ORTS
 
                 if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
                 {
+                    // keep any items allready passed
+                    List<ObjectItemInfo> keeplist = new List<ObjectItemInfo>();
+                    foreach (ObjectItemInfo checkItem in SignalObjectItems)
+                    {
+                        float actualDistance = GetObjectDistanceToTrain(checkItem);
+                        if (actualDistance < 0)
+                        {
+                            keeplist.Add(checkItem);
+                        }
+                    }
+
+                    // create new list
                     InitializeSignals(true);
+
+                    // add any passed items (in reverse order at start of list)
+                    if (keeplist.Count > 0)
+                    {
+                        for (int iObject = keeplist.Count - 1; iObject >= 0; iObject--)
+                        {
+                            SignalObjectItems.Insert(0, keeplist[iObject]);
+                        }
+                    }
+
+                    // find new next signal
+                    NextSignalObject[0] = null;
+                    for (int iObject = 0; iObject <= SignalObjectItems.Count - 1 && NextSignalObject[0] == null; iObject++)
+                    {
+                        if (SignalObjectItems[iObject].ObjectType == ObjectItemInfo.ObjectItemType.Signal)
+                        {
+                            NextSignalObject[0] = SignalObjectItems[iObject].ObjectDetails;
+                        }
+                    }
+
                     if (NextSignalObject[0] != null)
                     {
                         NextSignalObject[0].requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
@@ -15842,6 +15874,7 @@ namespace ORTS
 
             public enum DetachUnitsInfo
             {
+                onlyPower,
                 allLeadingPower,
                 allTrailingPower,
                 unitsAtFront,
@@ -15854,7 +15887,7 @@ namespace ORTS
             public int NumberOfUnits;
             public int DetachFormedTrain;
             public bool ReverseDetachedTrain;
-            public int DetachTime;   // set to -1 if detach is to be immediate
+            public int? DetachTime;
 
             /// <summary>
             /// Default constructor
@@ -15866,8 +15899,8 @@ namespace ORTS
             /// <param name="leadingPower"></param>
             /// <param name="trailingPower"></param>
             /// <param name="units"></param>
-            public DetachInfo(bool atStart, bool atEnd, bool atStation, int sectionIndex, bool leadingPower, bool trailingPower, int units,
-                int time, int formedTrain, bool reverseTrain)
+            public DetachInfo(bool atStart, bool atEnd, bool atStation, int sectionIndex, bool leadingPower, bool trailingPower, bool onlyPower,
+                int units, int? time, int formedTrain, bool reverseTrain)
             {
                 if (atStart)
                 {
@@ -15896,6 +15929,10 @@ namespace ORTS
                 {
                     DetachUnits = DetachUnitsInfo.allTrailingPower;
                 }
+                else if (onlyPower)
+                {
+                    DetachUnits = DetachUnitsInfo.onlyPower;
+                }
                 else if (units < 0)
                 {
                     DetachUnits = DetachUnitsInfo.unitsAtEnd;
@@ -15922,7 +15959,16 @@ namespace ORTS
                 DetachSectionInfo = inf.ReadInt32();
                 DetachUnits = (DetachUnitsInfo)inf.ReadInt32();
                 NumberOfUnits = inf.ReadInt32();
-                DetachTime = inf.ReadInt32();
+                int detachTimeValue = inf.ReadInt32();
+                if (detachTimeValue < 0)
+                {
+                    DetachTime = null;
+                }
+                else
+                {
+                    DetachTime = detachTimeValue;
+                }
+                    
                 DetachFormedTrain = inf.ReadInt32();
                 ReverseDetachedTrain = inf.ReadBoolean();
             }
@@ -15937,17 +15983,34 @@ namespace ORTS
                 outf.Write(DetachSectionInfo);
                 outf.Write((int)DetachUnits);
                 outf.Write(NumberOfUnits);
-                outf.Write(DetachTime);
+                if (DetachTime.HasValue)
+                {
+                    outf.Write(DetachTime.Value);
+                }
+                else
+                {
+                    outf.Write(-1);
+                }
                 outf.Write(DetachFormedTrain);
                 outf.Write(ReverseDetachedTrain);
             }
 
-            public void Detach(AITrain train)
+            public void Detach(AITrain train, int presentTime)
             {
                 // Determine no. of units to detach
 
                 int iunits = 0;
                 bool frontpos = true;
+
+                // if position of power not defined, set position according to present position of power
+                if (DetachUnits == DetachUnitsInfo.onlyPower)
+                {
+                    DetachUnits = DetachUnitsInfo.allLeadingPower;
+                    if (train.Cars[train.Cars.Count - 1] is MSTSLocomotive)
+                    {
+                        DetachUnits = DetachUnitsInfo.allTrailingPower;
+                    }
+                }
 
                 switch (DetachUnits)
                 {
@@ -15992,9 +16055,17 @@ namespace ORTS
                 if (iunits > 0 && iunits < train.Cars.Count)
                 {
                     AITrain newTrain = train.AI.Simulator.GetAutoGenTrainByNumber(DetachFormedTrain);
-                    if (train.AI.Simulator.AutoGenDictionary != null && train.AI.Simulator.AutoGenDictionary.ContainsKey(newTrain.Number))
-                        train.AI.Simulator.AutoGenDictionary.Remove(newTrain.Number);
-                    train.AI.Simulator.UncoupleBehind(train, iunits, frontpos, newTrain, ReverseDetachedTrain);
+                    if (newTrain == null)
+                    {
+                        Trace.TraceInformation("Cannot find train {0} to detach from train {1} ( = {2} )", DetachFormedTrain, train.Number, train.Name);
+                    }
+                    else
+                    {
+                        if (train.AI.Simulator.AutoGenDictionary != null && train.AI.Simulator.AutoGenDictionary.ContainsKey(newTrain.Number))
+                            train.AI.Simulator.AutoGenDictionary.Remove(newTrain.Number);
+                        train.AI.Simulator.UncoupleBehind(train, iunits, frontpos, newTrain, ReverseDetachedTrain);
+                        newTrain.StartTime = presentTime + 30; // start in 30 seconds
+                    }
                 }
             }
         }

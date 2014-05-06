@@ -475,7 +475,7 @@ namespace ORTS
                 thisTrain.actualWaitTimeS += 30;
                 if (thisTrain.actualWaitTimeS > 900)   // tried for 15 mins
                 {
-                    Trace.TraceWarning("Cannot place AI train {0} at time {1}", thisTrain.Name, thisTrain.StartTime.ToString());
+                    Trace.TraceWarning("Cannot place AI train {0} at time {1}", thisTrain.Name, thisTrain.StartTime.Value.ToString());
                 }
                 else
                 {
@@ -576,7 +576,7 @@ namespace ORTS
                 bool inserted = false;
                 while (!inserted)
                 {
-                    if (nextTrain.StartTime > thisTrain.StartTime)
+                    if (nextTrain.StartTime.Value > thisTrain.StartTime.Value)
                     {
                         this.AddBefore(nextNode, thisTrain);
                         inserted = true;
@@ -610,7 +610,7 @@ namespace ORTS
             {
                 LinkedListNode<AITrain> nextNode = this.First;
                 AITrain nextTrain = nextNode.Value;
-                return (nextTrain.StartTime);
+                return (nextTrain.StartTime.Value);
             }
         }
 
@@ -630,7 +630,7 @@ namespace ORTS
 
             while (!itemsCollected && nextNode != null)
             {
-                if (nextNode.Value.StartTime <= reqTime)
+                if (nextNode.Value.StartTime.Value <= reqTime)
                 {
                     if (nextNode.Value.FormedOf < 0)
                     {

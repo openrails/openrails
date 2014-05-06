@@ -60,7 +60,7 @@ namespace ORTS
         public bool PreUpdate;                           // pre update state
         public AIActionItem nextActionInfo;              // no next action
         public float NextStopDistanceM;                  // distance to next stop node
-        public int StartTime;                            // starting time
+        public int? StartTime;                           // starting time
 
         public enum AI_MOVEMENT_STATE
         {
@@ -177,7 +177,16 @@ namespace ORTS
             UiD = inf.ReadInt32();
             MaxDecelMpSS = inf.ReadSingle();
             MaxAccelMpSS = inf.ReadSingle();
-            StartTime = inf.ReadInt32();
+           
+            int startTimeValue = inf.ReadInt32();
+            if (startTimeValue < 0)
+            {
+                StartTime = null;
+            }
+            else
+            {
+                StartTime = startTimeValue;
+            }
 
             Alpha10 = inf.ReadInt32();
 
@@ -212,7 +221,14 @@ namespace ORTS
             outf.Write(UiD);
             outf.Write(MaxDecelMpSS);
             outf.Write(MaxAccelMpSS);
-            outf.Write(StartTime);
+            if (StartTime.HasValue)
+            {
+                outf.Write(StartTime.Value);
+            }
+            else
+            {
+                outf.Write(-1);
+            }
             outf.Write(Alpha10);
 
             outf.Write((int)MovementState);
@@ -306,7 +322,7 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Frght : " + IsFreight.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Length: " + Length.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "MaxSpd: " + TrainMaxSpeedMpS.ToString() + "\n");
-                File.AppendAllText(@"C:\temp\checktrain.txt", "Start : " + StartTime.ToString() + "\n");
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Start : " + StartTime.Value.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "State : " + MovementState.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "Sttion: " + atStation.ToString() + "\n");
                 File.AppendAllText(@"C:\temp\checktrain.txt", "ValPos: " + validPosition.ToString() + "\n");
@@ -379,7 +395,6 @@ namespace ORTS
                             DetachInfo thisDetach = DetachDetails[iDetach];
                             if (thisDetach.DetachPosition == DetachInfo.DetachPositionInfo.atStart)
                             {
-                                thisDetach.Detach(this);
                                 switch (thisDetach.DetachUnits)
                                 {
                                     case DetachInfo.DetachUnitsInfo.allLeadingPower:
@@ -423,6 +438,9 @@ namespace ORTS
 
             // set state
             MovementState = AI_MOVEMENT_STATE.AI_STATIC;
+            // if no start time, set to now + 30
+            if (!StartTime.HasValue)
+                StartTime = presentTime + 30;
             bool validPosition = InitialTrainPlacement();
 
             return (true);
@@ -1182,7 +1200,7 @@ namespace ORTS
         {
             // start if start time is reached
 
-            if (StartTime < presentTime && TrainHasPower())
+            if (StartTime.HasValue && StartTime.Value < presentTime && TrainHasPower())
             {
                 foreach (var car in Cars)
                 {
@@ -1194,6 +1212,7 @@ namespace ORTS
                 }
 
                 PostInit();
+                return;
             }
 
             // check if anything needs be detached
@@ -1202,9 +1221,11 @@ namespace ORTS
                 for (int iDetach = DetachDetails.Count - 1; iDetach >= 0; iDetach-- )
                 {
                     DetachInfo thisDetach = DetachDetails[iDetach];
-                    if (thisDetach.DetachPosition == DetachInfo.DetachPositionInfo.atStart && thisDetach.DetachTime < presentTime)
+
+                    bool validTime = !thisDetach.DetachTime.HasValue || thisDetach.DetachTime.Value < presentTime;
+                    if (thisDetach.DetachPosition == DetachInfo.DetachPositionInfo.atStart && validTime)
                     {
-                        thisDetach.Detach(this);
+                        thisDetach.Detach(this, presentTime);
                         DetachDetails.RemoveAt(iDetach);
                     }
                 }
@@ -1658,7 +1679,7 @@ namespace ORTS
                 }
             }
 
-            MovementState = AI_MOVEMENT_STATE.STOPPED;   // ready to depart - change to stop to check action
+            if (MovementState == AI_MOVEMENT_STATE.STATION_STOP) MovementState = AI_MOVEMENT_STATE.STOPPED;   // if state is still station_stop and ready to depart - change to stop to check action
             Delay = TimeSpan.FromSeconds( (presentTime - thisStation.DepartTime) % (24*3600));
 
 #if DEBUG_REPORTS
@@ -3468,6 +3489,20 @@ namespace ORTS
 
                 if (Forms > 0)
                 {
+                    // check if anything needs be detached
+                    if (DetachDetails.Count > 0)
+                    {
+                        for (int iDetach = DetachDetails.Count - 1; iDetach >= 0; iDetach--)
+                        {
+                            DetachInfo thisDetach = DetachDetails[iDetach];
+                            if (thisDetach.DetachPosition == DetachInfo.DetachPositionInfo.atEnd)
+                            {
+                                thisDetach.Detach(this, presentTime);
+                                DetachDetails.RemoveAt(iDetach);
+                            }
+                        }
+                    }
+
                     bool autogenStart = false;
                     // get train which is to be formed
                     AITrain formedTrain = AI.StartList.GetNotStartedTrainByNumber(Forms);
@@ -3517,11 +3552,11 @@ namespace ORTS
                 else if (FormsStatic)
                 {
                     MovementState = AI_MOVEMENT_STATE.AI_STATIC;
-                    StartTime = 2 * 24 * 3600; // set start time beyond end of day
+                    ControlMode = TRAIN_CONTROL.UNDEFINED;
+                    StartTime = null;  // set starttime to invalid
                     return (true);
                 }
 
-                // check if train is to attach
 #if DEBUG_REPORTS
                 File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
                      Number.ToString() + " removed\n");
@@ -3618,9 +3653,12 @@ namespace ORTS
                 ReverseFormation(false);
             }
 
+            var attachCar = Cars[0];
+
             // attach to front of waiting train
             if (attachTrainFront)
             {
+                attachCar = Cars[Cars.Count - 1];
                 for (int iCar = Cars.Count - 1; iCar >= 0; iCar--)
                 {
                     var car = Cars[iCar];
@@ -3686,6 +3724,7 @@ namespace ORTS
 
             // set various items
             attachTrain.CheckFreight();
+            attachCar.SignalEvent(Event.Couple);
 
             if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)
             {
@@ -4001,6 +4040,14 @@ namespace ORTS
                 MovementState = AI_MOVEMENT_STATE.ACCELERATING;
                 Alpha10 = 10;
             }
+
+#if DEBUG_REPORTS
+            File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number + " Validated speedlimit : " +
+               "Limit : " + allowedMaxSpeedLimitMpS.ToString() + " ; " +
+               "Signal : " + allowedMaxSpeedSignalMpS.ToString() + " ; " +
+               "Overall : " + AllowedMaxSpeedMpS.ToString() + "\n");
+
+#endif
 
             // reset pending actions to recalculate braking distance
 
@@ -4613,9 +4660,9 @@ namespace ORTS
             }
             else if (MovementState == AI_MOVEMENT_STATE.AI_STATIC)
             {
-                if (StartTime < ((24*3600)+1))
+                if (StartTime.HasValue)
                 {
-                    long startNSec = (long)(StartTime * Math.Pow(10, 7));
+                    long startNSec = (long)(StartTime.Value * Math.Pow(10, 7));
                     DateTime startDT = new DateTime(startNSec);
                     abString = startDT.ToString("HH:mm:ss");
                 }

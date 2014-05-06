@@ -801,7 +801,7 @@ namespace ORTS
                 if (validTime)
                 {
                     AITrain.StartTime = Convert.ToInt32(startingTime.TotalSeconds);
-                    StartTime = AITrain.StartTime;
+                    StartTime = AITrain.StartTime.Value;
                 }
                 else
                 {
@@ -1199,23 +1199,27 @@ namespace ORTS
                 {
                     Train usedTrain;
                     bool atStart = false;  // indicates if run-round is to be performed before start of move or forms, or at end of move
+                    int attachTo;
 
                     if (DisposeDetails.Stable)
                     {
                         switch (DisposeDetails.RunRoundPos)
                         {
-                            case DisposeInfo.RunRoundPosition.inposition:
+                            case DisposeInfo.RunRoundPosition.outposition:
                                 usedTrain = outTrain;
+                                attachTo = usedTrain.Number;
                                 atStart = true;
                                 break;
 
-                            case DisposeInfo.RunRoundPosition.outposition:
+                            case DisposeInfo.RunRoundPosition.inposition:
                                 usedTrain = inTrain;
+                                attachTo = formedTrain.Number;
                                 atStart = false;
                                 break;
 
                             default:
                                 usedTrain = outTrain;
+                                attachTo = inTrain.Number;
                                 atStart = false;
                                 break;
                         }
@@ -1223,10 +1227,16 @@ namespace ORTS
                     else
                     {
                         usedTrain = formedTrain;
+                        attachTo = usedTrain.Number;
                         atStart = true;
                     }
 
-                    BuildRunRound(ref usedTrain, atStart, DisposeDetails, simulator, ref trainList);
+                    BuildRunRound(ref usedTrain, attachTo, atStart, DisposeDetails, simulator, ref trainList);
+                }
+
+                if (DisposeDetails.FormStatic)
+                {
+                    AITrain.FormsStatic = true;
                 }
             }
 
@@ -1239,7 +1249,7 @@ namespace ORTS
             /// <param name="simulator"></param>
             /// <param name="trainList"></param>
             /// <param name="paths"></param>
-            public void BuildRunRound(ref Train rrtrain, bool atStart, DisposeInfo disposeDetails, Simulator simulator, ref List<AITrain> trainList)
+            public void BuildRunRound(ref Train rrtrain, int attachTo, bool atStart, DisposeInfo disposeDetails, Simulator simulator, ref List<AITrain> trainList)
             {
                 AITrain formedTrain = new AITrain(simulator);
 
@@ -1260,7 +1270,7 @@ namespace ORTS
                 formedTrain.FormedOf = rrtrain.Number;
                 formedTrain.FormedOfType = Train.FormCommand.Detached;
                 formedTrain.TrainType = Train.TRAINTYPE.AI_AUTOGENERATE;
-                formedTrain.AttachTo = rrtrain.Number;
+                formedTrain.AttachTo = attachTo;
                 trainList.Add(formedTrain);
 
                 Train.TCSubpathRoute lastSubpath = rrtrain.TCRoute.TCRouteSubpaths[rrtrain.TCRoute.TCRouteSubpaths.Count - 1];
@@ -1268,13 +1278,13 @@ namespace ORTS
 
                 if (atStart)
                 {
-                    int rrtime = (disposeDetails.RunRoundTime > 0) ? disposeDetails.RunRoundTime : -1;
-                    Train.DetachInfo detachDetails = new Train.DetachInfo(true, false, false, 0, true, false, -1, rrtime, formedTrain.Number, reverseTrain);
+                    int? rrtime = disposeDetails.RunRoundTime;
+                    Train.DetachInfo detachDetails = new Train.DetachInfo(true, false, false, 0, false, false, true, -1, rrtime, formedTrain.Number, reverseTrain);
                     rrtrain.DetachDetails.Add(detachDetails);
                 }
                 else
                 {
-                    Train.DetachInfo detachDetails = new Train.DetachInfo(false, true, false, 0, true, false, -1, -1, formedTrain.Number, reverseTrain);
+                    Train.DetachInfo detachDetails = new Train.DetachInfo(false, true, false, 0, false, false, true, -1, null, formedTrain.Number, reverseTrain);
                     rrtrain.DetachDetails.Add(detachDetails);
                 }
 
@@ -1592,13 +1602,13 @@ namespace ORTS
 
             public bool Stable;
             public string Stable_outpath;
-            public int Stable_outtime;
+            public int? Stable_outtime;
             public string Stable_inpath;
-            public int Stable_intime;
+            public int? Stable_intime;
 
             public bool RunRound;
             public string RunRoundPath;
-            public int RunRoundTime;
+            public int? RunRoundTime;
 
             public enum RunRoundPosition
             {

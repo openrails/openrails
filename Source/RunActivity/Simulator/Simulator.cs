@@ -1159,6 +1159,8 @@ namespace ORTS
             newTrain.CheckFreight();
 
             newTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC; // start of as AI static
+            newTrain.StartTime = null; // time will be set later
+
             detachCar.SignalEvent(Event.Uncouple);
 
             newTrain.TrainType = Train.TRAINTYPE.AI;
@@ -1170,6 +1172,7 @@ namespace ORTS
             int direction = (int)train.FrontTDBTraveller.Direction;
 
             train.PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
+            train.PresentPosition[0].RouteListIndex = train.ValidRoute[0].GetRouteIndex(train.PresentPosition[0].TCSectionIndex, 0);
             train.PresentPosition[0].CopyTo(ref train.PreviousPosition[0]);
 
             if (frontportion)
@@ -1182,6 +1185,7 @@ namespace ORTS
             direction = (int)train.RearTDBTraveller.Direction;
 
             train.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+            train.PresentPosition[1].RouteListIndex = train.ValidRoute[0].GetRouteIndex(train.PresentPosition[1].TCSectionIndex, 0);
 
             // remove train from track and clear actions
             train.RemoveFromTrack();
@@ -1203,6 +1207,7 @@ namespace ORTS
             direction = (int)newTrain.FrontTDBTraveller.Direction;
 
             newTrain.PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
+            newTrain.PresentPosition[0].RouteListIndex = newTrain.ValidRoute[0].GetRouteIndex(newTrain.PresentPosition[0].TCSectionIndex, 0);
             newTrain.PresentPosition[0].CopyTo(ref newTrain.PreviousPosition[0]);
 
             newTrain.DistanceTravelledM = 0.0f;
@@ -1212,6 +1217,7 @@ namespace ORTS
             direction = (int)newTrain.RearTDBTraveller.Direction;
 
             newTrain.PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+            newTrain.PresentPosition[1].RouteListIndex = newTrain.ValidRoute[0].GetRouteIndex(newTrain.PresentPosition[1].TCSectionIndex, 0);
 
             // set track section occupied
             Train.TCSubpathRoute tempRouteNewTrain = Signals.BuildTempRoute(newTrain, newTrain.PresentPosition[1].TCSectionIndex,
