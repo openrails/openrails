@@ -531,12 +531,13 @@ namespace ORTS
                     }
                 }
             }
-            TrainsToRemove.Clear();
 
-            if (MultiPlayer.MPManager.IsServer())
+            if (MultiPlayer.MPManager.IsServer() && removeList.Count > 0)
             {
                 MultiPlayer.MPManager.BroadCast((new MultiPlayer.MSGRemoveTrain(removeList)).ToString());
             }
+
+            TrainsToRemove.Clear();
         }
 
         private void AddTrains()
