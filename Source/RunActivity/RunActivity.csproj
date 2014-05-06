@@ -141,11 +141,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RollingStock\- RollingStock.cs" />
     <Compile Include="RollingStock\Axle.cs" />
+    <Compile Include="RollingStock\BrakeController.cs" />
     <Compile Include="RollingStock\ControllerFactory.cs" />
     <Compile Include="RollingStock\DieselEngine.cs" />
     <Compile Include="RollingStock\ElectricMotor.cs" />
     <Compile Include="RollingStock\GearBox.cs" />
-    <Compile Include="RollingStock\IBrakeController.cs" />
     <Compile Include="RollingStock\IController.cs" />
     <Compile Include="RollingStock\LocomotiveAttributes.cs" />
     <Compile Include="RollingStock\MSTSBrakeController.cs" />

@@ -34,6 +34,14 @@ namespace ORTS.Common
     //
     // Web research suggests that VC++ will optimize "/ 2.0" replacing it with "* 0.5f" but VC# will not and cost is around 15 cycles.
 
+    public enum PressureUnit
+    {
+        KPa,
+        Bar,
+        PSI,
+        InHg
+    }
+
     /// <summary>
     /// Distance conversions from and to metres
     /// </summary>
@@ -90,6 +98,10 @@ namespace ORTS.Common
         static string yd = Catalog.GetString("yd");
         static string kmph = Catalog.GetString("km/h");
         static string mph = Catalog.GetString("mph");
+        static string kpa = Catalog.GetString("kPa");
+        static string bar = Catalog.GetString("bar");
+        static string psi = Catalog.GetString("psi");
+        static string inhg = Catalog.GetString("inHg");
 
         /// <summary>
         /// Formatted unlocalized speed string, used in reports and logs.
@@ -161,6 +173,90 @@ namespace ORTS.Common
                 return String.Format("{0:F1}kg", mass);
             }
             return String.Format("{0:F1}Lb", Kg.ToLb(mass));
+        }
+    
+        /// <summary>
+        /// Formatted localized pressure string
+        /// </summary>
+        public static string FormatPressure(float pressure, PressureUnit inputUnit, PressureUnit outputUnit, bool unitDisplayed)
+        {
+            string unit = "";
+            string format = "";
+            switch (outputUnit)
+            {
+                case PressureUnit.KPa:
+                    unit = kpa;
+                    format = "{0:F0}";
+                    switch (inputUnit)
+                    {
+                        case PressureUnit.Bar:
+                            pressure = KPa.FromBar(pressure);
+                            break;
+                        case PressureUnit.PSI:
+                            pressure = KPa.FromPSI(pressure);
+                            break;
+                        case PressureUnit.InHg:
+                            pressure = KPa.FromInHg(pressure);
+                            break;
+                    }
+                    break;
+
+                case PressureUnit.Bar:
+                    unit = bar;
+                    format = "{0:F1}";
+                    switch (inputUnit)
+                    {
+                        case PressureUnit.KPa:
+                            pressure = Bar.FromKPa(pressure);
+                            break;
+                        case PressureUnit.PSI:
+                            pressure = Bar.FromPSI(pressure);
+                            break;
+                        case PressureUnit.InHg:
+                            pressure = Bar.FromInHg(pressure);
+                            break;
+                    }
+                    break;
+
+                case PressureUnit.PSI:
+                    unit = psi;
+                    format = "{0:F0}";
+                    switch (inputUnit)
+                    {
+                        case PressureUnit.KPa:
+                            pressure = KPa.ToPSI(pressure);
+                            break;
+                        case PressureUnit.Bar:
+                            pressure = Bar.ToPSI(pressure);
+                            break;
+                        case PressureUnit.InHg:
+                            pressure = KPa.ToPSI(KPa.FromInHg(pressure));
+                            break;
+                    }
+                    break;
+
+                case PressureUnit.InHg:
+                    unit = inhg;
+                    format = "{0:F0}";
+                    switch (inputUnit)
+                    {
+                        case PressureUnit.KPa:
+                            pressure = KPa.ToInHg(pressure);
+                            break;
+                        case PressureUnit.Bar:
+                            pressure = Bar.ToInHg(pressure);
+                            break;
+                        case PressureUnit.PSI:
+                            pressure = KPa.ToInHg(KPa.FromPSI(pressure));
+                            break;
+                    }
+                    break;
+            }
+
+            if(unitDisplayed)
+                 format += " " + unit;
+
+            return String.Format(format, pressure);
         }
     }
 
@@ -255,8 +351,30 @@ namespace ORTS.Common
         public static float    ToPSI(float k)   { return k / 6.89475729f; } // kPa => PSI
         public static float FromInHg(float i)   { return i * 3.386389f; }   // inHg => kPa
         public static float   ToInHg(float k)   { return k / 3.386389f; }   // kPa => inHg
-        public static float FromBar(float b)    { return b * 100.0f; }      // bar => kPa
-        public static float   ToBar(float k)    { return k / 100.0f; }      // kPa => bar
+        public static float  FromBar(float b)   { return b * 100.0f; }      // bar => kPa
+        public static float    ToBar(float k)   { return k / 100.0f; }      // kPa => bar
+    }
+
+    /// <summary>
+    /// Pressure conversions from and to bar
+    /// </summary>
+    public class Bar
+    {
+        public static float  FromKPa(float k)   { return k / 100.0f; }      // kPa => bar
+        public static float    ToKPa(float b)   { return b * 100.0f; }      // bar => kPa
+        public static float  FromPSI(float p)   { return p / 14.5037738f; } // PSI => bar
+        public static float    ToPSI(float b)   { return b * 14.5037738f; } // bar => PSI
+        public static float FromInHg(float i)   { return i / 29.5333727f; } // inHg => bar
+        public static float   ToInHg(float b)   { return b * 29.5333727f; } // bar => inHg
+    }
+
+    /// <summary>
+    /// Pressure rate conversions from and to bar/s
+    /// </summary>
+    public class BarpS
+    {
+        public static float FromPSIpS(float p)  { return p / 14.5037738f; } // PSI/s => bar/s
+        public static float   ToPSIpS(float b)  { return b * 14.5037738f; } // bar/s => PSI/s
     }
 
     /// <summary>
@@ -277,13 +395,6 @@ namespace ORTS.Common
         public static float   ToGUK(float l)    { return l / 4.54609f; }    // litre => UK gallon
         public static float FromGUS(float g)    { return g * 3.78541f; }    // US gallon => litre
         public static float   ToGUS(float l)    { return l / 3.78541f; }    // litre => US gallon
-    }
-
-    /// <summary>
-    /// Pressure rate conversions from and to kilopascals/sec
-    /// </summary>
-    public class KPapS
-    {
     }
 
     /// <summary>

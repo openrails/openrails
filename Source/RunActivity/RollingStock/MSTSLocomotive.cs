@@ -171,8 +171,8 @@ namespace ORTS
         public List<CabView> CabViewList = new List<CabView>();
 
         public MSTSNotchController ThrottleController;
-        public MSTSBrakeController TrainBrakeController;
-        public MSTSBrakeController EngineBrakeController;
+        public ScriptedBrakeController TrainBrakeController;
+        public ScriptedBrakeController EngineBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController DynamicBrakeController;
         public MSTSNotchController GearBoxController;
@@ -210,11 +210,15 @@ namespace ORTS
         /// </summary>
         public override void InitializeFromWagFile(string wagFilePath)
         {
-            TrainBrakeController = new MSTSBrakeController(Simulator);
-            EngineBrakeController = new MSTSBrakeController(Simulator);
+            TrainBrakeController = new ScriptedBrakeController(this);
+            EngineBrakeController = new ScriptedBrakeController(this);
             DynamicBrakeController = new MSTSNotchController();
             TrainControlSystem = new ScriptedTrainControlSystem(this);
+
             base.InitializeFromWagFile(wagFilePath);
+
+            TrainBrakeController.Initialize();
+            EngineBrakeController.Initialize();
 
             if (ThrottleController == null)
             {
@@ -255,7 +259,7 @@ namespace ORTS
 
             IsDriveable = true;
             if (!TrainBrakeController.IsValid())
-                TrainBrakeController = new MSTSBrakeController(Simulator); //create a blank one
+                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
             if (!EngineBrakeController.IsValid())
                 EngineBrakeController = null;
 
@@ -338,10 +342,6 @@ namespace ORTS
         /// </summary>
         public override void Parse(string lowercasetoken, STFReader stf)
         {
-            if (lowercasetoken.StartsWith("engine(trainbrakescontroller"))
-                TrainBrakeController.ParseBrakeValue(lowercasetoken.Substring(28), stf);
-            if (lowercasetoken.StartsWith("engine(enginebrakescontroller"))
-                EngineBrakeController.ParseBrakeValue(lowercasetoken.Substring(29), stf);
             switch (lowercasetoken)
             {
                 case "engine(sound": CabSoundFileName = stf.ReadStringBlock(null); break;
@@ -361,13 +361,31 @@ namespace ORTS
 
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
-                case "engine(enginecontrollers(brake_train":
-                    TrainBrakeController.Parse(stf);
-                    break;
-                case "engine(enginecontrollers(brake_engine":
-                    EngineBrakeController.Parse(stf);
-                    break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
+
+                case "engine(trainbrakescontrollermaxsystempressure":
+                case "engine(trainbrakescontrollermaxreleaserate":
+                case "engine(trainbrakescontrollermaxquickreleaserate":
+                case "engine(trainbrakescontrollermaxapplicationrate":
+                case "engine(trainbrakescontrolleremergencyapplicationrate":
+                case "engine(trainbrakescontrollerfullservicepressuredrop":
+                case "engine(trainbrakescontrollerminpressurereduction":
+                case "engine(ortstrainbrakecontroller":
+                case "engine(enginecontrollers(brake_train":
+                    TrainBrakeController.Parse(lowercasetoken, stf);
+                    break;
+
+                case "engine(enginebrakescontrollermaxsystempressure":
+                case "engine(enginebrakescontrollermaxreleaserate":
+                case "engine(enginebrakescontrollermaxquickreleaserate":
+                case "engine(enginebrakescontrollermaxapplicationrate":
+                case "engine(enginebrakescontrolleremergencyapplicationrate":
+                case "engine(enginebrakescontrollerfullservicepressuredrop":
+                case "engine(enginebrakescontrollerminpressurereduction":
+                case "engine(enginecontrollers(brake_engine":
+                case "engine(ortsenginebrakecontroller":
+                    EngineBrakeController.Parse(lowercasetoken, stf);
+                    break;
 
                 case "engine(ortstraincontrolsystem":
                 case "engine(ortstraincontrolsystemsound":
@@ -464,8 +482,8 @@ namespace ORTS
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
             ThrottleController = (MSTSNotchController)locoCopy.ThrottleController.Clone();
-            TrainBrakeController = (MSTSBrakeController)locoCopy.TrainBrakeController.Clone();
-            EngineBrakeController = locoCopy.EngineBrakeController != null ? (MSTSBrakeController)locoCopy.EngineBrakeController.Clone() : null;
+            TrainBrakeController = (ScriptedBrakeController)locoCopy.TrainBrakeController.Clone();
+            EngineBrakeController = locoCopy.EngineBrakeController != null ? (ScriptedBrakeController)locoCopy.EngineBrakeController.Clone() : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             TrainControlSystem = locoCopy.TrainControlSystem != null ? locoCopy.TrainControlSystem.Clone(this) : null;
 
@@ -512,10 +530,10 @@ namespace ORTS
             LocomotiveAxle.Reset(inf.ReadSingle());
             CabLightOn = inf.ReadBoolean();
             UsingRearCab = inf.ReadBoolean();
-            ThrottleController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
-            TrainBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
-            EngineBrakeController = (MSTSBrakeController)ControllerFactory.Restore(Simulator, inf);
-            DynamicBrakeController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
+            ControllerFactory.Restore(ThrottleController, inf);
+            ControllerFactory.Restore(TrainBrakeController, inf);
+            ControllerFactory.Restore(EngineBrakeController, inf);
+            ControllerFactory.Restore(DynamicBrakeController, inf);
             AdhesionFilter.Reset(0.5f);
 
             base.Restore(inf);
@@ -605,12 +623,12 @@ namespace ORTS
             TrainBrakeController.Update(elapsedClockSeconds);
             if (TrainBrakeController.UpdateValue > 0.0)
             {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
             }
 
             if (TrainBrakeController.UpdateValue < 0.0)
             {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
             }
 
             if (EngineBrakeController != null)
@@ -618,11 +636,11 @@ namespace ORTS
                 EngineBrakeController.Update(elapsedClockSeconds);
                 if (EngineBrakeController.UpdateValue > 0.0)
                 {
-                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
                 }
                 if (EngineBrakeController.UpdateValue < 0.0)
                 {
-                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus());
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
                 }
             }
 
@@ -1546,7 +1564,7 @@ namespace ORTS
         {
             AlerterReset();
             TrainBrakeController.StartIncrease(target);
-            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus());
+            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
             SignalEvent(Event.TrainBrakeChange);
         }
 
@@ -1560,7 +1578,7 @@ namespace ORTS
         {
             AlerterReset();
             TrainBrakeController.StartDecrease(target);
-            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus());
+            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
             SignalEvent(Event.TrainBrakeChange);
         }
 
@@ -1638,19 +1656,19 @@ namespace ORTS
                 TrainBrakeController.SetRDPercent(percent);
         }
 
-        public void SetEmergency()
+        public void SetEmergency(bool emergency)
         {
             if (this.Train != null && this.Train.TrainType == Train.TRAINTYPE.REMOTE) return; //not apply emergency for remote trains.
-            TrainControlSystem.SetEmergency();
+            TrainControlSystem.SetEmergency(emergency);
         }
 
-        public override string GetTrainBrakeStatus()
+        public override string GetTrainBrakeStatus(bool isMetric)
         {
             string s = TrainBrakeController.GetStatus();
             TrainCar lastCar = Train.Cars[Train.Cars.Count - 1];
             if (lastCar == this)
                 lastCar = Train.Cars[0];
-            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem);
+            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem, isMetric);
             return s;
         }
 
@@ -1661,7 +1679,7 @@ namespace ORTS
                 return;
 
             EngineBrakeController.StartIncrease(target);
-            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
+            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
             SignalEvent(Event.EngineBrakeChange);
         }
 
@@ -1690,7 +1708,7 @@ namespace ORTS
 
             EngineBrakeController.StartDecrease(target);
             EngineBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
-            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus());
+            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
             SignalEvent(Event.EngineBrakeChange);
         }
 
@@ -1718,7 +1736,7 @@ namespace ORTS
             EngineBrakeController.SetRDPercent(percent);
         }
 
-        public override string GetEngineBrakeStatus()
+        public override string GetEngineBrakeStatus(bool isMetric)
         {
             if (EngineBrakeController == null)
                 return null;

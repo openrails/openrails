@@ -311,7 +311,7 @@ namespace ORTS.Viewer3D.Popups
             var playerTrain = Viewer.PlayerLocomotive.Train;
             var showMUReverser = Math.Abs(playerTrain.MUReverserPercent) != 100;
             var showRetainers = playerTrain.RetainerSetting != RetainerSetting.Exhaust;
-            var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
+            var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus(Viewer.MilepostUnitsMetric);
             var dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
             var locomotiveStatus = Viewer.PlayerLocomotive.GetStatus();
             var stretched = playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1;
@@ -332,7 +332,7 @@ namespace ORTS.Viewer3D.Popups
             TableAddLabelValue(table, "Speed", FormatStrings.FormatSpeed(Viewer.PlayerLocomotive.SpeedMpS, Viewer.MilepostUnitsMetric));
             TableAddLabelValue(table, "Direction", showMUReverser ? "{1:F0} {0}" : "{0}", Viewer.PlayerLocomotive.Direction, Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, "Throttle", "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
-            TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
+            TableAddLabelValue(table, "Train brake", "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus(Viewer.MilepostUnitsMetric));
             if (showRetainers)
             {
                 TableAddLabelValue(table, "Retainers", "{0}% {1}", playerTrain.RetainerPercent, playerTrain.RetainerSetting);
@@ -442,7 +442,7 @@ namespace ORTS.Viewer3D.Popups
             TextPageHeading(table, "BRAKE INFORMATION");
 
             var train = Viewer.PlayerLocomotive.Train;
-            TableAddLabelValue(table, "Main reservoir", "{0:F0} psi", train.BrakeLine2PressurePSI);
+            TableAddLabelValue(table, "Main reservoir", "{0}", FormatStrings.FormatPressure(train.BrakeLine2PressurePSI, PressureUnit.PSI, (Viewer.MilepostUnitsMetric ? PressureUnit.Bar : PressureUnit.PSI), true));
 
             var n = Math.Min(10, train.Cars.Count);
             for (var i = 0; i < n; i++)
@@ -450,7 +450,7 @@ namespace ORTS.Viewer3D.Popups
                 var j = i == 0 ? 0 : i * (train.Cars.Count - 1) / (n - 1);
                 var car = train.Cars[j];
                 TableSetCell(table, 0, "{0}", j + 1);
-                TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus());
+                TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus(Viewer.MilepostUnitsMetric));
                 TableAddLine(table);
             }
         }

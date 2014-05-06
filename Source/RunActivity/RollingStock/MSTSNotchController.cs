@@ -150,7 +150,7 @@ namespace ORTS
      */
     public class MSTSNotchController: IController
     {
-        public float CurrentValue;
+        public float CurrentValue { get; set; }
         public float IntermediateValue;
         public float MinimumValue;
         public float MaximumValue = 1;
@@ -158,13 +158,11 @@ namespace ORTS
         private List<MSTSNotch> Notches = new List<MSTSNotch>();
         public int CurrentNotch;
 
-        protected Simulator Simulator;
-
         //Does not need to persist
         //this indicates if the controller is increasing or decreasing, 0 no changes
-        public float UpdateValue;
+        public float UpdateValue { get; set; }
         private float? controllerTarget;
-        public double CommandStartTime;
+        public double CommandStartTime { get; set; }
 
         #region CONSTRUCTORS
 
@@ -211,6 +209,11 @@ namespace ORTS
         public MSTSNotchController(BinaryReader inf)
         {
             this.Restore(inf);
+        }
+
+        public MSTSNotchController(List<MSTSNotch> notches)
+        {
+            Notches = notches;
         }
         #endregion
 
@@ -516,8 +519,10 @@ namespace ORTS
             }            
         }
 
-        protected virtual void Restore(BinaryReader inf)
+        public virtual void Restore(BinaryReader inf)
         {
+            Notches.Clear();
+
             IntermediateValue = CurrentValue = inf.ReadSingle();            
             MinimumValue = inf.ReadSingle();
             MaximumValue = inf.ReadSingle();
@@ -534,7 +539,7 @@ namespace ORTS
             }           
         }
 
-        protected MSTSNotch GetCurrentNotch()
+        public MSTSNotch GetCurrentNotch()
         {
             return Notches.Count == 0 ? null : Notches[CurrentNotch];
         }

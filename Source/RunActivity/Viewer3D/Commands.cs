@@ -387,18 +387,20 @@ namespace ORTS.Viewer3D
     }
 
     [Serializable()]
-    public class EmergencyBrakesCommand : BooleanCommand {
+    public class EmergencyBrakesCommand : Command
+    {
         public static MSTSLocomotive Receiver { get; set; }
 
-        public EmergencyBrakesCommand( CommandLog log, bool toState ) 
-            : base( log, toState ) {
+        public EmergencyBrakesCommand(CommandLog log)
+            : base(log)
+        {
             Redo();
         }
 
-        public override void Redo() {
-            Receiver.EmergencyButtonPressed = ToState;
-            if (ToState)
-                Receiver.SetEmergency();
+        public override void Redo()
+        {
+            Receiver.EmergencyButtonPressed = !Receiver.EmergencyButtonPressed;
+            Receiver.TrainBrakeController.EmergencyBrakingPushButton = Receiver.EmergencyButtonPressed;
             // Report();
         }
     }

@@ -85,6 +85,7 @@ namespace ORTS
             Simulator = newLocomotive.Simulator;
             ScriptName = other.ScriptName;
             SoundFileName = other.SoundFileName;
+            ParametersFileName = other.ParametersFileName;
             if (other.VigilanceMonitor != null) VigilanceMonitor = new MonitoringDevice(other.VigilanceMonitor);
             if (other.OverspeedMonitor != null) OverspeedMonitor = new MonitoringDevice(other.OverspeedMonitor);
             if (other.EmergencyStopMonitor != null) EmergencyStopMonitor = new MonitoringDevice(other.EmergencyStopMonitor);
@@ -99,7 +100,7 @@ namespace ORTS
                 case "engine(overspeedmonitor": OverspeedMonitor = new MonitoringDevice(stf); break;
                 case "engine(emergencystopmonitor": EmergencyStopMonitor = new MonitoringDevice(stf); break;
                 case "engine(awsmonitor": AWSMonitor = new MonitoringDevice(stf); break;
-                case "engine(ortstraincontrolsystem" : ScriptName = stf.ReadStringBlock(null); break;
+                case "engine(ortstraincontrolsystem": ScriptName = stf.ReadStringBlock(null); break;
                 case "engine(ortstraincontrolsystemsound": SoundFileName = stf.ReadStringBlock(null); break;
                 case "engine(ortstraincontrolsystemparameters": ParametersFileName = stf.ReadStringBlock(null); break;
             }
@@ -213,8 +214,8 @@ namespace ORTS
 
             Script.ClockTime = () => (float)Simulator.ClockTime;
             Script.DistanceM = () => Locomotive.DistanceM;
-            Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.GetIsEmergency();
-            Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.GetIsFullBrake();
+            Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
+            Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
             Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;
             Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
             Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? KPa.ToBar(KPa.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI)) : float.MaxValue;
@@ -223,8 +224,8 @@ namespace ORTS
             Script.IsAlerterEnabled = () => this.IsAlerterEnabled;
             Script.AlerterSound = () => Locomotive.AlerterSnd;
             Script.SetHorn = (value) => Locomotive.SignalEvent(value ? Event.HornOn : Event.HornOff);
-            Script.SetFullBrake = () => Locomotive.TrainBrakeController.SetFullBrake();
-            Script.SetEmergencyBrake = () => Locomotive.TrainBrakeController.SetEmergency();
+            Script.SetFullBrake = (value) => Locomotive.TrainBrakeController.TCSFullServiceBraking = value;
+            Script.SetEmergencyBrake = (value) => Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
             Script.SetThrottleController = (value) => Locomotive.ThrottleController.SetValue(value);
             Script.SetDynamicBrakeController = (value) => Locomotive.DynamicBrakeController.SetValue(value);
             Script.SetVigilanceAlarmDisplay = (value) => this.VigilanceAlarm = value;
@@ -401,12 +402,12 @@ namespace ORTS
             SendEvent(TCSEvent.AlerterReset);
         }
 
-        public void SetEmergency()
+        public void SetEmergency(bool emergency)
         {
             if (Script != null)
-                Script.SetEmergency();
+                Script.SetEmergency(emergency);
             else
-                Locomotive.TrainBrakeController.SetEmergency();
+                Locomotive.TrainBrakeController.TCSEmergencyBraking = emergency;
         }
 
         void SendEvent(TCSEvent evt)
@@ -443,10 +444,12 @@ namespace ORTS
         Timer OverspeedAlarmTimer;
         Timer OverspeedPenaltyTimer;
 
+        bool OverspeedWarning;
         bool OverspeedAlarm;
+        bool OverspeedEmergency;
         bool VigilanceAlarm;
         bool VigilanceEmergency;
-        bool OverspeedWarning;
+        bool ExternalEmergency;
 
         float VigilanceAlarmTimeoutS;
         float CurrentSpeedLimitMpS;
@@ -501,8 +504,45 @@ namespace ORTS
             if (OverspeedMonitor != null)
                 UpdateSpeedControl();
 
-            if (!IsBrakeEmergency() && !IsBrakeFullService())
-                SetPenaltyApplicationDisplay(false);
+            bool EmergencyBrake = false;
+            bool FullBrake = false;
+
+            if (VigilanceMonitor != null)
+            {
+                if (VigilanceMonitor.AppliesEmergencyBrake)
+                    EmergencyBrake |= VigilanceEmergency;
+                else if (VigilanceMonitor.AppliesFullBrake)
+                    FullBrake |= VigilanceEmergency;
+            }
+
+            if (OverspeedMonitor != null)
+            {
+                if (OverspeedMonitor.AppliesEmergencyBrake)
+                    EmergencyBrake |= OverspeedEmergency;
+                else if (OverspeedMonitor.AppliesFullBrake)
+                    FullBrake |= OverspeedEmergency;
+            }
+
+            if (EmergencyStopMonitor != null)
+            {
+                if (EmergencyStopMonitor.AppliesEmergencyBrake)
+                    EmergencyBrake |= ExternalEmergency;
+                else if (EmergencyStopMonitor.AppliesFullBrake)
+                    FullBrake |= ExternalEmergency;
+
+                if (EmergencyStopMonitor.EmergencyCutsPower && ExternalEmergency) SetPantographsDown();
+            }
+
+            SetEmergencyBrake(EmergencyBrake);
+            SetFullBrake(FullBrake);
+
+            if (EmergencyBrake || FullBrake)
+            {
+                if (EmergencyCausesThrottleDown) SetThrottleController(0f);
+                if (EmergencyEngagesHorn) SetHorn(true);
+            }
+
+            SetPenaltyApplicationDisplay(IsBrakeEmergency() && IsBrakeFullService());
         }
 
         public override void HandleEvent(TCSEvent evt, string message)
@@ -530,29 +570,9 @@ namespace ORTS
             }
         }
 
-        public override void SetEmergency()
+        public override void SetEmergency(bool emergency)
         {
-            SetPenaltyApplicationDisplay(true);
-            if (EmergencyStopMonitor != null && !EmergencyStopMonitor.AppliesEmergencyBrake)
-            {
-                if (IsBrakeFullService() || IsBrakeEmergency())
-                    return;
-                EngageFullBrake();
-            }
-            else
-            {
-                if (IsBrakeEmergency())
-                    return;
-                SetEmergencyBrake();
-            }
-            if (EmergencyCausesThrottleDown) SetThrottleController(0f);
-            if (EmergencyStopMonitor != null && EmergencyStopMonitor.EmergencyCutsPower) SetPantographsDown();
-            if (EmergencyEngagesHorn) SetHorn(true);
-        }
-
-        void EngageFullBrake()
-        {
-            SetFullBrake();
+            ExternalEmergency = emergency;
         }
 
         void UpdateVigilance()
@@ -567,12 +587,6 @@ namespace ORTS
 
             if (VigilanceEmergency)
             {
-                SetPenaltyApplicationDisplay(true);
-                if (VigilanceMonitor.AppliesEmergencyBrake)
-                    SetEmergency();
-                else if (VigilanceMonitor.AppliesFullBrake)
-                    EngageFullBrake();
-
                 if (!VigilancePenaltyTimer.Started)
                     VigilancePenaltyTimer.Start();
                 if (SpeedMpS() < 0.1f && VigilancePenaltyTimer.Triggered)
@@ -623,24 +637,22 @@ namespace ORTS
 
             OverspeedAlarm = OverspeedAlarmTimer.Triggered;
 
-            if (OverspeedAlarm && IsAlerterEnabled())
+            if (OverspeedAlarm && !OverspeedEmergency && IsAlerterEnabled())
             {
                 SetPenaltyApplicationDisplay(true);
-                if (OverspeedMonitor.AppliesEmergencyBrake)
-                    SetEmergency();
-                else if (OverspeedMonitor.AppliesFullBrake)
-                    EngageFullBrake();
+                OverspeedEmergency = true;
 
                 if (!OverspeedPenaltyTimer.Started)
                     OverspeedPenaltyTimer.Start();
-
-                if (SpeedMpS() < 0.1f && OverspeedPenaltyTimer.Triggered)
-                {
-                    OverspeedAlarmTimer.Stop();
-                    OverspeedPenaltyTimer.Stop();
-                }
-                return;
             }
+            
+            if (OverspeedEmergency && SpeedMpS() < 0.1f && OverspeedPenaltyTimer.Triggered)
+            {
+                OverspeedAlarmTimer.Stop();
+                OverspeedPenaltyTimer.Stop();
+                OverspeedEmergency = false;
+            }
+            
             if (OverspeedWarning)
             {
                 if (!OverspeedAlarmTimer.Started)
@@ -649,8 +661,6 @@ namespace ORTS
             else
             {
                 OverspeedAlarmTimer.Stop();
-                if (OverspeedPenaltyTimer.Triggered)
-                    OverspeedPenaltyTimer.Stop();
             }
         }
     }

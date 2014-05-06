@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-05-04 11:37:41+0100\n"
-"PO-Revision-Date: 2014-05-04 11:37:42+0100\n"
+"POT-Creation-Date: 2014-05-06 19:32:03+0200\n"
+"PO-Revision-Date: 2014-05-06 19:32:04+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,7 +11,7 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:2038
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:2039
 msgid "Switching Request Sent to the Server"
 msgstr ""
 
@@ -309,38 +309,38 @@ msgstr ""
 msgid "Passenger boarding completed. You may depart now."
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5193
+#: ../../RunActivity/Physics/Train.cs:5195
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5855
-#: ../../RunActivity/Physics/Train.cs:6928
+#: ../../RunActivity/Physics/Train.cs:5857
+#: ../../RunActivity/Physics/Train.cs:6930
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5863
+#: ../../RunActivity/Physics/Train.cs:5865
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:5924
+#: ../../RunActivity/Physics/Train.cs:5926
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:6030
-#: ../../RunActivity/Physics/Train.cs:7048
+#: ../../RunActivity/Physics/Train.cs:6032
+#: ../../RunActivity/Physics/Train.cs:7050
 msgid "No switch found"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7282
+#: ../../RunActivity/Physics/Train.cs:7280
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7291
+#: ../../RunActivity/Physics/Train.cs:7289
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../RunActivity/Physics/Train.cs:7304
+#: ../../RunActivity/Physics/Train.cs:7302
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
@@ -749,6 +749,7 @@ msgstr ""
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 #: ../../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "release"
 msgstr ""
 
@@ -1474,52 +1475,52 @@ msgstr ""
 msgid "Train Operations"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:491
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:490
 msgid "water"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:492
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:491
 msgid "coal"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:493
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:492
 msgid "diesel oil"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:494
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:493
 msgid "wood"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:604
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:603
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:612
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:611
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:618
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:623
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:631
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:630
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:638
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:637
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:613
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:612
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"

@@ -816,13 +816,13 @@ namespace ORTS
             EvaporationLBpS = inf.ReadSingle();
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
-            CutoffController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
-            Injector1Controller = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
-            Injector2Controller = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
-            BlowerController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
-            DamperController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
-            FireboxDoorController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
-            FiringRateController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
+            ControllerFactory.Restore(CutoffController, inf);
+            ControllerFactory.Restore(Injector1Controller, inf);
+            ControllerFactory.Restore(Injector2Controller, inf);
+            ControllerFactory.Restore(BlowerController, inf);
+            ControllerFactory.Restore(DamperController, inf);
+            ControllerFactory.Restore(FireboxDoorController, inf);
+            ControllerFactory.Restore(FiringRateController, inf);
             base.Restore(inf);
         }
 

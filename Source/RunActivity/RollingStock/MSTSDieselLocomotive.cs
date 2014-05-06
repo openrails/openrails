@@ -220,7 +220,7 @@ namespace ORTS
         {
             base.Restore(inf);
             DieselLevelL = inf.ReadSingle();
-            GearBoxController = (MSTSNotchController)ControllerFactory.Restore(Simulator, inf);
+            ControllerFactory.Restore(GearBoxController, inf);
             if (DieselEngines.Count == 0)
             {
                 DieselEngines = new DieselEngines(this);
@@ -251,19 +251,19 @@ namespace ORTS
 
             TrainBrakeController.Update(elapsedClockSeconds);
             if( TrainBrakeController.UpdateValue > 0.0 ) {
-                Simulator.Confirmer.Update( CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus() );
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
             }
             if( TrainBrakeController.UpdateValue < 0.0 ) {
-                Simulator.Confirmer.Update( CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus() );
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
             }
 
             if( EngineBrakeController != null ) {
                 EngineBrakeController.Update( elapsedClockSeconds );
                 if( EngineBrakeController.UpdateValue > 0.0 ) {
-                    Simulator.Confirmer.Update( CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus() );
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
                 }
                 if( EngineBrakeController.UpdateValue < 0.0 ) {
-                    Simulator.Confirmer.Update( CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus() );
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
                 }
             }
 

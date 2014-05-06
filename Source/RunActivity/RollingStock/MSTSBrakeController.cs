@@ -17,7 +17,7 @@
 
 using System;
 using System.IO;
-using MSTS.Parsers;
+using ORTS.Scripting.Api;
 
 namespace ORTS
 {
@@ -28,139 +28,128 @@ namespace ORTS
      * has specific methods to update brake status.
      * 
      */ 
-    public class MSTSBrakeController: MSTSNotchController, IBrakeController
+    public class MSTSBrakeController: BrakeController
     {
-        // brake controller values
-        private float MaxPressurePSI = 90;
-        private float ReleaseRatePSIpS = 5;
-        private float QuickReleaseRatePSIpS = 10;
-        private float ApplyRatePSIpS = 2;
-        private float EmergencyRatePSIpS = 10;
-        private float FullServReductionPSI = 26;
-        private float MinReductionPSI = 6;
+        MSTSNotchController NotchController;
 
-		public MSTSBrakeController(Simulator simulator)
+		public MSTSBrakeController()
         {
-			Simulator = simulator;
         }
 
-		public MSTSBrakeController(MSTSBrakeController controller) :
-            base(controller)  
+        public override void Initialize()
         {
-            MaxPressurePSI = controller.MaxPressurePSI;
-            ReleaseRatePSIpS = controller.ReleaseRatePSIpS;
-            QuickReleaseRatePSIpS = controller.QuickReleaseRatePSIpS;
-            ApplyRatePSIpS = controller.ApplyRatePSIpS;
-            EmergencyRatePSIpS = controller.EmergencyRatePSIpS;
-            FullServReductionPSI = controller.FullServReductionPSI;
-            MinReductionPSI = controller.MinReductionPSI;
-			Simulator = controller.Simulator;
+            NotchController = new MSTSNotchController(Notches());
+            NotchController.SetValue(CurrentValue());
+            NotchController.IntermediateValue = IntermediateValue();
+            NotchController.MinimumValue = MinimumValue();
+            NotchController.MaximumValue = MaximumValue();
+            NotchController.StepSize = StepSize();
         }
 
-		public MSTSBrakeController(Simulator simulator, BinaryReader inf) :
-            base(inf)               
+        public override float Update(float elapsedSeconds)
         {
-			Simulator = simulator;
-            this.RestoreData(inf);
+            float value = NotchController.Update(elapsedSeconds);
+            SetCurrentValue(value);
+            return value;
         }
 
-        public new IController Clone()
+        public override void UpdatePressure(ref float pressureBar, float elapsedClockSeconds, ref float epPressureBar)
         {
-            return new MSTSBrakeController(this);
-        }
-
-        public float GetFullServReductionPSI()
-        {
-            return FullServReductionPSI;
-        }
-
-        public float GetMaxPressurePSI()
-        {
-            return MaxPressurePSI;
-        }
-
-        public void UpdatePressure(ref float pressurePSI, float elapsedClockSeconds, ref float epPressurePSI)
-        {
-            MSTSNotch notch = this.GetCurrentNotch();
-            if (notch == null)
+            if (EmergencyBrakingPushButton() || TCSEmergencyBraking())
             {
-                pressurePSI = MaxPressurePSI - FullServReductionPSI * CurrentValue;
+                pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
+            }
+            else if (TCSFullServiceBraking())
+            {
+                if (pressureBar > MaxPressureBar() - FullServReductionBar())
+                    pressureBar -= ApplyRateBarpS() * elapsedClockSeconds;
+                else if (pressureBar < MaxPressureBar() - FullServReductionBar())
+                    pressureBar = MaxPressureBar() - FullServReductionBar();
             }
             else
-            {                
-                float x = GetNotchFraction();
-                switch (notch.Type)
+            {
+                MSTSNotch notch = NotchController.GetCurrentNotch();
+                if (notch == null)
                 {
-                    case MSTSNotchType.Release:
-                        pressurePSI += x * ReleaseRatePSIpS * elapsedClockSeconds;
-                        epPressurePSI -= x * ReleaseRatePSIpS * elapsedClockSeconds;
-                        break;
-                    case MSTSNotchType.FullQuickRelease:
-                        pressurePSI += x * QuickReleaseRatePSIpS * elapsedClockSeconds;
-                        epPressurePSI -= x * QuickReleaseRatePSIpS * elapsedClockSeconds;
-                        break;
-                    case MSTSNotchType.Running:
-                        if (notch.Smooth)
-                            x = .1f * (1 - x);
-                        pressurePSI += x * ReleaseRatePSIpS * elapsedClockSeconds;
-                        break;
-                    case MSTSNotchType.Apply:
-                    case MSTSNotchType.FullServ:
-                        pressurePSI -= x * ApplyRatePSIpS * elapsedClockSeconds;
-                        break;
-                    case MSTSNotchType.EPApply:
-                        pressurePSI += x * ReleaseRatePSIpS * elapsedClockSeconds;
-                        if (notch.Smooth)
-                            IncreasePressure(ref epPressurePSI, x * FullServReductionPSI, ApplyRatePSIpS, elapsedClockSeconds);
-                        else
-                            epPressurePSI += x * ApplyRatePSIpS * elapsedClockSeconds;
-                        break;
-                    case MSTSNotchType.GSelfLapH:
-                    case MSTSNotchType.Suppression:
-                    case MSTSNotchType.ContServ:
-                    case MSTSNotchType.GSelfLap:
-                        x = MaxPressurePSI - MinReductionPSI * (1 - x) - FullServReductionPSI * x;
-                        DecreasePressure(ref pressurePSI, x, ApplyRatePSIpS, elapsedClockSeconds);
-                        if (Simulator.Settings.GraduatedRelease)
-                            IncreasePressure(ref pressurePSI, x, ReleaseRatePSIpS, elapsedClockSeconds);
-                        break;
-                    case MSTSNotchType.Emergency:
-                        pressurePSI -= EmergencyRatePSIpS * elapsedClockSeconds;
-                        break;
-                    case MSTSNotchType.Dummy:
-                        x *= MaxPressurePSI - FullServReductionPSI;
-                        IncreasePressure(ref pressurePSI, x, ReleaseRatePSIpS, elapsedClockSeconds);
-                        DecreasePressure(ref pressurePSI, x, ApplyRatePSIpS, elapsedClockSeconds);
-                        break;
+                    pressureBar = MaxPressureBar() - FullServReductionBar() * CurrentValue();
                 }
-                if (pressurePSI > MaxPressurePSI)
-                    pressurePSI = MaxPressurePSI;
-                if (pressurePSI < 0)
-                    pressurePSI = 0;
-                if (epPressurePSI > MaxPressurePSI)
-                    epPressurePSI = MaxPressurePSI;
-                if (epPressurePSI < 0)
-                    epPressurePSI = 0;
+                else
+                {
+                    float x = NotchController.GetNotchFraction();
+                    switch (notch.Type)
+                    {
+                        case MSTSNotchType.Release:
+                            pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
+                            epPressureBar -= x * ReleaseRateBarpS() * elapsedClockSeconds;
+                            break;
+                        case MSTSNotchType.FullQuickRelease:
+                            pressureBar += x * QuickReleaseRateBarpS() * elapsedClockSeconds;
+                            epPressureBar -= x * QuickReleaseRateBarpS() * elapsedClockSeconds;
+                            break;
+                        case MSTSNotchType.Running:
+                            if (notch.Smooth)
+                                x = .1f * (1 - x);
+                            pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
+                            break;
+                        case MSTSNotchType.Apply:
+                        case MSTSNotchType.FullServ:
+                            pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
+                            break;
+                        case MSTSNotchType.EPApply:
+                            pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
+                            if (notch.Smooth)
+                                IncreasePressure(ref epPressureBar, x * FullServReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
+                            else
+                                epPressureBar += x * ApplyRateBarpS() * elapsedClockSeconds;
+                            break;
+                        case MSTSNotchType.GSelfLapH:
+                        case MSTSNotchType.Suppression:
+                        case MSTSNotchType.ContServ:
+                        case MSTSNotchType.GSelfLap:
+                            x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
+                            DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
+                            if (GraduatedRelease())
+                                IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
+                            break;
+                        case MSTSNotchType.Emergency:
+                            pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
+                            break;
+                        case MSTSNotchType.Dummy:
+                            x *= MaxPressureBar() - FullServReductionBar();
+                            IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
+                            DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
+                            break;
+                    }
+                }
             }
+
+            if (pressureBar > MaxPressureBar())
+                pressureBar = MaxPressureBar();
+            if (pressureBar < 0)
+                pressureBar = 0;
+            if (epPressureBar > MaxPressureBar())
+                epPressureBar = MaxPressureBar();
+            if (epPressureBar < 0)
+                epPressureBar = 0;
         }
 
-        public void UpdateEngineBrakePressure(ref float pressurePSI, float elapsedClockSeconds)
+        public override void UpdateEngineBrakePressure(ref float pressureBar, float elapsedClockSeconds)
         {
-            MSTSNotch notch = this.GetCurrentNotch();
+            MSTSNotch notch = NotchController.GetCurrentNotch();
             if (notch == null)
             {
-                pressurePSI = (MaxPressurePSI - FullServReductionPSI) * CurrentValue;
+                pressureBar = (MaxPressureBar() - FullServReductionBar()) * CurrentValue();
             }
             else
             {                
-                float x = GetNotchFraction();
+                float x = NotchController.GetNotchFraction();
                 switch (notch.Type)
                 {
                     case MSTSNotchType.Release:
-                        pressurePSI -= x * ReleaseRatePSIpS * elapsedClockSeconds;
+                        pressureBar -= x * ReleaseRateBarpS() * elapsedClockSeconds;
                         break;
                     case MSTSNotchType.Running:
-                        pressurePSI -= ReleaseRatePSIpS * elapsedClockSeconds;
+                        pressureBar -= ReleaseRateBarpS() * elapsedClockSeconds;
                         break;
 #if false
                     case MSTSNotchType.Apply:
@@ -169,63 +158,91 @@ namespace ORTS
                         break;
 #endif
                     case MSTSNotchType.Emergency:
-                        pressurePSI += EmergencyRatePSIpS * elapsedClockSeconds;
+                        pressureBar += EmergencyRateBarpS() * elapsedClockSeconds;
                         break;
                     case MSTSNotchType.Dummy:
-                        pressurePSI = (MaxPressurePSI - FullServReductionPSI) * CurrentValue;
+                        pressureBar = (MaxPressureBar() - FullServReductionBar()) * CurrentValue();
                         break;
                     default:
-                        x *= MaxPressurePSI - FullServReductionPSI;
-                        IncreasePressure(ref pressurePSI, x, ApplyRatePSIpS, elapsedClockSeconds);
-                        DecreasePressure(ref pressurePSI, x, ReleaseRatePSIpS, elapsedClockSeconds);
+                        x *= MaxPressureBar() - FullServReductionBar();
+                        IncreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
+                        DecreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                         break;
                 }
-                if (pressurePSI > MaxPressurePSI)
-                    pressurePSI = MaxPressurePSI;
-                if (pressurePSI < 0)
-                    pressurePSI = 0;
+                if (pressureBar > MaxPressureBar())
+                    pressureBar = MaxPressureBar();
+                if (pressureBar < 0)
+                    pressureBar = 0;
             }
-        }      
+        }
 
-        public void ParseBrakeValue(string lowercasetoken, STFReader stf)
+        public override void HandleEvent(BrakeControllerEvent evt)
         {
-            switch (lowercasetoken)
+            switch (evt)
             {
-                case "maxsystempressure": MaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-                case "maxreleaserate": ReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "maxquickreleaserate": QuickReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "maxapplicationrate": ApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "emergencyapplicationrate": EmergencyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "fullservicepressuredrop": FullServReductionPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-                case "minpressurereduction": MinReductionPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case BrakeControllerEvent.StartIncrease:
+                    NotchController.StartIncrease();
+                    break;
+
+                case BrakeControllerEvent.StopIncrease:
+                    NotchController.StopIncrease();
+                    break;
+
+                case BrakeControllerEvent.StartDecrease:
+                    NotchController.StartDecrease();
+                    break;
+
+                case BrakeControllerEvent.StopDecrease:
+                    NotchController.StopDecrease();
+                    break;
             }
         }
 
-        public bool GetIsEmergency()
+        public override void HandleEvent(BrakeControllerEvent evt, float? value)
         {
-            MSTSNotch notch = this.GetCurrentNotch();
+            switch (evt)
+            {
+                case BrakeControllerEvent.StartIncrease:
+                    NotchController.StartIncrease(value);
+                    break;
 
-            return notch != null && notch.Type == MSTSNotchType.Emergency;            
+                case BrakeControllerEvent.StartDecrease:
+                    NotchController.StartDecrease(value);
+                    break;
+
+                case BrakeControllerEvent.SetRDPercent:
+                    if (value != null)
+                    {
+                        float newValue = value ?? 0F;
+                        NotchController.SetRDPercent(newValue);
+                    }
+                    break;
+
+                case BrakeControllerEvent.SetCurrentValue:
+                    if (value != null)
+                    {
+                        float newValue = value ?? 0F;
+                        NotchController.SetValue(newValue);
+                    }
+                    break;
+            }
         }
 
-        public void SetEmergency()
+        public override bool IsValid()
         {
-            SetCurrentNotch(MSTSNotchType.Emergency);
-            Simulator.Confirmer.Confirm(CabControl.EmergencyBrake, CabSetting.On);
-        }        
-
-        public bool GetIsFullBrake()
-        {
-            MSTSNotch notch = this.GetCurrentNotch();
-
-            return notch != null && (notch.Type == MSTSNotchType.FullServ || notch.Type == MSTSNotchType.ContServ);
+            return NotchController.IsValid();
         }
 
-        public void SetFullBrake()
+        public override string GetStatus()
         {
-            SetCurrentNotch(MSTSNotchType.ContServ);
-            SetCurrentNotch(MSTSNotchType.FullServ);
-            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.On);
+            if (EmergencyBrakingPushButton())
+                return "Emergency Braking Push Button";
+            else if (TCSEmergencyBraking())
+                return "TCS Emergency Braking";
+            else if (TCSFullServiceBraking())
+                return "TCS Full Service Braking";
+            else
+                return NotchController.GetStatus();
         }
 
         static void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
@@ -246,37 +263,6 @@ namespace ORTS
                 if (pressurePSI < targetPSI)
                     pressurePSI = targetPSI;
             }
-        }
-
-        public override void Save(BinaryWriter outf)
-        {
-            outf.Write((int)ControllerTypes.MSTSBrakeController);
-
-            this.SaveData(outf);
-        }
-
-        protected override void SaveData(BinaryWriter outf)
-        {
-            base.SaveData(outf);
-            
-            outf.Write(MaxPressurePSI);
-            outf.Write(ReleaseRatePSIpS);
-            outf.Write(QuickReleaseRatePSIpS);
-            outf.Write(ApplyRatePSIpS);
-            outf.Write(EmergencyRatePSIpS);
-            outf.Write(FullServReductionPSI);
-            outf.Write(MinReductionPSI);
-        }
-
-        private void RestoreData(BinaryReader inf)
-        {
-            MaxPressurePSI = inf.ReadSingle();
-            ReleaseRatePSIpS = inf.ReadSingle();
-            QuickReleaseRatePSIpS = inf.ReadSingle();
-            ApplyRatePSIpS = inf.ReadSingle();
-            EmergencyRatePSIpS = inf.ReadSingle();
-            FullServReductionPSI = inf.ReadSingle();
-            MinReductionPSI = inf.ReadSingle();
         }
     }
 }

@@ -2669,8 +2669,8 @@ namespace ORTS
                 if (lead.TrainBrakeController != null)
                 {
                     lead.TrainBrakeController.UpdatePressure(ref BrakeLine1PressurePSIorInHg, 1000, ref BrakeLine4PressurePSI);
-                    maxPressurePSI = lead.TrainBrakeController.GetMaxPressurePSI();
-                    fullServPressurePSI = maxPressurePSI - lead.TrainBrakeController.GetFullServReductionPSI();
+                    maxPressurePSI = lead.TrainBrakeController.MaxPressurePSI;
+                    fullServPressurePSI = maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
                     BrakeLine1PressurePSIorInHg =
                             MathHelper.Max(BrakeLine1PressurePSIorInHg, fullServPressurePSI);
                 }
@@ -4951,6 +4951,8 @@ namespace ORTS
                 case (TRAIN_CONTROL.OUT_OF_CONTROL):
                     {
                         UpdateOutOfControl();
+                        if (LeadLocomotive != null)
+                            ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
                         break;
                     }
                 case (TRAIN_CONTROL.UNDEFINED):
@@ -7183,25 +7185,15 @@ namespace ORTS
 
         public void UpdateOutOfControl()
         {
-
-            // if train not yet at a stand, keep applying emergency break
-
-            if (SpeedMpS > Math.Abs(0.1f))
+            if (SpeedMpS < Math.Abs(0.1f))
             {
-                if (LeadLocomotive != null)
-                    ((MSTSLocomotive)LeadLocomotive).SetEmergency();
-            }
-
-            // train is at a stand : 
-            // clear all occupied blocks
-            // clear signal/speedpost list 
-            // clear DistanceTravelledActions 
-            // clear all previous occupied sections 
-            // set sections occupied on which train stands
-
-            else
-            {
-                // all the above is still TODO
+                // TODO
+                // train is at a stand : 
+                // clear all occupied blocks
+                // clear signal/speedpost list 
+                // clear DistanceTravelledActions 
+                // clear all previous occupied sections 
+                // set sections occupied on which train stands
             }
         }
 
@@ -7212,6 +7204,9 @@ namespace ORTS
 
         public virtual void SwitchToSignalControl(SignalObject thisSignal)
         {
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
+                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+
             // in auto mode, use forward direction only
 
             ControlMode = TRAIN_CONTROL.AUTO_SIGNAL;
@@ -7225,6 +7220,9 @@ namespace ORTS
 
         public virtual void SwitchToNodeControl(int thisSectionIndex)
         {
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
+                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+            
             // use direction forward only
             float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
             float clearedDistanceM = 0.0f;
@@ -7341,6 +7339,8 @@ namespace ORTS
 
         public void ToggleToManualMode()
         {
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
+                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
 
             // set track occupation (using present route)
             UpdateSectionStateManual();
@@ -7774,7 +7774,7 @@ namespace ORTS
             }
 
             if (LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency();
+                ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
         }
 
         //================================================================================================//
@@ -7897,7 +7897,7 @@ namespace ORTS
             }
 
             if (LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency();
+                ((MSTSLocomotive)LeadLocomotive).SetEmergency(true);
         }
 
         //================================================================================================//

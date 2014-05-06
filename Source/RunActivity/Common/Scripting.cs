@@ -18,14 +18,12 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
 using System.Reflection;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
-using ORTS.Processes;
 
 namespace ORTS.Scripting
 {
@@ -234,11 +232,11 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Set train brake controller to full service position.
         /// </summary>
-        public Action SetFullBrake;
+        public Action<bool> SetFullBrake;
         /// <summary>
         /// Set train brake controller to emergency position.
         /// </summary>
-        public Action SetEmergencyBrake;
+        public Action<bool> SetEmergencyBrake;
         /// <summary>
         /// Set throttle controller to position in range [0-1].
         /// </summary>
@@ -299,7 +297,6 @@ namespace ORTS.Scripting.Api
         /// Trigger Deactivate sound event
         /// </summary>
         public Action TriggerSoundSystemDeactivate;
-
         /// <summary>
         /// Set ALERTER_DISPLAY cabcontrol display's alarm state on or off.
         /// </summary>
@@ -362,7 +359,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Called by signalling code externally to stop the train in certain circumstances.
         /// </summary>
-        public abstract void SetEmergency();
+        public abstract void SetEmergency(bool emergency);
     }
 
     /// <summary>
@@ -421,6 +418,163 @@ namespace ORTS.Scripting.Api
         AlerterReset,
     }
 
+
+    #endregion
+
+    #region BrakeController
+
+    public abstract class BrakeController
+    {
+        /// <summary>
+        /// True if the Graduated Brake Release setting is set.
+        /// </summary>
+        public Func<bool> GraduatedRelease;
+        /// <summary>
+        /// True if the driver has asked for an emergency braking (push button)
+        /// </summary>
+        public Func<bool> EmergencyBrakingPushButton;
+        /// <summary>
+        /// True if the TCS has asked for an emergency braking
+        /// </summary>
+        public Func<bool> TCSEmergencyBraking;
+        /// <summary>
+        /// True if the TCS has asked for a full service braking
+        /// </summary>
+        public Func<bool> TCSFullServiceBraking;
+        /// <summary>
+        /// Maximum pressure in the brake pipes and the equalizing reservoir
+        /// </summary>
+        public Func<float> MaxPressureBar;
+        /// <summary>
+        /// Release rate of the equalizing reservoir
+        /// </summary>
+        public Func<float> ReleaseRateBarpS;
+        /// <summary>
+        /// Quick release rate of the equalizing reservoir
+        /// </summary>
+        public Func<float> QuickReleaseRateBarpS;
+        /// <summary>
+        /// Apply rate of the equalizing reservoir
+        /// </summary>
+        public Func<float> ApplyRateBarpS;
+        /// <summary>
+        /// Emergency rate of the equalizing reservoir
+        /// </summary>
+        public Func<float> EmergencyRateBarpS;
+        /// <summary>
+        /// Depressure needed in order to obtain the full service braking
+        /// </summary>
+        public Func<float> FullServReductionBar;
+        /// <summary>
+        /// Release rate of the equalizing reservoir
+        /// </summary>
+        public Func<float> MinReductionBar;
+        /// <summary>
+        /// Current value of the brake controller
+        /// </summary>
+        public Func<float> CurrentValue;
+        /// <summary>
+        /// Intermediate value of the brake controller (at initialization time)
+        /// </summary>
+        public Func<float> IntermediateValue;
+        /// <summary>
+        /// Minimum value of the brake controller
+        /// </summary>
+        public Func<float> MinimumValue;
+        /// <summary>
+        /// Maximum value of the brake controller
+        /// </summary>
+        public Func<float> MaximumValue;
+        /// <summary>
+        /// Step size of the brake controller
+        /// </summary>
+        public Func<float> StepSize;
+        /// <summary>
+        /// State of the brake pressure (1 = increasing, -1 = decreasing)
+        /// </summary>
+        public Func<float> UpdateValue;
+        /// <summary>
+        /// Start time of the pressure change command
+        /// </summary>
+        public Func<double> CommandStartTime;
+        /// <summary>
+        /// Gives the list of notches
+        /// </summary>
+        public Func<List<MSTSNotch>> Notches;
+
+        /// <summary>
+        /// Sets the current value of the brake controller lever
+        /// </summary>
+        public Action<float> SetCurrentValue;
+        /// <summary>
+        /// Sets the state of the brake pressure (1 = increasing, -1 = decreasing)
+        /// </summary>
+        public Action<float> SetUpdateValue;
+
+        /// <summary>
+        /// Called once at initialization time.
+        /// </summary>
+        public abstract void Initialize();
+        /// <summary>
+        /// Called regularly at every simulator update cycle.
+        /// </summary>
+        public abstract float Update(float elapsedSeconds);
+        /// <summary>
+        /// Called regularly at every simulator update cycle.
+        /// </summary>
+        public abstract void UpdatePressure(ref float pressureBar, float elapsedClockSeconds, ref float epPressureBar);
+        /// <summary>
+        /// Called regularly at every simulator update cycle.
+        /// </summary>
+        public abstract void UpdateEngineBrakePressure(ref float pressureBar, float elapsedClockSeconds);
+        /// <summary>
+        /// Called when an event happens (like the alerter button pressed)
+        /// </summary>
+        /// <param name="evt">The event happened</param>
+        public abstract void HandleEvent(BrakeControllerEvent evt);
+        /// <summary>
+        /// Called when an event happens (like the alerter button pressed)
+        /// </summary>
+        /// <param name="evt">The event happened</param>
+        /// <param name="value">The value assigned to the event (a target for example). May be null.</param>
+        public abstract void HandleEvent(BrakeControllerEvent evt, float? value);
+        /// <summary>
+        /// Called in order to check if the controller is valid
+        /// </summary>
+        public abstract bool IsValid();
+        /// <summary>
+        /// Called in order to get a status text for the debug overlay
+        /// </summary>
+        public abstract string GetStatus();
+    }
+
+    public enum BrakeControllerEvent
+    {
+        /// <summary>
+        /// Starts the pressure increase (may have a target value)
+        /// </summary>
+        StartIncrease,
+        /// <summary>
+        /// Stops the pressure increase
+        /// </summary>
+        StopIncrease,
+        /// <summary>
+        /// Starts the pressure decrease (may have a target value)
+        /// </summary>
+        StartDecrease,
+        /// <summary>
+        /// Stops the pressure decrease
+        /// </summary>
+        StopDecrease,
+        /// <summary>
+        /// Sets the value of the brake controller using a RailDriver peripheral (must have a value)
+        /// </summary>
+        SetRDPercent,
+        /// <summary>
+        /// Sets the current value of the brake controller (must have a value)
+        /// </summary>
+        SetCurrentValue
+    }
 
     #endregion
 }

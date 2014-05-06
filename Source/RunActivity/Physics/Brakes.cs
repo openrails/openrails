@@ -35,9 +35,9 @@ namespace ORTS
 
         public abstract void AISetPercent(float percent);
 
-        public abstract string GetStatus();
-        public abstract string GetFullStatus(BrakeSystem lastCarBrakeSystem);
-        public abstract string[] GetDebugStatus();
+        public abstract string GetStatus(bool isMetric);
+        public abstract string GetFullStatus(BrakeSystem lastCarBrakeSystem, bool isMetric);
+        public abstract string[] GetDebugStatus(bool isMetric);
         public abstract float GetCylPressurePSI();
         public abstract float GetVacResPressurePSI();
 
@@ -132,35 +132,39 @@ namespace ORTS
             EmergAuxVolumeRatio = thiscopy.EmergAuxVolumeRatio;
         }
 
-        public override string GetStatus()
+        public override string GetStatus(bool isMetric)
         {
             if (BrakeLine1PressurePSI < 0)
                 return "";
-            return string.Format("BP {0:F0}", BrakeLine1PressurePSI);
+            return string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, (isMetric ? PressureUnit.Bar : PressureUnit.PSI), true));
         }
 
-        public override string GetFullStatus(BrakeSystem lastCarBrakeSystem)
+        public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, bool isMetric)
         {
-            string s= string.Format(" EQ {0:F0} psi", Car.Train.BrakeLine1PressurePSIorInHg);
+            PressureUnit unit = (isMetric ? PressureUnit.Bar : PressureUnit.PSI);
+
+            string s= string.Format(" EQ {0}", FormatStrings.FormatPressure(Car.Train.BrakeLine1PressurePSIorInHg, PressureUnit.PSI, unit, true));
             if (BrakeLine1PressurePSI >= 0)
-                s+= string.Format(" BC {0:F0} BP {1:F0}", CylPressurePSI, BrakeLine1PressurePSI);
+                s += string.Format(" BC {0} BP {1}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false), FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
-                s += " EOT " + lastCarBrakeSystem.GetStatus();
+                s += " EOT " + lastCarBrakeSystem.GetStatus(isMetric);
             if (HandbrakePercent > 0)
                 s+= string.Format(" Handbrake {0:F0}%", HandbrakePercent);
             return s;
         }
 
-        public override string[] GetDebugStatus()
+        public override string[] GetDebugStatus(bool isMetric)
         {
+            PressureUnit unit = (isMetric ? PressureUnit.Bar : PressureUnit.PSI);
+
             if (BrakeLine1PressurePSI < 0)
                 return new string[0];
             var rv = new string[8];
             rv[0] = "1P";
-            rv[1] = string.Format("BC {0:F0}", CylPressurePSI);
-            rv[2] = string.Format("BP {0:F0}", BrakeLine1PressurePSI);
-            rv[3] = string.Format("AR {0:F0}", AuxResPressurePSI);
-            rv[4] = string.Format("ER {0:F0}", EmergResPressurePSI);
+            rv[1] = string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false));
+            rv[2] = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
+            rv[3] = string.Format("AR {0}", FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, false));
+            rv[4] = string.Format("ER {0}", FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, false));
             rv[5] = string.Format("State {0}", TripleValveState);
             rv[6] = string.Empty; // Spacer because the state above needs 2 columns.
             rv[7] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
@@ -394,7 +398,7 @@ namespace ORTS
             else
             {   // approximate pressure gradiant in line1
                 float serviceTimeFactor = lead.BrakeServiceTimeFactorS;
-                if (lead.TrainBrakeController != null && lead.TrainBrakeController.GetIsEmergency())
+                if (lead.TrainBrakeController != null && lead.TrainBrakeController.EmergencyBraking)
                     serviceTimeFactor = lead.BrakeEmergencyTimeFactorS;
                 int nSteps = (int)(elapsedClockSeconds * 2 / lead.BrakePipeTimeFactorS + 1);
                 float dt = elapsedClockSeconds / nSteps;
@@ -634,29 +638,19 @@ namespace ORTS
             //Car.FrictionForceN += f;
         }
 
-        public override string GetFullStatus(BrakeSystem lastCarBrakeSystem)
+        public override string[] GetDebugStatus(bool isMetric)
         {
-            string s = string.Format(" EQ {0:F0} psi", Car.Train.BrakeLine1PressurePSIorInHg);
-            if (BrakeLine1PressurePSI >= 0)
-                s += string.Format(" BC {0:F0} BP {1:F0}", CylPressurePSI, BrakeLine1PressurePSI);
-            if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
-                s += " EOT " + lastCarBrakeSystem.GetStatus();
-            if (HandbrakePercent > 0)
-                s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
-            return s;
-        }
+            PressureUnit unit = (isMetric ? PressureUnit.Bar : PressureUnit.PSI);
 
-        public override string[] GetDebugStatus()
-        {
             if (BrakeLine1PressurePSI < 0)
                 return new string[0];
             var rv = new string[9];
             rv[0] = "2P";
-            rv[1] = string.Format("BC {0:F0}", CylPressurePSI);
-            rv[2] = string.Format("BP {0:F0}", BrakeLine1PressurePSI);
-            rv[3] = string.Format("AR {0:F0}", AuxResPressurePSI);
-            rv[4] = string.Format("ER {0:F0}", EmergResPressurePSI);
-            rv[5] = string.Format("MRP {0:F0}", BrakeLine2PressurePSI);
+            rv[1] = string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false));
+            rv[2] = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
+            rv[3] = string.Format("AR {0}", FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, false));
+            rv[4] = string.Format("ER {0}", FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, false));
+            rv[5] = string.Format("MRP {0}", FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, unit, false));
             rv[6] = string.Format("State {0}", TripleValveState);
             rv[7] = string.Empty; // Spacer because the state above needs 2 columns.
             rv[8] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
@@ -727,25 +721,27 @@ namespace ORTS
             //Car.FrictionForceN += f;
         }
 
-        public override string GetFullStatus(BrakeSystem lastCarBrakeSystem)
+        public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, bool isMetric)
         {
-            string s = string.Format(" BC {0:F0} psi", CylPressurePSI);
+            string s = string.Format(" BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, (isMetric ? PressureUnit.Bar : PressureUnit.PSI), true));
             if (HandbrakePercent > 0)
                 s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
             return s;
         }
 
-        public override string[] GetDebugStatus()
+        public override string[] GetDebugStatus(bool isMetric)
         {
+            PressureUnit unit = (isMetric ? PressureUnit.Bar : PressureUnit.PSI);
+
             if (BrakeLine1PressurePSI < 0)
                 return new string[0];
             var rv = new string[9];
             rv[0] = "EP";
-            rv[1] = string.Format("BC {0:F0}", CylPressurePSI);
-            rv[2] = string.Format("MRP {0:F0}", BrakeLine2PressurePSI);
-            rv[3] = string.Format("AR {0:F0}", AuxResPressurePSI);
-            rv[4] = string.Format("ER {0:F0}", EmergResPressurePSI);
-            rv[5] = string.Format("BP {0:F0}", BrakeLine1PressurePSI);
+            rv[1] = string.Format("BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, unit, false));
+            rv[2] = string.Format("MRP {0}", FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, unit, false));
+            rv[3] = string.Format("AR {0}", FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, unit, false));
+            rv[4] = string.Format("ER {0}", FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, unit, false));
+            rv[5] = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, unit, false));
             rv[6] = string.Format("State {0}", TripleValveState);
             rv[7] = string.Empty; // Spacer because the state above needs 2 columns.
             rv[8] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
@@ -838,32 +834,32 @@ namespace ORTS
             return p < CylPressurePSIA ? p : CylPressurePSIA;
         }
 
-        public override string GetStatus()
+        public override string GetStatus(bool isMetric)
         {
             if (BrakeLine1PressurePSI < 0)
                 return "";
-            return string.Format(" BP {0:F0}", P2V(BrakeLine1PressurePSI));
+            return string.Format(" BP {0}", FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false));
         }
 
-        public override string GetFullStatus(BrakeSystem lastCarBrakeSystem)
+        public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, bool isMetric)
         {
-            string s = string.Format(" V {0:F0} inHg", Car.Train.BrakeLine1PressurePSIorInHg);
+            string s = string.Format(" V {0}", FormatStrings.FormatPressure(Car.Train.BrakeLine1PressurePSIorInHg, PressureUnit.InHg, PressureUnit.InHg, true));
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
-                s += " EOT " + lastCarBrakeSystem.GetStatus();
+                s += " EOT " + lastCarBrakeSystem.GetStatus(isMetric);
             if (HandbrakePercent > 0)
                 s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
             return s;
         }
 
-        public override string[] GetDebugStatus()
+        public override string[] GetDebugStatus(bool isMetric)
         {
             if (BrakeLine1PressurePSI < 0)
                 return new string[0];
             var rv = new string[6];
             rv[0] = "V";
-            rv[1] = string.Format("BC {0:F0}", P2V(CylPressurePSIA));
-            rv[2] = string.Format("VR {0:F0}", P2V(VacResPressureAdjPSIA()));
-            rv[3] = string.Format("BP {0:F0}", P2V(BrakeLine1PressurePSI));
+            rv[1] = string.Format("BC {0}", FormatStrings.FormatPressure(P2V(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, false));
+            rv[2] = string.Format("VR {0}", FormatStrings.FormatPressure(P2V(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, false));
+            rv[3] = string.Format("BP {0}", FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false));
             rv[4] = string.Empty; // Spacer because the state above needs 2 columns.
             rv[5] = HandbrakePercent > 0 ? string.Format("Handbrake {0:F0}%", HandbrakePercent) : string.Empty;
             return rv;

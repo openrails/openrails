@@ -310,8 +310,7 @@ namespace ORTS.Viewer3D.RollingStock
             if (UserInput.IsPressed(UserCommands.ControlRetainersOn)) new RetainersCommand(Viewer.Log, true);
             if (UserInput.IsPressed(UserCommands.ControlBrakeHoseConnect)) new BrakeHoseConnectCommand(Viewer.Log, true);
             if (UserInput.IsPressed(UserCommands.ControlBrakeHoseDisconnect)) new BrakeHoseConnectCommand(Viewer.Log, false);
-            if (UserInput.IsPressed(UserCommands.ControlEmergency)) new EmergencyBrakesCommand(Viewer.Log, true);
-            if (UserInput.IsReleased(UserCommands.ControlEmergency)) new EmergencyBrakesCommand(Viewer.Log, false);
+            if (UserInput.IsPressed(UserCommands.ControlEmergency)) new EmergencyBrakesCommand(Viewer.Log);
 
             // <CJComment> Some inputs calls their method directly, other via a SignalEvent. 
             // Probably because a signal can then be handled more than once, 
@@ -376,9 +375,9 @@ namespace ORTS.Viewer3D.RollingStock
                     else
                         Locomotive.SetDirection(Direction.N);
                     if (UserInput.RDState.Emergency)
-                    {
-                        Locomotive.SetEmergency();
-                    }
+                        Locomotive.SetEmergency(true);
+                    else
+                        Locomotive.SetEmergency(false);
                     if (UserInput.RDState.Wipers == 1 && Locomotive.Wiper)
                         Locomotive.SignalEvent(Event.WiperOff);
                     if (UserInput.RDState.Wipers != 1 && !Locomotive.Wiper)

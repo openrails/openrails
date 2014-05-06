@@ -23,7 +23,7 @@ namespace ORTS
     public enum ControllerTypes
     {        
         MSTSNotchController = 1,        
-        MSTSBrakeController
+        BrakeController
     }
 
     public class ControllerFactory
@@ -36,21 +36,23 @@ namespace ORTS
                 controller.Save(outf);
         }
 
-		public static IController Restore(Simulator simulator, BinaryReader inf)
+		public static void Restore(IController controller, BinaryReader inf)
         {
             if (!inf.ReadBoolean())
-                return null;
+                return;
 
             switch ((ControllerTypes)inf.ReadInt32())
             {                
                 case ControllerTypes.MSTSNotchController:
-                    return new MSTSNotchController(inf);                
+                    ((MSTSNotchController)controller).Restore(inf);
+                    break;
 
-                case ControllerTypes.MSTSBrakeController:
-                    return new MSTSBrakeController(simulator, inf);
+                case ControllerTypes.BrakeController:
+                    ((ScriptedBrakeController)controller).Restore(inf);
+                    break;
 
                 default:
-					throw new InvalidDataException("Invalid controller type");
+                    throw new InvalidDataException("Invalid controller type");
             }
         }
     }

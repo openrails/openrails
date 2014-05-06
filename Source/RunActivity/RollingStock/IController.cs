@@ -38,10 +38,18 @@ namespace ORTS
         void StartIncrease();
         void StopIncrease();
         void StartDecrease();
-        void StopDecrease();        
+        void StopDecrease();
+        void StartIncrease(float? target);
+        void StartDecrease(float? target);
+        float SetRDPercent(float percent);
+
+        float UpdateValue { get; set; }
+        float CurrentValue { get; set; }
+        double CommandStartTime { get; set; }
+        void SetValue(float v);
 
         //Loads the controller from a stream
-        void Parse(STFReader stf);        
+        void Parse(STFReader stf);
 
         //returns true if this controller was loaded and can be used
         //Some notched controllers will have stepSize == 0, those are invalid
