@@ -8603,7 +8603,7 @@ namespace ORTS
             // reserve partial sections if signal clears on occupied track or permission is granted
 
                 else if ((signalState > MstsSignalAspect.STOP || hasPermission == Permission.Granted) &&
-                internalBlockState != InternalBlockstate.Reserved)
+                         (internalBlockState != InternalBlockstate.Reserved && internalBlockState > InternalBlockstate.ReservedOther))
                 {
 
                     // reserve upto available section

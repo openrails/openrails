@@ -1635,7 +1635,7 @@ namespace ORTS
                 Stable = false;
                 RunRound = false;
 
-                if (formedTrainCommands.CommandQualifiers != null)
+                if (formedTrainCommands.CommandQualifiers != null && formType == Train.FormCommand.TerminationFormed)
                 {
                     foreach (TTTrainCommands.TTTrainComQualifiers formedTrainQualifiers in formedTrainCommands.CommandQualifiers)
                     {

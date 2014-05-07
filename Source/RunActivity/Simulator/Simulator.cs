@@ -269,7 +269,7 @@ namespace ORTS
             List<AITrain> allTrains = TTinfo.ProcessTimetable(arguments, ref playerTrain);
             Trains[0] = playerTrain;
 
-            AI = new AI(this, allTrains, ClockTime, playerTrain.FormedOf);
+            AI = new AI(this, allTrains, ClockTime, playerTrain.FormedOf, playerTrain);
 
             Season = (SeasonType)int.Parse(arguments[6]);
             Weather = (WeatherType)int.Parse(arguments[7]);
