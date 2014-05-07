@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2014-05-04 11:37:34+0100\n"
-"PO-Revision-Date: 2014-05-04 21:21+0100\n"
+"POT-Creation-Date: 2014-05-07 19:43:04+0200\n"
+"PO-Revision-Date: 2014-05-07 21:42+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) "
 "<strawberryfield@trainsimhobby.com>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -217,6 +217,14 @@ msgstr ""
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed but is optional.\n"
 msgstr "Microsoft Train Simulator non sembra installato, ma è opzionale.\n"
+
+#: ../../Menu/MainForm.cs:564
+msgid ""
+"Click on 'Add...' to point Open Rails at a folder containing folders ROUTES, "
+"TRAINS etc.."
+msgstr ""
+"Clicca su 'Aggiungi' per collegare Open Rails ad una cartella che contenga "
+"le sottocartelle ROUTES, TRAINS ecc."
 
 #: ../../Menu/MainForm.cs:830
 msgid "Activity Briefing"
