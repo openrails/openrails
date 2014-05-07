@@ -50,6 +50,7 @@ namespace ORTS
         {
             float value = NotchController.Update(elapsedSeconds);
             SetCurrentValue(value);
+            SetUpdateValue(NotchController.UpdateValue);
             return value;
         }
 
