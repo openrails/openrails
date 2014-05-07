@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2014-04-07 19:32:21+0200\n"
-"PO-Revision-Date: 2014-04-07 20:55+0100\n"
+"POT-Creation-Date: 2014-05-07 19:43:04+0200\n"
+"PO-Revision-Date: 2014-05-07 19:47+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.6.5\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Menu/FolderForm.Designer.cs:56 ../../Menu/Options.Designer.cs:156
@@ -214,34 +214,40 @@ msgstr ""
 
 #: ../../Menu/MainForm.cs:563
 msgid ""
-"Microsoft Train Simulator doesn't appear to be installed.\n"
-"Click on 'Add...' to point Open Rails at your Microsoft Train Simulator "
-"folder."
+"Microsoft Train Simulator doesn't appear to be installed but is optional.\n"
 msgstr ""
-"Úgy tűnik, a Microsoft Train Simulator nincs telepítve.\n"
-"Kattints a „Hozzáadás\" gombra az MSTS telepítési könyvtárának megadásához."
+"Úgy tűnik, a Microsoft Train Simulator nincs telepítve, de ez nem is "
+"kötelező\n"
 
-#: ../../Menu/MainForm.cs:829
+#: ../../Menu/MainForm.cs:564
+msgid ""
+"Click on 'Add...' to point Open Rails at a folder containing folders ROUTES, "
+"TRAINS etc.."
+msgstr ""
+"Kattints a \"Hozzáadás...\"-ra a ROUTES, TRAINS, stb. könyvtárak helyének "
+"beállításához."
+
+#: ../../Menu/MainForm.cs:830
 msgid "Activity Briefing"
 msgstr "Menetokmányok:"
 
-#: ../../Menu/MainForm.cs:836 ../../Menu/MainForm.Designer.cs:430
+#: ../../Menu/MainForm.cs:837 ../../Menu/MainForm.Designer.cs:430
 msgid "Timetable"
 msgstr "Menetrend"
 
-#: ../../Menu/MainForm.cs:840
+#: ../../Menu/MainForm.cs:841
 msgid "Player Timetable"
 msgstr "Játékos menetrendje"
 
-#: ../../Menu/MainForm.cs:844
+#: ../../Menu/MainForm.cs:845
 msgid "Player Train"
 msgstr "Játékos vonata"
 
-#: ../../Menu/MainForm.cs:847
+#: ../../Menu/MainForm.cs:848
 msgid "Consist : "
 msgstr "Szerelvény:"
 
-#: ../../Menu/MainForm.cs:855
+#: ../../Menu/MainForm.cs:856
 msgid "Path : "
 msgstr "Útvonal:"
 
@@ -277,17 +283,17 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:820
+#: ../../Menu/MainForm.cs:821
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Pálya: {0}"
 
-#: ../../Menu/MainForm.cs:825 ../../Menu/MainForm.cs:850
+#: ../../Menu/MainForm.cs:826 ../../Menu/MainForm.cs:851
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Jármű: {0}"
 
-#: ../../Menu/MainForm.cs:828
+#: ../../Menu/MainForm.cs:829
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "Szolgálat: {0}"
@@ -823,11 +829,33 @@ msgstr ""
 "Billentyűhozzárendelési lista létrehozása.\n"
 "A kimeneti fájl az asztalra kerül mentésre."
 
-#: ../../Menu/ResumeForm.cs:137
+#: ../../Menu/ResumeForm.cs:138
 msgid "Explore Route"
 msgstr "Vonalbejárás"
 
-#: ../../Menu/ResumeForm.cs:194
+#: ../../Menu/ResumeForm.cs:207
+msgid ""
+"To prevent crashes and unexpected behaviour, Open Rails invalidates games "
+"saved from older versions if they fail to restore.\n"
+msgstr ""
+"Az összeomlások és a váratlan működés elkerülése érdekében az Open Rails "
+"érvényteleníti a régi verziójú mentett állásokat, ha azok nem betölthetők.\n"
+
+#: ../../Menu/ResumeForm.cs:222
+msgid ""
+"Please do not report any problems that may result.\n"
+"\n"
+"Continue at your own risk?"
+msgstr ""
+"Ne jelentsd majd az esetlegesen itt felmerülő problémát.\n"
+"\n"
+"Folytatod saját felelősségre?"
+
+#: ../../Menu/ResumeForm.cs:382
+msgid "Delete of invalid saves"
+msgstr "Érvénytelen mentések törlése"
+
+#: ../../Menu/ResumeForm.cs:195
 #, csharp-format
 msgid ""
 "Warning: Save {0} found from a route with an unexpected name:\n"
@@ -838,56 +866,70 @@ msgstr ""
 "{1}.\n"
 "\n"
 
-#: ../../Menu/ResumeForm.cs:206
+#: ../../Menu/ResumeForm.cs:209
+#, csharp-format
+msgid "{0} of {1} saves for this route are no longer valid."
+msgstr "{1} mentésből {0} már érvénytelen ehhez a pályához."
+
+#: ../../Menu/ResumeForm.cs:219
 #, csharp-format
 msgid ""
-"To prevent crashes and unexpected behavior, new versions of Open Rails "
-"invalidate old saved games. {0} of {1} saves are no longer valid."
+"This save was made by an older version {0} of Open Rails and\n"
+"may be incompatible with the current version {1}.\n"
 msgstr ""
-"Az összeomlások és a váratlan működés elkerülése érdekében az Open Rails új "
-"verziói érvénytelenítik a régi mentett állásokat. {0}/{1} mentés érvénytelen."
+"Ez a mentés egy régebbi {0} verziójú OpenRails-zel készült,\n"
+"és már inkompatibilis lehet a jelenlegi {1} verzióval.\n"
 
-#: ../../Menu/ResumeForm.Designer.cs:175
+#: ../../Menu/ResumeForm.cs:382
+#, csharp-format
+msgid ""
+"{0} invalid saves deleted\n"
+"{1} saves remain"
+msgstr ""
+"{0} érvénytelen mentés törölve\n"
+"{1} mentés maradt"
+
+#: ../../Menu/ResumeForm.Designer.cs:176
 msgid "Resume"
 msgstr "Folytatás"
 
-#: ../../Menu/ResumeForm.Designer.cs:186
+#: ../../Menu/ResumeForm.Designer.cs:187
 msgid "Delete"
 msgstr "Törlés"
 
-#: ../../Menu/ResumeForm.Designer.cs:198
+#: ../../Menu/ResumeForm.Designer.cs:199
 msgid "Undelete"
 msgstr "Visszaállítás"
 
-#: ../../Menu/ResumeForm.Designer.cs:220
-msgid "Delete all invalid saves"
-msgstr "Érvénytelen mentések törlése"
+#: ../../Menu/ResumeForm.Designer.cs:221
+msgid "Delete all invalid saves in Open Rails"
+msgstr "Minden érvénytelen mentés törlése az OpenRailsből"
 
-#: ../../Menu/ResumeForm.Designer.cs:231
+#: ../../Menu/ResumeForm.Designer.cs:232
 msgid "Import/ export"
 msgstr "Importálás / Exportálás"
 
-#: ../../Menu/ResumeForm.Designer.cs:247
+#: ../../Menu/ResumeForm.Designer.cs:248
 msgid "Invalid saves"
 msgstr "Érvénytelen mentések"
 
-#: ../../Menu/ResumeForm.Designer.cs:291
-msgid "Replay from start"
-msgstr "Visszajátszás az elejétől"
-
-#: ../../Menu/ResumeForm.Designer.cs:314
+#: ../../Menu/ResumeForm.Designer.cs:305
 msgid "Replay from previous save"
 msgstr "Visszajátszás utolsó mentéstől"
 
-#: ../../Menu/ResumeForm.Designer.cs:327
+#: ../../Menu/ResumeForm.Designer.cs:315
+msgid "Replay from start"
+msgstr "Visszajátszás az elejétől"
+
+#: ../../Menu/ResumeForm.Designer.cs:328
 msgid "Pause replay at end"
 msgstr "Visszajátszás végén szünet"
 
-#: ../../Menu/ResumeForm.Designer.cs:359
+#: ../../Menu/ResumeForm.Designer.cs:340
 msgid "Pause seconds before end:"
 msgstr "Szünet hossza a befejezés előtt [s]:"
 
-#: ../../Menu/ResumeForm.Designer.cs:377
+#: ../../Menu/ResumeForm.Designer.cs:378
 msgid "Saved Games"
 msgstr "Mentett játékok"
 
@@ -919,11 +961,11 @@ msgstr "Mező"
 msgid "Valid"
 msgstr "Érvényesség"
 
-#: ../../Menu/ResumeForm.Designer.cs:187
+#: ../../Menu/ResumeForm.Designer.cs:188
 msgid "Deletes the currently selected save or saves."
 msgstr "A kiválasztott mentések törlése."
 
-#: ../../Menu/ResumeForm.Designer.cs:199 ../../Menu/ResumeForm.Designer.cs:232
+#: ../../Menu/ResumeForm.Designer.cs:200 ../../Menu/ResumeForm.Designer.cs:233
 msgid "Restores all saves deleted in this session."
 msgstr "Az ebben a játékban törölt mentések visszaállítása"
 

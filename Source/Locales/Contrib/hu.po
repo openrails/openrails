@@ -1,35 +1,35 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2014-04-13 18:00:34+0200\n"
-"PO-Revision-Date: 2014-04-13 19:54+0100\n"
+"POT-Creation-Date: 2014-05-04 11:37:33+0100\n"
+"PO-Revision-Date: 2014-05-07 19:02+0100\n"
 "Last-Translator: Péter Gulyás <pzgulyas@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.6.5\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.cs:59
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:61
 msgid "Loading..."
 msgstr "Betöltés..."
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:69
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:70
 msgid "Open Rails Content Manager"
 msgstr "Open Rails Tartalomkezelő"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:553
+#: ../../Contrib/TrackViewer/TrackViewer.cs:560
 msgid "The path you are working on has un-saved changes.\n"
 msgstr ""
 "A változtatás alatt álló útvonal el nem mentett változtatásokat tartalmaz.\n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:555
+#: ../../Contrib/TrackViewer/TrackViewer.cs:562
 msgid "Do you really want to Quit?"
 msgstr "Tényleg ki szeretnél lépni?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:592
+#: ../../Contrib/TrackViewer/TrackViewer.cs:599
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -37,35 +37,35 @@ msgstr ""
 "Érvénytelen telepítési könyvtár.\n"
 "A telepítési könyvtárnak tartalmaznia kell ROUTES, GLOBAL, stb. könyvtárakat"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:658
+#: ../../Contrib/TrackViewer/TrackViewer.cs:665
 msgid "Loading route..."
 msgstr "Pálya betöltése..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:678
+#: ../../Contrib/TrackViewer/TrackViewer.cs:685
 msgid "Route cannot be loaded. Sorry"
 msgstr "A pályát nem lehet betölteni. Elnézést"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:736
+#: ../../Contrib/TrackViewer/TrackViewer.cs:743
 msgid "Loading .pat file ..."
 msgstr ".pat fájl betöltése..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:739
+#: ../../Contrib/TrackViewer/TrackViewer.cs:746
 msgid "Processing .pat file ..."
 msgstr ".pat fájl feldolgozása..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:112
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:120
 msgid "Loading trackfile .trk ..."
 msgstr "Vágányfájl (.trk) betöltése"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:116
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:124
 msgid "Loading track database .tdb ..."
 msgstr "Vágányadatbázis (.tdb) betöltése"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:121
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:129
 msgid "Loading tsection.dat ..."
 msgstr "tsection.dat betöltése..."
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:132
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:140
 msgid "Finding the angles to draw signals ..."
 msgstr "Szögek meghatározása a jelzők rajzolásához"
 
@@ -85,80 +85,80 @@ msgstr "Kezdőpont eltávolítása"
 msgid "Change start direction"
 msgstr "Kezdőpont megváltoztatása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:522
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:521
 msgid "Place end point"
 msgstr "Végpont elhelyezése"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:559
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:558
 msgid "Remove end point"
 msgstr "Végpont eltávolítása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:585
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:584
 msgid "Place reversal point"
 msgstr "Fordítópont elhelyezése"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:620
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:619
 msgid "Remove reversal point"
 msgstr "Fordítópont eltávolítása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:681
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:680
 msgid "Place wait point"
 msgstr "Várakozási pont lehelyezése"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:708
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:707
 msgid "Edit wait point"
 msgstr "Várakozási pont szerkesztése"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:732
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:731
 msgid "Remove wait point"
 msgstr "Várakozási pont eltávolítása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:972
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1734
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:971
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1851
 msgid "Take other exit"
 msgstr "Másik kijárat használata"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1015
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1014
 msgid "Add passing path"
 msgstr "Áthaladási útvonal hozzáadása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1051
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1050
 msgid "Start passing path"
 msgstr "Áthaladási útvonal indítása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1109
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1108
 msgid "Remove passing path"
 msgstr "Áthaladási útvonal eltávolítása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1150
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1149
 msgid "Remove broken point"
 msgstr "Hibás pont eltávolítása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1185
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1184
 msgid "Remove everything after this point"
 msgstr "E pont után minden eltávolítása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1210
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1209
 msgid "Cut path here and store its tail"
 msgstr "Útvonal megszakítása itt, majd a végének eltárolása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1475
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1592
 msgid "Auto-fix broken nodes"
 msgstr "Hibás csomópontok automatikus javítása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1583
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1700
 msgid "Reconnect to tail"
 msgstr "Csatlakoztatása a végéhez"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1641
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1758
 msgid "Reconnect passing path"
 msgstr "Áthaladási útvonal újracsatlakoztatása"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2084
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2201
 msgid "Draw path until here"
 msgstr "Útvonal rajzolása idáig"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2124
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:2241
 msgid "Draw path until next broken point"
 msgstr "Útvonal rajzolása a következő hibás pontig"
 
@@ -166,11 +166,11 @@ msgstr "Útvonal rajzolása a következő hibás pontig"
 msgid "Saving broken paths is not supported"
 msgstr "Hibás útvonalak elmentése nem támogatott"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:366
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:322
 msgid "Closest junction is too far away"
 msgstr "A legközelebbi váltó túl messze van"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:642
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:647
 msgid "Not able to place node on track"
 msgstr "Nem lehetett csomópontot elhelyezni a vágányon"
 
@@ -359,163 +359,171 @@ msgstr "Váltók"
 msgid "Show end nodes"
 msgstr "Végpontok"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:52
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:51
+msgid "Show crossovers"
+msgstr "Útátjárók megjelenítése"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
 msgid "Sidings"
 msgstr "Mellékvágányok"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
 msgid "Show siding markers (F9)"
 msgstr "Mellékvágányjelölők"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
 msgid "Show siding names (shift-F9)"
 msgstr "Mellékvágánynevek"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:56
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
 msgid "Platforms"
 msgstr "Peronok"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
 msgid "Show platform markers (F8)"
 msgstr "Peronjelölők"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:59
 msgid "Show platform names (shift-F8)"
 msgstr "Peronnevek"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
 msgid "Interactives"
 msgstr "Interaktív elemek"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
 msgid "Show signals (F7)"
 msgstr "Jelzők"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
 msgid "Show level crossings"
 msgstr "Útátjárók"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
 msgid "Show hazards"
 msgstr "Veszélyelemek"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
 msgid "Show fuel/pickups"
 msgstr "Üzemanyag-felvételi helyek"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
 msgid "Show sound regions"
 msgstr "Hangtartományok"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:67
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
 msgid "Posts"
 msgstr "Jelek/kitűzések"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
 msgid "Show speed limits (F5)"
 msgstr "Lassújelek"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
 msgid "Show mileposts (shift F5)"
 msgstr "Mérföldkövek"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
 msgid "Paths"
 msgstr "Útvonalak"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:72
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
 msgid "Show path (F11)"
 msgstr "Útvonal"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:74
 msgid "Show raw path from .pat file (shift F11)"
 msgstr "Nyers útvonal a .pat fájlból"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:75
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
 msgid "Roads"
 msgstr "Utak"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
 msgid "Draw roads"
 msgstr "Utak rajzolása"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
 msgid "Show car spawners"
 msgstr "Autótermés"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:79
 msgid "Show road crossings"
 msgstr "Útátjárók"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:81
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
 msgid "Statusbar"
 msgstr "Állapotsor"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
 msgid "Show vector section info"
 msgstr "Vektorszakasz-információ"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:85
 msgid "Show PAT file info"
 msgstr "PAT fájl információ"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
 msgid "Show Path info"
 msgstr "Útvonal-információ"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:89
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
 msgid "Preferences"
 msgstr "Beállítások"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
 msgid "Select background color"
 msgstr "Háttérszín kiválasztása"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
+msgid "Zooming is centered on mouse"
+msgstr "Nagyítás egérkurzorhoz"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
 msgid "Path-Editor"
 msgstr "Útvonalszerkesztő"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:93
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
 msgid "==Supporting MSTS paths only=="
 msgstr "==Csak az MSTS útvonalakat támogatja=="
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:94
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
 msgid "Select path"
 msgstr "Útvonal kiválasztása"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
 msgid "Path Editor is under construction!"
 msgstr "Az útvonalszerkesztő készítés alatt!"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
 msgid "Save path"
 msgstr "Útvonal mentése"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:98
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
 msgid "Enable editing"
 msgstr "Szerkesztés engedélyezése"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:102
 msgid "New path"
 msgstr "Új útvonal"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
 msgid "Edit path metadata"
 msgstr "Útvonal metaadatainak szerkesztése"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
 msgid "Known limitations"
 msgstr "Ismert korlátok"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:106
 msgid "Help"
 msgstr "Súgó"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
 msgid "Shortcuts"
 msgstr "Billentyűparancsok"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:108
 msgid "About"
 msgstr "Névjegy"
 

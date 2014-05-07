@@ -560,8 +560,8 @@ namespace ORTS
             {
                 Folders = folders;
                 if (Folders.Count == 0)
-                    MessageBox.Show(catalog.GetString("Microsoft Train Simulator doesn't appear to be installed but is optional.\n"
-                        + "Click on 'Add...' to point Open Rails at a folder containing folders ROUTES, TRAINS etc.."), Application.ProductName);
+                    MessageBox.Show(catalog.GetString("Microsoft Train Simulator doesn't appear to be installed but is optional.\n")
+                        + catalog.GetString("Click on 'Add...' to point Open Rails at a folder containing folders ROUTES, TRAINS etc.."), Application.ProductName);
                 ShowFolderList();
                 if (Folders.Count > 0)
                     comboBoxFolder.Focus();

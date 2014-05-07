@@ -56,6 +56,7 @@ namespace ORTS
             Complete = complete;
 #if TASK_CATCH_EXCEPTIONS_AND_THREADED
             Thread = new Thread(TaskWorker);
+            Thread.CurrentUICulture = System.Globalization.CultureInfo.CurrentUICulture;
             Thread.Start();
 #else
             TaskWorker();

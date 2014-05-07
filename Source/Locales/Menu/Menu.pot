@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2014-05-04 11:37:34+0100\n"
-"PO-Revision-Date: 2014-05-04 11:37:35+0100\n"
+"POT-Creation-Date: 2014-05-07 19:43:04+0200\n"
+"PO-Revision-Date: 2014-05-07 19:43:05+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -209,6 +209,12 @@ msgstr ""
 #: ../../Menu/MainForm.cs:563
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed but is optional.\n"
+msgstr ""
+
+#: ../../Menu/MainForm.cs:564
+msgid ""
+"Click on 'Add...' to point Open Rails at a folder containing folders ROUTES, "
+"TRAINS etc.."
 msgstr ""
 
 #: ../../Menu/MainForm.cs:830
