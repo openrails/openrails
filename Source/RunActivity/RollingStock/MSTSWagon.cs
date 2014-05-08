@@ -77,10 +77,12 @@ namespace ORTS
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
-        public string InteriorShapeFileName; // passenger view shape file name
-        public string MainSoundFileName;
-        public string InteriorSoundFileName;
-        public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
+		public string Cab3DShapeFileName; // 3DCab view shape file name
+		public string InteriorShapeFileName; // passenger view shape file name
+		public string MainSoundFileName;
+		public string InteriorSoundFileName;
+		public string Cab3DSoundFileName;
+		public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
         public float DriverWheelRadiusM = 1.5f;    // provide some defaults in case i'ts missing from the wag
         float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
         public float Friction0N;        // static friction
@@ -378,9 +380,11 @@ namespace ORTS
             IsFrictionBearing = copy.IsFrictionBearing;
             brakeSystemType = copy.brakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(brakeSystemType, this);
-            InteriorShapeFileName = copy.InteriorShapeFileName;
-            InteriorSoundFileName = copy.InteriorSoundFileName;
-            Adhesion1 = copy.Adhesion1;
+			InteriorShapeFileName = copy.InteriorShapeFileName;
+			InteriorSoundFileName = copy.InteriorSoundFileName;
+			Cab3DShapeFileName = copy.Cab3DShapeFileName;
+			Cab3DSoundFileName = copy.Cab3DSoundFileName;
+			Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
             Adhesion3 = copy.Adhesion3;
             Curtius_KnifflerA = copy.Curtius_KnifflerA;
@@ -428,8 +432,8 @@ namespace ORTS
 			PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
 			stf.MustMatch("(");
 			stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("orts3dcabfile", ()=>{ InteriorShapeFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("sound", ()=>{ Cab3DSoundFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("orts3dcabfile", ()=>{ Cab3DShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
