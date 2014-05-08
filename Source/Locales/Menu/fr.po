@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2014-05-04 11:37:34+0100\n"
+"POT-Creation-Date: 2014-05-07 19:43:04+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -219,6 +219,14 @@ msgid ""
 "Microsoft Train Simulator doesn't appear to be installed but is optional.\n"
 msgstr ""
 "Microsoft Train Simulator ne semble pas être installé mais est optionnel.\n"
+
+#: ../../Menu/MainForm.cs:564
+msgid ""
+"Click on 'Add...' to point Open Rails at a folder containing folders ROUTES, "
+"TRAINS etc.."
+msgstr ""
+"Cliquez sur \"Ajouter\" pour sélectionner un dossier contenant les dossiers "
+"ROUTES, TRAINS, etc."
 
 #: ../../Menu/MainForm.cs:830
 msgid "Activity Briefing"
@@ -1025,8 +1033,3 @@ msgstr "Chargement"
 #: ../../Menu/TestingForm.Designer.cs:228
 msgid "FPS"
 msgstr "FPS"
-
-#~ msgid "Optimal curve speed factor"
-#~ msgstr ""
-#~ "Facteur de réduction des frottements en fonction de la vitesse limite de "
-#~ "la ligne"
