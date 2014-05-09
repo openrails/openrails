@@ -385,14 +385,21 @@ namespace ORTS
         {
             if ((clutch <= 0.05) || (clutch >= 1f))
             {
-                if (currentGearIndex < nextGearIndex) DieselEngine.locomotive.SignalEvent(Event.GearUp);
-                currentGearIndex = nextGearIndex;
+                if (currentGearIndex < nextGearIndex)
+                {
+                    DieselEngine.locomotive.SignalEvent(Event.GearUp);
+                    currentGearIndex = nextGearIndex;
+                }
             }
             if ((clutch <= 0.05) || (clutch >= 0.5f))
             {
-                if (currentGearIndex > nextGearIndex) DieselEngine.locomotive.SignalEvent(Event.GearDown);
-                currentGearIndex = nextGearIndex;
+                if (currentGearIndex > nextGearIndex)
+                {
+                    DieselEngine.locomotive.SignalEvent(Event.GearDown);
+                    currentGearIndex = nextGearIndex;
+                }
             }
+
             if (DieselEngine.EngineStatus == DieselEngine.Status.Running)
             {
                 switch (GearBoxOperation)

@@ -63,7 +63,7 @@ namespace ORTS.Viewer3D
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedShapeManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
-            if (path == null)
+            if (path == null || path == EmptyShape.FilePath)
                 return EmptyShape;
 
             path = path.ToLowerInvariant();
@@ -164,19 +164,22 @@ namespace ORTS.Viewer3D
         {
             HasNightSubObj = shapes[0].SharedShape.HasNightSubObj;
 
-            // We need both ends of the distance levels. We render the first but view as far as the last.
-            var dlHighest = shapes[0].SharedShape.LodControls[0].DistanceLevels.First();
-            var dlLowest = shapes[0].SharedShape.LodControls[0].DistanceLevels.Last();
+            if (shapes[0].SharedShape.LodControls.Length > 0)
+            {
+                // We need both ends of the distance levels. We render the first but view as far as the last.
+                var dlHighest = shapes[0].SharedShape.LodControls[0].DistanceLevels.First();
+                var dlLowest = shapes[0].SharedShape.LodControls[0].DistanceLevels.Last();
 
-            // Object radius should extend from central location to the furthest instance location PLUS the actual object radius.
-            ObjectRadius = shapes.Max(s => (Location.Location - s.Location.Location).Length()) + dlHighest.ViewSphereRadius;
-            
-            // Object viewing distance is easy because it's based on the outside of the object radius.
-            if (viewer.Settings.LODViewingExtention)
-                ObjectViewingDistance = float.MaxValue;
-            else
-                ObjectViewingDistance = dlLowest.ViewingDistance;
-            
+                // Object radius should extend from central location to the furthest instance location PLUS the actual object radius.
+                ObjectRadius = shapes.Max(s => (Location.Location - s.Location.Location).Length()) + dlHighest.ViewSphereRadius;
+
+                // Object viewing distance is easy because it's based on the outside of the object radius.
+                if (viewer.Settings.LODViewingExtention)
+                    ObjectViewingDistance = float.MaxValue;
+                else
+                    ObjectViewingDistance = dlLowest.ViewingDistance;
+            }
+
             // Create all the primitives for the shared shape.
             var prims = new List<ShapePrimitiveInstances>();
             foreach (var lod in shapes[0].SharedShape.LodControls)
