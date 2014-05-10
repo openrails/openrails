@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-04-28 20:54:35+0200\n"
-"PO-Revision-Date: 2014-04-29 20:52+0100\n"
+"POT-Creation-Date: 2014-05-06 19:32:03+0200\n"
+"PO-Revision-Date: 2014-05-10 22:02+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -12,7 +12,7 @@ msgstr ""
 "X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../../RunActivity/Debugging/DebugViewerForm.cs:2038
+#: ../../RunActivity/Debugging/DebugViewerForm.cs:2039
 msgid "Switching Request Sent to the Server"
 msgstr "Weichenstellanfrage an Server gesendet"
 
@@ -295,94 +295,98 @@ msgstr[1] ""
 "Abkuppeln nicht möglich: Zug von {0} Spielern bedient; muss vollständig "
 "anhalten."
 
-#: ../../RunActivity/Physics/Train.cs:1364
+#: ../../RunActivity/Physics/Train.cs:1432
 msgid "Coupler broken!"
 msgstr "Kupplung gebrochen!"
 
-#: ../../RunActivity/Physics/Train.cs:1367
+#: ../../RunActivity/Physics/Train.cs:1435
 msgid "Coupler overloaded!"
 msgstr "Kupplung überlastet!"
 
-#: ../../RunActivity/Physics/Train.cs:3936
-#: ../../RunActivity/Physics/Train.cs:3941
+#: ../../RunActivity/Physics/Train.cs:4060
+#: ../../RunActivity/Physics/Train.cs:4065
 msgid "Other train is blocking path"
 msgstr "Anderer Zug blockiert Fahrstraße."
 
-#: ../../RunActivity/Physics/Train.cs:4111
+#: ../../RunActivity/Physics/Train.cs:4191
+msgid "Held for connecting train : "
+msgstr "Wartet auf Anschlusszug :"
+
+#: ../../RunActivity/Physics/Train.cs:4246
 #: ../../RunActivity/Simulator/Activity.cs:830
 msgid "Passenger boarding completed. You may depart now."
 msgstr "Passagiere zugestiegen. Sie können die Fahrt fortsetzen."
 
-#: ../../RunActivity/Physics/Train.cs:4944
+#: ../../RunActivity/Physics/Train.cs:5195
 msgid "Stopped due to errors in route setting"
 msgstr "Wegen Fehlern in den Routeneinstellungen angehalten"
 
-#: ../../RunActivity/Physics/Train.cs:5609
-#: ../../RunActivity/Physics/Train.cs:6682
+#: ../../RunActivity/Physics/Train.cs:5857
+#: ../../RunActivity/Physics/Train.cs:6930
 msgid "No signal in train's path"
 msgstr "Kein Signal entlang der Fahrstraße"
 
-#: ../../RunActivity/Physics/Train.cs:5617
+#: ../../RunActivity/Physics/Train.cs:5865
 msgid "Next signal already allocated to other train"
 msgstr "Nächstes Signal schon anderem Zug zugewiesen"
 
-#: ../../RunActivity/Physics/Train.cs:5678
+#: ../../RunActivity/Physics/Train.cs:5926
 msgid "Request to clear signal cannot be processed"
 msgstr "Anfrage zur Signalfreigabe kann nicht verarbeitet werden"
 
-#: ../../RunActivity/Physics/Train.cs:5784
-#: ../../RunActivity/Physics/Train.cs:6802
+#: ../../RunActivity/Physics/Train.cs:6032
+#: ../../RunActivity/Physics/Train.cs:7050
 msgid "No switch found"
 msgstr "Keine Weiche gefunden"
 
-#: ../../RunActivity/Physics/Train.cs:7036
+#: ../../RunActivity/Physics/Train.cs:7280
 msgid "Train is not back on original route"
 msgstr "Zug nicht wieder auf ursprünglicher Fahrstraße"
 
-#: ../../RunActivity/Physics/Train.cs:7045
+#: ../../RunActivity/Physics/Train.cs:7289
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 "Ursprüngliche Farhstraße verläuft in entgegengesetzte Richtung. Zug vor "
 "umschalten anhalten."
 
-#: ../../RunActivity/Physics/Train.cs:7058
+#: ../../RunActivity/Physics/Train.cs:7302
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr "Umschalten zum Manuellen Modus im Erkundungsmodus nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:7151
+#: ../../RunActivity/Physics/Train.cs:7397
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 "Richtungsänderung erforderlich, aber Zugenede nicht auf richiger Fahrstraße."
 
-#: ../../RunActivity/Physics/Train.cs:7338
+#: ../../RunActivity/Physics/Train.cs:7584
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr "Signalfreigabe hinter dem Zug im automatischen Modus nicht möglich."
 
-#: ../../RunActivity/Physics/Train.cs:4117
+#: ../../RunActivity/Physics/Train.cs:4252
 #: ../../RunActivity/Simulator/Activity.cs:823
 #, csharp-format
 msgid "Passenger boarding completes in {0:D2}:{1:D2}"
 msgstr "Verbleibende Zusteigezeit: {0:D2}:{1:D2}"
 
-#: ../../RunActivity/Physics/Train.cs:7580
+#: ../../RunActivity/Physics/Train.cs:7826
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 
-#: ../../RunActivity/Physics/Train.cs:7622
+#: ../../RunActivity/Physics/Train.cs:7868
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Zug wegen Problemen mit anderem Zug angehalten: Zug {0} , Grund: {1}"
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:575
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:522
 #, csharp-format
 msgid "Restoring from a save made by an older version {0}\n"
 msgstr ""
 "Laden eines Spielstandes, der mit einer älteren Version ({0}) gespeichert "
 "wurde\n"
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:1058
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1013
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
@@ -772,6 +776,7 @@ msgstr "Zugbremse"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:165
 #: ../../RunActivity/Simulator/Confirmation.cs:166
+#: ../../RunActivity/Simulator/Confirmation.cs:168
 msgid "release"
 msgstr "lösen"
 
@@ -1163,38 +1168,38 @@ msgstr "Beobachter"
 msgid "3D Cab"
 msgstr "3D-Führerstand"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:562
-#: ../../RunActivity/Viewer3D/Viewer.cs:676
+#: ../../RunActivity/Viewer3D/Viewer.cs:565
+#: ../../RunActivity/Viewer3D/Viewer.cs:679
 msgid "Cab view not available"
 msgstr "Führerstandsansicht nicht verfügbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:624
+#: ../../RunActivity/Viewer3D/Viewer.cs:627
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "Benutzen Sie Alt-F4, um den Mehrspielermodus direkt zu beenden."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:687
+#: ../../RunActivity/Viewer3D/Viewer.cs:690
 msgid "3D Cab view not available"
 msgstr "3D-Führerstandsansicht nicht verfügbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:714
+#: ../../RunActivity/Viewer3D/Viewer.cs:717
 msgid "Will not ratate cab and land"
 msgstr "Führerstand und Umgebung werden nicht mehr mitgedreht."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1130
+#: ../../RunActivity/Viewer3D/Viewer.cs:1133
 msgid "Game saved"
 msgstr "Spiel gespeichert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:705
+#: ../../RunActivity/Viewer3D/Viewer.cs:708
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Vibrationslevel {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:713
+#: ../../RunActivity/Viewer3D/Viewer.cs:716
 #, csharp-format
 msgid "Rotating cab {0}/4, rotating land {1}/4"
 msgstr "Führerstands-Drehung {0}/4, Umgebungs-Drehung {1}/4"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:742
+#: ../../RunActivity/Viewer3D/Viewer.cs:745
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -1504,53 +1509,53 @@ msgstr " Entf       Begr    Signal"
 msgid "Train Operations"
 msgstr "Zugbedienung"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:491
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:490
 msgid "water"
 msgstr "Wasser"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:492
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:491
 msgid "coal"
 msgstr "Kohle"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:493
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:492
 msgid "diesel oil"
 msgstr "Diesel"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:494
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:493
 msgid "wood"
 msgstr "Holz"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:604
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:603
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
 msgstr ""
 "Auftanken: Keine geeignete Tankstelle auf der Route. Wird sofort aufgefüllt."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:612
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:611
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr "Auftanken: Entfernung zur nächsten {0}-Tankstelle: {1}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:618
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr "Auftanken: Lokomotive muss stillstehen, um {0} auftanken zu können."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:623
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr "Auftanken: Geschwindigkeit muss größer als {0} sein."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:631
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:630
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr "Auftanken: Geschwindigkeit darf nicht größer als {0} sein."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:638
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:637
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr "Auftanken: {0} Vorrat jetzt ergänzt."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:613
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:612
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
