@@ -2023,7 +2023,7 @@ namespace ORTS
                 case CABViewControlTypes.TRACTION_BRAKING:
                     {
                         var direction = 0; // Forwards
-                        if (cvc is CVCGauge)
+                        if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
 
                         if (LocomotiveAxle != null)
