@@ -1027,12 +1027,15 @@ namespace ORTS
                     p.FindCenterLine();
                 }
                 Vector3 fwd1 = new Vector3(p.B[0], p.B[1], -p.B[2]);
-                if (fwd1.X != 0 && fwd1.Y != 0 && fwd1.Z != 0)//fwd1 can be (0, 0, 0), force cos to be 1
+                if (fwd1.X == 0 && fwd1.Y == 0 && fwd1.Z == 0)
+                {
+                    p.Cos = 1;
+                }
+                else
                 {
                     fwd1.Normalize();
                     p.Cos = Vector3.Dot(fwd, fwd1);
                 }
-                else p.Cos = 1;
 
                 if (p.Cos >= .99999f)
                     p.Sin = 0;

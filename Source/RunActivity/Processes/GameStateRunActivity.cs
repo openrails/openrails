@@ -398,6 +398,7 @@ namespace ORTS.Processes
                     {
                         settings.YoungestFailedToRestore = saveRevision;
                         settings.Save("YoungestFailedToRestore");
+                        Trace.TraceInformation("YoungestFailedToRestore set to Save's revision: {0}", saveRevision);
                     }
                     throw new ORTS.Processes.IncompatibleSaveException(saveRevision, saveFile);
                 }
