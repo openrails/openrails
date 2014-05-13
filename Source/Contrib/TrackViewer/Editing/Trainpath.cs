@@ -381,6 +381,7 @@ namespace ORTS.TrackViewer.Editing
                             currentMainNode.NextSidingTvnIndex = -1;
                         }
                     }
+                    currentSidingNode = currentSidingNode.NextSidingNode;
                 }
 
                 currentMainNode = currentMainNode.NextMainNode;

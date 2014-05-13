@@ -89,7 +89,7 @@
             </MenuItem>
             <MenuItem Header="Preferences">
                 <MenuItem Header="Select background color" Name="menuSelectColor"/>
-                <MenuItem Header="Zooming is centered on mouse" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
+                <MenuItem Header="Zooming is centered on mouse (m)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
             </MenuItem>
             <MenuItem Header="Path-Editor">

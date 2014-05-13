@@ -18,6 +18,9 @@
 //
 //
 // ENHANCEMENT list for Trackviewer      
+// Issues
+//      moving around with cursor buttons
+//
 // Ideas from others
 //      Draw ground textures from .ace files.
 //      Be able to list the issues directly without going through the ORTS logfile
@@ -442,6 +445,8 @@ namespace ORTS.TrackViewer
             drawAreaInset.Update();
             drawAreaInset.Follow(DrawArea, 10f);
 
+            if (TVUserInput.IsPressed(TVUserCommands.ToggleZoomAroundMouse)) menuControl.MenuToggleZoomingAroundMouse();
+            
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSignals)) menuControl.MenuToggleShowSignals();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidings)) menuControl.MenuToggleShowSidings();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowSidingNames)) menuControl.MenuToggleShowSidingNames();

@@ -54,6 +54,8 @@ namespace ORTS.TrackViewer.UserInterface
         ZoomReset,
         /// <summary>command for zooming in to tile-size</summary>
         ZoomToTile,
+        /// <summary>command for toggling whether zooming is around mouse or center</summary>
+        ToggleZoomAroundMouse,
         /// <summary>command for shifting view window left</summary>
         ShiftLeft,
         /// <summary>command for shifting view window right</summary>
@@ -153,7 +155,8 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.ShiftUp]    = new ORTS.Settings.UserCommandKeyInput(0x11);
             Commands[(int)TVUserCommands.ShiftDown]  = new ORTS.Settings.UserCommandKeyInput(0x1F);
             Commands[(int)TVUserCommands.ShiftToLocation] = new ORTS.Settings.UserCommandKeyInput(0x2E);
-
+            Commands[(int)TVUserCommands.ToggleZoomAroundMouse] = new ORTS.Settings.UserCommandKeyInput(0x32);
+            
             Commands[(int)TVUserCommands.ToggleShowSpeedLimits] = new ORTS.Settings.UserCommandKeyInput(0x3F);
             Commands[(int)TVUserCommands.ToggleShowMilePosts] = new ORTS.Settings.UserCommandKeyInput(0x3F, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleShowSignals] = new ORTS.Settings.UserCommandKeyInput(0x41);

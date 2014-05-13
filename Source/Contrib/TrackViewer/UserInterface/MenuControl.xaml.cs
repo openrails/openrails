@@ -404,6 +404,15 @@ namespace ORTS.TrackViewer.UserInterface
         }
 
         /// <summary>
+        /// Toggle whether zooming is around mouse or centered
+        /// </summary>
+        public void MenuToggleZoomingAroundMouse()
+        {
+            menuZoomIsCenteredOnMouse.IsChecked = !menuZoomIsCenteredOnMouse.IsChecked;
+            UpdateMenuSettings();
+        }
+
+        /// <summary>
         /// Toggle whether the sidings are shown
         /// </summary>
         public void MenuToggleShowSidings()
