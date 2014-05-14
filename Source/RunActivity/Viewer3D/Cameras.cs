@@ -839,13 +839,13 @@ namespace ORTS.Viewer3D
                 new LastCarCommand(Viewer.Log);
         }
 
-        public void NextCar()
+        public virtual void NextCar()
         {
             var trainCars = GetCameraCars();
             SetCameraCar(attachedCar == trainCars.First() ? attachedCar : trainCars[trainCars.IndexOf(attachedCar) - 1]);
         }
 
-        public void PreviousCar()
+        public virtual void PreviousCar()
         {
             var trainCars = GetCameraCars();
             SetCameraCar(attachedCar == trainCars.Last() ? attachedCar : trainCars[trainCars.IndexOf(attachedCar) + 1]);
@@ -1257,6 +1257,17 @@ namespace ORTS.Viewer3D
         protected override bool IsCameraFlipped()
         {
             return attachedToRear ^ attachedCar.Flipped;
+        }
+
+// attached car may be no more part of the list, therefore base methods would return errors
+        public override void NextCar()
+        {
+            FirstCar();
+        }
+
+        public override void PreviousCar()
+        {
+            LastCar();
         }
 
     }

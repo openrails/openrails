@@ -622,7 +622,8 @@ namespace ORTS.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            DrawLabel(Car.WorldPosition, Car.HeightM, Car.CarID);
+            if ((Car.Train != null) && (Car.Train.TrainType == Train.TRAINTYPE.AI) && (Car.IsDriveable)) DrawLabel(Car.WorldPosition, Car.HeightM, Car.Train.Name) ;
+            else DrawLabel(Car.WorldPosition, Car.HeightM, Car.CarID);
         }
     }
 
