@@ -66,7 +66,7 @@ namespace ORTS
         public bool IsStandStill = true;  // Used for MSTS type friction
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsLowSpeed = true; // set indicator for low speed operation  0 - 5mph
-
+       
         // simulation parameters
         public float Variable1;  // used to convey status to soundsource
         public float Variable2;
@@ -469,6 +469,10 @@ namespace ORTS
             outf.Write(Variable1);
             outf.Write(Variable2);
             outf.Write(Variable3);
+            outf.Write(IsDavisFriction);
+            outf.Write(IsRollerBearing);
+            outf.Write(IsLowTorqueRollerBearing);
+            outf.Write(IsFrictionBearing);
             outf.Write(Friction0N);
             outf.Write(DavisAN);
             outf.Write(DavisBNSpM);
@@ -488,6 +492,10 @@ namespace ORTS
             Variable1 = inf.ReadSingle();
             Variable2 = inf.ReadSingle();
             Variable3 = inf.ReadSingle();
+            IsDavisFriction = inf.ReadBoolean();
+            IsRollerBearing = inf.ReadBoolean();
+            IsLowTorqueRollerBearing = inf.ReadBoolean();
+            IsFrictionBearing = inf.ReadBoolean();
             Friction0N = inf.ReadSingle();
             DavisAN = inf.ReadSingle();
             DavisBNSpM = inf.ReadSingle();
@@ -504,9 +512,14 @@ namespace ORTS
         public override void Update( float elapsedClockSeconds )
         {
             base.Update(elapsedClockSeconds);
-           
-            if (DavisAN == 0 || DavisBNSpM == 0 || DavisCNSSpMM == 0) // If Davis parameters are not defined in WAG file, then use default methods
-                IsDavisFriction = false; // set to false - indicating that Davis friction is not used
+
+            if (IsDavisFriction == true) // test to see if OR thinks that Davis Values have been entered in WG file.
+            {
+                if (DavisAN == 0 || DavisBNSpM == 0 || DavisCNSSpMM == 0) // If Davis parameters are not defined in WAG file, then set falg to use default friction values
+                    IsDavisFriction = false; // set to false - indicating that Davis friction is not used
+            }
+
+            if (IsDavisFriction == false)    // If Davis parameters are not defined in WAG file, then use default methods
             {
 
                 if (FrictionV2 < 0 || FrictionV2 > 4.4407f) // > 10 mph
