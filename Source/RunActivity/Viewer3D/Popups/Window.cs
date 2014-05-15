@@ -79,8 +79,13 @@ namespace ORTS.Viewer3D.Popups
         protected internal virtual void Restore(BinaryReader inf)
         {
             visible = inf.ReadBoolean();
+            var x = location.X;
+            var y = location.Y;
             location.X = (int)(inf.ReadSingle() * (Owner.ScreenSize.X - location.Width));
             location.Y = (int)(inf.ReadSingle() * (Owner.ScreenSize.Y - location.Height));
+            // <CS comment> To move the window background to the correct position this is needed
+            if ((location.X != x) || (location.Y != y))
+                LocationChanged();
         }
 
         protected virtual void VisibilityChanged()
