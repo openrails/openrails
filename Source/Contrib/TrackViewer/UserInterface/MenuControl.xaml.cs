@@ -102,6 +102,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             menuShowInset.IsChecked = Properties.Settings.Default.showInset;
             menuShowWorldTiles.IsChecked = Properties.Settings.Default.showWorldTiles;
+            menuShowGridLines.IsChecked = Properties.Settings.Default.showGridLines;
             menuColorTracks.IsChecked = Properties.Settings.Default.colorTracks;
 
             menuShowJunctionNodes.IsChecked = Properties.Settings.Default.showJunctionNodes;
@@ -153,6 +154,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             Properties.Settings.Default.showInset = menuShowInset.IsChecked;
             Properties.Settings.Default.showWorldTiles = menuShowWorldTiles.IsChecked;
+            Properties.Settings.Default.showGridLines = menuShowGridLines.IsChecked;
             Properties.Settings.Default.colorTracks = menuColorTracks.IsChecked;
             Properties.Settings.Default.showJunctionNodes = menuShowJunctionNodes.IsChecked;
             Properties.Settings.Default.showEndNodes = menuShowEndNodes.IsChecked;

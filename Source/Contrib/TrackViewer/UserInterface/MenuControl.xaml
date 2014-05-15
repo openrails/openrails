@@ -29,6 +29,7 @@
                 <Separator/>
                 <MenuItem Header="Show inset" Name="menuShowInset" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Show world tiles" Name="menuShowWorldTiles" IsCheckable="True" Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show grid lines" Name="menuShowGridLines" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Show scale ruler" Name="menuShowScaleRuler" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Show longitude/latitude" Name="menuShowLonLat" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Use miles i.s.o. meters" Name="menuUseMilesNotMeters" IsCheckable="True" Click="UpdateMenuSettings"/>

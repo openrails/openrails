@@ -628,6 +628,10 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public void DrawTileGrid()
         {
+            if (!Properties.Settings.Default.showGridLines)
+            {
+                return;
+            }
             // draw tile Grid boundaries. Note that coordinates within tile are from -1024 to 1024
             for (int tileX = LocationUpperLeft.TileX; tileX <= LocationLowerRight.TileX + 1; tileX++)
             {
