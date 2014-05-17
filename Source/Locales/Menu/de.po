@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2014-05-07 19:43:04+0200\n"
-"PO-Revision-Date: 2014-05-10 22:01+0100\n"
+"PO-Revision-Date: 2014-05-17 15:07+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -214,13 +214,11 @@ msgstr ""
 "enthalten und nicht mit einer Zahl beginnen."
 
 #: ../../Menu/MainForm.cs:563
-#, fuzzy
 msgid ""
 "Microsoft Train Simulator doesn't appear to be installed but is optional.\n"
 msgstr ""
-"Microsoft Train Simulator scheint nicht installiert zu sein.\n"
-"Klicken Sie auf 'Hinzufügen...' um Open Rails Ihren Microsoft Train "
-"Simulator Ordner zu mitzuteilen."
+"Microsoft Train Simulator scheint nicht installiert zu sein, was allerdings "
+"nicht unbedingt nötig ist.\n"
 
 #: ../../Menu/MainForm.cs:564
 msgid ""
