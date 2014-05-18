@@ -27,6 +27,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using ORTS.Settings;
 using ORTS.Viewer3D.Popups;
 
@@ -318,7 +319,12 @@ namespace ORTS.Viewer3D.RollingStock
             // The signals are distributed through the parent class MSTSWagon:SignalEvent </CJComment>
             if (UserInput.IsPressed(UserCommands.ControlSander)) new SanderCommand(Viewer.Log, Locomotive.Sander);
             if (UserInput.IsPressed(UserCommands.ControlWiper)) new ToggleWipersCommand(Viewer.Log);
-            if (UserInput.IsPressed(UserCommands.ControlHorn)) { new HornCommand(Viewer.Log, true); this.Car.Simulator.HazzardManager.Horn(); }
+            if (UserInput.IsPressed(UserCommands.ControlHorn))
+            {
+                new HornCommand(Viewer.Log, true);
+                Locomotive.AlerterReset(TCSEvent.HornActivated);
+                this.Car.Simulator.HazzardManager.Horn();
+            }
             if (UserInput.IsReleased(UserCommands.ControlHorn)) new HornCommand(Viewer.Log, false);
             if (UserInput.IsPressed(UserCommands.ControlBell)) new BellCommand(Viewer.Log, true);
             if (UserInput.IsReleased(UserCommands.ControlBell)) new BellCommand(Viewer.Log, false);

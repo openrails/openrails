@@ -40,7 +40,7 @@ namespace ORTS
         {
             NotchController = new MSTSNotchController(Notches());
             NotchController.SetValue(CurrentValue());
-            NotchController.IntermediateValue = IntermediateValue();
+            NotchController.IntermediateValue = CurrentValue();
             NotchController.MinimumValue = MinimumValue();
             NotchController.MaximumValue = MaximumValue();
             NotchController.StepSize = StepSize();
@@ -79,43 +79,43 @@ namespace ORTS
                     float x = NotchController.GetNotchFraction();
                     switch (notch.Type)
                     {
-                        case MSTSNotchType.Release:
+                        case ControllerState.Release:
                             pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
                             epPressureBar -= x * ReleaseRateBarpS() * elapsedClockSeconds;
                             break;
-                        case MSTSNotchType.FullQuickRelease:
+                        case ControllerState.FullQuickRelease:
                             pressureBar += x * QuickReleaseRateBarpS() * elapsedClockSeconds;
                             epPressureBar -= x * QuickReleaseRateBarpS() * elapsedClockSeconds;
                             break;
-                        case MSTSNotchType.Running:
+                        case ControllerState.Running:
                             if (notch.Smooth)
                                 x = .1f * (1 - x);
                             pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
                             break;
-                        case MSTSNotchType.Apply:
-                        case MSTSNotchType.FullServ:
+                        case ControllerState.Apply:
+                        case ControllerState.FullServ:
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
                             break;
-                        case MSTSNotchType.EPApply:
+                        case ControllerState.EPApply:
                             pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
                             if (notch.Smooth)
                                 IncreasePressure(ref epPressureBar, x * FullServReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
                             else
                                 epPressureBar += x * ApplyRateBarpS() * elapsedClockSeconds;
                             break;
-                        case MSTSNotchType.GSelfLapH:
-                        case MSTSNotchType.Suppression:
-                        case MSTSNotchType.ContServ:
-                        case MSTSNotchType.GSelfLap:
+                        case ControllerState.GSelfLapH:
+                        case ControllerState.Suppression:
+                        case ControllerState.ContServ:
+                        case ControllerState.GSelfLap:
                             x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
                             if (GraduatedRelease())
                                 IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                             break;
-                        case MSTSNotchType.Emergency:
+                        case ControllerState.Emergency:
                             pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
                             break;
-                        case MSTSNotchType.Dummy:
+                        case ControllerState.Dummy:
                             x *= MaxPressureBar() - FullServReductionBar();
                             IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                             DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
@@ -146,22 +146,22 @@ namespace ORTS
                 float x = NotchController.GetNotchFraction();
                 switch (notch.Type)
                 {
-                    case MSTSNotchType.Release:
+                    case ControllerState.Release:
                         pressureBar -= x * ReleaseRateBarpS() * elapsedClockSeconds;
                         break;
-                    case MSTSNotchType.Running:
+                    case ControllerState.Running:
                         pressureBar -= ReleaseRateBarpS() * elapsedClockSeconds;
                         break;
 #if false
-                    case MSTSNotchType.Apply:
-                    case MSTSNotchType.FullServ:
+                    case BrakeControllerState.Apply:
+                    case BrakeControllerState.FullServ:
                         pressurePSI += x * ApplyRatePSIpS * elapsedClockSeconds;
                         break;
 #endif
-                    case MSTSNotchType.Emergency:
+                    case ControllerState.Emergency:
                         pressureBar += EmergencyRateBarpS() * elapsedClockSeconds;
                         break;
-                    case MSTSNotchType.Dummy:
+                    case ControllerState.Dummy:
                         pressureBar = (MaxPressureBar() - FullServReductionBar()) * CurrentValue();
                         break;
                     default:
@@ -211,11 +211,11 @@ namespace ORTS
                     NotchController.StartDecrease(value);
                     break;
 
-                case BrakeControllerEvent.SetRDPercent:
+                case BrakeControllerEvent.SetCurrentPercent:
                     if (value != null)
                     {
                         float newValue = value ?? 0F;
-                        NotchController.SetRDPercent(newValue);
+                        NotchController.SetPercent(newValue);
                     }
                     break;
 
@@ -234,16 +234,16 @@ namespace ORTS
             return NotchController.IsValid();
         }
 
-        public override string GetStatus()
+        public override ControllerState GetState()
         {
             if (EmergencyBrakingPushButton())
-                return "Emergency Braking Push Button";
+                return ControllerState.EBPB;
             else if (TCSEmergencyBraking())
-                return "TCS Emergency Braking";
+                return ControllerState.TCSEmergency;
             else if (TCSFullServiceBraking())
-                return "TCS Full Service Braking";
+                return ControllerState.TCSFullServ;
             else
-                return NotchController.GetStatus();
+                return NotchController.GetCurrentNotch().Type;
         }
 
         static void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)

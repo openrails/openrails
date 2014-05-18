@@ -41,7 +41,7 @@ namespace ORTS
         void StopDecrease();
         void StartIncrease(float? target);
         void StartDecrease(float? target);
-        float SetRDPercent(float percent);
+        float SetPercent(float percent);
 
         float UpdateValue { get; set; }
         float CurrentValue { get; set; }

@@ -21,38 +21,20 @@ using System.Diagnostics;   // needed for Debug
 using System.IO;
 using Microsoft.Xna.Framework;
 using MSTS.Parsers;
+using ORTS.Scripting.Api;
 using ORTS.Viewer3D.Popups;  // needed for Confirmations
 
 namespace ORTS
 {
-    public enum MSTSNotchType 
-    { 
-        Dummy,
-        Release,        //TrainBrakesControllerReleaseStart 
-        FullQuickRelease,      //TrainBrakesControllerFullQuickReleaseStart
-        Running,        //TrainBrakesControllerRunningStart 
-        Neutral,        //TrainBrakesControllerNeutralhandleOffStart
-        SelfLap,        //TrainBrakesControllerSelfLapStart 
-        Lap,            
-        Apply,          //TrainBrakesControllerApplyStart 
-        EPApply,        //TrainBrakesControllerEPApplyStart 
-        GSelfLap, 
-        GSelfLapH,
-        Suppression,    //TrainBrakesControllerSuppressionStart 
-        ContServ,       //TrainBrakesControllerContinuousServiceStart 
-        FullServ,       //TrainBrakesControllerFullServiceStart 
-        Emergency       //TrainBrakesControllerEmergencyStart
-    };
-
     public class MSTSNotch {
         public float Value;
         public bool Smooth;
-        public MSTSNotchType Type;
+        public ControllerState Type;
         public MSTSNotch(float v, int s, string type, STFReader stf)
         {
             Value = v;
             Smooth = s == 0 ? false : true;
-            Type = MSTSNotchType.Dummy;
+            Type = ControllerState.Dummy;
             string lower = type.ToLower();
             if (lower.StartsWith("trainbrakescontroller"))
                 lower = lower.Substring(21);
@@ -62,23 +44,23 @@ namespace ORTS
             {
                 case "dummy": break;
                 case ")": break;
-                case "releasestart": Type = MSTSNotchType.Release; break;
-                case "fullquickreleasestart": Type = MSTSNotchType.FullQuickRelease; break;
-                case "runningstart": Type = MSTSNotchType.Running; break;
-                case "selflapstart": Type = MSTSNotchType.SelfLap; break;
-                case "holdstart": Type = MSTSNotchType.Lap; break;
-                case "holdlappedstart": Type = MSTSNotchType.Lap; break;
-                case "neutralhandleoffstart": Type = MSTSNotchType.Neutral; break;
-                case "graduatedselflaplimitedstart": Type = MSTSNotchType.GSelfLap; break;
-                case "graduatedselflaplimitedholdingstart": Type = MSTSNotchType.GSelfLapH; break;
-                case "applystart": Type = MSTSNotchType.Apply; break;
-                case "continuousservicestart": Type = MSTSNotchType.ContServ; break;
-                case "suppressionstart": Type = MSTSNotchType.Suppression; break;
-                case "fullservicestart": Type = MSTSNotchType.FullServ; break;
-                case "emergencystart": Type = MSTSNotchType.Emergency; break;
-                case "epapplystart": Type = MSTSNotchType.EPApply; break;
-                case "epholdstart": Type = MSTSNotchType.Lap; break;
-                case "minimalreductionstart": Type = MSTSNotchType.Lap; break;
+                case "releasestart": Type = ControllerState.Release; break;
+                case "fullquickreleasestart": Type = ControllerState.FullQuickRelease; break;
+                case "runningstart": Type = ControllerState.Running; break;
+                case "selflapstart": Type = ControllerState.SelfLap; break;
+                case "holdstart": Type = ControllerState.Lap; break;
+                case "holdlappedstart": Type = ControllerState.Lap; break;
+                case "neutralhandleoffstart": Type = ControllerState.Neutral; break;
+                case "graduatedselflaplimitedstart": Type = ControllerState.GSelfLap; break;
+                case "graduatedselflaplimitedholdingstart": Type = ControllerState.GSelfLapH; break;
+                case "applystart": Type = ControllerState.Apply; break;
+                case "continuousservicestart": Type = ControllerState.ContServ; break;
+                case "suppressionstart": Type = ControllerState.Suppression; break;
+                case "fullservicestart": Type = ControllerState.FullServ; break;
+                case "emergencystart": Type = ControllerState.Emergency; break;
+                case "epapplystart": Type = ControllerState.EPApply; break;
+                case "epholdstart": Type = ControllerState.Lap; break;
+                case "minimalreductionstart": Type = ControllerState.Lap; break;
                 default:
                     STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
                     break;
@@ -88,7 +70,7 @@ namespace ORTS
         {
             Value = v;
             Smooth = s;
-            Type = (MSTSNotchType)t;
+            Type = (ControllerState)t;
         }
 
         public MSTSNotch(MSTSNotch other)
@@ -102,7 +84,7 @@ namespace ORTS
         {
             Value = inf.ReadSingle();
             Smooth = inf.ReadBoolean();
-            Type = (MSTSNotchType)inf.ReadInt32();
+            Type = (ControllerState)inf.ReadInt32();
         }
 
         public MSTSNotch Clone()
@@ -112,25 +94,7 @@ namespace ORTS
 
         public string GetName()
         {
-            switch (Type)
-            {
-                case MSTSNotchType.Dummy: return "";
-                case MSTSNotchType.Release: return Viewer3D.Viewer.Catalog.GetString("Release");
-                case MSTSNotchType.FullQuickRelease: return Viewer3D.Viewer.Catalog.GetString("Quick Release");
-                case MSTSNotchType.Running: return Viewer3D.Viewer.Catalog.GetString("Running");
-                case MSTSNotchType.Neutral: return Viewer3D.Viewer.Catalog.GetString("Neutral");
-                case MSTSNotchType.Apply: return Viewer3D.Viewer.Catalog.GetString("Apply");
-                case MSTSNotchType.EPApply: return Viewer3D.Viewer.Catalog.GetString("EPApply");
-                case MSTSNotchType.Emergency: return Viewer3D.Viewer.Catalog.GetString("Emergency");
-                case MSTSNotchType.SelfLap: return Viewer3D.Viewer.Catalog.GetString("Lap");
-                case MSTSNotchType.GSelfLap: return Viewer3D.Viewer.Catalog.GetString("Service");
-                case MSTSNotchType.GSelfLapH: return Viewer3D.Viewer.Catalog.GetString("Service");
-                case MSTSNotchType.Lap: return Viewer3D.Viewer.Catalog.GetString("Lap");
-                case MSTSNotchType.Suppression: return Viewer3D.Viewer.Catalog.GetString("Suppression");
-                case MSTSNotchType.ContServ: return Viewer3D.Viewer.Catalog.GetString("Cont. Service");
-                case MSTSNotchType.FullServ: return Viewer3D.Viewer.Catalog.GetString("Full Service");
-                default: return "";
-            }
+            return ControllerStateDictionary.Dict[Type];
         }
 
         public void Save(BinaryWriter outf)
@@ -278,11 +242,7 @@ namespace ORTS
             IntermediateValue = CurrentValue;
         }
 
-        /// <summary>
-        /// Sets the controller value based on a RailDriver control
-        /// </summary>
-        /// <param name="percent"></param>
-        public float SetRDPercent(float percent)
+        public float SetPercent(float percent)
         {
             float v = (MinimumValue < 0 && percent < 0 ? -MinimumValue : MaximumValue) * percent / 100;
             if (v < MinimumValue)
@@ -290,14 +250,14 @@ namespace ORTS
             CurrentValue = v;
             if (CurrentNotch >= 0)
             {
-                if (Notches[Notches.Count - 1].Type == MSTSNotchType.Emergency)
+                if (Notches[Notches.Count - 1].Type == ControllerState.Emergency)
                     v = Notches[Notches.Count - 1].Value * percent / 100;
                 for (; ; )
                 {
                     MSTSNotch notch = Notches[CurrentNotch];
                     if (CurrentNotch > 0 && v < notch.Value)
                     {
-                        MSTSNotch prev= Notches[CurrentNotch-1];
+                        MSTSNotch prev = Notches[CurrentNotch-1];
                         if (!notch.Smooth && !prev.Smooth && v - prev.Value > .45 * (notch.Value - prev.Value))
                             break;
                         CurrentNotch--;
@@ -306,7 +266,7 @@ namespace ORTS
                     if (CurrentNotch < Notches.Count - 1)
                     {
                         MSTSNotch next = Notches[CurrentNotch + 1];
-                        if (next.Type != MSTSNotchType.Emergency)
+                        if (next.Type != ControllerState.Emergency)
                         {
                             if ((notch.Smooth || next.Smooth) && v < next.Value)
                                 break;
@@ -416,7 +376,7 @@ namespace ORTS
                 if ((direction > 0) && (CurrentNotch < Notches.Count - 1) && (IntermediateValue >= Notches[CurrentNotch + 1].Value))
                 {
                     // Prevent TrainBrake to continuously switch to emergency
-                    if (Notches[CurrentNotch + 1].Type == MSTSNotchType.Emergency)
+                    if (Notches[CurrentNotch + 1].Type == ControllerState.Emergency)
                         IntermediateValue = Notches[CurrentNotch + 1].Value - StepSize;
                     else
                         CurrentNotch++;
@@ -452,7 +412,7 @@ namespace ORTS
             if (CurrentNotch + 1 < Notches.Count)
                 x = Notches[CurrentNotch + 1].Value;
             x = (CurrentValue - notch.Value) / (x - notch.Value);
-            if (notch.Type == MSTSNotchType.Release)
+            if (notch.Type == ControllerState.Release)
                 x = 1 - x;
             return x;
         }
@@ -488,7 +448,7 @@ namespace ORTS
             if (Notches.Count == 0)
                 return string.Format("{0:F0}%", 100 * CurrentValue);
             MSTSNotch notch = Notches[CurrentNotch];
-            if (!notch.Smooth && notch.Type == MSTSNotchType.Dummy)
+            if (!notch.Smooth && notch.Type == ControllerState.Dummy)
                 return string.Format("{0:F0}%", 100 * CurrentValue);
             if (!notch.Smooth)
                 return notch.GetName();
@@ -544,7 +504,7 @@ namespace ORTS
             return Notches.Count == 0 ? null : Notches[CurrentNotch];
         }
 
-        protected void SetCurrentNotch(MSTSNotchType type)
+        protected void SetCurrentNotch(ControllerState type)
         {
             for (int i = 0; i < Notches.Count; i++)
             {

@@ -39,6 +39,8 @@
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.labelPressureUnit = new System.Windows.Forms.Label();
+            this.comboBoxPressureUnit = new System.Windows.Forms.ComboBox();
             this.labelLanguage = new System.Windows.Forms.Label();
             this.comboBoxLanguage = new System.Windows.Forms.ComboBox();
             this.checkAlerterDisableExternal = new System.Windows.Forms.CheckBox();
@@ -49,6 +51,7 @@
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
             this.checkMSTSBINSound = new System.Windows.Forms.CheckBox();
             this.tabPageVideo = new System.Windows.Forms.TabPage();
+            this.checkBoxVerticalSync = new System.Windows.Forms.CheckBox();
             this.label11 = new System.Windows.Forms.Label();
             this.numericDistantMountainsViewingDistance = new System.Windows.Forms.NumericUpDown();
             this.checkDistantMountains = new System.Windows.Forms.CheckBox();
@@ -119,7 +122,6 @@
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkBoxVerticalSync = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -223,7 +225,7 @@
             // checkSuppressConfirmations
             // 
             this.checkSuppressConfirmations.AutoSize = true;
-            this.checkSuppressConfirmations.Location = new System.Drawing.Point(6, 101);
+            this.checkSuppressConfirmations.Location = new System.Drawing.Point(6, 128);
             this.checkSuppressConfirmations.Name = "checkSuppressConfirmations";
             this.checkSuppressConfirmations.Size = new System.Drawing.Size(170, 17);
             this.checkSuppressConfirmations.TabIndex = 4;
@@ -233,7 +235,7 @@
             // checkViewDispatcher
             // 
             this.checkViewDispatcher.AutoSize = true;
-            this.checkViewDispatcher.Location = new System.Drawing.Point(6, 124);
+            this.checkViewDispatcher.Location = new System.Drawing.Point(6, 151);
             this.checkViewDispatcher.Name = "checkViewDispatcher";
             this.checkViewDispatcher.Size = new System.Drawing.Size(116, 17);
             this.checkViewDispatcher.TabIndex = 5;
@@ -261,6 +263,8 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
+            this.tabPageGeneral.Controls.Add(this.comboBoxPressureUnit);
             this.tabPageGeneral.Controls.Add(this.labelLanguage);
             this.tabPageGeneral.Controls.Add(this.comboBoxLanguage);
             this.tabPageGeneral.Controls.Add(this.checkViewDispatcher);
@@ -278,10 +282,34 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
+            // labelPressureUnit
+            // 
+            this.labelPressureUnit.AutoSize = true;
+            this.labelPressureUnit.Location = new System.Drawing.Point(133, 104);
+            this.labelPressureUnit.Name = "labelPressureUnit";
+            this.labelPressureUnit.Size = new System.Drawing.Size(68, 13);
+            this.labelPressureUnit.TabIndex = 9;
+            this.labelPressureUnit.Text = "Pressure unit";
+            // 
+            // comboBoxPressureUnit
+            // 
+            this.comboBoxPressureUnit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxPressureUnit.FormattingEnabled = true;
+            this.comboBoxPressureUnit.Items.AddRange(new object[] {
+            "Automatic",
+            "bar",
+            "PSI",
+            "inHg",
+            "kgf/cm^2"});
+            this.comboBoxPressureUnit.Location = new System.Drawing.Point(6, 101);
+            this.comboBoxPressureUnit.Name = "comboBoxPressureUnit";
+            this.comboBoxPressureUnit.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxPressureUnit.TabIndex = 8;
+            // 
             // labelLanguage
             // 
             this.labelLanguage.AutoSize = true;
-            this.labelLanguage.Location = new System.Drawing.Point(133, 150);
+            this.labelLanguage.Location = new System.Drawing.Point(133, 177);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
             this.labelLanguage.Size = new System.Drawing.Size(55, 13);
@@ -292,7 +320,7 @@
             // 
             this.comboBoxLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxLanguage.FormattingEnabled = true;
-            this.comboBoxLanguage.Location = new System.Drawing.Point(6, 147);
+            this.comboBoxLanguage.Location = new System.Drawing.Point(6, 174);
             this.comboBoxLanguage.Name = "comboBoxLanguage";
             this.comboBoxLanguage.Size = new System.Drawing.Size(121, 21);
             this.comboBoxLanguage.TabIndex = 6;
@@ -416,6 +444,16 @@
             this.tabPageVideo.TabIndex = 4;
             this.tabPageVideo.Text = "Video";
             this.tabPageVideo.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxVerticalSync
+            // 
+            this.checkBoxVerticalSync.AutoSize = true;
+            this.checkBoxVerticalSync.Location = new System.Drawing.Point(6, 59);
+            this.checkBoxVerticalSync.Name = "checkBoxVerticalSync";
+            this.checkBoxVerticalSync.Size = new System.Drawing.Size(86, 17);
+            this.checkBoxVerticalSync.TabIndex = 19;
+            this.checkBoxVerticalSync.Text = "Vertical sync";
+            this.checkBoxVerticalSync.UseVisualStyleBackColor = true;
             // 
             // label11
             // 
@@ -1342,16 +1380,6 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             // 
-            // checkBoxVerticalSync
-            // 
-            this.checkBoxVerticalSync.AutoSize = true;
-            this.checkBoxVerticalSync.Location = new System.Drawing.Point(6, 59);
-            this.checkBoxVerticalSync.Name = "checkBoxVerticalSync";
-            this.checkBoxVerticalSync.Size = new System.Drawing.Size(86, 17);
-            this.checkBoxVerticalSync.TabIndex = 19;
-            this.checkBoxVerticalSync.Text = "Vertical sync";
-            this.checkBoxVerticalSync.UseVisualStyleBackColor = true;
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -1496,5 +1524,7 @@
         private System.Windows.Forms.CheckBox checkUseLargeAddressAware;
         private System.Windows.Forms.CheckBox checkBoxModelInstancing;
         private System.Windows.Forms.CheckBox checkBoxVerticalSync;
+        private System.Windows.Forms.ComboBox comboBoxPressureUnit;
+        private System.Windows.Forms.Label labelPressureUnit;
     }
 }

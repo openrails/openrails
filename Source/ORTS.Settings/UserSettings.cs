@@ -93,6 +93,8 @@ namespace ORTS.Settings
 		public bool GraduatedRelease { get; set; }
 		[Default(21)]
 		public int BrakePipeChargingRate { get; set; }
+        [Default("Automatic")]
+        public String PressureUnit { get; set; }
 		[Default(false)]
 		public bool SuppressConfirmations { get; set; }
 		[Default(false)]

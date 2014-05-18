@@ -224,8 +224,16 @@ namespace ORTS
             Script.IsAlerterEnabled = () => this.IsAlerterEnabled;
             Script.AlerterSound = () => Locomotive.AlerterSnd;
             Script.SetHorn = (value) => Locomotive.SignalEvent(value ? Event.HornOn : Event.HornOff);
-            Script.SetFullBrake = (value) => Locomotive.TrainBrakeController.TCSFullServiceBraking = value;
-            Script.SetEmergencyBrake = (value) => Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
+            Script.SetFullBrake = (value) =>
+            {
+                if (Locomotive.TrainBrakeController.TCSFullServiceBraking != value)
+                    Locomotive.TrainBrakeController.TCSFullServiceBraking = value; 
+            };
+            Script.SetEmergencyBrake = (value) =>
+            {
+                if (Locomotive.TrainBrakeController.TCSEmergencyBraking != value)
+                    Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
+            };
             Script.SetThrottleController = (value) => Locomotive.ThrottleController.SetValue(value);
             Script.SetDynamicBrakeController = (value) => Locomotive.DynamicBrakeController.SetValue(value);
             Script.SetVigilanceAlarmDisplay = (value) => this.VigilanceAlarm = value;
@@ -255,11 +263,18 @@ namespace ORTS
             Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);
             Script.DistanceCurve = (arg1, arg2, arg3, arg4, arg5) => DistanceCurve(arg1, arg2, arg3, arg4, arg5);
             Script.SetPantographsDown = () => 
-            { 
-                Locomotive.SignalEvent(Event.Pantograph1Down);
-                Locomotive.SignalEvent(Event.Pantograph2Down);
-                Locomotive.Train.SignalEvent(Event.Pantograph1Down);
-                Locomotive.Train.SignalEvent(Event.Pantograph2Down);
+            {
+                if (Locomotive.Pan1Up)
+                {
+                    Locomotive.SignalEvent(Event.Pantograph1Down);
+                    Locomotive.Train.SignalEvent(Event.Pantograph1Down);
+                }
+
+                if (Locomotive.Pan2Up)
+                {
+                    Locomotive.SignalEvent(Event.Pantograph2Down);
+                    Locomotive.Train.SignalEvent(Event.Pantograph2Down);
+                }
             };
             Script.GetBoolParameter = (arg1, arg2, arg3) => LoadParameter<bool>(arg1, arg2, arg3);
             Script.GetIntParameter = (arg1, arg2, arg3) => LoadParameter<int>(arg1, arg2, arg3);
@@ -410,12 +425,12 @@ namespace ORTS
                 Locomotive.TrainBrakeController.TCSEmergencyBraking = emergency;
         }
 
-        void SendEvent(TCSEvent evt)
+        public void SendEvent(TCSEvent evt)
         {
             SendEvent(evt, String.Empty);
         }
 
-        void SendEvent(TCSEvent evt, string message)
+        public void SendEvent(TCSEvent evt, string message)
         {
             if (Script != null)
                 Script.HandleEvent(evt, message);

@@ -106,7 +106,6 @@ namespace ORTS
         public float MinReductionPSI { get; private set; }
 
         public float CurrentValue { get; set; }
-        public float IntermediateValue { get; set; }
         public float MinimumValue { get; set; }
         public float MaximumValue { get; set; }
         public float StepSize { get; set; }
@@ -195,7 +194,7 @@ namespace ORTS
                     MinimumValue = stf.ReadFloat(STFReader.UNITS.None, null);
                     MaximumValue = stf.ReadFloat(STFReader.UNITS.None, null);
                     StepSize = stf.ReadFloat(STFReader.UNITS.None, null);
-                    IntermediateValue = CurrentValue = stf.ReadFloat(STFReader.UNITS.None, null);
+                    CurrentValue = stf.ReadFloat(STFReader.UNITS.None, null);
                     string token = stf.ReadItem(); // s/b numnotches
                     if (string.Compare(token, "NumNotches", true) != 0) // handle error in gp38.eng where extra parameter provided before NumNotches statement 
                         stf.ReadItem();
@@ -249,12 +248,10 @@ namespace ORTS
                 Script.FullServReductionBar = () => Bar.FromPSI(FullServReductionPSI);
                 Script.MinReductionBar = () => Bar.FromPSI(MinReductionPSI);
                 Script.CurrentValue = () => CurrentValue;
-                Script.IntermediateValue = () => IntermediateValue;
                 Script.MinimumValue = () => MinimumValue;
                 Script.MaximumValue = () => MaximumValue;
                 Script.StepSize = () => StepSize;
                 Script.UpdateValue = () => UpdateValue;
-                Script.CommandStartTime = () => CommandStartTime;
                 Script.Notches = () => Notches;
 
                 Script.SetCurrentValue = (value) => CurrentValue = value;
@@ -338,9 +335,9 @@ namespace ORTS
             SendEvent(BrakeControllerEvent.StartDecrease, target);
         }
 
-        public float SetRDPercent(float percent)
+        public float SetPercent(float percent)
         {
-            SendEvent(BrakeControllerEvent.SetRDPercent, percent);
+            SendEvent(BrakeControllerEvent.SetCurrentPercent, percent);
             return CurrentValue;
         }
 
@@ -360,7 +357,7 @@ namespace ORTS
         public string GetStatus()
         {
             if (Script != null)
-                return Script.GetStatus();
+                return ControllerStateDictionary.Dict[Script.GetState()];
             else
                 return "";
         }

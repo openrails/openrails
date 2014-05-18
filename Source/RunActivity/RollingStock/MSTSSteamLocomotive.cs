@@ -2486,7 +2486,7 @@ namespace ORTS
 
         public void SetCutoffPercent(float percent)
         {
-            Train.MUReverserPercent = CutoffController.SetRDPercent(percent);
+            Train.MUReverserPercent = CutoffController.SetPercent(percent);
             Direction = Train.MUReverserPercent >= 0 ? Direction.Forward : Direction.Reverse;
         }
 

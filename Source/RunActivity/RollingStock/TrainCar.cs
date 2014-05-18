@@ -70,7 +70,7 @@ namespace ORTS
     {
         public readonly Simulator Simulator;
         public readonly string WagFilePath;
-		public string RealWagFilePath; //we are substituting missing remote cars in MP, so need to remember this
+        public string RealWagFilePath; //we are substituting missing remote cars in MP, so need to remember this
 
         // sound related variables
         public bool IsPartOfActiveTrain = true;
@@ -84,7 +84,7 @@ namespace ORTS
         public bool IsFreight;           // indication freight wagon or passenger car
         public bool IsTender;
         public bool HasFreightAnim = false;
-		public bool HasPassengerCapacity = false;
+        public bool HasPassengerCapacity = false;
         public bool HasInsideView = false;
 
         public LightCollection Lights;
@@ -213,8 +213,8 @@ namespace ORTS
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
         public List<PassengerViewPoint> PassengerViewpoints = new List<PassengerViewPoint>();
-		public List<ViewPoint> CabViewpoints; //three dimensional cab view point
-		public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
+        public List<ViewPoint> CabViewpoints; //three dimensional cab view point
+        public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method
         float TrackGaugeM;  // Track gauge - read in MSTSWagon
@@ -237,7 +237,7 @@ namespace ORTS
         float CoefficientFriction = 0.5f; // Initialise coefficient of Friction - 0.5 for dry rails, 0.1 - 0.3 for wet rails
         float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         
-          public virtual void Initialize()
+        public virtual void Initialize()
         {
             CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
@@ -581,11 +581,11 @@ namespace ORTS
 
         public virtual string GetStatus() { return null; }
         public virtual string GetDebugStatus() { return null; }
-        public virtual string GetTrainBrakeStatus(bool isMetric) { return null; }
-        public virtual string GetEngineBrakeStatus(bool isMetric) { return null; }
+        public virtual string GetTrainBrakeStatus(PressureUnit unit) { return null; }
+        public virtual string GetEngineBrakeStatus(PressureUnit unit) { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
         public virtual bool GetSanderOn() { return false; }
-		bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels
+        bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels
 
         public TrainCar()
         {
@@ -593,9 +593,9 @@ namespace ORTS
 
         public TrainCar(Simulator simulator, string wagFile)
         {
-			Simulator = simulator;
+            Simulator = simulator;
             WagFilePath = wagFile;
-			RealWagFilePath = wagFile;
+            RealWagFilePath = wagFile;
             Stiffness = (float)Program.Random.NextDouble() * 2f + 3f;//stiffness range from 4-8 (i.e. vibrating frequency)
             MaxVibSpeed = 15f + Stiffness * 2;//about 50km/h
         }
@@ -604,9 +604,9 @@ namespace ORTS
         public virtual void Save(BinaryWriter outf)
         {
             outf.Write(Flipped);
-			outf.Write(UiD);
-			outf.Write(CarID);
-			BrakeSystem.Save(outf);
+            outf.Write(UiD);
+            outf.Write(CarID);
+            BrakeSystem.Save(outf);
             outf.Write(MotiveForceN);
             outf.Write(FrictionForceN);
             outf.Write(SpeedMpS);
@@ -618,9 +618,9 @@ namespace ORTS
         public virtual void Restore(BinaryReader inf)
         {
             Flipped = inf.ReadBoolean();
-			UiD = inf.ReadInt32();
-			CarID = inf.ReadString();
-			BrakeSystem.Restore(inf);
+            UiD = inf.ReadInt32();
+            CarID = inf.ReadString();
+            BrakeSystem.Restore(inf);
             MotiveForceN = inf.ReadSingle();
             FrictionForceN = inf.ReadSingle();
             SpeedMpS = inf.ReadSingle();
@@ -787,9 +787,9 @@ namespace ORTS
                 Console.WriteLine("  part:  matrix {1,5:F0}  offset {0,10:F4}  weight {2,5:F0}", p.OffsetM, p.iMatrix, p.SumWgt);
 #endif
 
-			WheelHasBeenSet = true;
-           // No axles but we have bogies.
-           if (WheelAxles.Count == 0 && Parts.Count > 1)
+            WheelHasBeenSet = true;
+            // No axles but we have bogies.
+            if (WheelAxles.Count == 0 && Parts.Count > 1)
             {
                 // Fake the axles by pretending each has 1 axle.
                 foreach (var part in Parts.Skip(1))
@@ -798,10 +798,10 @@ namespace ORTS
             }
             // Less that two axles is bad.
             //if (WheelAxles.Count < 2)
-           //{
-           //    Trace.TraceWarning("Car has less than two axles in {0}", WagFilePath);
-           //    return;
-           //}
+            //{
+            //    Trace.TraceWarning("Car has less than two axles in {0}", WagFilePath);
+            //    return;
+            //}
             // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
                 Parts.Add(new TrainCarPart(0, 0));
@@ -1314,10 +1314,10 @@ namespace ORTS
         /// </summary>
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
 
-		/// <summary>
-		/// Unload and release the car - its not longer being displayed
-		/// </summary>
-		public abstract void Unload();
+        /// <summary>
+        /// Unload and release the car - its not longer being displayed
+        /// </summary>
+        public abstract void Unload();
 
         [CallOnThread("Loader")]
         internal virtual void LoadForPlayer() { }

@@ -80,6 +80,7 @@ namespace ORTS
             checkAlerterDisableExternal.Checked = Settings.AlerterDisableExternal;
             checkGraduatedRelease.Checked = Settings.GraduatedRelease;
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
+            comboBoxPressureUnit.Text = Settings.PressureUnit;
             checkSuppressConfirmations.Checked = Settings.SuppressConfirmations;
             checkViewDispatcher.Checked = Settings.ViewDispatcher;
             comboBoxLanguage.Text = Settings.Language;
@@ -237,6 +238,7 @@ namespace ORTS
             Settings.AlerterDisableExternal = checkAlerterDisableExternal.Checked;
             Settings.GraduatedRelease = checkGraduatedRelease.Checked;
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
+            Settings.PressureUnit = comboBoxPressureUnit.Text;
             Settings.SuppressConfirmations = checkSuppressConfirmations.Checked;
             Settings.ViewDispatcher = checkViewDispatcher.Checked;
             Settings.Language = comboBoxLanguage.SelectedValue.ToString();

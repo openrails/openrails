@@ -36,10 +36,12 @@ namespace ORTS.Common
 
     public enum PressureUnit
     {
+        None,
         KPa,
         Bar,
         PSI,
-        InHg
+        InHg,
+        KgfpCm2
     }
 
     /// <summary>
@@ -102,6 +104,7 @@ namespace ORTS.Common
         static string bar = Catalog.GetString("bar");
         static string psi = Catalog.GetString("psi");
         static string inhg = Catalog.GetString("inHg");
+        static string kgfpcm2 = Catalog.GetString("kgf/cm^2");
 
         /// <summary>
         /// Formatted unlocalized speed string, used in reports and logs.
@@ -180,6 +183,9 @@ namespace ORTS.Common
         /// </summary>
         public static string FormatPressure(float pressure, PressureUnit inputUnit, PressureUnit outputUnit, bool unitDisplayed)
         {
+            if (inputUnit == PressureUnit.None || outputUnit == PressureUnit.None)
+                return "";
+
             string unit = "";
             string format = "";
             switch (outputUnit)
@@ -198,6 +204,9 @@ namespace ORTS.Common
                         case PressureUnit.InHg:
                             pressure = KPa.FromInHg(pressure);
                             break;
+                        case PressureUnit.KgfpCm2:
+                            pressure = KPa.FromKgfpCm2(pressure);
+                            break;
                     }
                     break;
 
@@ -214,6 +223,9 @@ namespace ORTS.Common
                             break;
                         case PressureUnit.InHg:
                             pressure = Bar.FromInHg(pressure);
+                            break;
+                        case PressureUnit.KgfpCm2:
+                            pressure = Bar.FromKgfpCm2(pressure);
                             break;
                     }
                     break;
@@ -232,6 +244,9 @@ namespace ORTS.Common
                         case PressureUnit.InHg:
                             pressure = KPa.ToPSI(KPa.FromInHg(pressure));
                             break;
+                        case PressureUnit.KgfpCm2:
+                            pressure = KPa.ToPSI(KPa.FromKgfpCm2(pressure));
+                            break;
                     }
                     break;
 
@@ -248,6 +263,29 @@ namespace ORTS.Common
                             break;
                         case PressureUnit.PSI:
                             pressure = KPa.ToInHg(KPa.FromPSI(pressure));
+                            break;
+                        case PressureUnit.KgfpCm2:
+                            pressure = KPa.ToInHg(KPa.FromKgfpCm2(pressure));
+                            break;
+                    }
+                    break;
+
+                case PressureUnit.KgfpCm2:
+                    unit = kgfpcm2;
+                    format = "{0:F1}";
+                    switch (inputUnit)
+                    {
+                        case PressureUnit.KPa:
+                            pressure = KPa.ToKgfpCm2(pressure);
+                            break;
+                        case PressureUnit.Bar:
+                            pressure = Bar.ToKgfpCm2(pressure);
+                            break;
+                        case PressureUnit.PSI:
+                            pressure = KPa.ToKgfpCm2(KPa.FromPSI(pressure));
+                            break;
+                        case PressureUnit.InHg:
+                            pressure = KPa.ToKgfpCm2(KPa.FromInHg(pressure));
                             break;
                     }
                     break;
@@ -347,12 +385,14 @@ namespace ORTS.Common
     /// </summary>
     public class KPa
     {
-        public static float  FromPSI(float p)   { return p * 6.89475729f; } // PSI => kPa
-        public static float    ToPSI(float k)   { return k / 6.89475729f; } // kPa => PSI
-        public static float FromInHg(float i)   { return i * 3.386389f; }   // inHg => kPa
-        public static float   ToInHg(float k)   { return k / 3.386389f; }   // kPa => inHg
-        public static float  FromBar(float b)   { return b * 100.0f; }      // bar => kPa
-        public static float    ToBar(float k)   { return k / 100.0f; }      // kPa => bar
+        public static float     FromPSI(float p)    { return p * 6.89475729f; } // PSI => kPa
+        public static float       ToPSI(float k)    { return k / 6.89475729f; } // kPa => PSI
+        public static float    FromInHg(float i)    { return i * 3.386389f; }   // inHg => kPa
+        public static float      ToInHg(float k)    { return k / 3.386389f; }   // kPa => inHg
+        public static float     FromBar(float b)    { return b * 100.0f; }      // bar => kPa
+        public static float       ToBar(float k)    { return k / 100.0f; }      // kPa => bar
+        public static float FromKgfpCm2(float f)    { return f * 98.068059f; }  // kgf/cm2 => kPa
+        public static float   ToKgfpCm2(float k)    { return k / 98.068059f; }  // kPa => kgf/cm2
     }
 
     /// <summary>
@@ -360,12 +400,14 @@ namespace ORTS.Common
     /// </summary>
     public class Bar
     {
-        public static float  FromKPa(float k)   { return k / 100.0f; }      // kPa => bar
-        public static float    ToKPa(float b)   { return b * 100.0f; }      // bar => kPa
-        public static float  FromPSI(float p)   { return p / 14.5037738f; } // PSI => bar
-        public static float    ToPSI(float b)   { return b * 14.5037738f; } // bar => PSI
-        public static float FromInHg(float i)   { return i / 29.5333727f; } // inHg => bar
-        public static float   ToInHg(float b)   { return b * 29.5333727f; } // bar => inHg
+        public static float     FromKPa(float k)    { return k / 100.0f; }      // kPa => bar
+        public static float       ToKPa(float b)    { return b * 100.0f; }      // bar => kPa
+        public static float     FromPSI(float p)    { return p / 14.5037738f; } // PSI => bar
+        public static float       ToPSI(float b)    { return b * 14.5037738f; } // bar => PSI
+        public static float    FromInHg(float i)    { return i / 29.5333727f; } // inHg => bar
+        public static float      ToInHg(float b)    { return b * 29.5333727f; } // bar => inHg
+        public static float FromKgfpCm2(float f)    { return f / 1.0197f; }     // kgf/cm2 => bar
+        public static float   ToKgfpCm2(float b)    { return b * 1.0197f; }     // bar => kgf/cm2
     }
 
     /// <summary>

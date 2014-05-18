@@ -24,6 +24,8 @@ using System.Diagnostics;
 using System.Reflection;
 using System.CodeDom.Compiler;
 using Microsoft.CSharp;
+using GNU.Gettext;
+using ORTS.Viewer3D.Popups;
 
 namespace ORTS.Scripting
 {
@@ -383,11 +385,9 @@ namespace ORTS.Scripting.Api
     public class OdoMeter : Counter { public OdoMeter(TrainControlSystem tcs) { CurrentValue = tcs.DistanceM; } }
 
     // Represents the same enum as TrackMonitorSignalAspect
-    // [Flags] is for allowing the following syntax: if ((NextSignalAspect() & (Aspect.Approach_3 | Aspect.Approach_2)) != 0)
     /// <summary>
     /// A signal aspect, as shown on track monitor
     /// </summary>
-    [Flags]
     public enum Aspect
     {
         None,
@@ -416,8 +416,35 @@ namespace ORTS.Scripting.Api
         /// Internal reset request by touched systems other than the alerter button.
         /// </summary>
         AlerterReset,
+        /// <summary>
+        /// Internal reset request by the reverser.
+        /// </summary>
+        ReverserChanged,
+        /// <summary>
+        /// Internal reset request by the throttle controller.
+        /// </summary>
+        ThrottleChanged,
+        /// <summary>
+        /// Internal reset request by the gear box controller.
+        /// </summary>
+        GearBoxChanged,
+        /// <summary>
+        /// Internal reset request by the train brake controller.
+        /// </summary>
+        TrainBrakeChanged,
+        /// <summary>
+        /// Internal reset request by the engine brake controller.
+        /// </summary>
+        EngineBrakeChanged,
+        /// <summary>
+        /// Internal reset request by the dynamic brake controller.
+        /// </summary>
+        DynamicBrakeChanged,
+        /// <summary>
+        /// Internal reset request by the horn handle.
+        /// </summary>
+        HornActivated,
     }
-
 
     #endregion
 
@@ -474,10 +501,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> CurrentValue;
         /// <summary>
-        /// Intermediate value of the brake controller (at initialization time)
-        /// </summary>
-        public Func<float> IntermediateValue;
-        /// <summary>
         /// Minimum value of the brake controller
         /// </summary>
         public Func<float> MinimumValue;
@@ -493,10 +516,6 @@ namespace ORTS.Scripting.Api
         /// State of the brake pressure (1 = increasing, -1 = decreasing)
         /// </summary>
         public Func<float> UpdateValue;
-        /// <summary>
-        /// Start time of the pressure change command
-        /// </summary>
-        public Func<double> CommandStartTime;
         /// <summary>
         /// Gives the list of notches
         /// </summary>
@@ -545,7 +564,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Called in order to get a status text for the debug overlay
         /// </summary>
-        public abstract string GetStatus();
+        public abstract ControllerState GetState();
     }
 
     public enum BrakeControllerEvent
@@ -569,11 +588,65 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sets the value of the brake controller using a RailDriver peripheral (must have a value)
         /// </summary>
-        SetRDPercent,
+        SetCurrentPercent,
         /// <summary>
         /// Sets the current value of the brake controller (must have a value)
         /// </summary>
         SetCurrentValue
+    }
+
+    public enum ControllerState
+    {
+        // MSTS values (DO NOT CHANGE THE ORDER !)
+        Dummy,
+        Release,            // TrainBrakesControllerReleaseStart 
+        FullQuickRelease,   // TrainBrakesControllerFullQuickReleaseStart
+        Running,            // TrainBrakesControllerRunningStart 
+        Neutral,            // TrainBrakesControllerNeutralhandleOffStart
+        SelfLap,            // TrainBrakesControllerSelfLapStart 
+        Lap,
+        Apply,              // TrainBrakesControllerApplyStart 
+        EPApply,            // TrainBrakesControllerEPApplyStart 
+        GSelfLap,
+        GSelfLapH,
+        Suppression,        // TrainBrakesControllerSuppressionStart 
+        ContServ,           // TrainBrakesControllerContinuousServiceStart 
+        FullServ,           // TrainBrakesControllerFullServiceStart 
+        Emergency,          // TrainBrakesControllerEmergencyStart
+
+        // OR values
+        Overcharge,         // Overcharge
+        EBPB,               // Emergency Braking Push Button
+        TCSEmergency,       // TCS Emergency Braking
+        TCSFullServ         // TCS Full Service Braking
+    };
+
+    public static class ControllerStateDictionary
+    {
+        private static readonly GettextResourceManager Catalog = new GettextResourceManager("RunActivity");
+
+        public static readonly Dictionary<ControllerState, string> Dict = new Dictionary<ControllerState, string>
+        {
+            {ControllerState.Dummy, ""},
+            {ControllerState.Release, Catalog.GetString("Release")},
+            {ControllerState.FullQuickRelease, Catalog.GetString("Quick Release")},
+            {ControllerState.Running, Catalog.GetString("Running")},
+            {ControllerState.Neutral, Catalog.GetString("Neutral")},
+            {ControllerState.Apply, Catalog.GetString("Apply")},
+            {ControllerState.EPApply, Catalog.GetString("EPApply")},
+            {ControllerState.Emergency, Catalog.GetString("Emergency")},
+            {ControllerState.SelfLap, Catalog.GetString("Lap")},
+            {ControllerState.GSelfLap, Catalog.GetString("Service")},
+            {ControllerState.GSelfLapH, Catalog.GetString("Service")},
+            {ControllerState.Lap, Catalog.GetString("Lap")},
+            {ControllerState.Suppression, Catalog.GetString("Suppression")},
+            {ControllerState.ContServ, Catalog.GetString("Cont. Service")},
+            {ControllerState.FullServ, Catalog.GetString("Full Service")},
+            {ControllerState.Overcharge, Catalog.GetString("Overcharge")},
+            {ControllerState.EBPB, Catalog.GetString("Emergency Braking Push Button")},
+            {ControllerState.TCSEmergency, Catalog.GetString("TCS Emergency Braking")},
+            {ControllerState.TCSFullServ, Catalog.GetString("TCS Full Service Braking")}
+        };
     }
 
     #endregion

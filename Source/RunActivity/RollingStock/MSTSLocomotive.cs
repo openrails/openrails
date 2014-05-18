@@ -50,6 +50,7 @@ using Microsoft.Xna.Framework.Graphics;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using ORTS.Viewer3D;
 using ORTS.Viewer3D.Popups;
 
@@ -103,6 +104,8 @@ namespace ORTS
         public float PowerOnDelayS;
         public bool CabLightOn;
         public bool ShowCab = true;
+        public bool MilepostUnitsMetric;
+        public PressureUnit PressureUnit = PressureUnit.None;
 
         bool DoesHornTriggerBell;
 
@@ -188,7 +191,8 @@ namespace ORTS
         public MSTSLocomotive(Simulator simulator, string wagPath)
             : base(simulator, wagPath)
         {
-            BrakePipeChargingRatePSIpS = simulator.Settings.BrakePipeChargingRate;
+            BrakePipeChargingRatePSIpS = Simulator.Settings.BrakePipeChargingRate;
+            MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
 
             LocomotiveAxle = new Axle();
             LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
@@ -255,6 +259,90 @@ namespace ORTS
                 {
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
                 }
+            }
+
+            switch (Simulator.Settings.PressureUnit)
+            {
+
+                default:
+                case "Automatic":
+                    if (CabViewList.Count > 0)
+                    {
+                        List<CABViewControlTypes> correctTypes = new List<CABViewControlTypes> {
+                            CABViewControlTypes.MAIN_RES,
+                            CABViewControlTypes.EQ_RES,
+                            CABViewControlTypes.BRAKE_CYL,
+                            CABViewControlTypes.BRAKE_PIPE
+                        };
+                        bool coherent = true;
+
+                        CabViewControls cvcList = CabViewList[0].CVFFile.CabViewControls;
+                        foreach (CabViewControl cvc in cvcList)
+                        {
+                            if (correctTypes.Contains(cvc.ControlType))
+                            {
+                                PressureUnit unit = PressureUnit.None;
+                                switch (cvc.Units)
+                                {
+                                    case CABViewControlUnits.BAR:
+                                        unit = PressureUnit.Bar;
+                                        break;
+
+                                    case CABViewControlUnits.PSI:
+                                        unit = PressureUnit.PSI;
+                                        break;
+
+                                    case CABViewControlUnits.INCHES_OF_MERCURY:
+                                        unit = PressureUnit.InHg;
+                                        break;
+
+                                    case CABViewControlUnits.KGS_PER_SQUARE_CM:
+                                        unit = PressureUnit.KgfpCm2;
+                                        break;
+
+                                    default:
+                                        coherent = false;
+                                        Trace.TraceWarning("Can't use pressure unit defined in CVF file for debug purposes.");
+                                        break;
+                                }
+
+                                // Check if found pressure unit is the same as the previous one.
+                                if (PressureUnit != PressureUnit.None && unit != PressureUnit)
+                                    coherent = false;
+                                else
+                                    PressureUnit = unit;
+                            }
+
+                            if (!coherent)
+                                break;
+                        }
+
+                        // If CVF data isn't coherent, reset pressure unit.
+                        if (!coherent)
+                            PressureUnit = PressureUnit.None;
+                    }
+
+                    if (PressureUnit == PressureUnit.None)
+                    {
+                        PressureUnit = (MilepostUnitsMetric ? PressureUnit.Bar : PressureUnit.PSI);
+                    }
+                    break;
+
+                case "bar":
+                    PressureUnit = PressureUnit.Bar;
+                    break;
+
+                case "PSI":
+                    PressureUnit = PressureUnit.PSI;
+                    break;
+
+                case "inHg":
+                    PressureUnit = PressureUnit.InHg;
+                    break;
+                    
+                case "kgf/cm^2":
+                    PressureUnit = PressureUnit.KgfpCm2;
+                    break;
             }
 
             IsDriveable = true;
@@ -623,12 +711,12 @@ namespace ORTS
             TrainBrakeController.Update(elapsedClockSeconds);
             if (TrainBrakeController.UpdateValue > 0.0)
             {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(PressureUnit));
             }
 
             if (TrainBrakeController.UpdateValue < 0.0)
             {
-                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+                Simulator.Confirmer.Update(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(PressureUnit));
             }
 
             if (EngineBrakeController != null)
@@ -636,11 +724,11 @@ namespace ORTS
                 EngineBrakeController.Update(elapsedClockSeconds);
                 if (EngineBrakeController.UpdateValue > 0.0)
                 {
-                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(PressureUnit));
                 }
                 if (EngineBrakeController.UpdateValue < 0.0)
                 {
-                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+                    Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus(PressureUnit));
                 }
             }
 
@@ -1290,7 +1378,7 @@ namespace ORTS
 
         public virtual void StartReverseIncrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.ReverserChanged);
             if (this.IsLeadLocomotive())
             {
                 {
@@ -1306,7 +1394,7 @@ namespace ORTS
 
         public virtual void StartReverseDecrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.ReverserChanged);
             if (this.IsLeadLocomotive())
             {
                 {
@@ -1322,7 +1410,7 @@ namespace ORTS
 
         public void StartThrottleIncrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.ThrottleChanged);
             ThrottleController.StartIncrease(target);
             //Not needed, Update() handles it:
             // Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
@@ -1332,7 +1420,7 @@ namespace ORTS
         public bool StartThrottleIncrease()
         {
             bool notchedThrottleCommandNeeded = false;
-            AlerterReset();
+            AlerterReset(TCSEvent.ThrottleChanged);
 
             CommandStartTime = Simulator.ClockTime;
 
@@ -1365,7 +1453,7 @@ namespace ORTS
         {
             bool continuousThrottleCommandNeeded = false;
 
-            AlerterReset();
+            AlerterReset(TCSEvent.ThrottleChanged);
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
                 return continuousThrottleCommandNeeded;
@@ -1386,7 +1474,7 @@ namespace ORTS
 
         public void StartThrottleDecrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.ThrottleChanged);
             CommandStartTime = Simulator.ClockTime;
             ThrottleController.StartDecrease(target);
             //Not needed, Update() handles it:
@@ -1397,7 +1485,7 @@ namespace ORTS
         public bool StartThrottleDecrease()
         {
             bool notchedThrottleCommandNeeded = false;
-            AlerterReset();
+            AlerterReset(TCSEvent.ThrottleChanged);
 
             CommandStartTime = Simulator.ClockTime;
 
@@ -1429,7 +1517,7 @@ namespace ORTS
         public bool StopThrottleDecrease()
         {
             bool continuousThrottleCommandNeeded = false;
-            AlerterReset();
+            AlerterReset(TCSEvent.ThrottleChanged);
 
             if (!HasCombCtrl && DynamicBrakePercent >= 0)
                 // signal sound
@@ -1495,7 +1583,7 @@ namespace ORTS
 
         public void SetThrottlePercent(float percent)
         {
-            ThrottlePercent = ThrottleController.SetRDPercent(percent);
+            ThrottlePercent = ThrottleController.SetPercent(percent);
         }
 
         public virtual void StartGearBoxIncrease()
@@ -1504,7 +1592,7 @@ namespace ORTS
             {
                 GearBoxController.StartIncrease();
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
-                AlerterReset();
+                AlerterReset(TCSEvent.GearBoxChanged);
             }
 
             var mstsDieselLocomotive = this as MSTSDieselLocomotive;
@@ -1535,7 +1623,7 @@ namespace ORTS
             {
                 GearBoxController.StartDecrease();
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
-                AlerterReset();
+                AlerterReset(TCSEvent.GearBoxChanged);
             }
 
             var mstsDieselLocomotive = this as MSTSDieselLocomotive;
@@ -1562,29 +1650,29 @@ namespace ORTS
 
         public void StartTrainBrakeIncrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartIncrease(target);
-            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Increase, GetTrainBrakeStatus(PressureUnit));
             SignalEvent(Event.TrainBrakeChange);
         }
 
         public void StopTrainBrakeIncrease()
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StopIncrease();
         }
 
         public void StartTrainBrakeDecrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartDecrease(target);
-            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+            Simulator.Confirmer.Confirm(CabControl.TrainBrake, CabSetting.Decrease, GetTrainBrakeStatus(PressureUnit));
             SignalEvent(Event.TrainBrakeChange);
         }
 
         public void StopTrainBrakeDecrease()
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StopDecrease();
         }
 
@@ -1653,7 +1741,7 @@ namespace ORTS
             // such as Hy-rail truck
             // if (HasTrainBrake)
             if (TrainBrakeController.IsValid())
-                TrainBrakeController.SetRDPercent(percent);
+                TrainBrakeController.SetPercent(percent);
         }
 
         public void SetEmergency(bool emergency)
@@ -1662,24 +1750,24 @@ namespace ORTS
             TrainControlSystem.SetEmergency(emergency);
         }
 
-        public override string GetTrainBrakeStatus(bool isMetric)
+        public override string GetTrainBrakeStatus(PressureUnit unit)
         {
             string s = TrainBrakeController.GetStatus();
             TrainCar lastCar = Train.Cars[Train.Cars.Count - 1];
             if (lastCar == this)
                 lastCar = Train.Cars[0];
-            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem, isMetric);
+            s += BrakeSystem.GetFullStatus(lastCar.BrakeSystem, unit);
             return s;
         }
 
         public void StartEngineBrakeIncrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.EngineBrakeChanged);
             if (EngineBrakeController == null)
                 return;
 
             EngineBrakeController.StartIncrease(target);
-            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(PressureUnit));
             SignalEvent(Event.EngineBrakeChange);
         }
 
@@ -1691,7 +1779,7 @@ namespace ORTS
         {
             bool engineBrakeCommandNeeded = false;
 
-            AlerterReset();
+            AlerterReset(TCSEvent.EngineBrakeChanged);
             if (EngineBrakeController != null)
             {
                 EngineBrakeController.StopIncrease();
@@ -1702,13 +1790,13 @@ namespace ORTS
 
         public void StartEngineBrakeDecrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.EngineBrakeChanged);
             if (EngineBrakeController == null)
                 return;
 
             EngineBrakeController.StartDecrease(target);
             EngineBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
-            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(Simulator.Confirmer.Viewer.MilepostUnitsMetric));
+            Simulator.Confirmer.Confirm(CabControl.EngineBrake, CabSetting.Increase, GetEngineBrakeStatus(PressureUnit));
             SignalEvent(Event.EngineBrakeChange);
         }
 
@@ -1720,7 +1808,7 @@ namespace ORTS
         {
             bool engineBrakeCommandNeeded = false;
 
-            AlerterReset();
+            AlerterReset(TCSEvent.EngineBrakeChanged);
             if (EngineBrakeController != null)
             {
                 EngineBrakeController.StopDecrease();
@@ -1733,10 +1821,10 @@ namespace ORTS
         {
             if (EngineBrakeController == null)
                 return;
-            EngineBrakeController.SetRDPercent(percent);
+            EngineBrakeController.SetPercent(percent);
         }
 
-        public override string GetEngineBrakeStatus(bool isMetric)
+        public override string GetEngineBrakeStatus(PressureUnit unit)
         {
             if (EngineBrakeController == null)
                 return null;
@@ -1757,7 +1845,7 @@ namespace ORTS
 
         public void StartDynamicBrakeIncrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (!CanUseDynamicBrake())
                 return;
 
@@ -1783,7 +1871,7 @@ namespace ORTS
         {
             bool dynamicBrakeCommandNeeded = false;
 
-            AlerterReset();
+            AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CanUseDynamicBrake())
             {
                 DynamicBrakeController.StopIncrease();
@@ -1794,7 +1882,7 @@ namespace ORTS
 
         public void StartDynamicBrakeDecrease(float? target)
         {
-            AlerterReset();
+            AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (!CanUseDynamicBrake())
                 return;
 
@@ -1821,7 +1909,7 @@ namespace ORTS
         {
             bool dynamicBrakeCommandNeeded = false;
 
-            AlerterReset();
+            AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CanUseDynamicBrake())
             {
                 DynamicBrakeController.StopDecrease();
@@ -1834,7 +1922,7 @@ namespace ORTS
         {
             if (!CanUseDynamicBrake())
                 return;
-            DynamicBrakePercent = DynamicBrakeController.SetRDPercent(percent);
+            DynamicBrakePercent = DynamicBrakeController.SetPercent(percent);
             if (percent < 0)
                 DynamicBrakePercent = percent;
         }
@@ -1919,7 +2007,13 @@ namespace ORTS
 
         public void AlerterReset()
         {
-            TrainControlSystem.AlerterReset();
+            TrainControlSystem.SendEvent(TCSEvent.AlerterReset);
+        }
+
+        public void AlerterReset(TCSEvent evt)
+        {
+            AlerterReset();
+            TrainControlSystem.SendEvent(evt);
         }
 
         public void AlerterPressed(bool pressed)
