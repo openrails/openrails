@@ -230,6 +230,11 @@ namespace ORTS.Scripting.Api
         /// Returns a distance curve based safe braking distance, unit is m
         /// </summary>
         public Func5<float, float, float, float, float, float> DistanceCurve;
+        /// <summary>
+        /// (float currentSpeedMpS, float targetSpeedMpS, float distanceM)
+        /// Returns the deceleration needed to decrease the speed to the target speed at the target distance
+        /// </summary>
+        public Func<float, float, float, float> Deceleration;
 
         /// <summary>
         /// Set train brake controller to full service position.

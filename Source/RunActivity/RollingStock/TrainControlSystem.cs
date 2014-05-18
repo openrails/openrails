@@ -262,6 +262,7 @@ namespace ORTS
             Script.NextPostDistanceM = (value) => NextSignalItem<float>(value, ref PostDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
             Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);
             Script.DistanceCurve = (arg1, arg2, arg3, arg4, arg5) => DistanceCurve(arg1, arg2, arg3, arg4, arg5);
+            Script.Deceleration = (arg1, arg2, arg3) => Deceleration(arg1, arg2, arg3);
             Script.SetPantographsDown = () => 
             {
                 if (Locomotive.Pan1Up)
@@ -388,7 +389,12 @@ namespace ORTS
 
             return brakingDistanceM + delayDistanceM;
         }
-        
+
+        private static float Deceleration(float currentSpeedMpS, float targetSpeedMpS, float distanceM)
+        {
+            return (currentSpeedMpS - targetSpeedMpS) * (currentSpeedMpS + targetSpeedMpS) / (2 * distanceM);
+        }
+
         public void Update()
         {
             if (Script == null)
@@ -436,7 +442,7 @@ namespace ORTS
                 Script.HandleEvent(evt, message);
         }
 
-        T LoadParameter<T>(string sectionName, string keyName, T defaultValue)
+        private T LoadParameter<T>(string sectionName, string keyName, T defaultValue)
         {
             var buffer = new String('\0', 256);
 
