@@ -1518,9 +1518,14 @@ namespace ORTS.Viewer3D
                 else if (Viewer.Settings.LODAlwaysMaximum)
                     chosenDistanceLevel.ViewingDistance = lodControl.DistanceLevels[lodControl.DistanceLevels.Length - 1].ViewingDistance;
 
-                // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
-                foreach (var subObject in chosenDistanceLevel.SubObjects.Where((so, i) => (subObjVisible == null || subObjVisible[i]) && (i != 1 || !HasNightSubObj || Viewer.MaterialManager.sunDirection.Y < 0)))
+                for (var i = 0; i < chosenDistanceLevel.SubObjects.Length; i++)
                 {
+                    var subObject = chosenDistanceLevel.SubObjects[i];
+
+                    // The 1st subobject (note that index 0 is the main object itself) is hidden during the day if HasNightSubObj is true.
+                    if ((subObjVisible != null && !subObjVisible[i]) || (i == 1 && HasNightSubObj && Viewer.MaterialManager.sunDirection.Y >= 0))
+                        continue;
+
                     foreach (var shapePrimitive in subObject.ShapePrimitives)
                     {
                         var xnaMatrix = Matrix.Identity;

@@ -1118,10 +1118,10 @@ namespace ORTS.Processes
                     h = h * scale / 2;
                 }
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-w - 0.5f, +h + 0.5f, -1), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+w - 0.5f, +h + 0.5f, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-w - 0.5f, -h + 0.5f, -1), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+w - 0.5f, -h + 0.5f, -1), new Vector2(1, 1)),
+				    new VertexPositionTexture(new Vector3(-w - 0.5f, +h + 0.5f, -2), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(+w - 0.5f, +h + 0.5f, -2), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(-w - 0.5f, -h + 0.5f, -2), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(+w - 0.5f, -h + 0.5f, -2), new Vector2(1, 1)),
 			    };
             }
         }

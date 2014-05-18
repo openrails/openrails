@@ -123,10 +123,10 @@ namespace ORTS.Viewer3D
     [DebuggerDisplay("{Material} {RenderPrimitive} {Flags}")]
     public class RenderItem
     {
-        public readonly Material Material;
-        public readonly RenderPrimitive RenderPrimitive;
+        public Material Material;
+        public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
-        public readonly ShapeFlags Flags;
+        public ShapeFlags Flags;
 
         public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags)
         {
@@ -184,6 +184,9 @@ namespace ORTS.Viewer3D
         Vector3 ShadowMapY;
         Vector3[] ShadowMapCenter;
 
+        readonly List<RenderItem> AllRenderItems = new List<RenderItem>();
+        int UsedRenderItems;
+
         readonly Material DummyBlendedMaterial;
         readonly Dictionary<Material, List<RenderItem>>[] RenderItems = new Dictionary<Material, List<RenderItem>>[(int)RenderPrimitiveSequence.Sentinel];
         readonly List<RenderItem>[] RenderShadowItems;
@@ -235,11 +238,30 @@ namespace ORTS.Viewer3D
 
         public void Clear()
         {
-            for (int i = 0; i < RenderItems.Length; i++)
-                foreach (Material mat in RenderItems[i].Keys)
+            // If we didn't use them all, remove 1 per frame.
+            if (UsedRenderItems < AllRenderItems.Count)
+                AllRenderItems.RemoveAt(AllRenderItems.Count - 1);
+
+            // Reset usage count.
+            UsedRenderItems = 0;
+
+            // Attempt to clean up unused materials over time (max 1 per RenderPrimitiveSequence).
+            for (var i = 0; i < RenderItems.Length; i++)
+            {
+                foreach (var mat in RenderItems[i].Keys)
+                {
+                    if (RenderItems[i][mat].Count == 0)
+                    {
+                        RenderItems[i].Remove(mat);
+                        break;
+                    }
+                }
+            }
+            
+            for (var i = 0; i < RenderItems.Length; i++)
+                foreach (var mat in RenderItems[i].Keys)
                     RenderItems[i][mat].Clear();
-            for (int i = 0; i < RenderItems.Length; i++)
-                RenderItems[i].Clear();
+
             if (Game.Settings.DynamicShadows)
                 for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
                     RenderShadowItems[shadowMapIndex].Clear();
@@ -350,19 +372,18 @@ namespace ORTS.Viewer3D
             AddPrimitive(material, primitive, group, ref xnaMatrix, ShapeFlags.None);
         }
 
+        static readonly bool[] PrimitiveBlendedScenery = new bool[] { true, false }; // Search for opaque pixels in alpha blended primitives, thus maintaining correct DepthBuffer
+        static readonly bool[] PrimitiveBlended = new bool[] { true };
+        static readonly bool[] PrimitiveNotBlended = new bool[] { false };
+
         [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
         {
+            var getBlending = material.GetBlending();
+            var blending = getBlending && material is SceneryMaterial ? PrimitiveBlendedScenery : getBlending ? PrimitiveBlended : PrimitiveNotBlended;
+
             List<RenderItem> items;
-            bool[] blending;
-
-            bool getBlending = material.GetBlending();
-            if (getBlending && material is SceneryMaterial)
-                blending = new bool[] { true, false }; // Search for opaque pixels in alpha blended primitives, thus maintaining correct DepthBuffer
-            else
-                blending = new bool[] {getBlending};
-
-            foreach (bool blended in blending)
+            foreach (var blended in blending)
             {
                 var sortingMaterial = blended ? DummyBlendedMaterial : material;
                 var sequence = RenderItems[(int)GetRenderSequence(group, blended)];
@@ -372,7 +393,7 @@ namespace ORTS.Viewer3D
                     items = new List<RenderItem>();
                     sequence.Add(sortingMaterial, items);
                 }
-                items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+                items.Add(ReuseOrCreateRenderItem(material, primitive, ref xnaMatrix, flags));
             }
             if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
                 primitive.ZBias = 1;
@@ -381,7 +402,21 @@ namespace ORTS.Viewer3D
         [CallOnThread("Updater")]
         void AddShadowPrimitive(int shadowMapIndex, Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
         {
-            RenderShadowItems[shadowMapIndex].Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+            RenderShadowItems[shadowMapIndex].Add(ReuseOrCreateRenderItem(material, primitive, ref xnaMatrix, flags));
+        }
+
+        static Matrix MatrixIdentity = Matrix.Identity;
+
+        [CallOnThread("Updater")]
+        RenderItem ReuseOrCreateRenderItem(Material material, RenderPrimitive primitive, ref Matrix xnaMatrix, ShapeFlags flags)
+        {
+            if (UsedRenderItems == AllRenderItems.Count)
+                AllRenderItems.Add(new RenderItem(null, null, ref MatrixIdentity, 0));
+            AllRenderItems[UsedRenderItems].Material = material;
+            AllRenderItems[UsedRenderItems].RenderPrimitive = primitive;
+            AllRenderItems[UsedRenderItems].XNAMatrix = xnaMatrix;
+            AllRenderItems[UsedRenderItems].Flags = flags;
+            return AllRenderItems[UsedRenderItems++];
         }
 
         [CallOnThread("Updater")]
