@@ -15,11 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections;
-using System.Diagnostics;
-using System.Text;
 using MSTS.Parsers;
+using System;
+using System.Collections.Generic;
 
 // TODO - UV_OPS
 
@@ -31,12 +29,11 @@ namespace MSTS.Formats
 
         public SFile(string filename)
         {
-            SBR file = SBR.Open(filename);
+            var file = SBR.Open(filename);
             shape = new shape(file.ReadSubBlock());
             file.VerifyEndOfBlock();
         }
-
-    }//SFile
+    }
 
     public class shape
     {
@@ -59,7 +56,6 @@ namespace MSTS.Formats
         public lod_controls lod_controls;
         public animations animations;
 
-
         public shape(SBR block)
         {
             block.VerifyID(TokenID.shape);
@@ -80,47 +76,37 @@ namespace MSTS.Formats
             vtx_states = new vtx_states(block.ReadSubBlock());
             prim_states = new prim_states(block.ReadSubBlock());
             lod_controls = new lod_controls(block.ReadSubBlock());
-            if( !block.EndOfBlock() )
-                animations = new animations(block.ReadSubBlock()); 
+            if (!block.EndOfBlock())
+                animations = new animations(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
-
-
-    }//shape
+    }
 
     public class shape_header
     {
-        UInt32 flags1;
-        UInt32 flags2;
+        public UInt32 flags1;
+        public UInt32 flags2;
 
         public shape_header(SBR block)
         {
             block.VerifyID(TokenID.shape_header);
             flags1 = block.ReadFlags();
-            if( !block.EndOfBlock() )
+            if (!block.EndOfBlock())
                 flags2 = block.ReadFlags();
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//shape_header
-
-    public class volumes : ArrayList
+    public class volumes : List<vol_sphere>
     {
-        public new vol_sphere this[int i]
-        {
-            get { return (vol_sphere)base[i]; }
-            set { base[i] = value; }
-        }
-
         public volumes(SBR block)
         {
             block.VerifyID(TokenID.volumes);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new vol_sphere(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new vol_sphere(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-    }//volumes
+    }
 
     public class vol_sphere
     {
@@ -130,8 +116,7 @@ namespace MSTS.Formats
         public vol_sphere(SBR block)
         {
             block.VerifyID(TokenID.vol_sphere);
-            SBR vectorBlock = block.ReadSubBlock();
-            vector = new vector();
+            var vectorBlock = block.ReadSubBlock();
             vector.X = vectorBlock.ReadFloat();
             vector.Y = vectorBlock.ReadFloat();
             vector.Z = vectorBlock.ReadFloat();
@@ -139,98 +124,58 @@ namespace MSTS.Formats
             Radius = block.ReadFloat();
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//vol_sphere
-
-
-    public class shader_names : ArrayList
+    public class shader_names : List<string>
     {
-        public new string this[int i]
-        {
-            get { return (string)base[i]; }
-            set { base[i] = value; }
-        }
-
         public shader_names(SBR block)
         {
             block.VerifyID(TokenID.shader_names);
-            int count = block.ReadInt();
+            var count = Capacity = block.ReadInt();
             while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.named_shader);
-                this.Add(subBlock.ReadString());
+                Add(subBlock.ReadString());
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-
-    } // shader_names
-
-
-    public class texture_filter_names : ArrayList
+    public class texture_filter_names : List<string>
     {
-        public new string this[int i]
-        {
-            get { return (string)base[i]; }
-            set { base[i] = value; }
-        }
-
         public texture_filter_names(SBR block)
         {
             block.VerifyID(TokenID.texture_filter_names);
-            int count = block.ReadInt();
+            var count = Capacity = block.ReadInt();
             while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.named_filter_mode);
-                this.Add(subBlock.ReadString());
+                Add(subBlock.ReadString());
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-
-    }//texture_filter_names
-
-    public class points
+    public class points : List<point>
     {
-        public int Count;
-
-        public point this[int i]
-        {
-            get { return pointArray[i]; }
-            set { pointArray[i] = value; }
-        }
-
-        public points()
-        {
-            pointArray = new point[0];
-            Count = 0;
-        }
-
         public points(SBR block)
         {
             block.VerifyID(TokenID.points);
-            Count = block.ReadInt();
-            pointArray = new point[Count];
-            for (int i = 0; i < Count; ++i)
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.point);
-                pointArray[i].X = subBlock.ReadFloat();
-                pointArray[i].Y = subBlock.ReadFloat();
-                pointArray[i].Z = subBlock.ReadFloat();
+                Add(new point(subBlock.ReadFloat(), subBlock.ReadFloat(), subBlock.ReadFloat()));
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
-
-
-
-        point[] pointArray;
-    }//points
+    }
 
     public struct point
     {
@@ -259,54 +204,22 @@ namespace MSTS.Formats
         }
     }
 
-
-    public class uv_points
+    public class uv_points : List<uv_point>
     {
-        public int Count
-        {
-            get { return uv_pointArray.Count; }
-        }
-
-
-        public uv_point this[int i]
-        {
-            get { return (uv_point)uv_pointArray[i]; }
-            set { uv_pointArray[i] = value; }
-        }
-
-        public uv_points()
-        {
-            uv_pointArray = new ArrayList();
-        }
-
         public uv_points(SBR block)
         {
             block.VerifyID(TokenID.uv_points);
-            int count = block.ReadInt();
-            uv_pointArray = new ArrayList(count);
-            for (int i = 0; i < count; ++i)
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.uv_point);
-                float U = subBlock.ReadFloat();
-                float V = subBlock.ReadFloat();
-                Add(new uv_point(U, V));
+                Add(new uv_point(subBlock.ReadFloat(), subBlock.ReadFloat()));
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
-
-
-        public int Add(uv_point uv_point)
-        {
-            return uv_pointArray.Add(uv_point);
-        }
-
-
-        ArrayList uv_pointArray;
-
-    }//uv_points
-
+    }
 
     public struct uv_point
     {
@@ -329,47 +242,24 @@ namespace MSTS.Formats
             if (Math.Abs(uv_point.V - V) > 0.0001) return false;
             return true;
         }
-
     }
 
-    public class normals
+    public class normals : List<vector>
     {
-        public int Count;
-
-        public vector this[int i]
-        {
-            get { return normalArray[i]; }
-            set { normalArray[i] = value; }
-        }
-
-        public normals()
-        {
-            normalArray = new vector[0];
-            Count = 0;
-        }
-
         public normals(SBR block)
         {
             block.VerifyID(TokenID.normals);
-            Count = block.ReadInt();
-            normalArray = new vector[Count];
-            for (int i = 0; i < Count; ++i)
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.vector);
-                normalArray[i].X = subBlock.ReadFloat();
-                normalArray[i].Y = subBlock.ReadFloat();
-                normalArray[i].Z = subBlock.ReadFloat();
+                Add(new vector(subBlock.ReadFloat(), subBlock.ReadFloat(), subBlock.ReadFloat()));
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
-
-
-
-
-        vector[] normalArray;
-    }//normals
+    }
 
     public struct vector
     {
@@ -397,93 +287,63 @@ namespace MSTS.Formats
         }
     }
 
-
-    public class sort_vectors : ArrayList
+    public class sort_vectors : List<vector>
     {
-        public new vector this[int i]
-        {
-            get { return (vector)base[i]; }
-            set { base[i] = value; }
-        }
-
         public sort_vectors(SBR block)
         {
             block.VerifyID(TokenID.sort_vectors);
-            int count = block.ReadInt();
+            var count = Capacity = block.ReadInt();
             while (count-- > 0)
             {
-                vector vector = new vector();
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.vector);
-                vector.X = subBlock.ReadFloat();
-                vector.Y = subBlock.ReadFloat();
-                vector.Z = subBlock.ReadFloat();
+                Add(new vector(subBlock.ReadFloat(), subBlock.ReadFloat(), subBlock.ReadFloat()));
                 subBlock.VerifyEndOfBlock();
-                this.Add(vector);
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-
-    }//sort_vectors
-
-    public class colors : ArrayList
+    public class colors : List<color>
     {
-        public new color this[int i]
-        {
-            get { return (color)base[i]; }
-            set { base[i] = value; }
-        }
-
         public colors(SBR block)
         {
             block.VerifyID(TokenID.colours);
-            int count = block.ReadInt();
+            var count = Capacity = block.ReadInt();
             while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.colour);
-                color color = new color();
-                color.A = subBlock.ReadFloat();
-                color.R = subBlock.ReadFloat();
-                color.G = subBlock.ReadFloat();
-                color.B = subBlock.ReadFloat();
+                Add(new color()
+                {
+                    A = subBlock.ReadFloat(),
+                    R = subBlock.ReadFloat(),
+                    G = subBlock.ReadFloat(),
+                    B = subBlock.ReadFloat(),
+                });
                 subBlock.VerifyEndOfBlock();
-                this.Add(color);
             }
             block.VerifyEndOfBlock();
         }
-
-    }//colors
+    }
 
     public struct color
     {
         public float R, G, B, A;
     }
 
-    public class matrices : ArrayList
+    public class matrices : List<matrix>
     {
-        public new matrix this[int i]
-        {
-            get { return (matrix)base[i]; }
-            set { base[i] = value; }
-        }
-
-        public matrices()
-        {
-        }
-
         public matrices(SBR block)
         {
             block.VerifyID(TokenID.matrices);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new matrix(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new matrix(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//matrices
-
-    public class matrix   
+    public class matrix
     {
         public string Name;
         public float AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ;
@@ -545,12 +405,6 @@ namespace MSTS.Formats
             }
         }
 
-        public void Multiply( matrix a )
-        {
-
-        }
-
-
         public matrix()
         {
             AX = 1; AY = 0; AZ = 0;
@@ -605,52 +459,35 @@ namespace MSTS.Formats
                 && CX == target.CX && CY == target.CY && CZ == target.CZ
                 && DX == target.DX && DY == target.DY && DZ == target.DZ;
         }
+    }
 
-    }// matrix
-
-    public class images : ArrayList
+    public class images : List<string>
     {
-        public new string this[int i]
-        {
-            get { return (string)base[i]; }
-            set { base[i] = value; }
-        }
-
         public images(SBR block)
         {
             block.VerifyID(TokenID.images);
-            int count = block.ReadInt();
+            var count = Capacity = block.ReadInt();
             while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.image);
-                this.Add(subBlock.ReadString());
+                Add(subBlock.ReadString());
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-
-    } // images
-
-    public class textures : ArrayList
+    public class textures : List<texture>
     {
-        public new texture this[int i]
-        {
-            get { return (texture)base[i]; }
-            set { base[i] = value; }
-        }
-
         public textures(SBR block)
         {
             block.VerifyID(TokenID.textures);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new texture(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new texture(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//textures
+    }
 
     public class texture
     {
@@ -671,13 +508,12 @@ namespace MSTS.Formats
             iImage = block.ReadInt();
             FilterMode = block.ReadInt();
             MipMapLODBias = block.ReadFloat();
-            if( !block.EndOfBlock() )
-                BorderColor = block.ReadFlags(); 
+            if (!block.EndOfBlock())
+                BorderColor = block.ReadFlags();
             block.VerifyEndOfBlock();
         }
 
-
-        public texture( int newiImage )
+        public texture(int newiImage)
         {
             iImage = newiImage;
             FilterMode = 0;
@@ -693,27 +529,18 @@ namespace MSTS.Formats
             if (BorderColor != texture.BorderColor) return false;
             return true;
         }
+    }
 
-    }//texture
-
-    public class light_materials : ArrayList
+    public class light_materials : List<light_material>
     {
-        public new light_material this[int i]
-        {
-            get { return (light_material)base[i]; }
-            set { base[i] = value; }
-        }
-
         public light_materials(SBR block)
         {
             block.VerifyID(TokenID.light_materials);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new light_material(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new light_material(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//light_materials
+    }
 
     public class light_material
     {
@@ -739,27 +566,18 @@ namespace MSTS.Formats
             SpecPower = block.ReadFloat();
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//light_materials
-
-    public class light_model_cfgs : ArrayList
+    public class light_model_cfgs : List<light_model_cfg>
     {
-        public new light_model_cfg this[int i]
-        {
-            get { return (light_model_cfg)base[i]; }
-            set { base[i] = value; }
-        }
-
         public light_model_cfgs(SBR block)
         {
             block.VerifyID(TokenID.light_model_cfgs);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new light_model_cfg(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new light_model_cfg(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//light_model_cfgs
+    }
 
     public class light_model_cfg
     {
@@ -770,60 +588,50 @@ namespace MSTS.Formats
         {
             block.VerifyID(TokenID.light_model_cfg);
             flags = block.ReadFlags();
-            uv_ops = new uv_ops( block.ReadSubBlock() );
+            uv_ops = new uv_ops(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//light_model_cfg
-
-
-    public class uv_ops : ArrayList
+    public class uv_ops : List<uv_op>
     {
-        public new uv_op this[int i]
-        {
-            get { return (uv_op)base[i]; }
-            set { base[i] = value; }
-        }
-
         public uv_ops(SBR block)
         {
             block.VerifyID(TokenID.uv_ops);
-            int count = block.ReadInt();
-            while (count-- > 0) 
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
-                switch( subBlock.ID )
+                var subBlock = block.ReadSubBlock();
+                switch (subBlock.ID)
                 {
-                    case TokenID.uv_op_copy: this.Add( new uv_op_copy( subBlock ) ); break;
-                    case TokenID.uv_op_reflectmapfull: this.Add( new uv_op_reflectmapfull( subBlock ) ); break;
-                    default: throw new System.Exception( "Unexpected uv_op: " + subBlock.ID.ToString() );
+                    case TokenID.uv_op_copy: Add(new uv_op_copy(subBlock)); break;
+                    case TokenID.uv_op_reflectmapfull: Add(new uv_op_reflectmapfull(subBlock)); break;
+                    default: throw new System.Exception("Unexpected uv_op: " + subBlock.ID.ToString());
                 }
             }
             block.VerifyEndOfBlock();
         }
-
-
-    }//uv_ops
+    }
 
     public abstract class uv_op
     {
         public int TexAddrMode;
-    }// uv_op
+    }
 
     // TODO  Add a bunch more uv_ops
 
-    public class uv_op_copy: uv_op
+    public class uv_op_copy : uv_op
     {
-        int SrcUVIdx;
+        public int SrcUVIdx;
 
-        public uv_op_copy( SBR block )
+        public uv_op_copy(SBR block)
         {
-            block.VerifyID(TokenID.uv_op_copy );
+            block.VerifyID(TokenID.uv_op_copy);
             TexAddrMode = block.ReadInt();
             SrcUVIdx = block.ReadInt();
             block.VerifyEndOfBlock();
         }
-    }// uv_op_copy
+    }
 
     public class uv_op_reflectmapfull : uv_op
     {
@@ -833,30 +641,18 @@ namespace MSTS.Formats
             TexAddrMode = block.ReadInt();
             block.VerifyEndOfBlock();
         }
-    }// uv_op_copy
+    }
 
-    public class vtx_states : ArrayList
+    public class vtx_states : List<vtx_state>
     {
-        public new vtx_state this[int i]
-        {
-            get { return (vtx_state)base[i]; }
-            set { base[i] = value; }
-        }
-
-        public vtx_states()
-        {
-        }
-
         public vtx_states(SBR block)
         {
             block.VerifyID(TokenID.vtx_states);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new vtx_state(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new vtx_state(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//vtx_states
+    }
 
     public class vtx_state
     {
@@ -889,7 +685,7 @@ namespace MSTS.Formats
             LightFlags = block.ReadFlags();
             if (!block.EndOfBlock())
                 Matrix2 = block.ReadInt();
-            block.VerifyEndOfBlock();  
+            block.VerifyEndOfBlock();
         }
         public vtx_state(vtx_state copy)
         {
@@ -900,7 +696,7 @@ namespace MSTS.Formats
             LightFlags = copy.LightFlags;
         }
 
-        public bool Matches( vtx_state target )
+        public bool Matches(vtx_state target)
         {
             return flags == target.flags
                 && imatrix == target.imatrix
@@ -908,31 +704,18 @@ namespace MSTS.Formats
                 && LightCfgIdx == target.LightCfgIdx
                 && LightFlags == target.LightFlags;
         }
+    }
 
-    }//vtx_state
-
-    public class prim_states : ArrayList
+    public class prim_states : List<prim_state>
     {
-        public new prim_state this[int i]
-        {
-            get { return (prim_state)base[i]; }
-            set { base[i] = value; }
-        }
-
-        public prim_states()
-        {
-        }
-
         public prim_states(SBR block)
         {
             block.VerifyID(TokenID.prim_states);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new prim_state(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new prim_state(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//prim_states
+    }
 
     public class prim_state
     {/* prim_state              ==> :dword,flags :uint,ShaderIdx :tex_idxs :float,ZBias :sint,VertStateIdx [:uint,alphatestmode] [:uint,LightCfgIdx] [:uint,ZBufMode] .
@@ -973,12 +756,11 @@ namespace MSTS.Formats
 
             flags = block.ReadFlags();
             ishader = block.ReadInt();
-            { // tex_idxs
-                SBR subBlock = block.ReadSubBlock();
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.tex_idxs);
-                int count = subBlock.ReadInt();
-                tex_idxs = new int[count];
-                for (int i = 0; i < count; ++i) tex_idxs[i] = subBlock.ReadInt();
+                tex_idxs = new int[subBlock.ReadInt()];
+                for (var i = 0; i < tex_idxs.Length; ++i) tex_idxs[i] = subBlock.ReadInt();
                 subBlock.VerifyEndOfBlock();
             }
             ZBias = block.ReadFloat();
@@ -995,7 +777,7 @@ namespace MSTS.Formats
             flags = copy.flags;
             ishader = copy.ishader;
             tex_idxs = new int[copy.tex_idxs.Length];
-            for (int i = 0; i < copy.tex_idxs.Length; ++i) tex_idxs[i] = copy.tex_idxs[i];
+            for (var i = 0; i < copy.tex_idxs.Length; ++i) tex_idxs[i] = copy.tex_idxs[i];
             ZBias = copy.ZBias;
             ivtx_state = copy.ivtx_state;
             alphatestmode = copy.alphatestmode;
@@ -1008,7 +790,7 @@ namespace MSTS.Formats
             if (flags != prim_state.flags) return false;
             if (ishader != prim_state.ishader) return false;
             if (tex_idxs.Length != prim_state.tex_idxs.Length) return false;
-            for (int i = 0; i < tex_idxs.Length; ++i) if (tex_idxs[i] != prim_state.tex_idxs[i]) return false;
+            for (var i = 0; i < tex_idxs.Length; ++i) if (tex_idxs[i] != prim_state.tex_idxs[i]) return false;
             if (ZBias != prim_state.ZBias) return false;
             if (ivtx_state != prim_state.ivtx_state) return false;
             if (alphatestmode != prim_state.alphatestmode) return false;
@@ -1016,27 +798,18 @@ namespace MSTS.Formats
             if (ZBufMode != prim_state.ZBufMode) return false;
             return true;
         }
+    }
 
-    }//prim_state
-
-    public class lod_controls : ArrayList
+    public class lod_controls : List<lod_control>
     {
-        public new lod_control this[int i]
-        {
-            get { return (lod_control)base[i]; }
-            set { base[i] = value; }
-        }
-
         public lod_controls(SBR block)
         {
             block.VerifyID(TokenID.lod_controls);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new lod_control(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new lod_control(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//lod_controls
+    }
 
     public class lod_control
     {
@@ -1050,8 +823,7 @@ namespace MSTS.Formats
             distance_levels = new distance_levels(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
-
-    }//lod_control
+    }
 
     public class distance_levels_header
     {
@@ -1063,33 +835,23 @@ namespace MSTS.Formats
             DlevBias = block.ReadInt();
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//distance_levels_header
-
-    public class distance_levels : ArrayList
+    public class distance_levels : List<distance_level>
     {
-        public new distance_level this[int i]
-        {
-            get { return (distance_level)base[i]; }
-            set { base[i] = value; }
-        }
-
         public distance_levels(SBR block)
         {
             block.VerifyID(TokenID.distance_levels);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new distance_level(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new distance_level(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//distance_levels
-
+    }
 
     public class distance_level
     {
         public distance_level_header distance_level_header;
-        public sub_objects sub_objects; 
+        public sub_objects sub_objects;
 
         public distance_level(SBR block)
         {
@@ -1098,8 +860,7 @@ namespace MSTS.Formats
             sub_objects = new sub_objects(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
-
-    }//distance_level
+    }
 
     public class distance_level_header
     {
@@ -1109,44 +870,33 @@ namespace MSTS.Formats
         public distance_level_header(SBR block)
         {
             block.VerifyID(TokenID.distance_level_header);
-            { // dlevel_selection
-                SBR subBlock = block.ReadSubBlock();
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.dlevel_selection);
                 dlevel_selection = subBlock.ReadFloat();
                 subBlock.VerifyEndOfBlock();
             }
-            {//hierarchy
-                SBR subBlock = block.ReadSubBlock();
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.hierarchy);
-                int count = subBlock.ReadInt();
-                hierarchy = new int[count];
-                for (int i = 0; i < count; ++i) hierarchy[i] = subBlock.ReadInt();
+                hierarchy = new int[subBlock.ReadInt()];
+                for (var i = 0; i < hierarchy.Length; ++i) hierarchy[i] = subBlock.ReadInt();
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//distance_levels_header
-
-    public class sub_objects : ArrayList
+    public class sub_objects : List<sub_object>
     {
-        public new sub_object this[int i]
-        {
-            get { return (sub_object)base[i]; }
-            set { base[i] = value; }
-        }
-
         public sub_objects(SBR block)
         {
             block.VerifyID(TokenID.sub_objects);
-            int count = block.ReadInt();
-            while (count-- > 0) this.Add(new sub_object(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new sub_object(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//sub_objects
-
+    }
 
     public class sub_object
     {
@@ -1159,13 +909,12 @@ namespace MSTS.Formats
         {
             block.VerifyID(TokenID.sub_object);
             sub_object_header = new sub_object_header(block.ReadSubBlock());
-            vertices = new vertices( block.ReadSubBlock()); 
-            vertex_sets = new vertex_sets( block.ReadSubBlock()); 
-            primitives = new primitives(block.ReadSubBlock()); 
+            vertices = new vertices(block.ReadSubBlock());
+            vertex_sets = new vertex_sets(block.ReadSubBlock());
+            primitives = new primitives(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
-
-    }//sub_object
+    }
 
     public class sub_object_header
     {
@@ -1191,37 +940,33 @@ namespace MSTS.Formats
             SrcVtxFmtFlags = block.ReadFlags();
             DstVtxFmtFlags = block.ReadFlags();
             geometry_info = new geometry_info(block.ReadSubBlock());
-            
-            if( !block.EndOfBlock() )
-            { // subobject_shaders
-                SBR subBlock = block.ReadSubBlock(); 
+
+            if (!block.EndOfBlock())
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.subobject_shaders);
-                int count = subBlock.ReadInt();
-                subobject_shaders = new int[count];
-                for (int i = 0; i < count; ++i)
+                subobject_shaders = new int[subBlock.ReadInt()];
+                for (var i = 0; i < subobject_shaders.Length; ++i)
                     subobject_shaders[i] = subBlock.ReadInt();
                 subBlock.VerifyEndOfBlock();
             }
 
-            if( !block.EndOfBlock() )
-            { // subobject_light_cfgs
-                SBR subBlock = block.ReadSubBlock();  
+            if (!block.EndOfBlock())
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.subobject_light_cfgs);
-                int count = subBlock.ReadInt();
-                subobject_light_cfgs = new int[count];
-                for (int i = 0; i < count; ++i)
+                subobject_light_cfgs = new int[subBlock.ReadInt()];
+                for (var i = 0; i < subobject_light_cfgs.Length; ++i)
                     subobject_light_cfgs[i] = subBlock.ReadInt();
                 subBlock.VerifyEndOfBlock();
             }
 
-            if( !block.EndOfBlock() )
+            if (!block.EndOfBlock())
                 SubObjID = block.ReadInt();
 
             block.VerifyEndOfBlock();
         }
-
-
-    }//sub_objects_header
+    }
 
     public class geometry_info
     {
@@ -1253,45 +998,28 @@ namespace MSTS.Formats
             PtLists = block.ReadInt();
             NodeXTrilists = block.ReadInt();
             geometry_nodes = new geometry_nodes(block.ReadSubBlock());
-            {// geometry_node_map
-                SBR subBlock = block.ReadSubBlock();
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.geometry_node_map);
-                int count = subBlock.ReadInt();
-                geometry_node_map = new int[count];
-                for (int i = 0; i < count; ++i)
+                geometry_node_map = new int[subBlock.ReadInt()];
+                for (var i = 0; i < geometry_node_map.Length; ++i)
                     geometry_node_map[i] = subBlock.ReadInt();
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//geometry_info
-
-
-    public class geometry_nodes : ArrayList
+    public class geometry_nodes : List<geometry_node>
     {
-        public new geometry_node this[int i]
-        {
-            get { return (geometry_node)base[i]; }
-            set { base[i] = value; }
-        }
-
-        public geometry_nodes()
-        {
-        }
-
         public geometry_nodes(SBR block)
         {
             block.VerifyID(TokenID.geometry_nodes);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
-                this.Add(new geometry_node(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new geometry_node(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//geometry_nodes
-
+    }
 
     public class geometry_node
     {
@@ -1323,9 +1051,7 @@ namespace MSTS.Formats
             cullable_prims = new cullable_prims(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
-
-
-    }//geometry_node
+    }
 
     public class cullable_prims
     {
@@ -1348,31 +1074,18 @@ namespace MSTS.Formats
             NumPrimIdxs = block.ReadInt();
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//cullable_prims
-
-    public class vertices : ArrayList
+    public class vertices : List<vertex>
     {
-        public new vertex this[int index]
-        {
-            get { return (vertex)base[index]; }
-            set { base[index] = value; }
-        }
-
-        public vertices()
-        {
-        }
-
         public vertices(SBR block)
         {
             block.VerifyID(TokenID.vertices);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
-                this.Add(new vertex(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new vertex(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-    } //vertices
+    }
 
     public class vertex
     {
@@ -1391,12 +1104,11 @@ namespace MSTS.Formats
             inormal = block.ReadInt();
             Color1 = block.ReadFlags();
             Color2 = block.ReadFlags();
-            { // vertex_uvs
-                SBR subBlock = block.ReadSubBlock();
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.vertex_uvs);
-                int count = subBlock.ReadInt();
-                vertex_uvs = new int[ count ];
-                for( int i = 0; i < count; ++i ) vertex_uvs[i] = subBlock.ReadInt();
+                vertex_uvs = new int[subBlock.ReadInt()];
+                for (var i = 0; i < vertex_uvs.Length; ++i) vertex_uvs[i] = subBlock.ReadInt();
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
@@ -1410,7 +1122,7 @@ namespace MSTS.Formats
             Color1 = copy.Color1;
             Color2 = copy.Color2;
             vertex_uvs = new int[copy.vertex_uvs.Length];
-            for( int i = 0; i < copy.vertex_uvs.Length; ++i ) vertex_uvs[i] = copy.vertex_uvs[i];
+            for (var i = 0; i < copy.vertex_uvs.Length; ++i) vertex_uvs[i] = copy.vertex_uvs[i];
         }
 
         public vertex()
@@ -1431,42 +1143,28 @@ namespace MSTS.Formats
             if (inormal != vertex.inormal) return false;
             if (Color1 != vertex.Color1) return false;
             if (Color2 != vertex.Color2) return false;
-            if( vertex_uvs.Length != vertex.vertex_uvs.Length ) return false;
-            for( int i = 0; i < vertex_uvs.Length; ++i ) if( vertex_uvs[i] != vertex.vertex_uvs[i] ) return false;
+            if (vertex_uvs.Length != vertex.vertex_uvs.Length) return false;
+            for (var i = 0; i < vertex_uvs.Length; ++i) if (vertex_uvs[i] != vertex.vertex_uvs[i]) return false;
             return true;
         }
+    }
 
-    } //vertex
-
-    public class vertex_sets : ArrayList
+    public class vertex_sets : List<vertex_set>
     {
-        public new vertex_set this[int index]
-        {
-            get { return (vertex_set)base[index]; }
-            set { base[index] = value; }
-        }
-
-        public vertex_sets()
-        {
-        }
-
         public vertex_sets(SBR block)
         {
             block.VerifyID(TokenID.vertex_sets);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
-                this.Add(new vertex_set(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new vertex_set(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-    }//vertex_sets
+    }
 
     public class vertex_set
     {
         public int VtxStateIdx;
         public int StartVtxIdx;
         public int VtxCount;
-
 
         public vertex_set()
         {
@@ -1483,41 +1181,28 @@ namespace MSTS.Formats
             VtxCount = block.ReadInt();
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//vertex_set
-
-    public class primitives : ArrayList
+    public class primitives : List<primitive>
     {
-        public new primitive this[int index]
-        {
-            get { return (primitive)base[index]; }
-            set { base[index] = value; }
-        }
-
-        public primitives()
-        {
-        }
-
         public primitives(SBR block)
         {
             block.VerifyID(TokenID.primitives);
-            int last_prim_state_idx = 0;
-            int count = block.ReadInt();
-            for( int i = 0; i < count; ++i )
+            var last_prim_state_idx = 0;
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 switch (subBlock.ID)
                 {
                     case TokenID.prim_state_idx: last_prim_state_idx = subBlock.ReadInt(); subBlock.VerifyEndOfBlock(); break;
-                    case TokenID.indexed_trilist: this.Add(new primitive(subBlock, last_prim_state_idx)); break;
+                    case TokenID.indexed_trilist: Add(new primitive(subBlock, last_prim_state_idx)); break;
                     default: throw new System.Exception("Unexpected primitive type " + subBlock.ID.ToString());
                 }
             }
             block.VerifyEndOfBlock();
         }
-
-
-    }//primitives
+    }
 
     public class primitive
     {
@@ -1529,14 +1214,7 @@ namespace MSTS.Formats
             prim_state_idx = last_prim_state_idx;
             indexed_trilist = new indexed_trilist(block);
         }
-
-        public primitive(int new_prim_state_idx)
-        {
-            prim_state_idx = new_prim_state_idx;
-            indexed_trilist = new indexed_trilist();
-        }
-
-    }//primitive
+    }
 
     public class indexed_trilist
     {
@@ -1544,66 +1222,42 @@ namespace MSTS.Formats
         public int[] normal_idxs;
         public UInt32[] flags;
 
-        public indexed_trilist()
-        {
-            vertex_idxs = new vertex_idxs();
-            normal_idxs = new int[0];
-            flags = new UInt32[0];
-        }
-
         public indexed_trilist(SBR block)
         {
             block.VerifyID(TokenID.indexed_trilist);
             vertex_idxs = new vertex_idxs(block.ReadSubBlock());
-            { // normal_idxs
-                SBR subBlock = block.ReadSubBlock();
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.normal_idxs);
-                int count = subBlock.ReadInt();
-                normal_idxs = new int[count];
-                for (int i = 0; i < count; ++i)
+                normal_idxs = new int[subBlock.ReadInt()];
+                for (var i = 0; i < normal_idxs.Length; ++i)
                 {
                     normal_idxs[i] = subBlock.ReadInt();
                     subBlock.ReadInt(); // skip the '3' value - its purpose unknown
                 }
                 subBlock.VerifyEndOfBlock();
             }
-            { // flags
-                SBR subBlock = block.ReadSubBlock();
+            {
+                var subBlock = block.ReadSubBlock();
                 subBlock.VerifyID(TokenID.flags);
-                int count = subBlock.ReadInt();
-                flags = new UInt32[count];
-                for (int i = 0; i < count; ++i) subBlock.ReadFlags();
+                flags = new UInt32[subBlock.ReadInt()];
+                for (var i = 0; i < flags.Length; ++i) flags[i] = subBlock.ReadFlags();
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-
-    }//indexed_trilist
-
-    public class vertex_idxs : ArrayList
+    public class vertex_idxs : List<vertex_idx>
     {
-        public new vertex_idx this[int index]
-        {
-            get { return (vertex_idx)base[index]; }
-            set { base[index] = value; }
-        }
-
-        public vertex_idxs()
-        {
-        }
-
         public vertex_idxs(SBR block)
         {
             block.VerifyID(TokenID.vertex_idxs);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; i += 3)
-                this.Add(new vertex_idx(block));
+            var count = Capacity = block.ReadInt() / 3;
+            while (count-- > 0) Add(new vertex_idx(block));
             block.VerifyEndOfBlock();
         }
-
-
-    }//vertex_idxs
+    }
 
     public class vertex_idx
     {
@@ -1614,7 +1268,6 @@ namespace MSTS.Formats
             a = block.ReadInt();
             b = block.ReadInt();
             c = block.ReadInt();
-
         }
 
         public vertex_idx(int ia, int ib, int ic)
@@ -1623,26 +1276,18 @@ namespace MSTS.Formats
             b = ib;
             c = ic;
         }
-    }//vertex_idx
+    }
 
-    public class animations : ArrayList
+    public class animations : List<animation>
     {
-        public new animation this[int index]
-        {
-            get { return (animation)base[index]; }
-            set { base[index] = value; }
-        }
-
         public animations(SBR block)
         {
             block.VerifyID(TokenID.animations);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
-                this.Add(new animation(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new animation(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-    }//animations
+    }
 
     public class animation
     {
@@ -1658,125 +1303,85 @@ namespace MSTS.Formats
             anim_nodes = new anim_nodes(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//animation
-
-    public class anim_nodes : ArrayList
+    public class anim_nodes : List<anim_node>
     {
-        public new anim_node this[int index]
-        {
-            get { return (anim_node)base[index]; }
-            set { base[index] = value; }
-        }
-        
-        public anim_nodes()
-        {
-        }
-
         public anim_nodes(SBR block)
         {
             block.VerifyID(TokenID.anim_nodes);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
-                this.Add(new anim_node(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new anim_node(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
-
-
-    }//anim_nodes
+    }
 
     public class anim_node
     {
-        public string Name;          
+        public string Name;
         public controllers controllers;
-
-        public anim_node( string label)
-        {
-            Name = label;
-            controllers = new controllers();
-        }
 
         public anim_node(SBR block)
         {
             block.VerifyID(TokenID.anim_node);
             Name = block.Label;
-            controllers = new controllers( block.ReadSubBlock());
+            controllers = new controllers(block.ReadSubBlock());
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//anim_node
-
-    public class controllers : ArrayList
+    public class controllers : List<controller>
     {
-        public new controller this[int index]
-        {
-            get { return (controller)base[index]; }
-            set { base[index] = value; }
-        }
-
-        public controllers()
-        {
-        }
-
         public controllers(SBR block)
         {
             block.VerifyID(TokenID.controllers);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 switch (subBlock.ID)
                 {
-                    case TokenID.linear_pos: this.Add(new linear_pos(subBlock)); break;
-                    case TokenID.tcb_rot: this.Add(new tcb_rot(subBlock)); break;
+                    case TokenID.linear_pos: Add(new linear_pos(subBlock)); break;
+                    case TokenID.tcb_rot: Add(new tcb_rot(subBlock)); break;
                     default: throw new System.Exception("Unexpected animation controller " + subBlock.ID.ToString());
                 }
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//controllers
-
-    public abstract class controller: ArrayList
+    public abstract class controller : List<KeyPosition>
     {
-        public new KeyPosition this[int i]
-        {
-            get { return (KeyPosition)base[i]; }
-            set { base[i] = value; }
-        }
-
-    }//controller
+    }
 
     public abstract class KeyPosition
     {
         public int Frame;
     }
 
-    public class tcb_rot: controller
+    public class tcb_rot : controller
     {
-
         public tcb_rot(SBR block)
         {
             block.VerifyID(TokenID.tcb_rot);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0)
             {
-                SBR subBlock = block.ReadSubBlock();
+                var subBlock = block.ReadSubBlock();
                 switch (subBlock.ID)
                 {
-                    case TokenID.slerp_rot: this.Add(new slerp_rot(subBlock)); break;
-                    case TokenID.tcb_key: this.Add(new tcb_key(subBlock)); break;
+                    case TokenID.slerp_rot: Add(new slerp_rot(subBlock)); break;
+                    case TokenID.tcb_key: Add(new tcb_key(subBlock)); break;
                     default: throw new System.Exception("Unexpected block " + subBlock.ID.ToString());
                 }
             }
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//tcb_rot
-
-    public class slerp_rot: KeyPosition
+    public class slerp_rot : KeyPosition
     {
-        public float X,Y,Z,W;   //:float,x :float,y :float,z :float,w .
+        public float X, Y, Z, W;   //:float,x :float,y :float,z :float,w .
 
         public slerp_rot(SBR block)
         {
@@ -1788,29 +1393,20 @@ namespace MSTS.Formats
             W = block.ReadFloat();
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//slerp_rot
-
-    public class linear_pos :  controller
+    public class linear_pos : controller
     {
-        public new linear_key this[int index]
-        {
-            get { return (linear_key)base[index]; }
-            set { base[index] = value; }
-        }
-
         public linear_pos(SBR block)
         {
             block.VerifyID(TokenID.linear_pos);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
-                this.Add(new linear_key(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new linear_key(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//linear_pos
-
-    public class linear_key: KeyPosition
+    public class linear_key : KeyPosition
     {
         public float X, Y, Z;   //:float,x :float,y :float,z
 
@@ -1823,29 +1419,20 @@ namespace MSTS.Formats
             Z = block.ReadFloat();
             block.VerifyEndOfBlock();
         }
-
-    }//linear_key
+    }
 
     public class tcb_pos : controller
     {
-        public new tcb_key this[int index]
-        {
-            get { return (tcb_key)base[index]; }
-            set { base[index] = value; }
-        }
-
         public tcb_pos(SBR block)
         {
             block.VerifyID(TokenID.tcb_pos);
-            int count = block.ReadInt();
-            for (int i = 0; i < count; ++i)
-                this.Add(new tcb_key(block.ReadSubBlock()));
+            var count = Capacity = block.ReadInt();
+            while (count-- > 0) Add(new tcb_key(block.ReadSubBlock()));
             block.VerifyEndOfBlock();
         }
+    }
 
-    }//tcb_pos
-
-    public class tcb_key: KeyPosition
+    public class tcb_key : KeyPosition
     {
         public float X, Y, Z, W;   //:float,x :float,y :float,z :float,w
         public float Tension, Continuity, Bias, In, Out; // :float,tension :float,continuity :float,bias :float,in :float,out .
@@ -1865,6 +1452,5 @@ namespace MSTS.Formats
             Out = block.ReadFloat();
             block.VerifyEndOfBlock();
         }
-
-    }//tcb_key
+    }
 }

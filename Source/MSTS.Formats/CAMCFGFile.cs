@@ -33,6 +33,8 @@ namespace MSTS.Formats
     /// </summary>
     public class CAMCFGFile
     {
+        public List<Camera> Cameras = new List<Camera>();
+
         public CAMCFGFile(string filename)
         {
             using (STFReader stf = new STFReader(filename, false))
@@ -40,7 +42,6 @@ namespace MSTS.Formats
                     new STFReader.TokenProcessor("camera", ()=>{ Cameras.Add(new Camera(stf)); }),
                 });
         }
-        public ArrayList Cameras = new ArrayList(8);
     }
 
     /// <summary>
