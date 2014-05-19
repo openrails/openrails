@@ -1411,10 +1411,10 @@ namespace ORTS
         public void StartThrottleIncrease(float? target)
         {
             AlerterReset(TCSEvent.ThrottleChanged);
+            if (ThrottleController.CurrentValue != ThrottleController.MaximumValue) SignalEvent(Event.ThrottleChange);
             ThrottleController.StartIncrease(target);
             //Not needed, Update() handles it:
             // Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Increase, ThrottleController.CurrentValue * 100 );
-            SignalEvent(Event.ThrottleChange);
         }
 
         public bool StartThrottleIncrease()
@@ -1440,7 +1440,7 @@ namespace ORTS
             else if (smoothMax == null)
             {
                 notchedThrottleCommandNeeded = true;
-                SignalEvent(Event.ThrottleChange);
+                if (ThrottleController.CurrentValue != ThrottleController.MaximumValue) SignalEvent(Event.ThrottleChange);
             }
             else
             {
@@ -1476,10 +1476,10 @@ namespace ORTS
         {
             AlerterReset(TCSEvent.ThrottleChanged);
             CommandStartTime = Simulator.ClockTime;
+            if (HasCombCtrl || ThrottleController.CurrentValue != ThrottleController.MinimumValue) SignalEvent(Event.ThrottleChange);
             ThrottleController.StartDecrease(target);
             //Not needed, Update() handles it:
             //Simulator.Confirmer.ConfirmWithPerCent( CabControl.Regulator, CabSetting.Decrease, ThrottleController.CurrentValue * 100 );
-            SignalEvent(Event.ThrottleChange);
         }
 
         public bool StartThrottleDecrease()
@@ -1505,7 +1505,7 @@ namespace ORTS
             else if (smoothMin == null)
             {
                 notchedThrottleCommandNeeded = true;
-                SignalEvent(Event.ThrottleChange);
+                if (HasCombCtrl || ThrottleController.CurrentValue != ThrottleController.MinimumValue) SignalEvent(Event.ThrottleChange);
             }
             else
             {
