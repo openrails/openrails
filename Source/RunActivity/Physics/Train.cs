@@ -2658,6 +2658,15 @@ namespace ORTS
                     Simulator.Confirmer.Warning(CabControl.InitializeBrakes, CabSetting.Warn1);
                 return;
             }
+            UnconditionalInitializeBrakes();
+            return;
+        }
+
+        /// <summary>
+        /// Initializes brakes also if Speed != 0; directly used by keyboard command
+        /// <\summary>
+       public virtual void UnconditionalInitializeBrakes()
+       {
             if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                 Simulator.Confirmer.Confirm(CabControl.InitializeBrakes, CabSetting.Off);
 

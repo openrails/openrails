@@ -381,7 +381,7 @@ namespace ORTS.Viewer3D
         }
 
         public override void Redo() {
-            Receiver.InitializeBrakes();
+            Receiver.UnconditionalInitializeBrakes();
             // Report();
         }
     }
