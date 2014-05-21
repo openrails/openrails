@@ -242,8 +242,10 @@ namespace ORTS
                 return ControllerState.TCSEmergency;
             else if (TCSFullServiceBraking())
                 return ControllerState.TCSFullServ;
-            else
+            else if (NotchController != null && NotchController.NotchCount > 0)
                 return NotchController.GetCurrentNotch().Type;
+            else
+                return ControllerState.Dummy;
         }
 
         static void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
