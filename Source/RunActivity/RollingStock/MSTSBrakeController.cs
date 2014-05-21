@@ -242,7 +242,7 @@ namespace ORTS
                 return ControllerState.TCSEmergency;
             else if (TCSFullServiceBraking())
                 return ControllerState.TCSFullServ;
-            else if (NotchController != null && NotchController.NotchCount > 0)
+            else if (NotchController != null && NotchController.NotchCount() > 0)
                 return NotchController.GetCurrentNotch().Type;
             else
                 return ControllerState.Dummy;
