@@ -752,14 +752,15 @@ namespace ORTS
             }
             else if ((DynamicBrakeController != null) && (DynamicBrakePercent < 0) && (DynamicBrake))
             {
-                if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
-                {
+     // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
+     //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+     //           {
                     DynamicBrake = false; // Disengage
                     if (IsLeadLocomotive())
                         Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
-                }
-                else if (IsLeadLocomotive())
-                    Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+     //           }
+     //            else if (IsLeadLocomotive())
+     //               Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
             }
 
             //Currently the ThrottlePercent is global to the entire train
