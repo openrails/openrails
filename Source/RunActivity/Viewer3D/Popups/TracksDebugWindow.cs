@@ -33,6 +33,7 @@ namespace ORTS.Viewer3D.Popups
         const float DisplayDistance = 1000;
         const float DisplaySegmentLength = 10;
         const float MaximumSectionDistance = 10000;
+        const float Tolerance = 0.0001F;
 
         Viewport Viewport;
         List<DispatcherPrimitive> Primitives = new List<DispatcherPrimitive>();
@@ -74,7 +75,7 @@ namespace ORTS.Viewer3D.Popups
                     {
                         var previousLocation = currentPosition.WorldLocation;
                         var remaining = currentPosition.MoveInSection(DisplaySegmentLength);
-                        if (remaining == DisplaySegmentLength && !currentPosition.NextVectorSection())
+                        if ((Math.Abs(remaining - DisplaySegmentLength ) < Tolerance) && !currentPosition.NextVectorSection())
                             break;
                         primitives.Add(new DispatcherLineSegment(previousLocation, currentPosition.WorldLocation, Color.LightBlue, 2));
                     }
@@ -96,7 +97,7 @@ namespace ORTS.Viewer3D.Popups
                     {
                         var previousLocation = currentPosition.WorldLocation;
                         var remaining = currentPosition.MoveInSection(DisplaySegmentLength);
-                        if (remaining == DisplaySegmentLength && !currentPosition.NextVectorSection())
+                        if ((Math.Abs(remaining - DisplaySegmentLength) < Tolerance) && !currentPosition.NextVectorSection())
                             break;
                         primitives.Add(new DispatcherLineSegment(previousLocation, currentPosition.WorldLocation, Color.LightSalmon, 2));
                     }
