@@ -266,6 +266,7 @@ namespace ORTS
         public bool FormsStatic = false;                                  //indicate if train is to remain as static
         public int FormedOf = -1;                                         //indicates out of which train this train is formed
         public FormCommand FormedOfType = FormCommand.None;               //indicates type of formed-of command
+        public bool SetStop = false;                                      //indicates train must copy station stop from formed train
 
         public List<DetachInfo> DetachDetails = new List<DetachInfo>();   // detach information
         public int AttachTo = -1;                                         // attach information : train to which to attach at end of run
@@ -653,6 +654,7 @@ namespace ORTS
             FormsStatic = inf.ReadBoolean();
             FormedOf = inf.ReadInt32();
             FormedOfType = (FormCommand)inf.ReadInt32();
+            SetStop = inf.ReadBoolean();
 
             int totalDetach = inf.ReadInt32();
             DetachDetails = new List<DetachInfo>();
@@ -989,6 +991,7 @@ namespace ORTS
             outf.Write(FormsStatic);
             outf.Write(FormedOf);
             outf.Write((int)FormedOfType);
+            outf.Write(SetStop);
 
             outf.Write(DetachDetails.Count);
             foreach (DetachInfo thisDetach in DetachDetails)
@@ -3679,6 +3682,61 @@ namespace ORTS
 
             return (true);
         }
+        //================================================================================================//
+        /// <summary>
+        /// Set Formed Occupied
+        /// Set track occupied for train formed out of other train
+        /// </summary>
+
+        public void SetFormedOccupied()
+        {
+
+            int rearIndex = PresentPosition[1].RouteListIndex;
+            int frontIndex = PresentPosition[0].RouteListIndex;
+
+            int routeIndex = rearIndex;
+
+            List<TrackCircuitSection> placementSections = new List<TrackCircuitSection>();
+
+            // route is always available as previous train was there
+
+            float offset = PresentPosition[1].TCOffset;
+            float remLength = Length;
+
+            for (int iRouteIndex = rearIndex; iRouteIndex <= frontIndex; iRouteIndex++)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[ValidRoute[0][iRouteIndex].TCSectionIndex];
+                placementSections.Add(thisSection);
+                remLength -= (thisSection.Length - offset);
+
+                if (remLength > 0)
+                {
+                    if (routeIndex < ValidRoute[0].Count - 1)
+                    {
+                        routeIndex++;
+                        TCRouteElement thisElement = ValidRoute[0][routeIndex];
+                        thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                        offset = 0.0f;
+                    }
+                    else
+                    {
+                        Trace.TraceWarning("Not sufficient track to place train");
+                    }
+                }
+            }
+
+            // set track occupied (if not done yet)
+
+            foreach (TrackCircuitSection thisSection in placementSections)
+            {
+                if (!thisSection.IsSet(routedForward, false))
+                {
+                    thisSection.Reserve(routedForward, ValidRoute[0]);
+                    thisSection.SetOccupied(routedForward);
+                }
+            }
+        }
+
 
         //================================================================================================//
         /// <summary>
@@ -4293,6 +4351,17 @@ namespace ORTS
                         int rearIndex = PresentPosition[1].RouteListIndex;
                         List<int> occupiedSections = new List<int>();
 
+                        // check valid positions
+                        if (frontIndex < 0 && rearIndex < 0) // not on route so cannot be in station
+                        {
+                            return; // no further actions possible
+                        }
+
+                        // correct position if either end is off route
+                        if (frontIndex < 0) frontIndex = rearIndex;
+                        if (rearIndex < 0) rearIndex = frontIndex;
+
+                        // set start and stop in correct order
                         int startIndex = frontIndex < rearIndex ? frontIndex : rearIndex;
                         int stopIndex = frontIndex < rearIndex ? rearIndex : frontIndex;
 
@@ -4916,7 +4985,6 @@ namespace ORTS
                 // Check deadlock against all other trains
                 CheckDeadlock(ValidRoute[0], Number);
 
-
                 // reset signal information
 
                 SignalObjectItems.Clear();
@@ -4925,6 +4993,14 @@ namespace ORTS
                 InitializeSignals(true);
 
                 LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
+
+                // clear claims of any trains which have claimed present occupied sections upto common point - this avoids deadlocks
+                // trains may have claimed while train was reversing
+
+                TrackCircuitSection presentSection = signalRef.TrackCircuitList[LastReservedSection[0]];
+                presentSection.ClearReversalClaims(routedForward);
+
+                // switch to NODE mode
                 if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
                 {
                     SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
@@ -7194,16 +7270,15 @@ namespace ORTS
 
         public void UpdateOutOfControl()
         {
-            if (SpeedMpS < Math.Abs(0.1f))
-            {
-                // TODO
-                // train is at a stand : 
-                // clear all occupied blocks
-                // clear signal/speedpost list 
-                // clear DistanceTravelledActions 
-                // clear all previous occupied sections 
-                // set sections occupied on which train stands
-            }
+
+            // train is at a stand : 
+            // clear all occupied blocks
+            // clear signal/speedpost list 
+            // clear DistanceTravelledActions 
+            // clear all previous occupied sections 
+            // set sections occupied on which train stands
+
+            // all the above is still TODO
         }
 
         //================================================================================================//
@@ -7213,9 +7288,6 @@ namespace ORTS
 
         public virtual void SwitchToSignalControl(SignalObject thisSignal)
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
-
             // in auto mode, use forward direction only
 
             ControlMode = TRAIN_CONTROL.AUTO_SIGNAL;
@@ -7229,9 +7301,6 @@ namespace ORTS
 
         public virtual void SwitchToNodeControl(int thisSectionIndex)
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
-                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
-            
             // use direction forward only
             float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
             float clearedDistanceM = 0.0f;
@@ -9081,12 +9150,20 @@ namespace ORTS
                 returnValue[1] = thisRoute.Count;  // set beyond end of route - no further checks required
             }
 
-            // if this section occupied by own train, reverse deadlock is active
+            // if any section occupied by own train, reverse deadlock is active
 
             TrackCircuitSection firstSection = signalRef.TrackCircuitList[firstSectionIndex];
-            if (firstSection.IsSet(this, true))
+
+            int firstRouteIndex = ValidRoute[0].GetRouteIndex(firstSectionIndex, 0);
+            int lastRouteIndex = ValidRoute[0].GetRouteIndex(lastSectionIndex, 0);
+
+            for (int iRouteIndex = firstRouteIndex; iRouteIndex < lastRouteIndex; iRouteIndex++)
             {
-                firstSection.SetDeadlockTrap(this, DeadlockInfo[firstSectionIndex]);
+                TrackCircuitSection partSection = signalRef.TrackCircuitList[ValidRoute[0][iRouteIndex].TCSectionIndex];
+                if (partSection.IsSet(this, true))
+                {
+                    firstSection.SetDeadlockTrap(this, DeadlockInfo[firstSectionIndex]);
+                }
             }
 
             returnValue[0] = thisRoute.GetRouteIndex(lastSectionIndex, thisIndex);
@@ -11169,7 +11246,6 @@ namespace ORTS
 
         public virtual void SetAlternativeRoute_locationBased(int startSectionIndex, DeadlockInfo sectionDeadlockInfo, int usedPath, SignalObject nextSignal)
         {
-
 #if DEBUG_REPORTS
             File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
             " : set alternative route no. : " + usedPath.ToString() +
@@ -11433,6 +11509,8 @@ namespace ORTS
                                         break;
 
                                     default:
+                                        Trace.TraceWarning("Invalid qualifier for WAIT command for train {0} at station {1} : {2}",
+                                            Name, thisStationStop.PlatformItem.Name, addQualifier.QualifierName);
                                         break;
                                 }
                             }
@@ -11490,6 +11568,8 @@ namespace ORTS
                                         break;
 
                                     default:
+                                        Trace.TraceWarning("Invalid qualifier for FOLLOW command for train {0} at station {1} : {2}",
+                                            Name, thisStationStop.PlatformItem.Name, addQualifier.QualifierName);
                                         break;
                                 }
                             }
@@ -11548,6 +11628,8 @@ namespace ORTS
                                             break;
 
                                         default:
+                                            Trace.TraceWarning("Invalid qualifier for CONNECT command for train {0} at station {1} : {2}",
+                                                Name, thisStationStop.PlatformItem.Name, addQualifier.QualifierName);
                                             break;
                                     }
                                 }
@@ -11584,6 +11666,8 @@ namespace ORTS
                                     break;
 
                                 default:
+                                    Trace.TraceWarning("Invalid qualifier for WAITANY command for train {0} at station {1} : {2}",
+                                        Name, thisStationStop.PlatformItem.Name, thisQualifier.QualifierName);
                                     break;
                             }
                         }
@@ -11654,7 +11738,43 @@ namespace ORTS
                         thisStationStop.HoldSignal = false;
                     break;
 
+                case "forcehold":
+                    if (thisStationStop != null)
+                    {
+                        // use platform signal
+                        if (thisStationStop.ExitSignal >= 0)
+                        {
+                            thisStationStop.HoldSignal = true;
+                        }
+                        // use first signal in route
+                        else
+                        {
+                            TCSubpathRoute usedRoute = TCRoute.TCRouteSubpaths[thisStationStop.SubrouteIndex];
+                            int signalFound = -1;
+
+                            for (int iRouteIndex = thisStationStop.RouteIndex; iRouteIndex <= usedRoute.Count - 1 && signalFound < 0; iRouteIndex++)
+                            {
+                                TCRouteElement routeElement = usedRoute[iRouteIndex];
+                                TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+
+                                if (routeSection.EndSignals[routeElement.Direction] != null)
+                                {
+                                    signalFound = routeSection.EndSignals[routeElement.Direction].thisRef;
+                                }
+                            }
+
+                            if (signalFound >= 0)
+                            {
+                                thisStationStop.ExitSignal = signalFound;
+                                thisStationStop.HoldSignal = true;
+                                HoldingSignals.Add(signalFound);
+                            }
+                        }
+                    }
+                    break;
+
                 default:
+                    Trace.TraceWarning("Invalid station stop command for train {0} : {1}", Name, thisCommand.CommandToken);
                     break;
             }
         }
@@ -12126,6 +12246,53 @@ namespace ORTS
             }
 
             return (blockstate < SignalObject.InternalBlockstate.OccupiedSameDirection);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check for any active waits in indicated path
+        /// </summary>
+
+        public bool HasActiveWait(int startSectionIndex, int endSectionIndex)
+        {
+            bool returnValue = false;
+
+            int startRouteIndex = ValidRoute[0].GetRouteIndex(startSectionIndex, PresentPosition[0].RouteListIndex);
+            int endRouteIndex = ValidRoute[0].GetRouteIndex(endSectionIndex, startRouteIndex);
+
+            if (startRouteIndex < 0 || endRouteIndex < 0)
+            {
+                return (returnValue);
+            }
+
+            // check for any wait in indicated route section
+            for (int iRouteIndex = startRouteIndex; iRouteIndex <= endRouteIndex; iRouteIndex++)
+            {
+                int sectionIndex = ValidRoute[0][iRouteIndex].TCSectionIndex;
+                if (WaitList != null && WaitList.Count > 0)
+                {
+                    if (CheckWaitCondition(sectionIndex))
+                    {
+                        returnValue = true;
+                    }
+                }
+
+                if (WaitAnyList != null && WaitAnyList.Count > 0)
+                {
+                    if (WaitAnyList.ContainsKey(sectionIndex))
+                    {
+                        foreach (WaitInfo reqWait in WaitAnyList[sectionIndex])
+                        {
+                            if (CheckForRouteWait(reqWait))
+                            {
+                                returnValue = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return (returnValue);
         }
 
         //================================================================================================//

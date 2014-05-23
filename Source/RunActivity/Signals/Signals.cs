@@ -4416,7 +4416,7 @@ namespace ORTS
             {
                 for (int pin = 0; pin < 2; pin++)
                 {
-                    Pins      [direction, pin] = new TrPin() { Direction = -1, Link = -1 };
+                    Pins[direction, pin] = new TrPin() { Direction = -1, Link = -1 };
                     ActivePins[direction, pin] = new TrPin() { Direction = -1, Link = -1 };
                 }
             }
@@ -4565,7 +4565,7 @@ namespace ORTS
             {
                 for (int pin = 0; pin < 2; pin++)
                 {
-                    Pins      [iDir, pin] = new TrPin() { Direction = -1, Link = -1 };
+                    Pins[iDir, pin] = new TrPin() { Direction = -1, Link = -1 };
                     ActivePins[iDir, pin] = new TrPin() { Direction = -1, Link = -1 };
                 }
             }
@@ -5058,10 +5058,13 @@ namespace ORTS
                         int endSectionIndex = sectionDeadlockInfo.AvailablePathList[availableRoute].EndSectionIndex;
                         TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
 
-                        // no deadlock yet active
+                        // no deadlock yet active - do not set deadlock if train has wait within deadlock section
                         if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
                         {
-                            endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
+                            if (!Program.Simulator.TimetableMode || !thisTrain.Train.HasActiveWait(Index, endSection.Index))
+                            {
+                                endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
+                            }
                         }
                         else if (endSection.DeadlockTraps.ContainsKey(thisTrain.Train.Number) && !endSection.DeadlockAwaited.Contains(thisTrain.Train.Number))
                         {
@@ -5457,6 +5460,50 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // Remove claims from sections for reversed trains
+        //
+
+        public void ClearReversalClaims(Train.TrainRouted thisTrain)
+        {
+            // check if any trains have claimed this section
+            List<Train.TrainRouted> claimedTrains = new List<Train.TrainRouted>();
+
+            // get list of trains with claims on this section
+            foreach (Train.TrainRouted claimingTrain in CircuitState.TrainClaimed)
+            {
+                claimedTrains.Add(claimingTrain);
+                UnclaimTrain(claimingTrain);
+            }
+
+            // get train route
+            Train.TCSubpathRoute usedRoute = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex];
+            int routeIndex = usedRoute.GetRouteIndex(Index, 0);
+
+            // run down route and clear all claims for found trains, until end 
+            for (int iRouteIndex = routeIndex; iRouteIndex <= usedRoute.Count - 1 && (claimedTrains.Count > 0); iRouteIndex++)
+            {
+                TrackCircuitSection nextSection = signalRef.TrackCircuitList[usedRoute[iRouteIndex].TCSectionIndex];
+
+                for (int iTrain = claimedTrains.Count - 1; iTrain >= 0; iTrain--)
+                {
+                    Train.TrainRouted claimingTrain = claimedTrains[iTrain];
+
+                    if (nextSection.CircuitState.TrainClaimed.ContainsTrain(claimingTrain))
+                    {
+                        nextSection.UnclaimTrain(claimingTrain);
+                    }
+                    else
+                    {
+                        claimedTrains.Remove(claimingTrain);
+                    }
+                }
+
+                nextSection.Claim(thisTrain);
+            }
+        }
+
+        //================================================================================================//
+        //
         // Remove specified train from queue
         //
 
@@ -5740,7 +5787,7 @@ namespace ORTS
                     // if train is to attach to train in section, allow callon
                     bool allowCallOn = false;
 
-                    foreach (KeyValuePair<Train.TrainRouted,int> occTrainInfo in CircuitState.TrainOccupy)
+                    foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in CircuitState.TrainOccupy)
                     {
                         Train.TrainRouted occTrain = occTrainInfo.Key;
                         if (occTrain.Train.Number == thisTrain.Train.AttachTo)
@@ -5837,7 +5884,7 @@ namespace ORTS
                             }
                             else if (nextRear.TCOffset < offset && nextRear.TCOffset + nextTrain.Train.Length > offset) // our end is in the middle of the train
                             {
-                                distanceTrainAheadM = 0; // set distance to 0
+                                distanceTrainAheadM = offset; // set distance to 0
                                 trainFound = nextTrain.Train;
                             }
                         }
@@ -8278,7 +8325,6 @@ namespace ORTS
 				thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].TCSectionIndex,
 				thisRef));
 #endif
-
             if (thisTrain.Train.CheckTrain)
             {
                 File.AppendAllText(@"C:\temp\checktrain.txt",
@@ -8460,14 +8506,14 @@ namespace ORTS
                     ReqNumClearAhead = clearNextSignals > 0 ? clearNextSignals - 1 : SignalNumClearAhead_ORTS - 1;
                 }
             }
-            
+
             // perform route check
 
             checkRouteState(isPropagated, signalRoute, thisTrain);
 
             // propagate request
 
-            if (!isPropagated)
+            if (!isPropagated && enabledTrain != null)
             {
                 propagateRequest();
             }
@@ -9052,6 +9098,10 @@ namespace ORTS
 
         private bool getBlockState_locationBased(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain)
         {
+            List<int> SectionsWithAlternativePath = new List<int>();
+            List<int> SectionsWithAltPathSet = new List<int>();
+            bool altRouteAssigned = false;
+
             bool returnvalue = false;
             bool deadlockArea = false;
 
@@ -9070,7 +9120,7 @@ namespace ORTS
                 blockstate = thisSection.getSectionState(enabledTrain, direction, blockstate, thisRoute, thisRef);
                 if (blockstate > InternalBlockstate.Reservable)
                     break;     // exit on first none-available section
-                
+
                 // check if section is trigger section for waitany instruction
                 if (thisTrain != null && Program.Simulator.TimetableMode && thisTrain.Train.WaitAnyList != null && thisTrain.Train.WaitAnyList.ContainsKey(thisSection.Index))
                 {
@@ -9089,11 +9139,18 @@ namespace ORTS
                     if (thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL)
                     {
                         DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[thisSection.DeadlockReference];
+
+                        // if deadlock area and no path yet selected - exit loop; else follow assigned path
                         if (sectionDeadlockInfo.HasTrainAndSubpathIndex(thisTrain.Train.Number, thisTrain.Train.TCRoute.activeSubpath) &&
-                            thisElement.UsedAlternativePath < 0) // if deadlock area and no path yet selected - exit loop; else follow assigned path
+                            thisElement.UsedAlternativePath < 0)
                         {
                             deadlockArea = true;
                             break; // exits on deadlock area
+                        }
+                        else
+                        {
+                            SectionsWithAlternativePath.Add(thisElement.TCSectionIndex);
+                            altRouteAssigned = true;
                         }
                     }
                 }
@@ -9108,9 +9165,9 @@ namespace ORTS
                 File.AppendAllText(@"C:\Temp\deadlock.txt",
                     "\n **** Get block state for section " + lastElement.TCSectionIndex.ToString() + " for train : " + thisTrain.Train.Number.ToString() + "\n");
 #endif
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
-                DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[thisSection.DeadlockReference];
-                List<int> availableRoutes = sectionDeadlockInfo.CheckDeadlockPathAvailability(thisSection, thisTrain.Train);
+                TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
+                DeadlockInfo sectionDeadlockInfo = signalRef.DeadlockInfoList[lastSection.DeadlockReference];
+                List<int> availableRoutes = sectionDeadlockInfo.CheckDeadlockPathAvailability(lastSection, thisTrain.Train);
 
 #if DEBUG_DEADLOCK
                 File.AppendAllText(@"C:\Temp\deadlock.txt", "\nReturned no. of available paths : " + availableRoutes.Count.ToString() + "\n");
@@ -9119,9 +9176,13 @@ namespace ORTS
 
                 if (availableRoutes.Count >= 1)
                 {
-                    int usedRoute = sectionDeadlockInfo.SelectPath(availableRoutes, thisTrain.Train);
+                    int endSectionIndex = -1;
+                    int usedRoute = sectionDeadlockInfo.SelectPath(availableRoutes, thisTrain.Train, ref endSectionIndex);
+                    lastElement.UsedAlternativePath = usedRoute;
+                    SectionsWithAltPathSet.Add(lastElement.TCSectionIndex);
+                    altRouteAssigned = true;
 
-                    thisTrain.Train.SetAlternativeRoute_locationBased(thisSection.Index, sectionDeadlockInfo, usedRoute, this);
+                    thisTrain.Train.SetAlternativeRoute_locationBased(lastSection.Index, sectionDeadlockInfo, usedRoute, this);
                     returnvalue = true;
                     blockstate = InternalBlockstate.Reservable;
                 }
@@ -9132,6 +9193,32 @@ namespace ORTS
             }
 
             internalBlockState = blockstate;
+
+            // reset any alternative route selections if route is not available
+            if (altRouteAssigned && blockstate != InternalBlockstate.Reservable && blockstate != InternalBlockstate.Reserved)
+            {
+                foreach (int SectionNo in SectionsWithAlternativePath)
+                {
+#if DEBUG_REPORTS
+                    Trace.TraceInformation("Train : {0} : state {1} but route already set for section {2}",
+                        thisTrain.Train.Name, blockstate, SectionNo);
+#endif
+                    int routeIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(SectionNo, thisTrain.Train.PresentPosition[0].RouteListIndex);
+                    Train.TCRouteElement thisElement = thisTrain.Train.ValidRoute[0][routeIndex];
+                    thisElement.UsedAlternativePath = -1;
+                }
+                foreach (int SectionNo in SectionsWithAltPathSet)
+                {
+#if DEBUG_REPORTS
+                    Trace.TraceInformation("Train : {0} : state {1} but route now set for section {2}",
+                        thisTrain.Train.Name, blockstate, SectionNo);
+#endif
+                    int routeIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(SectionNo, thisTrain.Train.PresentPosition[0].RouteListIndex);
+                    Train.TCRouteElement thisElement = thisTrain.Train.ValidRoute[0][routeIndex];
+                    thisElement.UsedAlternativePath = -1;
+                }
+            }
+
             return (returnvalue);
         }
 
@@ -9357,6 +9444,159 @@ namespace ORTS
 
         //================================================================================================//
         //
+        // Test for approach control - position only
+        //
+
+        public bool ApproachControlPosition(int reqPositionM, string dumpfile)
+        {
+            // no train approaching
+            if (enabledTrain == null)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    File.AppendAllText(dumpfile, "APPROACH CONTROL : no train approaching");
+                }
+
+                return (false);
+            }
+
+            // signal is not first signal for train
+            if (enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
+                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} : First signal is not this signal but {1}",
+                        enabledTrain.Train.Number, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                return (false);
+            }
+
+            // test distance
+
+            if (Convert.ToInt32(enabledTrain.Train.distanceToSignal) < reqPositionM)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear allowed",
+                        enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                return (true);
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear not allowed",
+                        enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                return (false);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Test for approach control - position and speed
+        //
+
+        public bool ApproachControlSpeed(int reqPositionM, int reqSpeedMpS, string dumpfile)
+        {
+            // no train approaching
+            if (enabledTrain == null)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    File.AppendAllText(dumpfile, "APPROACH CONTROL : no train approaching");
+                }
+
+                return (false);
+            }
+
+            // signal is not first signal for train
+            if (enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
+                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} : First signal is not this signal but {1}",
+                        enabledTrain.Train.Number, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                return (false);
+            }
+
+            // test distance
+
+            if (Convert.ToInt32(enabledTrain.Train.distanceToSignal) < reqPositionM)
+            {
+                bool validSpeed = false;
+                if (reqSpeedMpS > 0)
+                {
+                    if (Math.Abs(enabledTrain.Train.SpeedMpS) < reqSpeedMpS)
+                    {
+                        validSpeed = true;
+                    }
+                }
+                else if (reqSpeedMpS == 0)
+                {
+                    if (Math.Abs(enabledTrain.Train.SpeedMpS) < 0.1)
+                    {
+                        validSpeed = true;
+                    }
+                }
+
+                if (validSpeed)
+                {
+                    if (!String.IsNullOrEmpty(dumpfile))
+                    {
+                        var sob = new StringBuilder();
+                        sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}) and speed {3} (required {4}), clear allowed",
+                            enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM, enabledTrain.Train.SpeedMpS, reqSpeedMpS);
+                        File.AppendAllText(dumpfile, sob.ToString());
+                    }
+
+                    return (true);
+                }
+                else
+                {
+                    if (!String.IsNullOrEmpty(dumpfile))
+                    {
+                        var sob = new StringBuilder();
+                        sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}) and speed {3} (required {4}), clear not allowed",
+                            enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM, enabledTrain.Train.SpeedMpS, reqSpeedMpS);
+                        File.AppendAllText(dumpfile, sob.ToString());
+                    }
+
+                    return (false);
+                }
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear not allowed",
+                        enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                return (false);
+            }
+        }
+
+        //================================================================================================//
+        //
         // Set HOLD state for dispatcher control
         //
         // Parameter : bool, if set signal must be reset if set (and train position allows)
@@ -9463,6 +9703,9 @@ namespace ORTS
 
         public SignalObject mainSignal;        //  This is the signal which this head forms a part.
 
+        public float? ApproachControlLimitPositionM;
+        public float? ApproachControlLimitSpeedMpS;
+
         public MstsSignalFunction sigFunction
         {
             get
@@ -9560,6 +9803,19 @@ namespace ORTS
                 {
                     mainSignal.SignalNumClearAhead_MSTS = Math.Max(mainSignal.SignalNumClearAhead_MSTS, signalType.NumClearAhead_MSTS);
                     mainSignal.SignalNumClearAhead_ORTS = Math.Max(mainSignal.SignalNumClearAhead_ORTS, signalType.NumClearAhead_ORTS);
+                }
+
+                // set approach control limits
+
+                if (signalType.ApproachControlDetails != null)
+                {
+                    ApproachControlLimitPositionM = signalType.ApproachControlDetails.ApproachControlPositionM;
+                    ApproachControlLimitSpeedMpS = signalType.ApproachControlDetails.ApproachControlSpeedMpS;
+                }
+                else
+                {
+                    ApproachControlLimitPositionM = null;
+                    ApproachControlLimitSpeedMpS = null;
                 }
 
                 if (sigFunction == MstsSignalFunction.SPEED)
@@ -9666,10 +9922,26 @@ namespace ORTS
 
             if (dumpfile.Length > 1)
             {
-                File.AppendAllText(dumpfile,
-                    String.Format("  signal type 2 : {0}\n",
-                    mainSignal.sigfound[(int)sigFN2]));
+                var sob = new StringBuilder();
+                sob.AppendFormat("  signal type 2 : {0}", mainSignal.sigfound[(int)sigFN2]);
+
+                if (mainSignal.sigfound[(int)sigFN2] > 0)
+                {
+                    SignalObject otherSignal = mainSignal.signalRef.SignalObjects[mainSignal.sigfound[(int)sigFN2]];
+                    sob.AppendFormat(" (");
+
+                    foreach (SignalHead otherHead in otherSignal.SignalHeads)
+                    {
+                        sob.AppendFormat(" {0} ", otherHead.TDBIndex);
+                    }
+
+                    sob.AppendFormat(") ");
+                }
+                sob.AppendFormat("\n");
+
+                File.AppendAllText(dumpfile, sob.ToString());
             }
+
             SignalObject thisSignal = mainSignal;
 
             // ensure next signal of type 1 is located correctly
@@ -9686,6 +9958,19 @@ namespace ORTS
 
                 if (dumpfile.Length > 1)
                 {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("  signal type 1 : {0}", thisSignal.thisRef);
+                    sob.AppendFormat(" (");
+
+                    foreach (SignalHead otherHead in thisSignal.SignalHeads)
+                    {
+                        sob.AppendFormat(" {0} ", otherHead.TDBIndex);
+                    }
+
+                    sob.AppendFormat(") ");
+                    sob.AppendFormat("\n");
+
+                    File.AppendAllText(dumpfile, sob.ToString());
                     File.AppendAllText(dumpfile,
                         String.Format("  signal type 1 : {0} = {1}\n",
                         thisSignal.thisRef, thisState));
@@ -11061,7 +11346,7 @@ namespace ORTS
         // set deadlock info references for intermediate sections
         //
 
-        public int SelectPath(List<int> availableRoutes, Train thisTrain)
+        public int SelectPath(List<int> availableRoutes, Train thisTrain, ref int endSectionIndex)
         {
 #if DEBUG_DEADLOCK
             File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n**** For train " + thisTrain.Number.ToString() + " Select route from : \n");
@@ -11076,7 +11361,7 @@ namespace ORTS
             bool checkedMain = false;
             bool checkedOwn = false;
 
-            int endSectionIndex = GetEndSection(thisTrain);
+            endSectionIndex = GetEndSection(thisTrain);
             TrackCircuitSection endSection = signalRef.TrackCircuitList[endSectionIndex];
 
             bool preferMain = true;

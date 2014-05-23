@@ -54,6 +54,7 @@ namespace ORTS
             comment,
             trainDefinition,
             trainAddInfo,
+            invalid,
         }
 
         private enum rowType
@@ -68,6 +69,7 @@ namespace ORTS
             directionInfo,
             trainNotesInfo,
             comment,
+            invalid,
         }
 
         Dictionary<string, AIPath> Paths = new Dictionary<string, AIPath>();                 // original path referenced by path name
@@ -111,7 +113,7 @@ namespace ORTS
 #endif
 
                 // convert to train info
-                indexcount = ConvertFileContents(fileContents, simulator.Signals, ref trainInfoList, indexcount);
+                indexcount = ConvertFileContents(fileContents, simulator.Signals, ref trainInfoList, indexcount, filePath);
             }
 
             // read and pre-process routes
@@ -211,7 +213,7 @@ namespace ORTS
         /// <param name="signalRef"></param>
         /// <param name="TDB"></param>
         /// <param name="trainInfoList"></param>
-        private int ConvertFileContents(TTContents fileContents, Signals signalRef, ref List<TTTrainInfo> trainInfoList, int indexcount)
+        private int ConvertFileContents(TTContents fileContents, Signals signalRef, ref List<TTTrainInfo> trainInfoList, int indexcount, string filePath)
         {
             int consistRow = -1;
             int pathRow = -1;
@@ -269,6 +271,13 @@ namespace ORTS
                 {
                     ColInfo[iColumn] = columnType.comment;
                     if (firstCommentColumn < 0) firstCommentColumn = iColumn;
+                }
+
+                // oheck for invalid command definition
+                else if (columnDef.Substring(0, 1).Equals("#"))
+                {
+                    Trace.TraceWarning("Invalid column definition in {0} : column {1} : {2}", filePath, iColumn, columnDef);
+                    ColInfo[iColumn] = columnType.invalid;
                 }
 
                 // otherwise it is a train definition
@@ -343,8 +352,16 @@ namespace ORTS
                             break;
 
                         default:  // default is station definition
-                            RowInfo[iRow] = rowType.stationInfo;
-                            stationNames.Add(iRow, new StationInfo(String.Copy(rowDef)));
+                            if (rowDef.Substring(0, 1).Equals("#"))
+                            {
+                                Trace.TraceWarning("Invalid row definition in {0} : {1}", filePath, rowDef);
+                                RowInfo[iRow] = rowType.invalid;
+                            }
+                            else
+                            {
+                                RowInfo[iRow] = rowType.stationInfo;
+                                stationNames.Add(iRow, new StationInfo(String.Copy(rowDef)));
+                            }
                             break;
                     }
                 }
@@ -383,6 +400,29 @@ namespace ORTS
                 File.AppendAllText(@"C:\temp\timetableproc.txt", stbuild.ToString());
             }
 #endif
+
+            bool validFile = true;
+
+            // check if all required row definitions are available
+            if (consistRow < 0)
+            {
+                Trace.TraceWarning("File : {0} - Consist definition row missing, file cannot be processed", filePath);
+                validFile = false;
+            }
+
+            if (pathRow < 0)
+            {
+                Trace.TraceWarning("File : {0} - Path definition row missing, file cannot be processed", filePath);
+                validFile = false;
+            }
+
+            if (startRow < 0)
+            {
+                Trace.TraceWarning("File : {0} - Start definition row missing, file cannot be processed", filePath);
+                validFile = false;
+            }
+
+            if (!validFile) return (indexcount); // abandone processing
 
             // extract description
 
@@ -525,7 +565,7 @@ namespace ORTS
             foreach (TTTrainInfo reqTrain in allTrains)
             {
                 // create train route
-                AIPath usedPath = Paths[TrainRouteXRef[reqTrain.Index]].CreateCopy();
+                AIPath usedPath = new AIPath(Paths[TrainRouteXRef[reqTrain.Index]]);
                 reqTrain.AITrain.RearTDBTraveller = new Traveller(simulator.TSectionDat, simulator.TDB.TrackDB.TrackNodes, usedPath);
                 reqTrain.AITrain.Path = usedPath;
                 reqTrain.AITrain.CreateRoute(false);  // create route without use of FrontTDBtraveller
@@ -699,12 +739,12 @@ namespace ORTS
             AIPath outPath = null;
             if (Paths.ContainsKey(formedpathFilefull))
             {
-                outPath = Paths[formedpathFilefull].CreateCopy();
+                outPath = new AIPath(Paths[formedpathFilefull]);
             }
             else
             {
                 outPath = new AIPath(simulator.TDB, simulator.TSectionDat, formedpathFilefull);
-                Paths.Add(formedpathFilefull, outPath.CreateCopy());
+                Paths.Add(formedpathFilefull, new AIPath(outPath));
             }
 
             return (outPath);
@@ -833,6 +873,11 @@ namespace ORTS
                         else if (String.Compare(disposeCommands.CommandToken, "$stable") == 0)
                         {
                             DisposeDetails = new DisposeInfo(disposeCommands);
+                        }
+                        else
+                        {
+                            Trace.TraceWarning("Invalid dispose string defined for train {0} : {1}",
+                                AITrain.Name, disposeCommands.CommandToken);
                         }
                     }
                 }
@@ -994,7 +1039,7 @@ namespace ORTS
                 }
 
                 StopInfo newStop = new StopInfo(stationDetails.StationName, arr_dep[0], arr_dep[1], parentInfo);
-                newStop.holdState = stationDetails.HoldState == StationInfo.HoldInfo.Hold;
+                newStop.holdState = stationDetails.HoldState == StationInfo.HoldInfo.Hold ? StopInfo.SignalHoldType.Normal : StopInfo.SignalHoldType.None;
 
                 if (!String.IsNullOrEmpty(fullCommandString))
                 {
@@ -1004,6 +1049,17 @@ namespace ORTS
                     {
                         newStop.Commands.Add(new TTTrainCommands(thisCommand));
                     }
+                }
+
+                // process forced stop through station commands
+                if (stationDetails.HoldState == StationInfo.HoldInfo.ForceHold)
+                {
+                    if (newStop.Commands == null)
+                    {
+                        newStop.Commands = new List<TTTrainCommands>();
+                    }
+
+                    newStop.Commands.Add(new TTTrainCommands("forcehold"));
                 }
 
                 return (newStop);
@@ -1088,7 +1144,15 @@ namespace ORTS
                     {
                         if (String.Compare(otherTrain.Name, otherTrainName[1], true) == 0)
                         {
+                            if (otherTrain.FormedOf >= 0)
+                            {
+                                Trace.TraceWarning("Train : {0} : dispose details : formed train {1} already formed out of another train",
+                                    AITrain.Name, otherTrain.Name);
+                                break;
+                            }
+
                             AITrain.Forms = otherTrain.Number;
+                            AITrain.SetStop = DisposeDetails.SetStop;
                             otherTrain.FormedOf = AITrain.Number;
                             otherTrain.FormedOfType = DisposeDetails.FormType;
                             trainFound = true;
@@ -1100,10 +1164,25 @@ namespace ORTS
                     // if train not found, check for player train
                     if (!trainFound && String.Compare(playerTrain.Train.Name, otherTrainName[1], true) == 0)
                     {
-                        playerTrain.Train.FormedOf = AITrain.Number;
-                        playerTrain.Train.FormedOfType = DisposeDetails.FormType;
-                        trainFound = true;
-                        formedTrain = playerTrain.Train;
+                        if (playerTrain.Train.FormedOf >= 0)
+                        {
+                            Trace.TraceWarning("Train : {0} : dispose details : formed train {1} already formed out of another train",
+                                AITrain.Name, playerTrain.Train.Name);
+                        }
+                        else
+                        {
+                            AITrain.SetStop = DisposeDetails.SetStop;
+                            playerTrain.Train.FormedOf = AITrain.Number;
+                            playerTrain.Train.FormedOfType = DisposeDetails.FormType;
+                            trainFound = true;
+                            formedTrain = playerTrain.Train;
+                        }
+                    }
+
+                    if (!trainFound)
+                    {
+                        Trace.TraceWarning("Train :  {0} : Dispose detailt : formed train {1} not found",
+                            AITrain.Name, otherTrainName[1]);
                     }
 
 #if DEBUG_TRACEINFO
@@ -1171,6 +1250,7 @@ namespace ORTS
                         inTrain.FormedOfType = DisposeDetails.FormType; // set forms or triggered as defined in stable
                         inTrain.TrainType = Train.TRAINTYPE.AI_AUTOGENERATE;
                         inTrain.Forms = finalForms;
+                        inTrain.SetStop = DisposeDetails.SetStop;
                         inTrain.FormsStatic = false;
                         inTrain.Stable_CallOn = DisposeDetails.CallOn;
 
@@ -1186,16 +1266,16 @@ namespace ORTS
                         formedTrain.FormedOfType = Train.FormCommand.TerminationFormed;
 
                         Train.TCSubpathRoute lastSubpath = inTrain.TCRoute.TCRouteSubpaths[inTrain.TCRoute.TCRouteSubpaths.Count - 1];
-                        bool reverseTrain = CheckFormedReverse(lastSubpath, formedTrain.TCRoute.TCRouteSubpaths[0]);
-                        if (inTrain.FormedOfType == Train.FormCommand.TerminationTriggered)
+                        if (inTrain.FormedOfType == Train.FormCommand.TerminationTriggered && formedTrain.Number != 0) // no need to set consist for player train
                         {
+                            bool reverseTrain = CheckFormedReverse(lastSubpath, formedTrain.TCRoute.TCRouteSubpaths[0]);
                             BuildStabledConsist(ref inTrain, formedTrain.Cars, formedTrain.TCRoute.TCRouteSubpaths[0], reverseTrain);
                         }
                     }
                 }
-                // if run round required, build runround
+                // if run round required, build runround (except if formed train is player train)
 
-                if (formtype == Train.FormCommand.TerminationFormed && trainFound && DisposeDetails.RunRound)
+                if (formtype == Train.FormCommand.TerminationFormed && trainFound && DisposeDetails.RunRound && formedTrain.Number != 0)
                 {
                     Train usedTrain;
                     bool atStart = false;  // indicates if run-round is to be performed before start of move or forms, or at end of move
@@ -1218,9 +1298,9 @@ namespace ORTS
                                 break;
 
                             default:
-                                usedTrain = outTrain;
+                                usedTrain = inTrain;
                                 attachTo = inTrain.Number;
-                                atStart = false;
+                                atStart = true;
                                 break;
                         }
                     }
@@ -1363,13 +1443,20 @@ namespace ORTS
         /// </summary>
         private class StopInfo
         {
+            public enum SignalHoldType
+            {
+                None,
+                Normal,
+                Forced,
+            }
+
             public string StopName;
             public int arrivalTime;
             public int departureTime;
             public DateTime arrivalDT;
             public DateTime departureDT;
             public bool arrdepvalid;
-            public bool holdState;
+            public SignalHoldType holdState;
             //          public int passageTime;   // not yet implemented
             //          public bool passvalid;    // not yet implemented
             public List<TTTrainCommands> Commands;
@@ -1432,7 +1519,7 @@ namespace ORTS
                     // override holdstate using stop info - but only if exit signal is defined
 
                     int exitSignal = actTrain.StationStops[actTrain.StationStops.Count - 1].ExitSignal;
-                    bool holdSignal = holdState & (exitSignal >= 0);
+                    bool holdSignal = holdState != SignalHoldType.None && (exitSignal >= 0);
                     actTrain.StationStops[actTrain.StationStops.Count - 1].HoldSignal = holdSignal;
 
                     // process additional commands
@@ -1530,6 +1617,7 @@ namespace ORTS
             {
                 Hold,
                 NoHold,
+                ForceHold,
                 HoldConditional_DwellTime,
             }
 
@@ -1583,6 +1671,10 @@ namespace ORTS
                             HoldState = HoldInfo.NoHold;
                             break;
 
+                        case "forcehold":
+                            HoldState = HoldInfo.ForceHold;
+                            break;
+
                         // other commands not yet implemented
                         default:
                             break;
@@ -1599,6 +1691,7 @@ namespace ORTS
             public Train.FormCommand FormType;
             public bool FormTrain;
             public bool FormStatic;
+            public bool SetStop;
 
             public bool Stable;
             public string Stable_outpath;
@@ -1634,6 +1727,7 @@ namespace ORTS
                 FormStatic = false;
                 Stable = false;
                 RunRound = false;
+                SetStop = false;
 
                 if (formedTrainCommands.CommandQualifiers != null && formType == Train.FormCommand.TerminationFormed)
                 {
@@ -1652,6 +1746,11 @@ namespace ORTS
                             TimeSpan.TryParse(formedTrainQualifiers.QualifierValues[0], out RRSpan);
                             RunRoundTime = Convert.ToInt32(RRSpan.TotalSeconds);
                         }
+
+                        if (String.Compare(formedTrainQualifiers.QualifierName, "setstop") == 0)
+                        {
+                            SetStop = true;
+                        }
                     }
                 }
             }
@@ -1666,6 +1765,7 @@ namespace ORTS
                 Stable = false;
                 RunRound = false;
                 FormType = Train.FormCommand.None;
+                SetStop = false;
             }
 
             /// <summary>
@@ -1679,6 +1779,7 @@ namespace ORTS
                 Stable = true;
                 RunRound = false;
                 CallOn = false;
+                SetStop = true;
 
                 foreach (TTTrainCommands.TTTrainComQualifiers stableQualifier in stableCommands.CommandQualifiers)
                 {

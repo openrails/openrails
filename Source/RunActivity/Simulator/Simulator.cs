@@ -271,8 +271,8 @@ namespace ORTS
 
             AI = new AI(this, allTrains, ClockTime, playerTrain.FormedOf, playerTrain);
 
-            Season = (SeasonType)int.Parse(arguments[6]);
-            Weather = (WeatherType)int.Parse(arguments[7]);
+            Season = (SeasonType)int.Parse(arguments[3]);
+            Weather = (WeatherType)int.Parse(arguments[4]);
 
             if (playerTrain != null)
             {
@@ -1103,11 +1103,12 @@ namespace ORTS
 
                 for (int iCar = 0; iCar <= noUnits - 1; iCar++)
                 {
-                    var car = train.Cars[iCar];
+                    var car = train.Cars[0]; // each car is removed so always detach first car!!!
                     train.Cars.Remove(car);
                     train.Length = -car.LengthM;
                     newTrain.Cars.Add(car); // place in rear
                     car.Train = newTrain;
+                    car.CarID = String.Copy(newTrain.Name);
                     newTrain.Length += car.LengthM;
                 }
             }
@@ -1118,11 +1119,12 @@ namespace ORTS
 
                 for (int iCar = 0; iCar <= noUnits - 1; iCar++)
                 {
-                    var car = train.Cars[totalCars - 1 - iCar];
+                    var car = train.Cars[totalCars - 1 - iCar]; // total cars is original length which keeps value despite cars are removed
                     train.Cars.Remove(car);
                     train.Length -= car.LengthM;
                     newTrain.Cars.Insert(0, car); // place in front
                     car.Train = newTrain;
+                    car.CarID = String.Copy(newTrain.Name);
                     newTrain.Length += car.LengthM;
                 }
             }
@@ -1242,12 +1244,12 @@ namespace ORTS
 
             if (!String.IsNullOrEmpty(ActivityFileName))
             {
-                logfilebase = String.Copy(RoutePath);
+                logfilebase = String.Copy(UserSettings.UserDataFolder);
                 logfilebase = String.Concat(logfilebase, "_", ActivityFileName);
             }
             else
             {
-                logfilebase = String.Copy(RoutePath);
+                logfilebase = String.Copy(UserSettings.UserDataFolder);
                 logfilebase = String.Concat(logfilebase, "_explorer");
             }
 

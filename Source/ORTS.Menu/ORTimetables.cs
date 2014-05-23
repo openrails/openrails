@@ -30,10 +30,6 @@ namespace ORTS.Menu
         public readonly String fileName;
 
         // items set for use as parameters, taken from main menu
-        public int AITimeHrs;
-        public int AITimeMins;
-        public bool AITimeRelative;  // true = time is relative, false = time is absolute
-        public bool AIInPlayerDirection;
         public int Day;
         public int Season;
         public int Weather;

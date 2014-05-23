@@ -92,12 +92,6 @@ namespace ORTS
             this.label20 = new System.Windows.Forms.Label();
             this.comboBoxTimetableSeason = new System.Windows.Forms.ComboBox();
             this.label21 = new System.Windows.Forms.Label();
-            this.groupBoxAITrains = new System.Windows.Forms.GroupBox();
-            this.comboBoxTimetableAITrainStart = new System.Windows.Forms.ComboBox();
-            this.radioButtonAITimeRelative = new System.Windows.Forms.RadioButton();
-            this.radioButtonAITimeAbsolute = new System.Windows.Forms.RadioButton();
-            this.checkBoxAISameDirection = new System.Windows.Forms.CheckBox();
-            this.label18 = new System.Windows.Forms.Label();
             this.comboBoxPlayerTimetable = new System.Windows.Forms.ComboBox();
             this.comboBoxTimetable = new System.Windows.Forms.ComboBox();
             this.label15 = new System.Windows.Forms.Label();
@@ -109,7 +103,6 @@ namespace ORTS
             this.panel1.SuspendLayout();
             this.panelModeActivity.SuspendLayout();
             this.panelModeTimetable.SuspendLayout();
-            this.groupBoxAITrains.SuspendLayout();
             this.SuspendLayout();
             // 
             // checkBoxWindowed
@@ -410,7 +403,6 @@ namespace ORTS
             // radioButtonModeActivity
             // 
             this.radioButtonModeActivity.Checked = true;
-            this.radioButtonModeActivity.Enabled = false;
             this.radioButtonModeActivity.Location = new System.Drawing.Point(12, 124);
             this.radioButtonModeActivity.Name = "radioButtonModeActivity";
             this.radioButtonModeActivity.Size = new System.Drawing.Size(130, 20);
@@ -422,7 +414,6 @@ namespace ORTS
             // 
             // radioButtonModeTimetable
             // 
-            this.radioButtonModeTimetable.Enabled = false;
             this.radioButtonModeTimetable.Location = new System.Drawing.Point(163, 123);
             this.radioButtonModeTimetable.Name = "radioButtonModeTimetable";
             this.radioButtonModeTimetable.Size = new System.Drawing.Size(130, 20);
@@ -707,7 +698,6 @@ namespace ORTS
             this.panelModeTimetable.Controls.Add(this.label20);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableSeason);
             this.panelModeTimetable.Controls.Add(this.label21);
-            this.panelModeTimetable.Controls.Add(this.groupBoxAITrains);
             this.panelModeTimetable.Controls.Add(this.comboBoxPlayerTimetable);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetable);
             this.panelModeTimetable.Controls.Add(this.label15);
@@ -753,22 +743,25 @@ namespace ORTS
             // comboBoxTimetableDay
             // 
             this.comboBoxTimetableDay.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTimetableDay.Enabled = false;
             this.comboBoxTimetableDay.FormattingEnabled = true;
-            this.comboBoxTimetableDay.Location = new System.Drawing.Point(61, 231);
+            this.comboBoxTimetableDay.Location = new System.Drawing.Point(91, 121);
             this.comboBoxTimetableDay.Name = "comboBoxTimetableDay";
             this.comboBoxTimetableDay.Size = new System.Drawing.Size(73, 21);
             this.comboBoxTimetableDay.TabIndex = 8;
+            this.comboBoxTimetableDay.Visible = false;
             // 
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(4, 234);
+            this.label22.Location = new System.Drawing.Point(5, 124);
             this.label22.Margin = new System.Windows.Forms.Padding(3);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(29, 13);
             this.label22.TabIndex = 7;
             this.label22.Text = "Day:";
             this.label22.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.label22.Visible = false;
             // 
             // comboBoxTimetableWeather
             // 
@@ -776,7 +769,7 @@ namespace ORTS
             this.comboBoxTimetableWeather.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxTimetableWeather.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTimetableWeather.FormattingEnabled = true;
-            this.comboBoxTimetableWeather.Location = new System.Drawing.Point(61, 286);
+            this.comboBoxTimetableWeather.Location = new System.Drawing.Point(91, 176);
             this.comboBoxTimetableWeather.Name = "comboBoxTimetableWeather";
             this.comboBoxTimetableWeather.Size = new System.Drawing.Size(73, 21);
             this.comboBoxTimetableWeather.TabIndex = 12;
@@ -784,7 +777,7 @@ namespace ORTS
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(4, 289);
+            this.label20.Location = new System.Drawing.Point(5, 179);
             this.label20.Margin = new System.Windows.Forms.Padding(3);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(51, 13);
@@ -798,7 +791,7 @@ namespace ORTS
             this.comboBoxTimetableSeason.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxTimetableSeason.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTimetableSeason.FormattingEnabled = true;
-            this.comboBoxTimetableSeason.Location = new System.Drawing.Point(61, 259);
+            this.comboBoxTimetableSeason.Location = new System.Drawing.Point(91, 149);
             this.comboBoxTimetableSeason.Name = "comboBoxTimetableSeason";
             this.comboBoxTimetableSeason.Size = new System.Drawing.Size(73, 21);
             this.comboBoxTimetableSeason.TabIndex = 10;
@@ -806,80 +799,13 @@ namespace ORTS
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(4, 262);
+            this.label21.Location = new System.Drawing.Point(5, 152);
             this.label21.Margin = new System.Windows.Forms.Padding(3);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(46, 13);
             this.label21.TabIndex = 9;
             this.label21.Text = "Season:";
             this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // groupBoxAITrains
-            // 
-            this.groupBoxAITrains.Controls.Add(this.comboBoxTimetableAITrainStart);
-            this.groupBoxAITrains.Controls.Add(this.radioButtonAITimeRelative);
-            this.groupBoxAITrains.Controls.Add(this.radioButtonAITimeAbsolute);
-            this.groupBoxAITrains.Controls.Add(this.checkBoxAISameDirection);
-            this.groupBoxAITrains.Controls.Add(this.label18);
-            this.groupBoxAITrains.Location = new System.Drawing.Point(3, 103);
-            this.groupBoxAITrains.Name = "groupBoxAITrains";
-            this.groupBoxAITrains.Size = new System.Drawing.Size(280, 115);
-            this.groupBoxAITrains.TabIndex = 6;
-            this.groupBoxAITrains.TabStop = false;
-            this.groupBoxAITrains.Text = "Computer trains";
-            // 
-            // comboBoxTimetableAITrainStart
-            // 
-            this.comboBoxTimetableAITrainStart.FormattingEnabled = true;
-            this.comboBoxTimetableAITrainStart.Location = new System.Drawing.Point(88, 19);
-            this.comboBoxTimetableAITrainStart.Name = "comboBoxTimetableAITrainStart";
-            this.comboBoxTimetableAITrainStart.Size = new System.Drawing.Size(73, 21);
-            this.comboBoxTimetableAITrainStart.TabIndex = 1;
-            // 
-            // radioButtonAITimeRelative
-            // 
-            this.radioButtonAITimeRelative.AutoSize = true;
-            this.radioButtonAITimeRelative.Location = new System.Drawing.Point(6, 69);
-            this.radioButtonAITimeRelative.Name = "radioButtonAITimeRelative";
-            this.radioButtonAITimeRelative.Size = new System.Drawing.Size(195, 17);
-            this.radioButtonAITimeRelative.TabIndex = 3;
-            this.radioButtonAITimeRelative.TabStop = true;
-            this.radioButtonAITimeRelative.Tag = "AITimeSelection";
-            this.radioButtonAITimeRelative.Text = "Relative time before player start time";
-            this.radioButtonAITimeRelative.UseVisualStyleBackColor = true;
-            // 
-            // radioButtonAITimeAbsolute
-            // 
-            this.radioButtonAITimeAbsolute.AutoSize = true;
-            this.radioButtonAITimeAbsolute.Location = new System.Drawing.Point(6, 46);
-            this.radioButtonAITimeAbsolute.Name = "radioButtonAITimeAbsolute";
-            this.radioButtonAITimeAbsolute.Size = new System.Drawing.Size(88, 17);
-            this.radioButtonAITimeAbsolute.TabIndex = 2;
-            this.radioButtonAITimeAbsolute.TabStop = true;
-            this.radioButtonAITimeAbsolute.Tag = "AITimeSelection";
-            this.radioButtonAITimeAbsolute.Text = "Absolute time";
-            this.radioButtonAITimeAbsolute.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxAISameDirection
-            // 
-            this.checkBoxAISameDirection.AutoSize = true;
-            this.checkBoxAISameDirection.Location = new System.Drawing.Point(6, 92);
-            this.checkBoxAISameDirection.Name = "checkBoxAISameDirection";
-            this.checkBoxAISameDirection.Size = new System.Drawing.Size(181, 17);
-            this.checkBoxAISameDirection.TabIndex = 4;
-            this.checkBoxAISameDirection.Text = "Include in direction of player train";
-            this.checkBoxAISameDirection.UseVisualStyleBackColor = true;
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(6, 22);
-            this.label18.Margin = new System.Windows.Forms.Padding(3);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(44, 13);
-            this.label18.TabIndex = 0;
-            this.label18.Text = "Start at:";
-            this.label18.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBoxPlayerTimetable
             // 
@@ -983,8 +909,6 @@ namespace ORTS
             this.panelModeActivity.PerformLayout();
             this.panelModeTimetable.ResumeLayout(false);
             this.panelModeTimetable.PerformLayout();
-            this.groupBoxAITrains.ResumeLayout(false);
-            this.groupBoxAITrains.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1053,15 +977,9 @@ namespace ORTS
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.ComboBox comboBoxTimetableSeason;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.GroupBox groupBoxAITrains;
-        private System.Windows.Forms.RadioButton radioButtonAITimeRelative;
-        private System.Windows.Forms.RadioButton radioButtonAITimeAbsolute;
-        private System.Windows.Forms.CheckBox checkBoxAISameDirection;
-        private System.Windows.Forms.Label label18;
         private System.Windows.Forms.ComboBox comboBoxPlayerTimetable;
         private System.Windows.Forms.ComboBox comboBoxTimetable;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.ComboBox comboBoxTimetableAITrainStart;
         private System.Windows.Forms.LinkLabel linkLabelUpdate;
         private System.Windows.Forms.LinkLabel linkLabelRestart;
     }

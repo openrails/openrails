@@ -68,7 +68,6 @@ namespace ORTS
             NONE,
             BLOCK_STATE,
             ROUTE_SET,
-//          STATION_HOLD,
             NEXT_SIG_LR,
             NEXT_SIG_MR,
             THIS_SIG_LR,
@@ -78,6 +77,8 @@ namespace ORTS
             DIST_MULTI_SIG_MR,
             SIG_FEATURE,
             DEF_DRAW_STATE,
+            APPROACH_CONTROL_POSITION,
+            APPROACH_CONTROL_SPEED,
             DEBUG_HEADER,
             DEBUG_OUT,
             RETURN,
@@ -87,8 +88,10 @@ namespace ORTS
         {
             STATE,
             DRAW_STATE,
-            ENABLED,
-            BLOCK_STATE,
+            ENABLED,                         // read only
+            BLOCK_STATE,                     // read only
+            APPROACH_CONTROL_REQ_POSITION,   // read only
+            APPROACH_CONTROL_REQ_SPEED,      // read only
         }
 
         public enum SCRTermCondition
@@ -201,7 +204,7 @@ namespace ORTS
 
 
 #if DEBUG_PRINT_PROCESS
-            TDB_debug_ref = new int[2] { 5692, 4181 };   /* signal tdb ref.no selected for print-out */
+            TDB_debug_ref = new int[3] { 1290, 1291, 7831 };   /* signal tdb ref.no selected for print-out */
 #endif
 
 #if DEBUG_PRINT_IN
@@ -245,7 +248,7 @@ namespace ORTS
 #else
                 // for test purposes : without exception catch
                 StreamReader scrStream = new StreamReader(fullName, true);
-                sigscrRead(scrStream, SignalTypes);
+                sigscrRead(fullName, scrStream, SignalTypes);
                 scrStream.Close();
 #endif
             }
@@ -3191,6 +3194,14 @@ namespace ORTS
                             return_value = (int)thisHead.mainSignal.block_state();
                             break;
 
+                        case SCRExternalFloats.APPROACH_CONTROL_REQ_POSITION:
+                            return_value = thisHead.ApproachControlLimitPositionM.HasValue ? Convert.ToInt32(thisHead.ApproachControlLimitPositionM.Value) : -1;
+                            break;
+
+                        case SCRExternalFloats.APPROACH_CONTROL_REQ_SPEED:
+                            return_value = thisHead.ApproachControlLimitSpeedMpS.HasValue ? Convert.ToInt32(thisHead.ApproachControlLimitSpeedMpS.Value) : -1;
+                            break;
+
                         default:
                             break;
                     }
@@ -3273,11 +3284,6 @@ namespace ORTS
                     return_value = (int)thisHead.mainSignal.block_state();
                     break;
 
-                //// Station Hold - experiment cancelled
-                //case (SCRExternalFunctions.STATION_HOLD):
-                //    return_value = Convert.ToInt32(thisHead.mainSignal.isStationHold());
-                //    break;
-
                 // Route set
 
                 case (SCRExternalFunctions.ROUTE_SET):
@@ -3299,9 +3305,24 @@ namespace ORTS
 #if DEBUG_PRINT_PROCESS
                     if (TDB_debug_ref.Contains(thisHead.TDBIndex))
                     {
-                        File.AppendAllText(dpr_fileLoc + @"printproc.txt",
-                                        " NEXT_SIG_LR : Located signal : " +
-                                               thisHead.mainSignal.sigfound[parameter1_value].ToString() + "\n");
+                        var sob = new StringBuilder();
+                        sob.AppendFormat(" NEXT_SIG_LR : Located signal : {0}", thisHead.mainSignal.sigfound[parameter1_value].ToString());
+
+                        if (thisHead.mainSignal.sigfound[parameter1_value] > 0)
+                        {
+                            SignalObject otherSignal = thisHead.mainSignal.signalRef.SignalObjects[thisHead.mainSignal.sigfound[parameter1_value]];
+                            sob.AppendFormat(" (");
+
+                            foreach (SignalHead otherHead in otherSignal.SignalHeads)
+                            {
+                                sob.AppendFormat(" {0} ", otherHead.TDBIndex);
+                            }
+
+                            sob.AppendFormat(") ");
+                        }
+                        sob.AppendFormat("\n");
+
+                        File.AppendAllText(dpr_fileLoc + @"printproc.txt", sob.ToString());
                     }
 #endif
 
@@ -3409,6 +3430,50 @@ namespace ORTS
                 case (SCRExternalFunctions.SIG_FEATURE):
                     bool temp_value;
                     temp_value = thisHead.sig_feature(parameter1_value);
+                    return_value = Convert.ToInt32(temp_value);
+                    break;
+
+                //// approach control position
+
+                case (SCRExternalFunctions.APPROACH_CONTROL_POSITION):
+                    dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    temp_value = thisHead.mainSignal.ApproachControlPosition(parameter1_value, dumpfile);
+                    return_value = Convert.ToInt32(temp_value);
+                    break;
+
+                // approach control speed
+
+                case (SCRExternalFunctions.APPROACH_CONTROL_SPEED):
+                    dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    temp_value = thisHead.mainSignal.ApproachControlSpeed(parameter1_value, parameter2_value, dumpfile);
                     return_value = Convert.ToInt32(temp_value);
                     break;
 

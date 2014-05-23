@@ -862,12 +862,9 @@ namespace ORTS.Processes
                 case "timetable":
                     Console.WriteLine("File                 = {0}", args[0]);
                     Console.WriteLine("Train                = {0}", args[1]);
-                    Console.WriteLine("AI StartTime         = {0}", args[2]);
-                    Console.WriteLine("AI StartType         = {0}", args[3]);
-                    Console.WriteLine("AI Player Direction  = {0}", args[4]);
-                    Console.WriteLine("Day                  = {0}", args[5]);
-                    Console.WriteLine("Season               = {0}", args[6]);
-                    Console.WriteLine("Weather              = {0}", args[7]);
+                    Console.WriteLine("Day                  = {0}", args[2]);
+                    Console.WriteLine("Season               = {0}", args[3]);
+                    Console.WriteLine("Weather              = {0}", args[4]);
                 break;
 
                 default:  // old style processing without explicit action definition - to be removed later

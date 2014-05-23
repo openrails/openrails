@@ -136,14 +136,10 @@ namespace ORTS
                             parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
                             break;
                         case MainForm.UserAction.SinglePlayerTimetableGame:
-                            parameters.Add(String.Format("-timetable \"{0}\" \"{1}:{2}\" \"{3}:{4}\" {5} {6} {7} {8} {9}",
+                            parameters.Add(String.Format("-timetable \"{0}\" \"{1}:{2}\" {3} {4} {5}",
                                 MainForm.SelectedTimetable.fileName,
                                 MainForm.SelectedPlayerTimetable,
                                 MainForm.SelectedTimetableTrain,
-                                MainForm.SelectedTimetable.AITimeHrs.ToString("00"),
-                                MainForm.SelectedTimetable.AITimeMins.ToString("00"),
-                                MainForm.SelectedTimetable.AITimeRelative ? String.Copy("R") : String.Copy("A"),
-                                MainForm.SelectedTimetable.AIInPlayerDirection.ToString(),
                                 MainForm.SelectedTimetable.Day,
                                 MainForm.SelectedTimetable.Season,
                                 MainForm.SelectedTimetable.Weather));

@@ -1051,12 +1051,6 @@ namespace ORTS
             {
                 return DialogResult.None;
             }
-
-            var time = comboBoxTimetableAITrainStart.Text.Split(':');
-            SelectedTimetable.AITimeHrs = time[0].Length > 0 ? int.Parse(time[0]) : 0;
-            SelectedTimetable.AITimeMins = time.Length > 1 ? int.Parse(time[1]) : 0;
-            SelectedTimetable.AITimeRelative = radioButtonAITimeRelative.Checked;
-            SelectedTimetable.AIInPlayerDirection = checkBoxAISameDirection.Checked;
             SelectedTimetable.Day = comboBoxTimetableDay.SelectedIndex;
             SelectedTimetable.Season = comboBoxTimetableSeason.SelectedIndex;
             SelectedTimetable.Weather = comboBoxTimetableWeather.SelectedIndex;
@@ -1129,8 +1123,6 @@ namespace ORTS
         #region TimetableAdditionInfo
         void PresetTimetableAdditionalInfo()
         {
-            radioButtonAITimeAbsolute.Checked = false;
-            radioButtonAITimeRelative.Checked = true;
             comboBoxTimetableDay.SelectedIndex = 0;
             comboBoxTimetableSeason.SelectedIndex = 1;
             comboBoxTimetableWeather.SelectedIndex = 0;

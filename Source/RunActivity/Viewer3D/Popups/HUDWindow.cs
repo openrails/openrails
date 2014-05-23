@@ -512,21 +512,10 @@ namespace ORTS.Viewer3D.Popups
         {
             TextPageHeading(table, "DISPATCHER INFORMATION");
 
-#if NEW_SIGNALLING
             TableSetCells(table, 0, "Train", "Travelled", "Speed", "Max", "AI mode", "AI data", "Mode", "Auth", "Distance", "Signal", "Distance", "Consist", "Path");
-#else	    
-            TableSetCells(table, 0, "Train", "Speed", "Signal aspect", "", "Distance", "Path");
-#endif
             TableAddLine(table);
 
-#if !NEW_SIGNALLING
-            foreach (var auth in Viewer.Simulator.AI.Dispatcher.TrackAuthorities)
-            {
-                var status = auth.GetStatus();
-                TableSetCells(table, 0, status.TrainID.ToString(), TrackMonitorWindow.FormatSpeed(status.Train.SpeedMpS, Viewer.MilepostUnitsMetric), status.Train.GetNextSignalAspect().ToString(), "", TrackMonitorWindow.FormatDistance(status.Train.distanceToSignal, Viewer.MilepostUnitsMetric), status.Path);
-                TableAddLine(table);
-            }
-#else
+            // first is player train
             foreach (var thisTrain in Viewer.Simulator.Trains)
             {
                 if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER || (thisTrain.TrainType == Train.TRAINTYPE.REMOTE && MultiPlayer.MPManager.IsServer()))
@@ -538,15 +527,31 @@ namespace ORTS.Viewer3D.Popups
                 }
             }
 
+            // next is active AI trains
             foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
             {
-                var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
-                status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
-                for (var iCell = 0; iCell < status.Length; iCell++)
-                    TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
-                TableAddLine(table);
+                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                {
+                    var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+                    status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
+                    for (var iCell = 0; iCell < status.Length; iCell++)
+                        TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                    TableAddLine(table);
+                }
             }
-#endif
+
+            // finally is static AI trains
+            foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
+            {
+                if (thisTrain.MovementState == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                {
+                    var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+                    status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
+                    for (var iCell = 0; iCell < status.Length; iCell++)
+                        TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                    TableAddLine(table);
+                }
+            }
         }
 
         void TextPageDebugInfo(TableData table)

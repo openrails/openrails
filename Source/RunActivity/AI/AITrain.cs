@@ -89,8 +89,8 @@ namespace ORTS
 
         public AI AI;
 
-        static float keepDistanceStatTrainM_P = 10.0f;  // stay 10m behind stationary train (pass)
-        static float keepDistanceStatTrainM_F = 50.0f;  // stay 50m behind stationary train (freight)
+        static float keepDistanceStatTrainM_P = 10.0f;  // stay 10m behind stationary train (pass in station)
+        static float keepDistanceStatTrainM_F = 50.0f;  // stay 50m behind stationary train (freight or pass outside station)
         static float followDistanceStatTrainM = 30.0f;  // min dist for starting to follow
         static float keepDistanceMovingTrainM = 300.0f; // stay 300m behind moving train
         static float creepSpeedMpS = 2.5f;              // speed for creeping up behind train or upto signal
@@ -177,7 +177,7 @@ namespace ORTS
             UiD = inf.ReadInt32();
             MaxDecelMpSS = inf.ReadSingle();
             MaxAccelMpSS = inf.ReadSingle();
-           
+
             int startTimeValue = inf.ReadInt32();
             if (startTimeValue < 0)
             {
@@ -259,6 +259,31 @@ namespace ORTS
                 CheckTrain = true;
             }
 #endif
+            // if train itself forms other train, check if train is to end at station (only if other train is not autogen and this train has SetStop set)
+
+            if (Forms > 0 && SetStop)
+            {
+                AITrain nextTrain = AI.StartList.GetNotStartedTrainByNumber(Forms, false);
+
+                if (nextTrain != null && nextTrain.StationStops != null && nextTrain.StationStops.Count > 0)
+                {
+                    TCSubpathRoute lastSubpath = TCRoute.TCRouteSubpaths[TCRoute.TCRouteSubpaths.Count - 1];
+                    int lastSectionIndex = lastSubpath[lastSubpath.Count - 1].TCSectionIndex;
+
+                    nextTrain.StationStops.Sort();
+                    if (nextTrain.StationStops[0].PlatformItem.TCSectionIndex.Contains(lastSectionIndex))
+                    {
+                        StationStops = new List<StationStop>();
+                        StationStop newStop = nextTrain.StationStops[0].CreateCopy();
+                        newStop.ArrivalTime = StartTime.Value;
+                        newStop.DepartTime = StartTime.Value;
+                        newStop.arrivalDT = new DateTime((long)(StartTime.Value * Math.Pow(10, 7)));
+                        newStop.departureDT = new DateTime((long)(StartTime.Value * Math.Pow(10, 7)));
+                        StationStops.Add(newStop);
+                    }
+                }
+            }
+
             // check deadlocks
 
             CheckDeadlock(ValidRoute[0], Number);
@@ -441,7 +466,7 @@ namespace ORTS
             // if no start time, set to now + 30
             if (!StartTime.HasValue)
                 StartTime = presentTime + 30;
-            bool validPosition = InitialTrainPlacement();
+            InitialTrainPlacement();
 
             return (true);
         }
@@ -477,6 +502,11 @@ namespace ORTS
                     thisPlatform.TCSectionIndex[0];
             int endSectionRouteIndex = ValidRoute[0].GetRouteIndex(endSectionIndex, 0);
 
+            int beginSectionIndex = thisStation.Direction == 1 ?
+                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1] :
+                    thisPlatform.TCSectionIndex[0];
+            int beginSectionRouteIndex = ValidRoute[0].GetRouteIndex(beginSectionIndex, 0);
+
             // check position
 
             float margin = 0.0f;
@@ -491,34 +521,25 @@ namespace ORTS
                 stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[1].RouteListIndex);
             }
 
-            if (PresentPosition[0].RouteListIndex == stationIndex || PresentPosition[1].RouteListIndex == stationIndex)   // front or rear of train in correct section
+            // if rear is in platform, station is valid
+            if (PresentPosition[1].RouteListIndex == stationIndex)
             {
-                // if train shorter than platform : check if end of train in platform
-                if (Length < thisPlatform.Length)
-                {
-                    if ((endSectionRouteIndex < 0) ||
-                        (PresentPosition[1].RouteListIndex > endSectionRouteIndex) ||
-                        (PresentPosition[1].RouteListIndex == endSectionRouteIndex && PresentPosition[1].TCOffset > (platformBeginOffset - margin)))
-                    {
-                        atStation = true;
-                    }
-                }
-                // if train longer than platform : check if begin of train beyond end of platform
-                else if (PresentPosition[0].TCOffset > (platformEndOffset - margin))
-                {
-                    atStation = true;
-                }
-                // if train longer than platform : check if begin of train beyond defined stop position
-                else if (PresentPosition[0].TCOffset > (thisStation.StopOffset - margin))
-                {
-                    atStation = true;
-                }
-                // in pre-update : train is close enough to required stop offset
-                else if (Math.Abs(PresentPosition[0].TCOffset - thisStation.StopOffset) < margin)
-                {
-                    atStation = true;
-                }
+                atStation = true;
             }
+
+            // if front is in platform and most of the train is as well, station is valid
+            else if (PresentPosition[0].RouteListIndex == stationIndex &&
+                    ((thisPlatform.Length - (platformBeginOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
+            {
+                atStation = true;
+            }
+
+            // if front is beyond platform and rear is not on route or before platform : train spans platform
+            else if (PresentPosition[0].RouteListIndex > stationIndex && PresentPosition[1].RouteListIndex < stationIndex)
+            {
+                atStation = true;
+            }
+
 
             // At station : set state, create action item
 
@@ -635,12 +656,12 @@ namespace ORTS
                     UpdateAIStaticState(presentTime);
                     break;
                 case AI_MOVEMENT_STATE.STOPPED:
-                    bool stillExist = ProcessEndOfPath(presentTime);
-                    if (stillExist) UpdateStoppedState();
+                    bool[] stillExist = ProcessEndOfPath(presentTime);
+                    if (stillExist[1]) UpdateStoppedState();
                     break;
                 case AI_MOVEMENT_STATE.INIT:
                     stillExist = ProcessEndOfPath(presentTime);
-                    if (stillExist) UpdateStoppedState();
+                    if (stillExist[1]) UpdateStoppedState();
                     break;
                 case AI_MOVEMENT_STATE.STATION_STOP:
                     UpdateStationState(presentTime);
@@ -744,9 +765,7 @@ namespace ORTS
                     }
                     File.AppendAllText(@"C:\Temp\checktrain.txt", "\n");
                 }
-
             }
-
         }
 
         //================================================================================================//
@@ -839,6 +858,7 @@ namespace ORTS
 
         public void CheckRequiredAction()
         {
+            // check if train ahead
             if (EndAuthorityType[0] == END_AUTHORITY.TRAIN_AHEAD)
             {
                 if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && MovementState != AI_MOVEMENT_STATE.STOPPED)
@@ -1218,7 +1238,7 @@ namespace ORTS
             // check if anything needs be detached
             if (DetachDetails.Count > 0)
             {
-                for (int iDetach = DetachDetails.Count - 1; iDetach >= 0; iDetach-- )
+                for (int iDetach = DetachDetails.Count - 1; iDetach >= 0; iDetach--)
                 {
                     DetachInfo thisDetach = DetachDetails[iDetach];
 
@@ -1316,7 +1336,6 @@ namespace ORTS
                         }
                     }
                 }
-
                 // if train not found, do nothing - state will change next update
 
             }
@@ -1505,6 +1524,8 @@ namespace ORTS
 
             if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP)
             {
+                AtStation = true;
+
                 if (thisStation.ActualArrival < 0)
                 {
                     thisStation.ActualArrival = presentTime;
@@ -1635,52 +1656,35 @@ namespace ORTS
                 }
             }
 
-            // check if stopped for hold exit signal
+            // check if station is end of path
 
-            if (thisStation.ExitSignal >= 0 && NextSignalObject[0] != null && NextSignalObject[0].thisRef == thisStation.ExitSignal)
+            bool[] endOfPath = ProcessEndOfPath(presentTime);
+
+            if (endOfPath[0])
+            {
+                removeStation = false; // do not remove station from list - is done by path processing
+            }
+            // check if station has exit signal and this signal is at danger
+            else if (thisStation.ExitSignal >= 0 && NextSignalObject[0] != null && NextSignalObject[0].thisRef == thisStation.ExitSignal)
             {
                 MstsSignalAspect nextAspect = GetNextSignalAspect(0);
                 if (nextAspect == MstsSignalAspect.STOP)
                 {
-                    // check if end of route reached
-
-                    if ((PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1)) ||
-                        (NextSignalObject[0] != null &&
-                         NextSignalObject[0].TCReference == ValidRoute[0][ValidRoute[0].Count - 1].TCSectionIndex) ||
-                        (NextSignalObject[0] != null &&
-                         NextSignalObject[0].TCNextTC == ValidRoute[0][ValidRoute[0].Count - 1].TCSectionIndex))
-                    {
-                        ProcessEndOfPath(presentTime);
-                        removeStation = false; // do not remove station from list - is done by path processing
-                    }
-                    else
-                    {
-                        return;  // do not depart if exit signal at danger
-                    }
+                    return;  // do not depart if exit signal at danger
                 }
             }
-            else
+
+            // change state if train still exists
+            if (endOfPath[1])
             {
-                if ((PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1)) ||
-                    (NextSignalObject[0] != null &&
-                     NextSignalObject[0].TCReference == ValidRoute[0][ValidRoute[0].Count - 1].TCSectionIndex) ||
-                    (NextSignalObject[0] != null &&
-                     NextSignalObject[0].TCNextTC == ValidRoute[0][ValidRoute[0].Count - 1].TCSectionIndex))
+                if (MovementState == AI_MOVEMENT_STATE.STATION_STOP)
                 {
-                    ProcessEndOfPath(presentTime);
-                    removeStation = false; // do not remove station from list - is done by path processing
+                    MovementState = AI_MOVEMENT_STATE.STOPPED;   // if state is still station_stop and ready to depart - change to stop to check action
+                    AtStation = false;
                 }
-                else if (ControlMode == TRAIN_CONTROL.AUTO_NODE &&
-                    (EndAuthorityType[0] == END_AUTHORITY.END_OF_TRACK ||
-                     EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH))
-                {
-                    ProcessEndOfPath(presentTime);
-                    removeStation = false; // do not remove station from list - is done by path processing
-                }
-            }
 
-            if (MovementState == AI_MOVEMENT_STATE.STATION_STOP) MovementState = AI_MOVEMENT_STATE.STOPPED;   // if state is still station_stop and ready to depart - change to stop to check action
-            Delay = TimeSpan.FromSeconds( (presentTime - thisStation.DepartTime) % (24*3600));
+                Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
+            }
 
 #if DEBUG_REPORTS
             DateTime baseDTd = new DateTime();
@@ -2322,7 +2326,7 @@ namespace ORTS
             }
             else if (SpeedMpS > requiredSpeedMpS && distanceToGoM < 0)
             {
-                 AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 50);
+                AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 50);
             }
             else if (SpeedMpS > ideal3HighBandMpS)
             {
@@ -2462,10 +2466,10 @@ namespace ORTS
             // check if at present speed train would pass beyond end of authority
             if (PreUpdate)
             {
-                    if (requiredSpeedMpS == 0 && (elapsedClockSeconds * SpeedMpS) > distanceToGoM)
-                    {
-                        SpeedMpS = (0.5f * SpeedMpS);
-                    }
+                if (requiredSpeedMpS == 0 && (elapsedClockSeconds * SpeedMpS) > distanceToGoM)
+                {
+                    SpeedMpS = (0.5f * SpeedMpS);
+                }
             }
 
             if (CheckTrain)
@@ -2615,48 +2619,63 @@ namespace ORTS
 
                         if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.TRAIN_AHEAD)
                         {
-                            NextStopDistanceM = nextActionInfo.ActivateDistanceM = distanceToTrain - keepDistanceTrainM;
+                            NextStopDistanceM = distanceToTrain - keepDistanceTrainM;
                         }
                         else if (nextActionInfo != null)
                         {
-                            NextStopDistanceM = Math.Min(nextActionInfo.ActivateDistanceM, (distanceToTrain - keepDistanceTrainM));
+                            //float deltaDistance = nextActionInfo.ActivateDistanceM - DistanceTravelledM;
+                            //if (deltaDistance < distanceToTrain) MovementState = AI_MOVEMENT_STATE.BRAKING; // switch to normal braking to handle action
+                            //NextStopDistanceM = Math.Min(deltaDistance, (distanceToTrain - keepDistanceTrainM));
+                            float deltaDistance = nextActionInfo.ActivateDistanceM - DistanceTravelledM;
+                            if (nextActionInfo.RequiredSpeedMpS > 0.0f)
+                            {
+                                NextStopDistanceM = distanceToTrain - keepDistanceTrainM;
+                            }
+                            else
+                            {
+                                NextStopDistanceM = Math.Min(deltaDistance, (distanceToTrain - keepDistanceTrainM));
+                            }
+
+                            if (deltaDistance < distanceToTrain) // perform to normal braking to handle action
+                            {
+                                UpdateBrakingState(elapsedClockSeconds, presentTime);
+                                return;
+                            }
                         }
-                        
+
                         // check distance and speed
                         if (OtherTrain.SpeedMpS == 0.0f)
                         {
                             float brakingDistance = SpeedMpS * SpeedMpS * 0.5f * (0.5f * MaxDecelMpSS);
+                            float reqspeed = (float)Math.Sqrt(distanceToTrain * MaxDecelMpSS);
 
-                            float minspeedMpS = Math.Min(2.0f * creepSpeedMpS, AllowedMaxSpeedMpS - (5.0f * hysterisMpS));
+                            float maxspeed = Math.Max(reqspeed / 2, creepSpeedMpS); // allow continue at creepspeed
+                            maxspeed = Math.Min(maxspeed, AllowedMaxSpeedMpS); // but never beyond valid speed limit
 
                             // set brake or acceleration as required
 
-                            if ((distanceToTrain - brakingDistance) > keepDistanceTrainM * 3.0f)
+                            if (SpeedMpS > maxspeed)
+                            {
+                                AdjustControlsBrakeMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
+                            }
+                            else if ((distanceToTrain - brakingDistance) > keepDistanceTrainM * 3.0f)
                             {
                                 if (brakingDistance > distanceToTrain)
                                 {
                                     AdjustControlsBrakeMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
                                 }
-                                else if (SpeedMpS < minspeedMpS)
+                                else if (SpeedMpS < maxspeed)
                                 {
                                     AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
-                                }
-                                else if (SpeedMpS < (AllowedMaxSpeedMpS - (2.0f * hysterisMpS)))
-                                {
-                                    AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
-                                }
-                                else if (SpeedMpS > (AllowedMaxSpeedMpS - (2.0f * hysterisMpS)))
-                                {
-                                    AdjustControlsBrakeMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
                                 }
                             }
                             else if ((distanceToTrain - brakingDistance) > keepDistanceTrainM)
                             {
-                                if (SpeedMpS > minspeedMpS)
+                                if (SpeedMpS > maxspeed)
                                 {
                                     AdjustControlsBrakeMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 50);
                                 }
-                                else if (SpeedMpS > 0.25f * minspeedMpS)
+                                else if (SpeedMpS > 0.25f * maxspeed)
                                 {
                                     AdjustControlsBrakeOff();
                                 }
@@ -2667,7 +2686,7 @@ namespace ORTS
                             }
                             else
                             {
-                                float reqMinSpeedMpS = attachToTrain ? 0.5f*creepSpeedMpS : 0;
+                                float reqMinSpeedMpS = attachToTrain ? 0.5f * creepSpeedMpS : 0;
                                 bool thisTrainFront;
                                 bool otherTrainFront;
 
@@ -2679,7 +2698,7 @@ namespace ORTS
                                 else if ((SpeedMpS - reqMinSpeedMpS) > 0.1f)
                                 {
                                     AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 50);
-                                    
+
                                     // if too close, force stop or slow down if coupling
                                     if (distanceToTrain < 0.25 * keepDistanceTrainM)
                                     {
@@ -2687,6 +2706,7 @@ namespace ORTS
                                         {
                                             car.SpeedMpS = car.Flipped ? -reqMinSpeedMpS : reqMinSpeedMpS;
                                         }
+                                        SpeedMpS = reqMinSpeedMpS;
                                     }
                                 }
                                 else if (attachToTrain)
@@ -3402,18 +3422,23 @@ namespace ORTS
         //================================================================================================//
         /// <summary>
         /// Process end of path 
-        /// returns false if train has been removed and no longer exists
+        /// returns :
+        /// [0] : true : end of route, false : not end of route
+        /// [1] : true : train still exists, false : train is removed and no longer exists
         /// <\summary>
 
-        public bool ProcessEndOfPath(int presentTime)
+        public bool[] ProcessEndOfPath(int presentTime)
         {
+            bool[] returnValue = new bool[2] { false, true };
+
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
             int positionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
 
             bool[] nextPart = UpdateRouteActions(0);
 
-            if (!nextPart[0]) return (true);   // not at end and not to attach to anything
+            if (!nextPart[0]) return (returnValue);   // not at end and not to attach to anything
 
+            returnValue[0] = true; // end of path reached
             if (nextPart[1])   // next route available
             {
 #if DEBUG_REPORTS
@@ -3505,7 +3530,7 @@ namespace ORTS
 
                     bool autogenStart = false;
                     // get train which is to be formed
-                    AITrain formedTrain = AI.StartList.GetNotStartedTrainByNumber(Forms);
+                    AITrain formedTrain = AI.StartList.GetNotStartedTrainByNumber(Forms, true);
 
                     if (formedTrain == null)
                     {
@@ -3536,6 +3561,7 @@ namespace ORTS
                             }
                             formedTrain.TrainType = Train.TRAINTYPE.AI;
                             MovementState = AI_MOVEMENT_STATE.AI_STATIC;
+                            formedTrain.SetFormedOccupied();
                             AI.TrainsToAdd.Add(formedTrain);
                         }
                         else if (!autogenStart)
@@ -3545,7 +3571,8 @@ namespace ORTS
                         }
                     }
 
-                    return (false);
+                    returnValue[1] = false;
+                    return (returnValue);
                 }
 
                 // check if train is to remain as static
@@ -3554,7 +3581,7 @@ namespace ORTS
                     MovementState = AI_MOVEMENT_STATE.AI_STATIC;
                     ControlMode = TRAIN_CONTROL.UNDEFINED;
                     StartTime = null;  // set starttime to invalid
-                    return (true);
+                    return (returnValue);
                 }
 
 #if DEBUG_REPORTS
@@ -3567,9 +3594,10 @@ namespace ORTS
                          Number.ToString() + " removed\n");
                 }
                 RemoveTrain();
-                return (false);
+                returnValue[1] = false;
+                return (returnValue);
             }
-            return (true);
+            return (returnValue);
         }
 
         public bool CheckCouplePosition(Train attachTrain, out bool thisTrainFront, out bool otherTrainFront)
@@ -3663,15 +3691,17 @@ namespace ORTS
                 {
                     var car = Cars[iCar];
                     car.Train = attachTrain;
+                    car.CarID = String.Copy(attachTrain.Name);
                     attachTrain.Cars.Insert(0, car);
                 }
             }
             // attach to rear of waiting train
-            else 
+            else
             {
                 foreach (var car in Cars)
                 {
                     car.Train = attachTrain;
+                    car.CarID = String.Copy(attachTrain.Name);
                     attachTrain.Cars.Add(car);
                 }
             }
@@ -3737,7 +3767,7 @@ namespace ORTS
             // remove original train
             RemoveTrain();
         }
-                
+
         //================================================================================================//
         /// <summary>
         /// Remove train
@@ -3751,7 +3781,7 @@ namespace ORTS
             // if train was to form another train, ensure this other train is started by removing the formed link
             if (Forms >= 0)
             {
-                AITrain formedTrain = AI.StartList.GetNotStartedTrainByNumber(Forms);
+                AITrain formedTrain = AI.StartList.GetNotStartedTrainByNumber(Forms, true);
                 if (formedTrain != null)
                 {
                     formedTrain.FormedOf = -1;
@@ -3923,6 +3953,27 @@ namespace ORTS
             }
 
             lengthToGoM -= 5.0f; // keep save distance from end
+
+            // if last section does not end at signal at next section is switch, set back overlap to keep clear of switch
+
+            TCRouteElement lastElement = ValidRoute[0][ValidRoute[0].Count - 1];
+            TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
+            if (lastSection.EndSignals[lastElement.Direction] == null)
+            {
+                int nextIndex = lastSection.Pins[lastElement.Direction, 0].Link;
+                if (nextIndex >= 0)
+                {
+                    if (signalRef.TrackCircuitList[nextIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
+                    {
+                        float lengthCorrection = Math.Max(Convert.ToSingle(signalRef.TrackCircuitList[nextIndex].Overlap), standardOverlapM);
+                        if (lastSection.Length - 2 * lengthCorrection < Length) // make sure train fits
+                        {
+                            lengthCorrection = Math.Max(0.0f, (lastSection.Length - Length) / 2);
+                        }
+                        lengthToGoM -= lengthCorrection; // correct for stopping position
+                    }
+                }
+            }
 
             CreateTrainAction(TrainMaxSpeedMpS, 0.0f, lengthToGoM, null,
                     AIActionItem.AI_ACTION_TYPE.END_OF_ROUTE);

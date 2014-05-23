@@ -240,7 +240,7 @@ namespace ORTS
                 // continue prerun until player train can be started
                 if (delayedrun)
                 {
-                    float deltaTime = 1.0f; // update with 1 sec. interval
+                    float deltaTime = 5.0f; // update with 1 sec. interval
                     double runTime = Simulator.ClockTime - (double)deltaTime;
                     bool playerTrainStarted = false;
 
@@ -250,6 +250,9 @@ namespace ORTS
                         Simulator.Signals.Update(true);
                         clockTime = runTime;
                         runTime += deltaTime;
+
+                        int fullsec = Convert.ToInt32(runTime);
+                        if (fullsec % 3600 == 0) Trace.Write(" " + (fullsec / 3600).ToString("00") + ":00 ");
 
                         if (runTime >= 24 * 3600) // end of day reached
                         {
@@ -498,7 +501,8 @@ namespace ORTS
                 thisTrain.actualWaitTimeS += 30;
                 if (thisTrain.actualWaitTimeS > 900)   // tried for 15 mins
                 {
-                    Trace.TraceWarning("Cannot place AI train {0} at time {1}", thisTrain.Name, thisTrain.StartTime.Value.ToString());
+                    TimeSpan timeStart = new TimeSpan((long)(Math.Pow(10, 7) * thisTrain.StartTime.Value));
+                    Trace.TraceWarning("Cannot place AI train {0} at time {1}", thisTrain.Name, timeStart.ToString());
                 }
                 else
                 {
@@ -679,10 +683,10 @@ namespace ORTS
 
         //================================================================================================//
         //
-        // Get unstarted train by number and remove it from startlist
+        // Get unstarted train by number and remove it from startlist if required
         //
 
-        public AITrain GetNotStartedTrainByNumber(int reqNumber)
+        public AITrain GetNotStartedTrainByNumber(int reqNumber, bool remove)
         {
             LinkedListNode<AITrain> AITrainNode = First;
             while (AITrainNode != null)
@@ -690,7 +694,7 @@ namespace ORTS
                 if (AITrainNode.Value.Number == reqNumber)
                 {
                     AITrain reqTrain = AITrainNode.Value;
-                    Remove(AITrainNode);
+                    if (remove) Remove(AITrainNode);
                     return (reqTrain);
                 }
                 else
