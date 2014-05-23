@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using MSTS.Formats;
@@ -357,9 +358,38 @@ namespace ORTS
         public string GetStatus()
         {
             if (Script != null)
-                return ControllerStateDictionary.Dict[Script.GetState()];
+            {
+                string state = ControllerStateDictionary.Dict[Script.GetState()];
+                string fraction = GetStateFraction();
+
+                if (String.IsNullOrEmpty(state) && String.IsNullOrEmpty(fraction))
+                    return String.Empty;
+                else if (!String.IsNullOrEmpty(state) && String.IsNullOrEmpty(fraction))
+                    return state;
+                else if (String.IsNullOrEmpty(state) && !String.IsNullOrEmpty(fraction))
+                    return fraction;
+                else
+                    return String.Format("{0} {1}", state, fraction);
+            }
             else
-                return "";
+                return String.Empty;
+        }
+
+        private string GetStateFraction()
+        {
+            if (Script != null)
+            {
+                float? fraction = Script.GetStateFraction();
+
+                if (fraction != null)
+                    return String.Format("{0:F0}%", 100 * (fraction ?? 0));
+                else
+                    return String.Empty;
+            }
+            else
+            {
+                return String.Empty;
+            }
         }
 
         public void Save(BinaryWriter outf)

@@ -248,6 +248,39 @@ namespace ORTS
                 return ControllerState.Dummy;
         }
 
+        public override float? GetStateFraction()
+        {
+            if (EmergencyBrakingPushButton() || TCSEmergencyBraking() || TCSFullServiceBraking())
+            {
+                return null;
+            }
+            else if (NotchController != null)
+            {
+                if (NotchController.NotchCount() == 0)
+                    return NotchController.CurrentValue;
+                else
+                {
+                    MSTSNotch notch = NotchController.GetCurrentNotch();
+
+                    if (!notch.Smooth)
+                    {
+                        if (notch.Type == ControllerState.Dummy)
+                            return NotchController.CurrentValue;
+                        else
+                            return null;
+                    }
+                    else
+                    {
+                        return NotchController.GetNotchFraction();
+                    }
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         static void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
         {
             if (pressurePSI < targetPSI)
