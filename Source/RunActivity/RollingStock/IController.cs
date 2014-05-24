@@ -30,9 +30,6 @@ namespace ORTS
      */
     public interface IController
     {
-        //Create a new controller exactly like this one
-        IController Clone();
-
         float Update(float elapsedSeconds);
 
         void StartIncrease();

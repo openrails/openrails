@@ -126,10 +126,10 @@ namespace ORTS
             MinReductionPSI = 6;
         }
 
-        public ScriptedBrakeController(ScriptedBrakeController controller)
+        public ScriptedBrakeController(ScriptedBrakeController controller, MSTSLocomotive locomotive)
         {
-            Simulator = controller.Simulator;
-            Locomotive = controller.Locomotive;
+            Simulator = locomotive.Simulator;
+            Locomotive = locomotive;
             ScriptName = controller.ScriptName;
             MaxPressurePSI = controller.MaxPressurePSI;
             ReleaseRatePSIpS = controller.ReleaseRatePSIpS;
@@ -138,11 +138,13 @@ namespace ORTS
             EmergencyRatePSIpS = controller.EmergencyRatePSIpS;
             FullServReductionPSI = controller.FullServReductionPSI;
             MinReductionPSI = controller.MinReductionPSI;
+
+            Initialize();
         }
 
-        public IController Clone()
+        public ScriptedBrakeController Clone(MSTSLocomotive locomotive)
         {
-            return new ScriptedBrakeController(this);
+            return new ScriptedBrakeController(this, locomotive);
         }
 
         public void Parse(STFReader stf)

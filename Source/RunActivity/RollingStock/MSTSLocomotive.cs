@@ -570,8 +570,8 @@ namespace ORTS
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
             ThrottleController = (MSTSNotchController)locoCopy.ThrottleController.Clone();
-            TrainBrakeController = (ScriptedBrakeController)locoCopy.TrainBrakeController.Clone();
-            EngineBrakeController = locoCopy.EngineBrakeController != null ? (ScriptedBrakeController)locoCopy.EngineBrakeController.Clone() : null;
+            TrainBrakeController = locoCopy.TrainBrakeController.Clone(this);
+            EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             TrainControlSystem = locoCopy.TrainControlSystem != null ? locoCopy.TrainControlSystem.Clone(this) : null;
 
