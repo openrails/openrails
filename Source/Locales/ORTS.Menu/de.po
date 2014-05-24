@@ -2,13 +2,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
 "POT-Creation-Date: 2014-02-28 18:43:36+0000\n"
-"PO-Revision-Date: 2014-03-02 14:21+0100\n"
+"PO-Revision-Date: 2014-05-24 18:14+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.6.5\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Language: de\n"
 
@@ -42,7 +42,7 @@ msgstr "Aufgabe '{0}' wurde ausgeschlossen."
 
 #: ../../ORTS.Menu/Consists.cs:113
 msgid "- Any Locomotive -"
-msgstr "- Beliebeige Lokomotive -"
+msgstr "- Beliebige Lokomotive -"
 
 #: ../../ORTS.Menu/Consists.cs:129
 #, csharp-format

@@ -1,16 +1,83 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2014-05-06 19:32:03+0200\n"
-"PO-Revision-Date: 2014-05-10 22:02+0100\n"
+"POT-Creation-Date: 2014-05-18 03:06:05+0200\n"
+"PO-Revision-Date: 2014-05-24 18:10+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.6.5\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../../RunActivity/Common/Scripting.cs:622
+msgid "Release"
+msgstr "Lösen"
+
+#: ../../RunActivity/Common/Scripting.cs:623
+msgid "Quick Release"
+msgstr "Schnellösen"
+
+#: ../../RunActivity/Common/Scripting.cs:624
+msgid "Running"
+msgstr "Läuft"
+
+#: ../../RunActivity/Common/Scripting.cs:625
+msgid "Neutral"
+msgstr "Neutral"
+
+#: ../../RunActivity/Common/Scripting.cs:626
+msgid "Apply"
+msgstr "Anwenden"
+
+#: ../../RunActivity/Common/Scripting.cs:627
+msgid "EPApply"
+msgstr "EP anwenden"
+
+#: ../../RunActivity/Common/Scripting.cs:628
+msgid "Emergency"
+msgstr "Notbremse"
+
+#: ../../RunActivity/Common/Scripting.cs:629
+#: ../../RunActivity/Common/Scripting.cs:632
+msgid "Lap"
+msgstr "Halten"
+
+#: ../../RunActivity/Common/Scripting.cs:630
+#: ../../RunActivity/Common/Scripting.cs:631
+msgid "Service"
+msgstr "Service"
+
+#: ../../RunActivity/Common/Scripting.cs:633
+msgid "Suppression"
+msgstr "Unterdrückung"
+
+#: ../../RunActivity/Common/Scripting.cs:634
+msgid "Cont. Service"
+msgstr "Dauerservice"
+
+#: ../../RunActivity/Common/Scripting.cs:635
+msgid "Full Service"
+msgstr "Vollservice"
+
+#: ../../RunActivity/Common/Scripting.cs:636
+#, fuzzy
+msgid "Overcharge"
+msgstr "Overcharge"
+
+#: ../../RunActivity/Common/Scripting.cs:637
+msgid "Emergency Braking Push Button"
+msgstr "Druckknopf für Notbremsung"
+
+#: ../../RunActivity/Common/Scripting.cs:638
+msgid "TCS Emergency Braking"
+msgstr "Zugkontrollscript Notbremsung"
+
+#: ../../RunActivity/Common/Scripting.cs:639
+msgid "TCS Full Service Braking"
+msgstr "Zugkontrollscript Vollbremsung"
 
 #: ../../RunActivity/Debugging/DebugViewerForm.cs:2039
 msgid "Switching Request Sent to the Server"
@@ -379,14 +446,14 @@ msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr "Zug wegen Problemen mit anderem Zug angehalten: Zug {0} , Grund: {1}"
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:522
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:523
 #, csharp-format
 msgid "Restoring from a save made by an older version {0}\n"
 msgstr ""
 "Laden eines Spielstandes, der mit einer älteren Version ({0}) gespeichert "
 "wurde\n"
 
-#: ../../RunActivity/Processes/GameStateRunActivity.cs:1013
+#: ../../RunActivity/Processes/GameStateRunActivity.cs:1014
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
@@ -402,56 +469,6 @@ msgstr "Keine Oberleitung!"
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:271
 msgid "Power line condition overridden."
 msgstr "Oberleitungszustand ignoriert."
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:118
-msgid "Release"
-msgstr "Lösen"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:119
-msgid "Quick Release"
-msgstr "Schnellösen"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:120
-msgid "Running"
-msgstr "Läuft"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:121
-msgid "Neutral"
-msgstr "Neutral"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:122
-msgid "Apply"
-msgstr "Anwenden"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:123
-msgid "EPApply"
-msgstr "EP anwenden"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:124
-msgid "Emergency"
-msgstr "Notbremse"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:125
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:128
-msgid "Lap"
-msgstr "Halten"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:126
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:127
-msgid "Service"
-msgstr "Service"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:129
-msgid "Suppression"
-msgstr "Unterdrückung"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:130
-msgid "Cont. Service"
-msgstr "Dauerservice"
-
-#: ../../RunActivity/RollingStock/MSTSNotchController.cs:131
-msgid "Full Service"
-msgstr "Vollservice"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1010
 msgid "Tender coal supply is empty. Your loco will fail."
@@ -923,7 +940,7 @@ msgid "Wipers"
 msgstr "Scheibenwischer"
 
 #: ../../RunActivity/Simulator/Confirmation.cs:183
-#: ../../RunActivity/Viewer3D/Cameras.cs:1406
+#: ../../RunActivity/Viewer3D/Cameras.cs:1417
 msgid "Cab"
 msgstr "Führerstand"
 
@@ -1152,19 +1169,19 @@ msgstr "Außen 2 (Zugende)"
 msgid "Brakeman"
 msgstr "Bremser"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1269
+#: ../../RunActivity/Viewer3D/Cameras.cs:1280
 msgid "Passenger"
 msgstr "Passagier"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1362
+#: ../../RunActivity/Viewer3D/Cameras.cs:1373
 msgid "Head out"
 msgstr "Hinauslehnen"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1586
+#: ../../RunActivity/Viewer3D/Cameras.cs:1597
 msgid "Trackside"
 msgstr "Beobachter"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1736
+#: ../../RunActivity/Viewer3D/Cameras.cs:1747
 msgid "3D Cab"
 msgstr "3D-Führerstand"
 
@@ -1509,53 +1526,53 @@ msgstr " Entf       Begr    Signal"
 msgid "Train Operations"
 msgstr "Zugbedienung"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:490
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:496
 msgid "water"
 msgstr "Wasser"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:491
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:497
 msgid "coal"
 msgstr "Kohle"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:492
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:498
 msgid "diesel oil"
 msgstr "Diesel"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:493
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:499
 msgid "wood"
 msgstr "Holz"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:603
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:609
 msgid "Refill: No suitable pick-up point anywhere, so refilling immediately."
 msgstr ""
 "Auftanken: Keine geeignete Tankstelle auf der Route. Wird sofort aufgefüllt."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:611
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr "Auftanken: Entfernung zur nächsten {0}-Tankstelle: {1}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:617
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:623
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr "Auftanken: Lokomotive muss stillstehen, um {0} auftanken zu können."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:623
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:629
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr "Auftanken: Geschwindigkeit muss größer als {0} sein."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:630
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:636
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr "Auftanken: Geschwindigkeit darf nicht größer als {0} sein."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:637
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:643
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr "Auftanken: {0} Vorrat jetzt ergänzt."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:612
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:618
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
