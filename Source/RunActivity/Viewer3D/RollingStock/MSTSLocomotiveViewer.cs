@@ -1775,7 +1775,6 @@ namespace ORTS.Viewer3D.RollingStock
     /// </summary>
 	public class CabViewDigitalRenderer : CabViewControlRenderer
 	{
-		const float FontScale = 10f / 480;
 		readonly LabelAlignment Alignment;
 		string Format = "{0}";
 		readonly string Format1 = "{0}";
@@ -1812,7 +1811,7 @@ namespace ORTS.Viewer3D.RollingStock
 				Format = Format2;
 			else
 				Format = Format1;
-			DrawFont = Viewer.WindowManager.TextManager.Get("Courier New", Viewer.CabHeightPixels * FontScale, System.Drawing.FontStyle.Regular);
+            DrawFont = Viewer.WindowManager.TextManager.Get(digital.FontFamily, Viewer.CabHeightPixels * digital.FontSize / 480, digital.FontStyle == 0 ? System.Drawing.FontStyle.Regular : System.Drawing.FontStyle.Bold);
 			DrawPosition.X = (int)(Position.X * Viewer.DisplaySize.X / 640);
 			DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels;
 			DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);

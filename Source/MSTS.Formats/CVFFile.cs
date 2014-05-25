@@ -472,6 +472,9 @@ namespace MSTS.Formats
         public color PositiveColor { get; set; }
         public color NegativeColor { get; set; }
         public color DecreaseColor { get; set; }
+        public float FontSize { get; set; }
+        public int FontStyle { get; set; }
+        public string FontFamily = "";
 
         public CVCDigital()
         {
@@ -485,6 +488,9 @@ namespace MSTS.Formats
             white.G = 255f;
             white.B = 255f;
             PositiveColor = white;
+            FontSize = 10;
+            FontStyle = 0;
+            FontFamily = "Courier New";
             
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -524,7 +530,8 @@ namespace MSTS.Formats
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
                             new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
                     }
-                })
+                }),
+                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); })
             });
         }
 
@@ -555,6 +562,15 @@ namespace MSTS.Formats
             Justification = stf.ReadInt(3);
             stf.SkipRestOfBlock();
         }
+        protected void ParseFont(STFReader stf)
+        {
+            stf.MustMatch("(");
+            FontSize = (float)stf.ReadDouble(10);
+            FontStyle = stf.ReadInt(0);
+            var fontFamily = stf.ReadString();
+            if (fontFamily != null) FontFamily = fontFamily;
+            stf.SkipRestOfBlock();
+         }
     }
 
     public class CVCDigitalClock : CVCDigital
@@ -562,13 +578,17 @@ namespace MSTS.Formats
 
         public CVCDigitalClock(STFReader stf, string basepath)
         {
+            FontSize = 10;
+            FontStyle = 0;
+            FontFamily = "Courier New";
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
                 new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
-                new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); })
+                new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }),
+                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); })
             });
         }
 
