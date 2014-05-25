@@ -1069,10 +1069,10 @@ namespace ORTS.Processes
             {
                 var dd = (float)Material.Texture.Width / 2;
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-dd - 0.5f, +dd + 0.5f, -1), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+dd - 0.5f, +dd + 0.5f, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-dd - 0.5f, -dd + 0.5f, -1), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -1), new Vector2(1, 1)),
+				    new VertexPositionTexture(new Vector3(-dd - 0.5f, +dd + 0.5f, -3), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(+dd - 0.5f, +dd + 0.5f, -3), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(-dd - 0.5f, -dd + 0.5f, -3), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
 			    };
             }
             
@@ -1142,9 +1142,9 @@ namespace ORTS.Processes
                 var x = -w / 2 - 0.5f;
                 var y = game.RenderProcess.DisplaySize.Y / 2 - h - 0.5f;
                 return new[] {
-				    new VertexPositionTexture(new Vector3(x, -y, -1), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(x + w, -y, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(x, -y - h, -1), new Vector2(0, 1)),
+				    new VertexPositionTexture(new Vector3(x + 0, -y - 0, -1), new Vector2(0, 0)),
+				    new VertexPositionTexture(new Vector3(x + w, -y - 0, -1), new Vector2(1, 0)),
+				    new VertexPositionTexture(new Vector3(x + 0, -y - h, -1), new Vector2(0, 1)),
 				    new VertexPositionTexture(new Vector3(x + w, -y - h, -1), new Vector2(1, 1)),
 			    };
             }
