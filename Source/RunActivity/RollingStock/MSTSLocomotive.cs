@@ -552,6 +552,7 @@ namespace ORTS
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
+            HasCombCtrl = locoCopy.HasCombCtrl;
             DynamicBrakeDelayS = locoCopy.DynamicBrakeDelayS;
             NumWheelsAdhesionFactor = locoCopy.NumWheelsAdhesionFactor;
             AntiSlip = locoCopy.AntiSlip;
@@ -567,6 +568,7 @@ namespace ORTS
 
             WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
+            PressureUnit = locoCopy.PressureUnit;
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
             ThrottleController = (MSTSNotchController)locoCopy.ThrottleController.Clone();
