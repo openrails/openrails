@@ -624,32 +624,25 @@ namespace ORTS.Processes
 
         void InitLogging(UserSettings settings, string[] args, bool appendLog)
         {
-            if (settings.LoggingPath == "")
+            if (settings.Logging && (settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
             {
-                settings.LoggingPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            }
-            if (settings.Logging)
-            {
-                if ((settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
+                var fileName = settings.LoggingFilename;
+                try
                 {
-                    var fileName = settings.LoggingFilename;
-                    try
-                    {
-                        fileName = String.Format(fileName, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
-                    }
-                    catch { }
-                    foreach (var ch in Path.GetInvalidFileNameChars())
-                        fileName = fileName.Replace(ch, '.');
-
-                    logFileName = Path.Combine(settings.LoggingPath, fileName);
-                    // Ensure we start with an empty file.
-                    if (!appendLog)
-                        File.Delete(logFileName);
-                    // Make Console.Out go to the log file AND the output stream.
-                    Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
-                    // Make Console.Error go to the new Console.Out.
-                    Console.SetError(Console.Out);
+                    fileName = String.Format(fileName, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
                 }
+                catch { }
+                foreach (var ch in Path.GetInvalidFileNameChars())
+                    fileName = fileName.Replace(ch, '.');
+
+                logFileName = Path.Combine(settings.LoggingPath, fileName);
+                // Ensure we start with an empty file.
+                if (!appendLog)
+                    File.Delete(logFileName);
+                // Make Console.Out go to the log file AND the output stream.
+                Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
+                // Make Console.Error go to the new Console.Out.
+                Console.SetError(Console.Out);
             }
 
             // Captures Trace.Trace* calls and others and formats.
@@ -658,12 +651,16 @@ namespace ORTS.Processes
             // Trace.Listeners and Debug.Listeners are the same list.
             Trace.Listeners.Add(ORTraceListener);
 
-            Console.WriteLine("{0} is starting...", Application.ProductName); { int i = 0; foreach (var a in args) { Console.WriteLine(String.Format("Argument {0} = {1}", i++, a)); } }
-
+            Console.WriteLine("Log file for {0}", Application.ProductName);
+            LogSeparator();
             Console.WriteLine("Version    = {0}", VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>");
             Console.WriteLine("Build      = {0}", VersionInfo.Build);
             if (logFileName.Length > 0)
                 Console.WriteLine("Logfile    = {0}", logFileName);
+            Console.WriteLine("Date/time  = {0} ({1:u})", DateTime.Now, DateTime.UtcNow);
+            Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
+            foreach (var arg in args)
+                Console.WriteLine("Argument   = {0}", arg);
             LogSeparator();
             settings.Log();
             LogSeparator();
