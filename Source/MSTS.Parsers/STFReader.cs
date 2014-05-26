@@ -90,8 +90,7 @@ namespace MSTS.Parsers
     //     error1 "You cannot use append suffix to non quoted " + items
     //  
     // The STF format also supports 3 special {token_item}s - include, comment & skip.
-    // include - must be at the root level (that is to say it cannot be included within a block).
-    // After an include directive the {constant_item} is a filename relative to the current processing STF file.
+    // include - directive contains a filename relative to the current file to include.
     // The include token has the effect of in-lining the defined file into the current document.
     // comment & skip - must be followed by a block which will not be processed in OR.
     //  
@@ -426,11 +425,9 @@ namespace MSTS.Parsers
         {
             if (includeReader != null)
             {
-                bool eob = includeReader.EndOfBlock();
+                var eob = includeReader.EndOfBlock();
                 if (includeReader.Eof)
                 {
-                    if (tree.Count != 0)
-                        STFException.TraceWarning(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
                     includeReader.Dispose();
                     includeReader = null;
                 }
@@ -1600,8 +1597,6 @@ namespace MSTS.Parsers
                 string item = includeReader.ReadItem( skip_mode, string_mode);
                 UpdateTreeAndStepBack(item);
                 if ((!includeReader.Eof) || (item.Length > 0)) return item;
-                if (tree.Count != 0)
-                    STFException.TraceWarning(includeReader, "Included file did not have a properly matched number of blocks.  It is unlikely the parent STF file will work properly.");
                 includeReader.Dispose();
                 includeReader = null;
             }
@@ -1742,20 +1737,14 @@ namespace MSTS.Parsers
                 {
                     #region Process special token - include
                     case "include":
-                        string filename = ReadItem(skip_mode, string_mode);
+                        var filename = ReadItem(skip_mode, string_mode);
                         if (filename == "(")
                         {
                             filename = ReadItem(skip_mode, string_mode);
                             SkipRestOfBlock();
                         }
-                        if (tree.Count == 0)
-                        {
-                            includeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename, false);
-                            return ReadItem(skip_mode, string_mode); // Which will recurse down when includeReader is tested
-                        }
-                        else
-                            STFException.TraceWarning(this, "Found an include directive, but it was enclosed inside block parenthesis which is illegal.");
-                        break;
+                        includeReader = new STFReader(Path.GetDirectoryName(FileName) + @"\" + filename, false);
+                        return ReadItem(skip_mode, string_mode); // Which will recurse down when includeReader is tested
                     #endregion
                     #region Process special token - skip and comment
                     case "skip":
