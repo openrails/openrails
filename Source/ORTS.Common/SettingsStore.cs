@@ -106,6 +106,9 @@ namespace ORTS.Common
             AssertGetUserValueType(expectedType);
 
             var userValue = Key.GetValue(name);
+            if (userValue == null)
+                return userValue;
+
             try
             {
                 // Expected bool-stored-as-int conversion.
