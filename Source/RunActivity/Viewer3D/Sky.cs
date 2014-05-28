@@ -31,6 +31,8 @@ namespace ORTS.Viewer3D
         // Sky dome constants
         public const int skyRadius = 6000;
         public const int skySides = 24;
+        // <CScomment> added a belt of triangles just below 0 level to avoid empty sky below horizon
+        public const short skyLevels = 6;
     }
 
     public class SkyViewer
@@ -202,14 +204,14 @@ namespace ORTS.Viewer3D
         private static int skySides = SkyConstants.skySides;
         public int cloudDomeRadiusDiff = 600; // Amount by which cloud dome radius is smaller than sky dome
         // skyLevels: Used for iterating vertically through the "levels" of the hemisphere polygon
-        private static int skyLevels = ((SkyConstants.skySides / 4) - 1);
-        // Number of vertices in the sky hemisphere. (each dome = 145 for 24-sided sky dome: 24 x 6 + 1)
+        private static int skyLevels = SkyConstants.skyLevels;
+        // Number of vertices in the sky hemisphere. (each dome = 169 for 24-sided sky dome: 24 x 7 + 1)
         // plus four more for the moon quad
-        private static int numVertices = 4 + 2 * (int)((Math.Pow(skySides, 2) / 4) + 1);
-        // Number of point indices (each dome = 792 for 24 sides: 5 levels of 24 triangle pairs each
+        private static int numVertices = 4 + 2 * ((skyLevels + 1) * skySides + 1);
+        // Number of point indices (each dome = 912 for 24 sides: 7 levels of 24 triangle pairs each
         // plus 24 triangles at the zenith)
         // plus six more for the moon quad
-        private static short indexCount = 6 + 2 * ((SkyConstants.skySides * 2 * 3 * ((SkyConstants.skySides / 4) - 1)) + 3 * SkyConstants.skySides);
+        private static short indexCount = 6 + 2 * (SkyConstants.skySides * 6 *SkyConstants.skyLevels + 3 * SkyConstants.skySides);
 
         /// <summary>
         /// Constructor.
@@ -226,7 +228,7 @@ namespace ORTS.Viewer3D
             DomeVertexList((numVertices - 4) / 2, skyRadius - cloudDomeRadiusDiff, 0.4f);
             DomeTriangleList((short)((indexCount - 6) / 2), 1);
             // Moon quad
-            MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
+            MoonLists(numVertices - 5, indexCount - 6);
             // Meshes have now been assembled, so put everything into vertex and index buffers
             InitializeVertexBuffers(renderProcess.GraphicsDevice);
         }
@@ -280,20 +282,25 @@ namespace ORTS.Viewer3D
         private void DomeVertexList(int index, int radius, float oblate)
         {
             int vertexIndex = index;
+            // <CSComment> for night sky texture wrap to maintain stars position, for clouds no wrap for better appearance
+            int texDivisor = (oblate == 1.0f) ? skyLevels : skyLevels + 1;
+
             // for each vertex
-            for (int i = 0; i < (skySides / 4); i++) // (=6 for 24 sides)
+            for (int i = 0; i <= (skyLevels); i++) // (=6 for 24 sides)
+            {
+                // The "oblate" factor is used to flatten the dome to an ellipsoid. Used for the inner (cloud)
+                // dome only. Gives the clouds a flatter appearance.
+                float y = (float)Math.Sin(MathHelper.ToRadians((360 / skySides) * (i-1))) * radius * oblate;
+                float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / skySides) * (i-1)));
                 for (int j = 0; j < skySides; j++) // (=24 for top overlay)
                 {
-                    // The "oblate" factor is used to flatten the dome to an ellipsoid. Used for the inner (cloud)
-                    // dome only. Gives the clouds a flatter appearance.
-                    float y = (float)Math.Sin(MathHelper.ToRadians((360 / skySides) * i)) * radius * oblate;
-                    float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / skySides) * i));
+
                     float x = (float)Math.Cos(MathHelper.ToRadians((360 / skySides) * (skySides - j))) * yRadius;
                     float z = (float)Math.Sin(MathHelper.ToRadians((360 / skySides) * (skySides - j))) * yRadius;
 
                     // UV coordinates - top overlay
                     float uvRadius;
-                    uvRadius = 0.5f - (float)(0.5f * i) / (skySides / 4);
+                    uvRadius = 0.5f - (float)(0.5f * (i - 1)) / texDivisor;
                     float uv_u = 0.5f - ((float)Math.Cos(MathHelper.ToRadians((360 / skySides) * (skySides - j))) * uvRadius);
                     float uv_v = 0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / skySides) * (skySides - j))) * uvRadius);
 
@@ -303,6 +310,7 @@ namespace ORTS.Viewer3D
                     vertexList[vertexIndex].Normal = Vector3.Normalize(new Vector3(x, y, z));
                     vertexIndex++;
                 }
+            }
             // Single vertex at zenith
             vertexList[vertexIndex].Position = new Vector3(0, radius, 0);
             vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
@@ -329,7 +337,7 @@ namespace ORTS.Viewer3D
             // ----------------------------------------------------------------------
             short iIndex = index;
             short baseVert = (short)(pass * (short)((numVertices - 4) / 2));
-            for (int i = 0; i < skyLevels; i++) // (=5 for 24 sides)
+            for (int i = 0; i < skyLevels; i++) // (=6 for 24 sides)
                 for (int j = 0; j < skySides; j++) // (=24 for 24 sides)
                 {
                     // Vertex indices, beginning in the southwest corner
