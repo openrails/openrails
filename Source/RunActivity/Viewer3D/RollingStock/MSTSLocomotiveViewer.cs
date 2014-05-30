@@ -1849,11 +1849,6 @@ namespace ORTS.Viewer3D.RollingStock
 				DrawText = String.Format(digital.Accuracy > 0 ? "{0:D2}:{1:D2}:{2:D2}" : "{0:D2}:{1:D2}", hour, minute, seconds);
 				DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B);
 			}
-			else if (Num < -2)
-			{
-				DrawText = String.Empty;
-				DrawColor = Color.White;
-			}
 			else if (digital.OldValue != 0 && digital.OldValue > Num && digital.DecreaseColor.A != 0)
 			{
 				DrawText = String.Format(Format, Math.Abs(Num));
@@ -1929,11 +1924,6 @@ namespace ORTS.Viewer3D.RollingStock
 					}
 					displayedText = String.Format(digital.Accuracy > 0 ? "{0:D2}:{1:D2}:{2:D2}" : "{0:D2}:{1:D2}", hour, minute, seconds);
 					DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B);
-				}
-				else if (Num < -2)
-				{
-					displayedText = String.Empty;
-					DrawColor = Color.White;
 				}
 				else if (digital.OldValue != 0 && digital.OldValue > Num && digital.DecreaseColor.A != 0)
 				{
