@@ -13743,7 +13743,7 @@ namespace ORTS
                             loopset = false;
                         }
 
-                        if (!loopset)
+                        if (!loopset && !sections.ContainsKey(thisElement.TCSectionIndex))
                         {
                             sections.Add(thisElement.TCSectionIndex, iElement);
                         }
