@@ -79,6 +79,7 @@ namespace ORTS
             DEF_DRAW_STATE,
             APPROACH_CONTROL_POSITION,
             APPROACH_CONTROL_SPEED,
+            TRAINHASCALLON,
             DEBUG_HEADER,
             DEBUG_OUT,
             RETURN,
@@ -204,7 +205,7 @@ namespace ORTS
 
 
 #if DEBUG_PRINT_PROCESS
-            TDB_debug_ref = new int[3] { 1290, 1291, 7831 };   /* signal tdb ref.no selected for print-out */
+            TDB_debug_ref = new int[1] { 4247 };   /* signal tdb ref.no selected for print-out */
 #endif
 
 #if DEBUG_PRINT_IN
@@ -3433,7 +3434,7 @@ namespace ORTS
                     return_value = Convert.ToInt32(temp_value);
                     break;
 
-                //// approach control position
+                // approach control position
 
                 case (SCRExternalFunctions.APPROACH_CONTROL_POSITION):
                     dumpfile = String.Empty;
@@ -3474,6 +3475,28 @@ namespace ORTS
                     }
 #endif
                     temp_value = thisHead.mainSignal.ApproachControlSpeed(parameter1_value, parameter2_value, dumpfile);
+                    return_value = Convert.ToInt32(temp_value);
+                    break;
+
+                // Check for CallOn
+
+                case (SCRExternalFunctions.TRAINHASCALLON):
+                    dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    temp_value = thisHead.mainSignal.TrainHasCallOn(dumpfile);
                     return_value = Convert.ToInt32(temp_value);
                     break;
 

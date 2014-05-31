@@ -3955,10 +3955,11 @@ namespace ORTS
             lengthToGoM -= 5.0f; // keep save distance from end
 
             // if last section does not end at signal at next section is switch, set back overlap to keep clear of switch
+            // only do so for last subroute to avoid falling short of reversal points
 
             TCRouteElement lastElement = ValidRoute[0][ValidRoute[0].Count - 1];
             TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
-            if (lastSection.EndSignals[lastElement.Direction] == null)
+            if (lastSection.EndSignals[lastElement.Direction] == null && TCRoute.activeSubpath == (TCRoute.TCRouteSubpaths.Count - 1))
             {
                 int nextIndex = lastSection.Pins[lastElement.Direction, 0].Link;
                 if (nextIndex >= 0)

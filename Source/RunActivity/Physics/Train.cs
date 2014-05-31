@@ -12073,6 +12073,9 @@ namespace ORTS
                 newWait.waitTrainSubpathIndex = otherTrainStationStop.SubrouteIndex;
                 newWait.startSectionIndex = otherTrainStationStop.TCSectionIndex;
 
+                newWait.activeSubrouteIndex = reqWait.startSubrouteIndex;
+                newWait.activeSectionIndex = reqWait.startSectionIndex;
+
                 stopStation.ConnectionsAwaited.Add(otherTrain.Number, -1);
                 stopStation.ConnectionDetails.Add(otherTrain.Number, newWait);
 
@@ -12104,6 +12107,13 @@ namespace ORTS
 
             // check if first wait is this section
             WaitInfo firstWait = WaitList[0];
+
+            // if first wait is connect : no normal waits or follows to process
+            if (firstWait.WaitType == WaitInfo.WaitInfoType.Connect)
+            {
+                return (false);
+            }
+
             while (firstWait.activeSubrouteIndex == TCRoute.activeSubpath && firstWait.activeSectionIndex == trackSectionIndex)
             {
                 switch (firstWait.WaitType)
@@ -13545,11 +13555,20 @@ namespace ORTS
                         thisDeadlockPathInfo.EndSectionIndex = usedEndSectionIndex;
                         thisDeadlockPathInfo.LastUsefullSectionIndex = mainPathUsefullValues.Key;
                         thisDeadlockPathInfo.UsefullLength = mainPathUsefullValues.Value;
-                        thisDeadlockPathInfo.AllowedTrains.Add(-1); // set as public path
+
+                        // only allow as public path if not in timetable mode
+                        if (Program.Simulator.TimetableMode)
+                        {
+                            thisDeadlockPathInfo.AllowedTrains.Add(trainNumber);
+                        }
+                        else
+                        {
+                            thisDeadlockPathInfo.AllowedTrains.Add(-1); // set as public path
+                        }
 
                         // if name is main insert inverse path also as MAIN to ensure reverse path is available
 
-                        if (String.Compare(thisDeadlockPathInfo.Name, "MAIN") == 0)
+                        if (String.Compare(thisDeadlockPathInfo.Name, "MAIN") == 0 && !Program.Simulator.TimetableMode)
                         {
                             TCSubpathRoute inverseMainPath = mainPathPart.ReversePath(orgSignals);
                             int[] inverseIndex = thisDeadlock.AddPath(inverseMainPath, endSectionIndex, "MAIN", String.Empty);
@@ -13680,6 +13699,7 @@ namespace ORTS
                     loopList.Add(loopInfo);
 
                     bool loopset = false;
+                    bool loopreverse = false; // loop is reversing loop, otherwise loop is continuing loop
                     int loopindex = -1;
 
                     for (int iElement = 0; iElement < thisRoute.Count; iElement++)
@@ -13695,14 +13715,32 @@ namespace ORTS
                             loopDetails[1] = iElement;
                             loopInfo.Add(loopDetails);
                             loopset = true;
+
+                            // check if loop reverses or continues
+                            loopreverse = thisElement.Direction != thisRoute[loopindex].Direction;
+
                         }
-                        else if (loopset)
+                        else if (sections.ContainsKey(thisElement.TCSectionIndex) && loopset)
                         {
-                            loopindex--;
-                            if (loopindex >= 0)
+                            int preloopindex = sections[thisElement.TCSectionIndex];
+
+                            if (thisElement.Direction == thisRoute[preloopindex].Direction)
+                            {
+                                loopindex--;
+                            }
+                            else
+                            {
+                                loopindex++;
+                            }
+
+                            if (loopindex >= 0 && loopindex <= (thisRoute.Count - 1))
                             {
                                 loopset = (thisElement.TCSectionIndex == thisRoute[loopindex].TCSectionIndex);
                             }
+                        }
+                        else
+                        {
+                            loopset = false;
                         }
 
                         if (!loopset)
@@ -16014,6 +16052,16 @@ namespace ORTS
 
             public int CompareTo(WaitInfo otherItem)
             {
+                // all connects are moved to the end of the queue
+                if (this.WaitType == WaitInfoType.Connect)
+                {
+                    if (otherItem.WaitType != WaitInfoType.Connect)
+                        return (1);
+                    return (0);
+                }
+                if (otherItem.WaitType == WaitInfoType.Connect)
+                    return (-1);
+
                 if (this.activeSubrouteIndex < otherItem.activeSubrouteIndex)
                     return (-1);
                 if (this.activeSubrouteIndex == otherItem.activeSubrouteIndex && this.activeRouteIndex < otherItem.activeRouteIndex)

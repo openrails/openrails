@@ -5776,64 +5776,6 @@ namespace ORTS
 
             thisBlockstate = localBlockstate > passedBlockstate ? localBlockstate : passedBlockstate;
 
-            // when in timetable mode : 
-            // check if section is part of station
-            // if so, check if train stops and station and check for call-on state
-
-            if (thisTrain != null && Program.Simulator.TimetableMode)
-            {
-                if (thisBlockstate == SignalObject.InternalBlockstate.OccupiedOppositeDirection || thisBlockstate == SignalObject.InternalBlockstate.OccupiedSameDirection)
-                {
-                    // if train is to attach to train in section, allow callon
-                    bool allowCallOn = false;
-
-                    foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in CircuitState.TrainOccupy)
-                    {
-                        Train.TrainRouted occTrain = occTrainInfo.Key;
-                        if (occTrain.Train.Number == thisTrain.Train.AttachTo)
-                        {
-                            allowCallOn = true;
-                            break;
-                        }
-                    }
-
-                    // check if route leads into platform
-
-                    if (!allowCallOn)
-                    {
-                        bool intoPlatform = false;
-                        int occupiedSectionIndex = thisRoute.GetRouteIndex(Index, 0); // start from occupied section
-
-                        for (int iIndex = occupiedSectionIndex; iIndex <= thisRoute.Count - 1; iIndex++)
-                        {
-                            Train.TCRouteElement routeElement = thisRoute[iIndex];
-                            TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
-                            if (routeSection.PlatformIndex.Count > 0)
-                            {
-                                intoPlatform = true;
-                                PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
-                                if (thisTrain.Train.StationStops != null && thisTrain.Train.StationStops.Count > 0) // train has stops
-                                {
-                                    if (String.Compare(thisTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0 && thisTrain.Train.StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
-                                    {
-                                        allowCallOn = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (!intoPlatform) allowCallOn = true; // path does not lead into platform
-                        if (thisTrain.Train.Stable_CallOn) allowCallOn = true;
-                    }
-
-                    if (!allowCallOn)
-                    {
-                        thisBlockstate = SignalObject.InternalBlockstate.Blocked;
-                    }
-                }
-            }
-
             return (thisBlockstate);
         }
 
@@ -6895,6 +6837,8 @@ namespace ORTS
         private bool isPropagated;              // route request for this signal was propagated from previous signal
         public bool ForcePropagation = false;   // Force propagation (used in case of signals at very short distance)
 
+        public bool ApproachControlCleared;     // set in case signal has cleared on approach control
+
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
 
         public bool enabled
@@ -7029,6 +6973,7 @@ namespace ORTS
             propagated = inf.ReadBoolean();
             isPropagated = inf.ReadBoolean();
             ForcePropagation = false; // preset (not stored)
+            ApproachControlCleared = inf.ReadBoolean();
             ReqNumClearAhead = inf.ReadInt32();
             StationHold = inf.ReadBoolean();
 
@@ -7157,6 +7102,7 @@ namespace ORTS
 
             outf.Write(fullRoute);
             outf.Write(propagated);
+            outf.Write(ApproachControlCleared);
             outf.Write(isPropagated);
             outf.Write(ReqNumClearAhead);
             outf.Write(StationHold);
@@ -8014,6 +7960,7 @@ namespace ORTS
             isPropagated = false;
             propagated = false;
             ForcePropagation = false;
+            ApproachControlCleared = false;
 
             // reset block state to most restrictive
 
@@ -9475,6 +9422,13 @@ namespace ORTS
                 return (false);
             }
 
+            // if already cleared - return true
+
+            if (ApproachControlCleared)
+            {
+                return (true);
+            }
+
             // test distance
 
             if (Convert.ToInt32(enabledTrain.Train.distanceToSignal) < reqPositionM)
@@ -9487,6 +9441,7 @@ namespace ORTS
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
+                ApproachControlCleared = true;
                 return (true);
             }
             else
@@ -9536,6 +9491,13 @@ namespace ORTS
                 return (false);
             }
 
+            // if already cleared - return true
+
+            if (ApproachControlCleared)
+            {
+                return (true);
+            }
+
             // test distance
 
             if (Convert.ToInt32(enabledTrain.Train.distanceToSignal) < reqPositionM)
@@ -9566,6 +9528,7 @@ namespace ORTS
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
 
+                    ApproachControlCleared = true;
                     return (true);
                 }
                 else
@@ -9593,6 +9556,133 @@ namespace ORTS
 
                 return (false);
             }
+        }
+
+        //================================================================================================//
+        //
+        // Test if train has call-on set
+        //
+
+        public bool TrainHasCallOn(string dumpfile)
+        {
+            // no train approaching
+            if (enabledTrain == null)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    File.AppendAllText(dumpfile, "CALL ON : no train approaching");
+                }
+
+                return (false);
+            }
+
+            // signal is not first signal for train
+            if (enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
+                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
+            {
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("CALL ON : Train {0} : First signal is not this signal but {1}",
+                        enabledTrain.Train.Name, enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                return (false);
+            }
+
+            if (enabledTrain.Train != null && signalRoute != null)
+            {
+                bool intoPlatform = false;
+
+                // always allow if set for stable working
+                if (Program.Simulator.TimetableMode && enabledTrain.Train.Stable_CallOn)
+                {
+                    if (!String.IsNullOrEmpty(dumpfile))
+                    {
+                        var sob = new StringBuilder();
+                        sob.AppendFormat("CALL ON : Train {0} : valid - train has Stable_CallOn set", enabledTrain.Train.Name);
+                        File.AppendAllText(dumpfile, sob.ToString());
+                    }
+                    return (true);
+                }
+
+                // loop through sections in signal route
+                foreach (Train.TCRouteElement routeElement in signalRoute)
+                {
+                    // if train is to attach to train in section, allow callon
+
+                    TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
+
+                    foreach (KeyValuePair<Train.TrainRouted, int> occTrainInfo in routeSection.CircuitState.TrainOccupy)
+                    {
+                        Train.TrainRouted occTrain = occTrainInfo.Key;
+                        if (Program.Simulator.TimetableMode && occTrain.Train.Number == enabledTrain.Train.AttachTo)
+                        {
+                            if (!String.IsNullOrEmpty(dumpfile))
+                            {
+                                var sob = new StringBuilder();
+                                sob.AppendFormat("CALL ON : Train {0} : valid - train is to attach to {1}",
+                                    enabledTrain.Train.Name, occTrain.Train.Name);
+                                File.AppendAllText(dumpfile, sob.ToString());
+                            }
+                            return (true);
+                        }
+                    }
+
+                    // check if route leads into platform
+
+                    if (routeSection.PlatformIndex.Count > 0)
+                    {
+                        intoPlatform = true;
+
+                        PlatformDetails thisPlatform = signalRef.PlatformDetailsList[routeSection.PlatformIndex[0]];
+                        if (Program.Simulator.TimetableMode && enabledTrain.Train.StationStops.Count > 0) // train has stops
+                        {
+                            if (String.Compare(enabledTrain.Train.StationStops[0].PlatformItem.Name, thisPlatform.Name) == 0 && enabledTrain.Train.StationStops[0].CallOnAllowed) // stop is next station stop and callon is set
+                            {
+                                if (!String.IsNullOrEmpty(dumpfile))
+                                {
+                                    var sob = new StringBuilder();
+                                    sob.AppendFormat("CALL ON : Train {0} : valid - access to platform {1}",
+                                        enabledTrain.Train.Name, thisPlatform.Name);
+                                    File.AppendAllText(dumpfile, sob.ToString());
+                                }
+                                return (true);
+                            }
+                        }
+
+                        if (!String.IsNullOrEmpty(dumpfile))
+                        {
+                            var sob = new StringBuilder();
+                            sob.AppendFormat("CALL ON : Train {0} : route is into platform {1}",
+                                enabledTrain.Train.Name, thisPlatform.Name);
+                            File.AppendAllText(dumpfile, sob.ToString());
+                        }
+                        break;  // no need to check for other platforms
+                    }
+                }
+
+                // always allow if track does not lead into platform
+                if (!intoPlatform)
+                {
+                    if (!String.IsNullOrEmpty(dumpfile))
+                    {
+                        var sob = new StringBuilder();
+                        sob.AppendFormat("CALL ON : Train {0} : valid - route does not lead into platform", enabledTrain.Train.Name);
+                        File.AppendAllText(dumpfile, sob.ToString());
+                    }
+                    return (true);
+                }
+            }
+
+            if (!String.IsNullOrEmpty(dumpfile))
+            {
+                var sob = new StringBuilder();
+                sob.AppendFormat("CALL ON : Train {0} : not valid", enabledTrain.Train.Name);
+                File.AppendAllText(dumpfile, sob.ToString());
+            }
+            return (false);
         }
 
         //================================================================================================//
@@ -11697,33 +11787,36 @@ namespace ORTS
             int foundMatchingEndRouteIndex = -1;
             int matchingPath = -1;
 
-            List<int> availablePaths = PathReferences[startSectionIndex];
-
-            // search through paths from this section
-
-            for (int iPath = 0; iPath <= availablePaths.Count - 1; iPath++)
+            if (PathReferences.ContainsKey(startSectionIndex))
             {
-                // extract path, get indices in train path
-                Train.TCSubpathRoute testPath = AvailablePathList[availablePaths[iPath]].Path;
-                int endSectionIndex = AvailablePathList[availablePaths[iPath]].EndSectionIndex;
-                int endSectionRouteIndex = fullPath.GetRouteIndex(endSectionIndex, startSectionRouteIndex);
+                List<int> availablePaths = PathReferences[startSectionIndex];
 
-                // can only be matching path if endindex > 0 and endindex != startindex (if wrong way path, endindex = startindex)
-                if (endSectionRouteIndex > 0 && endSectionRouteIndex != startSectionRouteIndex)
+                // search through paths from this section
+
+                for (int iPath = 0; iPath <= availablePaths.Count - 1; iPath++)
                 {
-                    Train.TCSubpathRoute partPath = new Train.TCSubpathRoute(fullPath, startSectionRouteIndex, endSectionRouteIndex);
+                    // extract path, get indices in train path
+                    Train.TCSubpathRoute testPath = AvailablePathList[availablePaths[iPath]].Path;
+                    int endSectionIndex = AvailablePathList[availablePaths[iPath]].EndSectionIndex;
+                    int endSectionRouteIndex = fullPath.GetRouteIndex(endSectionIndex, startSectionRouteIndex);
 
-                    // test route
-                    if (partPath.EqualsPath(testPath))
+                    // can only be matching path if endindex > 0 and endindex != startindex (if wrong way path, endindex = startindex)
+                    if (endSectionRouteIndex > 0 && endSectionRouteIndex != startSectionRouteIndex)
                     {
-                        matchingPath = availablePaths[iPath];
-                        break;
-                    }
+                        Train.TCSubpathRoute partPath = new Train.TCSubpathRoute(fullPath, startSectionRouteIndex, endSectionRouteIndex);
 
-                    // set end index (if not yet found)
-                    if (foundMatchingEndRouteIndex < 0)
-                    {
-                        foundMatchingEndRouteIndex = endSectionRouteIndex;
+                        // test route
+                        if (partPath.EqualsPath(testPath))
+                        {
+                            matchingPath = availablePaths[iPath];
+                            break;
+                        }
+
+                        // set end index (if not yet found)
+                        if (foundMatchingEndRouteIndex < 0)
+                        {
+                            foundMatchingEndRouteIndex = endSectionRouteIndex;
+                        }
                     }
                 }
             }
