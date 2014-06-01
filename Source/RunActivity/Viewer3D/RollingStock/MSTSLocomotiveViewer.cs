@@ -1366,8 +1366,9 @@ namespace ORTS.Viewer3D.RollingStock
         readonly Rectangle SourceRectangle;
 
         Rectangle DestinationRectangle = new Rectangle();
-        bool LoadMeterPositive = true;
+  //      bool LoadMeterPositive = true;
         Color DrawColor;
+        Double Num;
         bool IsFire;
 
         public CabViewGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCGauge control, CabShader shader)
@@ -1381,12 +1382,12 @@ namespace ORTS.Viewer3D.RollingStock
                 SourceRectangle.Width = (int)Texture.Width;
                 SourceRectangle.Height = (int)Texture.Height;
             }
-            else
-            {
-                DrawColor = new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B);
+			else
+			{
+				DrawColor = new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B);
                 SourceRectangle = Gauge.Area;
-            }
-        }
+			}
+          }
 
         public CabViewGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCFirebox control, CabShader shader)
             : base(viewer, locomotive, control, shader)
@@ -1419,7 +1420,8 @@ namespace ORTS.Viewer3D.RollingStock
             float percent, xpos, ypos, zeropos;
 
             percent = IsFire ? 1f : GetRangeFraction();
-            LoadMeterPositive = percent + Gauge.MinValue / (Gauge.MaxValue - Gauge.MinValue) >= 0;
+ //           LoadMeterPositive = percent + Gauge.MinValue / (Gauge.MaxValue - Gauge.MinValue) >= 0;
+            Num = Locomotive.GetDataOf(Control);
 
             if (Gauge.Orientation == 0)  // gauge horizontal
             {
@@ -1492,8 +1494,21 @@ namespace ORTS.Viewer3D.RollingStock
                 DestinationRectangle.X = (int)(Position.X + 0.5f); DestinationRectangle.Y = (int)(Position.Y + 0.5f);
             }
             if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
-                DrawColor = LoadMeterPositive ? new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B) : new Color(Gauge.NegativeColor.R, Gauge.NegativeColor.G, Gauge.NegativeColor.B);
-        }
+            {
+                if (Num < 0)
+                {
+                    if ((Gauge.NumNegativeColors >= 2) && (Num < Gauge.NegativeSwitchVal))
+                        DrawColor = new Color(Gauge.SecondNegativeColor.R, Gauge.SecondNegativeColor.G, Gauge.SecondNegativeColor.B);
+                    else DrawColor = new Color(Gauge.NegativeColor.R, Gauge.NegativeColor.G, Gauge.NegativeColor.B);
+                }
+                else
+                {
+                    if ((Gauge.NumPositiveColors >= 2) && (Num > Gauge.PositiveSwitchVal))
+                        DrawColor = new Color(Gauge.SecondPositiveColor.R, Gauge.SecondPositiveColor.G, Gauge.SecondPositiveColor.B);
+                    else DrawColor = new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B);
+                }
+            }
+          }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
@@ -1857,12 +1872,16 @@ namespace ORTS.Viewer3D.RollingStock
 			else if (Num < 0 && digital.NegativeColor.A != 0)
 			{
 				DrawText = String.Format(Format, Math.Abs(Num));
-				DrawColor = new Color(digital.NegativeColor.R, digital.NegativeColor.G, digital.NegativeColor.B, digital.NegativeColor.A);
+                if ((digital.NumNegativeColors >=2) && (Num < digital.NegativeSwitchVal ))
+                    DrawColor = new Color(digital.SecondNegativeColor.R, digital.SecondNegativeColor.G, digital.SecondNegativeColor.B, digital.SecondNegativeColor.A);
+				else DrawColor = new Color(digital.NegativeColor.R, digital.NegativeColor.G, digital.NegativeColor.B, digital.NegativeColor.A);
 			}
 			else if (digital.PositiveColor.A != 0)
 			{
 				DrawText = String.Format(Format, Num);
-				DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B, digital.PositiveColor.A);
+                if ((digital.NumPositiveColors >= 2) && (Num > digital.PositiveSwitchVal))
+                    DrawColor = new Color(digital.SecondPositiveColor.R, digital.SecondPositiveColor.G, digital.SecondPositiveColor.B, digital.SecondPositiveColor.A);
+                else DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B, digital.PositiveColor.A);
 			}
 			else
 			{
@@ -1930,16 +1949,20 @@ namespace ORTS.Viewer3D.RollingStock
 					displayedText = String.Format(Format, Math.Abs(Num));
 					DrawColor = new Color(digital.DecreaseColor.R, digital.DecreaseColor.G, digital.DecreaseColor.B, digital.DecreaseColor.A);
 				}
-				else if (Num < 0 && digital.NegativeColor.A != 0)
-				{
-					displayedText = String.Format(Format, Math.Abs(Num));
-					DrawColor = new Color(digital.NegativeColor.R, digital.NegativeColor.G, digital.NegativeColor.B, digital.NegativeColor.A);
-				}
-				else if (digital.PositiveColor.A != 0)
-				{
-					displayedText = String.Format(Format, Num);
-					DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B, digital.PositiveColor.A);
-				}
+                else if (Num < 0 && digital.NegativeColor.A != 0)
+                {
+                    displayedText = String.Format(Format, Math.Abs(Num));
+                    if ((digital.NumNegativeColors >= 2) && (Num < digital.NegativeSwitchVal))
+                        DrawColor = new Color(digital.SecondNegativeColor.R, digital.SecondNegativeColor.G, digital.SecondNegativeColor.B, digital.SecondNegativeColor.A);
+                    else DrawColor = new Color(digital.NegativeColor.R, digital.NegativeColor.G, digital.NegativeColor.B, digital.NegativeColor.A);
+                }
+                else if (digital.PositiveColor.A != 0)
+                {
+                    displayedText = String.Format(Format, Num);
+                    if ((digital.NumPositiveColors >= 2) && (Num > digital.PositiveSwitchVal))
+                        DrawColor = new Color(digital.SecondPositiveColor.R, digital.SecondPositiveColor.G, digital.SecondPositiveColor.B, digital.SecondPositiveColor.A);
+                    else DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B, digital.PositiveColor.A);
+                }
 				else
 				{
 					displayedText = String.Format(Format, Num);

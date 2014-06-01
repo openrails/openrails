@@ -329,6 +329,13 @@ namespace MSTS.Formats
             stf.SkipRestOfBlock();
             return colour;
         }
+        protected virtual float ParseSwitchVal(STFReader stf)
+        {
+            stf.MustMatch("(");
+            var switchVal = (float)(stf.ReadDouble(0));
+            stf.SkipRestOfBlock();
+            return switchVal;
+        }
     }
     #endregion
 
@@ -372,7 +379,13 @@ namespace MSTS.Formats
         public int Orientation;
         public int Direction;
         public color PositiveColor { get; set; }
+        public color SecondPositiveColor { get; set; }
+        public float PositiveSwitchVal { get; set; }
         public color NegativeColor { get; set; }
+        public float NegativeSwitchVal { get; set; }
+        public color SecondNegativeColor { get; set; }
+        public int NumPositiveColors { get; set; }
+        public int NumNegativeColors { get; set; }
         public color DecreaseColor { get; set; }
 
         public CVCGauge() { }
@@ -402,22 +415,30 @@ namespace MSTS.Formats
                 }),
                 new STFReader.TokenProcessor("positivecolour", ()=>{ 
                     stf.MustMatch("(");
-                    stf.ReadInt(0);
-                    if(stf.EndOfBlock() == false)
+                    NumPositiveColors = stf.ReadInt(0);
+                    if((stf.EndOfBlock() == false))
                     {
-                        stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }) });
+                       List <color> Colorset = new List<color>();
+                       stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}), 
+                            new STFReader.TokenProcessor("switchval", () => { PositiveSwitchVal = ParseSwitchVal(stf); }) });
+                    PositiveColor = Colorset [0];
+                    if ((NumPositiveColors >= 2) && (Colorset.Count >= 2 ))SecondPositiveColor = Colorset [1];
                     }
-                }),
-                new STFReader.TokenProcessor("negativecolour", ()=>{
+                   }),
+               new STFReader.TokenProcessor("negativecolour", ()=>{ 
                     stf.MustMatch("(");
-                    stf.ReadInt(0);
-                    if(stf.EndOfBlock() == false)
+                    NumNegativeColors = stf.ReadInt(0);
+                    if ((stf.EndOfBlock() == false))
                     {
+                        List<color> Colorset = new List<color>();
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ NegativeColor = ParseControlColor(stf); }) });
-                    }
-                }),
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}), 
+                            new STFReader.TokenProcessor("switchval", () => { NegativeSwitchVal = ParseSwitchVal(stf); }) });
+                        NegativeColor = Colorset[0];
+                        if ((NumNegativeColors >= 2) && (Colorset.Count >= 2)) SecondNegativeColor = Colorset[1];
+                     }
+                    }),
                 new STFReader.TokenProcessor("decreasecolour", ()=>{
                     stf.MustMatch("(");
                     stf.ReadInt(0);
@@ -470,7 +491,13 @@ namespace MSTS.Formats
         public double AccuracySwitch { get; set; }
         public int Justification { get; set; }
         public color PositiveColor { get; set; }
+        public color SecondPositiveColor { get; set; }
+        public float PositiveSwitchVal { get; set; }
         public color NegativeColor { get; set; }
+        public float NegativeSwitchVal { get; set; }
+        public color SecondNegativeColor { get; set; }
+        public int NumPositiveColors { get; set; }
+        public int NumNegativeColors { get; set; }
         public color DecreaseColor { get; set; }
         public float FontSize { get; set; }
         public int FontStyle { get; set; }
@@ -506,22 +533,30 @@ namespace MSTS.Formats
                 new STFReader.TokenProcessor("justification", ()=>{ ParseJustification(stf); }),
                 new STFReader.TokenProcessor("positivecolour", ()=>{ 
                     stf.MustMatch("(");
-                    stf.ReadInt(0);
-                    if(stf.EndOfBlock() == false)
+                    NumPositiveColors = stf.ReadInt(0);
+                    if((stf.EndOfBlock() == false))
                     {
-                        stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }) });
+                       List <color> Colorset = new List<color>();
+                       stf.ParseBlock(new STFReader.TokenProcessor[] {
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}), 
+                            new STFReader.TokenProcessor("switchval", () => { PositiveSwitchVal = ParseSwitchVal(stf); }) });
+                    PositiveColor = Colorset [0];
+                    if ((NumPositiveColors >= 2) && (Colorset.Count >= 2 ))SecondPositiveColor = Colorset [1];
                     }
-                }),
-                new STFReader.TokenProcessor("negativecolour", ()=>{
+                   }),
+               new STFReader.TokenProcessor("negativecolour", ()=>{ 
                     stf.MustMatch("(");
-                    stf.ReadInt(0);
-                    if(stf.EndOfBlock() == false)
+                    NumNegativeColors = stf.ReadInt(0);
+                    if ((stf.EndOfBlock() == false))
                     {
+                        List<color> Colorset = new List<color>();
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ NegativeColor = ParseControlColor(stf); }) });
-                    }
-                }),
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}), 
+                            new STFReader.TokenProcessor("switchval", () => { NegativeSwitchVal = ParseSwitchVal(stf); }) });
+                        NegativeColor = Colorset[0];
+                        if ((NumNegativeColors >= 2) && (Colorset.Count >= 2)) SecondNegativeColor = Colorset[1];
+                     }
+                    }),
                 new STFReader.TokenProcessor("decreasecolour", ()=>{
                     stf.MustMatch("(");
                     stf.ReadInt(0);
@@ -562,6 +597,7 @@ namespace MSTS.Formats
             Justification = stf.ReadInt(3);
             stf.SkipRestOfBlock();
         }
+
         protected void ParseFont(STFReader stf)
         {
             stf.MustMatch("(");
