@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2014-05-18 03:06:05+0200\n"
-"PO-Revision-Date: 2014-05-24 18:10+0100\n"
+"PO-Revision-Date: 2014-06-01 11:58+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -65,7 +65,7 @@ msgstr "Vollservice"
 #: ../../RunActivity/Common/Scripting.cs:636
 #, fuzzy
 msgid "Overcharge"
-msgstr "Overcharge"
+msgstr "Überladen"
 
 #: ../../RunActivity/Common/Scripting.cs:637
 msgid "Emergency Braking Push Button"

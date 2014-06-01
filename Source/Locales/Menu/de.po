@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2014-05-18 03:06:04+0200\n"
-"PO-Revision-Date: 2014-05-24 18:07+0100\n"
+"PO-Revision-Date: 2014-06-01 11:56+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -468,7 +468,7 @@ msgstr "Fahrplan-Set:"
 
 #: ../../Menu/MainForm.Designer.cs:935
 msgid "Restart to apply update"
-msgstr "Programm neu starten, um Uüdate durchzuführen."
+msgstr "Programm-Neustart für Update durchühren."
 
 #: ../../Menu/MainForm.Designer.cs:973
 msgid "Open Rails"
