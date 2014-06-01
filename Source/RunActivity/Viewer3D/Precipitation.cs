@@ -31,8 +31,8 @@ namespace ORTS.Viewer3D
 {
     public class PrecipitationViewer
     {
-        public const float MinIntensity = 0;
-        public const float MaxIntensity = 15000;
+        public const float MinIntensityPPSPM2 = 0;
+        public const float MaxIntensityPPSPM2 = 0.015f;
 
         readonly Viewer Viewer;
         readonly WeatherControl Weather;
@@ -57,7 +57,7 @@ namespace ORTS.Viewer3D
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var gameTime = (float)Viewer.Simulator.GameTime;
-            Pricipitation.Update(gameTime, elapsedTime, Weather.pricipitationIntensity, Viewer);
+            Pricipitation.Update(gameTime, elapsedTime, Weather.pricipitationIntensityPPSPM2, Viewer);
 
             // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
             var XNAWorldLocation = Matrix.Identity;
@@ -75,7 +75,7 @@ namespace ORTS.Viewer3D
             var gameTime = (float)Viewer.Simulator.GameTime;
             Pricipitation.Initialize(Viewer.Simulator.Weather, Wind);
             // Camera is null during first initialisation.
-            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.pricipitationIntensity, Viewer);
+            if (Viewer.Camera != null) Pricipitation.Update(gameTime, null, Weather.pricipitationIntensityPPSPM2, Viewer);
         }
 
         [CallOnThread("Loader")]
@@ -96,9 +96,9 @@ namespace ORTS.Viewer3D
         const float ParticleVelocityFactor = 10.0f;
 
         // The width/depth of the box containing pricipitation. It is centered around the camera usually.
-        const float ParticleBoxSizeM = 1024;
+        const float ParticleBoxSizeM = 500;
         // The height of the box containing pricipitation.
-        const float ParticleBoxHeightM = 100;
+        const float ParticleBoxHeightM = 43;
 
         const int IndiciesPerParticle = 6;
         const int VerticiesPerParticle = 4;
@@ -146,7 +146,8 @@ namespace ORTS.Viewer3D
         public PrecipitationPrimitive(GraphicsDevice graphicsDevice)
         {
             // Snow is the slower particle, hence longer duration, hence more particles in total.
-            MaxParticles = (int)(PrecipitationViewer.MaxIntensity * (ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor));
+            MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxSizeM * ParticleBoxSizeM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
+            Debug.Assert(MaxParticles * VerticiesPerParticle < ushort.MaxValue, "The maximum number of pricipitation verticies must be able to fit in a ushort (16bit unsigned) index buffer.");
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
             VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
@@ -163,21 +164,21 @@ namespace ORTS.Viewer3D
 
         static IndexBuffer InitIndexBuffer(GraphicsDevice graphicsDevice, int numIndicies)
         {
-            var indices = new uint[numIndicies];
+            var indices = new ushort[numIndicies];
             var index = 0;
             for (var i = 0; i < numIndicies; i += IndiciesPerParticle)
             {
-                indices[i] = (uint)index;
-                indices[i + 1] = (uint)(index + 1);
-                indices[i + 2] = (uint)(index + 2);
+                indices[i] = (ushort)index;
+                indices[i + 1] = (ushort)(index + 1);
+                indices[i + 2] = (ushort)(index + 2);
 
-                indices[i + 3] = (uint)(index + 2);
-                indices[i + 4] = (uint)(index + 3);
-                indices[i + 5] = (uint)(index);
+                indices[i + 3] = (ushort)(index + 2);
+                indices[i + 4] = (ushort)(index + 3);
+                indices[i + 5] = (ushort)(index);
 
                 index += VerticiesPerParticle;
             }
-            var indexBuffer = new IndexBuffer(graphicsDevice, sizeof(uint) * numIndicies, BufferUsage.WriteOnly, IndexElementSize.ThirtyTwoBits);
+            var indexBuffer = new IndexBuffer(graphicsDevice, sizeof(ushort) * numIndicies, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
             indexBuffer.SetData(indices);
             return indexBuffer;
         }
@@ -233,7 +234,7 @@ namespace ORTS.Viewer3D
             DrawCounter = 0;
         }
 
-        public void Update(float currentTime, ElapsedTime elapsedTime, float particlesPerSecond, Viewer viewer)
+        public void Update(float currentTime, ElapsedTime elapsedTime, float particlesPerSecondPerM2, Viewer viewer)
         {
             var tiles = viewer.Tiles;
             var scenery = viewer.World.Scenery;
@@ -242,14 +243,14 @@ namespace ORTS.Viewer3D
             if (TimeParticlesLastEmitted == 0)
             {
                 TimeParticlesLastEmitted = currentTime - ParticleDuration;
-                ParticlesToEmit += ParticleDuration * particlesPerSecond;
+                ParticlesToEmit += ParticleDuration * particlesPerSecondPerM2 * ParticleBoxSizeM * ParticleBoxSizeM;
             }
             else
             {
                 RetireActiveParticles(currentTime);
                 FreeRetiredParticles();
 
-                ParticlesToEmit += elapsedTime.ClockSeconds * particlesPerSecond;
+                ParticlesToEmit += elapsedTime.ClockSeconds * particlesPerSecondPerM2 * ParticleBoxSizeM * ParticleBoxSizeM;
             }
 
             var numParticlesAdded = 0;
@@ -263,7 +264,7 @@ namespace ORTS.Viewer3D
                 temp.Location.Y = Heights.GetHeight(temp, tiles, scenery);
                 var position = new WorldPosition(temp);
 
-                var time = MathHelper.Lerp(TimeParticlesLastEmitted, currentTime, (float)Program.Random.NextDouble());
+                var time = MathHelper.Lerp(TimeParticlesLastEmitted, currentTime, (float)i / numToEmit);
                 var particle = (FirstFreeParticle + 1) % MaxParticles;
                 var vertex = particle * VerticiesPerParticle;
 

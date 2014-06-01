@@ -28,10 +28,23 @@ namespace ORTS.Viewer3D
     {
         readonly Viewer Viewer;
 
+        // Rainy conditions (Glossary of Meteorology (June 2000). "Rain". American Meteorological Society. Retrieved 2010-01-15.):
+        //   Type        Rate
+        //   Light       <2.5mm/h
+        //   Moderate     2.5-7.3mm/h
+        //   Heavy           >7.3mm/h
+        //   Violent         >50.0mm/h
+        //
+        // Snowy conditions (Glossary of Meteorology (2009). "Snow". American Meteorological Society. Retrieved 2009-06-28.):
+        //   Type        Visibility
+        //   Light           >1.0km
+        //   Moderate     0.5-1.0km
+        //   Heavy       <0.5km
+
         // Overcast factor: 0.0 = almost no clouds; 0.1 = wispy clouds; 1.0 = total overcast.
         public float overcastFactor;
-        // ???
-        public float pricipitationIntensity;
+        // Pricipitation intensity in particles per second per meter^2 (PPSPM2).
+        public float pricipitationIntensityPPSPM2;
         // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
         public float fogDistance;
 
@@ -86,9 +99,9 @@ namespace ORTS.Viewer3D
             Viewer.SoundProcess.RemoveSoundSource(this);
             switch (Viewer.Simulator.Weather)
             {
-                case MSTS.Formats.WeatherType.Clear: pricipitationIntensity = 0; Viewer.SoundProcess.AddSoundSource(this, ClearSound); break;
-                case MSTS.Formats.WeatherType.Rain: pricipitationIntensity = 10000; Viewer.SoundProcess.AddSoundSource(this, RainSound); break;
-                case MSTS.Formats.WeatherType.Snow: pricipitationIntensity = 10000; Viewer.SoundProcess.AddSoundSource(this, SnowSound); break;
+                case MSTS.Formats.WeatherType.Clear: pricipitationIntensityPPSPM2 = 0; Viewer.SoundProcess.AddSoundSource(this, ClearSound); break;
+                case MSTS.Formats.WeatherType.Rain: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSource(this, RainSound); break;
+                case MSTS.Formats.WeatherType.Snow: pricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSource(this, SnowSound); break;
             }
 
             // WeatherControl is created during World consturction so this needs to be skipped.
@@ -97,8 +110,8 @@ namespace ORTS.Viewer3D
 
         void UpdateVolume()
         {
-            foreach (var soundSource in RainSound) soundSource.Volume = pricipitationIntensity / PrecipitationViewer.MaxIntensity;
-            foreach (var soundSource in SnowSound) soundSource.Volume = pricipitationIntensity / PrecipitationViewer.MaxIntensity;
+            foreach (var soundSource in RainSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
+            foreach (var soundSource in SnowSound) soundSource.Volume = pricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
         }
 
         // TODO: Add several other weather conditions, such as PartlyCloudy, LightRain, 
@@ -115,7 +128,7 @@ namespace ORTS.Viewer3D
                 // Multiplayer weather has changed so we need to update our state to match weather, overcastFactor, pricipitationIntensity and fogDistance.
                 if (MPManager.Instance().weather >= 0 && MPManager.Instance().weather != (int)Viewer.Simulator.Weather) { Viewer.Simulator.Weather = (MSTS.Formats.WeatherType)MPManager.Instance().weather; UpdateWeatherParameters(); }
                 if (MPManager.Instance().overcastFactor >= 0) overcastFactor = MPManager.Instance().overcastFactor;
-                if (MPManager.Instance().pricipitationIntensity >= 0) { pricipitationIntensity = MPManager.Instance().pricipitationIntensity; UpdateVolume(); }
+                if (MPManager.Instance().pricipitationIntensity >= 0) { pricipitationIntensityPPSPM2 = MPManager.Instance().pricipitationIntensity; UpdateVolume(); }
                 if (MPManager.Instance().fogDistance >= 0) fogDistance = MPManager.Instance().fogDistance;
 
                 // Reset the message now that we've applied all the changes.
@@ -162,8 +175,8 @@ namespace ORTS.Viewer3D
                 if (UserInput.IsDown(UserCommands.DebugOvercastDecrease)) overcastFactor = MathHelper.Clamp(overcastFactor - elapsedTime.RealSeconds / 10, 0, 1);
                 
                 // Pricipitation ranges from 0 to 15000.
-                if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease)) pricipitationIntensity = MathHelper.Clamp(pricipitationIntensity * 1.05f, PrecipitationViewer.MinIntensity, PrecipitationViewer.MaxIntensity);
-                if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) pricipitationIntensity = MathHelper.Clamp(pricipitationIntensity / 1.05f, PrecipitationViewer.MinIntensity, PrecipitationViewer.MaxIntensity);
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease)) pricipitationIntensityPPSPM2 = MathHelper.Clamp(pricipitationIntensityPPSPM2 * 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) pricipitationIntensityPPSPM2 = MathHelper.Clamp(pricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
                 if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) UpdateVolume();
 
                 // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
@@ -186,7 +199,7 @@ namespace ORTS.Viewer3D
                     || UserInput.IsReleased(UserCommands.DebugFogIncrease) || UserInput.IsReleased(UserCommands.DebugFogDecrease))
                 {
                     MPManager.Instance().SetEnvInfo(overcastFactor, fogDistance);
-                    MPManager.Notify((new MSGWeather(-1, overcastFactor, pricipitationIntensity, fogDistance)).ToString());
+                    MPManager.Notify((new MSGWeather(-1, overcastFactor, pricipitationIntensityPPSPM2, fogDistance)).ToString());
                 }
             }
         }
