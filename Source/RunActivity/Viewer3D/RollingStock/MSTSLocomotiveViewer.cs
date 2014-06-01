@@ -1888,14 +1888,14 @@ namespace ORTS.Viewer3D.RollingStock
 				DrawText = String.Format(Format, Num);
 				DrawColor = Color.White;
 			}
-
-			if (Control.ControlType == CABViewControlTypes.SPEEDOMETER)
+//          <CSComment> Now speedometer is handled like the other digitals
+/*			if (Control.ControlType == CABViewControlTypes.SPEEDOMETER)
 			{
 				// Speedometer is colored specially.
 				DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B);
 				if (Locomotive.Train != null && Locomotive.GetDataOf(Control) > MpS.FromMpS(Locomotive.Train.AllowedMaxSpeedMpS, Control.Units == CABViewControlUnits.KM_PER_HOUR))
 					DrawColor = Color.Yellow;
-			}
+			}*/
 
 			base.PrepareFrame(frame);
 		}
@@ -1968,14 +1968,14 @@ namespace ORTS.Viewer3D.RollingStock
 					displayedText = String.Format(Format, Num);
 					DrawColor = Color.White;
 				}
-
-				if (Control.ControlType == CABViewControlTypes.SPEEDOMETER)
+// <CSComment> Speedometer is now managed like the other digitals
+/*				if (Control.ControlType == CABViewControlTypes.SPEEDOMETER)
 				{
 					// Speedometer is colored specially.
 					DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B);
 					if (Locomotive.Train != null && Locomotive.GetDataOf(Control) > MpS.FromMpS(Locomotive.Train.AllowedMaxSpeedMpS, Control.Units == CABViewControlUnits.KM_PER_HOUR))
 						DrawColor = Color.Yellow;
-				}
+				}*/
 				return displayedText;
 			}
 			catch (Exception)
