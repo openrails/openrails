@@ -78,7 +78,8 @@ namespace ORTS.Viewer3D.Popups
             Visible = true;
 
             ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
-            ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { cb = 40 };
+            ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { Size = 40 };
+            ProcessVirtualAddressLimit = GetVirtualAddressLimit();
 
             Debug.Assert(GC.MaxGeneration == 2, "Runtime is expected to have a MaxGeneration of 2.");
 
@@ -107,7 +108,7 @@ namespace ORTS.Viewer3D.Popups
             ForceGraphNumOfSubsteps = ForceGraphs.Add("Num of substeps", "0", "300", Color.Blue, 25);
 
             DebugGraphs = new HUDGraphSet(Viewer, graphMaterial);
-            DebugGraphMemory = DebugGraphs.Add("Memory", "0GB", "2GB", Color.Orange, 50);
+            DebugGraphMemory = DebugGraphs.Add("Memory", "0GB", String.Format("{0:F0}GB", (float)ProcessVirtualAddressLimit / 1024 / 1024 / 1024), Color.Orange, 50);
             DebugGraphGCs = DebugGraphs.Add("GCs", "0", "2", Color.Magenta, 20); // Multiple of 4
             DebugGraphFrameTime = DebugGraphs.Add("Frame time", "0.0s", "0.1s", Color.LightGreen, 50);
             DebugGraphProcessRender = DebugGraphs.Add("Render process", "0%", "100%", Color.Red, 20);
@@ -189,7 +190,7 @@ namespace ORTS.Viewer3D.Popups
             if (Visible && TextPages[TextPage] == TextPageDebugInfo)
             {
                 var gcCounts = new[] { GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2) };
-                DebugGraphMemory.AddSample((float)GetWorkingSetSize() / 1024 / 1024 / 1024 / 2); // Scale it out of 2GB, the theoretical max WSS.
+                DebugGraphMemory.AddSample((float)GetWorkingSetSize() / ProcessVirtualAddressLimit);
                 DebugGraphGCs.AddSample(gcCounts[2] > lastGCCounts[2] ? 1.0f : gcCounts[1] > lastGCCounts[1] ? 0.5f : gcCounts[0] > lastGCCounts[0] ? 0.25f : 0);
                 DebugGraphFrameTime.AddSample(Viewer.RenderProcess.FrameTime.Value * 10);
                 DebugGraphProcessRender.AddSample(Viewer.RenderProcess.Profiler.Wall.Value / 100);
@@ -590,10 +591,24 @@ namespace ORTS.Viewer3D.Popups
         }
 
         #region Native code
+        [StructLayout(LayoutKind.Sequential, Size = 64)]
+        public class MEMORYSTATUSEX
+        {
+            public uint Size;
+            public uint MemoryLoad;
+            public ulong TotalPhysical;
+            public ulong AvailablePhysical;
+            public ulong TotalPageFile;
+            public ulong AvailablePageFile;
+            public ulong TotalVirtual;
+            public ulong AvailableVirtual;
+            public ulong AvailableExtendedVirtual;
+        }
+
         [StructLayout(LayoutKind.Sequential, Size = 40)]
         struct PROCESS_MEMORY_COUNTERS
         {
-            public int cb;
+            public int Size;
             public int PageFaultCount;
             public int PeakWorkingSetSize;
             public int WorkingSetSize;
@@ -605,6 +620,9 @@ namespace ORTS.Viewer3D.Popups
             public int PeakPagefileUsage;
         }
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX buffer);
+
         [DllImport("psapi.dll", SetLastError = true)]
         static extern bool GetProcessMemoryInfo(IntPtr hProcess, out PROCESS_MEMORY_COUNTERS counters, int size);
 
@@ -613,14 +631,21 @@ namespace ORTS.Viewer3D.Popups
 
         readonly IntPtr ProcessHandle;
         PROCESS_MEMORY_COUNTERS ProcessMemoryCounters;
+        readonly ulong ProcessVirtualAddressLimit;
         #endregion
 
-        int GetWorkingSetSize()
+        uint GetWorkingSetSize()
         {
             // Get memory usage (working set).
-            GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.cb);
-            var memory = ProcessMemoryCounters.WorkingSetSize;
-            return memory;
+            GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.Size);
+            return (uint)ProcessMemoryCounters.WorkingSetSize;
+        }
+
+        ulong GetVirtualAddressLimit()
+        {
+            var buffer = new MEMORYSTATUSEX { Size = 64 };
+            GlobalMemoryStatusEx(buffer);
+            return Math.Min(buffer.TotalVirtual, buffer.TotalPhysical);
         }
     }
 
