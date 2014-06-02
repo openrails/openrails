@@ -33,7 +33,7 @@ namespace ORTS
         public bool Activated;
         string ScriptName = "MSTS";
         BrakeController Script;
-        private List<MSTSNotch> Notches = new List<MSTSNotch>();
+        public List<MSTSNotch> Notches = new List<MSTSNotch>();
 
         private bool emergencyBrakingPushButton = false;
         private bool tcsEmergencyBraking = false;
@@ -117,6 +117,7 @@ namespace ORTS
         {
             Simulator = locomotive.Simulator;
             Locomotive = locomotive;
+
             MaxPressurePSI = 90;
             ReleaseRatePSIpS = 5;
             QuickReleaseRatePSIpS = 10;
@@ -130,6 +131,7 @@ namespace ORTS
         {
             Simulator = locomotive.Simulator;
             Locomotive = locomotive;
+
             ScriptName = controller.ScriptName;
             MaxPressurePSI = controller.MaxPressurePSI;
             ReleaseRatePSIpS = controller.ReleaseRatePSIpS;
@@ -138,6 +140,15 @@ namespace ORTS
             EmergencyRatePSIpS = controller.EmergencyRatePSIpS;
             FullServReductionPSI = controller.FullServReductionPSI;
             MinReductionPSI = controller.MinReductionPSI;
+
+            CurrentValue = controller.CurrentValue;
+            MinimumValue = controller.MinimumValue;
+            MaximumValue = controller.MaximumValue;
+            StepSize = controller.StepSize;
+
+            controller.Notches.ForEach(
+                (item) => { Notches.Add(new MSTSNotch(item)); }
+            );
 
             Initialize();
         }
