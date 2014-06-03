@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivityEditor", "ActivityEditor.csproj", "{306C904F-BE41-4B39-A0C4-51068B7F205E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibAE", "LibAE\LibAE.csproj", "{B79691A7-BF8C-40B4-ADE0-5F30F2730414}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XnaGeometry", "..\..\..\xnageometry\XnaGeometry.csproj", "{A4398650-10F4-450F-8E4F-FB3F30A39683}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Debug|x86.ActiveCfg = Debug|x86
+		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Debug|x86.Build.0 = Debug|x86
+		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Release|x86.ActiveCfg = Release|x86
+		{306C904F-BE41-4B39-A0C4-51068B7F205E}.Release|x86.Build.0 = Release|x86
+		{B79691A7-BF8C-40B4-ADE0-5F30F2730414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B79691A7-BF8C-40B4-ADE0-5F30F2730414}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B79691A7-BF8C-40B4-ADE0-5F30F2730414}.Debug|x86.ActiveCfg = Debug|x86
+		{B79691A7-BF8C-40B4-ADE0-5F30F2730414}.Debug|x86.Build.0 = Debug|x86
+		{B79691A7-BF8C-40B4-ADE0-5F30F2730414}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B79691A7-BF8C-40B4-ADE0-5F30F2730414}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B79691A7-BF8C-40B4-ADE0-5F30F2730414}.Release|x86.ActiveCfg = Release|x86
+		{B79691A7-BF8C-40B4-ADE0-5F30F2730414}.Release|x86.Build.0 = Release|x86
+		{A4398650-10F4-450F-8E4F-FB3F30A39683}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4398650-10F4-450F-8E4F-FB3F30A39683}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4398650-10F4-450F-8E4F-FB3F30A39683}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A4398650-10F4-450F-8E4F-FB3F30A39683}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4398650-10F4-450F-8E4F-FB3F30A39683}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4398650-10F4-450F-8E4F-FB3F30A39683}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

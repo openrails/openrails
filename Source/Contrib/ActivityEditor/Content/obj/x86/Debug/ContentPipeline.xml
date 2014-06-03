@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Pipeline="Microsoft.Xna.Framework.Content.Pipeline">
+  <Asset Type="Pipeline:BuildItemCollection">
+    <BuildSuccessful>true</BuildSuccessful>
+    <Settings>
+      <TargetPlatform>Windows</TargetPlatform>
+      <BuildConfiguration>Debug</BuildConfiguration>
+      <CompressContent>false</CompressContent>
+      <RootDirectory>F:\Data Stef\OpenRail\source\Source\ActivityEditor\Content\</RootDirectory>
+      <LoggerRootDirectory>F:\Data Stef\OpenRail\source\Source\ActivityEditor\</LoggerRootDirectory>
+      <IntermediateDirectory>F:\Data Stef\OpenRail\source\Source\ActivityEditor\Content\obj\x86\Debug\</IntermediateDirectory>
+      <OutputDirectory>F:\Data Stef\OpenRail\Content\</OutputDirectory>
+    </Settings>
+    <Assemblies>
+      <Assembly>
+        <Key>C:\Windows\assembly\GAC_32\Microsoft.Xna.Framework.Content.Pipeline\3.1.0.0__6d5c3888ef60e27d\Microsoft.Xna.Framework.Content.Pipeline.dll</Key>
+        <Value>2013-02-26T16:16:33.2619742+01:00</Value>
+      </Assembly>
+    </Assemblies>
+  </Asset>
+</XnaContent>
