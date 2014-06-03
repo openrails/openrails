@@ -105,12 +105,6 @@ namespace LibAE.Formats
             foreach (var sig in Signal.SignalHeads)
             {
                 sigFonction.Add(sig.sigFunction);
-                if (sig.sigFunction == MstsSignalFunction.SPEED)
-                    File.AppendAllText(@"C:\temp\AE.txt", "SPEED\n");
-            }
-            foreach (var fn in sigFonction)
-            {
-                File.AppendAllText(@"C:\temp\AE.txt", "FN " + fn + "\n");
             }
             hasDir = false;
             Location.X = item.TileX * 2048 + item.X;
