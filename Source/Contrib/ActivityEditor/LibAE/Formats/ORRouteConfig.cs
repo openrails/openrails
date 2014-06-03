@@ -280,6 +280,7 @@ namespace LibAE.Formats
         /// <param name="TDB">The current TDB config to update.</param>
         public void CompleteTDB(TDBFile TDB)
         {
+#if false
             int idx;
             List<TrItem> trItemToAdd = new List<TrItem>();
             TrItem[] trItemTable = TDB.TrackDB.TrItemTable;
@@ -300,6 +301,7 @@ namespace LibAE.Formats
                 }
             }
             TDB.TrackDB.TrItemTable = trItemToAdd.ToArray();
+#endif
         }
 
         public void StartSearchPath(TrackPDP startPoint)
@@ -315,7 +317,7 @@ namespace LibAE.Formats
             trItem = searchTraveller.MoveToNextItem(AllItems, (int)endPoint.TileX, (int)endPoint.TileZ, endPoint.X, endPoint.Z);
             if (trItem != null)
             {
-                newNode = new TrackPDP(trItem);
+                //newNode = new TrackPDP(trItem);
             }
 
             return newNode;

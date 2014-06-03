@@ -856,6 +856,7 @@ namespace LibAE
         public TrItem MoveToNextItem(List<GlobalItem> AllItems, int tileX, int tileZ, float x, float z)
         {
             TrItem foundItem = null;
+#if false
             WorldLocation loc = new WorldLocation(tileX, tileZ, x, 0, z);
             float distFound = float.MaxValue;
             float distMax = DistanceTo(loc);
@@ -880,6 +881,7 @@ namespace LibAE
             {
                 Move(distMax + 0.1f);
             }
+#endif
             return foundItem;
         }
 
