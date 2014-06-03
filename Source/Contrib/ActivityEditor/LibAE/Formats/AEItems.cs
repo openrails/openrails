@@ -27,7 +27,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using XnaGeometry;
+using Microsoft.Xna.Framework;
 using MSTS;
 using MSTS.Formats;
 using MSTS.Parsers;
@@ -1329,7 +1329,7 @@ namespace LibAE.Formats
                     double lenCorde = Vector2.Distance(vectorA, vectorB);
                     if (lenCorde < 2)
                         return;
-                    double lenFleche = ((ts.SectionCurve.Radius * ts.SectionCurve.Radius) - (lenCorde * lenCorde) / 4f);
+                    float lenFleche = (float)((ts.SectionCurve.Radius * ts.SectionCurve.Radius) - (lenCorde * lenCorde) / 4f);
                     lenFleche = Math.Abs(lenFleche);
                     lenFleche = (float)Math.Sqrt(lenFleche);
                     lenFleche = (float)ts.SectionCurve.Radius - lenFleche;
@@ -1566,7 +1566,7 @@ namespace LibAE.Formats
 
             Vector2 vector1 = new Vector2(dx1, dy1);
             Vector2 vector2 = new Vector2(dx2, dy2);
-            double distBetween;
+            float distBetween;
             Vector2.Distance(ref vector1, ref vector2, out distBetween);
             double atan1 = Math.Atan2(dy1, dx1);
             double atan2 = Math.Atan2(dy2, dx2);

@@ -33,7 +33,8 @@ using MSTS.Formats;
 using ORTS.Common;
 using LibAE;
 using LibAE.Formats;
-using XnaGeometry;
+//using XnaGeometry;
+using Microsoft.Xna.Framework;
 
 #if !JSON_OR_XML
 using System.Xml.Serialization;

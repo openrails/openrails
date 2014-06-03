@@ -24,7 +24,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using XnaGeometry;
+using Microsoft.Xna.Framework;
 using MSTS;
 using MSTS.Formats;
 using MSTS.Parsers;
