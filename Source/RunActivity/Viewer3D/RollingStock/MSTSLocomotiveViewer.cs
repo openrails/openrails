@@ -1440,10 +1440,20 @@ namespace ORTS.Viewer3D.RollingStock
             {
                 if (Control.MinValue < 0)
                 {
-                    DestinationRectangle.X = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos)));
-                    DestinationRectangle.Y = (int)(yratio * Control.PositionY) + Viewer.CabYOffsetPixels;
-                    DestinationRectangle.Width = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
-                    DestinationRectangle.Height = (int)(yratio * ypos);
+                    if (Gauge.Orientation == 0)
+                    {
+                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos)));
+                        DestinationRectangle.Y = (int)(yratio * Control.PositionY) + Viewer.CabYOffsetPixels;
+                        DestinationRectangle.Width = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
+                        DestinationRectangle.Height = (int)(yratio * ypos);
+                    }
+                    else
+                    {
+                        DestinationRectangle.X = (int)(xratio * Control.PositionX );
+                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos))) + Viewer.CabYOffsetPixels;
+                        DestinationRectangle.Width = (int)(xratio * xpos);
+                        DestinationRectangle.Height = (int)(yratio * (ypos > zeropos ? ypos - zeropos : zeropos - ypos));
+                    }
                 }
                 else
                 {
@@ -1495,17 +1505,17 @@ namespace ORTS.Viewer3D.RollingStock
             }
             if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
             {
-                if (Num < 0)
+                if (Num < 0 && Gauge.NegativeColor.A != 0)
                 {
                     if ((Gauge.NumNegativeColors >= 2) && (Num < Gauge.NegativeSwitchVal))
-                        DrawColor = new Color(Gauge.SecondNegativeColor.R, Gauge.SecondNegativeColor.G, Gauge.SecondNegativeColor.B);
-                    else DrawColor = new Color(Gauge.NegativeColor.R, Gauge.NegativeColor.G, Gauge.NegativeColor.B);
+                        DrawColor = new Color(Gauge.SecondNegativeColor.R, Gauge.SecondNegativeColor.G, Gauge.SecondNegativeColor.B, Gauge.SecondNegativeColor.A);
+                    else DrawColor = new Color(Gauge.NegativeColor.R, Gauge.NegativeColor.G, Gauge.NegativeColor.B, Gauge.NegativeColor.A);
                 }
                 else
                 {
                     if ((Gauge.NumPositiveColors >= 2) && (Num > Gauge.PositiveSwitchVal))
-                        DrawColor = new Color(Gauge.SecondPositiveColor.R, Gauge.SecondPositiveColor.G, Gauge.SecondPositiveColor.B);
-                    else DrawColor = new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B);
+                        DrawColor = new Color(Gauge.SecondPositiveColor.R, Gauge.SecondPositiveColor.G, Gauge.SecondPositiveColor.B, Gauge.SecondPositiveColor.A);
+                    else DrawColor = new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B, Gauge.PositiveColor.A);
                 }
             }
           }
