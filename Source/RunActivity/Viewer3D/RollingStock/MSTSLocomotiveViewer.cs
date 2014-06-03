@@ -429,7 +429,7 @@ namespace ORTS.Viewer3D.RollingStock
             {
 
                 if (_CabRenderer != null)
-                    _CabRenderer.PrepareFrame(frame);
+                    _CabRenderer.PrepareFrame(frame, elapsedTime);
             }
 
             base.PrepareFrame(frame, elapsedTime);
@@ -1112,7 +1112,7 @@ namespace ORTS.Viewer3D.RollingStock
 			#endregion
 		}
 
-        public void PrepareFrame(RenderFrame frame)
+        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (!_Locomotive.ShowCab)
                 return;
@@ -1152,7 +1152,7 @@ namespace ORTS.Viewer3D.RollingStock
 
             if (_Location == 0)
                 foreach (var cvcr in CabViewControlRenderersList[i])
-                    cvcr.PrepareFrame(frame);
+                    cvcr.PrepareFrame(frame, elapsedTime);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -1263,7 +1263,7 @@ namespace ORTS.Viewer3D.RollingStock
         }
 
         [CallOnThread("Updater")]
-        public virtual void PrepareFrame(RenderFrame frame)
+        public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             frame.AddPrimitive(ControlView, this, RenderPrimitiveGroup.Cab, ref Matrix);
         }
@@ -1306,7 +1306,7 @@ namespace ORTS.Viewer3D.RollingStock
             Origin = new Vector2((float)Texture.Width / 2, ControlDial.Center / Scale);
         }
 
-        public override void PrepareFrame(RenderFrame frame)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var dark = Viewer.MaterialManager.sunDirection.Y <= 0f || Viewer.Camera.IsUnderground;
 
@@ -1314,7 +1314,7 @@ namespace ORTS.Viewer3D.RollingStock
             if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
-            base.PrepareFrame(frame);
+            base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height and vertical position adjusted to allow for clip or stretch.
             Position.X = (float)Viewer.DisplaySize.X / 640 * ((float)Control.PositionX + Origin.X * Scale);
@@ -1401,7 +1401,7 @@ namespace ORTS.Viewer3D.RollingStock
             IsFire = true;
         }
 
-        public override void PrepareFrame(RenderFrame frame)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             if (!(Gauge is CVCFirebox))
             {
@@ -1411,7 +1411,7 @@ namespace ORTS.Viewer3D.RollingStock
             if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
-            base.PrepareFrame(frame);
+            base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height adjusted to allow for clip or stretch.
             var xratio = (float)Viewer.DisplaySize.X / 640;
@@ -1541,6 +1541,9 @@ namespace ORTS.Viewer3D.RollingStock
         readonly Rectangle SourceRectangle;
         Vector2 DrawPosition = new Vector2();
         Rectangle DestinationRectangle = new Rectangle();
+        public readonly float CVCFlashTimeOn = 0.75f;
+        public readonly float CVCFlashTimeTotal = 1.5f;
+        float CumulativeTime;
 
         public CabViewDiscreteRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCWithFrames control, CabShader shader)
             : base(viewer, locomotive, control, shader)
@@ -1550,15 +1553,26 @@ namespace ORTS.Viewer3D.RollingStock
             SourceRectangle = new Rectangle(0, 0, (int)ControlDiscrete.Width, (int)ControlDiscrete.Height);
         }
 
-        public override void PrepareFrame(RenderFrame frame)
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var index = GetDrawIndex();
+
+            var mS = Control as CVCMultiStateDisplay;
+            if ( mS != null)
+            {
+             CumulativeTime += elapsedTime.ClockSeconds;
+             while (CumulativeTime > CVCFlashTimeTotal)
+                CumulativeTime -= CVCFlashTimeTotal;
+             if ((mS.MSStyles.Count > index) && (mS.MSStyles[index] == 1) && (CumulativeTime > CVCFlashTimeOn))
+                 return;
+            }
             var dark = Viewer.MaterialManager.sunDirection.Y <= 0f || Viewer.Camera.IsUnderground;
 
-            Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, GetDrawIndex(), dark, Locomotive.CabLightOn, out IsNightTexture);
+            Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, index, dark, Locomotive.CabLightOn, out IsNightTexture);
             if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
-            base.PrepareFrame(frame);
+            base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height and vertical position adjusted to allow for clip or stretch.
             var xratio = (float)Viewer.DisplaySize.X / 640;
@@ -1817,7 +1831,7 @@ namespace ORTS.Viewer3D.RollingStock
 			Format2 = "{0:0" + new String('0', digital.LeadingZeros) + (digital.AccuracySwitch > 0 ? "." + new String('0', (int)(digital.Accuracy + 1)) : "") + "}";
 		}
 
-		public override void PrepareFrame(RenderFrame frame)
+		public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
 		{
 			var digital = Control as CVCDigital;
 
@@ -1889,15 +1903,8 @@ namespace ORTS.Viewer3D.RollingStock
 				DrawColor = Color.White;
 			}
 //          <CSComment> Now speedometer is handled like the other digitals
-/*			if (Control.ControlType == CABViewControlTypes.SPEEDOMETER)
-			{
-				// Speedometer is colored specially.
-				DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B);
-				if (Locomotive.Train != null && Locomotive.GetDataOf(Control) > MpS.FromMpS(Locomotive.Train.AllowedMaxSpeedMpS, Control.Units == CABViewControlUnits.KM_PER_HOUR))
-					DrawColor = Color.Yellow;
-			}*/
 
-			base.PrepareFrame(frame);
+			base.PrepareFrame(frame, elapsedTime);
 		}
 
 		public override void Draw(GraphicsDevice graphicsDevice)
@@ -1969,13 +1976,7 @@ namespace ORTS.Viewer3D.RollingStock
 					DrawColor = Color.White;
 				}
 // <CSComment> Speedometer is now managed like the other digitals
-/*				if (Control.ControlType == CABViewControlTypes.SPEEDOMETER)
-				{
-					// Speedometer is colored specially.
-					DrawColor = new Color(digital.PositiveColor.R, digital.PositiveColor.G, digital.PositiveColor.B);
-					if (Locomotive.Train != null && Locomotive.GetDataOf(Control) > MpS.FromMpS(Locomotive.Train.AllowedMaxSpeedMpS, Control.Units == CABViewControlUnits.KM_PER_HOUR))
-						DrawColor = Color.Yellow;
-				}*/
+
 				return displayedText;
 			}
 			catch (Exception)
