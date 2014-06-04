@@ -2137,18 +2137,32 @@ namespace ORTS
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                             {
-                                float rangeFactor = direction == 0 ? (float)cvc.MinValue : (float)cvc.MaxValue;
-                                if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                data = -Math.Abs(data);
+                                if (cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING)
+                                {
+                                    float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
+                                    if (FilteredMotiveForceN != 0)
+                                        data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
+                                    else
+                                        data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
+                                    data = Math.Abs(data);
+                                }
+                                else 
+                                { 
+                                   float rangeFactor = direction == 0 ? (float)cvc.MinValue : (float)cvc.MaxValue;
+                                   if (FilteredMotiveForceN != 0)
+                                       data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
+                                    else
+                                       data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
+                                   data = -Math.Abs(data);
+                                }
                             }
                             if (direction == 1)
                                 data = -data;
-                            break;
+                             break;
                         }
                         data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
+                        if (cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING)
+                            data = Math.Abs(data);
                         break;
                     }
                 case CABViewControlTypes.MAIN_RES:
