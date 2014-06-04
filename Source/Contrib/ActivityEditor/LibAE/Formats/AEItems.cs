@@ -40,6 +40,10 @@ using Newtonsoft.Json.Linq;
 
 namespace LibAE.Formats
 {
+    /// <summary>
+    /// MSTSItems retains all the items comming from MSTS route config represented by GlobalItem derived classes.
+    /// These items are in a Editor form derived from GlobalItem.
+    /// </summary>
     public class MSTSItems
     {
 
@@ -52,6 +56,9 @@ namespace LibAE.Formats
         public List<ShapeItem> shapes;
         public List<AECrossOver> aeCrossOver;
 
+        /// <summary>
+        /// The MSTSItems class constructor.
+        /// </summary>
         public MSTSItems()
         {
             aeItemsName = "coco";
@@ -64,6 +71,10 @@ namespace LibAE.Formats
             aeCrossOver = new List<AECrossOver>();
         }
 
+        /// <summary>
+        /// Used to add a new segment to the list of segments managed by the editor.
+        /// </summary>
+        /// <param name="line">A TrackSegment instance to be added.</param>
         public void AddSegment(TrackSegment line)
         {
             PointF lineA = line.getStart();
@@ -82,6 +93,13 @@ namespace LibAE.Formats
             segments.Add(line);
         }
 
+        /// <summary>
+        /// Used to add a new siding (start or end) to the list of siding  managed by the editor.
+        /// </summary>
+        /// <param name="trSegment">The TrackSegment associated to the siding as TrackSegment instance.</param>
+        /// <param name="info"></param>
+        /// <param name="travel"></param>
+        /// <returns>Return a new SideItem instance</returns>
         public SideItem AddSiding(TrackSegment trSegment, TrItem info, AETraveller travel)
         {
             SideItem sideItem = (SideItem)sidings.Find(place => place.Name == info.ItemName && place.trItem.TrItemId == info.TrItemId);
