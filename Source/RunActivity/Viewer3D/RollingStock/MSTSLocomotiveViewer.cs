@@ -1760,8 +1760,16 @@ namespace ORTS.Viewer3D.RollingStock
 
             if (ControlDiscrete.Values.Count > 1)
             {
-                var val = ControlDiscrete.Values.Where(v => (float)v <= percent).Last();
-                index = ControlDiscrete.Values.IndexOf(val);
+                try
+                {
+                    var val = ControlDiscrete.Values.Where(v => (float)v <= percent).Last();
+                    index = ControlDiscrete.Values.IndexOf(val);
+                }
+                catch
+                {
+                    var val = ControlDiscrete.Values.Min();
+                    index = ControlDiscrete.Values.IndexOf(val);
+                }
             }
             else if (ControlDiscrete.MaxValue != ControlDiscrete.MinValue)
             {
