@@ -411,6 +411,7 @@ namespace LibAE.Formats
     #region ShapeItem
     /// <summary>
     /// Defines a siding name being drawn in a 2D view.
+    /// Work in Progress
     /// </summary>
     public class ShapeItem : GlobalItem
     {

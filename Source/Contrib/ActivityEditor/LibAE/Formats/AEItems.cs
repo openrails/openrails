@@ -42,12 +42,9 @@ namespace LibAE.Formats
 {
     /// <summary>
     /// MSTSItems retains all the items comming from MSTS route config represented by GlobalItem derived classes.
-    /// These items are in a Editor form derived from GlobalItem.
     /// </summary>
     public class MSTSItems
     {
-
-        string aeItemsName;
         public List<AEJunctionItem> switches;
         public List<AESignalItem> signals;
         public List<SideItem> sidings;
@@ -61,7 +58,6 @@ namespace LibAE.Formats
         /// </summary>
         public MSTSItems()
         {
-            aeItemsName = "coco";
             signals = new List<AESignalItem>();
             sidings = new List<SideItem>();
             switches = new List<AEJunctionItem>();
@@ -152,21 +148,12 @@ namespace LibAE.Formats
             signals.Add(signal);
         }
 
-        public bool saveConfig(StreamWriter wr)
-        {
-
-            return false;
-
-        }
-
-        public static MSTSItems loadConfig(StreamReader rd)
-        {
-
-            return null;
-
-        }
-
-        public GlobalItem getTrackSegment(uint nodeIdx)
+        /// <summary>
+        /// Search through 'segments', 'switches' or 'buffer' for the item in relation with the TrackNode index
+        /// </summary>
+        /// <param name="nodeIdx">The TrackNode index to search for</param>
+        /// <returns>GlobalItem, use the typeItem as 'TypeItem' to do the casting</returns>
+        public GlobalItem GetTrackSegment(uint nodeIdx)
         {
             foreach (var item in segments)
             {
@@ -183,13 +170,17 @@ namespace LibAE.Formats
                 if (item.associateNodeIdx == nodeIdx)
                     return (GlobalItem)item;
             }
-
             return null;
         }
 
-        public GlobalItem getTrackSegment(TrackNode node, int sectionIdx)
+        /// <summary>
+        /// Search through 'segments', 'switches' or 'buffer' for the item in relation with the given TrackNode and sectionIdx
+        /// </summary>
+        /// <param name="node">The TrackNode to search for</param>
+        /// <param name="sectionIdx">in case of multiple VectorNode, the index of the relevant vector</param>
+        /// <returns>GlobalItem, use the typeItem as 'TypeItem' to do the casting</returns>
+        public GlobalItem GetTrackSegment(TrackNode node, int sectionIdx)
         {
-            int i;
             if (node.TrJunctionNode != null)
             {
                 foreach (var item in switches)
@@ -206,7 +197,7 @@ namespace LibAE.Formats
                         return (GlobalItem)item;
                 }
             }
-            else
+            else if (sectionIdx >= 0)
             {
                 //foreach (var sideItem in segments)
                 for (int cnt = 0; cnt < segments.Count; cnt++)
@@ -222,9 +213,36 @@ namespace LibAE.Formats
                 }
             }
             return null;
-
         }
 
+        /// <summary>
+        /// Search through 'segments' for the item in relation with the given TrackNodeIdx and sectionIdx
+        /// This methof return only a TrackSegment
+        /// </summary>
+        /// <param name="nodeIdx">The index of the node in TrackNode</param>
+        /// <param name="sectionIdx">The index of the vector in the TrackNode</param>
+        /// <returns>TrackSegment</returns>
+        public TrackSegment GetTrackSegment(int nodeIdx, int sectionIdx)
+        {
+            TrackSegment trackSegment = null;
+            foreach (var segment in segments)
+            {
+                if (segment.associateNodeIdx == nodeIdx && segment.associateSectionIdx == sectionIdx)
+                {
+                    trackSegment = segment;
+                    break;
+                }
+            }
+
+            return trackSegment;
+        }
+
+        /// <summary>
+        /// Search a segment from the coordinate of the mouse.
+        /// </summary>
+        /// <param name="pt">The real coordinate pointed by the mouse</param>
+        /// <param name="snapSize">A circle in wich the segment must cross</param>
+        /// <returns>GlobalItem but for now, only a TrackSegment</returns>
         public GlobalItem findSegmentFromMouse(PointF pt, double snapSize)
         {
             double positiveInfinity = double.PositiveInfinity;
@@ -236,7 +254,7 @@ namespace LibAE.Formats
             
             PointF closest = new PointF(0f, 0f);
             TrackSegment segment = null;
-            foreach (TrackSegment segment2 in getSegments())
+            foreach (TrackSegment segment2 in segments)
             {
                 segment2.unsetSnap();
                 double num = DrawUtility.FindDistanceToSegment(pt, segment2, out closest);
@@ -254,17 +272,30 @@ namespace LibAE.Formats
             return null;
         }
 
-
+        /// <summary>
+        /// Return the list of buffer
+        /// </summary>
+        /// <returns>List<AEBufferItem></returns>
         public List<AEBufferItem> getBuffers()
         {
             return buffers;
         }
 
+        /// <summary>
+        /// Return the list of segments
+        /// </summary>
+        /// <returns>List<TrackSegment></returns>
         public List<TrackSegment> getSegments()
         {
             return segments;
         }
 
+        /// <summary>
+        /// Search for a shape by index, if no occurence, create one and return it
+        /// Work in Progress
+        /// </summary>
+        /// <param name="idx"></param>
+        /// <returns></returns>
         public ShapeItem GetShape(int idx)
         {
             ShapeItem item = shapes.Find(place => place.ShapeIdx == idx);
@@ -300,26 +331,13 @@ namespace LibAE.Formats
         {
             return switches;
         }
-
-        public TrackSegment SearchTrackSegment(int nodeIdx, int sectionIdx)
-        {
-            TrackSegment trackSegment = null;
-            foreach (var segment in segments)
-            {
-                if (segment.associateNodeIdx == nodeIdx && segment.associateSectionIdx == sectionIdx)
-                {
-                    trackSegment = segment;
-                    break;
-                }
-            }
-
-            return trackSegment;
-        }
     }
 
     #region globalItem
 
-
+    /// <summary>
+    /// GlobalItem: The generic item for the viewer and json
+    /// </summary>
     public class GlobalItem
     {
         [JsonProperty("Location")]
@@ -330,6 +348,13 @@ namespace LibAE.Formats
         public int typeItem;
         [JsonProperty("CoordMSTS")]
         public MSTSCoord Coord;
+        [JsonProperty("NodeIDX")]
+        public int associateNodeIdx { get; protected set; }
+        [JsonProperty("SectionIDX")]
+        public int associateSectionIdx { get; protected set; }
+        [JsonProperty("inStationArea")]
+        public bool inStationArea { get; set; }
+
         [JsonIgnore]
         private bool movable;
         [JsonIgnore]
@@ -345,18 +370,11 @@ namespace LibAE.Formats
         [JsonIgnore]
         public bool asMetadata { get; protected set; }  //  If true, the sideItem will be in the routeMetadata json file
         [JsonIgnore]
-        public TrackNode associateNode { get; protected set; }
-        [JsonProperty("NodeIDX")]
-        public int associateNodeIdx { get; protected set; }
-        [JsonProperty("SectionIDX")]
-        public int associateSectionIdx { get; protected set; }
-        [JsonProperty("inStationArea")]
-        public bool inStationArea { get; set; }
+        public TrackNode associateNode { get; protected set; }  // Never save this information, it comes from MSTS
 
         /// <summary>
-        /// 
+        /// The default constructor
         /// </summary>
-        /// <param name="sideItem"></param>
         public GlobalItem()
         {
             movable = false;
@@ -369,7 +387,7 @@ namespace LibAE.Formats
             typeItem = (int)TypeItem.GLOBAL_ITEM;
             Location = new PointF(float.NegativeInfinity, float.NegativeInfinity);
             Location2D = new PointF(float.NegativeInfinity, float.NegativeInfinity);
-            //Coord = new MSTSCoord();
+            Coord = new MSTSCoord();
         }
 
         public virtual void alignEdition(TypeEditor interfaceType, GlobalItem ownParent) { }
@@ -389,24 +407,6 @@ namespace LibAE.Formats
         {
         }
 
-#if false
-        public virtual double FindItem(PointF point, double snap, double actualDist)
-        {
-            double distD;
-            isSeen = false;
-            if ((Location.X < point.X - snap) || (Location.X > point.X + snap)
-                || (Location.Y < point.Y - snap) || (Location.Y > point.Y + snap))
-            {
-                return double.PositiveInfinity;
-            }
-            distD = Math.Sqrt(Math.Pow((Location.X - point.X), 2) + Math.Pow((Location.Y - point.Y), 2));
-            if (distD > actualDist)
-                return double.PositiveInfinity;
-            isSeen = true;
-            return distD;
-        }
-        
-#endif
         public virtual double FindItem(PointF point, double snap, double actualDist, MSTSItems aeItems)
         {
             double usedSnap = snap;
@@ -426,11 +426,12 @@ namespace LibAE.Formats
         }
 
         public virtual void complete(ORRouteConfig orRouteConfig, MSTSItems aeItems, MSTSBase tileBase) { }
-        public bool isItSeen() { return isSeen; }
+
         public virtual void Edit() { }
 
         public virtual void setAngle(float angle) { }
 
+        public bool isItSeen() { return isSeen; }
         public bool IsMovable() { return movable; }
         public bool IsRotable() { return rotable; }
         public bool IsEditable() { return editable; }
@@ -458,6 +459,9 @@ namespace LibAE.Formats
 
     #region TagItem
 
+    /// <summary>
+    /// Used to represent a tag, a mark with a name and used to facilitate navigation in the viewer 
+    /// </summary>
     public class TagItem : GlobalItem
     {
         [JsonProperty("nameTag")]
@@ -916,7 +920,7 @@ namespace LibAE.Formats
             {
                 if (!item.IsInterface())
                     continue;
-                TrackSegment trackSegment = mstsItems.SearchTrackSegment(item.associateNodeIdx, item.associateSectionIdx);
+                TrackSegment trackSegment = mstsItems.GetTrackSegment(item.associateNodeIdx, item.associateSectionIdx);
                 item.DefineAsInterface(trackSegment);
             }
             foreach (var segment in mstsItems.segments)

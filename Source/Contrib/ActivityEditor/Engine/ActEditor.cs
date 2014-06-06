@@ -33,6 +33,7 @@ using System.Windows.Forms;
 using AEWizard;
 using ActivityEditor.Engine;
 using LibAE;
+using LibAE.Common;
 using LibAE.Formats;
 
 namespace ActivityEditor
@@ -63,7 +64,7 @@ namespace ActivityEditor
         private bool loadEnabled = false;
         public List<Viewer2D> viewer2ds;
         public Viewer2D selectedViewer;
-        Cursor reduit;
+        
         //public List<AEActivity> aeActivity;
         //public AEActivity selectedActivity;
         private bool focusOnViewer = false;
@@ -78,9 +79,12 @@ namespace ActivityEditor
             viewer2ds = new List<Viewer2D>();
             selectedViewer = null;
             CheckCurrentStatus();
-            using (MemoryStream ms = new MemoryStream(Properties.Resources.point))
+            if (selectedViewer != null)
             {
-                reduit = new Cursor(ms);
+                using (MemoryStream ms = new MemoryStream(Properties.Resources.point))
+                {
+                    selectedViewer.reduit = new Cursor(ms);
+                }
             }
 
             //this.ActivityTool.Visible = false;
@@ -102,11 +106,11 @@ namespace ActivityEditor
         {
             if (!Program.aePreference.CheckPrefValidity())
             {
-                DisplayStatusMessage(Program.intlMngr.GetString("ConfPath"));
+                DisplayStatusMessage("Please, Configure your Path!");
                 return;
             }
 
-            DisplayStatusMessage(Program.intlMngr.GetString("CreateNewActivity"));
+            DisplayStatusMessage("Create New Activity");
         }
         private void pictureBox1_Click(object sender, EventArgs e)
         {
@@ -144,7 +148,7 @@ namespace ActivityEditor
                 this.Cursor = Cursors.Default;
                 this.Refresh();
 
-                DisplayStatusMessage(Program.intlMngr.GetString("LoadSucceed"));
+                DisplayStatusMessage("Load Succeed");
             }
         }
 
@@ -152,7 +156,7 @@ namespace ActivityEditor
         {
             this.selectedViewer.Save();
             //this.selectedActivity.activityInfo.saveXml();
-            DisplayStatusMessage(Program.intlMngr.GetString("SaveActInfoStatus"));
+            DisplayStatusMessage("Save Activity Info Status");
         }
 
         private void activityToolStripMenuItem_Click(object sender, EventArgs e)
@@ -171,7 +175,7 @@ namespace ActivityEditor
 
                 this.Cursor = Cursors.Default;
                 this.Refresh();
-                DisplayStatusMessage(Program.intlMngr.GetString("LoadSucceed"));
+                DisplayStatusMessage("Load Succeed");
             }
         }
 
@@ -213,17 +217,17 @@ namespace ActivityEditor
         {
             if (selectedViewer == null)
             {
-                DisplayStatusMessage(Program.intlMngr.GetString("NoActSelected"));
+                DisplayStatusMessage("No Activity Selected");
                 return;
             }
-            DisplayStatusMessage(Program.intlMngr.GetString("TypeInActivityDescr"));
+            DisplayStatusMessage("Type In Activity Descr");
             SimpleTextEd simpleTextEd = new SimpleTextEd();
             simpleTextEd.aEditer.Text = selectedViewer.getDescr();
             simpleTextEd.ShowDialog();
             if (simpleTextEd.aEditer.TextLength > 0)
             {
                 selectedViewer.setDescr(simpleTextEd.aEditer.Text);
-                DisplayStatusMessage(Program.intlMngr.GetString("ActDescrUpdated"));
+                DisplayStatusMessage("Act Description Updated");
             }
         }
 
@@ -253,21 +257,21 @@ namespace ActivityEditor
 
         private void AddTag_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceTag"));
-            SetToolClicked(ToolClicked.TAG);
+            DisplayStatusMessage("Please, Place Tag");
+            selectedViewer.SetToolClicked(ToolClicked.TAG);
         }
 
         private void AddStation_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceStation"));
-            ToolClicked = ToolClicked.STATION;
-            ToolToUse = global::ActivityEditor.Properties.Resources.SignalBox;
-
+            DisplayStatusMessage("Please, Place Station");
+            selectedViewer.SetToolClicked(ToolClicked.STATION);
         }
 
+        #region Activity    
+        //  Not used actuially
         private void AddActivityStart_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceStartAct"));
+            DisplayStatusMessage("Please, Place Start Activity");
             ToolClicked = ToolClicked.START;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_start;
 
@@ -275,7 +279,7 @@ namespace ActivityEditor
 
         private void AddActivityStop_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceStopAct"));
+            DisplayStatusMessage("Please, Place Stop Activity");
             ToolClicked = ToolClicked.STOP;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_stop;
 
@@ -283,7 +287,7 @@ namespace ActivityEditor
 
         private void AddActivityWait_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceWaitPointAct"));
+            DisplayStatusMessage("Please, Place Wait Point Activity");
             ToolClicked = ToolClicked.WAIT;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_wait;
 
@@ -291,7 +295,7 @@ namespace ActivityEditor
 
         private void AddActivityAction_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceActionPointAct"));
+            DisplayStatusMessage("Please, Place Action Point Activity");
             ToolClicked = ToolClicked.ACTION;
             ToolToUse = global::ActivityEditor.Properties.Resources.Action;
 
@@ -299,107 +303,38 @@ namespace ActivityEditor
 
         private void AddActivityEval_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceEvalPointAct"));
+            DisplayStatusMessage("Please, Place Evaluation Point Activity");
             ToolClicked = ToolClicked.CHECK;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_check;
 
         }
-
+        #endregion
+        
         private void MoveSelected_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceMoveTool"));
-            SetToolClicked(ToolClicked.MOVE);
+            DisplayStatusMessage("Please, Place Move Tool");
+            selectedViewer.SetToolClicked(ToolClicked.MOVE);
         }
 
         private void RotateSelected_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("PlaceRotateTool"));
-            ToolClicked = ToolClicked.ROTATE;
-            ToolToUse = global::ActivityEditor.Properties.Resources.object_rotate;
-
-        }
-
-        public ToolClicked IsToolClicked()
-        {
-            return ToolClicked;
+            DisplayStatusMessage("Place Rotate Tool");
+            selectedViewer.SetToolClicked(ToolClicked.ROTATE);
         }
 
         public void UnsetToolClick()
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("WaitActionForm"));
+            DisplayStatusMessage("Wait Action Form");
             ToolClicked = ToolClicked.NO_TOOL;
             ToolToUse = null;
             this.Cursor = Cursors.Default;
-        }
-
-        public void SetToolClicked(ToolClicked info)
-        {
-            if ((ToolClicked)info == ToolClicked.AREA_ADD)
-            {   //  To prevent bad setting
-                ToolClicked = info;
-                ToolToUse = global::ActivityEditor.Properties.Resources._64;
-                CursorToUse = reduit;
-            }
-            else if ((ToolClicked)info == ToolClicked.AREA)
-            {
-                ToolClicked = info;
-                ToolToUse = global::ActivityEditor.Properties.Resources._32;
-                CursorToUse = reduit;
-            }
-            else if ((ToolClicked)info == ToolClicked.DRAG)
-            {
-                ToolClicked = info;
-                ToolToUse = null;
-                CursorToUse = Cursors.Hand;
-            }
-            else if ((ToolClicked)info == ToolClicked.ZOOM)
-            {
-                ToolClicked = info;
-                ToolToUse = null;
-                CursorToUse = Cursors.SizeAll;
-            }
-            else if ((ToolClicked)info == ToolClicked.MOVE)
-            {
-                ToolClicked = info;
-                ToolToUse = global::ActivityEditor.Properties.Resources.object_move;
-                CursorToUse = Cursors.Default;
-            }
-            else if ((ToolClicked)info == ToolClicked.TAG)
-            {
-                ToolClicked = info;
-                ToolToUse = global::ActivityEditor.Properties.Resources.tag;
-                CursorToUse = reduit;
-            }
-            else if ((ToolClicked)info == ToolClicked.METASEGMENT)
-            {
-                ToolClicked = info;
-                ToolToUse = global::ActivityEditor.Properties.Resources.metasegment;
-                CursorToUse = reduit;
-            }
-            else
-            {
-                ToolClicked = ToolClicked.NO_TOOL;
-                CursorToUse = Cursors.Default;
-                ToolToUse = null;
-            }
-        }
-
-        public Image getToolToUse()
-        {
-            return ToolToUse;
-        }
-
-        public Cursor getCursorToUse()
-        {
-            if (CursorToUse == null)
-                return Cursors.Default;
-            return CursorToUse;
+            CursorToUse = Cursors.Default;
         }
 
         private void AddArea_Click(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("AddStationArea"));
-            SetToolClicked(ToolClicked.AREA);
+            DisplayStatusMessage("Add Station Area");
+            selectedViewer.SetToolClicked(ToolClicked.AREA);
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -465,7 +400,7 @@ namespace ActivityEditor
 
                 this.Cursor = Cursors.Default;
                 this.Refresh();
-                DisplayStatusMessage(Program.intlMngr.GetString("LoadSucceed"));
+                DisplayStatusMessage("Load Succeed");
             }
         }
 
@@ -563,13 +498,13 @@ namespace ActivityEditor
 
         private void editMetaSegment(object sender, EventArgs e)
         {
-            DisplayStatusMessage("Edit MEtadata for Segment");
-            SetToolClicked(ToolClicked.METASEGMENT);
+            DisplayStatusMessage("Edit Metadata for Segment");
+            selectedViewer.SetToolClicked(ToolClicked.METASEGMENT);
         }
 
         private void routeData_Leave(object sender, EventArgs e)
         {
-            DisplayStatusMessage(Program.intlMngr.GetString("lose"));
+            DisplayStatusMessage("lose");
         }
 
         private void SaveRouteCfg(object sender, EventArgs e)

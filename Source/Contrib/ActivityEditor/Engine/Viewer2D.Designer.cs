@@ -11,6 +11,7 @@ namespace ActivityEditor.Engine
         {
             parent = viewer;
             this.SetStyle(ControlStyles.Selectable, true);
+            this.IsInputKey(Keys.Up);
         }
         protected override void OnMouseDown(MouseEventArgs e)
         {
@@ -19,6 +20,17 @@ namespace ActivityEditor.Engine
             this.Focus();
             base.OnMouseDown(e);
             this.Select();
+        }
+        protected override bool IsInputKey(Keys keyData)
+        {
+            if (keyData == Keys.Up || keyData == Keys.Down || keyData == Keys.Left || keyData == Keys.Right)
+            {
+                return true;
+            }
+            else
+            {
+                return base.IsInputKey(keyData);
+            }
         }
     }
     partial class Viewer2D

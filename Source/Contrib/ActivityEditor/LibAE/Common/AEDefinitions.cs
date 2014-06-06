@@ -1,4 +1,5 @@
-﻿// This file is part of Open Rails.
+﻿// 
+// This file is part of Open Rails.
 // 
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,19 +19,28 @@
 /// Author: Stéfan Paitoni
 /// Updates : 
 /// 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace LibAE.Common
 {
-    public enum TypeConfig
+    public enum Direction { Forward, Reverse, N }
+
+    public static class DirectionControl
     {
-        ACTIVITY,
-        ROUTE
+        public static Direction Flip(Direction direction)
+        {
+            //return direction == Direction.Forward ? Direction.Reverse : Direction.Forward;
+            if (direction == Direction.N)
+                return Direction.N;
+            if (direction == Direction.Forward)
+                return Direction.Reverse;
+            else
+                return Direction.Forward;
+        }
     }
 
+    /// <summary>
+    /// List of items that can be shown through the Editor.  These items can be searchable, modifiable, movable, ...
+    /// </summary>
     public enum TypeItem
     {
         GLOBAL_ITEM = 0,
@@ -53,5 +63,12 @@ namespace LibAE.Common
         SIDING_END = 1,
         PLATFORM_START = 2,
         PLATFORM_END = 3
+    };
+    public enum TypeEditor
+    {
+        ACTIVITY = 1,
+        ROUTECONFIG = 2,
+        TRAFFIC = 3,
+        NONE = 0
     };
 }

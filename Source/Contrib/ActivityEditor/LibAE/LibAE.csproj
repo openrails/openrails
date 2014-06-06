@@ -121,12 +121,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\RunActivity\Common\enums.cs">
-      <Link>Common\enums.cs</Link>
-    </Compile>
-    <Compile Include="AEDefinitions.cs" />
+    <Compile Include="Common\AEDefinitions.cs" />
     <Compile Include="AEUtility.cs" />
-    <Compile Include="Common\AEDef.cs" />
     <Compile Include="Divers.cs" />
     <Compile Include="Formats\ActivityInfo.cs" />
     <Compile Include="Formats\AEItems.cs" />

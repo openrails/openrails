@@ -77,7 +77,7 @@ namespace LibAE.Formats
             int lastCommonTrack = trackNodeIndex;
             int trackVectorSectionIndex = myTravel.TrackVectorSectionIndex;
             TrVectorSection currentSection = myTravel.GetCurrentSection();
-            GlobalItem startNode = aeItems.getTrackSegment(currentNode, trackVectorSectionIndex);
+            GlobalItem startNode = aeItems.GetTrackSegment(currentNode, trackVectorSectionIndex);
             //paths.Add(new StationPath(startNode, myTravel));
             paths.Add(new StationPath(myTravel));
             paths[0].LastCommonTrack = trackNodeIndex;
@@ -340,7 +340,7 @@ namespace LibAE.Formats
                 do
                 {
                     int sectionIdx = traveller.TrackVectorSectionIndex;
-                    TrackSegment item = (TrackSegment)aeItems.getTrackSegment(currentNode, sectionIdx);
+                    TrackSegment item = (TrackSegment)aeItems.GetTrackSegment(currentNode, sectionIdx);
                     foreach (TrackSegment conSeg in listConnector)
                     {
                         if (conSeg.associateNodeIdx == entryNode)
@@ -391,7 +391,7 @@ namespace LibAE.Formats
             }
             else
             {
-                GlobalItem item = aeItems.getTrackSegment(currentNode, 0);
+                GlobalItem item = aeItems.GetTrackSegment(currentNode, -1);
                 item.inStationArea = true;
                 ComponentItem.Add(item);
             }

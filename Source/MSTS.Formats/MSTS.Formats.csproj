@@ -32,6 +32,10 @@
     <DocumentationFile>..\..\Program\MSTS.Formats.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="LibAE, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Contrib\ActivityEditor\LibAE\obj\x86\Debug\LibAE.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
     <Reference Include="System" />
     <Reference Include="System.Core">

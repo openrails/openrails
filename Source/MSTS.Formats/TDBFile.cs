@@ -227,7 +227,7 @@ namespace MSTS.Formats
         public uint Index { get; set; }
 
         /// <summary>??? (needed for ActivityEditor, but not used here, so why is it defined here?)</summary>
-        protected bool Reduced { get; set; }
+        public bool Reduced { get; set; }
 
         /// <summary>
         /// Default constructor used during file parsing.

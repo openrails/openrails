@@ -53,7 +53,7 @@ namespace ActivityEditor.Engine
         public List<StationWidgetInfo> stationWidgetInfo;
         public List<GroupBox> tagGBList;
         public List<TagWidgetInfo> tagWidgetInfo;
-        private TypeConfig typeConfig;
+        private TypeEditor typeConfig;
         // Properties
         
         public AERouteConfig aeRouteConfig { get; set; }
@@ -63,14 +63,14 @@ namespace ActivityEditor.Engine
         Random rnd = new Random();
 
         // Methods
-        public AEConfig(TypeConfig type, ActEditor panel, Viewer2D viewer)
+        public AEConfig(TypeEditor type, ActEditor panel, Viewer2D viewer)
         {
             routeData = panel.routeData;
             AEConfigPanel = panel.activityOverview;
             typeConfig = type;
             Viewer = viewer;
             aeRouteConfig = new AERouteConfig(this);
-            if (typeConfig == TypeConfig.ACTIVITY)
+            if (typeConfig == TypeEditor.ACTIVITY)
             {
                 aeActivity = new AEActivity();
             }
@@ -165,7 +165,7 @@ namespace ActivityEditor.Engine
 
         public List<GlobalItem> getActItem()
         {
-            if (typeConfig == TypeConfig.ACTIVITY)
+            if (typeConfig == TypeEditor.ACTIVITY)
             {
                 return aeActivity.getActItem();
             }
@@ -174,7 +174,7 @@ namespace ActivityEditor.Engine
 
         public string getActivityDescr()
         {
-            if (typeConfig == TypeConfig.ACTIVITY)
+            if (typeConfig == TypeEditor.ACTIVITY)
             {
                 return aeActivity.activityInfo.ActivityDescr;
             }
@@ -183,7 +183,7 @@ namespace ActivityEditor.Engine
 
         public string getActivityName()
         {
-            if (typeConfig == TypeConfig.ACTIVITY)
+            if (typeConfig == TypeEditor.ACTIVITY)
             {
                 return aeActivity.activityInfo.ActivityName;
             }
@@ -212,7 +212,7 @@ namespace ActivityEditor.Engine
 
         public void LoadPanels(string name)
         {
-            if (typeConfig == TypeConfig.ACTIVITY)
+            if (typeConfig == TypeEditor.ACTIVITY)
             {
                 aeActivity.LoadPanels(AEConfigPanel);
             }

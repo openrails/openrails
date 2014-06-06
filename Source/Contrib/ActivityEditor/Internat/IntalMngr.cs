@@ -44,7 +44,8 @@ namespace ActivityEditor.Internat
 
         public string GetString(string name)
         {
-            return resMan.GetString(name);
+            string info = resMan.GetString(name);
+            return info;
         }
     }
 }

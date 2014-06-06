@@ -65,6 +65,8 @@ namespace LibAE.Formats
         AETraveller searchTraveller;
         [JsonIgnore]
         public MSTSBase TileBase { get; set; }
+        [JsonIgnore]
+        public int a;
 
         /// <summary>
         /// The class constructor, but, don't use it.  Prefer to use the static method 'LoadConfig' wich return this object
@@ -272,36 +274,6 @@ namespace LibAE.Formats
                 }
             }
 
-        }
-
-        /// <summary>
-        /// CompleteTDB is used to add all the OR Specific items to the current TDBList.
-        /// </summary>
-        /// <param name="TDB">The current TDB config to update.</param>
-        public void CompleteTDB(TDBFile TDB)
-        {
-#if false
-            int idx;
-            List<TrItem> trItemToAdd = new List<TrItem>();
-            TrItem[] trItemTable = TDB.TrackDB.TrItemTable;
-            foreach (var trItem in trItemTable)
-            {
-                trItemToAdd.Add(trItem);
-            }
-            idx = trItemTable.Count();
-            foreach (var item in AllItems)
-            {
-                if (item.typeItem == (int)TypeItem.STATION_CONNECTOR)
-                {
-                    TrackNode node = TDB.TrackDB.TrackNodes[item.associateNodeIdx];
-                    AeConnector newTrItem = new AeConnector((StationAreaItem)item, idx);
-                    trItemToAdd.Add (newTrItem);
-                    node.TrVectorNode.AddTrItemRef(idx);
-                    idx++;
-                }
-            }
-            TDB.TrackDB.TrItemTable = trItemToAdd.ToArray();
-#endif
         }
 
         public void StartSearchPath(TrackPDP startPoint)

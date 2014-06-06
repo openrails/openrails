@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This module ...
+/// This module is a 'Work in Progress'
 /// 
 /// Author: Stéfan Paitoni
 /// Updates : 

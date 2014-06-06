@@ -483,6 +483,8 @@ namespace LibAE.Formats
         }
 
     }
+
+#if false
     //================================================================================================//
     //
     // class TrackCircuitXRefList
@@ -576,7 +578,8 @@ namespace LibAE.Formats
             }
         }
     } // class TrackCircuitXRefList
-
+    
+#endif
     //================================================================================================//
     //
     // class TrackCircuitSignalList

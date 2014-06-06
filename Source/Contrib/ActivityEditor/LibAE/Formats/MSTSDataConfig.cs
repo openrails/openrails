@@ -25,20 +25,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-//using MSTS;
 using MSTS.Formats;
 using MSTS.Parsers;
 using ORTS.Common;
-using LibAE.Formats;
+using LibAE.Common;
 
 namespace LibAE
 {
     public class MSTSDataConfig : MSTSData
     {
         public MSTSBase TileBase { get; protected set; }
-        //public TSectionDatFile TSectionDat { get; protected set; }
-        //public AETraveller traveller { get { return orRouteConfig.traveller; } protected set { } }
-
 
         public MSTSDataConfig(string mstsPath, string Route, TypeEditor interfaceType) : base (mstsPath, Route)
         {
